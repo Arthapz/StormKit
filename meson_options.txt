@@ -1,0 +1,12 @@
+option('enable_doc', type: 'boolean', value: false, description: 'Generate documentation')
+option('enable_examples', type: 'boolean', value: false, description: 'Build examples')
+
+option('enable_log', type: 'boolean', value: true, description: 'Build StormKit log library')
+option('enable_entities', type: 'boolean', value: true, description: 'Build StormKit entities library')
+option('enable_module', type: 'boolean', value: true, description: 'Build StormKit module library')
+option('enable_window', type: 'boolean', value: true, description: 'Build StormKit window library')
+option('enable_image', type: 'boolean', value: true, description: 'Build StormKit image library')
+option('enable_render', type: 'boolean', value: true, description: 'Build StormKit render library')
+option('enable_engine', type: 'boolean', value: true, description: 'Build StormKit engine library')
+
+option('library_type', type: 'combo', choices: ['shared', 'static'], value: 'shared', description: 'Library type (default is shared)')

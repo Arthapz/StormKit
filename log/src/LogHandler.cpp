@@ -8,16 +8,16 @@
 using namespace storm::log;
 
 namespace storm::log {
-	LoggerOwnedPtr LogHandler::m_logger = nullptr;
+    LoggerOwnedPtr LogHandler::m_logger = nullptr;
 }
 void LogHandler::setupLogger(LoggerOwnedPtr &&ptr) {
-	m_logger = std::move(ptr);
+    m_logger = std::move(ptr);
 }
 
 void LogHandler::setupDefaultLogger() {
-	setupLogger<ConsoleLogger>();
+    setupLogger<ConsoleLogger>();
 }
 
 Logger &LogHandler::logger() {
-	return *m_logger;
+    return *m_logger;
 }

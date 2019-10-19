@@ -12,8 +12,16 @@
 
 /// \brief FLAG_ENUM is a macro which define enum class with binary operators
 /// \param x the type of enum
-#define FLAG_ENUM(x)                                                           \
-	template <> struct enable_bitmask_operators<x> {                           \
-		constexpr enable_bitmask_operators() = default;                        \
-		static const bool enable			 = true;                           \
-	};
+#define FLAG_ENUM(x)                                    \
+    template<>                                          \
+    struct enable_bitmask_operators<x> {                \
+        constexpr enable_bitmask_operators() = default; \
+        static const bool enable             = true;    \
+    };
+
+namespace storm::core {
+    template<typename Enum, typename Enum2>
+    constexpr inline bool checkFlag(Enum value, Enum2 flag) {
+        return (value & flag) == value;
+    }
+} // namespace storm::core

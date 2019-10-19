@@ -9,8 +9,8 @@ using namespace storm::module;
 
 /////////////////////////////////////
 /////////////////////////////////////
-AbstractModule::AbstractModule(core::filesystem::path filepath)
-	: m_filepath{std::move(filepath)} {
+AbstractModule::AbstractModule(std::filesystem::path filepath)
+    : m_filepath { std::move(filepath) } {
 }
 
 /////////////////////////////////////

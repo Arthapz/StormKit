@@ -7,10 +7,10 @@
 #include <storm/core/NamedType.hpp>
 
 namespace storm::log {
-	using Module = core::NamedType<const char *, struct LogModuleParameter>;
+    using Module = core::NamedType<const char *, struct LogModuleParameter>;
 
-	constexpr storm::log::Module
-		operator"" _module(const char *str, [[maybe_unused]] std::size_t sz) {
-		return storm::core::makeNamed<Module>(str);
-	}
+    constexpr storm::log::Module operator"" _module(const char *str,
+                                                    [[maybe_unused]] core::ArraySize sz) {
+        return storm::core::makeNamed<Module>(str);
+    }
 } // namespace storm::log

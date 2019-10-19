@@ -39,9 +39,11 @@ namespace storm::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const TreeNode::DirtyBitType &TreeNode::dirtyBits() const noexcept { return m_dirty_bits; }
+    inline const TreeNode::DirtyBitType &TreeNode::dirtyBits() const noexcept {
+        return m_dirty_bits;
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     inline void TreeNode::setDirtyBits(DirtyBitType bits) noexcept { m_dirty_bits = bits; }
-} // namespace storm::tools
+} // namespace storm::core

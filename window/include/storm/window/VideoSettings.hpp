@@ -11,18 +11,28 @@
 #include <vector>
 
 namespace storm::window {
-	struct VideoSettings {
-		core::Extent size;
-		union {
-			std::uint8_t bitsPerPixel;
-			std::uint8_t bpp;
-		};
-		union {
-			std::uint16_t dotsPerInch;
-			std::uint16_t dpi;
-		};
+    struct VideoSettings {
+        core::Extentu size;
+        union {
+            core::UInt8 bitsPerPixel;
+            core::UInt8 bpp;
+        };
+        union {
+            core::UInt16 dotsPerInch;
+            core::UInt16 dpi;
+        };
 
-		STORM_PUBLIC static std::vector<VideoSettings> getDesktopModes();
-	};
+        STORM_PUBLIC static std::vector<VideoSettings> getDesktopModes();
+        STORM_PUBLIC static VideoSettings getDesktopFullscreenSize();
+
+        inline bool operator==(const VideoSettings &other) const noexcept {
+            return size.width == other.size.width && size.height == other.size.height &&
+                   bpp == other.bpp;
+        }
+
+        inline bool operator>(const VideoSettings &other) const noexcept {
+            return size.width > other.size.width;
+        }
+    };
 
 } // namespace storm::window

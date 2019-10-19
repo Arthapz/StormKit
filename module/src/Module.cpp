@@ -5,10 +5,10 @@
 #include <storm/module/Module.hpp>
 
 #if defined(STORM_OS_WINDOWS)
-#include "win32/ModuleImpl.hpp"
+    #include "win32/ModuleImpl.hpp"
 using Impl = storm::module::ModuleImpl;
 #elif defined(STORM_POSIX)
-#include "posix/ModuleImpl.hpp"
+    #include "posix/ModuleImpl.hpp"
 using Impl = storm::module::ModuleImpl;
 #endif
 
@@ -17,10 +17,10 @@ using namespace storm::module;
 
 /////////////////////////////////////
 /////////////////////////////////////
-Module::Module(core::filesystem::path filename) : m_impl{nullptr} {
-	STORM_EXPECTS(!filename.empty());
+Module::Module(std::filesystem::path filename) : m_impl { nullptr } {
+    STORM_EXPECTS(!filename.empty());
 
-	m_impl = std::make_unique<Impl>(filename);
+    m_impl = std::make_unique<Impl>(filename);
 }
 
 /////////////////////////////////////

@@ -4,60 +4,49 @@
 
 #pragma once
 
-#include <storm/core/Platform.hpp>
-
-#ifdef STORM_COMPILER_MSVC
-#pragma warning(push)
-#pragma warning(disable : 4251)
-#endif
-
 #include <gsl/string_span>
+
 #include <storm/core/Platform.hpp>
-#include <storm/log/ForwardDeclarations.hpp>
+
+#include <storm/log/Fwd.hpp>
 #include <storm/log/Module.hpp>
 #include <storm/log/Severity.hpp>
 
 namespace storm::log {
-	class STORM_PUBLIC Logger {
-	  public:
-		explicit Logger(LogClock::time_point start,
-						Severity log_level = DEFAULT_SEVERITY);
-		virtual ~Logger();
+    class STORM_PUBLIC Logger {
+      public:
+        explicit Logger(LogClock::time_point start, Severity log_level = DEFAULT_SEVERITY);
+        virtual ~Logger();
 
-		Logger(Logger &&);
-		Logger &operator=(Logger &&);
+        Logger(Logger &&);
+        Logger &operator=(Logger &&);
 
-		Logger(const Logger &);
-		Logger &operator=(const Logger &);
+        Logger(const Logger &);
+        Logger &operator=(const Logger &);
 
-		virtual void write(Severity severity, Module module,
-						   const char *string) = 0;
-		virtual void flush()				   = 0;
+        virtual void write(Severity severity, Module module, const char *string) = 0;
+        virtual void flush()                                                     = 0;
 
-		inline void setLogLevel(Severity log_level);
+        inline void setLogLevel(Severity log_level);
 
-		inline const LogClock::time_point &startTime() const noexcept;
-		inline const Severity &logLevel() const noexcept;
+        inline const LogClock::time_point &startTime() const noexcept;
+        inline const Severity &logLevel() const noexcept;
 
-	  protected:
+      protected:
 #ifdef STORM_BUILD_DEBUG
-		static constexpr const auto DEFAULT_SEVERITY =
-			Severity::Info | Severity::Debug | Severity::Error |
-			Severity::Fatal | Severity::Warning;
+        static constexpr const auto DEFAULT_SEVERITY = Severity::Info | Severity::Debug |
+                                                       Severity::Error | Severity::Fatal |
+                                                       Severity::Warning;
 #else
-		static constexpr const auto DEFAULT_SEVERITY =
-			Severity::Info | Severity::Error | Severity::Fatal;
+        static constexpr const auto DEFAULT_SEVERITY =
+            Severity::Info | Severity::Error | Severity::Fatal;
 #endif
 
-		LogClock::time_point m_start_time;
-		Severity m_log_level;
+        LogClock::time_point m_start_time;
+        Severity m_log_level;
 
-		friend class LogHandler;
-	};
+        friend class LogHandler;
+    };
 } // namespace storm::log
 
 #include "Logger.inl"
-
-#ifdef STORM_COMPILER_MSVC
-#pragma warning(pop)
-#endif

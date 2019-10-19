@@ -12,81 +12,85 @@ using namespace storm::render;
 
 /////////////////////////////////////
 /////////////////////////////////////
-DescriptorSetLayout::DescriptorSetLayout(const Device &device)
-	: m_device{&device} {
+DescriptorSetLayout::DescriptorSetLayout(const Device &device) : m_device { &device } {
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-DescriptorSetLayout::~DescriptorSetLayout() {
-	if (m_vk_descriptor_set_layout != VK_NULL_HANDLE)
-		m_device->destroyVkDescriptorSetLayout(m_vk_descriptor_set_layout);
+DescriptorSetLayout::~DescriptorSetLayout() = default;
+
+/////////////////////////////////////
+/////////////////////////////////////
+DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout &&rhs) noexcept
+    : m_device { rhs.m_device }, m_bindings { std::move(rhs.m_bindings) }, m_hash { rhs.m_hash },
+      m_vk_descriptor_set_layout { std::move(rhs.m_vk_descriptor_set_layout) } {
+    rhs.m_vk_descriptor_set_layout.release();
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout &&) = default;
+DescriptorSetLayout &DescriptorSetLayout::operator=(DescriptorSetLayout &&rhs) {
+    if (&rhs == this) return *this;
 
-/////////////////////////////////////
-/////////////////////////////////////
-DescriptorSetLayout &DescriptorSetLayout::
-	operator=(DescriptorSetLayout &&) = default;
+    m_device                   = rhs.m_device;
+    m_bindings                 = std::move(rhs.m_bindings);
+    m_hash                     = rhs.m_hash;
+    m_vk_descriptor_set_layout = std::move(rhs.m_vk_descriptor_set_layout);
+
+    rhs.m_vk_descriptor_set_layout.release();
+
+    return *this;
+}
 
 /////////////////////////////////////
 /////////////////////////////////////
 void DescriptorSetLayout::updateHash() noexcept {
-	m_hash = std::hash<decltype(m_bindings)>{}(m_bindings);
+    m_hash = std::hash<decltype(m_bindings)> {}(m_bindings);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void DescriptorSetLayout::build() {
-	const auto &device = static_cast<const Device &>(*m_device);
+void DescriptorSetLayout::bake() {
+    auto descriptor_set_bindings = std::vector<vk::DescriptorSetLayoutBinding> {};
+    descriptor_set_bindings.reserve(std::size(m_bindings));
 
-	auto descriptor_set_bindings = std::vector<VkDescriptorSetLayoutBinding>{};
-	descriptor_set_bindings.reserve(std::size(m_bindings));
+    for (const auto &descriptor_set_binding : m_bindings) {
+        const auto vk_descriptor_set_binding =
+            vk::DescriptorSetLayoutBinding {}
+                .setBinding(descriptor_set_binding.binding)
+                .setDescriptorType(toVK(descriptor_set_binding.type))
+                .setDescriptorCount(
+                    gsl::narrow_cast<core::UInt32>(descriptor_set_binding.descriptor_count))
+                .setStageFlags(toVK(descriptor_set_binding.stages));
 
-	for (const auto &descriptor_set_binding : m_bindings) {
-		const auto vk_descriptor_set_binding = VkDescriptorSetLayoutBinding{
-			.binding		 = descriptor_set_binding.binding,
-			.descriptorType  = toVK(descriptor_set_binding.type),
-			.descriptorCount = gsl::narrow_cast<std::uint32_t>(
-				descriptor_set_binding.descriptor_count),
-			.stageFlags = toVK(descriptor_set_binding.stages)};
-		descriptor_set_bindings.emplace_back(
-			std::move(vk_descriptor_set_binding));
-	}
+        descriptor_set_bindings.emplace_back(std::move(vk_descriptor_set_binding));
+    }
 
-	const auto descriptor_layout = VkDescriptorSetLayoutCreateInfo{
-		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-		.bindingCount =
-			gsl::narrow_cast<std::uint32_t>(std::size(descriptor_set_bindings)),
-		.pBindings = std::data(descriptor_set_bindings)};
+    const auto descriptor_layout =
+        vk::DescriptorSetLayoutCreateInfo {}
+            .setBindingCount(gsl::narrow_cast<core::UInt32>(std::size(descriptor_set_bindings)))
+            .setPBindings(std::data(descriptor_set_bindings));
 
-	m_vk_descriptor_set_layout =
-		device.createVkDescriptorSetLayout(descriptor_layout);
+    m_vk_descriptor_set_layout = m_device->createVkDescriptorSetLayout(descriptor_layout);
 }
-
 
 namespace std {
-	std::size_t hash<storm::render::DescriptorSetLayoutBinding>::operator()(
-		const storm::render::DescriptorSetLayoutBinding &binding) const
-		noexcept {
-		auto hash = std::size_t{0};
-		core::hash_combine(hash, binding.binding);
-		core::hash_combine(hash, binding.type);
-		core::hash_combine(hash, binding.stages);
-		core::hash_combine(hash, binding.descriptor_count);
+    core::Hash64 hash<storm::render::DescriptorSetLayoutBinding>::operator()(
+        const storm::render::DescriptorSetLayoutBinding &binding) const noexcept {
+        auto hash = core::Hash64 { 0 };
+        core::hash_combine(hash, binding.binding);
+        core::hash_combine(hash, binding.type);
+        core::hash_combine(hash, binding.stages);
+        core::hash_combine(hash, binding.descriptor_count);
 
-		return hash;
-	}
+        return hash;
+    }
 
-	std::size_t hash<std::vector<storm::render::DescriptorSetLayoutBinding>>::
-		operator()(const std::vector<storm::render::DescriptorSetLayoutBinding>
-					   &bindings) const noexcept {
-		auto hash = std::size_t{0};
-		for (const auto &binding : bindings) core::hash_combine(hash, binding);
+    core::Hash64 hash<std::vector<storm::render::DescriptorSetLayoutBinding>>::operator()(
+        const std::vector<storm::render::DescriptorSetLayoutBinding> &bindings) const noexcept {
+        auto hash = core::Hash64 { 0 };
+        for (const auto &binding : bindings) core::hash_combine(hash, binding);
 
-		return hash;
-	}
+        return hash;
+    }
 } // namespace std

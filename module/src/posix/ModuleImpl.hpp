@@ -7,18 +7,18 @@
 #include <storm/module/AbstractModule.hpp>
 
 namespace storm::module {
-	class ModuleImpl final : public AbstractModule {
-	  public:
-		explicit ModuleImpl(core::filesystem::path filename);
-		~ModuleImpl() override;
+    class ModuleImpl final: public AbstractModule {
+      public:
+        explicit ModuleImpl(std::filesystem::path filename);
+        ~ModuleImpl() override;
 
-		ModuleImpl(ModuleImpl &&);
-		ModuleImpl &operator=(ModuleImpl &&);
+        ModuleImpl(ModuleImpl &&);
+        ModuleImpl &operator=(ModuleImpl &&);
 
-	  protected:
-		void *_getFunc(std::string_view name) const override;
+      protected:
+        void *_getFunc(std::string_view name) const override;
 
-	  private:
-		void *m_library_handle = nullptr;
-	};
+      private:
+        void *m_library_handle = nullptr;
+    };
 } // namespace storm::module

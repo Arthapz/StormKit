@@ -11,38 +11,50 @@
 #include <storm/render/core/Fwd.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
+#include <storm/render/pipeline/DescriptorSet.hpp>
 #include <storm/render/pipeline/DescriptorSetLayout.hpp>
 #include <storm/render/pipeline/Fwd.hpp>
 
 #include <storm/render/resource/Fwd.hpp>
 
 namespace storm::render {
-	class STORM_PUBLIC DescriptorPool : public core::NonCopyable {
-	  public:
-		struct Size {
-			DescriptorType type;
-			std::size_t descriptor_count;
-		};
+    class STORM_PUBLIC DescriptorPool: public core::NonCopyable {
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Descriptor_Pool;
 
-		DescriptorPool(const Device &device,
-								const DescriptorSetLayout &layout,
-								std::vector<Size> sizes, std::size_t max_sets);
-		 ~DescriptorPool() ;
+        struct Size {
+            DescriptorType type;
+            core::ArraySize descriptor_count;
+        };
 
-		DescriptorPool(DescriptorPool &&);
-		DescriptorPool &operator=(DescriptorPool &&);
+        DescriptorPool(const Device &device, std::vector<Size> sizes, core::ArraySize max_sets);
+        ~DescriptorPool();
 
-		 std::vector<DescriptorSetOwnedPtr>
-			allocateDescriptorSets(std::size_t count) ;
+        DescriptorPool(DescriptorPool &&);
+        DescriptorPool &operator=(DescriptorPool &&);
 
-		inline const Device &device() const noexcept {
-            return *m_device;
-		}
+        std::vector<DescriptorSet> allocateDescriptorSets(core::ArraySize count,
+                                                          const DescriptorSetLayout &layout) const;
+        inline DescriptorSet allocateDescriptorSet(const DescriptorSetLayout &layout) const;
 
-	  private:
-		DeviceConstObserverPtr m_device;
-		DescriptorSetLayoutConstObserverPtr m_layout;
+        std::vector<DescriptorSetOwnedPtr>
+            allocateDescriptorSetsPtr(core::ArraySize count,
+                                      const DescriptorSetLayout &layout) const;
+        inline DescriptorSetOwnedPtr
+            allocateDescriptorSetPtr(const DescriptorSetLayout &layout) const;
 
-		VkDescriptorPool m_vk_descriptor_pool = VK_NULL_HANDLE;
-	};
+        inline const Device &device() const noexcept;
+
+        inline vk::DescriptorPool vkDescriptorPool() const noexcept;
+        inline operator vk::DescriptorPool() const noexcept;
+        inline vk::DescriptorPool vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
+
+      private:
+        DeviceConstObserverPtr m_device;
+
+        RAIIVkDescriptorPool m_vk_descriptor_pool;
+    };
 } // namespace storm::render
+
+#include "DescriptorPool.inl"

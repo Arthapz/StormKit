@@ -4,36 +4,73 @@
 
 #pragma once
 
+#include <filesystem>
+#include <unordered_map>
+
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
 
-#include <gsl/string_span>
-
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
+#include <storm/render/core/Vulkan.hpp>
+
 #include <storm/render/pipeline/GraphicsPipelineState.hpp>
 
-#include <unordered_map>
-
 namespace storm::render {
-	class STORM_PUBLIC PipelineCache : public core::NonCopyable {
-	  public:
-		explicit PipelineCache(const Device &device);
-		~PipelineCache();
+    class STORM_PUBLIC PipelineCache: public core::NonCopyable {
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Pipeline_Cache;
 
-		PipelineCache(PipelineCache &&);
-		PipelineCache &operator=(PipelineCache &&);
+        explicit PipelineCache(const Device &devicen,
+                               std::filesystem::path cache_path = "./pipeline_cache.bin");
+        ~PipelineCache();
 
-		render::GraphicsPipeline &
-			getPipeline(const GraphicsPipelineState &state,
-						const RenderPass &render_pass);
+        PipelineCache(PipelineCache &&);
+        PipelineCache &operator=(PipelineCache &&);
 
-	  protected:
-		bool has(const GraphicsPipelineState &state) noexcept;
+        render::GraphicsPipeline &getPipeline(const GraphicsPipelineState &state,
+                                              const RenderPass &render_pass);
 
-		DeviceConstObserverPtr m_device;
+        inline vk::PipelineCache vkPipelineCache() const noexcept;
+        inline operator vk::PipelineCache() const noexcept;
+        inline vk::PipelineCache vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
 
-		std::unordered_map<GraphicsPipelineState, GraphicsPipelineOwnedPtr>
-			m_pipelines;
-	};
+      private:
+        bool has(const GraphicsPipelineState &state) const noexcept;
+
+        void createNewPipelineCache();
+        void readPipelineCache();
+        void saveCache();
+
+        static constexpr auto MAGIC   = core::UInt32 { 0xDEADBEEF };
+        static constexpr auto VERSION = core::UInt32 { 1u };
+        struct SerializedCache {
+            struct {
+                core::UInt32 magic;
+                core::UInt32 data_size;
+                core::UInt64 data_hash;
+            } guard;
+
+            struct {
+                core::UInt32 version;
+                core::UInt32 vendor_id;
+                core::UInt32 device_id;
+            } infos;
+
+            struct {
+                std::array<core::UInt8, VK_UUID_SIZE> value;
+            } uuid;
+        } m_serialized;
+
+        DeviceConstObserverPtr m_device;
+
+        vk::UniquePipelineCache m_vk_pipeline_cache;
+
+        std::filesystem::path m_path;
+
+        std::unordered_map<GraphicsPipelineState, GraphicsPipelineOwnedPtr> m_pipelines;
+    };
 } // namespace storm::render
+
+#include "PipelineCache.inl"

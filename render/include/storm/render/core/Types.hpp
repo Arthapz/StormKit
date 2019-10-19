@@ -6,30 +6,32 @@
 
 #include <variant>
 
+#include <storm/core/Color.hpp>
 #include <storm/core/Math.hpp>
+#include <storm/core/Types.hpp>
 
 namespace storm::render {
-	struct Viewport {
-		core::Vector2 position;
-		core::Extentf extent;
-		core::Vector2 depth;
-	};
+    struct Viewport {
+        core::Vector2f position;
+        core::Extentf extent;
+        core::Vector2f depth;
+    };
 
-	struct Scissor {
-		core::Vector2i offset;
-		core::Extent extent;
-	};
+    struct Scissor {
+        core::Vector2i offset;
+        core::Extentu extent;
+    };
 
-	struct ClearColor {
-        core::RGBColorF color = storm::core::RGBColorDef::Silver;
-	};
+    struct ClearColor {
+        core::RGBColorF color = storm::core::RGBColorDef::Silver<float>;
+    };
 
-	struct ClearDepthStencil {
-		float depth			  = 1.f;
-		std::uint32_t stencil = 0;
-	};
+    struct ClearDepthStencil {
+        float depth          = 1.f;
+        core::UInt32 stencil = 0;
+    };
 
-	using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
+    using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
 
 } // namespace storm::render
 

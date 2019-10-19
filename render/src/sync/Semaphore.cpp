@@ -11,23 +11,15 @@ using namespace storm::render;
 
 /////////////////////////////////////
 /////////////////////////////////////
-Semaphore::Semaphore(const render::Device &device) : m_device{&device} {
-	const auto &device_ = static_cast<const Device &>(*m_device);
+Semaphore::Semaphore(const render::Device &device) : m_device { &device } {
+    const auto create_info = vk::SemaphoreCreateInfo {};
 
-	const auto create_info =
-		VkSemaphoreCreateInfo{.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
-
-	m_vk_semaphore = device_.createVkSemaphore(create_info);
+    m_vk_semaphore = m_device->createVkSemaphore(create_info);
 };
 
 /////////////////////////////////////
 /////////////////////////////////////
-Semaphore::~Semaphore() {
-	const auto &device = static_cast<const Device &>(*m_device);
-
-	if (m_vk_semaphore != VK_NULL_HANDLE)
-		device.destroyVkSemaphore(m_vk_semaphore);
-}
+Semaphore::~Semaphore() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////

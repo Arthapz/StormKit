@@ -11,7 +11,7 @@ using StormWindowControllerOwnedPtr = void *;
 #endif
 
 class ContextImpl;
-class WindowImpl : public storm::window::AbstractWindow {
+class WindowImpl: public storm::window::AbstractWindow {
   public:
 	WindowImpl() noexcept;
 	WindowImpl(const std::string &title,
@@ -25,16 +25,14 @@ class WindowImpl : public storm::window::AbstractWindow {
 	void close() noexcept override;
 	void display() noexcept override;
 
-	bool pollEvent(storm::window::Event &event,
-				   void *native_event) noexcept override;
+	bool pollEvent(storm::window::Event &event, void *native_event) noexcept override;
 	bool waitEvent(storm::window::Event &event,
 				   [[maybe_unused]] void *native_event) noexcept override;
 
 	void setTitle(const std::string &title) noexcept override;
-	void setVideoSettings(
-		const storm::window::VideoSettings &settings) noexcept override;
+	void setVideoSettings(const storm::window::VideoSettings &settings) noexcept override;
 
-	storm::core::Extent size() const noexcept override;
+	storm::core::Extentu size() const noexcept override;
 
 	bool isOpen() const noexcept override;
 	bool isVisible() const noexcept override;

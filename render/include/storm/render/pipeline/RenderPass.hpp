@@ -6,10 +6,10 @@
 
 #include <vector>
 
-#include <storm/core/Platform.hpp>
-#include <storm/core/Span.hpp>
 #include <storm/core/Math.hpp>
 #include <storm/core/NonCopyable.hpp>
+#include <storm/core/Platform.hpp>
+#include <storm/core/Span.hpp>
 
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
@@ -19,80 +19,73 @@
 #include <storm/render/resource/Fwd.hpp>
 
 namespace storm::render {
-	class STORM_PUBLIC RenderPass : public core::NonCopyable {
-	  public:
-		struct Attachment {
-			PixelFormat format;
-			SampleCountFlag samples = SampleCountFlag::C1_BIT;
+    class STORM_PUBLIC RenderPass: public core::NonCopyable {
+      public:
+        struct AttachmentDescription {
+            PixelFormat format;
+            SampleCountFlag samples = SampleCountFlag::C1_BIT;
 
-			AttachmentLoadOperation load_op   = AttachmentLoadOperation::Clear;
-			AttachmentStoreOperation store_op = AttachmentStoreOperation::Store;
+            AttachmentLoadOperation load_op   = AttachmentLoadOperation::Clear;
+            AttachmentStoreOperation store_op = AttachmentStoreOperation::Store;
 
-			AttachmentLoadOperation stencil_load_op =
-				AttachmentLoadOperation::Dont_Care;
-			AttachmentStoreOperation stencil_store_op =
-				AttachmentStoreOperation::Dont_Care;
+            AttachmentLoadOperation stencil_load_op   = AttachmentLoadOperation::Dont_Care;
+            AttachmentStoreOperation stencil_store_op = AttachmentStoreOperation::Dont_Care;
 
-			ImageLayout initial_layout = ImageLayout::Undefined;
-			ImageLayout final_layout   = ImageLayout::Present_Src;
-		};
+            TextureLayout source_layout      = TextureLayout::Undefined;
+            TextureLayout destination_layout = TextureLayout::Present_Src;
 
-		struct Subpass {
-			struct Ref {
-				std::uint32_t attachment_id;
+            bool resolve = false;
+        };
 
-				ImageLayout layout = ImageLayout::Color_Attachment_Optimal;
-			};
+        struct Subpass {
+            struct Ref {
+                core::UInt32 attachment_id;
 
-			PipelineBindPoint bind_point;
-			std::vector<Ref> attachment_refs;
-		};
+                TextureLayout layout = TextureLayout::Color_Attachment_Optimal;
+            };
 
-		explicit RenderPass(const Device &device);
-		 ~RenderPass() ;
+            PipelineBindPoint bind_point;
+            std::vector<Ref> attachment_refs;
+        };
 
-		RenderPass(RenderPass &&);
-		RenderPass &operator=(RenderPass &&);
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Render_Pass;
 
-		std::uint32_t addAttachment(Attachment attachment);
-		inline void addSubpass(Subpass subpass) {
-			m_subpasses.emplace_back(std::move(subpass));
-		}
+        explicit RenderPass(const Device &device);
+        ~RenderPass();
 
-		 void build() ;
-		 FramebufferOwnedPtr createFramebuffer(
-            core::Extent extent,
-			std::vector<TextureConstObserverPtr> textures) const ;
+        RenderPass(RenderPass &&);
+        RenderPass &operator=(RenderPass &&);
 
-		inline const Device &device() const noexcept {
-            return *m_device;
-		}
+        core::UInt32 addAttachmentDescription(AttachmentDescription attachment);
+        std::vector<core::UInt32>
+            addAttachmentDescriptions(core::span<AttachmentDescription> attachment);
+        inline void addSubpass(Subpass subpass);
 
-		inline storm::core::span<const Attachment> attachments() const
-			noexcept {
-			return m_attachments;
-		}
+        void build();
+        Framebuffer createFramebuffer(core::Extentu extent,
+                                      TextureViewConstObserverPtrArray attachments) const;
+        FramebufferOwnedPtr
+            createFramebufferPtr(core::Extentu extent,
+                                 TextureViewConstObserverPtrArray attachments) const;
 
-		inline storm::core::span<const Subpass> subpasses() const noexcept {
-			return m_subpasses;
-		}
+        inline const Device &device() const noexcept;
 
-		inline VkRenderPass vkRenderPass() const noexcept {
-			STORM_EXPECTS(m_vk_render_pass != VK_NULL_HANDLE);
-			return m_vk_render_pass;
-		}
+        inline core::span<const AttachmentDescription> attachmentDescriptions() const noexcept;
+        inline core::span<const Subpass> subpasses() const noexcept;
 
-		inline operator VkRenderPass() const noexcept {
-			STORM_EXPECTS(m_vk_render_pass != VK_NULL_HANDLE);
-			return m_vk_render_pass;
-		}
+        inline vk::RenderPass vkRenderPass() const noexcept;
+        inline operator vk::RenderPass() const noexcept;
+        inline vk::RenderPass vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
 
-	  private:
-		DeviceConstObserverPtr m_device;
+      private:
+        DeviceConstObserverPtr m_device;
 
-		std::vector<Attachment> m_attachments;
-		std::vector<Subpass> m_subpasses;
+        std::vector<AttachmentDescription> m_attachment_descriptions;
+        std::vector<Subpass> m_subpasses;
 
-		VkRenderPass m_vk_render_pass = VK_NULL_HANDLE;
-	};
+        RAIIVkRenderPass m_vk_render_pass;
+    };
 } // namespace storm::render
+
+#include "RenderPass.inl"

@@ -4,7 +4,6 @@
 
 #import <AppKit/NSEvent.h>
 #import <Carbon/Carbon.h>
-#import <Carbon/Carbon.h>
 #import <IOKit/hid/IOHIDDevice.h>
 #import <IOKit/hid/IOHIDManager.h>
 
@@ -18,6 +17,8 @@ storm::window::MouseButton toStormMouseButton(int button) {
 		case 3: return MouseButton::BUTTON1;
 		case 4: return MouseButton::BUTTON2;
 	}
+
+	return MouseButton::UNKNOW;
 }
 
 storm::window::Key localizedKeyToStormKey(char code) {
@@ -231,7 +232,7 @@ storm::window::Key nonLocalizedKeytoStormKey(unsigned short code) {
 	return Key::UNKNOW;
 }
 
-UInt8 usageToVirtualCode(UInt32 usage)
+storm::core::UInt8 usageToVirtualCode(storm::core::UInt32 usage)
 {
 	switch (usage) {
 	case kHIDUsage_KeyboardErrorRollOver:       return 0xff;
@@ -429,13 +430,13 @@ UInt8 usageToVirtualCode(UInt32 usage)
 }
 
 storm::core::Vector2u toStormVec(NSPoint point) {
-	return {static_cast<std::uint16_t>(point.x), static_cast<std::uint16_t>(point.y)};
+	return {static_cast<storm::core::UInt16>(point.x), static_cast<storm::core::UInt16>(point.y)};
 }
 
 NSPoint fromStormVec(const storm::core::Vector2u &point) {
 	return CGPointMake(point.x, point.y);
 }
 
-storm::core::Extent toStormVec(CGSize size) {
-	return {static_cast<std::uint16_t>(size.width), static_cast<std::uint16_t>(size.height)};
+storm::core::Extentu toStormVec(CGSize size) {
+	return {static_cast<storm::core::UInt32>(size.width), static_cast<storm::core::UInt32>(size.height)};
 }

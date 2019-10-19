@@ -1,0 +1,36 @@
+set(STORMKIT_VERSION "@x@.@y@.@z@")
+
+@PACKAGE_INIT@
+
+macro(check_required_components _NAME)
+  foreach(comp ${${_NAME}_FIND_COMPONENTS})
+    if(NOT ${_NAME}_${comp}_FOUND)
+      if(${_NAME}_FIND_REQUIRED_${comp})
+        set(${_NAME}_FOUND FALSE)
+      endif()
+    endif()
+  endforeach(comp)
+endmacro()
+
+if(NOT StormKit_FIND_COMPONENTS)
+    message(FATAL_ERROR "find_package(StormKit) called with no component")
+endif()
+
+set(STORMKIT_TARGETS)
+foreach(component ${StormKit_FIND_COMPONENTS})
+    set(target_config_file "${CMAKE_CURRENT_LIST_DIR}/StormKit${component}Target.cmake")
+
+    if(EXISTS "${target_config_file}")
+        include("${target_config_file}")
+
+        list(APPEND STORMKIT_TARGETS "StormKit::${component}")
+    else()
+        set(FIND_STORMKIT_ERROR "Requested StormKit component \"${component}\" was not found")
+        set(StormKit_${component}_FOUND FALSE)
+    endif()
+endforeach()
+
+add_library(StormKit::StormKit INTERFACE IMPORTED)
+set_target_properties(StormKit::StormKit PROPERTIES INTERFACE_LINK_LIBRARIES "${STORMKIT_TARGETS}")
+
+check_required_components(StormKit)

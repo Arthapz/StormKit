@@ -11,41 +11,40 @@
 #undef None
 
 namespace storm::window {
-	enum class EventType : std::uint8_t {
-		None,
-		Closed,
-		Resized,
-		Minimized,
-		Maximized,
-		KeyPressed,
-		KeyReleased,
-		MouseButtonPushed,
-		MouseButtonReleased,
-		MouseEntered,
-		MouseExited,
-		MouseMoved,
-		LostFocus,
-		GainedFocus
-	};
-	struct Event {
-		struct ResizedEvent {
-			std::uint16_t width;
-			std::uint16_t height;
-		};
-		struct KeyEvent {
-			Key key;
-		};
-		struct MouseEvent {
-			MouseButton button;
-			std::int16_t x;
-			std::int16_t y;
-		};
-		EventType type = EventType::None;
-		union {
-			ResizedEvent resizedEvent;
-			KeyEvent keyEvent;
-			MouseEvent mouseEvent;
-			// MouseMoved       mouseMoved;
-		};
-	};
+    enum class EventType : core::UInt8 {
+        None,
+        Closed,
+        Resized,
+        Minimized,
+        Maximized,
+        KeyPressed,
+        KeyReleased,
+        MouseButtonPushed,
+        MouseButtonReleased,
+        MouseEntered,
+        MouseExited,
+        MouseMoved,
+        LostFocus,
+        GainedFocus
+    };
+    struct Event {
+        struct ResizedEvent {
+            core::UInt16 width;
+            core::UInt16 height;
+        };
+        struct KeyEvent {
+            Key key;
+        };
+        struct MouseEvent {
+            MouseButton button;
+            core::Int16 x;
+            core::Int16 y;
+        };
+        EventType type = EventType::None;
+        union {
+            ResizedEvent resized_event;
+            KeyEvent key_event;
+            MouseEvent mouse_event;
+        };
+    };
 } // namespace storm::window

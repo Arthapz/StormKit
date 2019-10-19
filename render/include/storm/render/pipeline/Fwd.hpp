@@ -7,30 +7,33 @@
 #include <storm/core/Memory.hpp>
 
 namespace storm::render {
-	class AbstractPipeline;
-	DECLARE_PTR_AND_REF(AbstractPipeline);
+    class AbstractPipeline;
+    DECLARE_PTR_AND_REF(AbstractPipeline);
 
-	class GraphicsPipeline;
-	DECLARE_PTR_AND_REF(GraphicsPipeline);
+    class GraphicsPipeline;
+    DECLARE_PTR_AND_REF(GraphicsPipeline);
 
-	class RenderPass;
-	DECLARE_PTR_AND_REF(RenderPass);
+    class RenderPass;
+    DECLARE_PTR_AND_REF(RenderPass);
 
-	class Framebuffer;
-	DECLARE_PTR_AND_REF(Framebuffer);
+    class Framebuffer;
+    DECLARE_PTR_AND_REF(Framebuffer);
 
-	class DescriptorSetLayout;
-	DECLARE_PTR_AND_REF(DescriptorSetLayout);
+    class DescriptorSetLayout;
+    DECLARE_PTR_AND_REF(DescriptorSetLayout);
 
-	class DescriptorPool;
-	DECLARE_PTR_AND_REF(DescriptorPool);
+    class DescriptorPool;
+    DECLARE_PTR_AND_REF(DescriptorPool);
 
-	class DescriptorSet;
-	DECLARE_PTR_AND_REF(DescriptorSet);
+    class DescriptorSet;
+    DECLARE_PTR_AND_REF(DescriptorSet);
 
-	class PipelineCache;
-	DECLARE_PTR_AND_REF(PipelineCache);
+    class PipelineCache;
+    DECLARE_PTR_AND_REF(PipelineCache);
 
-	struct GraphicsPipelineState;
+    struct GraphicsPipelineState;
     DECLARE_PTR_AND_REF(GraphicsPipelineState);
+
+    struct DescriptorSetLayoutBinding;
+    DECLARE_PTR_AND_REF(DescriptorSetLayoutBinding);
 } // namespace storm::render

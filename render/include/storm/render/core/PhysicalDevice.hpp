@@ -14,58 +14,80 @@
 #include <storm/render/core/PhysicalDeviceInfo.hpp>
 #include <storm/render/core/QueueFamily.hpp>
 #include <storm/render/core/RenderCapabilities.hpp>
+#include <storm/render/core/Surface.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
 namespace storm::render {
-	class STORM_PUBLIC PhysicalDevice : public core::NonCopyable {
-	  public:
-		explicit PhysicalDevice(VkPhysicalDevice physical_device,
-								const Instance &context);
+    class STORM_PUBLIC PhysicalDevice: public core::NonCopyable {
+      public:
+        using MemoryProperties           = std::vector<MemoryProperty>;
+        using MemoryPropertiesSpan       = core::span<const MemoryProperty>;
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Physical_Device;
+
+        explicit PhysicalDevice(vk::PhysicalDevice physical_device, const Instance &context);
         ~PhysicalDevice();
 
-		PhysicalDevice(PhysicalDevice &&);
-		PhysicalDevice &operator=(PhysicalDevice &&);
+        PhysicalDevice(PhysicalDevice &&);
+        PhysicalDevice &operator=(PhysicalDevice &&);
 
         bool checkExtensionSupport(gsl::czstring<> extension) const noexcept;
-        bool checkExtensionSupport(
-            storm::core::span<const gsl::czstring<>> extensions) const noexcept;
-        DeviceOwnedPtr createLogicalDevice() const;
+        bool checkExtensionSupport(core::span<const gsl::czstring<>> extensions) const noexcept;
+
+        Device createLogicalDevice() const;
+        DeviceOwnedPtr createLogicalDevicePtr() const;
+
         void checkIfPresentSupportIsEnabled(const Surface &surface) noexcept;
 
-        VkSurfaceCapabilitiesKHR
-            queryVkSurfaceCapabilities(const Surface &surface) const noexcept;
-        std::vector<VkSurfaceFormatKHR>
-            queryVkSurfaceFormats(const Surface &surface) const noexcept;
-        std::vector<VkPresentModeKHR>
-            queryVkPresentModes(const Surface &surface) const noexcept;
+        inline vk::SurfaceCapabilitiesKHR queryVkSurfaceCapabilities(const Surface &surface) const
+            noexcept;
+        inline std::vector<vk::SurfaceFormatKHR> queryVkSurfaceFormats(const Surface &surface) const
+            noexcept;
+        inline std::vector<vk::PresentModeKHR> queryVkPresentModes(const Surface &surface) const
+            noexcept;
 
         inline const PhysicalDeviceInfo &info() const noexcept;
         inline const RenderCapabilities &capabilities() const noexcept;
-        inline storm::core::span<const QueueFamily> queueFamilies() const
-            noexcept;
+        inline MemoryPropertiesSpan memoryProperties() const noexcept;
 
-        inline VkDevice
-            createVkDevice(const VkDeviceCreateInfo &create_info) const;
+        inline storm::core::span<const QueueFamily> queueFamilies() const noexcept;
 
-        inline VkPhysicalDeviceMemoryProperties vkMemoryProperties() const
-            noexcept;
+        inline vk::UniqueDevice createVkDevice(const vk::DeviceCreateInfo &create_info) const;
 
-        inline VkPhysicalDevice vkPhysicalDevice() const noexcept;
-        inline operator VkPhysicalDevice() const noexcept;
+        inline const vk::PhysicalDeviceMemoryProperties &vkMemoryProperties() const noexcept;
+
+        inline vk::PhysicalDevice vkPhysicalDevice() const noexcept;
+        inline operator vk::PhysicalDevice() const noexcept;
+        inline vk::PhysicalDevice vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
+
+        inline vk::FormatProperties vkGetFormatProperties(vk::Format format) const noexcept;
 
       private:
         InstanceConstObserverPtr m_instance;
 
         PhysicalDeviceInfo m_device_info;
         RenderCapabilities m_capabilities;
+        MemoryProperties m_memory_properties;
 
         std::vector<QueueFamily> m_queue_families;
 
-        VkPhysicalDevice m_vk_physical_device = VK_NULL_HANDLE;
-        VkPhysicalDeviceMemoryProperties m_vk_memory_properties;
+        vk::PhysicalDevice m_vk_physical_device = VK_NULL_HANDLE;
+        vk::PhysicalDeviceMemoryProperties m_vk_memory_properties;
 
         std::vector<std::string> m_extensions;
     };
+
+    inline core::ArraySize
+        computeUniformBufferOffsetAlignement(core::ArraySize size,
+                                             const RenderCapabilities &capabilities) {
+        if (size < capabilities.limits.min_uniform_buffer_offset_alignment)
+            size = capabilities.limits.min_uniform_buffer_offset_alignment;
+        else if (size > capabilities.limits.min_uniform_buffer_offset_alignment)
+            size = capabilities.limits.min_uniform_buffer_offset_alignment *
+                   ((size / capabilities.limits.min_uniform_buffer_offset_alignment) + 1);
+
+        return size;
+    }
 } // namespace storm::render
 
 #include "PhysicalDevice.inl"

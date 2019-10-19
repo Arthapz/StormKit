@@ -19,53 +19,55 @@
 #include <storm/render/resource/Fwd.hpp>
 
 namespace storm::render {
-	struct BufferDescriptor {
-		std::uint32_t binding;
-		HardwareBufferConstObserverPtr buffer;
-		std::uint32_t range;
-		std::uint32_t offset ;
-	};
+    struct BufferDescriptor {
+        DescriptorType type = DescriptorType::Uniform_Buffer;
+        core::UInt32 binding;
+        HardwareBufferConstObserverPtr buffer;
+        core::UInt32 range;
+        core::UInt32 offset;
+    };
 
-	struct ImageDescriptor {
-		std::uint32_t binding;
-		ImageLayout layout;
-		TextureConstObserverPtr texture;
-		SamplerConstObserverPtr sampler;
-	};
+    struct TextureDescriptor {
+        DescriptorType type = DescriptorType::Combined_Texture_Sampler;
+        core::UInt32 binding;
+        TextureLayout layout;
+        TextureViewConstObserverPtr texture_view;
+        SamplerConstObserverPtr sampler;
+    };
 
-	using Descriptor = std::variant<BufferDescriptor, ImageDescriptor>;
+    using Descriptor      = std::variant<BufferDescriptor, TextureDescriptor>;
+    using DescriptorArray = std::vector<Descriptor>;
+    template<std::size_t N>
+    using DescriptorStaticArray = std::array<Descriptor, N>;
 
-	class STORM_PUBLIC DescriptorSet : public core::NonCopyable {
-	  public:
-		DescriptorSet(const render::DescriptorPool &pool,
-							   std::vector<DescriptorType> type,
-							   VkDescriptorSet sets);
-		 ~DescriptorSet() ;
+    class STORM_PUBLIC DescriptorSet: public core::NonCopyable {
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Descriptor_Set;
+        DescriptorSet(const render::DescriptorPool &pool,
+                      std::vector<DescriptorType> type,
+                      RAIIVkDescriptorSet sets);
+        ~DescriptorSet();
 
-		DescriptorSet(DescriptorSet &&);
-		DescriptorSet &operator=(DescriptorSet &&);
+        DescriptorSet(DescriptorSet &&);
+        DescriptorSet &operator=(DescriptorSet &&);
 
-		 void update(std::vector<Descriptor> descriptors) ;
+        void update(core::span<const Descriptor> descriptors);
 
-		inline core::span<const DescriptorType> types() const noexcept {
-			return m_types;
-		}
+        inline core::span<const DescriptorType> types() const noexcept;
 
-		inline VkDescriptorSet vkDescriptorSet() const noexcept {
-			STORM_EXPECTS(m_vk_descriptor_set != VK_NULL_HANDLE);
-			return m_vk_descriptor_set;
-		}
+        inline vk::DescriptorSet vkDescriptorSet() const noexcept;
+        inline operator vk::DescriptorSet() const noexcept;
+        inline vk::DescriptorSet vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
 
-		inline operator VkDescriptorSet() const noexcept {
-			STORM_EXPECTS(m_vk_descriptor_set != VK_NULL_HANDLE);
-			return m_vk_descriptor_set;
-		}
-
-	  private:
+      private:
+        DeviceConstObserverPtr m_device;
         DescriptorPoolConstObserverPtr m_pool;
 
-		std::vector<DescriptorType> m_types;
+        std::vector<DescriptorType> m_types;
 
-		VkDescriptorSet m_vk_descriptor_set;
-	};
+        RAIIVkDescriptorSet m_vk_descriptor_set;
+    };
 } // namespace storm::render
+
+#include "DescriptorSet.inl"

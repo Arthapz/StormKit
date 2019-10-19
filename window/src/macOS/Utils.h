@@ -1,5 +1,7 @@
 #pragma once
 
+#include <storm/core/Types.hpp>
+
 #include <storm/window/Key.hpp>
 #include <storm/window/MouseButton.hpp>
 #include <storm/window/VideoSettings.hpp>
@@ -10,6 +12,6 @@ storm::window::MouseButton toStormMouseButton(int button);
 storm::window::Key localizedKeyToStormKey(char code);
 storm::window::Key nonLocalizedKeytoStormKey(unsigned short code);
 storm::core::Vector2u toStormVec(NSPoint point);
-storm::core::Extent toStormVec(CGSize size);
+storm::core::Extentu toStormVec(CGSize size);
 NSPoint fromStormVec(const storm::core::Vector2u &point);
-UInt8 usageToVirtualCode(UInt32 usage);
+storm::core::UInt8 usageToVirtualCode(storm::core::UInt32 usage);

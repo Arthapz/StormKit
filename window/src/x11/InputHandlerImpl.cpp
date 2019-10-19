@@ -37,9 +37,9 @@ bool InputHandlerImpl::isKeyPressed(Key key) {
     const auto key_sym = stormkeyToX11Key(key);
 
     auto default_screen_id = 0;
-    auto connection		   = xcb_connect(nullptr, &default_screen_id);
+    auto connection        = xcb_connect(nullptr, &default_screen_id);
     auto hot_keys_symbols  = xcb_key_symbols_alloc(connection);
-    const auto key_loc = xcb_key_symbols_get_keycode(hot_keys_symbols, key_sym);
+    const auto key_loc     = xcb_key_symbols_get_keycode(hot_keys_symbols, key_sym);
 
     auto is_pressed = false;
 
@@ -58,32 +58,20 @@ bool InputHandlerImpl::isKeyPressed(Key key) {
 /////////////////////////////////////
 bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) {
     auto default_screen_id = 0;
-    auto connection		   = xcb_connect(nullptr, &default_screen_id);
-    auto root_window	   = defaultRootWindow(connection, default_screen_id);
+    auto connection        = xcb_connect(nullptr, &default_screen_id);
+    auto root_window       = defaultRootWindow(connection, default_screen_id);
 
     auto cookie = xcb_query_pointer(connection, root_window);
     auto reply  = xcb_query_pointer_reply(connection, cookie, nullptr);
 
     auto is_pressed = false;
     switch (button) {
-    case MouseButton::LEFT:
-        is_pressed = (reply->mask & XCB_BUTTON_MASK_1);
-        break;
-    case MouseButton::MIDDLE:
-        is_pressed = (reply->mask & XCB_BUTTON_MASK_2);
-        break;
-    case MouseButton::RIGHT:
-        is_pressed = (reply->mask & XCB_BUTTON_MASK_3);
-        break;
-    case MouseButton::BUTTON1:
-        is_pressed = (reply->mask & XCB_BUTTON_MASK_4);
-        break;
-    case MouseButton::BUTTON2:
-        is_pressed = (reply->mask & XCB_BUTTON_MASK_5);
-        break;
-    case MouseButton::UNKNOW:
-        is_pressed = false;
-        break;
+        case MouseButton::LEFT: is_pressed = (reply->mask & XCB_BUTTON_MASK_1); break;
+        case MouseButton::MIDDLE: is_pressed = (reply->mask & XCB_BUTTON_MASK_2); break;
+        case MouseButton::RIGHT: is_pressed = (reply->mask & XCB_BUTTON_MASK_3); break;
+        case MouseButton::BUTTON1: is_pressed = (reply->mask & XCB_BUTTON_MASK_4); break;
+        case MouseButton::BUTTON2: is_pressed = (reply->mask & XCB_BUTTON_MASK_5); break;
+        case MouseButton::UNKNOW: is_pressed = false; break;
     }
 
     xcb_disconnect(connection);
@@ -95,11 +83,10 @@ bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) {
 /////////////////////////////////////
 void InputHandlerImpl::setMousePosition(core::Position2u position) {
     auto default_screen_id = 0;
-    auto connection		   = xcb_connect(nullptr, &default_screen_id);
-    auto root_window	   = defaultRootWindow(connection, default_screen_id);
+    auto connection        = xcb_connect(nullptr, &default_screen_id);
+    auto root_window       = defaultRootWindow(connection, default_screen_id);
 
-    xcb_warp_pointer(connection, 0, root_window, 0, 0, 0, 0, position->x,
-                     position->y);
+    xcb_warp_pointer(connection, 0, root_window, 0, 0, 0, 0, position->x, position->y);
 
     xcb_flush(connection);
 
@@ -108,12 +95,18 @@ void InputHandlerImpl::setMousePosition(core::Position2u position) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setMousePosition(core::Position2u position,
-                                        const Window &relative_to) {
+void InputHandlerImpl::setMousePosition(core::Position2i position, const Window &relative_to) {
     auto native_handle = static_cast<Handles *>(relative_to.nativeHandle());
 
-    xcb_warp_pointer(native_handle->connection, 0, native_handle->window, 0, 0,
-                     0, 0, position->x, position->y);
+    xcb_warp_pointer(native_handle->connection,
+                     0,
+                     native_handle->window,
+                     0,
+                     0,
+                     0,
+                     0,
+                     position->x,
+                     position->y);
 
     xcb_flush(native_handle->connection);
 }
@@ -122,13 +115,13 @@ void InputHandlerImpl::setMousePosition(core::Position2u position,
 /////////////////////////////////////
 core::Position2u InputHandlerImpl::getMousePosition() {
     auto default_screen_id = 0;
-    auto connection		   = xcb_connect(nullptr, &default_screen_id);
-    auto root_window	   = defaultRootWindow(connection, default_screen_id);
+    auto connection        = xcb_connect(nullptr, &default_screen_id);
+    auto root_window       = defaultRootWindow(connection, default_screen_id);
 
     auto cookie = xcb_query_pointer(connection, root_window);
     auto reply  = xcb_query_pointer_reply(connection, cookie, nullptr);
 
-    const auto position = core::Vector2{reply->win_x, reply->win_y};
+    const auto position = core::Vector2u { reply->win_x, reply->win_y };
 
     xcb_disconnect(connection);
 
@@ -137,22 +130,19 @@ core::Position2u InputHandlerImpl::getMousePosition() {
 
 /////////////////////////////////////
 /////////////////////////////////////
-core::Position2u InputHandlerImpl::getMousePosition(const Window &relative_to) {
+core::Position2i InputHandlerImpl::getMousePosition(const Window &relative_to) {
     auto native_handle = static_cast<Handles *>(relative_to.nativeHandle());
 
-    auto cookie =
-        xcb_query_pointer(native_handle->connection, native_handle->window);
-    auto reply =
-        xcb_query_pointer_reply(native_handle->connection, cookie, nullptr);
+    auto cookie = xcb_query_pointer(native_handle->connection, native_handle->window);
+    auto reply  = xcb_query_pointer_reply(native_handle->connection, cookie, nullptr);
 
-    const auto position = core::Vector2{reply->win_x, reply->win_y};
+    const auto position = core::Vector2i { reply->win_x, reply->win_y };
 
-    return core::makeNamed<core::Position2u>(std::move(position));
+    return core::makeNamed<core::Position2i>(std::move(position));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setVirtualKeyboardVisible([
-    [maybe_unused]] bool visible) {
+void InputHandlerImpl::setVirtualKeyboardVisible([[maybe_unused]] bool visible) {
     // not supported
 }

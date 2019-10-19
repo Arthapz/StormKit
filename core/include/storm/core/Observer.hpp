@@ -13,30 +13,31 @@
 
 /// \module storm::core
 namespace storm::core {
-	/// \brief storm::core::Observer<Event, CustomData> is a utility class to
-	/// declare an Observer type (Observer pattern)
-	template <typename Event, typename CustomData> class Observer {
-	  public:
-		/// \output_section Public Special Member Functions
-		/// \brief Default constructor
-		explicit Observer() noexcept = default;
+    /// \brief storm::core::Observer<Event, CustomData> is a utility class to
+    /// declare an Observer type (Observer pattern)
+    template<typename Event, typename CustomData>
+    class Observer {
+      public:
+        /// \output_section Public Special Member Functions
+        /// \brief Default constructor
+        explicit Observer() noexcept = default;
 
-		/// \brief Destructor
-		virtual ~Observer() noexcept = default;
+        /// \brief Destructor
+        virtual ~Observer() noexcept = default;
 
-		/// \brief Move constructor
-		Observer(Observer &&) noexcept = default;
+        /// \brief Move constructor
+        Observer(Observer &&) noexcept = default;
 
-		/// \brief Move assignement
-		Observer &operator=(Observer &&) noexcept = default;
+        /// \brief Move assignement
+        Observer &operator=(Observer &&) noexcept = default;
 
-		/// \brief Copy constructor
-		Observer(const Observer &) noexcept = default;
+        /// \brief Copy constructor
+        Observer(const Observer &) noexcept = default;
 
-		/// \brief Copy assignement
-		Observer &operator=(const Observer &) noexcept = default;
+        /// \brief Copy assignement
+        Observer &operator=(const Observer &) noexcept = default;
 
-		// TODO continue DOCUMENTATION
-		virtual void onNotified(Event, CustomData &&) = 0;
-	};
+        // TODO continue DOCUMENTATION
+        virtual void onNotified(Event, CustomData &&) = 0;
+    };
 } // namespace storm::core

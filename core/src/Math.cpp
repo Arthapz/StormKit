@@ -4,20 +4,19 @@ using namespace storm;
 using namespace storm::core;
 
 namespace std {
-	std::size_t hash<Extent>::operator()(const Extent &extent) const noexcept {
-		auto hash = std::size_t{0};
-		core::hash_combine(hash, extent.w);
-		core::hash_combine(hash, extent.h);
+    auto hash<Extentu>::operator()(const Extentu &extent) const noexcept -> Hash64 {
+        auto hash = Hash64 { 0 };
+        hash_combine(hash, extent.w);
+        hash_combine(hash, extent.h);
 
-		return hash;
-	}
+        return hash;
+    }
 
-	std::size_t hash<Extentf>::operator()(const Extentf &extent) const
-		noexcept {
-		auto hash = std::size_t{0};
-		core::hash_combine(hash, extent.w);
-		core::hash_combine(hash, extent.h);
+    auto hash<Extentf>::operator()(const Extentf &extent) const noexcept -> Hash64 {
+        auto hash = Hash64 { 0 };
+        hash_combine(hash, extent.w);
+        hash_combine(hash, extent.h);
 
-		return hash;
-	}
+        return hash;
+    }
 } // namespace std

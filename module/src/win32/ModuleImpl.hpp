@@ -9,18 +9,18 @@
 #include <Windows.h>
 
 namespace storm::module {
-	class ModuleImpl final : public AbstractModule {
-	  public:
-		explicit ModuleImpl(core::filesystem::path filename);
-		~ModuleImpl() override;
+    class ModuleImpl final: public AbstractModule {
+      public:
+        explicit ModuleImpl(std::filesystem::path filename);
+        ~ModuleImpl() override;
 
-		ModuleImpl(ModuleImpl &&);
-		ModuleImpl &operator=(ModuleImpl &&);
+        ModuleImpl(ModuleImpl &&);
+        ModuleImpl &operator=(ModuleImpl &&);
 
-	  protected:
-		void *_getFunc(std::string_view name) const override;
+      protected:
+        void *_getFunc(std::string_view name) const override;
 
-	  private:
-		HMODULE m_library_handle;
-	};
+      private:
+        HMODULE m_library_handle;
+    };
 } // namespace storm::module

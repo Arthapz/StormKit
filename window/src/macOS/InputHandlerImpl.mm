@@ -8,6 +8,8 @@
 #include <storm/window/Window.hpp>
 #include <storm/window/VideoSettings.hpp>
 
+#include <cmath>
+
 using namespace storm;
 using namespace storm::window;
 
@@ -46,7 +48,7 @@ InputHandlerImpl &InputHandlerImpl::operator=(InputHandlerImpl &&) = default;
 bool InputHandlerImpl::isKeyPressed(Key key) {
 	initIOHID();
 
-	auto elements = m_keys[static_cast<std::size_t>(key)];
+	auto elements = m_keys[static_cast<core::ArraySize>(key)];
 
 	auto state = false;
 	for(auto element = std::begin(elements); element != std::end(elements);) {
@@ -93,17 +95,19 @@ bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) {
 /////////////////////////////////////
 /////////////////////////////////////
 void InputHandlerImpl::setMousePosition(core::Position2u position) {
-	const auto point = CGPoint{gsl::narrow_cast<double>(position->x), gsl::narrow_cast<double>(position->y)};
+	const auto scale = [[NSScreen mainScreen] backingScaleFactor];
+	const auto point = CGPoint{gsl::narrow_cast<double>(position->x / scale), gsl::narrow_cast<double>(position->y / scale)};
 
 	setMousePositionInternal(std::move(point));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setMousePosition(core::Position2u position, const Window &relative_to) {
+void InputHandlerImpl::setMousePosition(core::Position2i position, const Window &relative_to) {
 	auto native_handle = static_cast<StormView*>(relative_to.nativeHandle());
+	const auto scale = [[NSScreen mainScreen] backingScaleFactor];
 
-	const auto point = CGPoint{gsl::narrow_cast<double>(position->x), gsl::narrow_cast<double>(position->y)};
+	const auto point = CGPoint{gsl::narrow_cast<double>(position->x / scale), gsl::narrow_cast<double>(position->y / scale)};
 	const auto on_screen = [native_handle relativeToGlobal:point];
 
 	setMousePositionInternal(std::move(on_screen));
@@ -112,28 +116,34 @@ void InputHandlerImpl::setMousePosition(core::Position2u position, const Window 
 /////////////////////////////////////
 /////////////////////////////////////
 core::Position2u InputHandlerImpl::getMousePosition() {
-	auto pos = [NSEvent mouseLocation];
-	pos.y = VideoSettings::getDesktopModes()[0].size.height - pos.y;
-
 	const auto scale = [[NSScreen mainScreen] backingScaleFactor];
-	const auto position = core::Vector2u{pos.x, pos.y} * static_cast<std::uint32_t>(scale);
+	const auto desktop_height = VideoSettings::getDesktopModes()[0].size.height;
+	const auto pos = [NSEvent mouseLocation];
+
+	const auto position = core::Vector2u{scale * pos.x, desktop_height - (scale * pos.y)};
 
 	return core::makeNamed<core::Position2u>(std::move(position));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-core::Position2u InputHandlerImpl::getMousePosition(const Window &relative_to) {
+core::Position2i InputHandlerImpl::getMousePosition(const Window &relative_to) {
 	auto native_handle = static_cast<StormView*>(relative_to.nativeHandle());
-
-	auto pos = [NSEvent mouseLocation];
-	pos.y = VideoSettings::getDesktopModes()[0].size.height - pos.y;
-	const auto on_screen = [native_handle relativeToGlobal:pos];
-
+	auto window = [native_handle myWindow];
 	const auto scale = [[NSScreen mainScreen] backingScaleFactor];
-	const auto position = core::Vector2u{on_screen.x, on_screen.y} * static_cast<std::uint32_t>(scale);
 
-	return core::makeNamed<core::Position2u>(std::move(position));
+	const auto window_height = relative_to.size().height;
+
+	const auto screen_pos = [NSEvent mouseLocation];
+
+	const auto rect = NSMakeRect(screen_pos.x, screen_pos.y, 0, 0);
+	const auto window_rect = [window convertRectFromScreen: rect];
+
+	const NSPoint pos = 
+		[native_handle convertPoint: NSMakePoint(window_rect.origin.x, window_rect.origin.y) fromView: native_handle];
+	const auto position = core::Vector2i{scale * pos.x, scale * (window_height - pos.y)};
+
+	return core::makeNamed<core::Position2i>(std::move(position));
 }
 
 
@@ -210,7 +220,7 @@ void InputHandlerImpl::loadKey(IOHIDElementRef key) {
 	if (virtual_code == 0xff)
 		return;
 
-	auto dead_key_state     = UInt32{0};
+	auto dead_key_state     = core::UInt32{0};
 	const auto max_string_length  = UniCharCount{4};
 	auto actual_string_length = UniCharCount{0};
 
@@ -238,13 +248,13 @@ void InputHandlerImpl::loadKey(IOHIDElementRef key) {
 
 	if (code != Key::UNKNOW)
 	{
-		m_keys[static_cast<std::size_t>(code)].emplace_back(key);
+		m_keys[static_cast<core::ArraySize>(code)].emplace_back(key);
 
-		CFRetain(m_keys[static_cast<std::size_t>(code)].back());
+		CFRetain(m_keys[static_cast<core::ArraySize>(code)].back());
 	}
 }
 
-CFDictionaryRef InputHandlerImpl::copyDevicesMask(UInt32 page, UInt32 usage) {
+CFDictionaryRef InputHandlerImpl::copyDevicesMask(core::UInt32 page, core::UInt32 usage) {
 	auto dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 2,
 															&kCFTypeDictionaryKeyCallBacks,
 															&kCFTypeDictionaryValueCallBacks);
@@ -260,7 +270,7 @@ CFDictionaryRef InputHandlerImpl::copyDevicesMask(UInt32 page, UInt32 usage) {
 	return dict;
 }
 
-CFSetRef InputHandlerImpl::copyDevices(UInt32 page, UInt32 usage) {
+CFSetRef InputHandlerImpl::copyDevices(core::UInt32 page, core::UInt32 usage) {
 	auto mask = copyDevicesMask(page, usage);
 
 	IOHIDManagerSetDeviceMatching(m_manager, mask);

@@ -10,16 +10,17 @@
 
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
+#include <storm/core/Types.hpp>
 
 #include <storm/entities/Entity.hpp>
 
 namespace storm::entities {
     struct Message {
-        std::uint32_t id;
+        core::UInt32 id;
         std::vector<Entity> entities;
     };
 
-    class STORM_PUBLIC MessageBus : public core::NonCopyable {
+    class STORM_PUBLIC MessageBus: public core::NonCopyable {
       public:
         MessageBus();
         ~MessageBus();
@@ -31,9 +32,7 @@ namespace storm::entities {
         const Message &top() const;
         void pop();
 
-        inline bool empty() const noexcept {
-            return m_messages.empty();
-        }
+        inline bool empty() const noexcept { return m_messages.empty(); }
 
       private:
         std::queue<Message> m_messages;

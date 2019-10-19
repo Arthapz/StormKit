@@ -5,7 +5,7 @@ using namespace storm::log;
 /////////////////////////////////////
 /////////////////////////////////////
 Logger::Logger(LogClock::time_point start_time, Severity log_level)
-	: m_start_time{std::move(start_time)}, m_log_level{log_level} {
+    : m_start_time { std::move(start_time) }, m_log_level { log_level } {
 }
 
 /////////////////////////////////////

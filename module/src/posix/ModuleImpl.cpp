@@ -4,31 +4,33 @@
 
 #include "ModuleImpl.hpp"
 
+#include <storm/core/Strings.hpp>
+
+#include <stdexcept>
+
 #include <dlfcn.h>
-#include <storm/log/LogHandler.hpp>
 
 using namespace storm;
 using namespace storm::module;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-ModuleImpl::ModuleImpl(core::filesystem::path filepath)
-	: AbstractModule{std::move(filepath)} {
-	m_library_handle = dlopen(m_filepath.c_str(), RTLD_LAZY | RTLD_LOCAL);
+ModuleImpl::ModuleImpl(std::filesystem::path filepath) : AbstractModule { std::move(filepath) } {
+    m_library_handle = dlopen(m_filepath.c_str(), RTLD_LAZY | RTLD_LOCAL);
 
-	if (!m_library_handle) {
-		auto system_reason = std::string(dlerror());
-		log::LogHandler::elog("Failed to load module \"%{1}\", reason: %{2}",
-							  m_filepath.string(), system_reason);
-	} else
-		m_is_loaded = true;
+    if (!m_library_handle) {
+        auto system_reason = std::string(dlerror());
+        throw std::runtime_error { fmt::format("Failed to load module \"{}\", reason: {}",
+                                               m_filepath.string(),
+                                               system_reason) };
+    } else
+        m_is_loaded = true;
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 ModuleImpl::~ModuleImpl() {
-	if (m_library_handle)
-		dlclose(m_library_handle);
+    if (m_library_handle) dlclose(m_library_handle);
 }
 
 /////////////////////////////////////
@@ -42,14 +44,16 @@ ModuleImpl &ModuleImpl::operator=(ModuleImpl &&) = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 void *ModuleImpl::_getFunc(std::string_view name) const {
-	void *func = dlsym(m_library_handle, name.data());
+    void *func = dlsym(m_library_handle, name.data());
 
-	if (!func) {
-		auto system_reason = std::string(dlerror());
-		log::LogHandler::elog("Failed to load function \"%{1}()\" (on module "
-							  "\"%{2}\"), reason: %{3}",
-							  name, m_filepath.string(), system_reason);
-	}
+    if (!func) {
+        auto system_reason = std::string(dlerror());
+        throw std::runtime_error { fmt::format("Failed to load function \"{}()\" (on module "
+                                               "\"{}\"), reason: {}",
+                                               name,
+                                               m_filepath.string(),
+                                               system_reason) };
+    }
 
-	return func;
+    return func;
 }

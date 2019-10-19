@@ -11,24 +11,15 @@ using namespace storm::render;
 
 /////////////////////////////////////
 /////////////////////////////////////
-Fence::Fence(const render::Device &device) : m_device{&device} {
-	const auto &device_ = static_cast<const Device &>(*m_device);
+Fence::Fence(const render::Device &device) : m_device { &device } {
+    const auto create_info = vk::FenceCreateInfo {}.setFlags(vk::FenceCreateFlagBits::eSignaled);
 
-	const auto create_info =
-		VkFenceCreateInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-						  .flags = VK_FENCE_CREATE_SIGNALED_BIT};
-
-	m_vk_fence = device_.createVkFence(create_info);
+    m_vk_fence = m_device->createVkFence(create_info);
 };
 
 /////////////////////////////////////
 /////////////////////////////////////
-Fence::~Fence() {
-	const auto &device = static_cast<const Device &>(*m_device);
-
-	if (m_vk_fence != VK_NULL_HANDLE)
-		device.destroyVkFence(m_vk_fence);
-}
+Fence::~Fence() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -41,25 +32,25 @@ Fence &Fence::operator=(Fence &&) = default;
 /////////////////////////////////////
 /////////////////////////////////////
 render::WaitResult Fence::wait(uint64_t wait_for) const {
-	const auto &device		 = static_cast<const Device &>(*m_device);
-	const auto &device_table = device.vkDeviceTable();
+    auto result = m_device->waitForVkFence(*m_vk_fence, wait_for);
 
-	auto result =
-		device_table.vkWaitForFences(device, 1, &m_vk_fence, VK_TRUE, wait_for);
+    if (result == vk::Result::eSuccess) return render::WaitResult::Success;
+    else if (result == vk::Result::eTimeout)
+        return render::WaitResult::Timeout;
 
-	if (result == VK_SUCCESS)
-		return render::WaitResult::Success;
-	else if (result == VK_TIMEOUT)
-		return render::WaitResult::Timeout;
-
-	return render::WaitResult::Error;
+    return render::WaitResult::Error;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 void Fence::reset() {
-	const auto &device		 = static_cast<const Device &>(*m_device);
-	const auto &device_table = device.vkDeviceTable();
+    m_device->resetVkFence(*m_vk_fence);
+}
 
-	device_table.vkResetFences(device, 1, &m_vk_fence);
+/////////////////////////////////////
+/////////////////////////////////////
+Fence::Status Fence::status() const noexcept {
+    auto status = m_device->getVkFenceStatus(*m_vk_fence);
+
+    return (status == vk::Result::eSuccess) ? Status::Signaled : Status::Unsignaled;
 }

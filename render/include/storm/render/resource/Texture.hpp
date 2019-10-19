@@ -4,106 +4,94 @@
 
 #pragma once
 
-#include <storm/core/Platform.hpp>
 #include <storm/core/Math.hpp>
 #include <storm/core/NonCopyable.hpp>
+#include <storm/core/Platform.hpp>
 
 #include <storm/image/Image.hpp>
 
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
 
+#include <storm/render/resource/Fwd.hpp>
+#include <storm/render/resource/TextureView.hpp>
+
 namespace storm::render {
-	class STORM_PUBLIC Texture : public core::NonCopyable {
-	  public:
-		explicit Texture(const Device &device);
-		explicit Texture(const render::Device &device, core::Extent extent,
-						 render::PixelFormat format, VkImage image);
-		~Texture();
+    class STORM_PUBLIC Texture: public core::NonCopyable {
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Image;
 
-		Texture(Texture &&);
-		Texture &operator=(Texture &&);
+        Texture(const Device &device,
+                TextureType type        = TextureType::T2D,
+                TextureCreateFlag flags = TextureCreateFlag::None);
+        Texture(const Device &device,
+                core::Extentu extent,
+                render::PixelFormat format,
+                vk::Image image);
+        ~Texture();
 
-		void loadFromImage(image::Image &image);
-		void loadFromMemory(storm::core::span<const std::byte> data,
-									core::Extent extent,
-									PixelFormat format);
-		void
-			createTextureData(core::Extent extent, PixelFormat format,
-							  SampleCountFlag samples = SampleCountFlag::C1_BIT,
-							  std::uint32_t mip_levels = 1,
-							  std::uint32_t layers	 = 1,
-							  ImageUsage usage		   = ImageUsage::Sampled |
-												 ImageUsage::Transfert_Dst);
+        Texture(Texture &&);
+        Texture &operator=(Texture &&);
 
-		inline core::Extent extent() const noexcept {
-			return m_extent;
-		}
-		inline PixelFormat format() const noexcept {
-			return m_format;
-		}
-		inline ImageLayout layout() const noexcept {
-			return m_image_layout;
-		}
-		inline SampleCountFlag samples() const noexcept {
-			return m_samples;
-		}
-		inline std::uint32_t mipLevels() const noexcept {
-			return m_mip_levels;
-		}
-		inline std::uint32_t layers() const noexcept {
-			return m_layers;
-		}
+        void loadFromImage(image::Image &image,
+                           PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
+                           SampleCountFlag samples    = SampleCountFlag::C1_BIT,
+                           core::UInt32 mip_levels    = 1,
+                           core::UInt32 layers        = 1,
+                           TextureUsage usage         = TextureUsage::Sampled |
+                                                TextureUsage::Transfert_Dst);
+        void loadFromMemory(storm::core::span<const core::Byte> data,
+                            core::Extentu extent,
+                            PixelFormat load_format,
+                            PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
+                            SampleCountFlag samples    = SampleCountFlag::C1_BIT,
+                            core::UInt32 mip_levels    = 1,
+                            core::UInt32 layers        = 1,
+                            TextureUsage usage         = TextureUsage::Sampled |
+                                                 TextureUsage::Transfert_Dst);
+        void createTextureData(core::Extentu extent,
+                               PixelFormat format,
+                               SampleCountFlag samples = SampleCountFlag::C1_BIT,
+                               core::UInt32 mip_levels = 1,
+                               core::UInt32 layers     = 1,
+                               TextureUsage usage      = TextureUsage::Sampled |
+                                                    TextureUsage::Transfert_Dst);
 
-		inline const Device &device() const noexcept {
-            return *m_device;
-		}
+        TextureView createView(TextureViewType type                      = TextureViewType::T2D,
+                               TextureSubresourceRange subresource_range = {}) const noexcept;
+        TextureViewOwnedPtr createViewPtr(TextureViewType type = TextureViewType::T2D,
+                                          TextureSubresourceRange subresource_range = {}) const;
 
-		inline VkImage vkImage() const noexcept {
-			STORM_EXPECTS(m_vk_image != VK_NULL_HANDLE);
-			return m_vk_image;
-		}
+        inline core::Extentu extent() const noexcept;
+        inline PixelFormat format() const noexcept;
+        inline TextureType type() const noexcept;
+        inline SampleCountFlag samples() const noexcept;
+        inline core::UInt32 mipLevels() const noexcept;
+        inline core::UInt32 layers() const noexcept;
 
-		inline VkImageView vkImageView() const noexcept {
-			STORM_EXPECTS(m_vk_image_view != VK_NULL_HANDLE);
-			return m_vk_image_view;
-		}
+        inline const Device &device() const noexcept;
 
-		inline operator VkImageView() const noexcept {
-			STORM_EXPECTS(m_vk_image_view != VK_NULL_HANDLE);
-			return m_vk_image_view;
-		}
+        inline vk::Image vkImage() const noexcept;
+        inline operator vk::Image() const noexcept;
+        inline vk::Image vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
 
-		inline const VkImageSubresourceRange &vkSubresourceRange() const
-			noexcept {
-			return m_subresource_range;
-		}
-	  protected:
-		inline void setLayout(ImageLayout layout) const noexcept {
-			m_image_layout = layout;
-		}
+      private:
+        DeviceConstObserverPtr m_device;
 
-		DeviceConstObserverPtr m_device;
+        core::Extentu m_extent = { { 0 }, { 0 } };
+        PixelFormat m_format   = PixelFormat::Undefined;
+        TextureType m_type;
+        TextureCreateFlag m_flags;
 
-		core::Extent m_extent			    = {0, 0};
-		PixelFormat m_format			    = PixelFormat::Undefined;
-		mutable ImageLayout m_image_layout = ImageLayout::Undefined;
+        SampleCountFlag m_samples = SampleCountFlag::C1_BIT;
+        core::UInt32 m_mip_levels = 1;
+        core::UInt32 m_layers     = 1;
 
-		ImageUsage m_usage;
-
-		SampleCountFlag m_samples  = SampleCountFlag::C1_BIT;
-		std::uint32_t m_mip_levels = 1;
-		std::uint32_t m_layers	 = 1;
-
-
-		VmaAllocation m_vma_image_memory = VK_NULL_HANDLE;
-		VkImage m_vk_image				 = VK_NULL_HANDLE;
-		VkImageView m_vk_image_view		 = VK_NULL_HANDLE;
-
-		VkImageSubresourceRange m_subresource_range;
-
-		bool m_is_owning_image = true;
-
-		friend class CommandBuffer;
-	};
+        RAIIVmaAllocation m_vma_texture_memory;
+        RAIIVkImage m_vk_texture;
+        vk::Image m_non_owning_texture = VK_NULL_HANDLE;
+    };
 } // namespace storm::render
+
+#include "Texture.inl"

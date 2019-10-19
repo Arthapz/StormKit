@@ -12,26 +12,25 @@
 
 /// \module storm::core
 namespace storm::core {
-	/// \brief storm::core::App is an abstract class that encapsulate all the
-	/// app logic
-	///
-	/// This class is a facility to keep the code aside from the main and split
-	/// it in OO way
-	class App : public storm::core::NonCopyable,
-				public storm::core::NonMovable {
-	  public:
-		/// \output_section Public Special Member Functions
-		/// \brief Default constructor
-		explicit App() noexcept = default;
+    /// \brief storm::core::App is an abstract class that encapsulate all the
+    /// app logic
+    ///
+    /// This class is a facility to keep the code aside from the main and split
+    /// it in OO way
+    class App: public storm::core::NonCopyable, public storm::core::NonMovable {
+      public:
+        /// \output_section Public Special Member Functions
+        /// \brief Default constructor
+        explicit App() noexcept = default;
 
-		/// \brief Destructor
-		virtual ~App() noexcept = default;
+        /// \brief Destructor
+        virtual ~App() noexcept = default;
 
-		/// \output_section Public Member Functions
-		/// \brief Run the app logic
-		///
-		/// This is a pure virtual function that has to be implemented by the
-		/// derived class to define the app logic
-		virtual void run(int argc, char **argv) = 0;
-	};
+        /// \output_section Public Member Functions
+        /// \brief Run the app logic
+        ///
+        /// This is a pure virtual function that has to be implemented by the
+        /// derived class to define the app logic
+        virtual void run(int argc, char **argv) = 0;
+    };
 } // namespace storm::core

@@ -7,24 +7,24 @@
 #include <storm/core/Memory.hpp>
 
 namespace storm::render {
-	struct PhysicalDeviceInfo;
-	struct RenderCapabilities;
+    struct PhysicalDeviceInfo;
+    struct RenderCapabilities;
 
-	class Instance;
-	DECLARE_PTR_AND_REF(Instance);
+    class Instance;
+    DECLARE_PTR_AND_REF(Instance);
 
-	class PhysicalDevice;
-	DECLARE_PTR_AND_REF(PhysicalDevice);
+    class PhysicalDevice;
+    DECLARE_PTR_AND_REF(PhysicalDevice);
 
-	class Device;
-	DECLARE_PTR_AND_REF(Device);
+    class Device;
+    DECLARE_PTR_AND_REF(Device);
 
-	class Surface;
-	DECLARE_PTR_AND_REF(Surface);
+    class Surface;
+    DECLARE_PTR_AND_REF(Surface);
 
-	class Queue;
-	DECLARE_PTR_AND_REF(Queue);
+    class Queue;
+    DECLARE_PTR_AND_REF(Queue);
 
-	class CommandBuffer;
-	DECLARE_PTR_AND_REF(CommandBuffer);
+    class CommandBuffer;
+    DECLARE_PTR_AND_REF(CommandBuffer);
 } // namespace storm::render

@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include <fmt/core.h>
 #include <queue>
 #include <storm/core/Strings.hpp>
-#include <fmt/core.h>
 
 namespace storm::log {
     template<class T, typename... Args>
@@ -15,7 +15,7 @@ namespace storm::log {
 
         auto time_point = LogClock::now();
 
-        if(m_logger) time_point = m_logger->startTime();
+        if (m_logger) time_point = m_logger->startTime();
 
         auto logger = std::make_unique<T>(std::move(time_point), std::forward<Args>(param_args)...);
 
@@ -23,16 +23,19 @@ namespace storm::log {
     }
 
     template<typename... Args>
-    void
-    LogHandler::log(Severity severity, Module module, std::string format_string, Args &&... param_args) {
-        auto memory_buffer = fmt::memory_buffer{};
+    void LogHandler::log(Severity severity,
+                         Module module,
+                         std::string format_string,
+                         Args &&... param_args) {
+        auto memory_buffer = fmt::memory_buffer {};
         fmt::format_to(memory_buffer, format_string, std::forward<Args>(param_args)...);
 
         logger().write(severity, module, std::data(fmt::to_string(memory_buffer)));
     }
 
     template<typename... Args>
-    inline void LogHandler::log(Severity severity, std::string format_string, Args &&... param_args) {
+    inline void
+        LogHandler::log(Severity severity, std::string format_string, Args &&... param_args) {
         log(severity, ""_module, std::move(format_string), std::forward<Args>(param_args)...);
     }
 

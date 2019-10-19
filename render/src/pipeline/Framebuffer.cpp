@@ -13,39 +13,31 @@ using namespace storm::render;
 
 /////////////////////////////////////
 /////////////////////////////////////
-Framebuffer::Framebuffer(const RenderPass &render_pass, core::Extent extent,
-                         std::vector<TextureConstObserverPtr> textures)
-    : m_render_pass{&render_pass}, m_extent{std::move(extent)},
-	  m_textures{std::move(textures)} {
-	auto attachments = std::vector<VkImageView>{};
+Framebuffer::Framebuffer(const RenderPass &render_pass,
+                         core::Extentu extent,
+                         TextureViewConstObserverPtrArray attachments)
+    : m_render_pass { &render_pass }, m_extent { std::move(extent) }, m_attachments { std::move(
+                                                                          attachments) } {
+    auto vk_attachments = std::vector<vk::ImageView> {};
 
-	for (const auto &texture : m_textures) {
-		const auto &texture_ = static_cast<const Texture &>(*texture);
-		attachments.emplace_back(texture_);
-	}
+    for (const auto &attachment : m_attachments) vk_attachments.emplace_back(*attachment);
 
-	const auto create_info = VkFramebufferCreateInfo{
-		.sType		= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-		.renderPass = *m_render_pass,
-		.attachmentCount =
-			gsl::narrow_cast<std::uint32_t>(std::size(attachments)),
-		.pAttachments = std::data(attachments),
-		.width		  = m_extent.w,
-		.height		  = m_extent.h,
-		.layers		  = 1};
+    const auto create_info =
+        vk::FramebufferCreateInfo {}
+            .setRenderPass(*m_render_pass)
+            .setAttachmentCount(gsl::narrow_cast<core::UInt32>(std::size(m_attachments)))
+            .setPAttachments(std::data(vk_attachments))
+            .setWidth(m_extent.w)
+            .setHeight(m_extent.h)
+            .setLayers(1);
 
-	const auto &device = m_render_pass->device();
-	m_vk_framebuffer = device.createVkFramebuffer(create_info);
+    const auto &device = m_render_pass->device();
+    m_vk_framebuffer   = device.createVkFramebuffer(create_info);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-Framebuffer::~Framebuffer() {
-	const auto &device = m_render_pass->device();
-
-	if (m_vk_framebuffer != VK_NULL_HANDLE)
-		device.destroyVkFramebuffer(m_vk_framebuffer);
-}
+Framebuffer::~Framebuffer() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////

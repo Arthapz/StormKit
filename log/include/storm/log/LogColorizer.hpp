@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include <storm/log/Severity.hpp>
+
 namespace storm::log {
-	class LogColorizer {
-	  public:
-		explicit LogColorizer();
-	};
+    void colorifyBegin(Severity severity, bool to_stderr) noexcept;
+    void colorifyEnd(bool to_stderr) noexcept;
 } // namespace storm::log

@@ -2,6 +2,9 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+#include <storm/core/Numerics.hpp>
+#include <storm/core/Ranges.hpp>
+
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/pipeline/Framebuffer.hpp>
@@ -12,17 +15,11 @@ using namespace storm::render;
 
 /////////////////////////////////////
 /////////////////////////////////////
-RenderPass::RenderPass(const render::Device &device)
-	: m_device{&device} {};
+RenderPass::RenderPass(const render::Device &device) : m_device { &device } {};
 
 /////////////////////////////////////
 /////////////////////////////////////
-RenderPass::~RenderPass() {
-	const auto &device = static_cast<const Device &>(*m_device);
-
-	if (m_vk_render_pass != VK_NULL_HANDLE)
-		device.destroyVkRenderPass(m_vk_render_pass);
-}
+RenderPass::~RenderPass() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -34,101 +31,120 @@ RenderPass &RenderPass::operator=(RenderPass &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-std::uint32_t RenderPass::addAttachment(Attachment attachment) {
-	m_attachments.emplace_back(std::move(attachment));
+core::UInt32 RenderPass::addAttachmentDescription(AttachmentDescription attachment) {
+    m_attachment_descriptions.emplace_back(std::move(attachment));
 
-	return gsl::narrow_cast<std::uint32_t>(std::size(m_attachments) - 1u);
+    return std::size(m_attachment_descriptions) - 1u;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
+std::vector<core::UInt32>
+    RenderPass::addAttachmentDescriptions(core::span<AttachmentDescription> attachment) {
+    const auto end = std::size(m_attachment_descriptions);
+
+    m_attachment_descriptions.resize(end + std::size(attachment));
+
+    core::ranges::copy(attachment, core::ranges::begin(m_attachment_descriptions) + end);
+
+    return core::genRange<core::UInt32>(end - 1u, std::size(m_attachment_descriptions));
+}
+/////////////////////////////////////
+/////////////////////////////////////
 void RenderPass::build() {
-	const auto &device = static_cast<const Device &>(*m_device);
+    auto attachments = std::vector<vk::AttachmentDescription> {};
+    attachments.reserve(std::size(m_attachment_descriptions));
+    for (const auto &attachment : m_attachment_descriptions) {
+        const auto vk_attachment = vk::AttachmentDescription {}
+                                       .setFormat(toVK(attachment.format))
+                                       .setSamples(toVKBits(attachment.samples))
+                                       .setLoadOp(toVK(attachment.load_op))
+                                       .setStencilLoadOp(toVK(attachment.stencil_load_op))
+                                       .setStencilStoreOp(toVK(attachment.stencil_store_op))
+                                       .setInitialLayout(toVK(attachment.source_layout))
+                                       .setFinalLayout(toVK(attachment.destination_layout));
 
-	auto attachments = std::vector<VkAttachmentDescription>{};
-	attachments.reserve(std::size(m_attachments));
-	for (const auto &attachment : m_attachments) {
-		const auto vk_attachment = VkAttachmentDescription{
-			.format			= toVK(attachment.format),
-			.samples		= toVK(attachment.samples),
-			.loadOp			= toVK(attachment.load_op),
-			.storeOp		= toVK(attachment.store_op),
-			.stencilLoadOp  = toVK(attachment.stencil_load_op),
-			.stencilStoreOp = toVK(attachment.stencil_store_op),
-			.initialLayout  = toVK(attachment.initial_layout),
-			.finalLayout	= toVK(attachment.final_layout)};
+        attachments.emplace_back(std::move(vk_attachment));
+    }
 
-		attachments.emplace_back(std::move(vk_attachment));
-	}
+    auto color_attachment_refs   = std::vector<std::vector<vk::AttachmentReference>> {};
+    auto depth_attachment_ref    = std::optional<vk::AttachmentReference> {};
+    auto resolve_attachment_refs = std::vector<std::vector<vk::AttachmentReference>> {};
+    auto subpasses               = std::vector<vk::SubpassDescription> {};
+    auto subpasses_deps          = std::vector<vk::SubpassDependency> {};
 
-	auto color_attachment_refs =
-		std::vector<std::vector<VkAttachmentReference>>{};
-	auto depth_attachment_ref = std::optional<VkAttachmentReference>{};
-	auto subpasses			  = std::vector<VkSubpassDescription>{};
-	auto subpasses_deps		  = std::vector<VkSubpassDependency>{};
+    for (const auto &subpass : m_subpasses) {
+        auto &color_attachment_ref = color_attachment_refs.emplace_back();
+        color_attachment_ref.reserve(std::size(subpass.attachment_refs));
+        auto &resolve_attachment_ref = resolve_attachment_refs.emplace_back();
 
-	for (const auto &subpass : m_subpasses) {
-		auto &color_attachment_ref = color_attachment_refs.emplace_back();
-		color_attachment_ref.reserve(std::size(subpass.attachment_refs));
+        for (const auto &attachment_ref : subpass.attachment_refs) {
+            if (isDepthFormat(m_attachment_descriptions[attachment_ref.attachment_id].format)) {
+                depth_attachment_ref = vk::AttachmentReference {}
+                                           .setAttachment(attachment_ref.attachment_id)
+                                           .setLayout(toVK(attachment_ref.layout));
+                continue;
+            }
 
-		for (const auto &attachment_ref : subpass.attachment_refs) {
-			if (isDepthFormat(
-					m_attachments[attachment_ref.attachment_id].format)) {
-				depth_attachment_ref = VkAttachmentReference{
-					.attachment = attachment_ref.attachment_id,
-					.layout		= toVK(attachment_ref.layout)};
-				continue;
-			}
-			const auto vk_attachment_ref = VkAttachmentReference{
-				.attachment = attachment_ref.attachment_id,
-				.layout		= toVK(attachment_ref.layout)};
+            const auto vk_attachment_ref = vk::AttachmentReference {}
+                                               .setAttachment(attachment_ref.attachment_id)
+                                               .setLayout(toVK(attachment_ref.layout));
 
-			color_attachment_ref.emplace_back(std::move(vk_attachment_ref));
-		}
+            if (m_attachment_descriptions[attachment_ref.attachment_id].resolve)
+                resolve_attachment_ref.emplace_back(std::move(vk_attachment_ref));
+            else
+                color_attachment_ref.emplace_back(std::move(vk_attachment_ref));
+        }
 
-		const auto vk_subpass = VkSubpassDescription{
-			.pipelineBindPoint	= toVK(subpass.bind_point),
-			.colorAttachmentCount = gsl::narrow_cast<std::uint32_t>(
-				std::size(color_attachment_ref)),
-			.pColorAttachments		 = std::data(color_attachment_ref),
-			.pDepthStencilAttachment = (depth_attachment_ref.has_value())
-										   ? &depth_attachment_ref.value()
-										   : nullptr};
+        const auto vk_subpass =
+            vk::SubpassDescription {}
+                .setPipelineBindPoint(toVK(subpass.bind_point))
+                .setColorAttachmentCount(
+                    gsl::narrow_cast<core::UInt32>(std::size(color_attachment_ref)))
+                .setPColorAttachments(std::data(color_attachment_ref))
+                .setPResolveAttachments(std::data(resolve_attachment_ref))
+                .setPDepthStencilAttachment(
+                    (depth_attachment_ref.has_value() ? &depth_attachment_ref.value() : nullptr));
 
-		subpasses.emplace_back(std::move(vk_subpass));
+        subpasses.emplace_back(std::move(vk_subpass));
 
-		const auto vk_subpass_dependency = VkSubpassDependency{
-			.srcSubpass	= VK_SUBPASS_EXTERNAL,
-			.dstSubpass	= 0,
-			.srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			.srcAccessMask = 0,
-			.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-							 VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT};
+        const auto vk_subpass_dependency =
+            vk::SubpassDependency {}
+                .setSrcSubpass(VK_SUBPASS_EXTERNAL)
+                .setDstSubpass(0)
+                .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+                .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+                .setSrcAccessMask(vk::AccessFlags {})
+                .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead |
+                                  vk::AccessFlagBits::eColorAttachmentWrite);
 
-		subpasses_deps.emplace_back(std::move(vk_subpass_dependency));
-	}
+        subpasses_deps.emplace_back(std::move(vk_subpass_dependency));
+    }
 
-	const auto create_info = VkRenderPassCreateInfo{
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-		.attachmentCount =
-			gsl::narrow_cast<std::uint32_t>(std::size(attachments)),
-		.pAttachments = std::data(attachments),
-		.subpassCount = gsl::narrow_cast<std::uint32_t>(std::size(subpasses)),
-		.pSubpasses   = std::data(subpasses),
-		.dependencyCount =
-			gsl::narrow_cast<std::uint32_t>(std::size(subpasses_deps)),
-		.pDependencies = std::data(subpasses_deps)};
+    const auto create_info =
+        vk::RenderPassCreateInfo {}
+            .setAttachmentCount(gsl::narrow_cast<core::UInt32>(std::size(attachments)))
+            .setPAttachments(std::data(attachments))
+            .setSubpassCount(gsl::narrow_cast<core::UInt32>(std::size(subpasses)))
+            .setPSubpasses(std::data(subpasses))
+            .setDependencyCount(gsl::narrow_cast<core::UInt32>(std::size(subpasses_deps)))
+            .setPDependencies(std::data(subpasses_deps));
 
-	m_vk_render_pass = device.createVkRenderPass(create_info);
+    m_vk_render_pass = m_device->createVkRenderPass(create_info);
 };
 
 /////////////////////////////////////
 /////////////////////////////////////
-render::FramebufferOwnedPtr RenderPass::createFramebuffer(
-	core::Extent extent,
-	std::vector<render::TextureConstObserverPtr> textures) const {
-	return std::make_unique<Framebuffer>(*this, std::move(extent),
-										 std::move(textures));
+render::Framebuffer
+    RenderPass::createFramebuffer(core::Extentu extent,
+                                  TextureViewConstObserverPtrArray attachments) const {
+    return Framebuffer { *this, std::move(extent), std::move(attachments) };
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
+render::FramebufferOwnedPtr
+    RenderPass::createFramebufferPtr(core::Extentu extent,
+                                     TextureViewConstObserverPtrArray attachments) const {
+    return std::make_unique<Framebuffer>(*this, std::move(extent), std::move(attachments));
+}

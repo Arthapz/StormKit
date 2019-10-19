@@ -9,10 +9,10 @@
 #include <storm/render/core/Enums.hpp>
 
 namespace storm::render {
-	struct QueueFamily {
-		QueueFlag flags;
-		std::uint32_t count;
+    struct QueueFamily {
+        QueueFlag flags;
+        core::UInt32 count;
 
-		bool has_present_support = false;
-	};
+        bool has_present_support = false;
+    };
 } // namespace storm::render

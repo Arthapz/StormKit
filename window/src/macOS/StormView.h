@@ -5,9 +5,11 @@
 
 class WindowImpl;
 @interface StormView : NSView
-	- (BOOL) acceptsFirstResponder;
-	- (id) initWithFrame: (NSRect) frame withRequester: (WindowImpl*)_requester;
 
+	- (BOOL) acceptsFirstResponder;
+	- (id) initWithFrame: (NSRect) frame withRequester: (WindowImpl*)_requester withWindow: (NSWindow*)window;
+
+	- (NSWindow*) myWindow;
 	- (void) mouseDown:(NSEvent *)event;
 	- (void) rightMouseDown:(NSEvent *)event;
 	- (void) otherMouseDown:(NSEvent *)event;

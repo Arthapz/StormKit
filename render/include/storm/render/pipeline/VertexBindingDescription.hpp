@@ -4,20 +4,23 @@
 
 #pragma once
 
-#include <storm/core/Math.hpp>
 #include <storm/core/Hash.hpp>
+#include <storm/core/Math.hpp>
+#include <storm/core/Memory.hpp>
 
 #include <storm/render/core/Enums.hpp>
 
 namespace storm::render {
-	struct VertexBindingDescription {
-		std::uint32_t binding;
-		std::size_t stride;
-		VertexInputRate input_rate = VertexInputRate::Vertex;
-	};
+    struct VertexBindingDescription {
+        core::UInt32 binding;
+        core::ArraySize stride;
+        VertexInputRate input_rate = VertexInputRate::Vertex;
+    };
 
-	using VertexBindingDescriptions = std::vector<VertexBindingDescription>;
+    DECLARE_ARRAYS(VertexBindingDescription)
 } // namespace storm::render
 
 HASH_FUNC(storm::render::VertexBindingDescription)
-HASH_FUNC(storm::render::VertexBindingDescriptions)
+HASH_FUNC(storm::render::VertexBindingDescriptionArray)
+HASH_FUNC(storm::render::VertexBindingDescriptionSpan)
+HASH_FUNC(storm::render::VertexBindingDescriptionConstSpan)

@@ -4,79 +4,46 @@
 
 #pragma once
 
+#include <storm/core/Flags.hpp>
 #include <storm/core/Platform.hpp>
 
-#ifdef STORM_COMPILER_MSVC
-#pragma warning(push)
-#pragma warning(disable : 4251)
-#endif
-
-#include <storm/core/Flags.hpp>
 #include <storm/window/AbstractWindow.hpp>
 
 namespace storm::window {
-	class STORM_PUBLIC STORM_EBCO Window : public core::NonCopyable {
-	  public:
-		Window() noexcept;
-		Window(const std::string &title, const VideoSettings &settings,
-			   WindowStyle style) noexcept;
-		~Window();
+    class STORM_PUBLIC Window: public core::NonCopyable {
+      public:
+        Window() noexcept;
+        Window(const std::string &title, const VideoSettings &settings, WindowStyle style) noexcept;
+        ~Window();
 
-		Window(Window &&);
-		Window &operator=(Window &&);
+        Window(Window &&);
+        Window &operator=(Window &&);
 
-		inline void create(const std::string &title,
-						   const VideoSettings &settings,
-						   WindowStyle style) noexcept {
-			m_impl->create(title, settings, style);
-		}
-		inline void close() noexcept {
-			m_impl->close();
-		}
-		void display() noexcept;
+        inline void create(const std::string &title,
+                           const VideoSettings &settings,
+                           WindowStyle style) noexcept;
+        inline void close() noexcept;
 
-		inline bool pollEvent(Event &event,
-							  void *native_event = nullptr) noexcept {
-			return m_impl->pollEvent(event, native_event);
-		}
-		inline bool waitEvent(Event &event,
-							  void *native_event = nullptr) noexcept {
-			return m_impl->waitEvent(event, native_event);
-		}
+        void display() noexcept;
 
-		inline void setTitle(const std::string &title) noexcept {
-			m_impl->setTitle(title);
-		}
-		inline void setVideoSettings(const VideoSettings &settings) noexcept {
-			m_impl->setVideoSettings(settings);
-		}
+        inline bool pollEvent(Event &event, void *native_event = nullptr) noexcept;
+        inline bool waitEvent(Event &event, void *native_event = nullptr) noexcept;
 
-		inline core::Extent size() const noexcept {
-			return m_impl->size();
-		}
+        inline void setTitle(const std::string &title) noexcept;
+        inline void setVideoSettings(const VideoSettings &settings) noexcept;
 
-		inline const std::string &title() const noexcept {
-			return m_impl->title();
-		}
-		inline VideoSettings videoSettings() const noexcept {
-			return m_impl->videoSettings();
-		}
-		inline bool isOpen() const noexcept {
-			return m_impl->isOpen();
-		}
-		inline bool isVisible() const noexcept {
-			return m_impl->isVisible();
-		}
+        inline core::Extentu size() const noexcept;
+        inline const std::string &title() const noexcept;
+        inline VideoSettings videoSettings() const noexcept;
 
-		inline NativeHandle nativeHandle() const noexcept {
-			return m_impl->nativeHandle();
-		}
+        inline bool isOpen() const noexcept;
+        inline bool isVisible() const noexcept;
 
-	  private:
-		AbstractWindowOwnedPtr m_impl;
-	};
+        inline NativeHandle nativeHandle() const noexcept;
+
+      private:
+        AbstractWindowOwnedPtr m_impl;
+    };
 } // namespace storm::window
 
-#ifdef STORM_COMPILER_MSVC
-#pragma warning(pop)
-#endif
+#include "Window.inl"

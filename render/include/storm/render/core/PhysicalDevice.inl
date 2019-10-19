@@ -5,42 +5,100 @@
 #pragma once
 
 namespace storm::render {
-    inline const PhysicalDeviceInfo &PhysicalDevice::info() const noexcept {
-        return m_device_info;
+    /////////////////////////////////////
+    /////////////////////////////////////
+    vk::SurfaceCapabilitiesKHR
+        PhysicalDevice::queryVkSurfaceCapabilities(const Surface &surface) const noexcept {
+        CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceCapabilitiesKHR(surface), capabilities);
+
+        return capabilities;
     }
-    inline const RenderCapabilities &PhysicalDevice::capabilities() const
-        noexcept {
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    std::vector<vk::SurfaceFormatKHR>
+        PhysicalDevice::queryVkSurfaceFormats(const Surface &surface) const noexcept {
+        CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceFormatsKHR(surface), format);
+
+        return format;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    std::vector<vk::PresentModeKHR>
+        PhysicalDevice::queryVkPresentModes(const Surface &surface) const noexcept {
+        CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfacePresentModesKHR(surface),
+                             present_modes);
+
+        return present_modes;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline const PhysicalDeviceInfo &PhysicalDevice::info() const noexcept { return m_device_info; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline const RenderCapabilities &PhysicalDevice::capabilities() const noexcept {
         return m_capabilities;
     }
-    inline storm::core::span<const QueueFamily>
-        PhysicalDevice::queueFamilies() const noexcept {
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline PhysicalDevice::MemoryPropertiesSpan PhysicalDevice::memoryProperties() const noexcept {
+        return m_memory_properties;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline storm::core::span<const QueueFamily> PhysicalDevice::queueFamilies() const noexcept {
         return m_queue_families;
     }
 
-    inline VkDevice PhysicalDevice::createVkDevice(
-        const VkDeviceCreateInfo &create_info) const {
-        auto vk_device = VkDevice{};
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline vk::UniqueDevice
+        PhysicalDevice::createVkDevice(const vk::DeviceCreateInfo &create_info) const {
+        CHECK_VK_ERROR_VALUE(m_vk_physical_device.createDeviceUnique(create_info), device);
 
-        const auto result = vkCreateDevice(m_vk_physical_device, &create_info,
-                                           nullptr, &vk_device);
-        STORM_ENSURES(result == VK_SUCCESS);
-
-        return vk_device;
+        return device;
     }
 
-    inline VkPhysicalDeviceMemoryProperties
-        PhysicalDevice::vkMemoryProperties() const noexcept {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline const vk::PhysicalDeviceMemoryProperties &PhysicalDevice::vkMemoryProperties() const
+        noexcept {
         return m_vk_memory_properties;
     }
 
-    inline VkPhysicalDevice PhysicalDevice::vkPhysicalDevice() const noexcept {
-        STORM_EXPECTS(m_vk_physical_device != VK_NULL_HANDLE);
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline vk::PhysicalDevice PhysicalDevice::vkPhysicalDevice() const noexcept {
         return m_vk_physical_device;
     }
 
-    inline PhysicalDevice::operator VkPhysicalDevice() const noexcept {
-        STORM_EXPECTS(m_vk_physical_device != VK_NULL_HANDLE);
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline PhysicalDevice::operator vk::PhysicalDevice() const noexcept {
         return m_vk_physical_device;
     }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline vk::PhysicalDevice PhysicalDevice::vkHandle() const noexcept {
+        return vkPhysicalDevice();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline vk::FormatProperties PhysicalDevice::vkGetFormatProperties(vk::Format format) const
+        noexcept {
+        return m_vk_physical_device.getFormatProperties(format);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline core::UInt64 PhysicalDevice::vkDebugHandle() const noexcept {
+        return reinterpret_cast<core::UInt64>(vkHandle().operator VkPhysicalDevice());
+    }
 } // namespace storm::render
