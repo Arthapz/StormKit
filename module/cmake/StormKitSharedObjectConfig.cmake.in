@@ -1,0 +1,13 @@
+get_filename_component(SharedObject_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+find_dependency(StormKit REQUIRED COMPONENTS core)
+if(${STORM_OS_MACOS})
+	find_dependency(Boost REQUIRED COMPONENTS system filesystem)
+endif()
+
+if(NOT TARGET StormKit::sharedobject)
+    include("${Core_CMAKE_DIR}/StormKitSharedObjectTargets.cmake")
+endif()
+
+set(StormKitSharedObject_LIBRARIES StormKit::sharedobject)
+

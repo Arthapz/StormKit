@@ -1,0 +1,15 @@
+get_filename_component(Log_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+find_dependency(StormKit REQUIRED COMPONENTS core)
+
+if(${STORM_OS_MACOS})
+	find_dependency(Boost REQUIRED COMPONENTS system filesystem)
+endif()
+
+if(NOT TARGET StormKit::log)
+	include("${Log_CMAKE_DIR}/StormKitLogTargets.cmake")
+endif()
+
+set(StormKitLog_LIBRARIES StormKit::log)
+

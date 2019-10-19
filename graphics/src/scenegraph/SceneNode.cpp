@@ -1,0 +1,31 @@
+#include <storm/graphics/scenegraph/SceneGraph.hpp>
+#include <storm/graphics/scenegraph/SceneNode.hpp>
+#include <storm/graphics/scenegraph/SceneRenderer.hpp>
+
+using namespace storm;
+using namespace storm::graphics;
+
+////////////////////////////////////////
+////////////////////////////////////////
+SceneNode::SceneNode() : Node{"SceneNode"} {
+	setName("scene");
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+SceneNode::~SceneNode() = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+SceneNode::SceneNode(SceneNode &&) = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+SceneNode &SceneNode::operator=(SceneNode &&) = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+void SceneNode::visit(SceneVisitorContext &context,
+					  SceneRenderer &renderer) const {
+	renderer.visit(context, *this);
+}

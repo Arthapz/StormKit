@@ -1,0 +1,10 @@
+get_filename_component(SharedTools_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+find_dependency(StormKit REQUIRED COMPONENTS core log image window)
+
+if(NOT TARGET StormKit::render)
+    include("${Core_CMAKE_DIR}/StormKitRenderTargets.cmake")
+endif()
+
+set(StormKitRender_LIBRARIES StormKit::render)
+

@@ -1,0 +1,30 @@
+#include <storm/graphics/scenegraph/PipelineNode.hpp>
+#include <storm/graphics/scenegraph/SceneRenderer.hpp>
+
+using namespace storm;
+using namespace storm::graphics;
+
+////////////////////////////////////////
+////////////////////////////////////////
+PipelineNode::PipelineNode(std::string name) : Node{"PipelineNode"} {
+	setName(std::move(name));
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+PipelineNode::~PipelineNode() = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+PipelineNode::PipelineNode(PipelineNode &&) = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+PipelineNode &PipelineNode::operator=(PipelineNode &&) = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+void PipelineNode::visit(SceneVisitorContext &context,
+						 SceneRenderer &renderer) const {
+	renderer.visit(context, *this);
+}
