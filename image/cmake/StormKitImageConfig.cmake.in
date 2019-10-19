@@ -1,0 +1,20 @@
+get_filename_component(Image_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+list(APPEND CMAKE_MODULE_PATH ${Image_CMAKE_DIR})
+
+find_dependency(StormKit  REQUIRED COMPONENTS core)
+find_dependency(PNG       REQUIRED)
+find_dependency(TURBOJPEG REQUIRED)
+
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
+if(${STORM_OS_MACOS})
+	find_package(Boost REQUIRED COMPONENTS system filesystem)
+endif()
+if(NOT TARGET StormKit::image)
+    include("${Image_CMAKE_DIR}/StormKitImageTargets.cmake")
+endif()
+
+set(StormKitImage_LIBRARIES StormKit::image)
+

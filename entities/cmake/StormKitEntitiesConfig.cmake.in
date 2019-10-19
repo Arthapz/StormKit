@@ -1,0 +1,11 @@
+get_filename_component(Entities_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+find_dependency(StormKit REQUIRED COMPONENTS core)
+
+if(NOT TARGET StormKit::entities)
+	include("${Entities_CMAKE_DIR}/StormKitEntitiesTargets.cmake")
+endif()
+
+set(StormKitEntities_LIBRARIES StormKit::entities)
+

@@ -1,0 +1,9 @@
+get_filename_component(Window_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+if(NOT TARGET StormKit::window)
+    include("${Image_CMAKE_DIR}/StormKitWindowTargets.cmake")
+endif()
+
+set(StormKitWindow_LIBRARIES StormKit::window)
+

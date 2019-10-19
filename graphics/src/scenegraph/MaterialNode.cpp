@@ -1,0 +1,30 @@
+#include <storm/graphics/scenegraph/MaterialNode.hpp>
+#include <storm/graphics/scenegraph/SceneRenderer.hpp>
+
+using namespace storm;
+using namespace storm::graphics;
+
+////////////////////////////////////////
+////////////////////////////////////////
+MaterialNode::MaterialNode(std::string name) : Node{"MaterialNode"} {
+	setName(std::move(name));
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+MaterialNode::~MaterialNode() = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+MaterialNode::MaterialNode(MaterialNode &&) = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+MaterialNode &MaterialNode::operator=(MaterialNode &&) = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+void MaterialNode::visit(SceneVisitorContext &context,
+						 SceneRenderer &renderer) const {
+	renderer.visit(context, *this);
+}
