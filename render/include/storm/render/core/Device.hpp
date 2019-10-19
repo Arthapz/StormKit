@@ -6,7 +6,6 @@
 
 #include <gsl/string_span>
 
-#include <storm/core/Filesystem.hpp>
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
 
@@ -25,189 +24,298 @@
 #include <storm/render/sync/Fwd.hpp>
 
 namespace storm::render {
-	class STORM_PUBLIC Device : public core::NonCopyable {
-	  public:
-		Device(const PhysicalDevice &physical_device, const Instance &instance);
+    class STORM_PUBLIC Device: public core::NonCopyable {
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Device;
+
+        Device(const PhysicalDevice &physical_device, const Instance &instance);
         ~Device();
 
-		Device(Device &&);
-		Device &operator=(Device &&);
+        Device(Device &&);
+        Device &operator=(Device &&);
 
         void waitIdle() const noexcept;
         void waitForFences(storm::core::span<const FenceCRef> fences,
-                           bool wait_all = true,
-                           std::uint64_t timeout =
-                               std::numeric_limits<std::uint64_t>::max()) const
+                           bool wait_all        = true,
+                           core::UInt64 timeout = std::numeric_limits<core::UInt64>::max()) const
             noexcept;
-		inline void
-			waitForFence(const Fence &fence,
-						 std::uint64_t timeout =
-                             std::numeric_limits<std::uint64_t>::max()) const
+        inline void
+            waitForFence(const Fence &fence,
+                         core::UInt64 timeout = std::numeric_limits<core::UInt64>::max()) const
             noexcept;
 
-        ShaderOwnedPtr createShader(core::filesystem::path filepath,
-                                    Shader::Language language,
-                                    ShaderType type) const;
-        ShaderOwnedPtr createShader(core::span<const std::byte> data,
-                                    Shader::Language language,
-                                    ShaderType type) const;
-        template <typename Container, std::enable_if_t<!std::is_same_v<
-                                          Container, core::filesystem::path>>>
-        inline ShaderOwnedPtr createShader(const Container &container,
-                                           ShaderType type) const;
+        Shader createShader(std::filesystem::path filepath, ShaderStage type) const;
+        ShaderOwnedPtr createShaderPtr(std::filesystem::path filepath, ShaderStage type) const;
+        Shader createShader(core::span<const core::Byte> data, ShaderStage type) const;
+        ShaderOwnedPtr createShaderPtr(core::span<const core::Byte> data, ShaderStage type) const;
+        Shader createShader(core::span<const core::UInt32> data, ShaderStage type) const;
+        ShaderOwnedPtr createShaderPtr(core::span<const core::UInt32> data, ShaderStage type) const;
+        template<typename Container,
+                 std::enable_if_t<!std::is_same_v<Container, std::filesystem::path>>>
+        inline Shader createShader(const Container &container, ShaderStage type) const;
+        template<typename Container,
+                 std::enable_if_t<!std::is_same_v<Container, std::filesystem::path>>>
+        inline ShaderOwnedPtr createShaderPtr(const Container &container, ShaderStage type) const;
 
-        GraphicsPipelineOwnedPtr createGraphicsPipeline() const;
-        RenderPassOwnedPtr createRenderPass() const;
-        FenceOwnedPtr createFence() const;
-        SemaphoreOwnedPtr createSemaphore() const;
-        HardwareBufferOwnedPtr createHardwareBuffer(
-			HardwareBufferUsage usage, std::size_t size,
-			MemoryProperty property = MemoryProperty::Host_Visible |
-									  MemoryProperty::Host_Coherent) const;
-        DescriptorSetLayoutOwnedPtr createDescriptorSetLayout() const;
-        DescriptorPoolOwnedPtr
-			createDescriptorPool(const DescriptorSetLayout &layout,
-								 std::vector<DescriptorPool::Size> sizes,
-								 std::size_t max_sets) const;
-        TextureOwnedPtr createTexture() const;
-        SamplerOwnedPtr createSampler(
-			Sampler::Settings settings = Sampler::Settings{}) const;
-		PipelineCacheOwnedPtr createPipelineCache() const;
+        GraphicsPipeline
+            createGraphicsPipeline(PipelineCacheConstObserverPtr cache = nullptr) const;
+        GraphicsPipelineOwnedPtr
+            createGraphicsPipelinePtr(PipelineCacheConstObserverPtr cache = nullptr) const;
 
-		inline HardwareBufferOwnedPtr createVertexBuffer(
-			std::size_t size,
-			MemoryProperty property = MemoryProperty::Host_Visible |
-									  MemoryProperty::Host_Coherent,
-            bool use_staging = false) const;
-		inline HardwareBufferOwnedPtr createIndexBuffer(
-			std::size_t size,
-			MemoryProperty property = MemoryProperty::Host_Visible |
-									  MemoryProperty::Host_Coherent,
-            bool use_staging = false) const;
-		inline HardwareBufferOwnedPtr createUniformBuffer(
-			std::size_t size,
-			MemoryProperty property = MemoryProperty::Host_Visible |
-									  MemoryProperty::Host_Coherent,
-            bool use_staging = false) const;
-		inline HardwareBufferOwnedPtr createStagingBuffer(
-			std::size_t size,
-			MemoryProperty property = MemoryProperty::Host_Visible |
-                                      MemoryProperty::Host_Coherent) const;
+        RenderPass createRenderPass() const;
+        RenderPassOwnedPtr createRenderPassPtr() const;
+
+        Fence createFence() const;
+        FenceOwnedPtr createFencePtr() const;
+
+        Semaphore createSemaphore() const;
+        SemaphoreOwnedPtr createSemaphorePtr() const;
+
+        HardwareBuffer createHardwareBuffer(HardwareBufferUsage usage,
+                                            core::ArraySize size,
+                                            MemoryProperty property) const;
+        HardwareBufferArray createHardwareBuffers(core::ArraySize count,
+                                                  HardwareBufferUsage usage,
+                                                  core::ArraySize size,
+                                                  MemoryProperty property) const;
+        HardwareBufferOwnedPtr createHardwareBufferPtr(HardwareBufferUsage usage,
+                                                       core::ArraySize size,
+                                                       MemoryProperty property) const;
+        HardwareBufferOwnedPtrArray createHardwareBuffersPtr(core::ArraySize count,
+                                                             HardwareBufferUsage usage,
+                                                             core::ArraySize size,
+                                                             MemoryProperty property) const;
+
+        DescriptorSetLayout createDescriptorSetLayout() const;
+        DescriptorSetLayoutOwnedPtr createDescriptorSetLayoutPtr() const;
+
+        DescriptorPool createDescriptorPool(std::vector<DescriptorPool::Size> sizes,
+                                            core::ArraySize max_sets) const;
+        DescriptorPoolOwnedPtr createDescriptorPoolPtr(std::vector<DescriptorPool::Size> sizes,
+                                                       core::ArraySize max_sets) const;
+
+        Texture createTexture(TextureType type        = TextureType::T2D,
+                              TextureCreateFlag flags = TextureCreateFlag::None) const;
+        TextureOwnedPtr createTexturePtr(TextureType type        = TextureType::T2D,
+                                         TextureCreateFlag flags = TextureCreateFlag::None) const;
+
+        Sampler createSampler(Sampler::Settings settings = Sampler::Settings {}) const;
+        SamplerOwnedPtr createSamplerPtr(Sampler::Settings settings = Sampler::Settings {}) const;
+
+        PipelineCache createPipelineCache() const;
+        PipelineCacheOwnedPtr createPipelineCachePtr() const;
+
+        inline HardwareBuffer createVertexBuffer(
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+        inline HardwareBufferArray createVertexBuffers(
+            core::ArraySize count,
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+        inline HardwareBufferOwnedPtr createVertexBufferPtr(
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+        inline HardwareBufferOwnedPtrArray createVertexBuffersPtr(
+            core::ArraySize count,
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+
+        inline HardwareBuffer createIndexBuffer(
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+        inline HardwareBufferArray createIndexBuffers(
+            core::ArraySize count,
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+        inline HardwareBufferOwnedPtr createIndexBufferPtr(
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+        inline HardwareBufferOwnedPtrArray createIndexBuffersPtr(
+            core::ArraySize count,
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+
+        inline HardwareBuffer createUniformBuffer(
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+
+        inline HardwareBufferArray createUniformBuffers(
+            core::ArraySize count,
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+        inline HardwareBufferOwnedPtr createUniformBufferPtr(
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+        inline HardwareBufferOwnedPtrArray createUniformBuffersPtr(
+            core::ArraySize count,
+            core::ArraySize size,
+            MemoryProperty property = MemoryProperty::Host_Visible | MemoryProperty::Host_Coherent,
+            bool use_staging        = false) const;
+
+        inline HardwareBuffer
+            createStagingBuffer(core::ArraySize size,
+                                MemoryProperty property = MemoryProperty::Host_Visible |
+                                                          MemoryProperty::Host_Coherent) const;
+        inline HardwareBufferArray
+            createStagingBuffers(core::ArraySize count,
+                                 core::ArraySize size,
+                                 MemoryProperty property = MemoryProperty::Host_Visible |
+                                                           MemoryProperty::Host_Coherent) const;
+        inline HardwareBufferOwnedPtr
+            createStagingBufferPtr(core::ArraySize size,
+                                   MemoryProperty property = MemoryProperty::Host_Visible |
+                                                             MemoryProperty::Host_Coherent) const;
+        inline HardwareBufferOwnedPtrArray
+            createStagingBuffersPtr(core::ArraySize count,
+                                    core::ArraySize size,
+                                    MemoryProperty property = MemoryProperty::Host_Visible |
+                                                              MemoryProperty::Host_Coherent) const;
 
         inline const Queue &graphicsQueue() const noexcept;
-        inline const Queue &transfertQueue() const noexcept;
-        inline const Queue &computeQueue() const noexcept;
+        inline const Queue &asyncTransfertQueue() const noexcept;
+        inline const Queue &asyncComputeQueue() const noexcept;
+
+        inline bool hasAsyncTransfertQueue() const noexcept;
+        inline bool hasAsyncComputeQueue() const noexcept;
 
         inline const PhysicalDevice &physicalDevice() const noexcept;
 
-        inline VkDevice vkDevice() const noexcept;
-        inline operator VkDevice() const noexcept;
+        inline vk::Device vkDevice() const noexcept;
+        inline operator vk::Device() const noexcept;
+        inline vk::Device vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
 
-        inline const VolkDeviceTable &vkDeviceTable() const noexcept;
+        inline const vk::DispatchLoaderDynamic &vkDispatcher() const noexcept;
 
         inline VmaAllocator vmaAllocator() const noexcept;
 
-		void waitIdle(VkQueue queue) const noexcept;
-		VkSwapchainKHR
-			createVkSwapchain(const VkSwapchainCreateInfoKHR &create_info) const
-			noexcept;
-		void destroyVkSwapchain(VkSwapchainKHR swapchain) const noexcept;
+        inline vk::Result
+            waitForVkFence(vk::Fence fence,
+                           core::UInt64 wait_for = std::numeric_limits<core::UInt64>::max()) const
+            noexcept {
+            auto fences = std::array { std::move(fence) };
 
-		VkShaderModule createVkShaderModule(
-			const VkShaderModuleCreateInfo &create_info) const noexcept;
-		void destroyVkShaderModule(VkShaderModule module) const noexcept;
+            return waitForVkFences(fences, wait_for);
+        }
+        vk::Result waitForVkFences(gsl::span<const vk::Fence> fences,
+                                   core::UInt64 wait_for = std::numeric_limits<core::UInt64>::max(),
+                                   bool wait_all         = true) const noexcept;
+        void resetVkFence(vk::Fence fence) const noexcept;
+        vk::Result getVkFenceStatus(vk::Fence fence) const noexcept;
 
-		VkPipeline createVkGraphicsPipeline(
-			const VkGraphicsPipelineCreateInfo &create_info) const noexcept;
-		VkPipeline createVkComputePipeline(
-			const VkComputePipelineCreateInfo &create_info) const noexcept;
-		void destroyVkPipeline(VkPipeline pipeline) const noexcept;
+        vk::MemoryRequirements getVkBufferMemoryRequirements(vk::Buffer buffer) const noexcept;
+        vk::MemoryRequirements getVkImageMemoryRequirements(vk::Image image) const noexcept;
 
-		VkPipelineLayout createVkPipelineLayout(
-			const VkPipelineLayoutCreateInfo &create_info) const noexcept;
-		void destroyVkPipelineLayout(VkPipelineLayout pipeline) const noexcept;
+        std::pair<vk::Result, core::UInt32> vkAcquireNextImage(vk::SwapchainKHR swapchain,
+                                                               core::UInt64 timeout,
+                                                               vk::Semaphore semaphore,
+                                                               vk::Fence fence) const;
+        std::vector<vk::Image> getVkSwapchainImages(vk::SwapchainKHR swapchain) const noexcept;
 
-		VkRenderPass
-			createVkRenderPass(const VkRenderPassCreateInfo &create_info) const
-			noexcept;
-		void destroyVkRenderPass(VkRenderPass pipeline) const noexcept;
+        void updateVkDescriptorSets(gsl::span<const vk::WriteDescriptorSet> writes,
+                                    gsl::span<const vk::CopyDescriptorSet> copies) const noexcept;
+        RAIIVkSwapchain createVkSwapchain(const vk::SwapchainCreateInfoKHR &create_info) const
+            noexcept;
 
-		VkImage createVkImage(const VkImageCreateInfo &create_info) const
-			noexcept;
-		void destroyVkImage(VkImage image) const noexcept;
+        RAIIVkShaderModule createVkShaderModule(const vk::ShaderModuleCreateInfo &create_info) const
+            noexcept;
 
-		VkImageView
-			createVkImageView(const VkImageViewCreateInfo &create_info) const
-			noexcept;
-		void destroyVkImageView(VkImageView image_view) const noexcept;
+        RAIIVkPipeline
+            createVkGraphicsPipeline(const vk::GraphicsPipelineCreateInfo &create_info,
+                                     const vk::PipelineCache &cache = VK_NULL_HANDLE) const
+            noexcept;
+        RAIIVkPipeline
+            createVkComputePipeline(const vk::ComputePipelineCreateInfo &create_info,
+                                    const vk::PipelineCache &cache = VK_NULL_HANDLE) const noexcept;
 
-		VkSampler createVkSampler(const VkSamplerCreateInfo &create_info) const
-			noexcept;
-		void destroyVkSampler(VkSampler sampler) const noexcept;
+        vk::UniquePipelineCache
+            createVkPipelineCache(const vk::PipelineCacheCreateInfo &create_info) const noexcept;
 
-		VkFramebuffer createVkFramebuffer(
-			const VkFramebufferCreateInfo &create_info) const noexcept;
-		void destroyVkFramebuffer(VkFramebuffer framebuffer) const noexcept;
+        RAIIVkPipelineLayout
+            createVkPipelineLayout(const vk::PipelineLayoutCreateInfo &create_info) const noexcept;
 
-		VkCommandPool createVkCommandPool(
-			const VkCommandPoolCreateInfo &create_info) const noexcept;
-		void destroyVkCommandPool(VkCommandPool command_pool) const noexcept;
+        RAIIVkRenderPass createVkRenderPass(const vk::RenderPassCreateInfo &create_info) const
+            noexcept;
 
-		VkFence createVkFence(const VkFenceCreateInfo &create_info) const
-			noexcept;
-		void destroyVkFence(VkFence fence) const noexcept;
+        RAIIVkImage createVkImage(const vk::ImageCreateInfo &create_info) const noexcept;
 
-		VkSemaphore
-			createVkSemaphore(const VkSemaphoreCreateInfo &create_info) const
-			noexcept;
-		void destroyVkSemaphore(VkSemaphore semaphore) const noexcept;
+        RAIIVkImageView createVkImageView(const vk::ImageViewCreateInfo &create_info) const
+            noexcept;
 
-		VkBuffer createVkBuffer(const VkBufferCreateInfo &create_info) const
-			noexcept;
-		void destroyVkBuffer(VkBuffer buffer) const noexcept;
+        RAIIVkSampler createVkSampler(const vk::SamplerCreateInfo &create_info) const noexcept;
 
-		VkDescriptorSetLayout createVkDescriptorSetLayout(
-			const VkDescriptorSetLayoutCreateInfo &create_info) const noexcept;
-		void destroyVkDescriptorSetLayout(VkDescriptorSetLayout layout) const
-			noexcept;
+        RAIIVkFramebuffer createVkFramebuffer(const vk::FramebufferCreateInfo &create_info) const
+            noexcept;
 
-		VkDescriptorPool createVkDescriptorPool(
-			const VkDescriptorPoolCreateInfo &create_info) const noexcept;
-		void destroyVkDescriptorPool(VkDescriptorPool pool) const noexcept;
+        RAIIVkCommandPool createVkCommandPool(const vk::CommandPoolCreateInfo &create_info) const
+            noexcept;
 
-		std::vector<VkCommandBuffer> allocateVkCommandBuffers(
-			const VkCommandBufferAllocateInfo &allocate_info) const noexcept;
-		void deallocateVkCommandBuffers(
-			const VkCommandPool command_pool,
-			storm::core::span<const VkCommandBuffer> command_buffer) const
-			noexcept;
+        RAIIVkFence createVkFence(const vk::FenceCreateInfo &create_info) const noexcept;
 
-		VmaAllocation
-			allocateVmaAllocation(const VmaAllocationCreateInfo &allocate_info,
-								  VkMemoryRequirements requirements) const
-			noexcept;
-		void deallocateVmaAllocation(VmaAllocation allocation) const noexcept;
+        RAIIVkSemaphore createVkSemaphore(const vk::SemaphoreCreateInfo &create_info) const
+            noexcept;
 
-		void bindVmaBufferMemory(VmaAllocation allocation,
-								 VkBuffer buffer) const noexcept;
+        RAIIVkBuffer createVkBuffer(const vk::BufferCreateInfo &create_info) const noexcept;
 
-		std::byte *mapVmaMemory(VmaAllocation allocation) const noexcept;
-		void unmapVmaMemory(VmaAllocation allocation) const noexcept;
+        RAIIVkDescriptorSetLayout
+            createVkDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo &create_info) const
+            noexcept;
 
-	  protected:
-		InstanceConstObserverPtr m_instance;
+        RAIIVkDescriptorPool
+            createVkDescriptorPool(const vk::DescriptorPoolCreateInfo &create_info) const noexcept;
 
-		PhysicalDeviceConstObserverPtr m_physical_device;
+        std::vector<RAIIVkCommandBuffer>
+            allocateVkCommandBuffers(const vk::CommandBufferAllocateInfo &allocate_info) const
+            noexcept;
 
-		QueueOwnedPtr m_graphics_queue;
-		QueueOwnedPtr m_transfert_queue;
-		QueueOwnedPtr m_compute_queue;
+        std::vector<RAIIVkDescriptorSet>
+            allocateVkDescriptorSets(const vk::DescriptorSetAllocateInfo &allocate_info) const
+            noexcept;
 
-		VkDevice m_vk_device		 = VK_NULL_HANDLE;
-		VmaAllocator m_vma_allocator = VK_NULL_HANDLE;
-		VmaVulkanFunctions m_vma_device_table;
+        VmaAllocation allocateVmaAllocation(const VmaAllocationCreateInfo &allocate_info,
+                                            const vk::MemoryRequirements &requirements) const
+            noexcept;
+        void deallocateVmaAllocation(VmaAllocation allocation) const noexcept;
 
-		struct VolkDeviceTable m_device_table;
+        void bindVmaBufferMemory(VmaAllocation allocation, vk::Buffer buffer) const noexcept;
+        void bindVmaImageMemory(VmaAllocation allocation, vk::Image image) const noexcept;
+
+        core::Byte *mapVmaMemory(VmaAllocation allocation) const noexcept;
+        void unmapVmaMemory(VmaAllocation allocation) const noexcept;
+
+        template<typename T>
+        inline void setObjectName(const T &object, std::string_view name) const;
+
+        void setObjectName(core::UInt64 object, DebugObjectType type, std::string_view name) const;
+
+      protected:
+        InstanceConstObserverPtr m_instance;
+
+        PhysicalDeviceConstObserverPtr m_physical_device;
+
+        PFN_vkGetDeviceProcAddr m_vkGetDeviceProcAddr;
+
+        QueueOwnedPtr m_graphics_queue;
+        QueueOwnedPtr m_async_transfert_queue;
+        QueueOwnedPtr m_async_compute_queue;
+
+        vk::UniqueDevice m_vk_device;
+        vk::DispatchLoaderDynamic m_vk_dispatcher;
+
+        RAIIVmaAllocator m_vma_allocator;
+
+        VmaVulkanFunctions m_vma_device_table;
     };
 } // namespace storm::render
 

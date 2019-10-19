@@ -1,12 +1,11 @@
 #pragma once
 
-
 namespace storm::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, bool initialize>
     Pimpl<T, initialize>::Pimpl() {
-        if constexpr(initialize) m_ptr = std::make_unique<T>();
+        if constexpr (initialize) m_ptr = std::make_unique<T>();
     }
 
     ////////////////////////////////////////
@@ -14,7 +13,7 @@ namespace storm::core {
     template<typename T, bool initialize>
     template<typename... Args>
     Pimpl<T, initialize>::Pimpl(Args &&... args) {
-        if constexpr(initialize) m_ptr = std::make_unique<T>(std::forward<Args>(args)...);
+        if constexpr (initialize) m_ptr = std::make_unique<T>(std::forward<Args>(args)...);
     }
 
     ////////////////////////////////////////

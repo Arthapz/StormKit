@@ -7,22 +7,35 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::span<const PhysicalDeviceOwnedPtr>
-        Instance::physicalDevices() {
+    inline const DynamicLoader &Instance::loader() const noexcept { return m_loader; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline core::span<const PhysicalDeviceOwnedPtr> Instance::physicalDevices() {
         return m_physical_devices;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline VkInstance Instance::vkInstance() const noexcept {
-        STORM_EXPECTS(m_instance != VK_NULL_HANDLE);
-        return m_instance;
+    inline vk::Instance Instance::vkInstance() const noexcept {
+        STORM_EXPECTS(m_vk_instance);
+        return *m_vk_instance;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline Instance::operator VkInstance() const noexcept {
-        STORM_EXPECTS(m_instance != VK_NULL_HANDLE);
-        return m_instance;
+    inline Instance::operator vk::Instance() const noexcept {
+        STORM_EXPECTS(m_vk_instance);
+        return *m_vk_instance;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline vk::Instance Instance::vkHandle() const noexcept { return vkInstance(); }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline core::UInt64 Instance::vkDebugHandle() const noexcept {
+        return reinterpret_cast<core::UInt64>(vkHandle().operator VkInstance_T *());
     }
 } // namespace storm::render

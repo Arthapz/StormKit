@@ -12,21 +12,29 @@ using namespace storm::window;
 /////////////////////////////////////
 /////////////////////////////////////
 std::vector<VideoSettings> VideoSettings::getDesktopModes() {
-	auto dm = DEVMODE{};
-	ZeroMemory(&dm, sizeof(DEVMODE));
+    auto dm = DEVMODE {};
+    ZeroMemory(&dm, sizeof(DEVMODE));
 
-	dm.dmSize = sizeof(dm);
+    dm.dmSize = sizeof(dm);
 
-	auto video_settings = std::vector<VideoSettings>{};
-	for (auto i = 0; EnumDisplaySettings(nullptr, i, &dm) != 0; ++i) {
-		auto video_setting = VideoSettings{
-			.size = {.width  = gsl::narrow_cast<std::uint16_t>(dm.dmPelsWidth),
-					 .height = gsl::narrow_cast<std::uint16_t>(dm.dmPelsHeight)}
+    auto video_settings = std::vector<VideoSettings> {};
+    for (auto i = 0; EnumDisplaySettings(nullptr, i, &dm) != 0; ++i) {
+        auto video_setting =
+            VideoSettings { .size = { .width  = gsl::narrow_cast<core::UInt16>(dm.dmPelsWidth),
+                                      .height = gsl::narrow_cast<core::UInt16>(dm.dmPelsHeight) }
 
-		};
+            };
 
-		video_settings.emplace_back(std::move(video_setting));
-	}
+        video_settings.emplace_back(std::move(video_setting));
+    }
 
-	return video_settings;
+    return video_settings;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+VideoSettings VideoSettings::getDesktopFullscreenSize() {
+    auto width  = static_cast<core::UInt32>(GetSystemMetrics(SM_CXSIZE));
+    auto height = static_cast<core::UInt32>(GetSystemMetrics(SM_CYSIZE));
+    return { width, height };
 }

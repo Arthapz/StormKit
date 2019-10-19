@@ -7,7 +7,7 @@ using namespace storm::window;
 
 /////////////////////////////////////
 /////////////////////////////////////
-EventHandler::EventHandler(Window &window) : m_window{&window} {
+EventHandler::EventHandler(Window &window) : m_window { &window } {
 }
 
 /////////////////////////////////////
@@ -33,11 +33,11 @@ EventHandler &EventHandler::operator=(EventHandler &&) = default;
 /////////////////////////////////////
 /////////////////////////////////////
 void EventHandler::update() {
-	auto event = Event{};
+    auto event = Event {};
 
-	while (m_window->pollEvent(event)) {
-		auto event_type = event.type;
+    while (m_window->pollEvent(event)) {
+        auto event_type = event.type;
 
-		for (auto &callback : m_callback[event_type]) callback(event);
-	}
+        for (auto &callback : m_callback[event_type]) callback(event);
+    }
 }

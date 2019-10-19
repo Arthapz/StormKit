@@ -9,32 +9,31 @@
 #include <storm/core/Pimpl.hpp>
 #include <storm/core/Platform.hpp>
 
-#include <storm/window/ForwardDeclarations.hpp>
+#include <storm/window/Fwd.hpp>
 
 namespace storm::window {
-	class InputHandlerImpl;
-	class STORM_PUBLIC InputHandler : public core::NonCopyable {
-	  public:
-		using Callback = std::function<void()>;
-		InputHandler();
-		~InputHandler();
+    class InputHandlerImpl;
+    class STORM_PUBLIC InputHandler: public core::NonCopyable {
+      public:
+        using Callback = std::function<void()>;
+        InputHandler();
+        ~InputHandler();
 
-		InputHandler(InputHandler &&);
-		InputHandler &operator=(InputHandler &&);
+        InputHandler(InputHandler &&);
+        InputHandler &operator=(InputHandler &&);
 
-		static bool isKeyPressed(Key key);
-		static bool isMouseButtonPressed(MouseButton button);
-		static void setMousePosition(core::Position2u position);
-		static void setMousePosition(core::Position2u position,
-									 const Window &relative_to);
-		static core::Position2u getMousePosition();
-		static core::Position2u getMousePosition(const Window &relative_to);
+        static bool isKeyPressed(Key key);
+        static bool isMouseButtonPressed(MouseButton button);
+        static void setMousePosition(core::Position2u position);
+        static void setMousePosition(core::Position2i position, const Window &relative_to);
+        static core::Position2u getMousePosition();
+        static core::Position2i getMousePosition(const Window &relative_to);
 
-		static void setVirtualKeyboardVisible(bool visible);
+        static void setVirtualKeyboardVisible(bool visible);
 
-		// TODO implement a input handler like gainput
-		// TODO implement touch events
-	  private:
-		core::Pimpl<InputHandlerImpl> m_impl;
-	};
+        // TODO implement a input handler like gainput
+        // TODO implement touch events
+      private:
+        core::Pimpl<InputHandlerImpl> m_impl;
+    };
 } // namespace storm::window

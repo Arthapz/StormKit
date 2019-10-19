@@ -7,9 +7,9 @@
 #include <initializer_list>
 #include <optional>
 
+#include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/core/Span.hpp>
-#include <storm/core/NonCopyable.hpp>
 
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
@@ -17,66 +17,64 @@
 #include <storm/render/sync/Fwd.hpp>
 
 namespace storm::render {
-	class STORM_PUBLIC Queue : public core::NonCopyable {
-	  public:
-		explicit Queue(const render::Device &device, QueueFlag flags,
-					   std::uint32_t family_index, VkQueue queue);
-		 ~Queue() ;
+    class STORM_PUBLIC Queue: public core::NonCopyable {
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Queue;
 
-		Queue(Queue &&);
-		Queue &operator=(Queue &&);
+        explicit Queue(const render::Device &device,
+                       QueueFlag flags,
+                       core::UInt32 family_index,
+                       vk::Queue queue);
+        ~Queue();
 
-		CommandBufferOwnedPtr createCommandBuffer(
-			CommandBufferLevel level = CommandBufferLevel::Primary) const;
+        Queue(Queue &&);
+        Queue &operator=(Queue &&);
 
-		 void waitIdle() const noexcept ;
+        void waitIdle() const noexcept;
 
-		void submit( // todo optimise rvalue / lvalue
-			storm::core::span<const CommandBufferConstObserverPtr>
-				command_buffers,
-			storm::core::span<const SemaphoreConstObserverPtr> wait_semaphores =
-				{},
-			storm::core::span<const SemaphoreConstObserverPtr>
-				signal_semaphores  = {},
-			FenceObserverPtr fence = nullptr) const noexcept;
+        void submit( // todo optimise rvalue / lvalue
+            storm::core::span<const CommandBufferConstObserverPtr> command_buffers,
+            storm::core::span<const SemaphoreConstObserverPtr> wait_semaphores   = {},
+            storm::core::span<const SemaphoreConstObserverPtr> signal_semaphores = {},
+            FenceObserverPtr fence = nullptr) const noexcept;
 
-		 std::vector<CommandBufferOwnedPtr> createCommandBuffers(
-			std::size_t count,
-			CommandBufferLevel level = CommandBufferLevel::Primary) const ;
+        CommandBuffer
+            createCommandBuffer(CommandBufferLevel level = CommandBufferLevel::Primary) const;
+        CommandBufferOwnedPtr
+            createCommandBufferPtr(CommandBufferLevel level = CommandBufferLevel::Primary) const;
 
-		inline QueueFlag type() const noexcept {
-			return m_queue_flag;
-		}
+        std::vector<CommandBuffer>
+            createCommandBuffers(core::ArraySize count,
+                                 CommandBufferLevel level = CommandBufferLevel::Primary) const;
+        std::vector<CommandBufferOwnedPtr>
+            createCommandBufferPtrs(core::ArraySize count,
+                                    CommandBufferLevel level = CommandBufferLevel::Primary) const;
 
-		inline const Device &device() const noexcept {
-            return *m_device;
-		}
+        vk::Result vkPresent(const vk::PresentInfoKHR &present_info) const noexcept;
 
-		inline VkQueue vkQueue() const noexcept {
-			STORM_EXPECTS(m_vk_queue != VK_NULL_HANDLE);
-			return m_vk_queue;
-		}
+        inline QueueFlag type() const noexcept;
+        inline const Device &device() const noexcept;
+        inline core::UInt32 familyIndex() const noexcept;
 
-		inline operator VkQueue() const noexcept {
-			STORM_EXPECTS(m_vk_queue != VK_NULL_HANDLE);
-			return m_vk_queue;
-		}
+        inline vk::Queue vkQueue() const noexcept;
+        inline operator vk::Queue() const noexcept;
+        inline vk::Queue vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
 
-		inline VkCommandPool vkCommandPool() const noexcept {
-			STORM_EXPECTS(m_vk_command_pool != VK_NULL_HANDLE);
-			return m_vk_command_pool;
-		}
+        inline vk::CommandPool vkCommandPool() const noexcept;
 
-	  private:
+      private:
         DeviceConstObserverPtr m_device;
 
-		QueueFlag m_queue_flag;
+        QueueFlag m_queue_flag;
 
-		std::uint32_t m_family_index;
+        core::UInt32 m_family_index;
 
-		VkQueue m_vk_queue = VK_NULL_HANDLE;
+        vk::Queue m_vk_queue = VK_NULL_HANDLE;
 
-		VkCommandPool m_vk_command_pool = VK_NULL_HANDLE;
-	};
+        RAIIVkCommandPool m_vk_command_pool;
+    };
 
 } // namespace storm::render
+
+#include "Queue.inl"

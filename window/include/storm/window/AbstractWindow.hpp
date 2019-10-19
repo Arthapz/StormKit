@@ -10,82 +10,67 @@
 #include <storm/core/Math.hpp>
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
-
-#ifdef STORM_COMPILER_MSVC
-#pragma warning(push)
-#pragma warning(disable : 4251)
-#endif
+#include <storm/core/Types.hpp>
 
 #include <storm/window/Event.hpp>
-#include <storm/window/ForwardDeclarations.hpp>
+#include <storm/window/Fwd.hpp>
 #include <storm/window/VideoSettings.hpp>
 #include <storm/window/WindowStyle.hpp>
 
 namespace storm::window {
-	class STORM_PUBLIC STORM_EBCO AbstractWindow : public core::NonCopyable {
-	  public:
-		AbstractWindow();
-		virtual ~AbstractWindow();
+    class STORM_PUBLIC STORM_EBCO AbstractWindow: public core::NonCopyable {
+      public:
+        AbstractWindow();
+        virtual ~AbstractWindow();
 
-		virtual void create(const std::string &title,
-							const VideoSettings &settings,
-							WindowStyle style) = 0;
-		virtual void close() noexcept		   = 0;
-		virtual void display() noexcept		   = 0;
+        virtual void
+            create(const std::string &title, const VideoSettings &settings, WindowStyle style) = 0;
+        virtual void close() noexcept                                                          = 0;
+        virtual void display() noexcept                                                        = 0;
 
-		// BLC
-		virtual bool pollEvent(Event &event,
-							   void *native_event = nullptr) noexcept;
-		virtual bool waitEvent(Event &event,
-							   void *native_event = nullptr) noexcept = 0;
+        // BLC
+        virtual bool pollEvent(Event &event, void *native_event = nullptr) noexcept;
+        virtual bool waitEvent(Event &event, void *native_event = nullptr) noexcept = 0;
 
-		virtual void setTitle(const std::string &title) noexcept = 0;
-		virtual void
-			setVideoSettings(const VideoSettings &settings) noexcept = 0;
+        virtual void setTitle(const std::string &title) noexcept              = 0;
+        virtual void setVideoSettings(const VideoSettings &settings) noexcept = 0;
 
-		virtual core::Extent size() const noexcept = 0;
+        virtual core::Extentu size() const noexcept = 0;
 
-		inline const std::string &title() const noexcept {
-			return m_title;
-		}
-		inline const VideoSettings &videoSettings() const noexcept {
-			return m_video_settings;
-		}
-		virtual bool isOpen() const noexcept	= 0;
-		virtual bool isVisible() const noexcept = 0;
+        inline const std::string &title() const noexcept;
+        inline const VideoSettings &videoSettings() const noexcept;
 
-		virtual NativeHandle nativeHandle() const noexcept = 0;
+        virtual bool isOpen() const noexcept    = 0;
+        virtual bool isVisible() const noexcept = 0;
 
-		void mouseDownEvent(MouseButton button, std::int16_t x,
-							std::int16_t y) noexcept;
-		void mouseUpEvent(MouseButton button, std::int16_t x,
-						  std::int16_t y) noexcept;
+        virtual NativeHandle nativeHandle() const noexcept = 0;
 
-		void mouseMoveEvent(std::int16_t x, std::int16_t y) noexcept;
+        void mouseDownEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
+        void mouseUpEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
 
-		void mouseEnteredEvent() noexcept;
-		void mouseExitedEvent() noexcept;
+        void mouseMoveEvent(core::Int16 x, core::Int16 y) noexcept;
 
-		void keyDownEvent(Key key) noexcept;
-		void keyUpEvent(Key key) noexcept;
+        void mouseEnteredEvent() noexcept;
+        void mouseExitedEvent() noexcept;
 
-		void closeEvent() noexcept;
+        void keyDownEvent(Key key) noexcept;
+        void keyUpEvent(Key key) noexcept;
 
-		void resizeEvent(std::uint16_t width, std::uint16_t height) noexcept;
-		void minimizeEvent() noexcept;
-		void maximizeEvent() noexcept;
+        void closeEvent() noexcept;
 
-	  protected:
-		void pushEvent(Event event) noexcept;
+        void resizeEvent(core::UInt16 width, core::UInt16 height) noexcept;
+        void minimizeEvent() noexcept;
+        void maximizeEvent() noexcept;
 
-		std::string m_title;
-		VideoSettings m_video_settings;
-		WindowStyle m_style;
+      protected:
+        void pushEvent(Event event) noexcept;
 
-		std::queue<Event> m_events;
-	};
+        std::string m_title;
+        VideoSettings m_video_settings;
+        WindowStyle m_style;
+
+        std::queue<Event> m_events;
+    };
 } // namespace storm::window
 
-#ifdef STORM_COMPILER_MSVC
-#pragma warning(pop)
-#endif
+#include "AbstractWindow.inl"

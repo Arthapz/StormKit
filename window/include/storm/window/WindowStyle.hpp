@@ -8,14 +8,14 @@
 #include <storm/core/Flags.hpp>
 
 namespace storm::window {
-	enum class WindowStyle : std::uint8_t {
-		TitleBar	= 0b1,
-		Close		= TitleBar | 0b10,
-		Minimizable = TitleBar | 0b100,
-		Resizable   = TitleBar | 0b1000,
-		All			= Resizable | Minimizable | Close,
-		Fullscreen  = 0b10000
-	};
+    enum class WindowStyle : core::UInt8 {
+        TitleBar    = 0b1,
+        Close       = TitleBar | 0b10,
+        Minimizable = TitleBar | 0b100,
+        Resizable   = TitleBar | 0b1000,
+        All         = Resizable | Minimizable | Close,
+        Fullscreen  = 0b10000
+    };
 }
 
 FLAG_ENUM(storm::window::WindowStyle)

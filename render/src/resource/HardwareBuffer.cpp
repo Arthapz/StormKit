@@ -10,46 +10,36 @@
 using namespace storm;
 using namespace storm::render;
 
+#define DELETER [](auto handle, const auto &device) { device->deallocateVmaAllocation(handle); }
+
 /////////////////////////////////////
 /////////////////////////////////////
-HardwareBuffer::HardwareBuffer(
-	const render::Device &device, HardwareBufferUsage usage,
-	std::size_t size,
-	MemoryProperty property)
-	: m_device{&device}, m_usage{usage}, m_size{size} {
-	const auto &device_		 = static_cast<const Device &>(*m_device);
-	const auto &device_table = device_.vkDeviceTable();
+HardwareBuffer::HardwareBuffer(const render::Device &device,
+                               HardwareBufferUsage usage,
+                               core::ArraySize size,
+                               MemoryProperty property)
+    : m_device { &device }, m_usage { usage }, m_byte_count { size },
+      m_vma_buffer_memory { DELETER, *m_device } {
+    const auto create_info = vk::BufferCreateInfo {}
+                                 .setSize(m_byte_count)
+                                 .setUsage(toVK(usage))
+                                 .setSharingMode(vk::SharingMode::eExclusive);
 
-	const auto create_info =
-		VkBufferCreateInfo{.sType		= VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-						   .size		= m_size,
-						   .usage		= toVK(usage),
-						   .sharingMode = VK_SHARING_MODE_EXCLUSIVE};
+    m_vk_buffer = m_device->createVkBuffer(create_info);
 
-	m_vk_buffer		 = device_.createVkBuffer(create_info);
-	auto requirement = VkMemoryRequirements{};
-	device_table.vkGetBufferMemoryRequirements(device_, m_vk_buffer,
-											   &requirement);
+    const auto requirements = m_device->getVkBufferMemoryRequirements(*m_vk_buffer);
 
-	auto allocate_info =
-		VmaAllocationCreateInfo{.requiredFlags = toVK(property)};
+    auto allocate_info =
+        VmaAllocationCreateInfo { .requiredFlags = toVK(property).operator unsigned int() };
 
-	m_vma_buffer_memory =
-		device_.allocateVmaAllocation(allocate_info, requirement);
+    m_vma_buffer_memory.reset(m_device->allocateVmaAllocation(allocate_info, requirements));
 
-	device_.bindVmaBufferMemory(m_vma_buffer_memory, m_vk_buffer);
+    m_device->bindVmaBufferMemory(m_vma_buffer_memory, *m_vk_buffer);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-HardwareBuffer::~HardwareBuffer() {
-	const auto &device = static_cast<const Device &>(*m_device);
-
-	if (m_vma_buffer_memory != VK_NULL_HANDLE)
-		device.deallocateVmaAllocation(m_vma_buffer_memory);
-	if (m_vk_buffer != VK_NULL_HANDLE)
-		device.destroyVkBuffer(m_vk_buffer);
-}
+HardwareBuffer::~HardwareBuffer() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -59,49 +49,46 @@ HardwareBuffer::HardwareBuffer(HardwareBuffer &&) = default;
 /////////////////////////////////////
 HardwareBuffer &HardwareBuffer::operator=(HardwareBuffer &&) = default;
 
-
 /////////////////////////////////////
 /////////////////////////////////////
-std::byte *HardwareBuffer::map(std::uint32_t offset) {
-	STORM_EXPECTS(offset < m_size);
+core::Byte *HardwareBuffer::map(core::UInt32 offset) {
+    STORM_EXPECTS(offset < m_byte_count);
 
-	const auto &device = static_cast<const Device &>(*m_device);
+    const auto &device = static_cast<const Device &>(*m_device);
 
-	return device.mapVmaMemory(m_vma_buffer_memory) + offset;
+    return device.mapVmaMemory(m_vma_buffer_memory) + offset;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void HardwareBuffer::flush(std::ptrdiff_t offset, std::size_t size) {
-	STORM_EXPECTS(offset < gsl::narrow_cast<std::ptrdiff_t>(m_size));
-	STORM_EXPECTS(size <= m_size);
+void HardwareBuffer::flush(core::Offset offset, core::ByteCount count) {
+    STORM_EXPECTS(offset < gsl::narrow_cast<core::Offset>(m_byte_count));
+    STORM_EXPECTS(count <= m_byte_count);
 
-	const auto &device = static_cast<const Device &>(*m_device);
-
-	vmaFlushAllocation(device.vmaAllocator(), m_vma_buffer_memory, offset,
-					   size);
+    vmaFlushAllocation(m_device->vmaAllocator(),
+                       m_vma_buffer_memory,
+                       gsl::narrow_cast<VkDeviceSize>(offset),
+                       count);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 void HardwareBuffer::unmap() {
-	const auto &device = static_cast<const Device &>(*m_device);
-
-	device.unmapVmaMemory(m_vma_buffer_memory);
+    m_device->unmapVmaMemory(m_vma_buffer_memory);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-std::uint32_t HardwareBuffer::findMemoryType(
-	std::uint32_t type_filter, VkMemoryPropertyFlags properties,
-	const VkPhysicalDeviceMemoryProperties &mem_properties,
-	[[maybe_unused]] const VkMemoryRequirements &mem_requirements) {
-	for (auto i = 0u; i < mem_properties.memoryTypeCount; ++i) {
-		if ((type_filter & (1 << i)) &&
-			(mem_properties.memoryTypes[i].propertyFlags & properties) ==
-				properties)
-			return i;
-	}
+core::UInt32
+    HardwareBuffer::findMemoryType(core::UInt32 type_filter,
+                                   VkMemoryPropertyFlags properties,
+                                   const VkPhysicalDeviceMemoryProperties &mem_properties,
+                                   [[maybe_unused]] const VkMemoryRequirements &mem_requirements) {
+    for (auto i = 0u; i < mem_properties.memoryTypeCount; ++i) {
+        if ((type_filter & (1 << i)) &&
+            (mem_properties.memoryTypes[i].propertyFlags & properties) == properties)
+            return i;
+    }
 
-	return 0;
+    return 0;
 }

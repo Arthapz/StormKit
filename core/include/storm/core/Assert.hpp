@@ -15,55 +15,79 @@
 #include <storm/core/Platform.hpp>
 
 #ifdef ASSERT
-#undef ASSERT
+    #undef ASSERT
 #endif
 
 #if defined(__clang__) || defined(__GNUC__)
-/// \brief FUNCTION is a macro which get the C++ symbol of current function as
-/// string
-#define FUNCTION __PRETTY_FUNCTION__
+    /// \brief FUNCTION is a macro which get the C++ symbol of current function as
+    /// string
+    #define FUNCTION __PRETTY_FUNCTION__
 #else
-#define FUNCTION __FUNCSIG__
+    #define FUNCTION __FUNCSIG__
 #endif
 
 #ifdef STORM_BUILD_DEBUG
-/// \brief ASSERT is a macro which define an assertion
-/// \param condition the condition of the assertion
-/// \param message the message which will displayed on failed assertion
-#define ASSERT(condition, message)                                             \
-	do {                                                                       \
-		if (GSL_LIKELY(!(condition))) {                                        \
-			std::cerr << "Assertion `" #condition "` failed in " << __FILE__   \
-					  << " line " << __LINE__ << "\n " << FUNCTION << ": "     \
-					  << message << std::endl;                                 \
-			std::terminate();                                                  \
-		}                                                                      \
-	} while (false)
+    /// \brief ASSERT is a macro which define an assertion
+    /// \param condition the condition of the assertion
+    /// \param message the message which will displayed on failed assertion
+    #define ASSERT(condition, message)                                                       \
+        do {                                                                                 \
+            if (GSL_LIKELY(!(condition))) {                                                  \
+                std::cerr << "Assertion `" #condition "` failed in " << __FILE__ << " line " \
+                          << __LINE__ << "\n " << FUNCTION << ": " << message << std::endl;  \
+                std::terminate();                                                            \
+            }                                                                                \
+        } while (false)
 #else
-#define ASSERT(condition, message)
+    #define ASSERT(condition, message)
 #endif
 
 #ifdef STORM_BUILD_DEBUG
-#define STORM_ENSURES(condition)                                               \
-	do {                                                                       \
-		if (GSL_LIKELY(!(condition))) {                                        \
-			std::cerr << "A postcondition `" #condition "` failed in "         \
-					  << __FILE__ << " line " << __LINE__ << "\n " << FUNCTION \
-					  << std::endl;                                            \
-		}                                                                      \
-		Ensures(condition);                                                    \
-	} while (false)
+    #define STORM_ENSURES(condition)                                                               \
+        do {                                                                                       \
+            if (GSL_LIKELY(!(condition))) {                                                        \
+                std::cerr << "A postcondition `" #condition "` failed in " << __FILE__ << " line " \
+                          << __LINE__ << "\n " << FUNCTION << std::endl;                           \
+            }                                                                                      \
+            Ensures(condition);                                                                    \
+        } while (false)
+    #define STORM_ENSURES_MESSAGE(condition, message)                                              \
+        do {                                                                                       \
+            if (GSL_LIKELY(!(condition))) {                                                        \
+                std::cerr << "A postcondition `" #condition "` failed in " << __FILE__ << " line " \
+                          << __LINE__ << "\n " << FUNCTION << std::endl;                           \
+                std::cerr << message << std::endl;                                                 \
+            }                                                                                      \
+            Ensures(condition);                                                                    \
+        } while (false)
 
-#define STORM_EXPECTS(condition)                                               \
-	do {                                                                       \
-		if (GSL_LIKELY(!(condition))) {                                        \
-			std::cerr << "A precondition `" #condition "` failed in "          \
-					  << __FILE__ << " line " << __LINE__ << "\n " << FUNCTION \
-					  << std::endl;                                            \
-		}                                                                      \
-		Expects(condition);                                                    \
-	} while (false)
+    #define STORM_EXPECTS(condition)                                                              \
+        do {                                                                                      \
+            if (GSL_LIKELY(!(condition))) {                                                       \
+                std::cerr << "A precondition `" #condition "` failed in " << __FILE__ << " line " \
+                          << __LINE__ << "\n " << FUNCTION << std::endl;                          \
+            }                                                                                     \
+            Expects(condition);                                                                   \
+        } while (false)
+    #define STORM_EXPECTS_MESSAGE(condition)                                                      \
+        do {                                                                                      \
+            if (GSL_LIKELY(!(condition))) {                                                       \
+                std::cerr << "A precondition `" #condition "` failed in " << __FILE__ << " line " \
+                          << __LINE__ << "\n " << FUNCTION << std::endl;                          \
+                std::cerr << message << std::endl;                                                \
+            }                                                                                     \
+            Expects(condition);                                                                   \
+        } while (false)
 #else
-#define STORM_ENSURES(condition) Ensures(condition)
-#define STORM_EXPECTS(condition) Expects(condition)
+    #define STORM_ENSURES(condition) Ensures(condition)
+    #define STORM_ENSURES_MESSAGE(condition, message)                                              \
+        do {                                                                                       \
+            if (GSL_LIKELY(!(condition))) {                                                        \
+                std::cerr << "A postcondition `" #condition "` failed in " << __FILE__ << " line " \
+                          << __LINE__ << "\n " << FUNCTION << std::endl;                           \
+                std::cerr << message << std::endl;                                                 \
+            }                                                                                      \
+            Ensures(condition);                                                                    \
+        } while (false)
+    #define STORM_EXPECTS(condition) Expects(condition)
 #endif

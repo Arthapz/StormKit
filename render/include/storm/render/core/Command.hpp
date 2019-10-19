@@ -14,109 +14,189 @@
 
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
+#include <storm/render/core/MemoryBarrier.hpp>
 #include <storm/render/core/Types.hpp>
 
 #include <storm/render/pipeline/Fwd.hpp>
 
 #include <storm/render/resource/Fwd.hpp>
+#include <storm/render/resource/TextureSubresourceLayers.hpp>
+#include <storm/render/resource/TextureSubresourceRange.hpp>
 
 namespace storm::render {
-	struct BeginCommand {
-		bool one_time_submit					= false;
-		std::optional<CommandBufferCRef> parent = std::nullopt;
-	};
+    struct BeginDebugRegionCommand {
+        std::string_view name;
+        core::RGBColorF color = core::RGBColorDef::White<float>;
+    };
 
-	struct EndCommand {};
+    struct InsertDebugLabelCommand {
+        std::string_view name;
+        core::RGBColorF color = core::RGBColorDef::White<float>;
+    };
 
-	struct BeginRenderPassCommand {
-		using ClearValues = std::vector<ClearValue>;
+    struct EndDebugRegionCommand {};
 
-		const RenderPass &render_pass;
-		const Framebuffer &framebuffer;
+    struct BeginCommand {
+        bool one_time_submit                    = false;
+        std::optional<CommandBufferCRef> parent = std::nullopt;
+    };
 
-		ClearValues clear_values = {
-			ClearColor{.color = core::RGBColorDef::Black}};
-	};
+    struct EndCommand {};
 
-	struct EndRenderPassCommand {};
+    struct BeginRenderPassCommand {
+        using ClearValues = std::vector<ClearValue>;
 
-	struct BindGraphicsPipelineCommand {
-		const GraphicsPipeline &pipeline;
-	};
+        const RenderPass &render_pass;
+        const Framebuffer &framebuffer;
 
-	struct DrawCommand {
-		std::uint32_t vertex_count;
-		std::uint32_t instance_count = 1u;
-        std::uint32_t first_vertex	 = 0u;
-		std::uint32_t first_instance = 0u;
-	};
+        ClearValues clear_values = { ClearColor { .color = core::RGBColorDef::Black<float> } };
 
-	struct DrawIndexedCommand {
-		std::uint32_t index_count;
-		std::uint32_t instance_count = 2u;
-        std::uint32_t first_index	 = 0u;
-        std::int32_t vertex_offset	 = 0;
-		std::uint32_t first_instance = 0u;
-	};
+        bool secondary_command_buffers = false;
+    };
 
-	struct BindVertexBuffersCommand {
-		std::vector<HardwareBufferCRef> buffers;
-		std::vector<std::ptrdiff_t> offsets;
-	};
+    struct NextSubPassCommand {};
 
-	struct BindIndexBufferCommand {
-		const HardwareBuffer &buffer;
-		std::ptrdiff_t offset = 0u;
-        bool large_indices	  = false;
-	};
+    struct EndRenderPassCommand {};
 
-	struct BindDescriptorSetsCommand {
-		const GraphicsPipeline *pipeline = nullptr;
-		std::vector<DescriptorSetCRef> descriptor_sets;
-	};
+    struct BindGraphicsPipelineCommand {
+        const GraphicsPipeline &pipeline;
+    };
 
-	struct CopyBufferCommand {
-		const HardwareBuffer &source;
-		const HardwareBuffer &destination;
+    struct DrawCommand {
+        core::UInt32 vertex_count;
+        core::UInt32 instance_count = 1u;
+        core::UInt32 first_vertex   = 0u;
+        core::UInt32 first_instance = 0u;
+    };
 
-		std::size_t size;
+    struct DrawIndexedCommand {
+        core::UInt32 index_count;
+        core::UInt32 instance_count = 2u;
+        core::UInt32 first_index    = 0u;
+        core::Offset vertex_offset  = 0;
+        core::UInt32 first_instance = 0u;
+    };
 
-		std::ptrdiff_t src_offset = 0u;
-		std::ptrdiff_t dst_offset = 0u;
-	};
+    struct BindVertexBuffersCommand {
+        std::vector<HardwareBufferCRef> buffers;
+        std::vector<core::Offset> offsets;
+    };
 
-	struct CopyBufferToImageCommand {
-		const HardwareBuffer &source;
-		const Texture &destination;
-	};
+    struct BindIndexBufferCommand {
+        const HardwareBuffer &buffer;
+        core::Offset offset = 0u;
+        bool large_indices  = false;
+    };
 
-	struct TransitionImageLayoutCommand {
-		Texture &image;
-		ImageLayout new_layout;
-	};
+    struct BindDescriptorSetsCommand {
+        const GraphicsPipeline *pipeline = nullptr;
+        std::vector<DescriptorSetCRef> descriptor_sets;
+        std::vector<core::UOffset> dynamic_offsets;
+    };
 
-	struct ExecuteSubCommandBuffersCommand {
-		std::vector<CommandBufferCRef> command_buffers;
-	};
+    struct CopyBufferCommand {
+        const HardwareBuffer &source;
+        const HardwareBuffer &destination;
 
-	struct CopyImageCommand {
-		const Texture &source;
-		ImageLayout source_layout;
-		ImageAspectMask source_aspect_mask;
+        core::ArraySize size;
 
-		const Texture &destination;
-		ImageLayout destination_layout;
-		ImageAspectMask destination_aspect_mask;
-	};
+        core::UOffset src_offset = 0u;
+        core::UOffset dst_offset = 0u;
+    };
 
-    struct GeometryCommand {};
+    struct BufferTextureCopy {
+        core::UOffset buffer_offset;
+        core::UInt32 buffer_row_length;
+        core::UInt32 buffer_image_height;
 
-	using Command =
-		std::variant<BeginCommand, EndCommand, BeginRenderPassCommand,
-					 EndRenderPassCommand, BindGraphicsPipelineCommand,
-					 DrawCommand, DrawIndexedCommand, BindVertexBuffersCommand,
-					 BindIndexBufferCommand, BindDescriptorSetsCommand,
-					 CopyBufferCommand, CopyBufferToImageCommand,
-					 TransitionImageLayoutCommand,
-					 ExecuteSubCommandBuffersCommand, CopyImageCommand>;
+        TextureSubresourceLayers subresource_layers;
+
+        core::Vector3i offset;
+        core::Extentu extent;
+    };
+
+    struct CopyBufferToTextureCommand {
+        const HardwareBuffer &source;
+        const Texture &destination;
+
+        std::vector<BufferTextureCopy> buffer_image_copies;
+    };
+
+    struct CopyTextureCommand {
+        const Texture &source;
+        TextureLayout source_layout;
+        TextureSubresourceLayers source_subresource_layers;
+
+        const Texture &destination;
+        TextureLayout destination_layout;
+        TextureSubresourceLayers destination_subresource_layers;
+    };
+
+    struct ResolveTextureCommand {
+        const Texture &source;
+        TextureLayout source_layout;
+        TextureSubresourceLayers source_subresource_layers;
+
+        const Texture &destination;
+        TextureLayout destination_layout;
+        TextureSubresourceLayers destination_subresource_layers;
+    };
+
+    struct TransitionTextureLayoutCommand {
+        const Texture &texture;
+
+        TextureLayout source_layout;
+        TextureLayout destination_layout;
+        TextureSubresourceRange subresource_range;
+    };
+
+    struct ExecuteSubCommandBuffersCommand {
+        std::vector<CommandBufferCRef> command_buffers;
+    };
+
+    struct PipelineBarrierCommand {
+        PipelineStageFlag src_mask;
+        PipelineStageFlag dst_mask;
+
+        DependencyFlag dependency;
+
+        MemoryBarriers memory_barriers;
+        BufferMemoryBarriers buffer_memory_barriers;
+        ImageMemoryBarriers image_memory_barriers;
+    };
+
+    struct SetScissorCommand {
+        core::UInt32 first_scissor;
+        std::vector<Scissor> scissors;
+    };
+
+    struct PushConstantsCommand {
+        const GraphicsPipeline *pipeline = nullptr;
+        ShaderStage stage;
+        std::vector<std::byte> data;
+    };
+
+    using Command = std::variant<BeginDebugRegionCommand,
+                                 InsertDebugLabelCommand,
+                                 EndDebugRegionCommand,
+                                 BeginCommand,
+                                 EndCommand,
+                                 BeginRenderPassCommand,
+                                 NextSubPassCommand,
+                                 EndRenderPassCommand,
+                                 BindGraphicsPipelineCommand,
+                                 DrawCommand,
+                                 DrawIndexedCommand,
+                                 BindVertexBuffersCommand,
+                                 BindIndexBufferCommand,
+                                 BindDescriptorSetsCommand,
+                                 CopyBufferCommand,
+                                 CopyBufferToTextureCommand,
+                                 CopyTextureCommand,
+                                 ResolveTextureCommand,
+                                 TransitionTextureLayoutCommand,
+                                 ExecuteSubCommandBuffersCommand,
+                                 SetScissorCommand,
+                                 PipelineBarrierCommand,
+                                 PushConstantsCommand>;
 } // namespace storm::render

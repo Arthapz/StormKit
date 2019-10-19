@@ -8,35 +8,33 @@
 #include <vector>
 
 #include <storm/core/Platform.hpp>
-#include <storm/window/ForwardDeclarations.hpp>
+
+#include <storm/window/Fwd.hpp>
 
 namespace storm::window {
-	class STORM_PUBLIC EventHandler {
-	  public:
-		using Callback = std::function<void(const Event &)>;
+    class STORM_PUBLIC EventHandler {
+      public:
+        using Callback = std::function<void(const Event &)>;
 
-		explicit EventHandler(Window &window);
-		~EventHandler();
+        explicit EventHandler(Window &window);
+        ~EventHandler();
 
-		EventHandler(const EventHandler &);
-		EventHandler &operator=(const EventHandler &);
+        EventHandler(const EventHandler &);
+        EventHandler &operator=(const EventHandler &);
 
-		EventHandler(EventHandler &&);
-		EventHandler &operator=(EventHandler &&);
+        EventHandler(EventHandler &&);
+        EventHandler &operator=(EventHandler &&);
 
-		void update();
+        void update();
 
-		inline void addCallback(EventType event_type, Callback callback) {
-			m_callback[event_type].emplace_back(std::move(callback));
-		}
+        inline void addCallback(EventType event_type, Callback callback);
+        inline void clearCallbacks(EventType event_type);
 
-		inline void clearCallbacks(EventType event_type) {
-			m_callback[event_type].clear();
-		}
+      private:
+        WindowObserverPtr m_window;
 
-	  private:
-		WindowObserverPtr m_window;
-
-		std::unordered_map<EventType, std::vector<Callback>> m_callback;
-	};
+        std::unordered_map<EventType, std::vector<Callback>> m_callback;
+    };
 } // namespace storm::window
+
+#include "EventHandler.inl"

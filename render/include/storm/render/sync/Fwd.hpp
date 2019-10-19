@@ -7,9 +7,9 @@
 #include <storm/core/Memory.hpp>
 
 namespace storm::render {
-	class Fence;
-	DECLARE_PTR_AND_REF(Fence);
+    class Fence;
+    DECLARE_PTR_AND_REF(Fence);
 
-	class Semaphore;
-	DECLARE_PTR_AND_REF(Semaphore);
+    class Semaphore;
+    DECLARE_PTR_AND_REF(Semaphore);
 } // namespace storm::render

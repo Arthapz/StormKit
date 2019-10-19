@@ -16,7 +16,7 @@ namespace storm::core {
     ////////////////////////////////////////
     template<typename Event, typename CustomData, bool lifo>
     inline typename Subject<Event, CustomData, lifo>::ObserverType &
-    Subject<Event, CustomData, lifo>::observer() noexcept {
+        Subject<Event, CustomData, lifo>::observer() noexcept {
         return *m_observer;
     }
 
@@ -24,17 +24,24 @@ namespace storm::core {
     ////////////////////////////////////////
     template<typename Event, typename CustomData, bool lifo>
     inline const typename Subject<Event, CustomData, lifo>::ObserverType &
-    Subject<Event, CustomData, lifo>::observer() const noexcept {
+        Subject<Event, CustomData, lifo>::observer() const noexcept {
         return *m_observer;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Event, typename CustomData, bool lifo>
-    Subject<Event, CustomData, lifo>::Subject()
-          : m_observer(nullptr) {
+    inline bool Subject<Event, CustomData, lifo>::observer() const noexcept {
+        return m_observer != nullptr;
+    }
 
-            };
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename Event, typename CustomData, bool lifo>
+    Subject<Event, CustomData, lifo>::Subject()
+        : m_observer(nullptr) {
+
+          };
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -49,8 +56,7 @@ namespace storm::core {
     ////////////////////////////////////////
     template<typename Event, typename CustomData, bool lifo>
     void Subject<Event, CustomData, lifo>::notify(Event &&event, CustomData &&args) {
-        if(m_observer)
-            m_observer->onNotified(event, std::move(args));
+        if (m_observer) m_observer->onNotified(event, std::move(args));
         else
             defferEvent(std::move(event), std::move(args));
     }
@@ -59,7 +65,7 @@ namespace storm::core {
     ////////////////////////////////////////
     template<typename Event, typename CustomData, bool lifo>
     void Subject<Event, CustomData, lifo>::notifyDefferedEvents() {
-        while(!m_deffered_events.empty()) {
+        while (!m_deffered_events.empty()) {
             auto &pair = getDatas();
 
             // if(pair.first != nullptr)
@@ -79,10 +85,10 @@ namespace storm::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Event, typename CustomData, bool lifo>
-    typename Subject<Event, CustomData, lifo>::DataType &Subject<Event, CustomData, lifo>::getDatas() {
-        if constexpr(lifo)
-            return m_deffered_events.top();
+    typename Subject<Event, CustomData, lifo>::DataType &
+        Subject<Event, CustomData, lifo>::getDatas() {
+        if constexpr (lifo) return m_deffered_events.top();
         else
             return m_deffered_events.front();
     }
-} // namespace storm::tools
+} // namespace storm::core

@@ -7,15 +7,22 @@
 #include <storm/core/Memory.hpp>
 
 namespace storm::render {
-	class Shader;
-	DECLARE_PTR_AND_REF(Shader);
+    class Shader;
+    DECLARE_PTR_AND_REF(Shader);
 
-	class Texture;
-	DECLARE_PTR_AND_REF(Texture);
+    class Texture;
+    DECLARE_PTR_AND_REF(Texture);
 
-	class Sampler;
-	DECLARE_PTR_AND_REF(Sampler);
+    class TextureView;
+    DECLARE_PTR_AND_REF(TextureView);
 
-	class HardwareBuffer;
-	DECLARE_PTR_AND_REF(HardwareBuffer);
+    class Sampler;
+    DECLARE_PTR_AND_REF(Sampler);
+
+    class HardwareBuffer;
+    DECLARE_PTR_AND_REF(HardwareBuffer);
+
+    struct TextureSubresource;
+    struct TextureSubresourceLayers;
+    struct TextureSubresourceRange;
 } // namespace storm::render

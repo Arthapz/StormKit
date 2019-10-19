@@ -9,17 +9,22 @@
 @implementation StormView  {
 	NSTrackingArea*    trackingArea;
 	WindowImpl*        requester;
+	NSWindow          *windowA;
 	BOOL               isMouseInside;
 	void*              nativeEvent;
 }
 
+	- (NSWindow*) myWindow {
+		return windowA;
+	}
 - (BOOL) acceptsFirstResponder {
 	return YES;
 }
 
-- (id) initWithFrame: (NSRect) frame withRequester: (WindowImpl*)_requester {
+- (id) initWithFrame: (NSRect) frame withRequester: (WindowImpl*)_requester withWindow: (NSWindow*) window{
 	self = [super initWithFrame: frame];
 
+	windowA = window;
 	isMouseInside = NO;
 	nativeEvent = nullptr;
 	requester = _requester;

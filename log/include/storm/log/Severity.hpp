@@ -9,24 +9,19 @@
 #include <string>
 
 namespace storm::log {
-	enum class Severity { Info, Warning, Error, Fatal, Debug };
+    enum class Severity { Info, Warning, Error, Fatal, Debug };
 
-	inline std::string severityToString(Severity severity) {
-		switch (severity) {
-		case Severity::Info:
-			return "Information";
-		case Severity::Warning:
-			return "Warning";
-		case Severity::Error:
-			return "Error";
-		case Severity::Fatal:
-			return "Fatal";
-		case Severity::Debug:
-			return "Debug";
-		}
+    inline std::string severityToString(Severity severity) {
+        switch (severity) {
+            case Severity::Info: return "Information";
+            case Severity::Warning: return "Warning";
+            case Severity::Error: return "Error";
+            case Severity::Fatal: return "Fatal";
+            case Severity::Debug: return "Debug";
+        }
 
-		return "Unkown severity";
-	}
+        return "Unkown severity";
+    }
 } // namespace storm::log
 
 FLAG_ENUM(storm::log::Severity)

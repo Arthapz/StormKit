@@ -13,7 +13,7 @@ using namespace storm::window;
 
 static bool is_process_set_as_application = false;
 
-WindowImpl::WindowImpl() noexcept : AbstractWindow(), m_controller(nil) {
+WindowImpl::WindowImpl() noexcept : AbstractWindow{}, m_controller{nil} {
 	ensureThreadHasPool();
 
 	initCocoaProcess();
@@ -31,7 +31,6 @@ WindowImpl::~WindowImpl() {
 	drainThreadPool();
 }
 
-//FIXME make invalid context
 void WindowImpl::create(const std::string &title, const VideoSettings &settings, WindowStyle style) noexcept {
 	initCocoaProcess();
 
@@ -75,7 +74,7 @@ void WindowImpl::setVideoSettings(const VideoSettings &settings) noexcept {
 	m_video_settings = settings;
 }
 
-storm::core::Extent WindowImpl::size() const noexcept {
+storm::core::Extentu WindowImpl::size() const noexcept {
 	auto size = [m_controller size];
 
 	return toStormVec(size);

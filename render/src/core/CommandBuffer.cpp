@@ -19,91 +19,72 @@ using namespace storm;
 using namespace storm::render;
 
 static const auto old_layout_access_map =
-	std::unordered_map<VkImageLayout,
-					   std::pair<VkAccessFlags, VkPipelineStageFlags>>{
-		{VK_IMAGE_LAYOUT_UNDEFINED,
-		 {VkAccessFlagBits{}, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT}},
-		{VK_IMAGE_LAYOUT_PREINITIALIZED,
-		 {VkAccessFlagBits{}, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT}},
-		{VK_IMAGE_LAYOUT_GENERAL,
-		 {VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-			  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
-		  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}},
-		{VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-		 {VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-			  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
-		  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}},
-		{VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-		 {VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-			  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
-		  VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT}},
-		{VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-		 {VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
-		  VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT}},
-		{VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		 {VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
-		  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT}},
-		{VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-		 {VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT}},
-		{VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		 {VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT}},
-		{VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-		 {VK_ACCESS_MEMORY_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT}}};
+    std::unordered_map<vk::ImageLayout, std::pair<vk::AccessFlags, vk::PipelineStageFlags>> {
+        { vk::ImageLayout::eUndefined,
+          { vk::AccessFlags {}, vk::PipelineStageFlagBits::eTopOfPipe } },
+        { vk::ImageLayout::ePreinitialized,
+          { vk::AccessFlags {}, vk::PipelineStageFlagBits::eTopOfPipe } },
+        { vk::ImageLayout::eGeneral,
+          { vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput } },
+        { vk::ImageLayout::eColorAttachmentOptimal,
+          { vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput } },
+        { vk::ImageLayout::eDepthStencilAttachmentOptimal,
+          { vk::AccessFlagBits::eDepthStencilAttachmentWrite |
+                vk::AccessFlagBits::eDepthStencilAttachmentRead,
+            vk::PipelineStageFlagBits::eLateFragmentTests } },
+        { vk::ImageLayout::eDepthStencilReadOnlyOptimal,
+          { vk::AccessFlagBits::eDepthStencilAttachmentRead,
+            vk::PipelineStageFlagBits::eLateFragmentTests } },
+        { vk::ImageLayout::eShaderReadOnlyOptimal,
+          { vk::AccessFlagBits::eInputAttachmentRead,
+            vk::PipelineStageFlagBits::eFragmentShader } },
+        { vk::ImageLayout::eTransferSrcOptimal,
+          { vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer } },
+        { vk::ImageLayout::eTransferDstOptimal,
+          { vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer } },
+        { vk::ImageLayout::ePresentSrcKHR,
+          { vk::AccessFlagBits::eMemoryRead, vk::PipelineStageFlagBits::eTransfer } }
+    };
 
 static const auto new_layout_access_map =
-	std::unordered_map<VkImageLayout,
-					   std::pair<VkAccessFlags, VkPipelineStageFlags>>{
-		{VK_IMAGE_LAYOUT_UNDEFINED, {VkAccessFlagBits{}, {}}},
-		{VK_IMAGE_LAYOUT_PREINITIALIZED, {VkAccessFlagBits{}, {}}},
-		{VK_IMAGE_LAYOUT_GENERAL,
-		 {VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT,
-		  VK_PIPELINE_STAGE_VERTEX_SHADER_BIT}},
-		{VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-		 {VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-			  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
-		  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}},
-		{VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-		 {VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-			  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
-		  VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT}},
-		{VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-		 {VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT}},
-		{VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		 {VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT}},
-		{VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-		 {VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT}},
-		{VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		 {VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT}},
-		{VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-		 {VK_ACCESS_MEMORY_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT}}};
+    std::unordered_map<vk::ImageLayout, std::pair<vk::AccessFlags, vk::PipelineStageFlags>> {
+        { vk::ImageLayout::eUndefined, { vk::AccessFlags {}, {} } },
+        { vk::ImageLayout::ePreinitialized, { vk::AccessFlags {}, {} } },
+        { vk::ImageLayout::eGeneral,
+          { vk::AccessFlagBits::eShaderWrite | vk::AccessFlagBits::eShaderRead,
+            vk::PipelineStageFlagBits::eVertexShader } },
+        { vk::ImageLayout::eColorAttachmentOptimal,
+          { vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput } },
+        { vk::ImageLayout::eDepthStencilAttachmentOptimal,
+          { vk::AccessFlagBits::eDepthStencilAttachmentWrite |
+                vk::AccessFlagBits::eDepthStencilAttachmentRead,
+            vk::PipelineStageFlagBits::eEarlyFragmentTests } },
+        { vk::ImageLayout::eDepthStencilReadOnlyOptimal,
+          { vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eVertexInput } },
+        { vk::ImageLayout::eShaderReadOnlyOptimal,
+          { vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eFragmentShader } },
+        { vk::ImageLayout::eTransferSrcOptimal,
+          { vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer } },
+        { vk::ImageLayout::eTransferDstOptimal,
+          { vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer } },
+        { vk::ImageLayout::ePresentSrcKHR,
+          { vk::AccessFlagBits::eMemoryRead, vk::PipelineStageFlagBits::eTransfer } }
+    };
 
 /////////////////////////////////////
 /////////////////////////////////////
 CommandBuffer::CommandBuffer(const render::Queue &queue,
-							 render::CommandBufferLevel level,
-							 VkCommandBuffer command_buffer)
-	: m_queue{&queue}, m_level{level}, m_vk_command_buffer{command_buffer} {};
+                             render::CommandBufferLevel level,
+                             RAIIVkCommandBuffer &&command_buffer)
+    : m_queue { &queue }, m_level { level }, m_vk_command_buffer { std::move(command_buffer) } {
+}
 
 /////////////////////////////////////
 /////////////////////////////////////
-CommandBuffer::~CommandBuffer() {
-	const auto &queue  = static_cast<const Queue &>(*m_queue);
-	const auto &device = static_cast<const Device &>(queue.device());
-
-	if (m_vk_command_buffer != VK_NULL_HANDLE)
-		device.deallocateVkCommandBuffers(queue.vkCommandPool(),
-										  std::array{m_vk_command_buffer});
-}
-
-void CommandBuffer::reset() noexcept {
-	const auto &queue		 = static_cast<const Queue &>(*m_queue);
-	const auto &device		 = static_cast<const Device &>(queue.device());
-	const auto &device_table = device.vkDeviceTable();
-
-	device_table.vkResetCommandBuffer(m_vk_command_buffer, 0);
-
-	m_state = State::Initial;
-}
+CommandBuffer::~CommandBuffer() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -115,320 +96,451 @@ CommandBuffer &CommandBuffer::operator=(CommandBuffer &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-void CommandBuffer::build() noexcept {
-	STORM_EXPECTS(m_vk_command_buffer != VK_NULL_HANDLE);
-	STORM_EXPECTS(m_state == State::Recording);
+void CommandBuffer::reset() noexcept {
+    const auto &device = m_queue->device();
 
-	auto commands = std::exchange(m_commands, std::queue<render::Command>{});
-	const auto &device		 = static_cast<const Device &>(m_queue->device());
-	const auto &device_table = device.vkDeviceTable();
+    m_vk_command_buffer->reset(vk::CommandBufferResetFlags {}, device.vkDispatcher());
 
-	while (!commands.empty()) {
-		auto &command = commands.front();
-
-		std::visit(
-			core::overload{
-				[this, &device_table](const BeginCommand &command) {
-					auto begin_info = VkCommandBufferBeginInfo{};
-					begin_info.sType =
-						VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-					begin_info.flags =
-						(command.one_time_submit)
-							? VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-							: VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-					begin_info.pInheritanceInfo = nullptr;
-
-					auto result = device_table.vkBeginCommandBuffer(
-						m_vk_command_buffer, &begin_info);
-					STORM_ENSURES(result == VK_SUCCESS);
-				},
-				[this,
-				 &device_table]([[maybe_unused]] const EndCommand &command) {
-					device_table.vkEndCommandBuffer(m_vk_command_buffer);
-
-					updateImageLayouts();
-				},
-				[this, &device_table](const BeginRenderPassCommand &command) {
-					const auto &render_pass =
-						static_cast<const RenderPass &>(command.render_pass);
-					const auto &framebuffer =
-						static_cast<const Framebuffer &>(command.framebuffer);
-
-					auto clear_values = std::vector<VkClearValue>{};
-					clear_values.reserve(std::size(command.clear_values));
-					for (const auto &clear_value_variant :
-						 command.clear_values) {
-						auto clear_value = VkClearValue{};
-
-						if (std::holds_alternative<ClearColor>(
-								clear_value_variant)) {
-							const auto &clear_color =
-								std::get<ClearColor>(clear_value_variant);
-							clear_value.color.float32[0] = clear_color.color.r;
-							clear_value.color.float32[1] = clear_color.color.g;
-							clear_value.color.float32[2] = clear_color.color.b;
-							clear_value.color.float32[3] = clear_color.color.a;
-						} else if (std::holds_alternative<ClearDepthStencil>(
-									   clear_value_variant)) {
-							const auto &clear_depth_stencil =
-								std::get<ClearDepthStencil>(
-									clear_value_variant);
-							clear_value.depthStencil.depth =
-								clear_depth_stencil.depth;
-							clear_value.depthStencil.stencil =
-								clear_depth_stencil.stencil;
-						}
-
-						clear_values.emplace_back(std::move(clear_value));
-					}
-
-					const auto render_pass_info = VkRenderPassBeginInfo{
-						.sType		 = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-						.renderPass  = render_pass,
-						.framebuffer = framebuffer,
-						.renderArea  = {.offset = {0, 0},
-										.extent = {framebuffer.extent().width,
-												   framebuffer.extent().height}},
-						.clearValueCount = gsl::narrow_cast<std::uint32_t>(
-							std::size(clear_values)),
-						.pClearValues = std::data(clear_values)};
-
-					device_table.vkCmdBeginRenderPass(
-						m_vk_command_buffer, &render_pass_info,
-						VK_SUBPASS_CONTENTS_INLINE);
-
-					const auto attachments = command.render_pass.attachments();
-					const auto textures	= command.framebuffer.textures();
-					for (const auto &subpass :
-						 command.render_pass.subpasses()) {
-						for (const auto &refs : subpass.attachment_refs) {
-							const auto &attachment =
-								attachments[refs.attachment_id];
-							const auto &texture =
-									*textures[refs.attachment_id];
-
-							m_to_update_texture_layout[&texture] =
-								attachment.final_layout;
-						}
-					}
-				},
-				[this, &device_table](const EndRenderPassCommand &command) {
-					device_table.vkCmdEndRenderPass(m_vk_command_buffer);
-				},
-				[this,
-				 &device_table](const BindGraphicsPipelineCommand &command) {
-					const auto &pipeline =
-						static_cast<const GraphicsPipeline &>(command.pipeline);
-					device_table.vkCmdBindPipeline(
-						m_vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						pipeline);
-				},
-				[this, &device_table](const DrawCommand &command) {
-					STORM_EXPECTS(command.vertex_count > 0u);
-
-					device_table.vkCmdDraw(
-						m_vk_command_buffer, command.vertex_count,
-						command.instance_count, command.first_vertex,
-						command.first_instance);
-				},
-				[this, &device_table](const DrawIndexedCommand &command) {
-					STORM_EXPECTS(command.index_count > 0u);
-
-					device_table.vkCmdDrawIndexed(
-						m_vk_command_buffer, command.index_count,
-						command.instance_count, command.first_index,
-						command.vertex_offset, command.first_instance);
-				},
-				[this, &device_table](const BindVertexBuffersCommand &command) {
-					STORM_EXPECTS(!std::empty(command.buffers));
-					STORM_EXPECTS(!std::empty(command.offsets));
-					STORM_EXPECTS(std::size(command.buffers) ==
-								  std::size(command.offsets));
-
-					auto buffers = std::vector<VkBuffer>{};
-					auto offsets = std::vector<VkDeviceSize>{};
-
-					for (const auto &buffer : command.buffers)
-						buffers.emplace_back(
-							static_cast<const HardwareBuffer &>(buffer.get()));
-
-					for (const auto offset : command.offsets)
-						offsets.emplace_back(offset);
-
-					device_table.vkCmdBindVertexBuffers(
-						m_vk_command_buffer, 0,
-						gsl::narrow_cast<std::uint32_t>(std::size(buffers)),
-						std::data(buffers), std::data(offsets));
-				},
-				[this, &device_table](const BindIndexBufferCommand &command) {
-					const auto &buffer =
-						static_cast<const HardwareBuffer &>(command.buffer);
-
-					device_table.vkCmdBindIndexBuffer(
-						m_vk_command_buffer, buffer, command.offset,
-						(command.large_indices) ? VK_INDEX_TYPE_UINT32
-												: VK_INDEX_TYPE_UINT16);
-				},
-				[this, &device_table](const CopyBufferCommand &command) {
-					auto src_buffer =
-						static_cast<const HardwareBuffer &>(command.source)
-							.vkBuffer();
-					auto dst_buffer =
-						static_cast<const HardwareBuffer &>(command.destination)
-							.vkBuffer();
-
-					auto copy_buffer	  = VkBufferCopy{};
-					copy_buffer.size	  = command.size;
-					copy_buffer.srcOffset = command.src_offset;
-					copy_buffer.dstOffset = command.dst_offset;
-
-					device_table.vkCmdCopyBuffer(m_vk_command_buffer,
-												 src_buffer, dst_buffer, 1,
-												 &copy_buffer);
-				},
-				[this,
-				 &device_table](const BindDescriptorSetsCommand &command) {
-					STORM_EXPECTS(!std::empty(command.descriptor_sets));
-
-					auto descriptor_sets = std::vector<VkDescriptorSet>{};
-					for (const auto &descriptor_set : command.descriptor_sets)
-						descriptor_sets.emplace_back(
-							static_cast<const DescriptorSet &>(
-								descriptor_set.get()));
-
-					const auto pipeline_layout =
-						static_cast<const GraphicsPipeline &>(*command.pipeline)
-							.vkPipelineLayout();
-
-					device_table.vkCmdBindDescriptorSets(
-						m_vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						pipeline_layout, 0,
-						gsl::narrow_cast<std::uint32_t>(
-							std::size(descriptor_sets)),
-						std::data(descriptor_sets), 0, nullptr);
-				},
-				[this, &device_table](const CopyBufferToImageCommand &command) {
-					const auto &source =
-						static_cast<const HardwareBuffer &>(command.source);
-					const auto &destination =
-						static_cast<const Texture &>(command.destination);
-					const auto &subresource_range =
-						destination.vkSubresourceRange();
-
-					const auto copy_buffer = VkBufferImageCopy{
-						.bufferOffset	  = 0,
-						.bufferRowLength   = 0,
-						.bufferImageHeight = 0,
-						.imageSubresource =
-							{.aspectMask	 = subresource_range.aspectMask,
-							 .mipLevel		 = subresource_range.baseMipLevel,
-							 .baseArrayLayer = subresource_range.baseArrayLayer,
-							 .layerCount	 = subresource_range.layerCount},
-						.imageOffset = {0, 0, 0},
-						.imageExtent = {destination.extent().w,
-										destination.extent().h, 1}};
-
-					device_table.vkCmdCopyBufferToImage(
-						m_vk_command_buffer, source, destination.vkImage(),
-						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy_buffer);
-				},
-				[this,
-				 &device_table](const TransitionImageLayoutCommand &command) {
-					auto &dst_image   = static_cast<Texture &>(command.image);
-					const auto &range = dst_image.vkSubresourceRange();
-
-					const auto it = m_to_update_texture_layout.find(&dst_image);
-					const auto old_layout =
-						toVK(it != std::end(m_to_update_texture_layout)
-								 ? it->second
-								 : dst_image.layout());
-
-					const auto &src_access =
-						old_layout_access_map.find(old_layout);
-					const auto &dst_access =
-						new_layout_access_map.find(toVK(command.new_layout));
-
-					const auto src_stage = src_access->second.second;
-					const auto dst_stage = dst_access->second.second;
-
-					const auto barrier = VkImageMemoryBarrier{
-						.sType		   = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-						.srcAccessMask = src_access->second.first,
-						.dstAccessMask = dst_access->second.first,
-						.oldLayout	 = old_layout,
-						.newLayout	 = toVK(command.new_layout),
-						.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-						.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-						.image				 = dst_image.vkImage(),
-						.subresourceRange	= range};
-
-					device_table.vkCmdPipelineBarrier(
-						m_vk_command_buffer, src_stage, dst_stage, 0, 0,
-						nullptr, 0, nullptr, 1, &barrier);
-
-					m_to_update_texture_layout[&dst_image] = command.new_layout;
-				},
-				[this, &device_table](
-					const ExecuteSubCommandBuffersCommand &command) {
-					auto vk_command_buffers = std::vector<VkCommandBuffer>{};
-					vk_command_buffers.reserve(
-						std::size(command.command_buffers));
-					for (const auto &cmb : command.command_buffers) {
-						STORM_EXPECTS(cmb.get().level() ==
-									  render::CommandBufferLevel::Secondary);
-						vk_command_buffers.emplace_back(
-							static_cast<const CommandBuffer &>(cmb.get()));
-					}
-
-					device_table.vkCmdExecuteCommands(
-						m_vk_command_buffer,
-						gsl::narrow_cast<std::uint32_t>(
-							std::size(command.command_buffers)),
-						std::data(vk_command_buffers));
-				},
-				[this, &device_table](const CopyImageCommand &command) {
-					auto extent = VkExtent3D{command.source.extent().w,
-											 command.source.extent().h, 1};
-
-					const auto regions = std::array{VkImageCopy{
-						.srcSubresource =
-							VkImageSubresourceLayers{
-								.aspectMask = toVK(command.source_aspect_mask),
-								.mipLevel   = 0,
-								.baseArrayLayer = 0,
-								.layerCount		= 1},
-						.srcOffset = {0, 0, 0},
-						.dstSubresource =
-							VkImageSubresourceLayers{
-								.aspectMask =
-									toVK(command.destination_aspect_mask),
-								.mipLevel		= 0,
-								.baseArrayLayer = 0,
-								.layerCount		= 1},
-						.dstOffset = {0, 0, 0},
-						.extent	= extent}};
-
-					device_table.vkCmdCopyImage(
-						m_vk_command_buffer,
-						static_cast<const Texture &>(command.source).vkImage(),
-						toVK(command.source_layout),
-						static_cast<const Texture &>(command.destination)
-							.vkImage(),
-						toVK(command.destination_layout),
-						gsl::narrow_cast<std::uint32_t>(std::size(regions)),
-						std::data(regions));
-				}},
-			command);
-
-		commands.pop();
-	}
-
-	m_state = State::Executable;
+    m_state = State::Initial;
 }
 
-void CommandBuffer::updateImageLayouts() {
-	for (auto &[texture, layout] : m_to_update_texture_layout) {
-		texture->setLayout(layout);
-	}
-	m_to_update_texture_layout.clear();
+/////////////////////////////////////
+/////////////////////////////////////
+void CommandBuffer::build() {
+    STORM_EXPECTS(m_vk_command_buffer);
+    STORM_EXPECTS(m_state == State::Recording);
+
+    auto commands          = std::exchange(m_commands, std::queue<render::Command> {});
+    const auto &device     = m_queue->device();
+    const auto &dispatcher = device.vkDispatcher();
+
+    while (!commands.empty()) {
+        auto &command = commands.front();
+
+        std::visit(
+            core::overload {
+                [this, &dispatcher](const BeginDebugRegionCommand &command) {
+                    if (dispatcher.vkCmdBeginDebugUtilsLabelEXT &&
+                        dispatcher.vkCmdEndDebugUtilsLabelEXT &&
+                        dispatcher.vkCmdInsertDebugUtilsLabelEXT) {
+                        const auto label_info = vk::DebugUtilsLabelEXT {}
+                                                    .setPLabelName(std::data(command.name))
+                                                    .setColor({ command.color.r,
+                                                                command.color.g,
+                                                                command.color.b,
+                                                                command.color.a });
+
+                        m_vk_command_buffer->beginDebugUtilsLabelEXT(label_info, dispatcher);
+                    }
+                },
+                [this, &dispatcher](const InsertDebugLabelCommand &command) {
+                    if (dispatcher.vkCmdBeginDebugUtilsLabelEXT &&
+                        dispatcher.vkCmdEndDebugUtilsLabelEXT &&
+                        dispatcher.vkCmdInsertDebugUtilsLabelEXT) {
+                        const auto label_info = vk::DebugUtilsLabelEXT {}
+                                                    .setPLabelName(std::data(command.name))
+                                                    .setColor({ command.color.r,
+                                                                command.color.g,
+                                                                command.color.b,
+                                                                command.color.a });
+
+                        m_vk_command_buffer->insertDebugUtilsLabelEXT(label_info, dispatcher);
+                    }
+                },
+                [this, &dispatcher]([[maybe_unused]] const EndDebugRegionCommand &command) {
+                    if (dispatcher.vkCmdBeginDebugUtilsLabelEXT &&
+                        dispatcher.vkCmdEndDebugUtilsLabelEXT &&
+                        dispatcher.vkCmdInsertDebugUtilsLabelEXT) {
+                        m_vk_command_buffer->endDebugUtilsLabelEXT(dispatcher);
+                    }
+                },
+                [this, &dispatcher](const BeginCommand &command) {
+                    const auto begin_info = vk::CommandBufferBeginInfo {}.setFlags(
+                        (command.one_time_submit)
+                            ? vk::CommandBufferUsageFlagBits::eOneTimeSubmit
+                            : vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+
+                    m_vk_command_buffer->begin(begin_info, dispatcher);
+                },
+                [this, &dispatcher]([[maybe_unused]] const EndCommand &command) {
+                    m_vk_command_buffer->end(dispatcher);
+                },
+                [this, &dispatcher](const BeginRenderPassCommand &command) {
+                    const auto &render_pass = static_cast<const RenderPass &>(command.render_pass);
+                    const auto &framebuffer = static_cast<const Framebuffer &>(command.framebuffer);
+
+                    auto clear_values = std::vector<vk::ClearValue> {};
+                    clear_values.reserve(std::size(command.clear_values));
+                    for (const auto &clear_value_variant : command.clear_values) {
+                        auto clear_value = vk::ClearValue {};
+
+                        if (std::holds_alternative<ClearColor>(clear_value_variant)) {
+                            const auto &clear_color = std::get<ClearColor>(clear_value_variant);
+
+                            const auto clear_color_ =
+                                vk::ClearColorValue {}.setFloat32({ clear_color.color.r,
+                                                                    clear_color.color.g,
+                                                                    clear_color.color.b,
+                                                                    clear_color.color.a });
+
+                            clear_value.setColor(std::move(clear_color_));
+                        } else if (std::holds_alternative<ClearDepthStencil>(clear_value_variant)) {
+                            const auto &clear_depth_stencil =
+                                std::get<ClearDepthStencil>(clear_value_variant);
+
+                            const auto clear_depth_stencil_ =
+                                vk::ClearDepthStencilValue {}
+                                    .setDepth(clear_depth_stencil.depth)
+                                    .setStencil(clear_depth_stencil.stencil);
+
+                            clear_value.setDepthStencil(std::move(clear_depth_stencil_));
+                        }
+
+                        clear_values.emplace_back(std::move(clear_value));
+                    }
+
+                    const auto render_pass_info =
+                        vk::RenderPassBeginInfo {}
+                            .setRenderArea(VkRect2D { .offset = { 0, 0 },
+                                                      .extent = { framebuffer.extent().width,
+                                                                  framebuffer.extent().height } })
+                            .setRenderPass(render_pass)
+                            .setFramebuffer(framebuffer)
+                            .setClearValueCount(
+                                gsl::narrow_cast<core::UInt32>(std::size(clear_values)))
+                            .setPClearValues(std::data(clear_values));
+
+                    auto subpass_content = vk::SubpassContents::eInline;
+                    if (command.secondary_command_buffers)
+                        subpass_content = vk::SubpassContents::eSecondaryCommandBuffers;
+
+                    m_vk_command_buffer->beginRenderPass(render_pass_info,
+                                                         subpass_content,
+                                                         dispatcher);
+                },
+                [this, &dispatcher]([[maybe_unused]] const NextSubPassCommand &command) {
+                    m_vk_command_buffer->nextSubpass(vk::SubpassContents::eInline, dispatcher);
+                },
+                [this, &dispatcher]([[maybe_unused]] const EndRenderPassCommand &command) {
+                    m_vk_command_buffer->endRenderPass(dispatcher);
+                },
+                [this, &dispatcher](const BindGraphicsPipelineCommand &command) {
+                    const auto &pipeline = command.pipeline;
+
+                    m_vk_command_buffer->bindPipeline(vk::PipelineBindPoint::eGraphics,
+                                                      pipeline,
+                                                      dispatcher);
+                },
+                [this, &dispatcher](const DrawCommand &command) {
+                    STORM_EXPECTS(command.vertex_count > 0u);
+
+                    m_vk_command_buffer->draw(command.vertex_count,
+                                              command.instance_count,
+                                              command.first_vertex,
+                                              command.first_instance,
+                                              dispatcher);
+                },
+                [this, &dispatcher](const DrawIndexedCommand &command) {
+                    STORM_EXPECTS(command.index_count > 0u);
+
+                    m_vk_command_buffer->drawIndexed(command.index_count,
+                                                     command.instance_count,
+                                                     command.first_index,
+                                                     command.vertex_offset,
+                                                     command.first_instance,
+                                                     dispatcher);
+                },
+                [this, &dispatcher](const BindVertexBuffersCommand &command) {
+                    STORM_EXPECTS(!std::empty(command.buffers));
+                    STORM_EXPECTS(!std::empty(command.offsets));
+                    STORM_EXPECTS(std::size(command.buffers) == std::size(command.offsets));
+
+                    auto buffers = std::vector<vk::Buffer> {};
+                    auto offsets = std::vector<vk::DeviceSize> {};
+
+                    for (const auto &buffer : command.buffers) buffers.emplace_back(buffer.get());
+
+                    for (const auto offset : command.offsets) offsets.emplace_back(offset);
+
+                    m_vk_command_buffer->bindVertexBuffers(0, buffers, offsets, dispatcher);
+                },
+                [this, &dispatcher](const BindIndexBufferCommand &command) {
+                    m_vk_command_buffer->bindIndexBuffer(command.buffer,
+                                                         gsl::narrow_cast<vk::DeviceSize>(
+                                                             command.offset),
+                                                         (command.large_indices)
+                                                             ? vk::IndexType::eUint32
+                                                             : vk::IndexType::eUint16,
+                                                         dispatcher);
+                },
+                [this, &dispatcher](const BindDescriptorSetsCommand &command) {
+                    STORM_EXPECTS(!std::empty(command.descriptor_sets));
+
+                    auto descriptor_sets = std::vector<vk::DescriptorSet> {};
+                    for (const auto &descriptor_set : command.descriptor_sets)
+                        descriptor_sets.emplace_back(descriptor_set.get());
+
+                    const auto pipeline_layout = command.pipeline->vkPipelineLayout();
+
+                    m_vk_command_buffer->bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+                                                            pipeline_layout,
+                                                            0,
+                                                            descriptor_sets,
+                                                            command.dynamic_offsets,
+                                                            dispatcher);
+                },
+                [this, &dispatcher](const CopyBufferCommand &command) {
+                    auto copy_buffer = vk::BufferCopy {}
+                                           .setSize(command.size)
+                                           .setSrcOffset(command.src_offset)
+                                           .setDstOffset(command.dst_offset);
+
+                    const auto copy_buffers = std::array { std::move(copy_buffer) };
+                    m_vk_command_buffer->copyBuffer(command.source,
+                                                    command.destination,
+                                                    copy_buffers,
+                                                    dispatcher);
+                },
+
+                [this, &dispatcher](const CopyBufferToTextureCommand &command) {
+                    auto copy_regions = std::vector<vk::BufferImageCopy> {};
+                    copy_regions.reserve(std::size(command.buffer_image_copies));
+
+                    for (const auto &buffer_image_copy : command.buffer_image_copies) {
+                        const auto image_subresource =
+                            vk::ImageSubresourceLayers {}
+                                .setAspectMask(
+                                    toVK(buffer_image_copy.subresource_layers.aspect_mask))
+                                .setMipLevel(buffer_image_copy.subresource_layers.mip_level)
+                                .setBaseArrayLayer(
+                                    buffer_image_copy.subresource_layers.base_array_layer)
+                                .setLayerCount(buffer_image_copy.subresource_layers.layer_count);
+
+                        const auto copy_buffer =
+                            vk::BufferImageCopy {}
+                                .setBufferOffset(buffer_image_copy.buffer_offset)
+                                .setBufferRowLength(buffer_image_copy.buffer_row_length)
+                                .setBufferImageHeight(buffer_image_copy.buffer_image_height)
+                                .setImageSubresource(std::move(image_subresource))
+                                .setImageOffset({ buffer_image_copy.offset.x,
+                                                  buffer_image_copy.offset.y,
+                                                  buffer_image_copy.offset.z })
+                                .setImageExtent({ buffer_image_copy.extent.w,
+                                                  buffer_image_copy.extent.h,
+                                                  buffer_image_copy.extent.d });
+
+                        copy_regions.emplace_back(std::move(copy_buffer));
+                    }
+
+                    m_vk_command_buffer->copyBufferToImage(command.source,
+                                                           command.destination.vkImage(),
+                                                           vk::ImageLayout::eTransferDstOptimal,
+                                                           copy_regions,
+                                                           dispatcher);
+                },
+                [this, &dispatcher](const CopyTextureCommand &command) {
+                    const auto extent =
+                        vk::Extent3D { command.source.extent().w, command.source.extent().h, 1 };
+
+                    const auto src_subresource =
+                        vk::ImageSubresourceLayers {}
+                            .setAspectMask(toVK(command.source_subresource_layers.aspect_mask))
+                            .setMipLevel(command.source_subresource_layers.mip_level)
+                            .setBaseArrayLayer(command.source_subresource_layers.base_array_layer)
+                            .setLayerCount(command.source_subresource_layers.layer_count);
+
+                    const auto dst_subresource =
+                        vk::ImageSubresourceLayers {}
+                            .setAspectMask(toVK(command.destination_subresource_layers.aspect_mask))
+                            .setMipLevel(command.destination_subresource_layers.mip_level)
+                            .setBaseArrayLayer(
+                                command.destination_subresource_layers.base_array_layer)
+                            .setLayerCount(command.destination_subresource_layers.layer_count);
+
+                    const auto region = vk::ImageCopy {}
+                                            .setSrcSubresource(std::move(src_subresource))
+                                            .setSrcOffset(vk::Offset3D { 0, 0, 0 })
+                                            .setDstSubresource(std::move(dst_subresource))
+                                            .setDstOffset(vk::Offset3D { 0, 0, 0 })
+                                            .setExtent(std::move(extent));
+
+                    const auto regions = std::array { std::move(region) };
+                    m_vk_command_buffer->copyImage(command.source,
+                                                   toVK(command.source_layout),
+                                                   command.destination,
+                                                   toVK(command.destination_layout),
+                                                   regions,
+                                                   dispatcher);
+                },
+                [this, &dispatcher](const ResolveTextureCommand &command) {
+                    const auto extent =
+                        vk::Extent3D { command.source.extent().w, command.source.extent().h, 1 };
+
+                    const auto src_subresource =
+                        vk::ImageSubresourceLayers {}
+                            .setAspectMask(toVK(command.source_subresource_layers.aspect_mask))
+                            .setMipLevel(command.source_subresource_layers.mip_level)
+                            .setBaseArrayLayer(command.source_subresource_layers.base_array_layer)
+                            .setLayerCount(command.source_subresource_layers.layer_count);
+
+                    const auto dst_subresource =
+                        vk::ImageSubresourceLayers {}
+                            .setAspectMask(toVK(command.destination_subresource_layers.aspect_mask))
+                            .setMipLevel(command.destination_subresource_layers.mip_level)
+                            .setBaseArrayLayer(
+                                command.destination_subresource_layers.base_array_layer)
+                            .setLayerCount(command.destination_subresource_layers.layer_count);
+
+                    const auto region = vk::ImageResolve {}
+                                            .setSrcSubresource(std::move(src_subresource))
+                                            .setSrcOffset(vk::Offset3D { 0, 0, 0 })
+                                            .setDstSubresource(std::move(dst_subresource))
+                                            .setDstOffset(vk::Offset3D { 0, 0, 0 })
+                                            .setExtent(std::move(extent));
+
+                    const auto regions = std::array { std::move(region) };
+                    m_vk_command_buffer->resolveImage(command.source,
+                                                      toVK(command.source_layout),
+                                                      command.destination,
+                                                      toVK(command.destination_layout),
+                                                      regions,
+                                                      dispatcher);
+                },
+                [this, &dispatcher](const TransitionTextureLayoutCommand &command) {
+                    const auto src_layout = toVK(command.source_layout);
+                    const auto dst_layout = toVK(command.destination_layout);
+
+                    const auto &src_access = old_layout_access_map.find(src_layout);
+                    const auto &dst_access = new_layout_access_map.find(dst_layout);
+
+                    const auto src_stage = src_access->second.second;
+                    const auto dst_stage = dst_access->second.second;
+
+                    const auto subresource_range =
+                        vk::ImageSubresourceRange {}
+                            .setAspectMask(toVK(command.subresource_range.aspect_mask))
+                            .setBaseMipLevel(command.subresource_range.base_mip_level)
+                            .setLevelCount(command.subresource_range.level_count)
+                            .setBaseArrayLayer(command.subresource_range.base_array_layer)
+                            .setLayerCount(command.subresource_range.layer_count);
+
+                    const auto barrier = vk::ImageMemoryBarrier {}
+                                             .setSrcAccessMask(src_access->second.first)
+                                             .setDstAccessMask(dst_access->second.first)
+                                             .setOldLayout(src_layout)
+                                             .setNewLayout(dst_layout)
+                                             .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                                             .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                                             .setImage(command.texture)
+                                             .setSubresourceRange(std::move(subresource_range));
+
+                    const auto barriers = std::array { std::move(barrier) };
+                    const auto mem      = std::array<vk::MemoryBarrier, 0> {};
+                    const auto buf      = std::array<vk::BufferMemoryBarrier, 0> {};
+                    m_vk_command_buffer
+                        ->pipelineBarrier(src_stage, dst_stage, {}, mem, buf, barriers, dispatcher);
+                },
+                [this, &dispatcher](const ExecuteSubCommandBuffersCommand &command) {
+                    auto vk_command_buffers = std::vector<vk::CommandBuffer> {};
+                    vk_command_buffers.reserve(std::size(command.command_buffers));
+
+                    for (const auto &cmb : command.command_buffers) {
+                        STORM_EXPECTS(cmb.get().level() == render::CommandBufferLevel::Secondary);
+                        vk_command_buffers.emplace_back(cmb.get());
+                    }
+
+                    m_vk_command_buffer->executeCommands(vk_command_buffers, dispatcher);
+                },
+                [this, &dispatcher](const SetScissorCommand &command) {
+                    auto scissors = std::vector<vk::Rect2D> {};
+                    scissors.reserve(std::size(command.scissors));
+
+                    for (const auto &scissor : command.scissors) {
+                        scissors.emplace_back(
+                            vk::Rect2D { vk::Offset2D { scissor.offset.x, scissor.offset.y },
+                                         { scissor.extent.w, scissor.extent.h } });
+                    }
+
+                    m_vk_command_buffer->setScissor(command.first_scissor, scissors, dispatcher);
+                },
+                [this, &dispatcher](const PipelineBarrierCommand &command) {
+                    auto memory_barriers = std::vector<vk::MemoryBarrier> {};
+                    memory_barriers.reserve(std::size(command.memory_barriers));
+
+                    for (const auto &barrier : command.memory_barriers) {
+                        const auto vk_barrier = vk::MemoryBarrier {}
+                                                    .setSrcAccessMask(toVK(barrier.src))
+                                                    .setDstAccessMask(toVK(barrier.dst));
+
+                        memory_barriers.emplace_back(std::move(vk_barrier));
+                    }
+
+                    auto buffer_memory_barriers = std::vector<vk::BufferMemoryBarrier> {};
+                    buffer_memory_barriers.reserve(std::size(command.buffer_memory_barriers));
+
+                    for (const auto &barrier : command.buffer_memory_barriers) {
+                        const auto vk_barrier =
+                            vk::BufferMemoryBarrier {}
+                                .setSrcAccessMask(toVK(barrier.src))
+                                .setDstAccessMask(toVK(barrier.dst))
+                                .setSrcQueueFamilyIndex(barrier.src_queue_family_index)
+                                .setDstQueueFamilyIndex(barrier.dst_queue_family_index)
+                                .setBuffer(barrier.buffer)
+                                .setOffset(barrier.offset)
+                                .setSize(barrier.size);
+
+                        buffer_memory_barriers.emplace_back(std::move(vk_barrier));
+                    }
+
+                    auto image_memory_barriers = std::vector<vk::ImageMemoryBarrier> {};
+                    image_memory_barriers.reserve(std::size(command.image_memory_barriers));
+
+                    for (const auto &barrier : command.image_memory_barriers) {
+                        const auto vk_subresource_range =
+                            vk::ImageSubresourceRange {}
+                                .setAspectMask(toVK(barrier.range.aspect_mask))
+                                .setBaseMipLevel(barrier.range.base_mip_level)
+                                .setLevelCount(barrier.range.level_count)
+                                .setBaseArrayLayer(barrier.range.base_array_layer)
+                                .setLayerCount(barrier.range.layer_count);
+
+                        const auto vk_barrier =
+                            vk::ImageMemoryBarrier {}
+                                .setSrcAccessMask(toVK(barrier.src))
+                                .setDstAccessMask(toVK(barrier.dst))
+                                .setSrcQueueFamilyIndex(barrier.src_queue_family_index)
+                                .setDstQueueFamilyIndex(barrier.dst_queue_family_index)
+                                .setOldLayout(toVK(barrier.old_layout))
+                                .setNewLayout(toVK(barrier.new_layout))
+                                .setImage(barrier.texture)
+                                .setSubresourceRange(std::move(vk_subresource_range));
+
+                        image_memory_barriers.emplace_back(std::move(vk_barrier));
+                    }
+
+                    m_vk_command_buffer->pipelineBarrier(toVK(command.src_mask),
+                                                         toVK(command.dst_mask),
+                                                         toVK(command.dependency),
+                                                         memory_barriers,
+                                                         buffer_memory_barriers,
+                                                         image_memory_barriers,
+                                                         dispatcher);
+                },
+                [this, &dispatcher](const PushConstantsCommand &command) {
+                    STORM_EXPECTS(command.pipeline != nullptr);
+                    STORM_EXPECTS(!std::empty(command.data));
+
+                    m_vk_command_buffer->pushConstants(command.pipeline->vkPipelineLayout(),
+                                                       toVK(command.stage),
+                                                       0u,
+                                                       std::size(command.data),
+                                                       std::data(command.data),
+                                                       dispatcher);
+                } },
+            command);
+
+        commands.pop();
+    }
+
+    m_state = State::Executable;
 }

@@ -10,133 +10,46 @@
  * @version 0.1
  **/
 
-#include <algorithm>
-#include <memory>
-#include <mutex>
+#include <unordered_map>
+
 #include <storm/core/Assert.hpp>
 #include <storm/core/NonCopyable.hpp>
-#include <unordered_map>
-#include <vector>
 
-namespace storm::tools {
-	template <typename Key, class Resource,
-			  class Deleter = std::default_delete<Resource>>
-	class ResourcesPool : public core::NonCopyable {
-		struct ResourcePoolDeleter {
-			explicit ResourcePoolDeleter(
-				Key key,
-				std::weak_ptr<ResourcesPool<Key, Resource, Deleter> *> owner)
-				: m_key(key), m_owner(owner) {
-			}
+namespace storm::core {
+    template<typename _Key, typename _Value>
+    class STORM_PUBLIC ResourcesPool: public NonCopyable {
+      public:
+        using Key   = _Key;
+        using Value = _Value;
 
-			void operator()(Resource *ptr) {
-				if (auto scoped_ptr = m_owner.lock()) {
-					try {
-						(*(scoped_ptr.get()))
-							->add(m_key, ResourceOwnedPtr(ptr));
-						return;
-					} catch (const std::bad_alloc &) {
-					}
-				}
+        ResourcesPool()  = default;
+        ~ResourcesPool() = default;
 
-				Deleter{}(ptr);
-			}
+        ResourcesPool(ResourcesPool &&) = default;
+        ResourcesPool &operator=(ResourcesPool &&) = default;
 
-		  private:
-			std::weak_ptr<ResourcesPool<Key, Resource, Deleter> *> m_owner;
-			Key m_key;
-		};
+        template<typename... Args>
+        Value &create(Key &&key, Args &&... args);
+        template<typename... Args>
+        Value &create(const Key &key, Args &&... args);
 
-	  public:
-		using ResourceOwnedPtr = std::unique_ptr<Resource, Deleter>;
-		using ScopedResourceOwnedPtr =
-			std::unique_ptr<Resource, ResourcePoolDeleter>;
+        Value &get(const Key &key);
+        const Value &get(const Key &key) const;
 
-		explicit ResourcesPool()
-			: m_shared_this(new ResourcesPool<Key, Resource, Deleter> *(this)) {
-		}
-		ResourcesPool(ResourcesPool &&) = default;
-		ResourcesPool &operator=(ResourcesPool &&) = default;
+        void remove(const Key &key);
 
-		~ResourcesPool() = default;
+        inline bool has(const Key &key) const noexcept;
 
-		inline void add(Key &&key, ResourceOwnedPtr &&resource) {
-			std::lock_guard<std::mutex> lock(m_sync);
-			Key _key = std::move(key);
-			m_pool.emplace(_key, std::move(resource));
-			m_keys.emplace_back(std::move(_key));
-		}
-		inline void add(const Key &key, ResourceOwnedPtr &&resource) {
-			std::lock_guard<std::mutex> lock(m_sync);
-			m_pool.emplace(std::move(Key(key)), std::move(resource));
-			m_keys.emplace_back(std::move(Key(key)));
-		}
+        void clear();
 
-		inline void remove(Key &&key) {
-			std::lock_guard<std::mutex> lock(m_sync);
-			auto value_it = m_pool.find(key);
-			ASSERT(value_it != std::end(m_pool), "Invalid key");
+      private:
+        using Map = std::unordered_map<Key, Value>;
 
-			auto key_it = std::find(std::begin(m_keys), std::end(m_keys), key);
-			ASSERT(key_it != std::end(m_keys), "Invalid key");
+        inline auto getIt(const Key &key) noexcept;
+        inline auto getIt(const Key &key) const noexcept;
 
-			m_pool.erase(value_it);
-			m_keys.erase(key_it);
-		}
-		inline void remove(const Key &key) {
-			std::lock_guard<std::mutex> lock(m_sync);
-			auto value_it = m_pool.find(key);
-			ASSERT(value_it != std::end(m_pool), "Invalid key");
+        Map m_resources;
+    };
+} // namespace storm::core
 
-			auto key_it = std::find(std::begin(m_keys), std::end(m_keys), key);
-			ASSERT(key_it != std::end(m_keys), "Invalid key");
-
-			m_pool.erase(value_it);
-			m_keys.erase(key_it);
-		}
-
-		ScopedResourceOwnedPtr acquire(const Key &key) {
-			ASSERT(!empty(), "Empty pool");
-
-			std::lock_guard<std::mutex> lock(m_sync);
-
-			auto value_it = m_pool.find(key);
-			ASSERT(value_it != std::end(m_pool), "Invalid key");
-
-			auto key_it = std::find(std::begin(m_keys), std::end(m_keys), key);
-			ASSERT(key_it != std::end(m_keys), "Invalid key");
-
-			ScopedResourceOwnedPtr ptr{
-				value_it->second.release(),
-				ResourcePoolDeleter{*key_it, m_shared_this}};
-			m_pool.erase(value_it);
-			m_keys.erase(key_it);
-
-			return std::move(ptr);
-		}
-
-		inline bool empty() const noexcept {
-			return m_pool.empty();
-		}
-
-		inline std::size_t size() const noexcept {
-			return m_pool.size();
-		}
-
-		inline const std::vector<Key> &keys() const {
-			return m_keys;
-		}
-
-		void clear() {
-			std::lock_guard<std::mutex> lock(m_sync);
-
-			m_pool.clear();
-		}
-
-	  private:
-		std::shared_ptr<ResourcesPool<Key, Resource, Deleter> *> m_shared_this;
-		std::unordered_map<Key, ResourceOwnedPtr> m_pool;
-		std::vector<Key> m_keys;
-		std::mutex m_sync;
-	};
-} // namespace storm::tools
+#include "ResourcesPool.inl"

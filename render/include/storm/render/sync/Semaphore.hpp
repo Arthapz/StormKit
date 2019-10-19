@@ -4,34 +4,34 @@
 
 #pragma once
 
-#include <storm/core/Platform.hpp>
 #include <storm/core/NonCopyable.hpp>
+#include <storm/core/Platform.hpp>
 
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
 namespace storm::render {
-	class STORM_PUBLIC Semaphore : public core::NonCopyable {
-	  public:
-		explicit Semaphore(const Device &device);
-		~Semaphore();
+    class STORM_PUBLIC Semaphore: public core::NonCopyable {
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Semaphore;
 
-		Semaphore(Semaphore &&);
-		Semaphore &operator=(Semaphore &&);
+        explicit Semaphore(const Device &device);
+        ~Semaphore();
 
-		inline VkSemaphore vkSemaphore() const noexcept {
-			STORM_EXPECTS(m_vk_semaphore != VK_NULL_HANDLE);
-			return m_vk_semaphore;
-		}
+        Semaphore(Semaphore &&);
+        Semaphore &operator=(Semaphore &&);
 
-		inline operator VkSemaphore() const noexcept {
-			STORM_EXPECTS(m_vk_semaphore != VK_NULL_HANDLE);
-			return m_vk_semaphore;
-		}
-	  private:
-		DeviceConstObserverPtr m_device;
+        inline vk::Semaphore vkSemaphore() const noexcept;
+        inline operator vk::Semaphore() const noexcept;
+        inline vk::Semaphore vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
 
-		VkSemaphore m_vk_semaphore = VK_NULL_HANDLE;
-	};
+      private:
+        DeviceConstObserverPtr m_device;
+
+        RAIIVkSemaphore m_vk_semaphore;
+    };
 } // namespace storm::render
+
+#include "Semaphore.inl"

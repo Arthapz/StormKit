@@ -4,41 +4,44 @@
 
 #pragma once
 
-
 #include <cstdint>
 #include <limits>
 
-#include <storm/core/Platform.hpp>
 #include <storm/core/NonCopyable.hpp>
+#include <storm/core/Platform.hpp>
 
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
 namespace storm::render {
-	class STORM_PUBLIC Fence : public core::NonCopyable {
-	  public:
-		explicit Fence(const Device &device);
-		~Fence();
+    class STORM_PUBLIC Fence: public core::NonCopyable {
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Fence;
 
-		Fence(Fence &&);
-		Fence &operator=(Fence &&);
+        enum class Status { Signaled, Unsignaled };
 
-		WaitResult wait(std::uint64_t wait_for = std::numeric_limits<std::uint64_t>::max()) const;
-		void reset()								  ;
+        explicit Fence(const Device &device);
+        ~Fence();
 
-		inline VkFence vkFence() const noexcept {
-			STORM_EXPECTS(m_vk_fence != VK_NULL_HANDLE);
-			return m_vk_fence;
-		}
+        Fence(Fence &&);
+        Fence &operator=(Fence &&);
 
-		inline operator VkFence() const noexcept {
-			STORM_EXPECTS(m_vk_fence != VK_NULL_HANDLE);
-			return m_vk_fence;
-		}
-	  private:
-		DeviceConstObserverPtr m_device;
+        WaitResult wait(core::UInt64 wait_for = std::numeric_limits<core::UInt64>::max()) const;
+        void reset();
 
-		VkFence m_vk_fence = VK_NULL_HANDLE;
-	};
+        Status status() const noexcept;
+
+        inline vk::Fence vkFence() const noexcept;
+        inline operator vk::Fence() const noexcept;
+        inline vk::Fence vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
+
+      private:
+        DeviceConstObserverPtr m_device;
+
+        RAIIVkFence m_vk_fence;
+    };
 } // namespace storm::render
+
+#include "Fence.inl"

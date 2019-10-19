@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <storm/core/Platform.hpp>
 #include <storm/core/Math.hpp>
 #include <storm/core/NonCopyable.hpp>
+#include <storm/core/Platform.hpp>
 
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
@@ -18,44 +18,35 @@
 #include <storm/render/resource/Fwd.hpp>
 
 namespace storm::render {
-	class STORM_PUBLIC Framebuffer : public core::NonCopyable {
-	  public:
-		Framebuffer(const RenderPass &render_pass, core::Extent size,
-							 std::vector<TextureConstObserverPtr> textures);
-		 ~Framebuffer() ;
+    class STORM_PUBLIC Framebuffer: public core::NonCopyable {
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Framebuffer;
 
-		Framebuffer(Framebuffer &&);
-		Framebuffer &operator=(Framebuffer &&);
+        Framebuffer(const RenderPass &render_pass,
+                    core::Extentu size,
+                    TextureViewConstObserverPtrArray attachments);
+        ~Framebuffer();
 
-		inline const core::Extent &extent() const noexcept {
-			return m_extent;
-		}
+        Framebuffer(Framebuffer &&);
+        Framebuffer &operator=(Framebuffer &&);
 
-		inline const Device &device() const noexcept {
-            return m_render_pass->device();
-		}
+        inline const core::Extentu &extent() const noexcept;
+        inline const Device &device() const noexcept;
+        inline storm::core::span<const TextureViewConstObserverPtr> attachments() const noexcept;
 
-        inline storm::core::span<const TextureConstObserverPtr> textures() const
-            noexcept {
-			return m_textures;
-		}
+        inline vk::Framebuffer vkFramebuffer() const noexcept;
+        inline operator vk::Framebuffer() const noexcept;
+        inline vk::Framebuffer vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
 
-		inline VkFramebuffer vkFramebuffer() const noexcept {
-			STORM_EXPECTS(m_vk_framebuffer != VK_NULL_HANDLE);
-			return m_vk_framebuffer;
-		}
-
-		inline operator VkFramebuffer() const noexcept {
-			STORM_EXPECTS(m_vk_framebuffer != VK_NULL_HANDLE);
-			return m_vk_framebuffer;
-		}
-
-	  private:
+      private:
         RenderPassConstObserverPtr m_render_pass;
 
-		core::Extent m_extent;
-		std::vector<TextureConstObserverPtr> m_textures;
+        core::Extentu m_extent;
+        TextureViewConstObserverPtrArray m_attachments;
 
-		VkFramebuffer m_vk_framebuffer = VK_NULL_HANDLE;
-	};
+        RAIIVkFramebuffer m_vk_framebuffer;
+    };
 } // namespace storm::render
+
+#include "Framebuffer.inl"

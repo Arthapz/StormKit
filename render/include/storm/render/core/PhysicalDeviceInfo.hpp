@@ -4,22 +4,51 @@
 
 #pragma once
 
-#include <storm/render/core/Enums.hpp>
 #include <string>
 
+#include <storm/core/Strings.hpp>
+
+#include <storm/render/core/Enums.hpp>
+
 namespace storm::render {
-	struct PhysicalDeviceInfo {
-		std::string device_name;
-		std::string vendor_name;
+    struct PhysicalDeviceInfo {
+        core::UInt64 device_id;
+        std::string device_name;
+        core::UInt64 vendor_id;
+        std::string vendor_name;
 
-		std::uint32_t api_major_version;
-		std::uint32_t api_minor_version;
-		std::uint32_t api_patch_version;
+        core::UInt32 api_major_version;
+        core::UInt32 api_minor_version;
+        core::UInt32 api_patch_version;
 
-		std::uint32_t driver_major_version;
-		std::uint32_t driver_minor_version;
-		std::uint32_t driver_patch_version;
+        core::UInt32 driver_major_version;
+        core::UInt32 driver_minor_version;
+        core::UInt32 driver_patch_version;
 
-		PhysicalDeviceType type;
-	};
+        std::array<core::UInt8, VK_UUID_SIZE> pipeline_cache_uuid;
+
+        PhysicalDeviceType type;
+    };
 } // namespace storm::render
+
+CUSTOM_FORMAT(storm::render::PhysicalDeviceInfo,
+              "PhysicalDeviceInfo {{\n"
+              "   device_id: {:#06x},\n"
+              "   device_name: {},\n"
+              "   vendor_id: {:#06x},\n"
+              "   vendor_name: {},\n"
+              "   api_version: {}.{}.{},\n"
+              "   driver_version: {}.{}.{},\n"
+              "   type: {}\n"
+              "}}",
+              data.device_id,
+              data.device_name,
+              data.vendor_id,
+              data.vendor_name,
+              data.api_major_version,
+              data.api_minor_version,
+              data.api_patch_version,
+              data.driver_major_version,
+              data.driver_minor_version,
+              data.driver_patch_version,
+              storm::render::to_string(data.type));

@@ -7,7 +7,7 @@
 #include <storm/core/Platform.hpp>
 #include <storm/core/Span.hpp>
 
-#include <storm/core/Filesystem.hpp>
+#include <filesystem>
 #include <storm/core/NonCopyable.hpp>
 
 #include <storm/render/core/Enums.hpp>
@@ -15,56 +15,38 @@
 
 #include <storm/window/Window.hpp>
 
-extern "C" {
-	struct TBuiltInResource;
-}
-
 namespace storm::render {
-	class STORM_PUBLIC Shader : public core::NonCopyable {
-	  public:
-		enum class Language { SPIRV, GLSL };
+    class STORM_PUBLIC Shader: public core::NonCopyable {
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::Shader_Module;
 
-		Shader(core::filesystem::path filepath, Language language,
-			   ShaderType type, const Device &device);
-		Shader(core::span<const std::byte> data, Language language,
-			   ShaderType type, const Device &device);
-		~Shader();
+        Shader(std::filesystem::path filepath, ShaderStage type, const Device &device);
+        Shader(core::span<const core::Byte> data, ShaderStage type, const Device &device);
+        Shader(core::span<const core::UInt32> data, ShaderStage type, const Device &device);
+        ~Shader();
 
-		Shader(Shader &&);
-		Shader &operator=(Shader &&);
+        Shader(Shader &&);
+        Shader &operator=(Shader &&);
 
-		inline ShaderType type() const noexcept {
-			return m_type;
-		}
-		inline storm::core::span<const std::byte> source() const noexcept {
-			return m_source;
-		}
+        inline ShaderStage type() const noexcept;
+        inline storm::core::span<const core::Byte> source() const noexcept;
+        inline const Device &device() const noexcept;
 
-		inline const Device &device() const noexcept {
-			return *m_device;
-		}
+        inline vk::ShaderModule vkShaderModule() const noexcept;
+        inline operator vk::ShaderModule() const noexcept;
+        inline vk::ShaderModule vkHandle() const noexcept;
+        inline core::UInt64 vkDebugHandle() const noexcept;
 
-		inline VkShaderModule vkShaderModule() const noexcept {
-			STORM_EXPECTS(m_vk_shader_module != VK_NULL_HANDLE);
-			return m_vk_shader_module;
-		}
+      private:
+        void compile() noexcept;
 
-		inline operator VkShaderModule() const noexcept {
-			STORM_EXPECTS(m_vk_shader_module != VK_NULL_HANDLE);
-			return m_vk_shader_module;
-		}
-	  private:
-		void compile() noexcept;
-		void transpileToSpirv(Language language,
-							  gsl::span<const std::byte> source);
-		void initResources(TBuiltInResource &resources);
+        DeviceConstObserverPtr m_device;
 
-		DeviceConstObserverPtr m_device;
+        ShaderStage m_type;
+        std::vector<core::Byte> m_source;
 
-		ShaderType m_type;
-		std::vector<std::byte> m_source;
-
-		VkShaderModule m_vk_shader_module = VK_NULL_HANDLE;
-	};
-
+        RAIIVkShaderModule m_vk_shader_module;
+    };
 } // namespace storm::render
+
+#include "Shader.inl"

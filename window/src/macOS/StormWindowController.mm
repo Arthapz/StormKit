@@ -49,7 +49,7 @@ NSString *fromStdString(const std::string &str) {
 
 		auto frame = [window convertRectToBacking: [[window contentView] frame]];
 
-		view   = [[StormView alloc] initWithFrame: frame withRequester: _requester];
+		view   = [[StormView alloc] initWithFrame: frame withRequester: _requester withWindow: window];
 		[view setLayer:[CAMetalLayer layer]];
 		[view setWantsLayer:YES];
 		

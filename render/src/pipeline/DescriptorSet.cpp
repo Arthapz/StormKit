@@ -16,9 +16,10 @@ using namespace storm::render;
 /////////////////////////////////////
 /////////////////////////////////////
 DescriptorSet::DescriptorSet(const DescriptorPool &pool,
-							 std::vector<DescriptorType> types,
-							 VkDescriptorSet set)
-	: m_pool{&pool}, m_types{std::move(types)}, m_vk_descriptor_set{set} {
+                             std::vector<DescriptorType> types,
+                             RAIIVkDescriptorSet set)
+    : m_device { &pool.device() }, m_pool { &pool }, m_types { std::move(types) },
+      m_vk_descriptor_set { std::move(set) } {
 }
 
 /////////////////////////////////////
@@ -35,83 +36,67 @@ DescriptorSet &DescriptorSet::operator=(DescriptorSet &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-void DescriptorSet::update(std::vector<render::Descriptor> descriptors) {
-	STORM_EXPECTS(!std::empty(descriptors));
+void DescriptorSet::update(core::span<const render::Descriptor> descriptors) {
+    STORM_EXPECTS(!std::empty(descriptors));
 
-	const auto &device		 = m_pool->device();
-	const auto &device_table = device.vkDeviceTable();
+    auto vk_buffer_infos =
+        std::vector<std::tuple<core::UInt32, vk::DescriptorBufferInfo, vk::DescriptorType>> {};
+    auto vk_image_infos =
+        std::vector<std::tuple<core::UInt32, vk::DescriptorImageInfo, vk::DescriptorType>> {};
 
-	auto vk_buffer_infos =
-		std::vector<std::pair<std::uint32_t, VkDescriptorBufferInfo>>{};
-	auto vk_image_infos =
-		std::vector<std::pair<std::uint32_t, VkDescriptorImageInfo>>{};
+    for (const auto &descriptor_proxy : descriptors) {
+        if (std::holds_alternative<BufferDescriptor>(descriptor_proxy)) {
+            const auto &descriptor = std::get<BufferDescriptor>(descriptor_proxy);
 
-	for (const auto &descriptor_proxy : descriptors) {
-		if (std::holds_alternative<BufferDescriptor>(descriptor_proxy)) {
-			const auto &descriptor =
-				std::get<BufferDescriptor>(descriptor_proxy);
-			const auto &buffer =
-				static_cast<const HardwareBuffer &>(*descriptor.buffer);
+            const auto buffer_info = vk::DescriptorBufferInfo {}
+                                         .setBuffer(*descriptor.buffer)
+                                         .setOffset(descriptor.offset)
+                                         .setRange(descriptor.range);
 
-			const auto buffer_info =
-				VkDescriptorBufferInfo{.buffer = buffer,
-									   .offset = descriptor.offset,
-									   .range  = descriptor.range};
+            vk_buffer_infos.emplace_back(descriptor.binding,
+                                         std::move(buffer_info),
+                                         toVK(descriptor.type));
+        } else if (std::holds_alternative<TextureDescriptor>(descriptor_proxy)) {
+            const auto &descriptor = std::get<TextureDescriptor>(descriptor_proxy);
 
-			vk_buffer_infos.emplace_back(descriptor.binding,
-										 std::move(buffer_info));
-		} else if (std::holds_alternative<ImageDescriptor>(descriptor_proxy)) {
-			const auto &descriptor =
-				std::get<ImageDescriptor>(descriptor_proxy);
-			const auto &texture =
-				static_cast<const Texture &>(*descriptor.texture);
-			const auto &sampler =
-				static_cast<const Sampler &>(*descriptor.sampler);
+            auto image_info = vk::DescriptorImageInfo {}
+                                  .setImageView(*descriptor.texture_view)
+                                  .setImageLayout(toVK(descriptor.layout));
 
-			const auto image_info =
-				VkDescriptorImageInfo{.sampler	   = sampler,
-									  .imageView   = texture.vkImageView(),
-									  .imageLayout = toVK(descriptor.layout)};
+            if (descriptor.sampler != nullptr) image_info.setSampler(*descriptor.sampler);
 
-			vk_image_infos.emplace_back(descriptor.binding,
-										std::move(image_info));
-		}
-	}
+            vk_image_infos.emplace_back(descriptor.binding,
+                                        std::move(image_info),
+                                        toVK(descriptor.type));
+        }
+    }
 
-		auto vk_write_infos = std::vector<VkWriteDescriptorSet>{};
-	vk_write_infos.reserve(std::size(vk_buffer_infos) +
-						   std::size(vk_image_infos));
+    auto vk_write_infos = std::vector<vk::WriteDescriptorSet> {};
+    vk_write_infos.reserve(std::size(vk_buffer_infos) + std::size(vk_image_infos));
 
-		for (const auto &[binding, vk_buffer_info] : vk_buffer_infos) {
-		const auto write_info = VkWriteDescriptorSet{
-			.sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-			.dstSet			 = m_vk_descriptor_set,
-			.dstBinding		 = binding,
-			.dstArrayElement = 0,
-			.descriptorCount = 1,
-			.descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			.pBufferInfo	 = &vk_buffer_info,
-			};
+    for (const auto &[binding, vk_buffer_info, type] : vk_buffer_infos) {
+        const auto write_info = vk::WriteDescriptorSet {}
+                                    .setDstSet(*m_vk_descriptor_set)
+                                    .setDstBinding(binding)
+                                    .setDstArrayElement(0)
+                                    .setDescriptorCount(1)
+                                    .setDescriptorType(type)
+                                    .setPBufferInfo(&vk_buffer_info);
 
-		vk_write_infos.emplace_back(std::move(write_info));
-	}
+        vk_write_infos.emplace_back(std::move(write_info));
+    }
 
-		for (const auto &[binding, vk_image_info] : vk_image_infos) {
-		const auto write_info = VkWriteDescriptorSet{
-			.sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-			.dstSet			 = m_vk_descriptor_set,
-			.dstBinding		 = binding,
-			.dstArrayElement = 0,
-			.descriptorCount = 1,
-			.descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			.pImageInfo		 = &vk_image_info,
-			};
+    for (const auto &[binding, vk_image_info, type] : vk_image_infos) {
+        const auto write_info = vk::WriteDescriptorSet {}
+                                    .setDstSet(*m_vk_descriptor_set)
+                                    .setDstBinding(binding)
+                                    .setDstArrayElement(0)
+                                    .setDescriptorCount(1)
+                                    .setDescriptorType(type)
+                                    .setPImageInfo(&vk_image_info);
 
-		vk_write_infos.emplace_back(std::move(write_info));
-	}
+        vk_write_infos.emplace_back(std::move(write_info));
+    }
 
-	device_table.vkUpdateDescriptorSets(
-		device, gsl::narrow_cast<std::uint32_t>(std::size(vk_write_infos)),
-		std::data(vk_write_infos), 0, nullptr);
+    m_device->updateVkDescriptorSets(vk_write_infos, {});
 }
-

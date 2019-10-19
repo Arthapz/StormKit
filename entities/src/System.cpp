@@ -1,20 +1,19 @@
 #include <storm/entities/EntityManager.hpp>
 #include <storm/entities/System.hpp>
 
+using namespace storm;
 using namespace storm::entities;
 
 /////////////////////////////////////
 /////////////////////////////////////
-System::System(storm::entities::EntityManager &manager, std::uint32_t priority,
-			   ComponentTypes &&types)
-	: m_manager{manager}, m_priority{priority}, m_types{std::move(types)} {
+System::System(EntityManager &manager, core::UInt32 priority, ComponentTypes &&types)
+    : m_manager { &manager }, m_priority { priority }, m_types { std::move(types) } {
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-System::System(storm::entities::EntityManager &manager, std::uint32_t priority,
-			   const ComponentTypes &types)
-	: m_manager{manager}, m_priority{priority}, m_types{types} {
+System::System(EntityManager &manager, core::UInt32 priority, const ComponentTypes &types)
+    : m_manager { &manager }, m_priority { priority }, m_types { types } {
 }
 
 /////////////////////////////////////
@@ -42,15 +41,15 @@ void System::postUpdate() {
 /////////////////////////////////////
 /////////////////////////////////////
 void System::addEntity(Entity e) {
-	STORM_EXPECTS(e != INVALID_ENTITY);
+    STORM_EXPECTS(e != INVALID_ENTITY);
 
-	m_entities.insert(e);
+    m_entities.insert(e);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 void System::removeEntity(Entity e) {
-	STORM_EXPECTS(e != INVALID_ENTITY);
+    STORM_EXPECTS(e != INVALID_ENTITY);
 
-	m_entities.erase(e);
+    m_entities.erase(e);
 }

@@ -7,6 +7,7 @@
 #include <storm/render/core/CommandBuffer.hpp>
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/Enums.hpp>
+#include <storm/render/core/PhysicalDevice.hpp>
 #include <storm/render/core/Queue.hpp>
 
 #include <storm/render/resource/HardwareBuffer.hpp>
@@ -14,55 +15,35 @@
 
 #include <storm/render/sync/Fence.hpp>
 
+#include "ConvertFormatShaders.hpp"
+
 using namespace storm;
 using namespace storm::render;
 
-/////////////////////////////////////
-/////////////////////////////////////
-Texture::Texture(const render::Device &device) : m_device{&device} {};
+#define DELETER [](auto handle, const auto &device) { device->deallocateVmaAllocation(handle); }
 
 /////////////////////////////////////
 /////////////////////////////////////
-Texture::Texture(const Device &device, core::Extent extent,
-				 PixelFormat format, VkImage image)
-	: m_device{&device}, m_vk_image{image}, m_is_owning_image{false} {
-	m_extent = extent;
-	m_format = format;
-
-	m_subresource_range =
-		VkImageSubresourceRange{.aspectMask		= VK_IMAGE_ASPECT_COLOR_BIT,
-								.baseMipLevel	= 0,
-								.levelCount		= 1,
-								.baseArrayLayer = 0,
-								.layerCount		= 1};
-
-	const auto &device_ = static_cast<const Device &>(*m_device);
-	const auto create_info =
-		VkImageViewCreateInfo{.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-							  .image = m_vk_image,
-							  .viewType			= VK_IMAGE_VIEW_TYPE_2D,
-							  .format			= toVK(m_format),
-							  .components		= {.r = VK_COMPONENT_SWIZZLE_R,
-											   .g = VK_COMPONENT_SWIZZLE_G,
-											   .b = VK_COMPONENT_SWIZZLE_B,
-											   .a = VK_COMPONENT_SWIZZLE_A},
-							  .subresourceRange = m_subresource_range};
-
-	m_vk_image_view = device_.createVkImageView(create_info);
-};
-
-/////////////////////////////////////
-/////////////////////////////////////
-Texture::~Texture() {
-	const auto &device = static_cast<const Device &>(*m_device);
-
-	if (m_vk_image_view != VK_NULL_HANDLE)
-		device.destroyVkImageView(m_vk_image_view);
-	if (m_is_owning_image && m_vk_image != VK_NULL_HANDLE)
-		device.destroyVkImage(m_vk_image);
-	if (m_is_owning_image && m_vma_image_memory != VK_NULL_HANDLE)
-		device.deallocateVmaAllocation(m_vma_image_memory);
+Texture::Texture(const Device &device, TextureType type, TextureCreateFlag flags)
+    : m_device { &device }, m_type { type }, m_flags { flags }, m_vma_texture_memory { DELETER,
+                                                                                       *m_device } {
 }
+
+/////////////////////////////////////
+/////////////////////////////////////
+Texture::Texture(const Device &device,
+                 core::Extentu extent,
+                 render::PixelFormat format,
+                 vk::Image image)
+    : Texture(device) {
+    m_extent             = std::move(extent);
+    m_format             = std::move(format);
+    m_non_owning_texture = std::move(image);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+Texture::~Texture() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -74,129 +55,127 @@ Texture &Texture::operator=(Texture &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Texture::loadFromImage(image::Image &image) {
-	STORM_EXPECTS(m_vk_image == VK_NULL_HANDLE);
-	STORM_EXPECTS(m_vk_image_view == VK_NULL_HANDLE);
+void Texture::loadFromImage(image::Image &image,
+                            PixelFormat storage_format,
+                            SampleCountFlag samples,
+                            core::UInt32 mip_levels,
+                            core::UInt32 layers,
+                            TextureUsage usage) {
+    STORM_EXPECTS(!m_non_owning_texture);
 
-	const auto format = [&image]() {
-		switch (image.channels()) {
-		case 1:
-			return render::PixelFormat::R8_UNorm;
-		case 2:
-			return render::PixelFormat::RG8_UNorm;
-		case 3:
-			return render::PixelFormat::RGB8_UNorm;
-		case 4:
-			return render::PixelFormat::RGBA8_UNorm;
-		}
+    const auto format = [&image]() {
+        switch (image.channels()) {
+            case 1: return render::PixelFormat::R8_UNorm;
+            case 2: return render::PixelFormat::RG8_UNorm;
+            case 3: return render::PixelFormat::RGB8_UNorm;
+            case 4: return render::PixelFormat::RGBA8_UNorm;
+        }
 
-		return render::PixelFormat::Undefined;
-	}();
+        return render::PixelFormat::Undefined;
+    }();
 
-	loadFromMemory(image.data(), {image.extent().width, image.extent().height},
-				   format);
+    loadFromMemory(image.data(),
+                   { image.extent().width, image.extent().height },
+                   format,
+                   storage_format,
+                   samples,
+                   mip_levels,
+                   layers,
+                   usage);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Texture::loadFromMemory(storm::core::span<const std::byte> data,
-							 core::Extent extent, render::PixelFormat format) {
-	STORM_EXPECTS(m_vk_image == VK_NULL_HANDLE);
-	STORM_EXPECTS(m_vk_image_view == VK_NULL_HANDLE);
+void Texture::loadFromMemory(
+    storm::core::span<const core::Byte> data,
+    core::Extentu extent,
+    [[maybe_unused]] render::PixelFormat load_format, // TODO convert to storage format
+    render::PixelFormat storage_format,
+    SampleCountFlag samples,
+    core::UInt32 mip_levels,
+    core::UInt32 layers,
+    TextureUsage usage) {
+    STORM_EXPECTS(!m_non_owning_texture);
 
-	createTextureData(extent, format);
+    createTextureData(extent, storage_format, samples, mip_levels, layers, usage);
 
-	auto staging_buffer = m_device->createStagingBuffer(std::size(data));
-	staging_buffer->upload<const std::byte>(data);
+    auto staging_buffer =
+        m_device->createStagingBuffer(gsl::narrow_cast<core::ArraySize>(std::size(data)));
+    staging_buffer.upload<const core::Byte>(data);
 
-	auto fence = m_device->createFence();
+    auto fence = m_device->createFence();
 
-	auto command_buffer = m_device->graphicsQueue().createCommandBuffer();
-	command_buffer->begin(true);
-	command_buffer->transitionImageLayout(*this,
-										  ImageLayout::Transfer_Dst_Optimal);
-	command_buffer->copyBufferToImage(*staging_buffer, *this);
-	command_buffer->transitionImageLayout(
-		*this, ImageLayout::Shader_Read_Only_Optimal);
-	command_buffer->end();
-	command_buffer->build();
+    auto command_buffer = m_device->graphicsQueue().createCommandBuffer();
+    command_buffer.begin(true);
+    command_buffer.transitionTextureLayout(*this,
+                                           TextureLayout::Undefined,
+                                           TextureLayout::Transfer_Dst_Optimal);
+    command_buffer.copyBufferToTexture(staging_buffer, *this);
+    command_buffer.transitionTextureLayout(*this,
+                                           TextureLayout::Transfer_Dst_Optimal,
+                                           TextureLayout::Shader_Read_Only_Optimal);
+    command_buffer.end();
+    command_buffer.build();
 
-	m_device->graphicsQueue().submit(
-		core::makeConstObserverArray(command_buffer), {}, {},
-		core::makeObserver(fence));
-	m_device->waitForFence(*fence);
+    m_device->graphicsQueue().submit(core::makeConstObserversArray(command_buffer),
+                                     {},
+                                     {},
+                                     core::makeObserver(fence));
+    m_device->waitForFence(fence);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Texture::createTextureData(core::Extent extent, render::PixelFormat format,
-								render::SampleCountFlag samples,
-								std::uint32_t mip_levels, std::uint32_t layers,
-								render::ImageUsage usage) {
-	STORM_EXPECTS(m_vk_image == VK_NULL_HANDLE);
-	STORM_EXPECTS(m_vk_image_view == VK_NULL_HANDLE);
-	STORM_EXPECTS(m_mip_levels > 0);
-	STORM_EXPECTS(m_layers > 0);
+void Texture::createTextureData(core::Extentu extent,
+                                render::PixelFormat format,
+                                render::SampleCountFlag samples,
+                                core::UInt32 mip_levels,
+                                core::UInt32 layers,
+                                render::TextureUsage usage) {
+    STORM_EXPECTS(m_mip_levels > 0);
+    STORM_EXPECTS(m_layers > 0);
 
-	const auto &device		 = static_cast<const Device &>(*m_device);
-	const auto &device_table = device.vkDeviceTable();
+    m_samples    = samples;
+    m_mip_levels = mip_levels;
+    m_layers     = layers;
+    m_format     = format;
+    m_extent     = extent / layers;
 
-	m_samples	 = samples;
-	m_mip_levels = mip_levels;
-	m_layers	 = layers;
-	m_format	 = format;
-	m_extent	 = extent;
+    const auto create_info =
+        vk::ImageCreateInfo {}
+            .setImageType(toVK(m_type))
+            .setFormat(toVK(m_format))
+            .setExtent(VkExtent3D { .width = m_extent.w, .height = m_extent.h, .depth = 1 })
+            .setMipLevels(m_mip_levels)
+            .setArrayLayers(m_layers)
+            .setSamples(toVKBits(m_samples))
+            .setTiling(vk::ImageTiling::eOptimal)
+            .setUsage(toVK(usage))
+            .setSharingMode(vk::SharingMode::eExclusive)
+            .setInitialLayout(vk::ImageLayout::eUndefined)
+            .setFlags(toVK(m_flags));
 
-	const auto create_info = VkImageCreateInfo{
-		.sType		   = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-		.imageType	   = VK_IMAGE_TYPE_2D,
-		.format		   = toVK(format),
-		.extent		   = {.width = extent.w, .height = extent.h, .depth = 1},
-		.mipLevels	   = m_mip_levels,
-		.arrayLayers   = m_layers,
-		.samples	   = toVK(m_samples),
-		.tiling		   = VK_IMAGE_TILING_OPTIMAL,
-		.usage		   = toVK(usage),
-		.sharingMode   = VK_SHARING_MODE_EXCLUSIVE,
-		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED};
+    m_vk_texture = m_device->createVkImage(create_info);
 
-	m_vk_image = device.createVkImage(create_info);
+    const auto requirements = m_device->getVkImageMemoryRequirements(*m_vk_texture);
+    const auto alloc_info =
+        VmaAllocationCreateInfo { .requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT };
 
-	auto requirement = VkMemoryRequirements{};
-	device_table.vkGetImageMemoryRequirements(device, m_vk_image, &requirement);
+    m_vma_texture_memory.reset(m_device->allocateVmaAllocation(alloc_info, requirements));
 
-	const auto alloc_info = VmaAllocationCreateInfo{
-		.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
+    m_device->bindVmaImageMemory(m_vma_texture_memory, *m_vk_texture);
+}
 
-	m_vma_image_memory = device.allocateVmaAllocation(alloc_info, requirement);
+/////////////////////////////////////
+/////////////////////////////////////
+TextureView Texture::createView(TextureViewType type,
+                                TextureSubresourceRange subresource_range) const noexcept {
+    return TextureView { *m_device, *this, type, std::move(subresource_range) };
+}
 
-	vmaBindImageMemory(device.vmaAllocator(), m_vma_image_memory, m_vk_image);
-
-	auto image_aspect = VkImageAspectFlags{VK_IMAGE_ASPECT_COLOR_BIT};
-	if (isDepthFormat(format)) {
-		image_aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
-		if (isDepthStencilFormat(format))
-			image_aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
-	}
-
-	m_subresource_range = VkImageSubresourceRange{.aspectMask	= image_aspect,
-												  .baseMipLevel = 0,
-												  .levelCount	= 1,
-												  .baseArrayLayer = 0,
-												  .layerCount	  = 1};
-	const auto create_view_info =
-		VkImageViewCreateInfo{.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-							  .image = m_vk_image,
-							  .viewType			= VK_IMAGE_VIEW_TYPE_2D,
-							  .format			= toVK(m_format),
-							  .components		= {.r = VK_COMPONENT_SWIZZLE_R,
-											   .g = VK_COMPONENT_SWIZZLE_G,
-											   .b = VK_COMPONENT_SWIZZLE_B,
-											   .a = VK_COMPONENT_SWIZZLE_A},
-							  .subresourceRange = m_subresource_range};
-
-	m_vk_image_view = device.createVkImageView(create_view_info);
-
-	m_extent = extent;
-	m_format = format;
+/////////////////////////////////////
+/////////////////////////////////////
+TextureViewOwnedPtr Texture::createViewPtr(TextureViewType type,
+                                           TextureSubresourceRange subresource_range) const {
+    return std::make_unique<TextureView>(*m_device, *this, type, std::move(subresource_range));
 }

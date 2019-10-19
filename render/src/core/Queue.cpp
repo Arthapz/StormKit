@@ -17,28 +17,23 @@ using namespace storm::render;
 
 /////////////////////////////////////
 /////////////////////////////////////
-Queue::Queue(const render::Device &device, render::QueueFlag flags,
-			 std::uint32_t family_index, VkQueue queue)
-	: m_device{&device}, m_queue_flag{flags}, m_family_index{family_index}, m_vk_queue{
-																	  queue} {
-	const auto &device_ = static_cast<const Device &>(*m_device);
-	const auto command_pool_create_info = VkCommandPoolCreateInfo{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-		.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT |
-				 VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-		.queueFamilyIndex = m_family_index};
+Queue::Queue(const render::Device &device,
+             render::QueueFlag flags,
+             core::UInt32 family_index,
+             vk::Queue queue)
+    : m_device { &device }, m_queue_flag { flags }, m_family_index { family_index }, m_vk_queue {
+          queue
+      } {
+    const auto create_info =
+        vk::CommandPoolCreateInfo {}.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
+                                              vk::CommandPoolCreateFlagBits::eTransient);
 
-	m_vk_command_pool = device_.createVkCommandPool(command_pool_create_info);
+    m_vk_command_pool = m_device->createVkCommandPool(create_info);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-Queue::~Queue() {
-	const auto &device = static_cast<const Device &>(*m_device);
-
-	if (m_vk_command_pool != VK_NULL_HANDLE)
-		device.destroyVkCommandPool(m_vk_command_pool);
-}
+Queue::~Queue() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -51,101 +46,118 @@ Queue &Queue::operator=(Queue &&) = default;
 /////////////////////////////////////
 /////////////////////////////////////
 void Queue::waitIdle() const noexcept {
-	STORM_EXPECTS(m_vk_queue != VK_NULL_HANDLE);
+    STORM_EXPECTS(m_vk_queue);
 
-	const auto &device = static_cast<const Device &>(*m_device);
-
-	device.waitIdle(m_vk_queue);
+    m_vk_queue.waitIdle(m_device->vkDispatcher());
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Queue::submit(
-	storm::core::span<const CommandBufferConstObserverPtr>
-		command_buffers,
-	storm::core::span<const SemaphoreConstObserverPtr> wait_semaphores,
-	storm::core::span<const SemaphoreConstObserverPtr>
-		signal_semaphores,
-	render::FenceObserverPtr fence) const noexcept {
-	const auto &device		 = static_cast<const Device &>(*m_device);
-	const auto &device_table = device.vkDeviceTable();
+void Queue::submit(core::span<const CommandBufferConstObserverPtr> command_buffers,
+                   core::span<const SemaphoreConstObserverPtr> wait_semaphores,
+                   core::span<const SemaphoreConstObserverPtr> signal_semaphores,
+                   FenceObserverPtr fence) const noexcept {
+    auto vk_command_buffers = std::vector<vk::CommandBuffer> {};
+    vk_command_buffers.reserve(gsl::narrow_cast<core::ArraySize>(
+        std::size(command_buffers))); // remove narrow_cast when C++20 is avalaible on all platform
+    auto vk_wait_semaphores = std::vector<vk::Semaphore> {};
+    vk_wait_semaphores.reserve(gsl::narrow_cast<core::ArraySize>(std::size(wait_semaphores)));
+    auto vk_signal_semaphores = std::vector<vk::Semaphore> {};
+    vk_signal_semaphores.reserve(gsl::narrow_cast<core::ArraySize>(std::size(signal_semaphores)));
 
-	auto vk_command_buffers = std::vector<VkCommandBuffer>{};
-	vk_command_buffers.reserve(std::size(command_buffers));
-	auto vk_wait_semaphores = std::vector<VkSemaphore>{};
-	vk_wait_semaphores.reserve(std::size(wait_semaphores));
-	auto vk_signal_semaphores = std::vector<VkSemaphore>{};
-	vk_signal_semaphores.reserve(std::size(signal_semaphores));
+    for (const auto &command_buffer : command_buffers)
+        vk_command_buffers.emplace_back(static_cast<const CommandBuffer &>(*command_buffer));
 
-	for (const auto &command_buffer : command_buffers)
-		vk_command_buffers.emplace_back(
-			static_cast<const CommandBuffer &>(*command_buffer));
+    for (const auto &semaphore : wait_semaphores)
+        vk_wait_semaphores.emplace_back(static_cast<const Semaphore &>(*semaphore));
 
-	for (const auto &semaphore : wait_semaphores)
-		vk_wait_semaphores.emplace_back(
-			static_cast<const Semaphore &>(*semaphore));
+    for (const auto &semaphore : signal_semaphores)
+        vk_signal_semaphores.emplace_back(static_cast<const Semaphore &>(*semaphore));
 
-	for (const auto &semaphore : signal_semaphores)
-		vk_signal_semaphores.emplace_back(
-			static_cast<const Semaphore &>(*semaphore));
+    auto wait_stages = std::vector<vk::PipelineStageFlags> {};
+    wait_stages.resize(gsl::narrow_cast<core::ArraySize>(std::size(wait_semaphores)),
+                       vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
-	auto wait_stages = std::vector<VkPipelineStageFlags>{};
-	wait_stages.resize(std::size(wait_semaphores),
-					   VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    const auto submit_info =
+        vk::SubmitInfo {}
+            .setWaitSemaphoreCount(gsl::narrow_cast<core::UInt32>(std::size(vk_wait_semaphores)))
+            .setPWaitSemaphores(std::data(vk_wait_semaphores))
+            .setPWaitDstStageMask(std::data(wait_stages))
+            .setCommandBufferCount(gsl::narrow_cast<core::UInt32>(std::size(vk_command_buffers)))
+            .setPCommandBuffers(std::data(vk_command_buffers))
+            .setSignalSemaphoreCount(
+                gsl::narrow_cast<core::UInt32>(std::size(vk_signal_semaphores)))
+            .setPSignalSemaphores(std::data(vk_signal_semaphores));
 
-	const auto submit_info = VkSubmitInfo{
-		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-		.waitSemaphoreCount =
-			gsl::narrow_cast<std::uint32_t>(std::size(vk_wait_semaphores)),
-		.pWaitSemaphores   = std::data(vk_wait_semaphores),
-		.pWaitDstStageMask = std::data(wait_stages),
-		.commandBufferCount =
-			gsl::narrow_cast<std::uint32_t>(std::size(vk_command_buffers)),
-		.pCommandBuffers = std::data(vk_command_buffers),
-		.signalSemaphoreCount =
-			gsl::narrow_cast<std::uint32_t>(std::size(vk_signal_semaphores)),
-		.pSignalSemaphores = std::data(vk_signal_semaphores)};
+    auto vk_fence = vk::Fence { VK_NULL_HANDLE };
+    if (fence) {
+        fence->reset();
+        vk_fence = *fence;
+    }
 
-	auto vk_fence = VkFence{VK_NULL_HANDLE};
-	if (fence != nullptr) {
-		fence->reset();
-		vk_fence = static_cast<const Fence &>(*fence);
-	}
-
-	device_table.vkQueueSubmit(m_vk_queue, 1, &submit_info, vk_fence);
+    const auto submit_infos = std::array { submit_info };
+    m_vk_queue.submit(submit_infos, vk_fence, m_device->vkDispatcher());
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-CommandBufferOwnedPtr
-	Queue::createCommandBuffer(CommandBufferLevel level) const {
-	auto command_buffer = std::move(createCommandBuffers(1, level)[0]);
+CommandBuffer Queue::createCommandBuffer(CommandBufferLevel level) const {
+    auto command_buffer = std::move(createCommandBuffers(1, level)[0]);
 
-	return command_buffer;
+    return command_buffer;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+CommandBufferOwnedPtr Queue::createCommandBufferPtr(CommandBufferLevel level) const {
+    auto command_buffer = std::move(createCommandBufferPtrs(1, level)[0]);
+
+    return command_buffer;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+std::vector<render::CommandBuffer>
+    Queue::createCommandBuffers(core::ArraySize count, render::CommandBufferLevel level) const {
+    const auto allocate_info = vk::CommandBufferAllocateInfo {}
+                                   .setCommandPool(*m_vk_command_pool)
+                                   .setLevel(toVK(level))
+                                   .setCommandBufferCount(gsl::narrow_cast<core::UInt32>(count));
+
+    auto vk_command_buffers = m_device->allocateVkCommandBuffers(allocate_info);
+
+    auto command_buffers = std::vector<CommandBuffer> {};
+    command_buffers.reserve(std::size(vk_command_buffers));
+
+    for (auto &vk_command_buffer : vk_command_buffers)
+        command_buffers.emplace_back(*this, level, std::move(vk_command_buffer));
+
+    return command_buffers;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 std::vector<render::CommandBufferOwnedPtr>
-	Queue::createCommandBuffers(std::size_t count,
-								render::CommandBufferLevel level) const {
-	const auto &device = static_cast<const Device &>(*m_device);
+    Queue::createCommandBufferPtrs(core::ArraySize count, render::CommandBufferLevel level) const {
+    const auto allocate_info = vk::CommandBufferAllocateInfo {}
+                                   .setCommandPool(*m_vk_command_pool)
+                                   .setLevel(toVK(level))
+                                   .setCommandBufferCount(gsl::narrow_cast<core::UInt32>(count));
 
-	const auto allocate_info = VkCommandBufferAllocateInfo{
-		.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool		= m_vk_command_pool,
-		.level				= toVK(level),
-		.commandBufferCount = gsl::narrow_cast<std::uint32_t>(count)};
+    auto vk_command_buffers = m_device->allocateVkCommandBuffers(allocate_info);
 
-	const auto vk_command_buffers =
-		device.allocateVkCommandBuffers(allocate_info);
+    auto command_buffers = std::vector<render::CommandBufferOwnedPtr> {};
+    command_buffers.reserve(std::size(vk_command_buffers));
 
-	auto command_buffers = std::vector<render::CommandBufferOwnedPtr>{};
-	command_buffers.reserve(std::size(vk_command_buffers));
+    for (auto &vk_command_buffer : vk_command_buffers)
+        command_buffers.emplace_back(
+            std::make_unique<CommandBuffer>(*this, level, std::move(vk_command_buffer)));
 
-	for (const auto vk_command_buffer : vk_command_buffers)
-		command_buffers.emplace_back(
-			std::make_unique<CommandBuffer>(*this, level, vk_command_buffer));
+    return command_buffers;
+}
 
-	return command_buffers;
+/////////////////////////////////////
+/////////////////////////////////////
+vk::Result Queue::vkPresent(const vk::PresentInfoKHR &present_info) const noexcept {
+    return m_vk_queue.presentKHR(present_info, m_device->vkDispatcher());
 }
