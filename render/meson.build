@@ -176,10 +176,10 @@ if get_option('enable_examples')
     subdir('samples')
 endif
 
-install_headers(core_headers + inls, subdir : 'storm/render/core')
-install_headers(resource_headers + inls, subdir : 'storm/render/resource')
-install_headers(pipeline_headers + inls, subdir : 'storm/render/pipeline')
-install_headers(sync_headers + inls, subdir : 'storm/render/sync')
+install_headers(core_headers + core_inls, subdir : 'storm/render/core')
+install_headers(resource_headers + resource_inls, subdir : 'storm/render/resource')
+install_headers(pipeline_headers + pipeline_inls, subdir : 'storm/render/pipeline')
+install_headers(sync_headers + sync_inls, subdir : 'storm/render/sync')
 
 conf = configuration_data()
 conf.set_quoted('PACKAGE_LIBRARY_NAME', 'Render')
