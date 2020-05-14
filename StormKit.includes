@@ -13,16 +13,11 @@ main/include/
 module/include/
 render/include/
 window/include/
-subprojects/fmt-6.2.0/include
-subprojects/glm/
-subprojects/GSL-2.0.0/include
 subprojects/jpeg-9c
 subprojects/libpng-1.6.37
 subprojects/ShaderWriter/include
 subprojects/tinygltf
-subprojects/vulkan-headers/include
 subprojects/zlib-1.2.11
-subprojects/range-v3-0.10.0/include
 window/src/iOS
 window/src/macOS
 window/src/win32
