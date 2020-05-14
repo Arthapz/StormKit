@@ -11,6 +11,7 @@ core_headers = files([
     'include/storm/render/core/Enums.hpp',
     'include/storm/render/core/Instance.hpp',
     'include/storm/render/core/RenderCapabilities.hpp',
+    'include/storm/render/core/MemoryBarrier.hpp',
     'include/storm/render/core/PhysicalDevice.hpp',
     'include/storm/render/core/PhysicalDeviceInfo.hpp',
     'include/storm/render/core/Device.hpp',
