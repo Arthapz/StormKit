@@ -12,6 +12,7 @@
 #include <storm/core/Platform.hpp>
 
 #if __has_include(<ranges>) && defined(__cpp_lib_concepts)
+    #include <algorithm>
     #include <ranges>
 namespace storm::core {
     namespace ranges = std::ranges;
