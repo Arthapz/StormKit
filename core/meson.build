@@ -1,6 +1,6 @@
 fmt_dep = dependency('fmt')
 glm_dep = dependency('glm')
-gsl_dep = dependency('gsl')
+gsl_dep = dependency('Microsoft.GSL', method: 'cmake', modules: ['Microsoft.GSL::GSL'])
 range_v3_dep = dependency('range-v3')
 
 dependencies = [fmt_dep, glm_dep, gsl_dep, range_v3_dep]
