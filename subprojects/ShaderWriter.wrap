@@ -1,5 +1,5 @@
 [wrap-git]
-url=https://github.com/DragonJoker/ShaderWriter.git
+url=https://github.com/Arthapz/ShaderWriter.git
 revision=master
 depth=1
 clone-recursive=true
