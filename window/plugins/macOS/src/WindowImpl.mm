@@ -47,10 +47,6 @@ void WindowImpl::close() noexcept {
 	drainThreadPool();
 }
 
-void WindowImpl::display() noexcept {
-
-}
-
 bool WindowImpl::pollEvent(storm::window::Event &event, [[maybe_unused]] void *native_event) noexcept {
 	[m_controller processEvent];
 

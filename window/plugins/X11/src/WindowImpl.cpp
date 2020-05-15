@@ -213,11 +213,6 @@ void WindowImpl::close() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WindowImpl::display() noexcept {
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
 bool WindowImpl::pollEvent(Event &event, void *native_event) noexcept {
     xcb_generic_event_t *xevent;
     if (xevent = xcb_poll_for_event(m_connection.get()); !xevent) return false;

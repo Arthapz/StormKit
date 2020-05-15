@@ -1,7 +1,10 @@
 #pragma once
 
+/////////// - StormKit::window - ///////////
 #include <storm/window/Key.hpp>
 #include <storm/window/MouseButton.hpp>
+
+/////////// - XCB - ///////////
 #include <xcb/xcb.h>
 
 xcb_keysym_t stormkeyToX11Key(storm::window::Key key);

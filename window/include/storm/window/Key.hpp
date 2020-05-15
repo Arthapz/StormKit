@@ -4,13 +4,14 @@
 
 #pragma once
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Strings.hpp>
 
 #undef DELETE
 
 namespace storm::window {
     enum class Key : core::Int8 {
-        UNKNOW = -1,
+        Unknow = -1,
         A      = 0,
         B,
         C,
@@ -37,66 +38,66 @@ namespace storm::window {
         X,
         Y,
         Z,
-        NUM0,
-        NUM1,
-        NUM2,
-        NUM3,
-        NUM4,
-        NUM5,
-        NUM6,
-        NUM7,
-        NUM8,
-        NUM9,
-        ESCAPE,
-        LCONTROL,
-        LSHIFT,
-        LALT,
-        LSYSTEM,
-        RCONTROL,
-        RSHIFT,
-        RALT,
-        RSYSTEM,
-        MENU,
-        LBRACKET,
-        RBRACKET,
-        SEMICOLON,
-        COMMA,
-        PERIOD,
-        QUOTE,
-        SLASH,
-        BACKSLASH,
-        TILDE,
-        EQUAL,
-        HYPHEN,
-        SPACE,
-        ENTER,
-        BACKSPACE,
-        TAB,
-        PAGEUP,
-        PAGEDOWN,
-        BEGIN,
-        END,
-        HOME,
-        INSERT,
-        DELETE,
-        ADD,
-        SUBSTRACT,
-        MULTIPLY,
-        DIVIDE,
-        LEFT,
-        RIGHT,
-        UP,
-        DOWN,
-        NUMPAD0,
-        NUMPAD1,
-        NUMPAD2,
-        NUMPAD3,
-        NUMPAD4,
-        NUMPAD5,
-        NUMPAD6,
-        NUMPAD7,
-        NUMPAD8,
-        NUMPAD9,
+        Num0,
+        Num1,
+        Num2,
+        Num3,
+        Num4,
+        Num5,
+        Num6,
+        Num7,
+        Num8,
+        Num9,
+        Escape,
+        L_Control,
+        L_Shift,
+        L_Alt,
+        L_System,
+        R_Control,
+        R_Shift,
+        R_Alt,
+        R_System,
+        Menu,
+        L_Bracket,
+        R_Bracket,
+        Semi_Colon,
+        Comma,
+        Period,
+        Quote,
+        Slash,
+        Back_Slash,
+        Tilde,
+        Equal,
+        Hyphen,
+        Space,
+        Enter,
+        Back_Space,
+        Tab,
+        Page_Up,
+        Page_Down,
+        Begin,
+        End,
+        Home,
+        Insert,
+        Delete,
+        Add,
+        Substract,
+        Multiply,
+        Divide,
+        Left,
+        Right,
+        Up,
+        Down,
+        Numpad0,
+        Numpad1,
+        Numpad2,
+        Numpad3,
+        Numpad4,
+        Numpad5,
+        Numpad6,
+        Numpad7,
+        Numpad8,
+        Numpad9,
         F1,
         F2,
         F3,
@@ -112,8 +113,8 @@ namespace storm::window {
         F13,
         F14,
         F15,
-        PAUSE,
-        KEYCOUNT,
+        Pause,
+        Keycount,
     };
 
     ////////////////////////////////////////
@@ -122,7 +123,7 @@ namespace storm::window {
         using namespace storm::window;
 
         switch (value) {
-            case Key::UNKNOW: return "UNKNOW";
+            case Key::Unknow: return "Unknow";
             case Key::A: return "A";
             case Key::B: return "B";
             case Key::C: return "C";
@@ -149,66 +150,66 @@ namespace storm::window {
             case Key::X: return "X";
             case Key::Y: return "Y";
             case Key::Z: return "Z";
-            case Key::NUM0: return "NUM0";
-            case Key::NUM1: return "NUM1";
-            case Key::NUM2: return "NUM2";
-            case Key::NUM3: return "NUM3";
-            case Key::NUM4: return "NUM4";
-            case Key::NUM5: return "NUM5";
-            case Key::NUM6: return "NUM6";
-            case Key::NUM7: return "NUM7";
-            case Key::NUM8: return "NUM8";
-            case Key::NUM9: return "NUM9";
-            case Key::ESCAPE: return "ESCAPE";
-            case Key::LCONTROL: return "LCONTROL";
-            case Key::LSHIFT: return "LSHIFT";
-            case Key::LALT: return "LALT";
-            case Key::LSYSTEM: return "LSYSTEM";
-            case Key::RCONTROL: return "RCONTROL";
-            case Key::RSHIFT: return "RSHIFT";
-            case Key::RALT: return "RALT";
-            case Key::RSYSTEM: return "RSYSTEM";
-            case Key::MENU: return "MENU";
-            case Key::LBRACKET: return "LBRACKET";
-            case Key::RBRACKET: return "RBRACKET";
-            case Key::SEMICOLON: return "SEMICOLON";
-            case Key::COMMA: return "COMMA";
-            case Key::PERIOD: return "PERIOD";
-            case Key::QUOTE: return "QUOTE";
-            case Key::SLASH: return "SLASH";
-            case Key::BACKSLASH: return "BACKSLASH";
-            case Key::TILDE: return "TILDE";
-            case Key::EQUAL: return "EQUAL";
-            case Key::HYPHEN: return "HYPHEN";
-            case Key::SPACE: return "SPACE";
-            case Key::ENTER: return "ENTER";
-            case Key::BACKSPACE: return "BACKSPACE";
-            case Key::TAB: return "TAB";
-            case Key::PAGEUP: return "PAGEUP";
-            case Key::PAGEDOWN: return "PAGEDOWN";
-            case Key::BEGIN: return "BEGIN";
-            case Key::END: return "END";
-            case Key::HOME: return "HOME";
-            case Key::INSERT: return "INSERT";
-            case Key::DELETE: return "DELETE";
-            case Key::ADD: return "ADD";
-            case Key::SUBSTRACT: return "SUBSTRACT";
-            case Key::MULTIPLY: return "MULTIPLY";
-            case Key::DIVIDE: return "DIVIDE";
-            case Key::LEFT: return "LEFT";
-            case Key::RIGHT: return "RIGHT";
-            case Key::UP: return "UP";
-            case Key::DOWN: return "DOWN";
-            case Key::NUMPAD0: return "NUMPAD0";
-            case Key::NUMPAD1: return "NUMPAD1";
-            case Key::NUMPAD2: return "NUMPAD2";
-            case Key::NUMPAD3: return "NUMPAD3";
-            case Key::NUMPAD4: return "NUMPAD4";
-            case Key::NUMPAD5: return "NUMPAD5";
-            case Key::NUMPAD6: return "NUMPAD6";
-            case Key::NUMPAD7: return "NUMPAD7";
-            case Key::NUMPAD8: return "NUMPAD8";
-            case Key::NUMPAD9: return "NUMPAD9";
+            case Key::Num0: return "Num0";
+            case Key::Num1: return "Num1";
+            case Key::Num2: return "Num2";
+            case Key::Num3: return "Num3";
+            case Key::Num4: return "Num4";
+            case Key::Num5: return "Num5";
+            case Key::Num6: return "Num6";
+            case Key::Num7: return "Num7";
+            case Key::Num8: return "Num8";
+            case Key::Num9: return "Num9";
+            case Key::Escape: return "Escape";
+            case Key::L_Control: return "L_Control";
+            case Key::L_Shift: return "L_Shift";
+            case Key::L_Alt: return "L_Alt";
+            case Key::L_System: return "L_System";
+            case Key::R_Control: return "R_Control";
+            case Key::R_Shift: return "R_Shift";
+            case Key::R_Alt: return "R_Alt";
+            case Key::R_System: return "R_System";
+            case Key::Menu: return "Menu";
+            case Key::L_Bracket: return "L_Bracket";
+            case Key::R_Bracket: return "R_Bracket";
+            case Key::Semi_Colon: return "Semi_Colon";
+            case Key::Comma: return "Comma";
+            case Key::Period: return "Period";
+            case Key::Quote: return "Quote";
+            case Key::Slash: return "Slash";
+            case Key::Back_Slash: return "Back_Slash";
+            case Key::Tilde: return "Tilde";
+            case Key::Equal: return "Equal";
+            case Key::Hyphen: return "Hyphen";
+            case Key::Space: return "Space";
+            case Key::Enter: return "Enter";
+            case Key::Back_Space: return "Back_Space";
+            case Key::Tab: return "Tab";
+            case Key::Page_Up: return "Page_Up";
+            case Key::Page_Down: return "Page_Down";
+            case Key::Begin: return "Begin";
+            case Key::End: return "End";
+            case Key::Home: return "Home";
+            case Key::Insert: return "Insert";
+            case Key::Delete: return "Delete";
+            case Key::Add: return "Add";
+            case Key::Substract: return "Substract";
+            case Key::Multiply: return "Multiply";
+            case Key::Divide: return "Divide";
+            case Key::Left: return "Left";
+            case Key::Right: return "Right";
+            case Key::Up: return "Up";
+            case Key::Down: return "Down";
+            case Key::Numpad0: return "Numpad0";
+            case Key::Numpad1: return "Numpad1";
+            case Key::Numpad2: return "Numpad2";
+            case Key::Numpad3: return "Numpad3";
+            case Key::Numpad4: return "Numpad4";
+            case Key::Numpad5: return "Numpad5";
+            case Key::Numpad6: return "Numpad6";
+            case Key::Numpad7: return "Numpad7";
+            case Key::Numpad8: return "Numpad8";
+            case Key::Numpad9: return "Numpad9";
             case Key::F1: return "F1";
             case Key::F2: return "F2";
             case Key::F3: return "F3";
@@ -224,8 +225,8 @@ namespace storm::window {
             case Key::F13: return "F13";
             case Key::F14: return "F14";
             case Key::F15: return "F15";
-            case Key::PAUSE: return "PAUSE";
-            case Key::KEYCOUNT: return "KEYCOUNT";
+            case Key::Pause: return "PAUSE";
+            case Key::Keycount: return "KEYCOUNT";
         }
 
         return "UNKNOWN KEY";

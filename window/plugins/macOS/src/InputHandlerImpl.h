@@ -47,6 +47,6 @@ namespace storm::window {
 		static inline UCKeyboardLayout *m_layout = nullptr;
 		static inline IOHIDManagerRef m_manager	 = nullptr;
 
-		static inline IOHIDElements m_keys[static_cast<core::ArraySize>(Key::KEYCOUNT)] = {};
+		static inline IOHIDElements m_keys[static_cast<core::ArraySize>(Key::Keycount)] = {};
 	};
 } // namespace storm::window

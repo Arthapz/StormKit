@@ -1,14 +1,21 @@
 #pragma once
 
+/////////// - STL - ///////////
 #include <functional>
 #include <memory>
+
+/////////// - StormKit::core - ///////////
 #include <storm/core/Platform.hpp>
+
+/////////// - StormKit::window - ///////////
 #include <storm/window/AbstractWindow.hpp>
+
+/////////// - XCB - ///////////
 #include <xcb/xcb.h>
 #include <xcb/xcb_keysyms.h>
 
 namespace storm::window {
-    class WindowImpl: public AbstractWindow {
+    class STORM_PRIVATE WindowImpl: public AbstractWindow {
         struct XCBConnectionDeleter {
             void operator()(xcb_connection_t *connection) { xcb_disconnect(connection); }
         };
@@ -26,7 +33,6 @@ namespace storm::window {
                     const storm::window::VideoSettings &settings,
                     storm::window::WindowStyle style) override;
         void close() noexcept override;
-        void display() noexcept override;
 
         // BLC
         bool pollEvent(storm::window::Event &event, void *native_event) noexcept override;

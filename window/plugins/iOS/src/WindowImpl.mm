@@ -70,12 +70,6 @@ void WindowImpl::close() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WindowImpl::display() noexcept {
-
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
 bool WindowImpl::pollEvent(storm::window::Event &event, [[maybe_unused]] void *native_event) noexcept {
 	while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0001, true) == kCFRunLoopRunHandledSource)
 		;
