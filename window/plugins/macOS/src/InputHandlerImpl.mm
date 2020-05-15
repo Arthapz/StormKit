@@ -5,8 +5,8 @@
 #import <AppKit/AppKit.h>
 
 #include <storm/window/Event.hpp>
-#include <storm/window/Window.hpp>
 #include <storm/window/VideoSettings.hpp>
+#include <storm/window/Window.hpp>
 
 #include <cmath>
 
@@ -14,21 +14,16 @@ using namespace storm;
 using namespace storm::window;
 
 void setMousePositionInternal(CGPoint point) {
-	auto move_event = CGEventCreateMouseEvent(
-		nullptr,
-		kCGEventMouseMoved,
-		std::move(point),
-		kCGMouseButtonLeft
-		);
+    auto move_event =
+        CGEventCreateMouseEvent(nullptr, kCGEventMouseMoved, std::move(point), kCGMouseButtonLeft);
 
-	CGEventPost(kCGSessionEventTap, move_event);
-	CFRelease(move_event);
+    CGEventPost(kCGSessionEventTap, move_event);
+    CFRelease(move_event);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-InputHandlerImpl::InputHandlerImpl() {
-
+InputHandlerImpl::InputHandlerImpl(const Window &window) : AbstractInputHandler { window } {
 }
 
 /////////////////////////////////////
@@ -45,249 +40,245 @@ InputHandlerImpl &InputHandlerImpl::operator=(InputHandlerImpl &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool InputHandlerImpl::isKeyPressed(Key key) {
-	initIOHID();
+bool InputHandlerImpl::isKeyPressed(Key key) const noexcept {
+    initIOHID();
 
-	auto elements = m_keys[static_cast<core::ArraySize>(key)];
+    auto elements = m_keys[static_cast<core::ArraySize>(key)];
 
-	auto state = false;
-	for(auto element = std::begin(elements); element != std::end(elements);) {
-		auto value = IOHIDValueRef{nullptr};
-		auto device = IOHIDElementGetDevice(*element);
+    auto state = false;
+    for (auto element = std::begin(elements); element != std::end(elements);) {
+        auto value  = IOHIDValueRef { nullptr };
+        auto device = IOHIDElementGetDevice(*element);
 
-		IOHIDDeviceGetValue(device, *element, &value);
+        IOHIDDeviceGetValue(device, *element, &value);
 
-		if (!value) {
-			CFRelease(*element);
-			element = elements.erase(element);
-		} else if (IOHIDValueGetIntegerValue(value) == 1) {
-			state = true;
-			break;
-		} else ++element;
-	}
+        if (!value) {
+            CFRelease(*element);
+            element = elements.erase(element);
+        } else if (IOHIDValueGetIntegerValue(value) == 1) {
+            state = true;
+            break;
+        } else
+            ++element;
+    }
 
-	return state;
+    return state;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) {
-	auto state = [NSEvent pressedMouseButtons];
+bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) const noexcept {
+    auto state = [NSEvent pressedMouseButtons];
 
-	switch(button) {
-	case MouseButton::LEFT:
-		return (state & (1 << 0)) != 0;
-	case MouseButton::RIGHT:
-		return (state & (1 << 1)) != 0;
-	case MouseButton::MIDDLE:
-		return (state & (1 << 2)) != 0;
-	case MouseButton::BUTTON1:
-		return (state & (1 << 3)) != 0;
-	case MouseButton::BUTTON2:
-		return (state & (1 << 4)) != 0;
-	default:
-		return false;
-	}
+    switch (button) {
+        case MouseButton::Left: return (state & (1 << 0)) != 0;
+        case MouseButton::Right: return (state & (1 << 1)) != 0;
+        case MouseButton::Middle: return (state & (1 << 2)) != 0;
+        case MouseButton::Button1: return (state & (1 << 3)) != 0;
+        case MouseButton::Button2: return (state & (1 << 4)) != 0;
+        default: return false;
+    }
 
-	return false;
+    return false;
+}
+
+extern "C" {
+extern const storm::window::VideoSettings *getDesktopModes(storm::core::ArraySize &size);
+}
+/////////////////////////////////////
+/////////////////////////////////////
+core::Position2u InputHandlerImpl::getMousePositionOnDesktop() const noexcept {
+    auto size                 = core::ArraySize { 0u };
+    const auto scale          = [[NSScreen mainScreen] backingScaleFactor];
+    const auto desktop_height = getDesktopModes(size)[0].size.height;
+    const auto pos            = [NSEvent mouseLocation];
+
+    const auto position = core::Vector2u { scale * pos.x, desktop_height - (scale * pos.y) };
+
+    return core::makeNamed<core::Position2u>(std::move(position));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setMousePosition(core::Position2u position) {
-	const auto scale = [[NSScreen mainScreen] backingScaleFactor];
-	const auto point = CGPoint{gsl::narrow_cast<double>(position->x / scale), gsl::narrow_cast<double>(position->y / scale)};
+void InputHandlerImpl::setMousePositionOnDesktop(core::Position2u position) noexcept {
+    const auto scale = [[NSScreen mainScreen] backingScaleFactor];
+    const auto point = CGPoint { gsl::narrow_cast<double>(position->x / scale),
+                                 gsl::narrow_cast<double>(position->y / scale) };
 
-	setMousePositionInternal(std::move(point));
+    setMousePositionInternal(std::move(point));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setMousePosition(core::Position2i position, const Window &relative_to) {
-	auto native_handle = static_cast<StormView*>(relative_to.nativeHandle());
-	const auto scale = [[NSScreen mainScreen] backingScaleFactor];
+core::Position2i InputHandlerImpl::getMousePositionOnWindow() const noexcept {
+    auto native_handle = static_cast<StormView *>(m_window->nativeHandle());
+    auto window        = [native_handle myWindow];
+    const auto scale   = [[NSScreen mainScreen] backingScaleFactor];
 
-	const auto point = CGPoint{gsl::narrow_cast<double>(position->x / scale), gsl::narrow_cast<double>(position->y / scale)};
-	const auto on_screen = [native_handle relativeToGlobal:point];
+    const auto window_height = m_window->size().height;
 
-	setMousePositionInternal(std::move(on_screen));
+    const auto screen_pos = [NSEvent mouseLocation];
+
+    const auto rect        = NSMakeRect(screen_pos.x, screen_pos.y, 0, 0);
+    const auto window_rect = [window convertRectFromScreen:rect];
+
+    const NSPoint pos =
+        [native_handle convertPoint:NSMakePoint(window_rect.origin.x, window_rect.origin.y)
+                           fromView:native_handle];
+    const auto position = core::Vector2i { scale * pos.x, scale * (window_height - pos.y) };
+
+    return core::makeNamed<core::Position2i>(std::move(position));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-core::Position2u InputHandlerImpl::getMousePosition() {
-	const auto scale = [[NSScreen mainScreen] backingScaleFactor];
-	const auto desktop_height = VideoSettings::getDesktopModes()[0].size.height;
-	const auto pos = [NSEvent mouseLocation];
+void InputHandlerImpl::setMousePositionOnWindow(core::Position2i position) noexcept {
+    auto native_handle = static_cast<StormView *>(m_window->nativeHandle());
+    const auto scale   = [[NSScreen mainScreen] backingScaleFactor];
 
-	const auto position = core::Vector2u{scale * pos.x, desktop_height - (scale * pos.y)};
+    const auto point     = CGPoint { gsl::narrow_cast<double>(position->x / scale),
+                                 gsl::narrow_cast<double>(position->y / scale) };
+    const auto on_screen = [native_handle relativeToGlobal:point];
 
-	return core::makeNamed<core::Position2u>(std::move(position));
+    setMousePositionInternal(std::move(on_screen));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-core::Position2i InputHandlerImpl::getMousePosition(const Window &relative_to) {
-	auto native_handle = static_cast<StormView*>(relative_to.nativeHandle());
-	auto window = [native_handle myWindow];
-	const auto scale = [[NSScreen mainScreen] backingScaleFactor];
-
-	const auto window_height = relative_to.size().height;
-
-	const auto screen_pos = [NSEvent mouseLocation];
-
-	const auto rect = NSMakeRect(screen_pos.x, screen_pos.y, 0, 0);
-	const auto window_rect = [window convertRectFromScreen: rect];
-
-	const NSPoint pos = 
-		[native_handle convertPoint: NSMakePoint(window_rect.origin.x, window_rect.origin.y) fromView: native_handle];
-	const auto position = core::Vector2i{scale * pos.x, scale * (window_height - pos.y)};
-
-	return core::makeNamed<core::Position2i>(std::move(position));
-}
-
-
-/////////////////////////////////////
-/////////////////////////////////////
-void InputHandlerImpl::setVirtualKeyboardVisible([[maybe_unused]] bool visible) {
-   // not supported
+void InputHandlerImpl::setVirtualKeyboardVisible([[maybe_unused]] bool visible) noexcept {
+    // not supported
 }
 
 void InputHandlerImpl::initIOHID() {
-	static auto is_init = false;
-	if(is_init) return;
+    static auto is_init = false;
+    if (is_init) return;
 
-	auto tis = TISCopyCurrentKeyboardLayoutInputSource();
-	m_layout_data = static_cast<CFDataRef>(TISGetInputSourceProperty(tis, kTISPropertyUnicodeKeyLayoutData));
+    auto tis = TISCopyCurrentKeyboardLayoutInputSource();
+    m_layout_data =
+        static_cast<CFDataRef>(TISGetInputSourceProperty(tis, kTISPropertyUnicodeKeyLayoutData));
 
-	CFRetain(m_layout_data);
-	m_layout = const_cast<UCKeyboardLayout*>(reinterpret_cast<const UCKeyboardLayout*>(CFDataGetBytePtr(m_layout_data)));
+    CFRetain(m_layout_data);
+    m_layout = const_cast<UCKeyboardLayout *>(
+        reinterpret_cast<const UCKeyboardLayout *>(CFDataGetBytePtr(m_layout_data)));
 
-	CFRelease(tis);
+    CFRelease(tis);
 
-	m_manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
+    m_manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
 
-	IOHIDManagerOpen(m_manager, kIOHIDOptionsTypeNone);
+    IOHIDManagerOpen(m_manager, kIOHIDOptionsTypeNone);
 
-	initializeKeyboard();
+    initializeKeyboard();
 
-	is_init = true;
+    is_init = true;
 }
 
 void InputHandlerImpl::initializeKeyboard() {
-	auto keyboards = copyDevices(kHIDPage_GenericDesktop, kHIDUsage_GD_Keyboard);
+    auto keyboards = copyDevices(kHIDPage_GenericDesktop, kHIDUsage_GD_Keyboard);
 
-	auto keyboardCount = CFSetGetCount(keyboards);
+    auto keyboardCount = CFSetGetCount(keyboards);
 
-	auto devices_array = std::vector<CFTypeRef>{};
-	devices_array.resize(keyboardCount, nullptr);
+    auto devices_array = std::vector<CFTypeRef> {};
+    devices_array.resize(keyboardCount, nullptr);
 
-	CFSetGetValues(keyboards, std::data(devices_array));
+    CFSetGetValues(keyboards, std::data(devices_array));
 
-	for (auto i = CFIndex{0}; i < keyboardCount; ++i) {
-		IOHIDDeviceRef keyboard = reinterpret_cast<IOHIDDeviceRef>(const_cast<void*>(devices_array[i]));
-		loadKeyboard(keyboard);
-	}
+    for (auto i = CFIndex { 0 }; i < keyboardCount; ++i) {
+        IOHIDDeviceRef keyboard =
+            reinterpret_cast<IOHIDDeviceRef>(const_cast<void *>(devices_array[i]));
+        loadKeyboard(keyboard);
+    }
 
-	CFRelease(keyboards);
+    CFRelease(keyboards);
 }
 
-
 void InputHandlerImpl::loadKeyboard(IOHIDDeviceRef keyboard) {
-	auto keys = IOHIDDeviceCopyMatchingElements(keyboard,
-													  nullptr,
-													  kIOHIDOptionsTypeNone);
+    auto keys = IOHIDDeviceCopyMatchingElements(keyboard, nullptr, kIOHIDOptionsTypeNone);
 
-	auto keys_count = CFArrayGetCount(keys);
+    auto keys_count = CFArrayGetCount(keys);
 
-	for (auto i = CFIndex{0}; i < keys_count; ++i) {
-		IOHIDElementRef key = reinterpret_cast<IOHIDElementRef>(const_cast<void*>(CFArrayGetValueAtIndex(keys, i)));
+    for (auto i = CFIndex { 0 }; i < keys_count; ++i) {
+        IOHIDElementRef key =
+            reinterpret_cast<IOHIDElementRef>(const_cast<void *>(CFArrayGetValueAtIndex(keys, i)));
 
-		if (IOHIDElementGetUsagePage(key) != kHIDPage_KeyboardOrKeypad)
-			continue;
+        if (IOHIDElementGetUsagePage(key) != kHIDPage_KeyboardOrKeypad) continue;
 
-		loadKey(key);
-	}
+        loadKey(key);
+    }
 
-	// Release unused stuff
-	CFRelease(keys);
+    // Release unused stuff
+    CFRelease(keys);
 }
 
 void InputHandlerImpl::loadKey(IOHIDElementRef key) {
-	auto usage_code   = IOHIDElementGetUsage(key);
-	auto virtual_code = usageToVirtualCode(usage_code);
+    auto usage_code   = IOHIDElementGetUsage(key);
+    auto virtual_code = usageToVirtualCode(usage_code);
 
-	if (virtual_code == 0xff)
-		return;
+    if (virtual_code == 0xff) return;
 
-	auto dead_key_state     = core::UInt32{0};
-	const auto max_string_length  = UniCharCount{4};
-	auto actual_string_length = UniCharCount{0};
+    auto dead_key_state          = core::UInt32 { 0 };
+    const auto max_string_length = UniCharCount { 4 };
+    auto actual_string_length    = UniCharCount { 0 };
 
-	auto unicode_string = std::vector<UniChar>{};
-	unicode_string.resize(max_string_length);
+    auto unicode_string = std::vector<UniChar> {};
+    unicode_string.resize(max_string_length);
 
-	UCKeyTranslate(m_layout,
-				   virtual_code,
-				   kUCKeyActionDown,
-				   0x100,
-				   LMGetKbdType(),
-				   kUCKeyTranslateNoDeadKeysBit,
-				   &dead_key_state,
-				   max_string_length,
-				   &actual_string_length,
-				   std::data(unicode_string));
+    UCKeyTranslate(m_layout,
+                   virtual_code,
+                   kUCKeyActionDown,
+                   0x100,
+                   LMGetKbdType(),
+                   kUCKeyTranslateNoDeadKeysBit,
+                   &dead_key_state,
+                   max_string_length,
+                   &actual_string_length,
+                   std::data(unicode_string));
 
-	auto code = Key::UNKNOW;
+    auto code = Key::Unknow;
 
-	if (actual_string_length > 0)
-		code = localizedKeyToStormKey(unicode_string[0]);
+    if (actual_string_length > 0) code = localizedKeyToStormKey(unicode_string[0]);
 
-	if (code == Key::UNKNOW)
-		code = nonLocalizedKeytoStormKey(virtual_code);
+    if (code == Key::Unknow) code = nonLocalizedKeytoStormKey(virtual_code);
 
-	if (code != Key::UNKNOW)
-	{
-		m_keys[static_cast<core::ArraySize>(code)].emplace_back(key);
+    if (code != Key::Unknow) {
+        m_keys[static_cast<core::ArraySize>(code)].emplace_back(key);
 
-		CFRetain(m_keys[static_cast<core::ArraySize>(code)].back());
-	}
+        CFRetain(m_keys[static_cast<core::ArraySize>(code)].back());
+    }
 }
 
 CFDictionaryRef InputHandlerImpl::copyDevicesMask(core::UInt32 page, core::UInt32 usage) {
-	auto dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 2,
-															&kCFTypeDictionaryKeyCallBacks,
-															&kCFTypeDictionaryValueCallBacks);
+    auto dict = CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                          2,
+                                          &kCFTypeDictionaryKeyCallBacks,
+                                          &kCFTypeDictionaryValueCallBacks);
 
-	auto value = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page);
-	CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsagePageKey), value);
-	CFRelease(value);
+    auto value = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page);
+    CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsagePageKey), value);
+    CFRelease(value);
 
-	value = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &usage);
-	CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsageKey), value);
-	CFRelease(value);
+    value = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &usage);
+    CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsageKey), value);
+    CFRelease(value);
 
-	return dict;
+    return dict;
 }
 
 CFSetRef InputHandlerImpl::copyDevices(core::UInt32 page, core::UInt32 usage) {
-	auto mask = copyDevicesMask(page, usage);
+    auto mask = copyDevicesMask(page, usage);
 
-	IOHIDManagerSetDeviceMatching(m_manager, mask);
+    IOHIDManagerSetDeviceMatching(m_manager, mask);
 
-	CFRelease(mask);
-	mask = nullptr;
+    CFRelease(mask);
+    mask = nullptr;
 
-	auto devices = IOHIDManagerCopyDevices(m_manager);
-	if (devices == nullptr)
-		return nullptr;
+    auto devices = IOHIDManagerCopyDevices(m_manager);
+    if (devices == nullptr) return nullptr;
 
-	CFIndex deviceCount = CFSetGetCount(devices);
-	if (deviceCount < 1)
-	{
-		CFRelease(devices);
-		return nullptr;
-	}
+    CFIndex deviceCount = CFSetGetCount(devices);
+    if (deviceCount < 1) {
+        CFRelease(devices);
+        return nullptr;
+    }
 
-	return devices;
+    return devices;
 }

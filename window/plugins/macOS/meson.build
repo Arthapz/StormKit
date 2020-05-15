@@ -17,7 +17,7 @@ sources += files([
     'src/StormWindowController.mm',
     'src/Utils.mm',
     'src/WindowImpl.mm',
-    'src/VideoSettings.mm',
+    'src/Plugin.mm',
     'src/InputHandlerImpl.mm',
     'src/StormApplication.h',
     'src/StormApplicationDelegate.h',
@@ -31,11 +31,11 @@ sources += files([
 ])
 
 macos_plugin = shared_library(
-    'StormKit-window-macOS' + suffix
+    'StormKit-window-macOS' + suffix,
     sources,
     dependencies: private_dependencies,
-    objc_args: ['-std=c11']
-    objcpp_args: ['-std=c++2a']
+    objc_args: ['-std=c11'],
+    objcpp_args: ['-std=c++2a'],
     install: true
 )
 

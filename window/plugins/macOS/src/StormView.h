@@ -3,38 +3,43 @@
 #import <AppKit/NSView.h>
 #include <storm/core/Platform.hpp>
 
-class WindowImpl;
-@interface StormView : NSView
+namespace storm::window {
+    class WindowImpl;
+}
 
-	- (BOOL) acceptsFirstResponder;
-	- (id) initWithFrame: (NSRect) frame withRequester: (WindowImpl*)_requester withWindow: (NSWindow*)window;
+@interface StormView: NSView
 
-	- (NSWindow*) myWindow;
-	- (void) mouseDown:(NSEvent *)event;
-	- (void) rightMouseDown:(NSEvent *)event;
-	- (void) otherMouseDown:(NSEvent *)event;
-	- (void) handleMouseDown:(NSEvent *)event;
+- (BOOL)acceptsFirstResponder;
+- (id)initWithFrame:(NSRect)frame
+      withRequester:(storm::window::WindowImpl *)_requester
+         withWindow:(NSWindow *)window;
 
-	- (void) mouseUp:(NSEvent *)event;
-	- (void) rightMouseUp:(NSEvent *)event;
-	- (void) otherMouseUp:(NSEvent *)event;
-	- (void) handleMouseUp:(NSEvent *)event;
+- (NSWindow *)myWindow;
+- (void)mouseDown:(NSEvent *)event;
+- (void)rightMouseDown:(NSEvent *)event;
+- (void)otherMouseDown:(NSEvent *)event;
+- (void)handleMouseDown:(NSEvent *)event;
 
-	- (void) mouseMoved:(NSEvent*)event;
-	- (void) mouseDragged:(NSEvent*)event;
-	- (void) rightMouseDragged: (NSEvent*)event;
-	- (void) handleMouseMove:(NSEvent*)event;
+- (void)mouseUp:(NSEvent *)event;
+- (void)rightMouseUp:(NSEvent *)event;
+- (void)otherMouseUp:(NSEvent *)event;
+- (void)handleMouseUp:(NSEvent *)event;
 
-	- (void) mouseEntered:(NSEvent*)event;
-	- (void) mouseExited:(NSEvent*)event;
+- (void)mouseMoved:(NSEvent *)event;
+- (void)mouseDragged:(NSEvent *)event;
+- (void)rightMouseDragged:(NSEvent *)event;
+- (void)handleMouseMove:(NSEvent *)event;
 
-	- (void) keyDown:(NSEvent *)event;
-	- (void) keyUp:(NSEvent *)event;
+- (void)mouseEntered:(NSEvent *)event;
+- (void)mouseExited:(NSEvent *)event;
 
-	- (void) updateTrackingAreas;
+- (void)keyDown:(NSEvent *)event;
+- (void)keyUp:(NSEvent *)event;
 
-	- (void) setRequester: (WindowImpl*)_requester;
+- (void)updateTrackingAreas;
 
-	- (NSPoint) relativeToGlobal: (NSPoint) point;
-	- (void) setNativeEventRetriever: (void*) native_event;
+- (void)setRequester:(storm::window::WindowImpl *)_requester;
+
+- (NSPoint)relativeToGlobal:(NSPoint)point;
+- (void)setNativeEventRetriever:(void *)native_event;
 @end

@@ -6,35 +6,40 @@
 
 #import <AppKit/NSWindow.h>
 
-class WindowImpl;
-@interface StormWindowController: NSResponder<NSWindowDelegate>
-	- (id) initWithSettings: (storm::window::VideoSettings)settings withStyle: (storm::window::WindowStyle)style withTitle: (std::string)title withRequester: (WindowImpl*)_requester;
-	- (void) dealloc;
+namespace storm::window {
+    class WindowImpl;
+}
+@interface StormWindowController: NSResponder <NSWindowDelegate>
+- (id)initWithSettings:(storm::window::VideoSettings)settings
+             withStyle:(storm::window::WindowStyle)style
+             withTitle:(std::string)title
+         withRequester:(storm::window::WindowImpl *)_requester;
+- (void)dealloc;
 
-	- (void) setRequester: (WindowImpl*)requester;
+- (void)setRequester:(storm::window::WindowImpl *)requester;
 
-	- (void) close;
-	- (BOOL) isOpen;
-	- (BOOL) isVisible;
+- (void)close;
+- (BOOL)isOpen;
+- (BOOL)isVisible;
 
-	- (void) showWindow;
-	- (void) hideWindow;
+- (void)showWindow;
+- (void)hideWindow;
 
-	- (void) processEvent;
-	- (void*) nativeHandle;
+- (void)processEvent;
+- (void *)nativeHandle;
 
-	- (NSSize) size;
+- (NSSize)size;
 
-	- (BOOL) windowShouldClose: (id)sender;
+- (BOOL)windowShouldClose:(id)sender;
 
-    - (void) windowWillClose: (id)sender;
-	- (NSSize) windowWillResize: (NSWindow *)sender toSize: (NSSize)frameSize;
+- (void)windowWillClose:(id)sender;
+- (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize;
 
-	- (void) windowDidMiniaturize: (NSNotification *)notification;
-	- (void) windowDidDeminiaturize: (NSNotification *)notification;
+- (void)windowDidMiniaturize:(NSNotification *)notification;
+- (void)windowDidDeminiaturize:(NSNotification *)notification;
 
-	- (void) setMousePosition:(NSPoint) point;
-	- (void) setWindowTitle: (std::string)title;
+- (void)setMousePosition:(NSPoint)point;
+- (void)setWindowTitle:(std::string)title;
 
-	- (NSPoint) convertPoint: (NSPoint)point;
+- (NSPoint)convertPoint:(NSPoint)point;
 @end
