@@ -115,7 +115,6 @@ extern "C" {
     #endif
 #else
     #define STORM_PUBLIC
-    #define STORM_PRIVATE
 #endif
 
 #ifdef _POSIX_VERSION

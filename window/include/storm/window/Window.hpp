@@ -82,11 +82,11 @@ namespace storm::window {
                                                                                                    \
     void destroyWindow(storm::window::AbstractWindow *window) {                                    \
         if (window == nullptr) return;                                                             \
-        const auto it = storm::core::ranges::find_if(windows, [&window](const auto &win) {         \
-            return win.get() == window;                                                            \
-        });                                                                                        \
+        const auto it = std::find_if(std::begin(windows),                                          \
+                                     std::end(windows),                                            \
+                                     [&window](const auto &win) { return win.get() == window; });  \
                                                                                                    \
-        if (it != storm::core::ranges::end(windows)) windows.erase(it);                            \
+        if (it != std::end(windows)) windows.erase(it);                                            \
     }                                                                                              \
                                                                                                    \
     storm::window::AbstractInputHandler *createInputHandler(const storm::window::Window &window) { \
@@ -98,11 +98,11 @@ namespace storm::window {
                                                                                                    \
     void destroyInputHandler(storm::window::AbstractInputHandler *handler) {                       \
         if (handler == nullptr) return;                                                            \
-        const auto it = storm::core::ranges::find_if(input_handlers, [&handler](const auto &ih) {  \
-            return ih.get() == handler;                                                            \
-        });                                                                                        \
+        const auto it = std::find_if(std::begin(input_handlers),                                   \
+                                     std::end(input_handlers),                                     \
+                                     [&handler](const auto &ih) { return ih.get() == handler; });  \
                                                                                                    \
-        if (it != storm::core::ranges::end(input_handlers)) input_handlers.erase(it);              \
+        if (it != std::end(input_handlers)) input_handlers.erase(it);                              \
     }
 
 #include "Window.inl"

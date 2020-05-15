@@ -1,168 +1,173 @@
 #import "StormWindowController.h"
 #import "AutoReleasePoolWrapper.h"
+#import "StormApplication.h"
 #import "StormView.h"
 #import "StormWindow.h"
-#import "StormApplication.h"
 #include "WindowImpl.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
+using namespace storm;
+using namespace storm::window;
+
 NSString *fromStdString(const std::string &str) {
-	return [NSString stringWithCString: str.c_str()
-										encoding:[NSString defaultCStringEncoding]];
+    return [NSString stringWithCString:str.c_str() encoding:[NSString defaultCStringEncoding]];
 }
 
 @implementation StormWindowController {
-	WindowImpl*        requester;
-	NSWindow*          window;
-	StormView*   view;
-	BOOL               is_open;
+    WindowImpl *requester;
+    NSWindow *window;
+    StormView *view;
+    BOOL is_open;
 }
 
-- (id) initWithSettings: (storm::window::VideoSettings)settings withStyle: (storm::window::WindowStyle)style withTitle: (std::string)title withRequester: (WindowImpl*)_requester {
-	using namespace storm::window;
+- (id)initWithSettings:(storm::window::VideoSettings)settings
+             withStyle:(storm::window::WindowStyle)style
+             withTitle:(std::string)title
+         withRequester:(WindowImpl *)_requester {
+    using namespace storm::window;
 
-	[super init];
+    [super init];
 
-	if(self) {
-		view      = nil;
-		window    = nil;
+    if (self) {
+        view   = nil;
+        window = nil;
 
-		auto fullscreen = (style & WindowStyle::Fullscreen) == WindowStyle::Fullscreen;
+        auto fullscreen = (style & WindowStyle::Fullscreen) == WindowStyle::Fullscreen;
 
-		auto window_style = NSUInteger(NSWindowStyleMaskTitled);
-		if((style & WindowStyle::Close) == WindowStyle::Close)
-			window_style |= NSWindowStyleMaskClosable;
+        auto window_style = NSUInteger(NSWindowStyleMaskTitled);
+        if ((style & WindowStyle::Close) == WindowStyle::Close)
+            window_style |= NSWindowStyleMaskClosable;
 
-		if((style & WindowStyle::Resizable) == WindowStyle::Resizable)
-			window_style |= NSWindowStyleMaskResizable;
+        if ((style & WindowStyle::Resizable) == WindowStyle::Resizable)
+            window_style |= NSWindowStyleMaskResizable;
 
-		if((style & WindowStyle::Minimizable) == WindowStyle::Minimizable)
-			window_style |= NSWindowStyleMaskMiniaturizable;
+        if ((style & WindowStyle::Minimizable) == WindowStyle::Minimizable)
+            window_style |= NSWindowStyleMaskMiniaturizable;
 
-		const auto rect = NSMakeRect(0, 0, settings.size.width, settings.size.height);
-		window = [[StormWindow alloc] initWithContentRect: rect
-									  styleMask: window_style
-									  backing: NSBackingStoreBuffered
-									  defer: NO];
+        const auto rect = NSMakeRect(0, 0, settings.size.width, settings.size.height);
+        window          = [[StormWindow alloc] initWithContentRect:rect
+                                                styleMask:window_style
+                                                  backing:NSBackingStoreBuffered
+                                                    defer:NO];
 
-		auto frame = [window convertRectToBacking: [[window contentView] frame]];
+        auto frame = [window convertRectToBacking:[[window contentView] frame]];
 
-		view   = [[StormView alloc] initWithFrame: frame withRequester: _requester withWindow: window];
-		[view setLayer:[CAMetalLayer layer]];
-		[view setWantsLayer:YES];
-		
-		[window setReleasedWhenClosed:NO];
-		[window makeFirstResponder: self];
+        view = [[StormView alloc] initWithFrame:frame withRequester:_requester withWindow:window];
+        [view setLayer:[CAMetalLayer layer]];
+        [view setWantsLayer:YES];
 
-		[window setContentView: view];
-		[window setOpaque: YES];
-		[window setTitle: fromStdString(title)];
+        [window setReleasedWhenClosed:NO];
+        [window makeFirstResponder:self];
 
-		[window setDelegate: self];
-		[window center];
-		[window setAutodisplay:YES];
-		[window orderFrontRegardless];
+        [window setContentView:view];
+        [window setOpaque:YES];
+        [window setTitle:fromStdString(title)];
 
-		if(fullscreen)
-            [window toggleFullScreen: self];
+        [window setDelegate:self];
+        [window center];
+        [window setAutodisplay:YES];
+        [window orderFrontRegardless];
 
-		requester = _requester;
+        if (fullscreen) [window toggleFullScreen:self];
 
-		is_open = YES;
-	}
+        requester = _requester;
 
-	return self;
+        is_open = YES;
+    }
+
+    return self;
 }
 
-- (void) dealloc {
-	[self close];
+- (void)dealloc {
+    [self close];
 
-	[window release];
-	[view release];
+    [window release];
+    [view release];
 
-	[super dealloc];
+    [super dealloc];
 }
 
-- (void) setRequester: (WindowImpl*)_requester {
-	requester = _requester;
-	[view setRequester: requester];
+- (void)setRequester:(WindowImpl *)_requester {
+    requester = _requester;
+    [view setRequester:requester];
 }
 
-- (void) close {
-	[window close];
-	[window setDelegate: nil];
+- (void)close {
+    [window close];
+    [window setDelegate:nil];
 
-	[self setRequester: nullptr];
+    [self setRequester:nullptr];
 }
 
-- (BOOL) isOpen {
-	return is_open;
+- (BOOL)isOpen {
+    return is_open;
 }
 
-- (BOOL) isVisible {
-	return [window isVisible];
+- (BOOL)isVisible {
+    return [window isVisible];
 }
 
-- (void) showWindow {
-	[window orderOut: nil];
+- (void)showWindow {
+    [window orderOut:nil];
 }
 
-- (void) hideWindow {
-	[window makeKeyAndOrderFront: nil];
+- (void)hideWindow {
+    [window makeKeyAndOrderFront:nil];
 }
 
-- (void) processEvent {
-	[StormApplication processEvent];
-	drainThreadPool();
+- (void)processEvent {
+    [StormApplication processEvent];
+    drainThreadPool();
 
-	//CGAssociateMouseAndMouseCursorPosition(TRUE);
+    // CGAssociateMouseAndMouseCursorPosition(TRUE);
 }
 
-- (void*) nativeHandle {
-	return view;
+- (void *)nativeHandle {
+    return view;
 }
 
-- (NSSize) size {
-	return [window contentRectForFrameRect: window.frame].size;
+- (NSSize)size {
+    return [window contentRectForFrameRect:window.frame].size;
 }
 
-- (BOOL) windowShouldClose: (id)sender {
-	is_open = NO;
-	return YES;
+- (BOOL)windowShouldClose:(id)sender {
+    is_open = NO;
+    return YES;
 }
 
-- (void) windowWillClose: (id)sender {
-	requester->closeEvent();
+- (void)windowWillClose:(id)sender {
+    requester->closeEvent();
 }
 
 - (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize {
-	requester->resizeEvent(frameSize.width, frameSize.height);
+    requester->resizeEvent(frameSize.width, frameSize.height);
 
-	return frameSize;
+    return frameSize;
 }
 
-- (void) windowDidMiniaturize: (NSNotification *)notification {
-	requester->minimizeEvent();
+- (void)windowDidMiniaturize:(NSNotification *)notification {
+    requester->minimizeEvent();
 }
 
-- (void) windowDidDeminiaturize: (NSNotification *)notification {
-	requester->maximizeEvent();
+- (void)windowDidDeminiaturize:(NSNotification *)notification {
+    requester->maximizeEvent();
 }
 
-- (void) setMousePosition:(NSPoint) point {
-	[view setMousePosition: point];
+- (void)setMousePosition:(NSPoint)point {
+    [view setMousePosition:point];
 }
 
-- (void) setWindowTitle: (std::string)title {
-	[window setTitle: [NSString stringWithCString: title.c_str() encoding:[NSString defaultCStringEncoding]]];
+- (void)setWindowTitle:(std::string)title {
+    [window setTitle:[NSString stringWithCString:title.c_str()
+                                        encoding:[NSString defaultCStringEncoding]]];
 }
 
-- (NSPoint) convertPoint: (NSPoint)point {
-	NSPoint pointInView = [view convertPoint: point fromView: nil];
+- (NSPoint)convertPoint:(NSPoint)point {
+    NSPoint pointInView = [view convertPoint:point fromView:nil];
 
-	return pointInView;
+    return pointInView;
 }
 
 @end

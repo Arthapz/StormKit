@@ -5,9 +5,6 @@
 #include <memory>
 #include <vector>
 
-/////////// - StormKit::core - ///////////
-#include <storm/core/Ranges.hpp>
-
 /////////// - StormKit::window - ///////////
 #include <storm/window/VideoSettings.hpp>
 #include <storm/window/Window.hpp>
