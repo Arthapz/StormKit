@@ -30,3 +30,9 @@ render/samples/UniformBuffer/shaders
 engine/include/storm/engine/core
 engine/src/framegraph
 core
+engine/include/storm/engine/material
+engine/src/material
+window/plugins/X11/src
+window/include/storm/window
+window/plugins/macOS/src
+window/plugins/iOS/src

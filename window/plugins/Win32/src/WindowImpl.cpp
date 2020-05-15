@@ -115,11 +115,6 @@ void WindowImpl::close() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WindowImpl::display() noexcept {
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
 bool WindowImpl::pollEvent(Event &event, void *native_event) noexcept {
     MSG message;
     while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
@@ -251,55 +246,55 @@ void WindowImpl::processEvents(UINT message, WPARAM w_param, LPARAM l_param) {
         case WM_LBUTTONDOWN: {
             auto x = static_cast<core::Int16>(LOWORD(l_param));
             auto y = static_cast<core::Int16>(HIWORD(l_param));
-            mouseDownEvent(MouseButton::LEFT, x, y);
+            mouseDownEvent(MouseButton::Left, x, y);
             break;
         }
         case WM_LBUTTONUP: {
             auto x = static_cast<core::Int16>(LOWORD(l_param));
             auto y = static_cast<core::Int16>(HIWORD(l_param));
-            mouseUpEvent(MouseButton::LEFT, x, y);
+            mouseUpEvent(MouseButton::Left, x, y);
             break;
         }
         case WM_RBUTTONDOWN: {
             auto x = static_cast<core::Int16>(LOWORD(l_param));
             auto y = static_cast<core::Int16>(HIWORD(l_param));
-            mouseDownEvent(MouseButton::RIGHT, x, y);
+            mouseDownEvent(MouseButton::Right, x, y);
             break;
         }
         case WM_RBUTTONUP: {
             auto x = static_cast<core::Int16>(LOWORD(l_param));
             auto y = static_cast<core::Int16>(HIWORD(l_param));
-            mouseUpEvent(MouseButton::RIGHT, x, y);
+            mouseUpEvent(MouseButton::Right, x, y);
             break;
         }
         case WM_MBUTTONDOWN: {
             auto x = static_cast<core::Int16>(LOWORD(l_param));
             auto y = static_cast<core::Int16>(HIWORD(l_param));
-            mouseDownEvent(MouseButton::MIDDLE, x, y);
+            mouseDownEvent(MouseButton::Middle, x, y);
             break;
         }
         case WM_MBUTTONUP: {
             auto x = static_cast<core::Int16>(LOWORD(l_param));
             auto y = static_cast<core::Int16>(HIWORD(l_param));
-            mouseUpEvent(MouseButton::MIDDLE, x, y);
+            mouseUpEvent(MouseButton::Middle, x, y);
             break;
         }
         case WM_XBUTTONDOWN: {
             auto x      = static_cast<core::Int16>(LOWORD(l_param));
             auto y      = static_cast<core::Int16>(HIWORD(l_param));
             auto button = HIWORD(w_param);
-            if (button == XBUTTON1) mouseDownEvent(MouseButton::BUTTON1, x, y);
+            if (button == XBUTTON1) mouseDownEvent(MouseButton::Button1, x, y);
             else if (button == XBUTTON2)
-                mouseDownEvent(MouseButton::BUTTON1, x, y);
+                mouseDownEvent(MouseButton::Button1, x, y);
             break;
         }
         case WM_XBUTTONUP: {
             auto x      = static_cast<core::Int16>(LOWORD(l_param));
             auto y      = static_cast<core::Int16>(HIWORD(l_param));
             auto button = HIWORD(w_param);
-            if (button == XBUTTON1) mouseUpEvent(MouseButton::BUTTON2, x, y);
+            if (button == XBUTTON1) mouseUpEvent(MouseButton::Button2, x, y);
             else if (button == XBUTTON2)
-                mouseUpEvent(MouseButton::BUTTON2, x, y);
+                mouseUpEvent(MouseButton::Button2, x, y);
             break;
         }
         case WM_MOUSEMOVE: {

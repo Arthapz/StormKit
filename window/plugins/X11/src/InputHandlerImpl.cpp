@@ -1,8 +1,10 @@
 #include "InputHandlerImpl.hpp"
 #include "Utils.hpp"
 
+/////////// - StormKit::window - ///////////
 #include <storm/window/Window.hpp>
 
+/////////// - XCB - ///////////
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_keysyms.h>
@@ -17,7 +19,8 @@ struct Handles {
 
 /////////////////////////////////////
 /////////////////////////////////////
-InputHandlerImpl::InputHandlerImpl() = default;
+InputHandlerImpl::InputHandlerImpl(const Window &window) : AbstractInputHandler { window } {
+}
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -33,7 +36,7 @@ InputHandlerImpl &InputHandlerImpl::operator=(InputHandlerImpl &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool InputHandlerImpl::isKeyPressed(Key key) {
+bool InputHandlerImpl::isKeyPressed(Key key) const noexcept {
     const auto key_sym = stormkeyToX11Key(key);
 
     auto default_screen_id = 0;
@@ -56,7 +59,7 @@ bool InputHandlerImpl::isKeyPressed(Key key) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) {
+bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) const noexcept {
     auto default_screen_id = 0;
     auto connection        = xcb_connect(nullptr, &default_screen_id);
     auto root_window       = defaultRootWindow(connection, default_screen_id);
@@ -66,12 +69,12 @@ bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) {
 
     auto is_pressed = false;
     switch (button) {
-        case MouseButton::LEFT: is_pressed = (reply->mask & XCB_BUTTON_MASK_1); break;
-        case MouseButton::MIDDLE: is_pressed = (reply->mask & XCB_BUTTON_MASK_2); break;
-        case MouseButton::RIGHT: is_pressed = (reply->mask & XCB_BUTTON_MASK_3); break;
-        case MouseButton::BUTTON1: is_pressed = (reply->mask & XCB_BUTTON_MASK_4); break;
-        case MouseButton::BUTTON2: is_pressed = (reply->mask & XCB_BUTTON_MASK_5); break;
-        case MouseButton::UNKNOW: is_pressed = false; break;
+        case MouseButton::Left: is_pressed = (reply->mask & XCB_BUTTON_MASK_1); break;
+        case MouseButton::Middle: is_pressed = (reply->mask & XCB_BUTTON_MASK_2); break;
+        case MouseButton::Right: is_pressed = (reply->mask & XCB_BUTTON_MASK_3); break;
+        case MouseButton::Button1: is_pressed = (reply->mask & XCB_BUTTON_MASK_4); break;
+        case MouseButton::Button2: is_pressed = (reply->mask & XCB_BUTTON_MASK_5); break;
+        case MouseButton::Unknow: is_pressed = false; break;
     }
 
     xcb_disconnect(connection);
@@ -81,7 +84,7 @@ bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setMousePosition(core::Position2u position) {
+void InputHandlerImpl::setMousePositionOnDesktop(core::Position2u position) noexcept {
     auto default_screen_id = 0;
     auto connection        = xcb_connect(nullptr, &default_screen_id);
     auto root_window       = defaultRootWindow(connection, default_screen_id);
@@ -95,25 +98,7 @@ void InputHandlerImpl::setMousePosition(core::Position2u position) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setMousePosition(core::Position2i position, const Window &relative_to) {
-    auto native_handle = static_cast<Handles *>(relative_to.nativeHandle());
-
-    xcb_warp_pointer(native_handle->connection,
-                     0,
-                     native_handle->window,
-                     0,
-                     0,
-                     0,
-                     0,
-                     position->x,
-                     position->y);
-
-    xcb_flush(native_handle->connection);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-core::Position2u InputHandlerImpl::getMousePosition() {
+core::Position2u InputHandlerImpl::getMousePositionOnDesktop() const noexcept {
     auto default_screen_id = 0;
     auto connection        = xcb_connect(nullptr, &default_screen_id);
     auto root_window       = defaultRootWindow(connection, default_screen_id);
@@ -130,8 +115,26 @@ core::Position2u InputHandlerImpl::getMousePosition() {
 
 /////////////////////////////////////
 /////////////////////////////////////
-core::Position2i InputHandlerImpl::getMousePosition(const Window &relative_to) {
-    auto native_handle = static_cast<Handles *>(relative_to.nativeHandle());
+void InputHandlerImpl::setMousePositionOnWindow(core::Position2i position) noexcept {
+    auto native_handle = static_cast<Handles *>(m_window->nativeHandle());
+
+    xcb_warp_pointer(native_handle->connection,
+                     0,
+                     native_handle->window,
+                     0,
+                     0,
+                     0,
+                     0,
+                     position->x,
+                     position->y);
+
+    xcb_flush(native_handle->connection);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+core::Position2i InputHandlerImpl::getMousePositionOnWindow() const noexcept {
+    auto native_handle = static_cast<Handles *>(m_window->nativeHandle());
 
     auto cookie = xcb_query_pointer(native_handle->connection, native_handle->window);
     auto reply  = xcb_query_pointer_reply(native_handle->connection, cookie, nullptr);
@@ -143,6 +146,6 @@ core::Position2i InputHandlerImpl::getMousePosition(const Window &relative_to) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setVirtualKeyboardVisible([[maybe_unused]] bool visible) {
+void InputHandlerImpl::setVirtualKeyboardVisible([[maybe_unused]] bool visible) noexcept {
     // not supported
 }

@@ -4,36 +4,41 @@
 
 #pragma once
 
-#include <storm/core/Math.hpp>
+/////////// - StormKit::core - ///////////
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Pimpl.hpp>
 #include <storm/core/Platform.hpp>
 
+/////////// - StormKit::window - ///////////
+#include <storm/window/AbstractInputHandler.hpp>
 #include <storm/window/Fwd.hpp>
 
 namespace storm::window {
-    class InputHandlerImpl;
+
     class STORM_PUBLIC InputHandler: public core::NonCopyable {
       public:
-        using Callback = std::function<void()>;
-        InputHandler();
+        explicit InputHandler(const Window &window);
         ~InputHandler();
 
         InputHandler(InputHandler &&);
         InputHandler &operator=(InputHandler &&);
 
-        static bool isKeyPressed(Key key);
-        static bool isMouseButtonPressed(MouseButton button);
-        static void setMousePosition(core::Position2u position);
-        static void setMousePosition(core::Position2i position, const Window &relative_to);
-        static core::Position2u getMousePosition();
-        static core::Position2i getMousePosition(const Window &relative_to);
+        inline bool isKeyPressed(Key key) const noexcept;
+        inline bool isMouseButtonPressed(MouseButton button) const noexcept;
 
-        static void setVirtualKeyboardVisible(bool visible);
+        inline core::Position2u getMousePositionOnDesktop() const noexcept;
+        inline void setMousePositionOnDesktop(core::Position2u position) noexcept;
+
+        inline core::Position2i getMousePositionOnWindow() const noexcept;
+        inline void setMousePositionOnWindow(core::Position2i position) noexcept;
+
+        inline void setVirtualKeyboardVisible(bool visible) noexcept;
 
         // TODO implement a input handler like gainput
         // TODO implement touch events
       private:
-        core::Pimpl<InputHandlerImpl> m_impl;
+        AbstractInputHandlerObserverPtr m_impl;
     };
 } // namespace storm::window
+
+#include "InputHandler.inl"

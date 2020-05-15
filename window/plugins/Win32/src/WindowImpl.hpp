@@ -16,7 +16,6 @@ namespace storm::window {
                     const storm::window::VideoSettings &settings,
                     storm::window::WindowStyle style) override;
         void close() noexcept override;
-        void display() noexcept override;
 
         // BLC
         bool pollEvent(storm::window::Event &event, void *native_event) noexcept override;

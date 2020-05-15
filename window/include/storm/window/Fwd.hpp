@@ -4,8 +4,10 @@
 
 #pragma once
 
+/////////// - STL - ///////////
 #include <cstdint>
-#include <memory>
+
+/////////// - StormKit::core - ///////////
 #include <storm/core/Memory.hpp>
 
 namespace storm::window {
@@ -25,6 +27,12 @@ namespace storm::window {
 
     class EventHandler;
     DECLARE_PTR_AND_REF(EventHandler)
+
+    class AbstractInputHandler;
+    DECLARE_PTR_AND_REF(AbstractInputHandler)
+
+    class InputHandler;
+    DECLARE_PTR_AND_REF(InputHandler)
 
     using NativeHandle = void *;
 } // namespace storm::window
