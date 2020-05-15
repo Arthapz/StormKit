@@ -1,6 +1,7 @@
 #include "InputHandlerImpl.hpp"
 #include "Utils.hpp"
 
+/////////// - StormKit::window - ///////////
 #include <storm/window/Window.hpp>
 
 using namespace storm;
@@ -8,7 +9,8 @@ using namespace storm::window;
 
 /////////////////////////////////////
 /////////////////////////////////////
-InputHandlerImpl::InputHandlerImpl() = default;
+InputHandlerImpl::InputHandlerImpl(const Window &window) : AbstractInputHandler { window } {
+}
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -24,7 +26,7 @@ InputHandlerImpl &InputHandlerImpl::operator=(InputHandlerImpl &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool InputHandlerImpl::isKeyPressed(Key key) {
+bool InputHandlerImpl::isKeyPressed(Key key) const noexcept {
     int vkey = 0;
     switch (key) {
         default: vkey = 0; break;
@@ -81,7 +83,7 @@ bool InputHandlerImpl::isKeyPressed(Key key) {
         case Key::Period: vkey = VK_OEM_PERIOD; break;
         case Key::Quote: vkey = VK_OEM_7; break;
         case Key::Slash: vkey = VK_OEM_2; break;
-        case Key::BACKSLASH: vkey = VK_OEM_5; break;
+        case Key::Back_Slash: vkey = VK_OEM_5; break;
         case Key::Tilde: vkey = VK_OEM_3; break;
         case Key::Equal: vkey = VK_OEM_PLUS; break;
         case Key::Hyphen: vkey = VK_OEM_MINUS; break;
@@ -136,18 +138,18 @@ bool InputHandlerImpl::isKeyPressed(Key key) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) {
+bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) const noexcept {
     auto vkey = 0;
     switch (button) {
-        case MouseButton::LEFT:
+        case MouseButton::Left:
             vkey = GetSystemMetrics(SM_SWAPBUTTON) ? VK_RBUTTON : VK_LBUTTON;
             break;
-        case MouseButton::RIGHT:
+        case MouseButton::Right:
             vkey = GetSystemMetrics(SM_SWAPBUTTON) ? VK_LBUTTON : VK_RBUTTON;
             break;
-        case MouseButton::MIDDLE: vkey = VK_MBUTTON; break;
-        case MouseButton::BUTTON1: vkey = VK_XBUTTON1; break;
-        case MouseButton::BUTTON2: vkey = VK_XBUTTON2; break;
+        case MouseButton::Middle: vkey = VK_MBUTTON; break;
+        case MouseButton::Button1: vkey = VK_XBUTTON1; break;
+        case MouseButton::Button2: vkey = VK_XBUTTON2; break;
         default: vkey = 0; break;
     }
 
@@ -157,25 +159,7 @@ bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setMousePosition(core::Position2u position) {
-    SetCursorPos(position->x, position->y);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-void InputHandlerImpl::setMousePosition(core::Position2i position, const Window &relative_to) {
-    auto handle = reinterpret_cast<HWND>(relative_to.nativeHandle());
-    if (handle) {
-        auto point =
-            POINT { gsl::narrow_cast<long>(position->x), gsl::narrow_cast<long>(position->y) };
-        ClientToScreen(handle, &point);
-        SetCursorPos(point.x, point.y);
-    }
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-core::Position2u InputHandlerImpl::getMousePosition() {
+core::Position2u InputHandlerImpl::getMousePositionOnDesktop() const noexcept {
     auto point = POINT {};
     GetCursorPos(&point);
 
@@ -186,8 +170,14 @@ core::Position2u InputHandlerImpl::getMousePosition() {
 
 /////////////////////////////////////
 /////////////////////////////////////
-core::Position2i InputHandlerImpl::getMousePosition(const Window &relative_to) {
-    auto handle = reinterpret_cast<HWND>(relative_to.nativeHandle());
+void InputHandlerImpl::setMousePositionOnDesktop(core::Position2u position) noexcept {
+    SetCursorPos(position->x, position->y);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+core::Position2i InputHandlerImpl::getMousePositionOnWindow() const noexcept {
+    auto handle = reinterpret_cast<HWND>(m_window->nativeHandle());
 
     auto point = POINT {};
     GetCursorPos(&point);
@@ -200,6 +190,18 @@ core::Position2i InputHandlerImpl::getMousePosition(const Window &relative_to) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setVirtualKeyboardVisible([[maybe_unused]] bool visible) {
+void InputHandlerImpl::setMousePositionOnWindow(core::Position2i position) noexcept {
+    auto handle = reinterpret_cast<HWND>(m_window->nativeHandle());
+    if (handle) {
+        auto point =
+            POINT { gsl::narrow_cast<long>(position->x), gsl::narrow_cast<long>(position->y) };
+        ClientToScreen(handle, &point);
+        SetCursorPos(point.x, point.y);
+    }
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+void InputHandlerImpl::setVirtualKeyboardVisible([[maybe_unused]] bool visible) noexcept {
     // not supported
 }

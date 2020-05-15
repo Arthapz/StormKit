@@ -337,18 +337,6 @@ PhysicalDevice &PhysicalDevice::operator=(PhysicalDevice &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-render::Device PhysicalDevice::createLogicalDevice() const {
-    return Device { *this, *m_instance };
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-render::DeviceOwnedPtr PhysicalDevice::createLogicalDevicePtr() const {
-    return std::make_unique<Device>(*this, *m_instance);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
 void PhysicalDevice::checkIfPresentSupportIsEnabled(const Surface &surface) noexcept {
     auto index = 0u;
     for (auto &queue_family : m_queue_families) {
@@ -371,10 +359,64 @@ bool PhysicalDevice::checkExtensionSupport(gsl::czstring<> extension) const noex
 bool PhysicalDevice::checkExtensionSupport(
     storm::core::span<const gsl::czstring<>> extensions) const noexcept {
     auto required_extensions =
-        std::unordered_set<std::string_view> { core::ranges::begin(extensions), core::ranges::end(extensions) };
+        std::unordered_set<std::string_view> { core::ranges::begin(extensions),
+                                               core::ranges::end(extensions) };
 
     for (const auto &extension : m_extensions) required_extensions.erase(extension);
     auto support = required_extensions.empty();
 
     return support;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+render::Device PhysicalDevice::createLogicalDevice() const {
+    return Device { *this, *m_instance };
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+render::DeviceOwnedPtr PhysicalDevice::createLogicalDevicePtr() const {
+    return std::make_unique<Device>(*this, *m_instance);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+vk::SurfaceCapabilitiesKHR PhysicalDevice::queryVkSurfaceCapabilities(const Surface &surface) const
+    noexcept {
+    CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceCapabilitiesKHR(surface), capabilities);
+
+    return capabilities;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+std::vector<vk::SurfaceFormatKHR>
+    PhysicalDevice::queryVkSurfaceFormats(const Surface &surface) const noexcept {
+    CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceFormatsKHR(surface), format);
+
+    return format;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+std::vector<vk::PresentModeKHR> PhysicalDevice::queryVkPresentModes(const Surface &surface) const
+    noexcept {
+    CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfacePresentModesKHR(surface), present_modes);
+
+    return present_modes;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+vk::UniqueDevice PhysicalDevice::createVkDevice(const vk::DeviceCreateInfo &create_info) const {
+    CHECK_VK_ERROR_VALUE(m_vk_physical_device.createDeviceUnique(create_info), device);
+
+    return device;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+vk::FormatProperties PhysicalDevice::vkGetFormatProperties(vk::Format format) const noexcept {
+    return m_vk_physical_device.getFormatProperties(format);
 }

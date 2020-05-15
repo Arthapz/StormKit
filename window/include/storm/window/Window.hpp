@@ -64,13 +64,14 @@ namespace storm::window {
     static auto input_handlers = std::vector<std::unique_ptr<INPUT_HANDLER_CLASS_NAME>> {};        \
                                                                                                    \
     extern "C" {                                                                                   \
-    STORM_PUBLIC storm::window::AbstractWindow *createWindow();                                    \
-    STORM_PUBLIC void destroyWindow(storm::window::AbstractWindow *);                              \
-    STORM_PUBLIC storm::window::AbstractInputHandler *                                             \
+    STORM_EXPORT storm::window::AbstractWindow *createWindow();                                    \
+    STORM_EXPORT void destroyWindow(storm::window::AbstractWindow *);                              \
+    STORM_EXPORT storm::window::AbstractInputHandler *                                             \
         createInputHandler(const storm::window::Window &window);                                   \
-    STORM_PUBLIC void destroyInputHandler(storm::window::AbstractInputHandler *);                  \
-    STORM_PUBLIC const storm::window::VideoSettings *                                              \
+    STORM_EXPORT void destroyInputHandler(storm::window::AbstractInputHandler *);                  \
+    STORM_EXPORT const storm::window::VideoSettings *                                              \
         getDesktopModes(storm::core::ArraySize &size);                                             \
+    STORM_EXPORT const storm::window::VideoSettings *getDesktopFullscreenSize();                   \
     }                                                                                              \
                                                                                                    \
     storm::window::AbstractWindow *createWindow() {                                                \

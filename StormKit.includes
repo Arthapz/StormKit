@@ -36,3 +36,9 @@ window/plugins/X11/src
 window/include/storm/window
 window/plugins/macOS/src
 window/plugins/iOS/src
+window/plugins/Win32/src
+C:\Dev\vcpkg\packages\glm_x64-windows\include
+C:\Dev\vcpkg\packages\ms-gsl_x64-windows\include
+C:\Dev\vcpkg\packages\range-v3_x64-windows\include
+C:\Dev\vcpkg\packages\fmt_x64-windows\include
+C:\Dev\VulkanSDK\1.2.131.2\Include

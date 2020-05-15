@@ -22,8 +22,9 @@ DEFINE_WINDOW_PLUGIN(storm::window::WindowImpl, storm::window::InputHandlerImpl)
 /////////////////////////////////////
 const storm::window::VideoSettings *getDesktopModes(storm::core::ArraySize &size) {
     static auto video_settings = std::vector<storm::window::VideoSettings> {};
+    static auto init           = false;
 
-    if (std::empty(video_settings)) {
+    if (!init) {
         auto display = xcb_connect(nullptr, nullptr);
         auto screen  = xcb_setup_roots_iterator(xcb_get_setup(display)).data;
         auto root    = screen->root;
@@ -59,9 +60,21 @@ const storm::window::VideoSettings *getDesktopModes(storm::core::ArraySize &size
 
             // free
         }
+
+        init = true;
     }
 
     size = std::size(video_settings);
 
     return std::data(video_settings);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+const storm::window::VideoSettings *getDesktopFullscreenSize() {
+    static auto video_setting = storm::window::VideoSettings {};
+    static auto init          = false;
+
+    if (!init) { init = true; }
+    return &video_setting;
 }

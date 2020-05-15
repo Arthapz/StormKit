@@ -32,10 +32,11 @@
 #if defined(__SWITCH__)
     #define STORM_OS_NX "Nintendo Switch"
     #define STORM_BITS 64
-    #define STORM_IMPOR
+    #define STORM_IMPORT
     #define STORM_EXPORT
     #define STORM_PRIVATE [[gnu::visibility("hidden")]]
     #define STORM_OS STORM_OS_NX
+    #define STORM_DLLSPECTIMPORT __declspec(dllimport)
 #elif defined(_WIN64)
 extern "C" {
     #include <Windows.h>
@@ -43,13 +44,8 @@ extern "C" {
     #define STORM_OS_WIN64 "Windows 64 bits"
     #define STORM_OS_WINDOWS STORM_OS_WIN64
     #define STORM_BITS_64
-    #ifdef STORM_STATIC
-        #define STORM_EXPORT __stdcall
-        #define STORM_IMPORT __stdcall
-    #else
-        #define STORM_EXPORT __declspec(dllexport)
-        #define STORM_IMPORT __declspec(dllimport)
-    #endif
+    #define STORM_EXPORT __declspec(dllexport)
+    #define STORM_IMPORT __declspec(dllimport)
     #define STORM_PRIVATE
     #define STORM_OS STORM_OS_WIN64
 #elif defined(_WIN32)
@@ -59,13 +55,8 @@ extern "C" {
     #define STORM_OS_WIN32 "Windows 32 bits"
     #define STORM_OS_WINDOWS STORM_OS_WIN32
     #define STORM_BITS_32
-    #ifdef STORM_STATIC
-        #define STORM_EXPORT __stdcall
-        #define STORM_IMPORT __stdcall
-    #else
-        #define STORM_EXPORT __declspec(dllexport)
-        #define STORM_IMPORT __declspec(dllimport)
-    #endif
+    #define STORM_EXPORT __declspec(dllexport)
+    #define STORM_IMPORT __declspec(dllimport)
     #define STORM_PRIVATE
     #define STORM_OS STORM_OS_WIN32
 #elif defined(__ANDROID__)
@@ -124,7 +115,7 @@ extern "C" {
     #endif
 #else
     #define STORM_PUBLIC
-    #define STORM_PUBLIC
+    #define STORM_PRIVATE
 #endif
 
 #ifdef _POSIX_VERSION

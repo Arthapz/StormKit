@@ -38,12 +38,11 @@ namespace storm::render {
 
         void checkIfPresentSupportIsEnabled(const Surface &surface) noexcept;
 
-        inline vk::SurfaceCapabilitiesKHR queryVkSurfaceCapabilities(const Surface &surface) const
+        vk::SurfaceCapabilitiesKHR queryVkSurfaceCapabilities(const Surface &surface) const
             noexcept;
-        inline std::vector<vk::SurfaceFormatKHR> queryVkSurfaceFormats(const Surface &surface) const
+        std::vector<vk::SurfaceFormatKHR> queryVkSurfaceFormats(const Surface &surface) const
             noexcept;
-        inline std::vector<vk::PresentModeKHR> queryVkPresentModes(const Surface &surface) const
-            noexcept;
+        std::vector<vk::PresentModeKHR> queryVkPresentModes(const Surface &surface) const noexcept;
 
         inline const PhysicalDeviceInfo &info() const noexcept;
         inline const RenderCapabilities &capabilities() const noexcept;
@@ -51,7 +50,7 @@ namespace storm::render {
 
         inline storm::core::span<const QueueFamily> queueFamilies() const noexcept;
 
-        inline vk::UniqueDevice createVkDevice(const vk::DeviceCreateInfo &create_info) const;
+        vk::UniqueDevice createVkDevice(const vk::DeviceCreateInfo &create_info) const;
 
         inline const vk::PhysicalDeviceMemoryProperties &vkMemoryProperties() const noexcept;
 
@@ -60,7 +59,7 @@ namespace storm::render {
         inline vk::PhysicalDevice vkHandle() const noexcept;
         inline core::UInt64 vkDebugHandle() const noexcept;
 
-        inline vk::FormatProperties vkGetFormatProperties(vk::Format format) const noexcept;
+        vk::FormatProperties vkGetFormatProperties(vk::Format format) const noexcept;
 
       private:
         InstanceConstObserverPtr m_instance;

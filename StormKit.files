@@ -4607,6 +4607,7 @@ window/include/storm/window/Window.hpp
 window/include/storm/window/Window.inl
 window/include/storm/window/WindowStyle.hpp
 window/meson.build
+window/plugins/Win32/src/Plugin.cpp
 window/plugins/X11/src/Plugin.cpp
 window/plugins/iOS/src/AppDelegate.hpp
 window/plugins/iOS/src/AppDelegate.mm
@@ -4662,7 +4663,6 @@ window/plugins/Win32/src/InputHandlerImpl.cpp
 window/plugins/Win32/src/InputHandlerImpl.hpp
 window/plugins/Win32/src/Utils.cpp
 window/plugins/Win32/src/Utils.hpp
-window/plugins/Win32/src/VideoSettings.cpp
 window/plugins/Win32/src/WindowImpl.cpp
 window/plugins/Win32/src/WindowImpl.hpp
 window/plugins/X11/meson.build

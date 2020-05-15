@@ -2,7 +2,7 @@ private_dependencies = [window_dep]
 
 sources += files([
     'src/WindowImpl.cpp',
-    'src/VideoSettings.cpp',
+    'src/Plugin.cpp',
     'src/Utils.cpp',
     'src/InputHandlerImpl.cpp',
     'src/WindowImpl.hpp',
