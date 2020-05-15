@@ -4,25 +4,27 @@
 
 #pragma once
 
-#include <storm/window/InputHandler.hpp>
+/////////// - StormKit::window - ///////////
+#include <storm/window/AbstractInputHandler.hpp>
 
 namespace storm::window {
-    class InputHandlerImplImpl;
-    class STORM_PUBLIC InputHandlerImpl: public core::NonCopyable {
+    class InputHandlerImpl: public AbstractInputHandler {
       public:
-        InputHandlerImpl();
-        ~InputHandlerImpl();
+        explicit InputHandlerImpl(const Window &window);
+        ~InputHandlerImpl() override;
 
         InputHandlerImpl(InputHandlerImpl &&);
         InputHandlerImpl &operator=(InputHandlerImpl &&);
 
-        static bool isKeyPressed(Key key);
-        static bool isMouseButtonPressed(MouseButton button);
-        static void setMousePosition(core::Position2u position);
-        static void setMousePosition(core::Position2i position, const Window &relative_to);
-        static core::Position2u getMousePosition();
-        static core::Position2i getMousePosition(const Window &relative_to);
+        bool isKeyPressed(Key key) const noexcept override;
+        bool isMouseButtonPressed(MouseButton button) const noexcept override;
 
-        static void setVirtualKeyboardVisible(bool visible);
+        core::Position2u getMousePositionOnDesktop() const noexcept override;
+        void setMousePositionOnDesktop(core::Position2u position) noexcept override;
+
+        core::Position2i getMousePositionOnWindow() const noexcept override;
+        void setMousePositionOnWindow(core::Position2i position) noexcept override;
+
+        void setVirtualKeyboardVisible(bool visible) noexcept override;
     };
 } // namespace storm::window

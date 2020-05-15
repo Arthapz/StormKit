@@ -14,7 +14,7 @@ using namespace std::literals;
     #define SUFFIX "-debug"
 #endif
 
-static constexpr auto WIN32_MODULE_FILEPATH   = "libStormKit-window-win32" SUFFIX ".dll"sv;
+static constexpr auto WIN32_MODULE_FILEPATH   = "StormKit-window-win32" SUFFIX ".dll"sv;
 static constexpr auto MACOS_MODULE_FILEPATH   = "libStormKit-window-macos" SUFFIX ".dylib"sv;
 static constexpr auto X11_MODULE_FILEPATH     = "libStormKit-window-x11" SUFFIX ".so"sv;
 static constexpr auto WAYLAND_MODULE_FILEPATH = "libStormKit-window-wayland" SUFFIX ".so"sv;
@@ -33,6 +33,7 @@ namespace details {
     std::function<void(AbstractInputHandler *)> input_handle_destroy_func;
 
     std::function<const VideoSettings *(core::ArraySize &size)> get_desktop_modes_func;
+    std::function<const VideoSettings *()> get_desktop_fullscreen_size_func;
 } // namespace details
 
 /////////////////////////////////////
@@ -80,16 +81,14 @@ core::span<const VideoSettings> Window::getDesktopModes() {
 const VideoSettings &Window::getDesktopFullscreenSize() {
     initPlugin();
 
-    auto size     = core::ArraySize { 0u };
-    auto settings = details::get_desktop_modes_func(size);
-
-    return *settings;
+    return *details::get_desktop_fullscreen_size_func();
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 void Window::initPlugin() {
-    if (details::window_plugin == nullptr) {
+    static auto init = false;
+    if (!init) {
         const auto wm = detectWM();
 
         const auto &module_name = [wm]() {
@@ -108,6 +107,8 @@ void Window::initPlugin() {
         }();
 
         details::window_plugin = std::make_unique<module::Module>(module_name);
+        if (!details::window_plugin->isLoaded())
+            std::cerr << "Failed to load window plugin " << WIN32_MODULE_FILEPATH << std::endl;
 
         details::window_create_func =
             details::window_plugin->getFunc<AbstractWindow *()>("createWindow");
@@ -119,6 +120,14 @@ void Window::initPlugin() {
                 "createInputHandler");
         details::input_handle_destroy_func =
             details::window_plugin->getFunc<void(AbstractInputHandler *)>("destroyInputHandler");
+
+        details::get_desktop_modes_func =
+            details::window_plugin->getFunc<const VideoSettings *(storm::core::ArraySize &)>(
+                "getDesktopModes");
+        details::get_desktop_fullscreen_size_func =
+            details::window_plugin->getFunc<const VideoSettings *()>("getDesktopFullscreenSize");
+
+        init = true;
     }
 }
 

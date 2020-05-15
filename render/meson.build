@@ -1,6 +1,8 @@
 vulkan_dep  = dependency('vulkan')
 
-public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, vulkan_dep]
+vulkan_headers_dep = declare_dependency(dependencies: [vulkan_dep])
+
+public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, vulkan_headers_dep]
 private_dependencies = []
 
 core_headers = files([
@@ -122,21 +124,7 @@ sources = files([
 headers = core_headers + resource_headers + pipeline_headers + sync_headers
 
 args = {}
-platform_define = ''
-if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
-    platform_define = '/DVK_USE_PLATFORM_WIN32_KHR'
-else
-    if is_linux
-        platform_define = '-DVK_USE_PLATFORM_XCB_KHR'
-    elif is_windows
-        platform_define = '-DVK_USE_PLATFORM_WIN32_KHR'
-    elif is_macos
-        platform_define = '-DVK_USE_PLATFORM_MACOS_MVK'
-    elif is_ios
-        platform_define = '-DVK_USE_PLATFORM_IOS_MVK'
-    endif
-endif
-args += {'cpp_args': ['-DSTORM_BUILD', platform_define], 'extra_files': inls, 'gnu_symbol_visibility': 'hidden'}
+args += {'extra_files': inls, 'gnu_symbol_visibility': 'hidden'}
 
 public_render_inc = ['include/']
 private_render_inc = []
@@ -170,7 +158,6 @@ render_dep = declare_dependency(
     link_with: render_lib,
     dependencies: public_dependencies,
     include_directories: public_render_inc,
-    compile_args: platform_define
 )
 
 if get_option('enable_examples')

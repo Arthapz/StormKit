@@ -68,7 +68,7 @@ namespace storm::engine {
 HASH_FUNC(storm::engine::FramePassResourceHandle)
 namespace std {
     template<typename Resource>
-    struct STORM_PUBLIC hash<storm::engine::FramePassResourceID<Resource>> {
+    struct hash<storm::engine::FramePassResourceID<Resource>> {
         [[nodiscard]] storm::core::Hash64
             operator()(const storm::engine::FramePassResourceID<Resource> &o) const noexcept {
             return std::hash<storm::engine::FramePassResourceHandle> {}(o);
