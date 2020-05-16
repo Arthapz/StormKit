@@ -166,6 +166,10 @@ CMakeLists.txt.user*
 
 # User project settings
 *.creator.user*
+*.cflags
+*.cxxflags
+*.config
+*.includes
 
 # Qt Creator backups
 

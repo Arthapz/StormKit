@@ -10,6 +10,17 @@
 
 #include <gsl/string_span>
 
+#if defined(STORM_OS_LINUX)
+    #define VK_USE_PLATFORM_XCB_KHR
+    #define VK_USE_PLATFORM_WAYLAND_KHR
+#elif defined(STORM_OS_WINDOWS)
+    #define VK_USE_PLATFORM_WIN32_KHR
+#elif defined(STORM_OS_MACOS)
+    #define VK_USE_PLATFORM_MACOS_MVK
+#elif defined(STORM_OS_IOS)
+    #define VK_USE_PLATFORM_IOS_MVK
+#endif
+
 #define VK_NO_PROTOTYPES
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #define VULKAN_HPP_ENABLE_DYNAMIC_LOADER_TOOL 0
@@ -164,13 +175,13 @@ namespace storm::render {
 
     static constexpr const auto INSTANCE_EXTENSIONS = std::array {
         gsl::czstring<> { VK_KHR_SURFACE_EXTENSION_NAME },
-#if defined(VK_USE_PLATFORM_XCB_KHR)
-            VK_KHR_XCB_SURFACE_EXTENSION_NAME,
-#elif defined(VK_USE_PLATFORM_WIN32_KHR)
+#if defined(STORM_OS_LINUX)
+            VK_KHR_XCB_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME,
+#elif defined(STORM_OS_WINDOWS)
             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
+#elif defined(STORM_OS_MACOS)
             VK_MVK_MACOS_SURFACE_EXTENSION_NAME,
-#elif defined(VK_USE_PLATFORM_IOS_MVK)
+#elif defined(STORM_OS_IOS)
             VK_MVK_IOS_SURFACE_EXTENSION_NAME,
 #endif
     };

@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include <cstdint>
+/////////// - StormKit::core - ///////////
 #include <storm/core/Flags.hpp>
+#include <storm/core/Types.hpp>
 
 namespace storm::window {
     enum class WindowStyle : core::UInt8 {

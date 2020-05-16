@@ -60,7 +60,7 @@ void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
         while (m_window->pollEvent(event)) {
             if (event.type == window::EventType::Closed) m_window->close();
             else if (event.type == window::EventType::KeyReleased &&
-                     event.key_event.key == window::Key::ESCAPE)
+                     event.key_event.key == window::Key::Escape)
                 m_window->close();
         }
 

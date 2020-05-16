@@ -7,34 +7,6 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-    vk::SurfaceCapabilitiesKHR
-        PhysicalDevice::queryVkSurfaceCapabilities(const Surface &surface) const noexcept {
-        CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceCapabilitiesKHR(surface), capabilities);
-
-        return capabilities;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    std::vector<vk::SurfaceFormatKHR>
-        PhysicalDevice::queryVkSurfaceFormats(const Surface &surface) const noexcept {
-        CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceFormatsKHR(surface), format);
-
-        return format;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    std::vector<vk::PresentModeKHR>
-        PhysicalDevice::queryVkPresentModes(const Surface &surface) const noexcept {
-        CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfacePresentModesKHR(surface),
-                             present_modes);
-
-        return present_modes;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
     inline const PhysicalDeviceInfo &PhysicalDevice::info() const noexcept { return m_device_info; }
 
     /////////////////////////////////////
@@ -53,15 +25,6 @@ namespace storm::render {
     /////////////////////////////////////
     inline storm::core::span<const QueueFamily> PhysicalDevice::queueFamilies() const noexcept {
         return m_queue_families;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline vk::UniqueDevice
-        PhysicalDevice::createVkDevice(const vk::DeviceCreateInfo &create_info) const {
-        CHECK_VK_ERROR_VALUE(m_vk_physical_device.createDeviceUnique(create_info), device);
-
-        return device;
     }
 
     /////////////////////////////////////
@@ -87,13 +50,6 @@ namespace storm::render {
     /////////////////////////////////////
     inline vk::PhysicalDevice PhysicalDevice::vkHandle() const noexcept {
         return vkPhysicalDevice();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline vk::FormatProperties PhysicalDevice::vkGetFormatProperties(vk::Format format) const
-        noexcept {
-        return m_vk_physical_device.getFormatProperties(format);
     }
 
     /////////////////////////////////////
