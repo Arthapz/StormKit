@@ -160,11 +160,13 @@ void DebugGUI::update(const storm::window::Window &window) {
     auto &io     = ImGui::GetIO();
     io.DeltaTime = m_current_cpu_time;
 
-    io.MouseDown[0] = window::InputHandler::isMouseButtonPressed(window::MouseButton::LEFT);
-    io.MouseDown[1] = window::InputHandler::isMouseButtonPressed(window::MouseButton::RIGHT);
-    io.MouseDown[2] = window::InputHandler::isMouseButtonPressed(window::MouseButton::MIDDLE);
+    auto input_handler = window::InputHandler { window };
 
-    const auto position = storm::window::InputHandler::getMousePosition(window);
+    io.MouseDown[0] = input_handler.isMouseButtonPressed(window::MouseButton::Left);
+    io.MouseDown[1] = input_handler.isMouseButtonPressed(window::MouseButton::Right);
+    io.MouseDown[2] = input_handler.isMouseButtonPressed(window::MouseButton::Middle);
+
+    const auto position = input_handler.getMousePositionOnWindow();
 
     io.MousePos = { static_cast<float>(position->x), static_cast<float>(position->y) };
 

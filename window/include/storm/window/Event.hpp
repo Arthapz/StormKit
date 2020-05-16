@@ -4,7 +4,10 @@
 
 #pragma once
 
+/////////// - STL - ///////////
 #include <cstdint>
+
+/////////// - StormKit::window - ///////////
 #include <storm/window/Key.hpp>
 #include <storm/window/MouseButton.hpp>
 

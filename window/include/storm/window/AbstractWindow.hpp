@@ -4,29 +4,34 @@
 
 #pragma once
 
+/////////// - STL - ///////////
 #include <queue>
 #include <string>
 
+/////////// - StormKit::window - ///////////
 #include <storm/core/Math.hpp>
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/core/Types.hpp>
 
+/////////// - StormKit::window - ///////////
 #include <storm/window/Event.hpp>
 #include <storm/window/Fwd.hpp>
 #include <storm/window/VideoSettings.hpp>
 #include <storm/window/WindowStyle.hpp>
 
 namespace storm::window {
-    class STORM_PUBLIC STORM_EBCO AbstractWindow: public core::NonCopyable {
+    class STORM_PUBLIC AbstractWindow: public core::NonCopyable {
       public:
         AbstractWindow();
-        virtual ~AbstractWindow();
+        virtual ~AbstractWindow() = 0;
+
+        AbstractWindow(AbstractWindow &&);
+        AbstractWindow &operator=(AbstractWindow &&);
 
         virtual void
             create(const std::string &title, const VideoSettings &settings, WindowStyle style) = 0;
         virtual void close() noexcept                                                          = 0;
-        virtual void display() noexcept                                                        = 0;
 
         // BLC
         virtual bool pollEvent(Event &event, void *native_event = nullptr) noexcept;
