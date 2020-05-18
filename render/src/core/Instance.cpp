@@ -140,8 +140,11 @@ void Instance::createInstance() noexcept {
     auto create_info =
         vk::InstanceCreateInfo {}.setPApplicationInfo(&app_info).setEnabledLayerCount(0);
 
-    auto instance_extensions = std::vector<gsl::czstring<>> { std::cbegin(INSTANCE_EXTENSIONS),
-                                                              std::cend(INSTANCE_EXTENSIONS) };
+    auto instance_extensions = std::vector<gsl::czstring<>>{};
+    for(auto ext : INSTANCE_EXTENSIONS) {
+        if(checkExtensionSupport(ext))
+            instance_extensions.emplace_back(ext);
+    }
 
     // auto has_base_exts = checkExtensionSupport(instance_extensions);
     LogHandler::dlog(log_module, "Instance extensions -----------");
