@@ -14,13 +14,13 @@
 #include <storm/render/core/PhysicalDeviceInfo.hpp>
 #include <storm/render/core/Surface.hpp>
 
-VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
-
 using namespace storm;
 using namespace storm::log;
 using namespace storm::render;
 
 static const auto log_module = "Vulkan"_module;
+
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
 
 core::UInt64 scorePhysicalDevice(const render::PhysicalDevice &physical_device) {
     if (!physical_device.checkExtensionSupport(DEVICE_EXTENSIONS)) return 0u;
@@ -262,8 +262,8 @@ vk::UniqueSurfaceKHR
 #elif defined(STORM_OS_LINUX)
 /////////////////////////////////////
 /////////////////////////////////////
-vk::UniqueSurfaceKHR
-    Instance::createVkSurface(const vk::XcbSurfaceCreateInfoKHR &create_info) const noexcept {
+vk::UniqueSurfaceKHR Instance::createVkSurface(const vk::XcbSurfaceCreateInfoKHR &create_info) const
+    noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_instance->createXcbSurfaceKHRUnique(create_info), surface);
 
     return surface;
@@ -271,8 +271,8 @@ vk::UniqueSurfaceKHR
 #elif defined(STORM_OS_IOS)
 /////////////////////////////////////
 /////////////////////////////////////
-vk::UniqueSurfaceKHR
-    Instance::createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const noexcept {
+vk::UniqueSurfaceKHR Instance::createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const
+    noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_instance->createIOSSurfaceMVKUnique(create_info), surface);
 
     return surface;

@@ -17,7 +17,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
     auto window =
         Window { "Hello world", VideoSettings { .size = { 800u, 600u } }, WindowStyle::All };
 
-    for (const auto &setting : VideoSettings::getDesktopModes())
+    for (const auto &setting : Window::getDesktopModes())
         LogHandler::ilog("Screen: {}", setting.size);
 
     while (window.isOpen()) {
@@ -62,7 +62,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
                 case EventType::KeyPressed: {
                     const auto key = event.key_event.key;
 
-                    if (event.key_event.key == Key::ESCAPE) {
+                    if (event.key_event.key == Key::Escape) {
                         window.close();
                         break;
                     }
@@ -73,7 +73,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
                 case EventType::KeyReleased: {
                     const auto key = event.key_event.key;
 
-                    if (event.key_event.key == Key::ESCAPE) {
+                    if (event.key_event.key == Key::Escape) {
                         window.close();
                         break;
                     }
@@ -84,8 +84,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
                 default: break;
             }
         }
-
-        window.display();
     }
 
     return EXIT_SUCCESS;

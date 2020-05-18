@@ -1,0 +1,4 @@
+#ifndef PBRMATERIAL_INL
+#define PBRMATERIAL_INL
+
+#endif // PBRMATERIAL_INL

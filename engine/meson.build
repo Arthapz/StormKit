@@ -87,11 +87,13 @@ core_inls = files([
 material_headers = files([
     'include/storm/engine/material/Fwd.hpp',
     'include/storm/engine/material/Material.hpp',
+    'include/storm/engine/material/PBRMaterial.hpp',
     'include/storm/engine/material/MaterialComponent.hpp',
 ])
 
 material_inls = files([
     'include/storm/engine/material/Material.inl',
+    'include/storm/engine/material/PBRMaterial.inl',
 ])
 
 scene_headers = files([
@@ -170,6 +172,7 @@ sources = files([
     'src/core/PipelineBuilder.cpp',
 
     'src/material/Material.cpp',
+    'src/material/PBRMaterial.cpp',
 
     'src/scene/Scene.cpp',
     'src/scene/Camera.cpp',
