@@ -4,10 +4,11 @@
 
 #pragma once
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Strings.hpp>
 
 namespace storm::window {
-    enum class MouseButton : core::UInt8 { UNKNOW, LEFT, RIGHT, MIDDLE, BUTTON1, BUTTON2 };
+    enum class MouseButton : core::UInt8 { Unknow, Left, Right, Middle, Button1, Button2 };
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -15,15 +16,15 @@ namespace storm::window {
         using namespace storm::window;
 
         switch (value) {
-            case MouseButton::LEFT: return "LEFT";
-            case MouseButton::RIGHT: return "RIGHT";
-            case MouseButton::MIDDLE: return "MIDDLE";
-            case MouseButton::BUTTON1: return "BUTTON1";
-            case MouseButton::BUTTON2: return "BUTTON2";
-            case MouseButton::UNKNOW: return "UNKNOW";
+            case MouseButton::Left: return "Left";
+            case MouseButton::Right: return "Right";
+            case MouseButton::Middle: return "Middle";
+            case MouseButton::Button1: return "Button1";
+            case MouseButton::Button2: return "Button2";
+            case MouseButton::Unknow: return "Unknow";
         }
 
-        return "UNKNOWN BUTTON";
+        return "Unknow";
     }
 } // namespace storm::window
 

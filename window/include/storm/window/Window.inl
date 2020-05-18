@@ -12,7 +12,6 @@ namespace storm::window {
                                WindowStyle style) noexcept {
         m_impl->create(title, settings, style);
     }
-
     /////////////////////////////////////
     /////////////////////////////////////
     inline void Window::close() noexcept { m_impl->close(); }

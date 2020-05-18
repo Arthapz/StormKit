@@ -78,9 +78,10 @@ void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 
     auto start_time = Clock::now();
 
-    window::InputHandler::setMousePosition(core::Position2i { WINDOW_WIDTH<core::Int32> / 2,
-                                                              WINDOW_HEIGHT<core::Int32> / 2 },
-                                           *m_window);
+    auto input_handler = window::InputHandler { *m_window };
+
+    input_handler.setMousePositionOnWindow(
+        core::Position2i { WINDOW_WIDTH<core::Int32> / 2, WINDOW_HEIGHT<core::Int32> / 2 });
 
     m_camera->setPosition({ 0.f, 0.f, -4.5f });
     m_camera->setRotation({ -90.f, 0.f, 0.f });
@@ -105,13 +106,13 @@ void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
         if (!m_freeze_camera) {
             auto camera_inputs = engine::FPSCamera::Inputs {};
 
-            if (window::InputHandler::isKeyPressed(window::Key::Z)) camera_inputs.up = true;
-            if (window::InputHandler::isKeyPressed(window::Key::S)) camera_inputs.down = true;
-            if (window::InputHandler::isKeyPressed(window::Key::Q)) camera_inputs.left = true;
-            if (window::InputHandler::isKeyPressed(window::Key::D)) camera_inputs.right = true;
+            if (input_handler.isKeyPressed(window::Key::Z)) camera_inputs.up = true;
+            if (input_handler.isKeyPressed(window::Key::S)) camera_inputs.down = true;
+            if (input_handler.isKeyPressed(window::Key::Q)) camera_inputs.left = true;
+            if (input_handler.isKeyPressed(window::Key::D)) camera_inputs.right = true;
 
-            const auto position = [this, &camera_inputs]() {
-                auto position = window::InputHandler::getMousePosition(*m_window);
+            const auto position = [&camera_inputs, &input_handler]() {
+                auto position = input_handler.getMousePositionOnWindow();
 
                 if (position->x < 0 || position->x > WINDOW_WIDTH<core::Int32>) {
                     position->x                = WINDOW_WIDTH<core::Int32> / 2;
@@ -122,7 +123,7 @@ void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
                     camera_inputs.mouse_ignore = true;
                 }
 
-                window::InputHandler::setMousePosition(position, *m_window);
+                input_handler.setMousePositionOnWindow(position);
 
                 return position;
             }();
@@ -152,14 +153,14 @@ void App::doInitWindow() {
     m_event_handler->addCallback(window::EventType::Closed,
                                  [this]([[maybe_unused]] const auto &event) { m_window->close(); });
     m_event_handler->addCallback(window::EventType::KeyPressed, [this](const auto &event) {
-        if (event.key_event.key == window::Key::ESCAPE) m_window->close();
+        if (event.key_event.key == window::Key::Escape) m_window->close();
         else if (event.key_event.key == window::Key::F3)
             enableMSAA();
         else if (event.key_event.key == window::Key::F2)
             m_freeze_camera = !m_freeze_camera;
         else if (event.key_event.key == window::Key::F1) {
             m_show_debug_gui = !m_show_debug_gui;
-        } else if (event.key_event.key == window::Key::SPACE)
+        } else if (event.key_event.key == window::Key::Space)
             m_rotate = !m_rotate;
         else if (event.key_event.key == window::Key::W) {
             const auto &capabilities = m_engine->device().physicalDevice().capabilities();

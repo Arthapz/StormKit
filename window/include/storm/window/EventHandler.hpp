@@ -4,11 +4,14 @@
 
 #pragma once
 
+/////////// - STL - ///////////
 #include <unordered_map>
 #include <vector>
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Platform.hpp>
 
+/////////// - StormKit::window - ///////////
 #include <storm/window/Fwd.hpp>
 
 namespace storm::window {
