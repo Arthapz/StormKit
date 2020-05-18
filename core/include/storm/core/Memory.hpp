@@ -331,10 +331,10 @@ namespace storm::core {
 
 #define DECLARE_ARRAYS_(x)                   \
     using x##Array = std::vector<x>;         \
-    template<core::ArraySize S>              \
+    template<storm::core::ArraySize S>              \
     using x##StaticArray = std::array<x, S>; \
-    using x##Span        = core::span<x>;    \
-    using x##ConstSpan   = core::span<const x>;
+    using x##Span        = storm::core::span<x>;    \
+    using x##ConstSpan   = storm::core::span<const x>;
 
 #define DECLARE_PTR_AND_REF_(x)                                  \
     using x##ObserverPtr      = _std::observer_ptr<x>;           \
@@ -365,7 +365,7 @@ namespace storm::core {
 
 /// \brief PADDING is a macro which insert padding within a struct or class
 /// \param size the size of padding
-#define PADDING(size) core::Byte private____padding[size];
+#define PADDING(size) storm::core::Byte private____padding[size];
 
 #if defined(STORM_COMPILER_MSVC)
     #define BEGIN_PACKED_STRUCT_A ___pragma(pack(push, 1))
