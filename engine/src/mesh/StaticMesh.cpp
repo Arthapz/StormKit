@@ -162,8 +162,10 @@ void StaticMesh::render(render::CommandBuffer &cmb,
 
     if (indexed) { cmb.bindIndexBuffer(*m_index_buffer, 0, useLargeIndices()); }
 
-    for (const auto &submesh : m_submeshes) {
+    for (auto &submesh : m_submeshes) {
         STORM_EXPECTS(submesh.materialID() < std::size(m_material_instances));
+
+        submesh.flush();
 
         auto &material_instance = m_material_instances[submesh.materialID()];
         auto &material          = material_instance->parent();
@@ -173,6 +175,7 @@ void StaticMesh::render(render::CommandBuffer &cmb,
         auto mesh_bindables = bindables;
         mesh_bindables.emplace_back(core::makeConstObserver(m_transform));
         mesh_bindables.emplace_back(core::makeConstObserver(material_instance));
+        mesh_bindables.emplace_back(core::makeConstObserver(submesh));
 
         auto mesh_state                 = state;
         mesh_state.input_assembly_state = m_input_assembly_state;

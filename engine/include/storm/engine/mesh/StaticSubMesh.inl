@@ -24,11 +24,22 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    inline void StaticSubMesh::setMatrix(core::Matrixf matrix) noexcept {
+        m_matrix = std::move(matrix);
+        m_dirty  = true;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     inline core::UInt32 StaticSubMesh::materialID() const noexcept { return m_material_id; }
 
     /////////////////////////////////////
     /////////////////////////////////////
     inline const BoundingBox &StaticSubMesh::boundingBox() const noexcept { return m_bounding_box; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline const core::Matrixf &StaticSubMesh::matrix() const noexcept { return m_matrix; }
 
     /////////////////////////////////////
     /////////////////////////////////////

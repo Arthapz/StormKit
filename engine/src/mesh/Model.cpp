@@ -117,20 +117,20 @@ std::optional<StaticMesh> Model::loadStaticMeshFromFile(const std::filesystem::p
 
     auto gltf_mesh = _std::observer_ptr<const tinygltf::Mesh> {};
 
-    auto node_queue = std::deque<tinygltf::Node *> {};
+    auto node_queue = std::deque<std::pair<tinygltf::Node *, core::Matrixf>> {};
     for (const auto &node_id : scene.nodes) {
         auto &node = model.nodes[node_id];
-        node_queue.push_front(&node);
+        node_queue.emplace_front(&node, core::Matrixf { 1.f });
     }
 
     while (!std::empty(node_queue)) {
-        auto node = node_queue.front();
+        auto [node, matrix] = node_queue.front();
         node_queue.pop_front();
 
         if (!std::empty(node->children)) {
             for (auto child_id : node->children) {
                 auto &child = model.nodes[child_id];
-                node_queue.push_front(&child);
+                node_queue.emplace_front(&child, matrix);
             }
         }
 

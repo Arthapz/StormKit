@@ -23,12 +23,16 @@ layout(set = 1, binding = 0, std140) uniform Transform {
     mat4 inverted_model;
 } transform;
 
+layout(set = 3, binding = 0, std140) uniform Submesh {
+    mat4 matrix;
+} submesh;
+
 void main() {
-    vec4 model_space_position = transform.model * vec4(vertex_position, 1.f);
+    vec4 model_space_position = transform.model * submesh.matrix * vec4(vertex_position, 1.f);
     model_space_position.y = -model_space_position.y;
 
     out_position = model_space_position.xyz / model_space_position.w;
-    out_normal   = normalize(transpose(inverse(mat3(transform.model))) * vertex_normal);
+    out_normal   = normalize(transpose(inverse(mat3(transform.model * submesh.matrix))) * vertex_normal);
     out_texcoord = vertex_texcoord;
     out_tangent  = vertex_tangent;
 

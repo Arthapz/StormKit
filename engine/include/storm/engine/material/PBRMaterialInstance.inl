@@ -71,6 +71,8 @@ namespace storm::engine {
         setDataValue(EMISSIVE_FACTOR_NAME, std::move(factor));
     }
 
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     inline void
         PBRMaterialInstance::setDebugView(PBRMaterialInstance::DebugView debug_index) noexcept {
         setDataValue("PAD0", debug_index);
