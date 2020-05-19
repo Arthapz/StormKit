@@ -48,16 +48,4 @@ namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     inline const core::Matrixf &Camera::viewMatrix() const noexcept { return m_view_matrix; }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline core::UOffset Camera::cameraOffset() const noexcept {
-        return m_camera_buffer->currentOffset();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline const render::BufferDescriptor &Camera::cameraDescriptor() const noexcept {
-        return m_camera_descriptor;
-    }
 } // namespace storm::engine

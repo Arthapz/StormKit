@@ -9,4 +9,13 @@
 namespace storm::engine {
     class Material;
     DECLARE_PTR_AND_REF(Material);
+
+    class MaterialInstance;
+    DECLARE_PTR_AND_REF(MaterialInstance);
+
+    class PBRMaterial;
+    DECLARE_PTR_AND_REF(PBRMaterial);
+
+    class PBRMaterialInstance;
+    DECLARE_PTR_AND_REF(PBRMaterialInstance);
 } // namespace storm::engine

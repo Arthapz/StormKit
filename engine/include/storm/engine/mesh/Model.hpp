@@ -33,19 +33,19 @@ namespace storm::engine {
 
         enum class Type { GLTF, GLB };
 
-        Model(Engine &device);
+        explicit Model(Scene &scene);
         ~Model();
 
         Model(Model &&);
         Model &operator=(Model &&);
 
-        std::optional<std::pair<StaticMesh, std::vector<Material>>>
-            loadStaticMeshFromFile(const std::filesystem::path &path, Type type);
+        std::optional<StaticMesh> loadStaticMeshFromFile(const std::filesystem::path &path,
+                                                         Type type);
 
         inline gsl::span<const SubModel> subModels() const noexcept { return m_sub_models; }
 
       private:
-        EngineObserverPtr m_engine;
+        SceneObserverPtr m_scene;
 
         std::filesystem::path m_filepath;
 

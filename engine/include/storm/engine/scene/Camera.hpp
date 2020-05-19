@@ -11,17 +11,20 @@
 /////////// - StormKit::render - ///////////
 #include <storm/render/Fwd.hpp>
 
+#include <storm/render/core/Device.hpp>
 #include <storm/render/core/Types.hpp>
 
-#include <storm/render/pipeline/DescriptorSet.hpp>
+#include <storm/render/pipeline/DescriptorSetLayout.hpp>
 
 /////////// - StormKit::render - ///////////
 #include <storm/engine/Fwd.hpp>
 
+#include <storm/engine/core/Bindable.hpp>
 #include <storm/engine/core/RingHardwareBuffer.hpp>
 
 namespace storm::engine {
-    class STORM_PUBLIC Camera: public core::NonCopyable {
+    struct CameraFlag {};
+    class STORM_PUBLIC Camera: public StaticBindable<CameraFlag> {
       public:
         enum class Type { Perspective, Orthographic };
 
@@ -47,12 +50,9 @@ namespace storm::engine {
         [[nodiscard]] inline const core::Matrixf &projectionMatrix() const noexcept;
         [[nodiscard]] inline const core::Matrixf &viewMatrix() const noexcept;
 
-        [[nodiscard]] inline core::UOffset cameraOffset() const noexcept;
-        [[nodiscard]] inline const render::BufferDescriptor &cameraDescriptor() const noexcept;
+        void flush() noexcept;
 
       protected:
-        void updateBuffer() noexcept;
-
         EngineConstObserverPtr m_engine;
 
         Type m_type;
@@ -67,12 +67,11 @@ namespace storm::engine {
         core::Vector3f m_position    = { 0.f, 0.f, 0.f };
 
         core::Vector3f m_move_speed     = { 8.f, 8.f, 8.f };
-        core::Vector3f m_rotation_speed = { 8.f, 8.f, 8.f };
+        core::Vector3f m_rotation_speed = { 16.f, 16.f, 16.f };
 
         core::Matrixf m_projection_matrix = core::Matrixf { 1.f };
         core::Matrixf m_view_matrix       = core::Matrixf { 1.f };
 
-        render::BufferDescriptor m_camera_descriptor;
         RingHardwareBufferOwnedPtr m_camera_buffer;
     };
 } // namespace storm::engine

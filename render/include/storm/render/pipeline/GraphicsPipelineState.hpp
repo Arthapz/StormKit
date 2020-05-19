@@ -41,7 +41,7 @@ namespace storm::render {
         PolygonMode polygon_mode       = PolygonMode::Fill;
         float line_width               = 1;
         CullMode cull_mode             = CullMode::Back;
-        FrontFace front_face           = FrontFace::Counter_Clockwise;
+        FrontFace front_face           = FrontFace::Clockwise;
     };
 
     struct GraphicsPipelineMultiSampleState {

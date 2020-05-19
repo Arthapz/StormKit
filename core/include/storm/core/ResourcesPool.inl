@@ -4,13 +4,15 @@
 
 #pragma once
 
+#include "ResourcesPool.hpp"
+
 namespace storm::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename _Key, typename _Value>
     template<typename... Args>
     _Value &ResourcesPool<_Key, _Value>::create(_Key &&key, Args &&... args) {
-        auto it = m_resources.emplace(std::move(key), Value { std::forward<Args>(args)... });
+        auto it = m_resources.emplace(std::move(key), _Value { std::forward<Args>(args)... });
         return it.first->second;
     }
 
@@ -19,7 +21,7 @@ namespace storm::core {
     template<typename _Key, typename _Value>
     template<typename... Args>
     _Value &ResourcesPool<_Key, _Value>::create(const _Key &key, Args &&... args) {
-        auto it = m_resources.emplace(key, Value { std::forward<Args>(args)... });
+        auto it = m_resources.emplace(key, _Value { std::forward<Args>(args)... });
         return it.first->second;
     }
 

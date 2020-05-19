@@ -2,8 +2,6 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-#include "Transform.hpp"
-
 namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
@@ -238,17 +236,5 @@ namespace storm::engine {
         if (m_is_updated) recomputeMatrix();
 
         return m_transform_matrix;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline core::UOffset Transform::transformOffset() const noexcept {
-        return m_transform_buffer->currentOffset();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline const render::BufferDescriptor &Transform::transformDescriptor() const noexcept {
-        return m_transform_descriptor;
     }
 } // namespace storm::engine

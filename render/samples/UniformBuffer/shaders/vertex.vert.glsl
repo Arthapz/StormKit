@@ -17,7 +17,10 @@ layout(set = 1, binding = 0, std140) uniform MeshData {
 } mesh_data;
 
 void main() {
-    gl_Position = camera.projection * camera.view * mesh_data.model * vec4(position, 1.f);
+    vec4 p = vec4(position, 1.f);
+    p.y = -p.y;
+
+    gl_Position = camera.projection * camera.view * mesh_data.model * p;
 
     frag_color = color;
 }

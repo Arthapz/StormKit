@@ -20,7 +20,7 @@
 namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto makeTriangle(const Engine &engine, core::Extentf size = { 0.5f, 0.5f }) {
+    inline auto makeTriangle(Engine &engine, core::Extentf size = { 0.5f, 0.5f }) {
         auto attributes = render::TaggedVertexInputAttributeDescriptionArray {};
         auto bindings   = render::VertexBindingDescriptionArray {};
 
