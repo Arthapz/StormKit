@@ -108,7 +108,7 @@ namespace storm::engine {
     inline StaticSubMesh &StaticMesh::addSubmesh(core::UInt32 vertex_count,
                                                  core::UInt32 first_index,
                                                  core::UInt32 index_count) {
-        auto &submesh = m_submeshes.emplace_back(vertex_count, first_index, index_count);
+        auto &submesh = m_submeshes.emplace_back(*m_engine, vertex_count, first_index, index_count);
         return submesh;
     }
 

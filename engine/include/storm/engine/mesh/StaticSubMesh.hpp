@@ -17,6 +17,7 @@
 #include <storm/render/resource/Fwd.hpp>
 
 /////////// - StormKit::engine - ///////////
+#include <storm/engine/core/Bindable.hpp>
 #include <storm/engine/core/Vertex.hpp>
 
 #include <storm/engine/mesh/Fwd.hpp>
@@ -24,9 +25,10 @@
 #include <storm/engine/mesh/BoundingBox.hpp>
 
 namespace storm::engine {
-    class STORM_PUBLIC StaticSubMesh: public core::NonCopyable {
+    class STORM_PUBLIC StaticSubMesh: public Bindable {
       public:
-        explicit StaticSubMesh(core::UInt32 vertex_count,
+        explicit StaticSubMesh(Engine &engine,
+                               core::UInt32 vertex_count,
                                core::UInt32 first_index,
                                core::UInt32 index_count) noexcept;
         ~StaticSubMesh();
@@ -36,14 +38,18 @@ namespace storm::engine {
 
         inline void setMaterialID(core::UInt32 index) noexcept;
         inline void setBoundingBox(core::Vector3f min, core::Vector3f max) noexcept;
+        inline void setMatrix(core::Matrixf matrix) noexcept;
 
         [[nodiscard]] inline core::UInt32 materialID() const noexcept;
         [[nodiscard]] inline const BoundingBox &boundingBox() const noexcept;
+        [[nodiscard]] inline const core::Matrixf &matrix() const noexcept;
         [[nodiscard]] inline core::UInt32 vertexCount() const noexcept;
         [[nodiscard]] inline core::UInt32 indexCount() const noexcept;
         [[nodiscard]] inline core::UInt32 firstIndex() const noexcept;
 
         [[nodiscard]] inline bool isIndexed() const noexcept;
+
+        void flush();
 
       private:
         core::UInt32 m_material_id = 0;
@@ -53,6 +59,12 @@ namespace storm::engine {
         core::UInt32 m_vertex_count = 0;
 
         BoundingBox m_bounding_box;
+
+        core::Matrixf m_matrix = core::Matrixf { 1.f };
+        RingHardwareBufferOwnedPtr m_submesh_buffer;
+
+        bool m_dirty = true;
+
         friend class StaticMesh;
     };
 } // namespace storm::engine
