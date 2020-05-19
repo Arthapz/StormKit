@@ -66,7 +66,7 @@ namespace storm::engine {
         core::Vector3f m_orientation = { 0.f, 0.f, 0.f };
         core::Vector3f m_position    = { 0.f, 0.f, 0.f };
 
-        core::Vector3f m_move_speed     = { 8.f, 8.f, 8.f };
+        core::Vector3f m_move_speed     = { 2.f, 2.f, 2.f };
         core::Vector3f m_rotation_speed = { 16.f, 16.f, 16.f };
 
         core::Matrixf m_projection_matrix = core::Matrixf { 1.f };
