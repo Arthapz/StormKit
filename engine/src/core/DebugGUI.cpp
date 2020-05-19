@@ -179,8 +179,22 @@ void DebugGUI::update(const storm::window::Window &window) {
 void DebugGUI::render(storm::render::CommandBuffer &cmb, const render::RenderPass &render_pass) {
     namespace Chrono = std::chrono;
 
-    const auto &profiler      = m_engine->profiler();
-    const auto &current_entry = profiler.entries()[profiler.currentEntryIndex()];
+    const auto &profiler = m_engine->profiler();
+
+    auto index = profiler.currentEntryIndex();
+
+    if (m_skip_frame > 0u) {
+        if (m_skip_frame_counter >= m_skip_frame) {
+            m_last_entry_index   = index;
+            m_skip_frame_counter = 0u;
+        } else {
+            m_skip_frame_counter++;
+            index = m_last_entry_index;
+        }
+    }
+
+    const auto &current_entry = profiler.entries()[index];
+    const auto extent         = m_engine->surface().extent().convertTo<core::Extentf>();
 
     const auto &device = m_engine->device();
     m_current_buffer++;
@@ -190,7 +204,8 @@ void DebugGUI::render(storm::render::CommandBuffer &cmb, const render::RenderPas
     ImGui::Begin("Debug window",
                  &foo,
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                     ImGuiWindowFlags_AlwaysAutoResize);
+                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
+    ImGui::SetWindowPos("Debug window", { 0, 0 });
 
     ImGui::BeginGroup();
 
@@ -204,7 +219,7 @@ void DebugGUI::render(storm::render::CommandBuffer &cmb, const render::RenderPas
                          "Frame times",
                          0,
                          m_max_fps,
-                         { 400, 60 });
+                         { extent.width, 120.f });
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
@@ -218,7 +233,7 @@ void DebugGUI::render(storm::render::CommandBuffer &cmb, const render::RenderPas
                                      "Main Thread",
                                      max,
                                      max,
-                                     { 400, 60 });
+                                     { extent.w, 120.f });
     ImGui::EndGroup();
 
     ImGui::BeginGroup();

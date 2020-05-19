@@ -22,11 +22,13 @@
 
 #include <storm/engine/core/Vertex.hpp>
 
+#include <storm/engine/scene/Scene.hpp>
+
 #include <storm/engine/mesh/Model.hpp>
 #include <storm/engine/mesh/StaticMesh.hpp>
 #include <storm/engine/mesh/StaticSubMesh.hpp>
 
-#include <storm/engine/material/Material.hpp>
+#include <storm/engine/material/PBRMaterial.hpp>
 
 //#define TINYGLTF_NO_STB_IMAGE
 //#define TINYGLTF_NO_STB_IMAGE_WRITE
@@ -69,7 +71,7 @@ constexpr render::Format toStormKit(int type) noexcept {
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-Model::Model(Engine &engine) : m_engine { &engine } {
+Model::Model(Scene &scene) : m_scene { &scene } {
 }
 
 ////////////////////////////////////////
@@ -86,8 +88,8 @@ Model &Model::operator=(Model &&) = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-std::optional<std::pair<StaticMesh, std::vector<Material>>>
-    Model::loadStaticMeshFromFile(const std::filesystem::path &path, Type type) {
+std::optional<StaticMesh> Model::loadStaticMeshFromFile(const std::filesystem::path &path,
+                                                        Type type) {
     m_filepath = std::filesystem::absolute(path);
 
     auto loader = tinygltf::TinyGLTF {};
@@ -165,7 +167,9 @@ std::optional<std::pair<StaticMesh, std::vector<Material>>>
         }
     }
 
-    auto mesh = m_engine->createStaticMesh(std::move(attributes), std::move(bindings));
+    auto &engine = m_scene->engine();
+
+    auto mesh = engine.createStaticMesh(std::move(attributes), std::move(bindings));
 
     auto index_array   = std::vector<std::byte> {};
     auto large_indices = false;
@@ -280,10 +284,10 @@ std::optional<std::pair<StaticMesh, std::vector<Material>>>
         }
     }
 
-    auto materials = std::vector<Material> {};
+    auto materials = std::vector<MaterialInstanceOwnedPtr> {};
     materials.reserve(std::size(model.materials));
 
-    const auto loadTexture = [&model, this](auto index) -> render::Texture * {
+    const auto loadTexture = [&model, &engine, this](auto index) -> render::Texture * {
         if (index < 0) return nullptr;
 
         auto &gltf_texture = model.textures[index];
@@ -297,10 +301,10 @@ std::optional<std::pair<StaticMesh, std::vector<Material>>>
 
         auto name = fmt::format("{:x}", hash);
 
-        auto &texture = m_engine->texturePool().create(std::move(name),
-                                                       m_engine->device(),
-                                                       render::TextureType::T2D,
-                                                       render::TextureCreateFlag::None);
+        auto &texture = m_scene->texturePool().create(std::move(name),
+                                                      engine.device(),
+                                                      render::TextureType::T2D,
+                                                      render::TextureCreateFlag::None);
 
         auto load_format = render::PixelFormat::RGBA8_UNorm;
         if (image.component == 1) load_format = render::PixelFormat::R8_UNorm;
@@ -316,41 +320,50 @@ std::optional<std::pair<StaticMesh, std::vector<Material>>>
                                load_format);
 
         return &texture;
-
-        return nullptr;
     };
 
+    auto &material = *m_scene->materialPool().get("StormKit:PBRMaterial_default");
+
     for (const auto &gltf_material : model.materials) {
-        auto material = m_engine->createMaterial();
+        auto material_instance      = material.createInstancePtr();
+        auto &pbr_material_instance = static_cast<PBRMaterialInstance &>(*material_instance);
+
+        pbr_material_instance.setDebugView(PBRMaterialInstance::DebugView::None);
 
         const auto &color = gltf_material.pbrMetallicRoughness.baseColorFactor;
-        material.setBaseColorFactor({ gsl::narrow_cast<float>(color[0]),
-                                      gsl::narrow_cast<float>(color[1]),
-                                      gsl::narrow_cast<float>(color[2]),
-                                      gsl::narrow_cast<float>(color[3]) });
-        material.setMetallicFactor(gltf_material.pbrMetallicRoughness.metallicFactor);
-        material.setRoughnessFactor(gltf_material.pbrMetallicRoughness.roughnessFactor);
+        pbr_material_instance.setAlbedoFactor({ gsl::narrow_cast<float>(color[0]),
+                                                gsl::narrow_cast<float>(color[1]),
+                                                gsl::narrow_cast<float>(color[2]),
+                                                gsl::narrow_cast<float>(color[3]) });
+        pbr_material_instance.setMetallicFactor(gltf_material.pbrMetallicRoughness.metallicFactor);
+        pbr_material_instance.setRoughnessFactor(
+            gltf_material.pbrMetallicRoughness.roughnessFactor);
         const auto &emissive = gltf_material.emissiveFactor;
-        material.setEmissiveFactor({ gsl::narrow_cast<float>(emissive[0]),
-                                     gsl::narrow_cast<float>(emissive[1]),
-                                     gsl::narrow_cast<float>(emissive[2]) });
+        pbr_material_instance.setEmissiveFactor({ gsl::narrow_cast<float>(emissive[0]),
+                                                  gsl::narrow_cast<float>(emissive[1]),
+                                                  gsl::narrow_cast<float>(emissive[2]),
+                                                  1.f });
 
         if (auto texture = loadTexture(gltf_material.pbrMetallicRoughness.baseColorTexture.index);
             texture != nullptr)
-            material.setBaseColorMap(*texture);
+            pbr_material_instance.setAlbedoMap(*texture);
         if (auto texture = loadTexture(gltf_material.normalTexture.index); texture != nullptr)
-            material.setNormalMap(*texture);
+            pbr_material_instance.setNormalMap(*texture);
         if (auto texture =
                 loadTexture(gltf_material.pbrMetallicRoughness.metallicRoughnessTexture.index);
-            texture != nullptr)
-            material.setMetallicRoughnessMap(*texture);
+            texture != nullptr) {
+            pbr_material_instance.setMetallicMap(*texture);
+            pbr_material_instance.setRoughnessMap(*texture);
+        }
         if (auto texture = loadTexture(gltf_material.occlusionTexture.index); texture != nullptr)
-            material.setAmbiantOcclusionMap(*texture);
+            pbr_material_instance.setAmbiantOcclusionMap(*texture);
         if (auto texture = loadTexture(gltf_material.emissiveTexture.index); texture != nullptr)
-            material.setEmissiveMap(*texture);
+            pbr_material_instance.setEmissiveMap(*texture);
 
-        materials.emplace_back(std::move(material));
+        materials.emplace_back(std::move(material_instance));
     }
 
-    return std::pair { std::move(mesh), std::move(materials) };
+    mesh.setMaterialInstances(std::move(materials));
+
+    return mesh;
 }

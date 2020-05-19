@@ -6,6 +6,8 @@
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/Queue.hpp>
 
+#include <storm/render/pipeline/PipelineCache.hpp>
+
 #include <storm/render/sync/Fence.hpp>
 
 /////////// - StormKit::engine - ///////////
@@ -19,15 +21,18 @@ using namespace storm::engine;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-StaticMesh::StaticMesh(const Engine &engine,
+StaticMesh::StaticMesh(Engine &engine,
                        render::TaggedVertexInputAttributeDescriptionArray vertex_attributes,
                        render::VertexBindingDescriptionArray vertex_bindings) noexcept
-    : m_engine { &engine }, m_tagged_vertex_attributes { std::move(vertex_attributes) },
-      m_vertex_bindings { std::move(vertex_bindings) } {
-    m_vertex_attributes.reserve(std::size(m_tagged_vertex_attributes));
-    for (const auto &[_, attr] : m_tagged_vertex_attributes) m_vertex_attributes.emplace_back(attr);
+    : m_engine { &engine }, m_vertex_bindings { std::move(vertex_bindings) } {
+    m_vertex_attributes.reserve(std::size(vertex_attributes));
+    for (const auto &[_, attr] : vertex_attributes) m_vertex_attributes.emplace_back(attr);
 
-    m_index_array = IndexArray {};
+    m_vertex_input_state.binding_descriptions         = m_vertex_bindings;
+    m_vertex_input_state.input_attribute_descriptions = m_vertex_attributes;
+    m_index_array                                     = IndexArray {};
+
+    m_transform = engine.createTransformPtr();
 }
 
 ////////////////////////////////////////
@@ -141,4 +146,69 @@ void StaticMesh::computeBoundingBox() const noexcept {
     m_bounding_box.extent.width  = extent.x;
     m_bounding_box.extent.height = extent.y;
     m_bounding_box.extent.depth  = extent.z;
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+void StaticMesh::render(render::CommandBuffer &cmb,
+                        const render::RenderPass &pass,
+                        std::vector<BindableBaseConstObserverPtr> bindables,
+                        render::GraphicsPipelineState state) {
+    m_transform->flush();
+
+    const auto indexed = hasIndices();
+
+    cmb.bindVertexBuffers({ *m_vertex_buffer }, { 0u });
+
+    if (indexed) { cmb.bindIndexBuffer(*m_index_buffer, 0, useLargeIndices()); }
+
+    for (const auto &submesh : m_submeshes) {
+        STORM_EXPECTS(submesh.materialID() < std::size(m_material_instances));
+
+        auto &material_instance = m_material_instances[submesh.materialID()];
+        auto &material          = material_instance->parent();
+
+        material_instance->flush();
+
+        auto mesh_bindables = bindables;
+        mesh_bindables.emplace_back(core::makeConstObserver(m_transform));
+        mesh_bindables.emplace_back(core::makeConstObserver(material_instance));
+
+        auto mesh_state                 = state;
+        mesh_state.input_assembly_state = m_input_assembly_state;
+        mesh_state.vertex_input_state   = m_vertex_input_state;
+        mesh_state.rasterization_state  = material_instance->m_rasterization_state;
+        mesh_state.shader_state         = material.m_data.shader_state;
+
+        auto descriptors = std::vector<render::DescriptorSetCRef> {};
+        auto offsets     = std::vector<core::UOffset> {};
+
+        descriptors.reserve(std::size(mesh_bindables));
+        offsets.reserve(std::size(mesh_bindables));
+
+        for (const auto &bindable : mesh_bindables) {
+            descriptors.push_back(bindable->descriptorSet());
+
+            const auto &offset = bindable->offset();
+            if (offset.has_value()) offsets.push_back(offset.value());
+
+            mesh_state.layout.descriptor_set_layouts.emplace_back(
+                core::makeConstObserver(bindable->descriptorLayout()));
+        }
+
+        const auto &pipeline = m_engine->pipelineCache().getPipeline(mesh_state, pass);
+
+        cmb.bindGraphicsPipeline(pipeline);
+        cmb.bindDescriptorSets(pipeline, std::move(descriptors), std::move(offsets));
+
+        if (indexed) {
+            const auto index_count = submesh.indexCount();
+
+            cmb.drawIndexed(index_count, 1u, submesh.firstIndex());
+        } else {
+            const auto vertex_count = submesh.vertexCount();
+
+            cmb.draw(vertex_count);
+        }
+    }
 }

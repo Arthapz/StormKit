@@ -9,25 +9,44 @@
 #include <storm/engine/scene/Camera.hpp>
 #include <storm/engine/scene/Scene.hpp>
 
+#include <storm/engine/material/PBRMaterial.hpp>
+
 using namespace storm;
 using namespace storm::engine;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-Scene::Scene(const Engine &engine) : m_engine { &engine } {
+Scene::Scene(Engine &engine) : m_engine { &engine } {
+    auto &device = m_engine->device();
+
     m_default_camera =
         std::make_unique<Camera>(engine,
                                  Camera::Type::Perspective,
                                  m_engine->surface().extent().convertTo<core::Extentf>());
     m_camera = core::makeObserver(m_default_camera);
 
-    const auto &layout = m_engine->pipelineBuilder().cameraLayout();
-    const auto &pool   = m_engine->descriptorPool();
+    auto &texture = m_texture_pool.create("BlankTexture",
+                                          device,
+                                          render::TextureType::T2D,
+                                          render::TextureCreateFlag::None);
 
-    const auto descriptors = std::array { render::Descriptor { m_camera->cameraDescriptor() } };
+    auto image = std::vector<float> { 1.f, 1.f, 1.f, 1.f };
 
-    m_camera_descriptor_set = pool.allocateDescriptorSetPtr(layout);
-    m_camera_descriptor_set->update(descriptors);
+    texture.loadFromMemory({ reinterpret_cast<const std::byte *>(std::data(image)),
+                             std::size(image) },
+                           { 1, 1 },
+                           render::PixelFormat::RGBA8_UNorm);
+
+    const auto &extent = m_engine->surface().extent();
+
+    m_pipeline_state.viewport_state.viewports =
+        std::vector { render::Viewport { .position = { 0, 0 },
+                                         .extent   = extent.convertTo<core::Extentf>(),
+                                         .depth    = { 0.f, 1.f } } };
+    m_pipeline_state.viewport_state.scissors =
+        std::vector { render::Scissor { .offset = { 0, 0 }, .extent = extent } };
+
+    materialPool().create("StormKit:PBRMaterial_default", std::make_unique<PBRMaterial>(*this));
 }
 
 ////////////////////////////////////////
@@ -48,4 +67,12 @@ void Scene::update(float delta) noexcept {
     m_camera->update(delta);
 
     m_entities.step(delta);
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+void Scene::render(FrameGraph &framegraph, storm::engine::FramePassTextureID backbuffer) noexcept {
+    m_camera->flush();
+
+    doRenderScene(framegraph, backbuffer, { core::makeConstObserver(*m_camera) }, m_pipeline_state);
 }

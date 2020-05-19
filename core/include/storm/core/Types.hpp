@@ -7,6 +7,11 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <array>
+#include <vector>
+
+#include <storm/core/Span.hpp>
+
 namespace storm::core {
     using Byte   = std::byte;
     using UInt8  = std::uint8_t;
@@ -26,4 +31,12 @@ namespace storm::core {
     using ByteCount = std::size_t;
     using Offset    = Int32;
     using UOffset   = UInt32;
+
+    using ByteArray = std::vector<Byte>;
+
+    template<ArraySize size>
+    using StaticByteArray = std::array<Byte, size>;
+
+    using ByteSpan      = core::span<std::byte>;
+    using ByteConstSpan = core::span<const std::byte>;
 } // namespace storm::core

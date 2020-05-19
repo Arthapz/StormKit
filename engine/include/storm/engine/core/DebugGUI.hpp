@@ -33,6 +33,8 @@ namespace storm::engine {
         void update(const window::Window &window);
         void render(render::CommandBuffer &cmb, const render::RenderPass &render_pass);
 
+        inline void setSkipFrameCount(core::UInt32 count) noexcept;
+
       private:
         engine::EngineObserverPtr m_engine;
 
@@ -42,9 +44,13 @@ namespace storm::engine {
         core::UInt32 m_current_buffer = 0;
 
         float m_current_cpu_time = 0.f;
-        std::array<float, 20> m_frame_times;
+        std::array<float, 40> m_frame_times;
         core::UInt8 m_frame_time_pointer = 0u;
         core::UInt32 m_max_fps           = 300u;
+
+        core::UInt32 m_last_entry_index   = 0u;
+        core::UInt32 m_skip_frame         = m_skip_frame;
+        core::UInt32 m_skip_frame_counter = m_skip_frame;
     };
 } // namespace storm::engine
 
