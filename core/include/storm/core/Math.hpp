@@ -12,8 +12,10 @@
 #include <storm/core/NamedType.hpp>
 #include <storm/core/Strings.hpp>
 
+#define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_LEFT_HANDED
+
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/hash.hpp>
@@ -42,6 +44,8 @@ namespace storm::core {
     using Vector4i = glm::ivec4;
     template<typename T>
     using Matrix      = glm::mat<4, 4, T, glm::defaultp>;
+    using Matrixu     = glm::umat4x4;
+    using Matrixi     = glm::imat4x4;
     using Matrixf     = glm::mat4;
     using Quaternionf = glm::quat;
 
@@ -124,6 +128,7 @@ namespace storm::core {
         }
     };
 
+    using Extenti = ExtentBase<core::Int32>;
     using Extentu = ExtentBase<core::UInt32>;
     using Extentf = ExtentBase<float>;
 
@@ -269,6 +274,10 @@ CUSTOM_FORMAT(storm::core::Matrixf,
               data[2],
               data[3])
 
+CUSTOM_FORMAT(storm::core::Extenti,
+              "Extent {{ .width = {}, .height = {} }}",
+              data.width,
+              data.height)
 CUSTOM_FORMAT(storm::core::Extentu,
               "Extent {{ .width = {}, .height = {} }}",
               data.width,

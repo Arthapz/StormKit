@@ -16,9 +16,9 @@
 
 #include <storm/engine/core/DebugGUI.hpp>
 #include <storm/engine/core/Profiler.hpp>
+#include <storm/engine/core/Transform.hpp>
 
-#include <storm/engine/mesh/StaticMeshRenderSystem.hpp>
-
+#include <storm/engine/scene/Camera.hpp>
 #include <storm/engine/scene/Scene.hpp>
 
 #include <storm/engine/framegraph/FrameGraph.hpp>
@@ -36,6 +36,24 @@ using storm::log::operator""_module;
 static constexpr auto LOG_MODULE = "engine"_module;
 
 static constexpr auto DESCRIPTOR_COUNT = 1000;
+
+static constexpr auto initTransformLayout =
+    [](const render::Device &device, render::DescriptorSetLayoutOwnedPtr &layout) -> void {
+    layout = device.createDescriptorSetLayoutPtr();
+    layout->addBinding(
+        { 0, render::DescriptorType::Uniform_Buffer_Dynamic, render::ShaderStage::Vertex, 1 });
+    layout->bake();
+};
+
+static constexpr auto initCameraLayout = [](const render::Device &device,
+                                            render::DescriptorSetLayoutOwnedPtr &layout) -> void {
+    layout = device.createDescriptorSetLayoutPtr();
+    layout->addBinding({ 0,
+                         render::DescriptorType::Uniform_Buffer_Dynamic,
+                         render::ShaderStage::Vertex | render::ShaderStage::Fragment,
+                         1 });
+    layout->bake();
+};
 
 ////////////////////////////////////////
 ////////////////////////////////////////
@@ -87,23 +105,10 @@ Engine::Engine(const window::Window &window) {
 
     m_pipeline_cache = m_device->createPipelineCachePtr();
 
-    auto &texture = m_texture_pool.create("BlankTexture",
-                                          *m_device,
-                                          render::TextureType::T2D,
-                                          render::TextureCreateFlag::None);
-
-    auto image = std::vector<float> { 1.f, 1.f, 1.f, 1.f };
-
-    texture.loadFromMemory({ reinterpret_cast<const std::byte *>(std::data(image)),
-                             std::size(image) },
-                           { 1, 1 },
-                           render::PixelFormat::RGBA8_UNorm);
-
     m_last_tp = Clock::now();
 
-    m_profiler         = std::make_unique<Profiler>(*this);
-    m_debug_gui        = std::make_unique<DebugGUI>(*this);
-    m_pipeline_builder = std::make_unique<PipelineBuilder>(*this);
+    m_profiler  = std::make_unique<Profiler>(*this);
+    m_debug_gui = std::make_unique<DebugGUI>(*this);
 
     auto count = m_device->physicalDevice().capabilities().limits.framebuffer_color_sample_counts;
     count &= m_device->physicalDevice().capabilities().limits.framebuffer_depth_sample_counts;
@@ -120,6 +125,9 @@ Engine::Engine(const window::Window &window) {
         m_max_sample_count = render::SampleCountFlag::C32_BIT;
     if ((count & render::SampleCountFlag::C64_BIT) == render::SampleCountFlag::C64_BIT)
         m_max_sample_count = render::SampleCountFlag::C64_BIT;
+
+    Camera::initDescriptorLayout(*m_device, initCameraLayout);
+    Transform::initDescriptorLayout(*m_device, initTransformLayout);
 }
 
 ////////////////////////////////////////
@@ -166,8 +174,8 @@ void Engine::render() {
                                            *frame.texture_available,
                                            *frame.render_finished,
                                            *frame.in_flight);
+    m_scene->render(framegraph, backbuffer);
 
-    m_init_framegraph_callback(backbuffer, framegraph);
     m_profiler->endStage("FrameGraph setup");
 
     m_profiler->beginStage("FrameGraph compilation");
@@ -181,67 +189,6 @@ void Engine::render() {
     m_profiler->beginStage("Frame present");
     m_surface->present(frame);
     m_profiler->endStage("Frame present");
-}
-
-FramePassTextureID Engine::doInitPBRPasses(FramePassTextureID output, FrameGraph &frame_graph) {
-    struct ColorPassData {
-        engine::FramePassTextureID depth;
-        engine::FramePassTextureID msaa;
-        engine::FramePassTextureID output;
-    };
-
-    const auto sample_count = maxSampleCount();
-
-    const auto depth_descriptor = FrameGraphTexture::Descriptor {
-        .type    = render::TextureType::T2D,
-        .format  = render::PixelFormat::Depth32F_Stencil8,
-        .extent  = m_surface->extent(),
-        .samples = (isMSAAEnabled()) ? sample_count : render::SampleCountFlag::C1_BIT,
-        .usage   = render::TextureUsage::Depth_Stencil_Attachment
-    };
-    const auto msaa_descriptor =
-        FrameGraphTexture::Descriptor { .type    = render::TextureType::T2D,
-                                        .format  = m_surface->pixelFormat(),
-                                        .extent  = m_surface->extent(),
-                                        .samples = sample_count,
-                                        .usage   = render::TextureUsage::Color_Attachment };
-
-    const auto setup = [&output,
-                        &depth_descriptor,
-                        &msaa_descriptor,
-                        this](FramePassBuilder &builder, ColorPassData &pass_data) {
-        pass_data.depth = builder.create<FrameGraphTexture>("Depth", std::move(depth_descriptor));
-
-        if (isMSAAEnabled()) {
-            pass_data.msaa  = builder.create<FrameGraphTexture>("MSAA", std::move(msaa_descriptor));
-            pass_data.msaa  = builder.write(pass_data.msaa);
-            pass_data.depth = builder.write(pass_data.depth);
-
-            pass_data.output = builder.resolve(output);
-        } else {
-            pass_data.output = builder.write(output);
-            pass_data.depth  = builder.write(pass_data.depth);
-        }
-    };
-
-    const auto execute = [this]([[maybe_unused]] const ColorPassData &pass_data,
-                                const FramePassResources &resources,
-                                render::CommandBuffer &cmb) {
-        auto &mesh_render_system = m_scene->entities().getSystem<StaticMeshRenderSystem>();
-
-        mesh_render_system.render(cmb,
-                                  "ColorPass",
-                                  resources.renderPass(),
-                                  { m_scene->cameraDescriptorSet() },
-                                  { m_scene->cameraOffset() });
-    };
-
-    auto &color_pass =
-        frame_graph.addPass<ColorPassData>("ColorPass", std::move(setup), std::move(execute));
-
-    color_pass.setCullImune(true);
-
-    return color_pass.data().output;
 }
 
 FramePassTextureID Engine::doInitDebugGUIPasses(FramePassTextureID output,

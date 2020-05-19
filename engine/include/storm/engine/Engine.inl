@@ -4,33 +4,9 @@
 
 #pragma once
 
+#include "Engine.hpp"
+
 namespace storm::engine {
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline void Engine::setInitFramegraphCallback(Callback &&callback) {
-        m_init_framegraph_callback = std::move(callback);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline void Engine::enableMSAA() noexcept { setMSAAEnabled(true); }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline void Engine::disableMSAA() noexcept { setMSAAEnabled(false); }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline void Engine::toggleMSAA() noexcept { setMSAAEnabled(!isMSAAEnabled()); }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline void Engine::setMSAAEnabled(bool enabled) noexcept { m_is_msaa_enabled = enabled; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline bool Engine::isMSAAEnabled() const noexcept { return m_is_msaa_enabled; }
-
     ////////////////////////////////////////
     ////////////////////////////////////////
     inline void Engine::setScene(Scene &scene) noexcept { m_scene = core::makeObserver(scene); }
@@ -39,7 +15,7 @@ namespace storm::engine {
     ////////////////////////////////////////
     inline StaticMesh Engine::createStaticMesh(
         render::TaggedVertexInputAttributeDescriptionArray vertex_attributes,
-        render::VertexBindingDescriptionArray vertex_bindings) const {
+        render::VertexBindingDescriptionArray vertex_bindings) {
         return StaticMesh { *this, std::move(vertex_attributes), std::move(vertex_bindings) };
     }
 
@@ -47,7 +23,7 @@ namespace storm::engine {
     ////////////////////////////////////////
     inline StaticMeshOwnedPtr Engine::createStaticMeshPtr(
         render::TaggedVertexInputAttributeDescriptionArray vertex_attributes,
-        render::VertexBindingDescriptionArray vertex_bindings) const {
+        render::VertexBindingDescriptionArray vertex_bindings) {
         return std::make_unique<StaticMesh>(*this,
                                             std::move(vertex_attributes),
                                             std::move(vertex_bindings));
@@ -55,33 +31,11 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline Material Engine::createMaterial() const { return Material { *this }; }
+    inline Transform Engine::createTransform() { return Transform { *this }; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline MaterialOwnedPtr Engine::createMaterialPtr() const {
-        return std::make_unique<Material>(*this);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline std::unordered_set<std::string> Engine::pbrPasseNames() const noexcept {
-        return { "ColorPass" };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline std::unordered_set<std::string> Engine::debugGUIPasseNames() const noexcept {
-        return { "DebugGUI" };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline Transform Engine::createTransform() const { return Transform { *this }; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline TransformOwnedPtr Engine::createTransformPtr() const {
+    inline TransformOwnedPtr Engine::createTransformPtr() {
         return std::make_unique<Transform>(*this);
     }
 
@@ -91,19 +45,11 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline render::Device &Engine::device() noexcept { return *m_device; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline render::Surface &Engine::surface() noexcept { return *m_surface; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline render::DescriptorPool &Engine::descriptorPool() noexcept { return *m_descriptor_pool; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
     inline const render::Instance &Engine::instance() const noexcept { return *m_instance; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline render::Device &Engine::device() noexcept { return *m_device; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -111,7 +57,15 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    inline render::Surface &Engine::surface() noexcept { return *m_surface; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     inline const render::Surface &Engine::surface() const noexcept { return *m_surface; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline render::DescriptorPool &Engine::descriptorPool() noexcept { return *m_descriptor_pool; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -121,25 +75,13 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline Engine::ShaderPool &Engine::shaderPool() noexcept { return m_shader_pool; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline const Engine::ShaderPool &Engine::shaderPool() const noexcept { return m_shader_pool; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline Engine::TexturePool &Engine::texturePool() noexcept { return m_texture_pool; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline const Engine::TexturePool &Engine::texturePool() const noexcept {
-        return m_texture_pool;
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
     inline render::PipelineCache &Engine::pipelineCache() noexcept { return *m_pipeline_cache; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline const render::PipelineCache &Engine::pipelineCache() const noexcept {
+        return *m_pipeline_cache;
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -160,16 +102,6 @@ namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
     inline const Profiler &Engine::profiler() const noexcept { return *m_profiler; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline PipelineBuilder &Engine::pipelineBuilder() noexcept { return *m_pipeline_builder; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline const PipelineBuilder &Engine::pipelineBuilder() const noexcept {
-        return *m_pipeline_builder;
-    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////

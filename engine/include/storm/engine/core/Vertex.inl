@@ -151,7 +151,7 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::span<const std::byte> VertexArray::bytes() const noexcept {
+    inline core::ByteConstSpan VertexArray::bytes() const noexcept {
         return { reinterpret_cast<const std::byte *>(std::data(m_data)),
                  std::size(m_data) * sizeof(float) };
     }

@@ -78,6 +78,4 @@ void FPSCamera::update(float delta) noexcept {
     first_iteration = false;
 
     m_inputs = {};
-
-    updateBuffer();
 }

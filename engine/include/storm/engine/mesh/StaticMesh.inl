@@ -7,6 +7,38 @@
 namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
+    inline void StaticMesh::setMaterialInstances(std::vector<MaterialInstanceOwnedPtr> instances) {
+        m_material_instances = std::move(instances);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline std::vector<MaterialInstanceObserverPtr> StaticMesh::materialInstances() noexcept {
+        auto vec = std::vector<MaterialInstanceObserverPtr> {};
+        vec.reserve(std::size(m_material_instances));
+
+        for (auto &ptr : m_material_instances) vec.emplace_back(ptr.get());
+
+        return vec;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline Transform &StaticMesh::transform() noexcept { return *m_transform; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline const Transform &StaticMesh::transform() const noexcept { return *m_transform; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline core::span<const MaterialInstanceOwnedPtr>
+        StaticMesh::materialInstances() const noexcept {
+        return m_material_instances;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     inline void StaticMesh::setInstanceCount(core::UInt32 count) {
         STORM_EXPECTS(count >= 1u);
 
@@ -16,26 +48,6 @@ namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     inline core::UInt32 StaticMesh::instanceCount() const noexcept { return m_instance_count; }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline const render::TaggedVertexInputAttributeDescriptionArray &
-        StaticMesh::taggedVertexAttributes() const noexcept {
-        return m_tagged_vertex_attributes;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline render::VertexInputAttributeDescriptionConstSpan StaticMesh::vertexAttributes() const
-        noexcept {
-        return m_vertex_attributes;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline render::VertexBindingDescriptionConstSpan StaticMesh::vertexBindings() const noexcept {
-        return m_vertex_bindings;
-    }
 
     /////////////////////////////////////
     /////////////////////////////////////
