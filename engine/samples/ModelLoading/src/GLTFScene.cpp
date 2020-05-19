@@ -40,7 +40,10 @@ GLTFScene::GLTFScene(engine::Engine &engine,
 
     auto model = engine::Model { *this };
 
-    auto loaded_mesh = model.loadStaticMeshFromFile(model_filepath, engine::Model::Type::GLB);
+    auto type = engine::Model::Type::GLB;
+    if (model_filepath.string().back() == 'f') type = engine::Model::Type::GLTF;
+
+    auto loaded_mesh = model.loadStaticMeshFromFile(model_filepath, type);
     if (!loaded_mesh.has_value()) {
         log::LogHandler::flog(LOG_MODULE, "Failed to load {}", model_filepath.string());
         std::exit(EXIT_FAILURE);
