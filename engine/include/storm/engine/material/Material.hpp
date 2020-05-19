@@ -6,9 +6,8 @@
 
 /////////// - STL - ///////////
 #include <cstdint>
+#include <map>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <variant>
 
 /////////// - StormKit::core - ///////////
@@ -30,94 +29,65 @@
 namespace storm::engine {
     class STORM_PUBLIC Material {
       public:
-        struct alignas(16) Data {
-            core::Vector4f base_color_factor = { 1.f, 1.f, 1.f, 1.f };
-            core::Vector4f emissive_factor   = { 0.f, 0.f, 0.f, 1.f };
-            float metallic_factor            = 1.f;
-            float roughness_factor           = 1.f;
-            float ambiant_occlusion_factor   = 1.f;
-            float PAD0                       = 0.f;
+        using Binding = core::UInt32;
+
+        enum class UniformType {
+            UInt8,
+            UInt16,
+            UInt32,
+            Int8,
+            Int16,
+            Int32,
+            Float,
+            Double,
+            Vec2u,
+            Vec2i,
+            Vec2f,
+            Vec4u,
+            Vec4i,
+            Vec4f,
+            Mat4u,
+            Mat4i,
+            Mat4f
         };
 
-        explicit Material(const Engine &engine);
-        ~Material();
+        enum class AlphaMode { Opaque, Mask, Blend };
+
+        explicit Material(Scene &scene);
+        virtual ~Material();
 
         Material(Material &&);
         Material &operator=(Material &&);
 
-        inline void setGraphicsPipelineState(render::GraphicsPipelineState state) noexcept;
-        inline const render::GraphicsPipelineState &pipelineState() const noexcept;
+        /* immuable data */
+        inline void addShader(const render::Shader &shader);
 
-        inline void setBaseColorMap(const render::Texture &map) noexcept;
-        [[nodiscard]] inline bool hasBaseColorMap() const noexcept;
-        inline void setNormalMap(const render::Texture &map) noexcept;
-        [[nodiscard]] inline bool hasNormalMap() const noexcept;
-        inline void setMetallicRoughnessMap(const render::Texture &map) noexcept;
-        [[nodiscard]] inline bool hasMetallicRoughnessMap() const noexcept;
-        inline void setAmbiantOcclusionMap(const render::Texture &map) noexcept;
-        [[nodiscard]] inline bool hasAmbiantOcclusionMap() const noexcept;
-        inline void setEmissiveMap(const render::Texture &map) noexcept;
-        [[nodiscard]] inline bool hasEmissiveMap() const noexcept;
+        /* instance based data */
+        inline void addSampler(Binding binding, std::string name);
+        inline void addUniform(std::string name, UniformType type);
 
-        inline void setBaseColorFactor(const core::RGBColorF &color) noexcept;
-        inline core::RGBColorF baseColorFactor() const noexcept;
+        void finalize() noexcept;
 
-        inline void setMetallicFactor(float factor) noexcept;
-        inline float metallicFactor() const noexcept;
+        [[nodiscard]] virtual MaterialInstanceOwnedPtr createInstancePtr() const noexcept;
 
-        inline void setRoughnessFactor(float factor) noexcept;
-        inline float roughnessFactor() const noexcept;
+        [[nodiscard]] inline core::Hash64 hash() const noexcept;
 
-        inline void setAmbiantOcclusionFactor(float factor) noexcept;
-        inline float ambiantOcclusionFactor() const noexcept;
+      protected:
+        SceneObserverPtr m_scene;
 
-        inline void setEmissiveFactor(const core::RGBColorF &factor) noexcept;
-        inline core::RGBColorF emissiveFactor() const noexcept;
+        struct MaterialData {
+            render::GraphicsPipelineShaderState shader_state;
 
-        inline bool isDirty() const noexcept;
+            std::vector<std::pair<Binding, std::string>> samplers;
+            std::vector<std::pair<std::string, UniformType>> uniforms;
+        } m_data;
 
-        inline const std::vector<std::byte> &pushConstantsData() const noexcept;
+        render::DescriptorSetLayoutOwnedPtr m_descriptor_set_layout;
+        core::Hash64 m_hash;
+        bool m_finalized = false;
 
-        inline const render::DescriptorSet &descriptorSet() const noexcept;
-
-        bool ensureIsUpdated();
-        inline core::UInt64 hash() const noexcept;
-
-      private:
-        void recomputeHash() const noexcept;
-
-        EngineConstObserverPtr m_engine;
-
-        render::DescriptorSetOwnedPtr m_descriptor_set;
-
-        render::GraphicsPipelineState m_pipeline_state;
-
-        render::TextureViewOwnedPtr m_default_map_view;
-
-        render::TextureConstObserverPtr m_base_color_map;
-        render::TextureViewOwnedPtr m_base_color_map_view;
-
-        render::TextureConstObserverPtr m_normal_map;
-        render::TextureViewOwnedPtr m_normal_map_view;
-
-        render::TextureConstObserverPtr m_metallic_roughness_map;
-        render::TextureViewOwnedPtr m_metallic_roughness_map_view;
-
-        render::TextureConstObserverPtr m_ambiant_occlusion_map;
-        render::TextureViewOwnedPtr m_ambiant_occlusion_map_view;
-
-        render::TextureConstObserverPtr m_emissive_map;
-        render::TextureViewOwnedPtr m_emissive_map_view;
-
-        render::SamplerOwnedPtr m_sampler;
-
-        Data m_data;
-        std::vector<std::byte> m_push_constant_data;
-
-        bool m_is_dirty = true;
-
-        mutable core::UInt64 m_hash;
-        mutable bool m_need_recompute_hash = true;
+        friend class MaterialInstance;
+        friend class StaticMesh;
     }; // namespace storm::engine
 } // namespace storm::engine
 

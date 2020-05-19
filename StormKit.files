@@ -2,6 +2,9 @@ CONTRIBUTE.md
 INSTALL.md
 LICENSE
 README.md
+StormKit.cflags
+StormKit.config
+StormKit.cxxflags
 StormKitConfig.cmake.in
 builddir/core/Configure.hpp
 builddir/engine/dab3991@@StormKit-engine-static-debug@sta/2D.frag.spv.hpp
@@ -126,6 +129,8 @@ core/src/TreeNode.cpp
 engine/include/storm/engine/Engine.hpp
 engine/include/storm/engine/Engine.inl
 engine/include/storm/engine/Fwd.hpp
+engine/include/storm/engine/core/Bindable.hpp
+engine/include/storm/engine/core/Bindable.inl
 engine/include/storm/engine/core/DebugGUI.hpp
 engine/include/storm/engine/core/DebugGUI.inl
 engine/include/storm/engine/core/Fwd.hpp
@@ -161,8 +166,12 @@ engine/include/storm/engine/material/Fwd.hpp
 engine/include/storm/engine/material/Material.hpp
 engine/include/storm/engine/material/Material.inl
 engine/include/storm/engine/material/MaterialComponent.hpp
+engine/include/storm/engine/material/MaterialInstance.hpp
+engine/include/storm/engine/material/MaterialInstance.inl
 engine/include/storm/engine/material/PBRMaterial.hpp
 engine/include/storm/engine/material/PBRMaterial.inl
+engine/include/storm/engine/material/PBRMaterialInstance.hpp
+engine/include/storm/engine/material/PBRMaterialInstance.inl
 engine/include/storm/engine/mesh/BoundingBox.hpp
 engine/include/storm/engine/mesh/Fwd.hpp
 engine/include/storm/engine/mesh/Model.hpp
@@ -187,6 +196,8 @@ engine/samples/ModelLoading/shaders/mesh.frag.glsl
 engine/samples/ModelLoading/shaders/mesh.vert.glsl
 engine/samples/ModelLoading/src/App.cpp
 engine/samples/ModelLoading/src/App.hpp
+engine/samples/ModelLoading/src/GLTFScene.cpp
+engine/samples/ModelLoading/src/GLTFScene.hpp
 engine/samples/ModelLoading/src/main.cpp
 engine/samples/PostFX/meson.build
 engine/samples/PostFX/shaders/mesh.frag.glsl
@@ -197,7 +208,10 @@ engine/samples/PostFX/src/App.cpp
 engine/samples/PostFX/src/App.hpp
 engine/samples/PostFX/src/main.cpp
 engine/samples/meson.build
+engine/shaders/PBRColorPass.frag.glsl
+engine/shaders/PBRColorPass.vert.glsl
 engine/src/Engine.cpp
+engine/src/core/Bindable.cpp
 engine/src/core/DebugGUI.cpp
 engine/src/core/PipelineBuilder.cpp
 engine/src/core/Profiler.cpp
@@ -230,7 +244,9 @@ engine/src/framegraph/FramePassResourceHandle.cpp
 engine/src/framegraph/FramePassResources.cpp
 engine/src/graphics/RenderQueue.cpp
 engine/src/material/Material.cpp
+engine/src/material/MaterialInstance.cpp
 engine/src/material/PBRMaterial.cpp
+engine/src/material/PBRMaterialInstance.cpp
 engine/src/mesh/Model.cpp
 engine/src/mesh/Primitives.cpp
 engine/src/mesh/StaticMesh.cpp
