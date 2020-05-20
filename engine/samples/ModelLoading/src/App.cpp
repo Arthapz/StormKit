@@ -21,9 +21,9 @@ using namespace storm;
 using storm::log::operator""_module;
 
 template<typename T>
-static constexpr auto WINDOW_WIDTH = T { 1280 };
+static constexpr auto WINDOW_WIDTH = T { 2560 };
 template<typename T>
-static constexpr auto WINDOW_HEIGHT = T { 800 };
+static constexpr auto WINDOW_HEIGHT = T { 1440 };
 static constexpr auto WINDOW_TITLE  = "StormKit ModelLoading Example";
 static constexpr auto LOG_MODULE    = "ModelLoading"_module;
 
@@ -77,7 +77,7 @@ void App::doInitWindow() {
     const auto video_settings =
         window::VideoSettings { .size = core::Extentu { .width  = WINDOW_WIDTH<core::UInt32>,
                                                         .height = WINDOW_HEIGHT<core::UInt32> } };
-    const auto window_style = window::WindowStyle::Close;
+    const auto window_style = window::WindowStyle::Fullscreen;
 
     m_window        = std::make_unique<window::Window>(WINDOW_TITLE, video_settings, window_style);
     m_event_handler = std::make_unique<window::EventHandler>(*m_window);

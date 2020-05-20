@@ -30,13 +30,13 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const render::RenderPass &FramePassResources::renderPass() const noexcept {
+     const render::RenderPass &FramePassResources::renderPass() const noexcept {
         return *m_render_pass;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const render::Framebuffer &FramePassResources::framebuffer() const noexcept {
+     const render::Framebuffer &FramePassResources::framebuffer() const noexcept {
         return *m_framebuffer;
     }
 

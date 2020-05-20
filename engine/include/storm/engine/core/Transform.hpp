@@ -70,6 +70,7 @@ namespace storm::engine {
         inline void rotatePitch(float value) noexcept;
         inline void rotateRoll(float value) noexcept;
 
+        inline void setMatrix(core::Matrixf matrix) noexcept;
         [[nodiscard]] inline const core::Matrixf &matrix() const noexcept;
 
         void flush() noexcept;
@@ -85,8 +86,10 @@ namespace storm::engine {
         core::Quaternionf m_roll  = core::Quaternionf { 1.f, 0.f, 0.f, 0.f };
         core::Vector3f m_scale    = core::Vector3f { 1.f, 1.f, 1.f };
 
+        mutable bool m_dirty                     = true;
         mutable bool m_is_updated                = true;
         mutable core::Matrixf m_transform_matrix = core::Matrixf { 1.f };
+        core::Matrixf m_premultiplicative_matrix = core::Matrixf { 1.f };
 
         RingHardwareBufferOwnedPtr m_transform_buffer;
     };

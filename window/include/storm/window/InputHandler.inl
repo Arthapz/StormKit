@@ -7,43 +7,43 @@
 namespace storm::window {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline bool InputHandler::isKeyPressed(Key key) const noexcept {
+     bool InputHandler::isKeyPressed(Key key) const noexcept {
         return m_impl->isKeyPressed(key);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline bool InputHandler::isMouseButtonPressed(MouseButton button) const noexcept {
+     bool InputHandler::isMouseButtonPressed(MouseButton button) const noexcept {
         return m_impl->isMouseButtonPressed(button);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::Position2u InputHandler::getMousePositionOnDesktop() const noexcept {
+     core::Position2u InputHandler::getMousePositionOnDesktop() const noexcept {
         return m_impl->getMousePositionOnDesktop();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void InputHandler::setMousePositionOnDesktop(core::Position2u position) noexcept {
+     void InputHandler::setMousePositionOnDesktop(core::Position2u position) noexcept {
         m_impl->setMousePositionOnDesktop(std::move(position));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::Position2i InputHandler::getMousePositionOnWindow() const noexcept {
+     core::Position2i InputHandler::getMousePositionOnWindow() const noexcept {
         return m_impl->getMousePositionOnWindow();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void InputHandler::setMousePositionOnWindow(core::Position2i position) noexcept {
+     void InputHandler::setMousePositionOnWindow(core::Position2i position) noexcept {
         m_impl->setMousePositionOnWindow(std::move(position));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void InputHandler::setVirtualKeyboardVisible(bool visible) noexcept {
+     void InputHandler::setVirtualKeyboardVisible(bool visible) noexcept {
         m_impl->setVirtualKeyboardVisible(visible);
     }
 } // namespace storm::window

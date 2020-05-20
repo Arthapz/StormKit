@@ -9,19 +9,47 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void Scene::setCamera(Camera &camera) noexcept { m_camera = core::makeObserver(camera); }
+    Mesh Scene::createPBRMesh() {
+        auto &default_pbr_material = m_material_pool.get(DEFAULT_PBR_MATERIAL_NAME);
+
+        return Mesh { *m_engine, *default_pbr_material };
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    [[nodiscard]] inline Camera &Scene::camera() noexcept { return *m_camera; }
+    MeshOwnedPtr Scene::createPBRMeshPtr() {
+        auto &default_pbr_material = m_material_pool.get(DEFAULT_PBR_MATERIAL_NAME);
+
+        return std::make_unique<Mesh>(*m_engine, *default_pbr_material);
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    [[nodiscard]] inline const Camera &Scene::camera() const noexcept { return *m_camera; }
+    v2::Model Scene::createModel() {
+        return m_engine->createModel(m_texture_pool, m_material_pool);
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void Scene::enableDepthTest(bool enable) noexcept {
+    inline v2::ModelOwnedPtr Scene::createModelPtr() {
+        return m_engine->createModelPtr(m_texture_pool, m_material_pool);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    void Scene::setCamera(Camera &camera) noexcept { m_camera = core::makeObserver(camera); }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    Camera &Scene::camera() noexcept { return *m_camera; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    const Camera &Scene::camera() const noexcept { return *m_camera; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    void Scene::enableDepthTest(bool enable) noexcept {
         m_pipeline_state.depth_stencil_state.depth_write_enable = enable;
         m_pipeline_state.depth_stencil_state.depth_test_enable  = enable;
     }
@@ -34,7 +62,7 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void Scene::setMSAASampleCount(render::SampleCountFlag samples) noexcept {
+    void Scene::setMSAASampleCount(render::SampleCountFlag samples) noexcept {
         m_pipeline_state.multisample_state.sample_shading_enable =
             samples != render::SampleCountFlag::C1_BIT;
         m_pipeline_state.multisample_state.rasterization_samples = samples;
@@ -42,45 +70,43 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline bool Scene::isMSAAEnabled() const noexcept {
+    bool Scene::isMSAAEnabled() const noexcept {
         return m_pipeline_state.multisample_state.sample_shading_enable;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline Scene::ShaderPool &Scene::shaderPool() noexcept { return m_shader_pool; }
+    ShaderPool &Scene::shaderPool() noexcept { return m_shader_pool; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const Scene::ShaderPool &Scene::shaderPool() const noexcept { return m_shader_pool; }
+    const ShaderPool &Scene::shaderPool() const noexcept { return m_shader_pool; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline Scene::TexturePool &Scene::texturePool() noexcept { return m_texture_pool; }
+    TexturePool &Scene::texturePool() noexcept { return m_texture_pool; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const Scene::TexturePool &Scene::texturePool() const noexcept { return m_texture_pool; }
+    const TexturePool &Scene::texturePool() const noexcept { return m_texture_pool; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline Scene::MaterialPool &Scene::materialPool() noexcept { return m_material_pool; }
+    MaterialPool &Scene::materialPool() noexcept { return m_material_pool; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const Scene::MaterialPool &Scene::materialPool() const noexcept {
-        return m_material_pool;
-    }
+    const MaterialPool &Scene::materialPool() const noexcept { return m_material_pool; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline entities::EntityManager &Scene::entities() noexcept { return m_entities; }
+    entities::EntityManager &Scene::entities() noexcept { return m_entities; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline Engine &Scene::engine() noexcept { return *m_engine; }
+    Engine &Scene::engine() noexcept { return *m_engine; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const Engine &Scene::engine() const noexcept { return *m_engine; }
+    const Engine &Scene::engine() const noexcept { return *m_engine; }
 } // namespace storm::engine

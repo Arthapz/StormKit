@@ -7,7 +7,7 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void Material::addShader(const render::Shader &shader) {
+    void Material::addShader(const render::Shader &shader) {
         STORM_EXPECTS(!m_finalized);
 
         m_data.shader_state.shaders.emplace_back(core::makeConstObserver(shader));
@@ -15,7 +15,7 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void Material::addSampler(Binding binding, std::string name) {
+    void Material::addSampler(Binding binding, std::string name) {
         STORM_EXPECTS(!m_finalized);
 
         m_data.samplers.emplace_back(binding, std::move(name));
@@ -23,7 +23,7 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void Material::addUniform(std::string name, UniformType type) {
+    void Material::addUniform(std::string name, UniformType type) {
         STORM_EXPECTS(!m_finalized);
 
         m_data.uniforms.emplace_back(std::move(name), type);
@@ -31,7 +31,7 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline core::Hash64 Material::hash() const noexcept {
+    core::Hash64 Material::hash() const noexcept {
         STORM_EXPECTS(m_finalized);
 
         return m_hash;

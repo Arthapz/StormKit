@@ -34,44 +34,44 @@ GLTFScene::GLTFScene(engine::Engine &engine,
         *m_engine,
         m_engine->surface().extent().convertTo<core::Extentf>());
     m_camera->setPosition({ 0.f, 0.f, 1.f });
-    m_camera->setRotation({ 0.f, 0.f, 0.f });
+    m_camera->setRotation({ 180.f, 0.f, 0.f });
 
     setCamera(*m_camera);
 
-    auto model = engine::Model { *this };
+    m_model = createModelPtr();
+    m_model->load(model_filepath);
 
-    auto type = engine::Model::Type::GLB;
-    if (model_filepath.string().back() == 'f') type = engine::Model::Type::GLTF;
-
-    auto loaded_mesh = model.loadStaticMeshFromFile(model_filepath, type);
-    if (!loaded_mesh.has_value()) {
+    if (!m_model->loaded()) {
         log::LogHandler::flog(LOG_MODULE, "Failed to load {}", model_filepath.string());
         std::exit(EXIT_FAILURE);
     }
-
     log::LogHandler::ilog(LOG_MODULE, "{} loaded", model_filepath.string());
 
-    m_mesh = std::make_unique<storm::engine::StaticMesh>(std::move(loaded_mesh.value()));
+    m_meshes = m_model->createMeshes();
 
-    const auto &bounding_box = m_mesh->boundingBox();
+    for (auto &mesh : m_meshes) {
+        const auto &bounding_box = mesh.boundingBox();
 
-    const auto max_length =
-        std::max(bounding_box.extent.width,
-                 std::max(bounding_box.extent.height, bounding_box.extent.depth));
+        const auto max_length =
+            std::max(bounding_box.extent.width,
+                     std::max(bounding_box.extent.height, bounding_box.extent.depth));
 
-    const auto scale = (1.f / max_length) * 0.5f;
-    auto translation = -bounding_box.min;
-    translation += -0.5f * core::Vector3f { bounding_box.extent.width,
-                                            bounding_box.extent.height,
-                                            bounding_box.extent.depth };
+        const auto scale = (1.f / max_length) * 0.5f;
 
-    auto &transform = m_mesh->transform();
-    transform.setScale(scale, scale, scale);
-    transform.setPosition(translation);
+        auto translation = core::Vector3f {};
+        translation.x    = -(bounding_box.max.x + bounding_box.min.x) / 2.f;
+        translation.y    = -(bounding_box.max.y + bounding_box.min.y) / 2.f;
+        translation.z    = -(bounding_box.max.z + bounding_box.min.z) / 2.f;
+
+        auto &transform = mesh.transform();
+        transform.setScale(scale, scale, scale);
+        transform.setPosition(translation);
+    }
 
     m_engine->debugGUI().setSkipFrameCount(40);
 
     enableDepthTest(true);
+    toggleMSAA();
 }
 
 ////////////////////////////////////////
@@ -97,7 +97,9 @@ void GLTFScene::toggleWireframe() {
 
     m_wireframe = !m_wireframe;
 
-    for (auto &material : m_mesh->materialInstances()) material->setWireFrameEnabled(m_wireframe);
+    for (auto &mesh : m_meshes)
+        for (auto &submesh : mesh.subMeshes())
+            submesh.materialInstance().setWireFrameEnabled(m_wireframe);
 }
 
 ////////////////////////////////////////
@@ -112,9 +114,12 @@ void GLTFScene::toggleMSAA() noexcept {
 ////////////////////////////////////////
 ////////////////////////////////////////
 void GLTFScene::setDebugView(engine::PBRMaterialInstance::DebugView debug_index) {
-    for (auto &material : m_mesh->materialInstances()) {
-        auto &pbr_material = static_cast<engine::PBRMaterialInstance &>(*material);
-        pbr_material.setDebugView(debug_index);
+    for (auto &mesh : m_meshes) {
+        for (auto &submesh : mesh.subMeshes()) {
+            auto &pbr_material =
+                static_cast<engine::PBRMaterialInstance &>(submesh.materialInstance());
+            pbr_material.setDebugView(debug_index);
+        }
     }
 }
 
@@ -123,7 +128,9 @@ void GLTFScene::setDebugView(engine::PBRMaterialInstance::DebugView debug_index)
 void GLTFScene::update(float time) {
     const auto extent = m_engine->surface().extent().convertTo<core::Extenti>();
 
-    if (m_rotate_mesh) m_mesh->transform().setRoll(time * 90.f);
+    if (m_rotate_mesh) {
+        for (auto &mesh : m_meshes) { mesh.transform().setPitch(time * 90.f); }
+    }
 
     if (!m_freeze_camera) {
         auto camera_inputs = engine::FPSCamera::Inputs {};
@@ -220,7 +227,9 @@ void GLTFScene::doRenderScene(storm::engine::FrameGraph &framegraph,
         mesh_state.color_blend_state.attachments = {
             render::GraphicsPipelineColorBlendAttachmentState {}
         };
-        m_mesh->render(cmb, resources.renderPass(), std::move(bindables), std::move(mesh_state));
+
+        for (auto &mesh : m_meshes)
+            mesh.render(cmb, resources.renderPass(), std::move(bindables), mesh_state);
     };
 
     auto &color_pass =

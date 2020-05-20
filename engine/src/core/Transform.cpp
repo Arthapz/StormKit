@@ -15,9 +15,6 @@ struct alignas(16) TransformData {
     core::Matrixf inv_transform = core::Matrixf { 1.f };
 };
 
-template<>
-render::DescriptorSetLayoutOwnedPtr StaticBindable<TransformFlag>::s_descriptor_set_layout = {};
-
 ////////////////////////////////////////
 ////////////////////////////////////////
 Transform::Transform(Engine &engine) : m_engine { &engine } {
@@ -43,6 +40,7 @@ Transform::Transform(Engine &engine) : m_engine { &engine } {
     descriptorSet().update(descriptors);
 
     m_is_updated = true;
+    m_dirty      = true;
     flush();
 }
 
@@ -61,27 +59,29 @@ Transform &Transform::operator=(Transform &&) = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 void Transform::flush() noexcept {
-    if (!m_is_updated) return;
+    if (!m_dirty) return;
 
-    recomputeMatrix();
+    const auto m = matrix();
 
-    const auto data = TransformData { .transform     = m_transform_matrix,
-                                      .inv_transform = core::inverse(m_transform_matrix) };
+    const auto data = TransformData { .transform = m, .inv_transform = core::inverse(m) };
 
     m_transform_buffer->next();
     m_transform_buffer->upload<TransformData>({ &data, 1 });
 
     m_offset = m_transform_buffer->currentOffset();
 
-    m_is_updated = false;
+    m_dirty = false;
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 void Transform::recomputeMatrix() const noexcept {
     const auto translation_matrix = core::translate(core::Matrixf { 1.f }, m_position);
-    const auto rotation_matrix    = core::mat4_cast(orientation());
+    const auto rotation_matrix    = core::Matrixf(orientation());
     const auto scale_matrix       = core::scale(core::Matrixf { 1.f }, m_scale);
 
-    m_transform_matrix = translation_matrix * rotation_matrix * scale_matrix;
+    m_transform_matrix =
+        translation_matrix * rotation_matrix * scale_matrix * m_premultiplicative_matrix;
+
+    // m_premultiplicative_matrix;
 }

@@ -42,7 +42,7 @@ namespace storm::engine {
         inline void setWireFrameEnabled(bool enabled) noexcept;
 
         inline void setSamplerTexture(std::string_view name, const render::Texture &texture);
-        inline void setDataValue(std::string_view name, core::ByteConstSpan bytes);
+        inline void setRawDataValue(std::string_view name, core::ByteConstSpan bytes);
         template<typename T>
         inline void setDataValue(std::string_view name, T &&value);
 
@@ -86,6 +86,7 @@ namespace storm::engine {
         mutable core::Hash64 m_hash = 0u;
 
         friend class StaticMesh;
+        friend class SubMesh;
     }; // namespace storm::engine
 } // namespace storm::engine
 

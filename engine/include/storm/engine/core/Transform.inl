@@ -5,18 +5,18 @@
 namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const core::Vector3f &Transform::position() const noexcept { return m_position; }
+    const core::Vector3f &Transform::position() const noexcept { return m_position; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setPosition(const core::Vector2f &position) noexcept {
+    void Transform::setPosition(const core::Vector2f &position) noexcept {
         setXPosition(position.x);
         setYPosition(position.y);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setPosition(const core::Vector3f &position) noexcept {
+    void Transform::setPosition(const core::Vector3f &position) noexcept {
         setXPosition(position.x);
         setYPosition(position.y);
         setZPosition(position.z);
@@ -24,7 +24,7 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setPosition(float x, float y, float z) noexcept {
+    void Transform::setPosition(float x, float y, float z) noexcept {
         setXPosition(x);
         setYPosition(y);
         setZPosition(z);
@@ -32,38 +32,41 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setXPosition(float x) noexcept {
+    void Transform::setXPosition(float x) noexcept {
         m_position.x = x;
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setYPosition(float y) noexcept {
+    void Transform::setYPosition(float y) noexcept {
         m_position.y = y;
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setZPosition(float z) noexcept {
+    void Transform::setZPosition(float z) noexcept {
         m_position.z = z;
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::move(const core::Vector2f &position) noexcept {
+    void Transform::move(const core::Vector2f &position) noexcept {
         moveX(position.x);
         moveY(position.y);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::move(const core::Vector3f &position) noexcept {
+    void Transform::move(const core::Vector3f &position) noexcept {
         moveX(position.x);
         moveY(position.y);
         moveZ(position.z);
@@ -71,7 +74,7 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::move(float x, float y, float z) noexcept {
+    void Transform::move(float x, float y, float z) noexcept {
         moveX(x);
         moveY(y);
         moveZ(z);
@@ -79,42 +82,45 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::moveX(float x) noexcept {
+    void Transform::moveX(float x) noexcept {
         m_position.x += x;
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::moveY(float y) noexcept {
+    void Transform::moveY(float y) noexcept {
         m_position.y += y;
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::moveZ(float z) noexcept {
+    void Transform::moveZ(float z) noexcept {
         m_position.z += z;
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const core::Vector3f &Transform::scale() const noexcept { return m_scale; }
+    const core::Vector3f &Transform::scale() const noexcept { return m_scale; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setScale(const core::Vector2f &scale) noexcept {
+    void Transform::setScale(const core::Vector2f &scale) noexcept {
         setXScale(scale.x);
         setYScale(scale.y);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setScale(const core::Vector3f &scale) noexcept {
+    void Transform::setScale(const core::Vector3f &scale) noexcept {
         setXScale(scale.x);
         setYScale(scale.y);
         setZScale(scale.z);
@@ -122,7 +128,7 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setScale(float x, float y, float z) noexcept {
+    void Transform::setScale(float x, float y, float z) noexcept {
         setXScale(x);
         setYScale(y);
         setZScale(z);
@@ -130,37 +136,38 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setXScale(float x) noexcept {
+    void Transform::setXScale(float x) noexcept {
         m_scale.x = x;
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setYScale(float y) noexcept {
+    void Transform::setYScale(float y) noexcept {
         m_scale.y = y;
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setZScale(float z) noexcept {
+    void Transform::setZScale(float z) noexcept {
         m_scale.z = z;
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::Quaternionf Transform::orientation() const noexcept {
-        return m_yaw * m_pitch * m_roll;
-    }
+    core::Quaternionf Transform::orientation() const noexcept { return m_yaw * m_pitch * m_roll; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setOrientation(const core::Vector3f &orientation) noexcept {
+    void Transform::setOrientation(const core::Vector3f &orientation) noexcept {
         setYaw(orientation.x);
         setPitch(orientation.y);
         setRoll(orientation.z);
@@ -168,7 +175,7 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setOrientation(float yaw, float pitch, float roll) noexcept {
+    void Transform::setOrientation(float yaw, float pitch, float roll) noexcept {
         setYaw(yaw);
         setPitch(pitch);
         setRoll(roll);
@@ -176,31 +183,34 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setYaw(float yaw) noexcept {
+    void Transform::setYaw(float yaw) noexcept {
         m_yaw = core::angleAxis(core::radians(yaw), core::Vector3f { 1.f, 0.f, 0.f });
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setPitch(float pitch) noexcept {
+    void Transform::setPitch(float pitch) noexcept {
         m_pitch = core::angleAxis(core::radians(pitch), core::Vector3f { 0.f, 1.f, 0.f });
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::setRoll(float roll) noexcept {
+    void Transform::setRoll(float roll) noexcept {
         m_roll = core::angleAxis(core::radians(roll), core::Vector3f { 0.f, 0.f, 1.f });
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::rotate(const core::Vector3f &rotation) noexcept {
+    void Transform::rotate(const core::Vector3f &rotation) noexcept {
         rotateYaw(rotation.x);
         rotatePitch(rotation.y);
         rotateRoll(rotation.z);
@@ -208,32 +218,43 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::rotateYaw(float yaw) noexcept {
+    void Transform::rotateYaw(float yaw) noexcept {
         m_yaw = core::rotate(m_yaw, core::radians(yaw), core::Vector3f { 1.f, 0.f, 0.f });
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::rotatePitch(float pitch) noexcept {
+    void Transform::rotatePitch(float pitch) noexcept {
         m_pitch = core::rotate(m_pitch, core::radians(pitch), core::Vector3f { 0.f, 1.f, 0.f });
 
         m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Transform::rotateRoll(float roll) noexcept {
+    void Transform::rotateRoll(float roll) noexcept {
         m_roll = core::rotate(m_roll, core::radians(roll), core::Vector3f { 0.f, 0.f, 1.f });
 
         m_is_updated = true;
+        m_dirty      = true;
+    }
+
+    void Transform::setMatrix(core::Matrixf matrix) noexcept {
+        m_premultiplicative_matrix = std::move(matrix);
+
+        m_is_updated = true;
+        m_dirty      = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const core::Matrixf &Transform::matrix() const noexcept {
+    const core::Matrixf &Transform::matrix() const noexcept {
         if (m_is_updated) recomputeMatrix();
+        m_is_updated = false;
 
         return m_transform_matrix;
     }

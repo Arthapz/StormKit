@@ -19,9 +19,6 @@ struct alignas(16) CameraData {
     core::Matrixf view       = core::Matrixf { 1.f };
 };
 
-template<>
-render::DescriptorSetLayoutOwnedPtr StaticBindable<CameraFlag>::s_descriptor_set_layout = {};
-
 ////////////////////////////////////////
 ////////////////////////////////////////
 Camera::Camera(const Engine &engine, Type type, core::Extentf viewport)
@@ -77,7 +74,20 @@ void Camera::update(float delta) noexcept {
 ////////////////////////////////////////
 ////////////////////////////////////////
 void Camera::flush() noexcept {
-    const auto data = CameraData { .position   = core::Vector4f { m_position, 0.f },
+    using storm::core::cos;
+    using storm::core::radians;
+    using storm::core::sin;
+
+    /*const auto position = core::Vector4f {
+        -m_position.z * sin(core::radians(m_orientation.y)) *
+    cos(core::radians(m_orientation.x)), -m_position.z *
+    sin(radians(m_orientation.x)), m_position.z * cos(radians(m_orientation.y)) *
+    cos(radians(m_orientation.x)), 0.f
+    };*/
+
+    const auto position = core::Vector4f { m_position, 0.f };
+
+    const auto data = CameraData { .position   = position,
                                    .projection = m_projection_matrix,
                                    .view       = m_view_matrix };
 
