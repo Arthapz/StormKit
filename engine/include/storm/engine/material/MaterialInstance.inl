@@ -4,12 +4,10 @@
 
 #pragma once
 
-#include "MaterialInstance.hpp"
-
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void MaterialInstance::setDoubleSided(bool double_sided) noexcept {
+    void MaterialInstance::setDoubleSided(bool double_sided) noexcept {
         m_rasterization_state.cull_mode =
             (double_sided) ? render::CullMode::None : render::CullMode::Back;
 
@@ -19,7 +17,7 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void MaterialInstance::setWireFrameEnabled(bool enabled) noexcept {
+    void MaterialInstance::setWireFrameEnabled(bool enabled) noexcept {
         m_rasterization_state.polygon_mode =
             (enabled) ? render::PolygonMode::Line : render::PolygonMode::Fill;
 
@@ -29,8 +27,8 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void MaterialInstance::setSamplerTexture(std::string_view name,
-                                                    const render::Texture &texture) {
+    void MaterialInstance::setSamplerTexture(std::string_view name,
+                                             const render::Texture &texture) {
         const auto it = core::ranges::find_if(m_sampled_textures, [&name](const auto &pair) {
             return name == pair.first;
         });
@@ -47,16 +45,14 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void MaterialInstance::setDataValue(std::string_view name, core::ByteConstSpan bytes) {
+    void MaterialInstance::setRawDataValue(std::string_view name, core::ByteConstSpan bytes) {
         const auto it = core::ranges::find_if(m_data_offsets, [&name](const auto &pair) {
             return name == pair.first;
         });
 
         STORM_EXPECTS(it != core::ranges::cend(m_data_offsets));
 
-        core::ranges::copy(core::ranges::begin(bytes),
-                           core::ranges::end(bytes),
-                           core::ranges::begin(m_bytes) + it->second);
+        core::ranges::copy(bytes, core::ranges::begin(m_bytes) + it->second);
 
         m_dirty       = true;
         m_bytes_dirty = true;
@@ -66,18 +62,18 @@ namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    inline void MaterialInstance::setDataValue(std::string_view name, T &&value) {
+    void MaterialInstance::setDataValue(std::string_view name, T &&value) {
         const auto *bytes = reinterpret_cast<const core::Byte *>(&value);
-        setDataValue(name, { bytes, sizeof(value) });
+        setRawDataValue(name, { bytes, sizeof(value) });
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const Material &MaterialInstance::parent() const noexcept { return *m_parent; }
+    const Material &MaterialInstance::parent() const noexcept { return *m_parent; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline core::Hash64 MaterialInstance::hash() const noexcept {
+    core::Hash64 MaterialInstance::hash() const noexcept {
         if (m_dirty_hash) recomputeHash();
 
         return m_hash;

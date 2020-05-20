@@ -7,7 +7,7 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void Device::waitForFence(const Fence &fence, core::UInt64 timeout) const noexcept {
+     void Device::waitForFence(const Fence &fence, core::UInt64 timeout) const noexcept {
         auto fences = std::array { std::cref(fence) };
         waitForFences(fences, true, timeout);
     }
@@ -30,7 +30,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBuffer Device::createVertexBuffer(core::ArraySize size,
+     HardwareBuffer Device::createVertexBuffer(core::ArraySize size,
                                                      MemoryProperty property,
                                                      bool use_staging) const {
         constexpr auto with_staging_buffer_usage =
@@ -43,7 +43,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferArray Device::createVertexBuffers(core::ArraySize count,
+     HardwareBufferArray Device::createVertexBuffers(core::ArraySize count,
                                                            core::ArraySize size,
                                                            MemoryProperty property,
                                                            bool use_staging) const {
@@ -57,7 +57,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferOwnedPtr Device::createVertexBufferPtr(core::ArraySize size,
+     HardwareBufferOwnedPtr Device::createVertexBufferPtr(core::ArraySize size,
                                                                 MemoryProperty property,
                                                                 bool use_staging) const {
         constexpr auto with_staging_buffer_usage =
@@ -70,7 +70,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferOwnedPtrArray Device::createVertexBuffersPtr(core::ArraySize count,
+     HardwareBufferOwnedPtrArray Device::createVertexBuffersPtr(core::ArraySize count,
                                                                       core::ArraySize size,
                                                                       MemoryProperty property,
                                                                       bool use_staging) const {
@@ -84,7 +84,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBuffer Device::createIndexBuffer(core::ArraySize size,
+     HardwareBuffer Device::createIndexBuffer(core::ArraySize size,
                                                     MemoryProperty property,
                                                     bool use_staging) const {
         constexpr auto with_staging_buffer_usage =
@@ -97,7 +97,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferArray Device::createIndexBuffers(core::ArraySize count,
+     HardwareBufferArray Device::createIndexBuffers(core::ArraySize count,
                                                           core::ArraySize size,
                                                           MemoryProperty property,
                                                           bool use_staging) const {
@@ -111,7 +111,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferOwnedPtr Device::createIndexBufferPtr(core::ArraySize size,
+     HardwareBufferOwnedPtr Device::createIndexBufferPtr(core::ArraySize size,
                                                                MemoryProperty property,
                                                                bool use_staging) const {
         constexpr auto with_staging_buffer_usage =
@@ -124,7 +124,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferOwnedPtrArray Device::createIndexBuffersPtr(core::ArraySize count,
+     HardwareBufferOwnedPtrArray Device::createIndexBuffersPtr(core::ArraySize count,
                                                                      core::ArraySize size,
                                                                      MemoryProperty property,
                                                                      bool use_staging) const {
@@ -138,7 +138,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBuffer Device::createUniformBuffer(core::ArraySize size,
+     HardwareBuffer Device::createUniformBuffer(core::ArraySize size,
                                                       MemoryProperty property,
                                                       bool use_staging) const {
         constexpr auto with_staging_buffer_usage =
@@ -151,7 +151,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferArray Device::createUniformBuffers(core::ArraySize count,
+     HardwareBufferArray Device::createUniformBuffers(core::ArraySize count,
                                                             core::ArraySize size,
                                                             MemoryProperty property,
                                                             bool use_staging) const {
@@ -165,7 +165,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferOwnedPtr Device::createUniformBufferPtr(core::ArraySize size,
+     HardwareBufferOwnedPtr Device::createUniformBufferPtr(core::ArraySize size,
                                                                  MemoryProperty property,
                                                                  bool use_staging) const {
         constexpr auto with_staging_buffer_usage =
@@ -178,7 +178,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferOwnedPtrArray Device::createUniformBuffersPtr(core::ArraySize count,
+     HardwareBufferOwnedPtrArray Device::createUniformBuffersPtr(core::ArraySize count,
                                                                        core::ArraySize size,
                                                                        MemoryProperty property,
                                                                        bool use_staging) const {
@@ -192,14 +192,14 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBuffer Device::createStagingBuffer(core::ArraySize size,
+     HardwareBuffer Device::createStagingBuffer(core::ArraySize size,
                                                       MemoryProperty property) const {
         return createHardwareBuffer(HardwareBufferUsage::Transfert_Src, size, property);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferArray Device::createStagingBuffers(core::ArraySize count,
+     HardwareBufferArray Device::createStagingBuffers(core::ArraySize count,
                                                             core::ArraySize size,
                                                             MemoryProperty property) const {
         auto buffers = HardwareBufferArray {};
@@ -211,14 +211,14 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferOwnedPtr Device::createStagingBufferPtr(core::ArraySize size,
+     HardwareBufferOwnedPtr Device::createStagingBufferPtr(core::ArraySize size,
                                                                  MemoryProperty property) const {
         return createHardwareBufferPtr(HardwareBufferUsage::Transfert_Src, size, property);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline HardwareBufferOwnedPtrArray
+     HardwareBufferOwnedPtrArray
         Device::createStagingBuffersPtr(core::ArraySize count,
                                         core::ArraySize size,
                                         MemoryProperty property) const {
@@ -232,18 +232,18 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const Queue &Device::graphicsQueue() const noexcept { return *m_graphics_queue; }
+     const Queue &Device::graphicsQueue() const noexcept { return *m_graphics_queue; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const Queue &Device::asyncTransfertQueue() const noexcept {
+     const Queue &Device::asyncTransfertQueue() const noexcept {
         STORM_EXPECTS(m_async_transfert_queue != nullptr);
 
         return *m_async_transfert_queue;
     }
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const Queue &Device::asyncComputeQueue() const noexcept {
+     const Queue &Device::asyncComputeQueue() const noexcept {
         STORM_EXPECTS(m_async_compute_queue != nullptr);
 
         return *m_async_compute_queue;
@@ -251,50 +251,50 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline bool Device::hasAsyncTransfertQueue() const noexcept {
+     bool Device::hasAsyncTransfertQueue() const noexcept {
         return m_async_transfert_queue != nullptr;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline bool Device::hasAsyncComputeQueue() const noexcept {
+     bool Device::hasAsyncComputeQueue() const noexcept {
         return m_async_compute_queue != nullptr;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const PhysicalDevice &Device::physicalDevice() const noexcept {
+     const PhysicalDevice &Device::physicalDevice() const noexcept {
         return *m_physical_device;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::Device Device::vkDevice() const noexcept {
+     vk::Device Device::vkDevice() const noexcept {
         STORM_EXPECTS(m_vk_device);
         return *m_vk_device;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline Device::operator vk::Device() const noexcept { return vkDevice(); }
+     Device::operator vk::Device() const noexcept { return vkDevice(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::Device Device::vkHandle() const noexcept { return vkDevice(); }
+     vk::Device Device::vkHandle() const noexcept { return vkDevice(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::UInt64 Device::vkDebugHandle() const noexcept {
+     core::UInt64 Device::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkDevice_T *());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline VmaAllocator Device::vmaAllocator() const noexcept { return m_vma_allocator; }
+     VmaAllocator Device::vmaAllocator() const noexcept { return m_vma_allocator; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const vk::DispatchLoaderDynamic &Device::vkDispatcher() const noexcept {
+     const vk::DispatchLoaderDynamic &Device::vkDispatcher() const noexcept {
         return m_vk_dispatcher;
     }
 

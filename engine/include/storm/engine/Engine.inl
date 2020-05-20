@@ -9,11 +9,11 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void Engine::setScene(Scene &scene) noexcept { m_scene = core::makeObserver(scene); }
+    void Engine::setScene(Scene &scene) noexcept { m_scene = core::makeObserver(scene); }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline StaticMesh Engine::createStaticMesh(
+    StaticMesh Engine::createStaticMesh(
         render::TaggedVertexInputAttributeDescriptionArray vertex_attributes,
         render::VertexBindingDescriptionArray vertex_bindings) {
         return StaticMesh { *this, std::move(vertex_attributes), std::move(vertex_bindings) };
@@ -21,7 +21,7 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline StaticMeshOwnedPtr Engine::createStaticMeshPtr(
+    StaticMeshOwnedPtr Engine::createStaticMeshPtr(
         render::TaggedVertexInputAttributeDescriptionArray vertex_attributes,
         render::VertexBindingDescriptionArray vertex_bindings) {
         return std::make_unique<StaticMesh>(*this,
@@ -31,81 +31,100 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline Transform Engine::createTransform() { return Transform { *this }; }
+    Mesh Engine::createMesh(const Material &material) { return Mesh { *this, material }; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline TransformOwnedPtr Engine::createTransformPtr() {
-        return std::make_unique<Transform>(*this);
+    MeshOwnedPtr Engine::createMeshPtr(const Material &material) {
+        return std::make_unique<Mesh>(*this, material);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline render::Instance &Engine::instance() noexcept { return *m_instance; }
+    v2::Model Engine::createModel(TexturePool &texture_pool, MaterialPool &material_pool) {
+        return v2::Model { *this, texture_pool, material_pool };
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const render::Instance &Engine::instance() const noexcept { return *m_instance; }
+    v2::ModelOwnedPtr Engine::createModelPtr(TexturePool &texture_pool,
+                                             MaterialPool &material_pool) {
+        return std::make_unique<v2::Model>(*this, texture_pool, material_pool);
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline render::Device &Engine::device() noexcept { return *m_device; }
+    Transform Engine::createTransform() { return Transform { *this }; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const render::Device &Engine::device() const noexcept { return *m_device; }
+    TransformOwnedPtr Engine::createTransformPtr() { return std::make_unique<Transform>(*this); }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline render::Surface &Engine::surface() noexcept { return *m_surface; }
+    render::Instance &Engine::instance() noexcept { return *m_instance; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const render::Surface &Engine::surface() const noexcept { return *m_surface; }
+    const render::Instance &Engine::instance() const noexcept { return *m_instance; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline render::DescriptorPool &Engine::descriptorPool() noexcept { return *m_descriptor_pool; }
+    render::Device &Engine::device() noexcept { return *m_device; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const render::DescriptorPool &Engine::descriptorPool() const noexcept {
+    const render::Device &Engine::device() const noexcept { return *m_device; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    render::Surface &Engine::surface() noexcept { return *m_surface; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    const render::Surface &Engine::surface() const noexcept { return *m_surface; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    render::DescriptorPool &Engine::descriptorPool() noexcept { return *m_descriptor_pool; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    const render::DescriptorPool &Engine::descriptorPool() const noexcept {
         return *m_descriptor_pool;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline render::PipelineCache &Engine::pipelineCache() noexcept { return *m_pipeline_cache; }
+    render::PipelineCache &Engine::pipelineCache() noexcept { return *m_pipeline_cache; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const render::PipelineCache &Engine::pipelineCache() const noexcept {
+    const render::PipelineCache &Engine::pipelineCache() const noexcept {
         return *m_pipeline_cache;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline DebugGUI &Engine::debugGUI() noexcept { return *m_debug_gui; }
+    DebugGUI &Engine::debugGUI() noexcept { return *m_debug_gui; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const DebugGUI &Engine::debugGUI() const noexcept { return *m_debug_gui; }
+    const DebugGUI &Engine::debugGUI() const noexcept { return *m_debug_gui; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline float Engine::getCPUTime() const noexcept { return m_cpu_time; }
+    float Engine::getCPUTime() const noexcept { return m_cpu_time; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline Profiler &Engine::profiler() noexcept { return *m_profiler; }
+    Profiler &Engine::profiler() noexcept { return *m_profiler; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const Profiler &Engine::profiler() const noexcept { return *m_profiler; }
+    const Profiler &Engine::profiler() const noexcept { return *m_profiler; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline render::SampleCountFlag Engine::maxSampleCount() const noexcept {
-        return m_max_sample_count;
-    }
+    render::SampleCountFlag Engine::maxSampleCount() const noexcept { return m_max_sample_count; }
 } // namespace storm::engine

@@ -7,7 +7,7 @@ namespace storm::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void seed(core::UInt32 seed) noexcept { private_::generator.seed(seed); }
+     void seed(core::UInt32 seed) noexcept { private_::generator.seed(seed); }
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -26,28 +26,28 @@ namespace storm::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, typename V, typename>
-    inline constexpr auto realIsEqual(T &&a, V &&b) noexcept {
+     constexpr auto realIsEqual(T &&a, V &&b) noexcept {
         return std::abs(a - b) < std::numeric_limits<std::remove_cv_t<std::decay_t<T>>>::epsilon();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    inline constexpr T map(T x, T in_min, T in_max, T out_min, T out_max) noexcept {
+     constexpr T map(T x, T in_min, T in_max, T out_min, T out_max) noexcept {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    inline constexpr float degToRad(T angle) noexcept {
+     constexpr float degToRad(T angle) noexcept {
         return angle / 180. * pi<T>;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    inline constexpr T radToDeg(T angle) noexcept {
+     constexpr T radToDeg(T angle) noexcept {
         return angle / pi<T> * 180.;
     }
 
@@ -73,7 +73,7 @@ namespace storm::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
-    inline std::intptr_t extractOwnedPtr(T *ptr) noexcept {
+     std::intptr_t extractOwnedPtr(T *ptr) noexcept {
         return reinterpret_cast<std::intptr_t>(ptr);
     }
 } // namespace storm::core

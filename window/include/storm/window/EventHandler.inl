@@ -7,13 +7,13 @@
 namespace storm::window {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void EventHandler::addCallback(EventType event_type, Callback callback) {
+     void EventHandler::addCallback(EventType event_type, Callback callback) {
         m_callback[event_type].emplace_back(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline void EventHandler::clearCallbacks(EventType event_type) {
+     void EventHandler::clearCallbacks(EventType event_type) {
         m_callback[event_type].clear();
     }
 } // namespace storm::window

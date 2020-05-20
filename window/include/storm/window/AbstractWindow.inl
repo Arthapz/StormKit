@@ -7,11 +7,11 @@
 namespace storm::window {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const std::string &AbstractWindow::title() const noexcept { return m_title; }
+     const std::string &AbstractWindow::title() const noexcept { return m_title; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const VideoSettings &AbstractWindow::videoSettings() const noexcept {
+     const VideoSettings &AbstractWindow::videoSettings() const noexcept {
         return m_video_settings;
     }
 } // namespace storm::window

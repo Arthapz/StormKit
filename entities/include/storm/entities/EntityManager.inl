@@ -193,7 +193,7 @@ namespace storm::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::ArraySize EntityManager::numberOfEntities() const noexcept {
+     core::ArraySize EntityManager::numberOfEntities() const noexcept {
         return std::size(m_entities);
     }
 } // namespace storm::entities
