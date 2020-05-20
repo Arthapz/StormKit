@@ -44,7 +44,7 @@ PBRMaterial::PBRMaterial(Scene &scene) : Material { scene } {
     addUniform(std::string { PBRMaterialInstance::ROUGHNESS_FACTOR_NAME }, UniformType::Float);
     addUniform(std::string { PBRMaterialInstance::AMBIANT_OCCLUSION_FACTOR_NAME },
                UniformType::Float);
-    addUniform("PAD0", UniformType::Float);
+    addUniform("PAD0", UniformType::UInt32);
     addUniform(std::string { PBRMaterialInstance::EMISSIVE_FACTOR_NAME }, UniformType::Vec4f);
     // addUniform("double_sided", UniformType::Int8);
 

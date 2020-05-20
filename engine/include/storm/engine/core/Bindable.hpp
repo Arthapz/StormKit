@@ -59,7 +59,7 @@ namespace storm::engine {
             noexcept final;
 
       private:
-        static render::DescriptorSetLayoutOwnedPtr s_descriptor_set_layout;
+        static inline render::DescriptorSetLayoutOwnedPtr s_descriptor_set_layout;
     };
 
     class STORM_PUBLIC Bindable: public BindableBase {

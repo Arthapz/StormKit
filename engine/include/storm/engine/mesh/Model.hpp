@@ -55,5 +55,7 @@ namespace storm::engine {
         render::TextureOwnedPtrArray m_textures;
         render::TextureViewOwnedPtrArray m_texture_views;
         render::SamplerOwnedPtrArray m_samplers;
+
+        std::vector<Mesh> m_meshes;
     };
 } // namespace storm::engine

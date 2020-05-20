@@ -147,6 +147,15 @@ engine/include/storm/engine/core/Transform.inl
 engine/include/storm/engine/core/TransformComponent.hpp
 engine/include/storm/engine/core/Vertex.hpp
 engine/include/storm/engine/core/Vertex.inl
+engine/include/storm/engine/drawable/Drawable.hpp
+engine/include/storm/engine/drawable/Drawable.inl
+engine/include/storm/engine/drawable/Fwd.hpp
+engine/include/storm/engine/drawable/Mesh.hpp
+engine/include/storm/engine/drawable/Mesh.inl
+engine/include/storm/engine/drawable/Model.hpp
+engine/include/storm/engine/drawable/Model.inl
+engine/include/storm/engine/drawable/SubMesh.hpp
+engine/include/storm/engine/drawable/SubMesh.inl
 engine/include/storm/engine/framegraph/FrameGraph.hpp
 engine/include/storm/engine/framegraph/FrameGraph.inl
 engine/include/storm/engine/framegraph/FramePass.hpp
@@ -236,6 +245,10 @@ engine/src/core/imgui/imgui_widgets.cpp
 engine/src/core/imgui/imstb_rectpack.hpp
 engine/src/core/imgui/imstb_textedit.hpp
 engine/src/core/imgui/imstb_truetype.hpp
+engine/src/drawable/Drawable.cpp
+engine/src/drawable/Mesh.cpp
+engine/src/drawable/Model.cpp
+engine/src/drawable/SubMesh.cpp
 engine/src/framegraph/FrameGraph.cpp
 engine/src/framegraph/FramePass.cpp
 engine/src/framegraph/FramePassBuilder.cpp

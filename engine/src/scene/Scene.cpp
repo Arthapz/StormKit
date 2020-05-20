@@ -3,6 +3,8 @@
 
 #include <storm/render/pipeline/DescriptorSet.hpp>
 
+#include <storm/render/resource/Texture.hpp>
+
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
@@ -46,7 +48,7 @@ Scene::Scene(Engine &engine) : m_engine { &engine } {
     m_pipeline_state.viewport_state.scissors =
         std::vector { render::Scissor { .offset = { 0, 0 }, .extent = extent } };
 
-    materialPool().create("StormKit:PBRMaterial_default", std::make_unique<PBRMaterial>(*this));
+    materialPool().create(DEFAULT_PBR_MATERIAL_NAME, std::make_unique<PBRMaterial>(*this));
 }
 
 ////////////////////////////////////////
