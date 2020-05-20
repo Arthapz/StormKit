@@ -15,7 +15,7 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const std::optional<core::UOffset> &Bindable::BindableBase::offset() const noexcept {
+     const std::optional<core::UOffset> &Bindable::BindableBase::offset() const noexcept {
         return m_offset;
     }
 

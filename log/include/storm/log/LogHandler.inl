@@ -34,33 +34,33 @@ namespace storm::log {
     }
 
     template<typename... Args>
-    inline void
+     void
         LogHandler::log(Severity severity, std::string format_string, Args &&... param_args) {
         log(severity, ""_module, std::move(format_string), std::forward<Args>(param_args)...);
     }
 
     template<typename... Args>
-    inline void LogHandler::dlog(Args &&... param_args) {
+     void LogHandler::dlog(Args &&... param_args) {
         log(Severity::Debug, std::forward<Args>(param_args)...);
     }
 
     template<typename... Args>
-    inline void LogHandler::ilog(Args &&... param_args) {
+     void LogHandler::ilog(Args &&... param_args) {
         log(Severity::Info, std::forward<Args>(param_args)...);
     }
 
     template<typename... Args>
-    inline void LogHandler::wlog(Args &&... param_args) {
+     void LogHandler::wlog(Args &&... param_args) {
         log(Severity::Warning, std::forward<Args>(param_args)...);
     }
 
     template<typename... Args>
-    inline void LogHandler::elog(Args &&... param_args) {
+     void LogHandler::elog(Args &&... param_args) {
         log(Severity::Error, std::forward<Args>(param_args)...);
     }
 
     template<typename... Args>
-    inline void LogHandler::flog(Args &&... param_args) {
+     void LogHandler::flog(Args &&... param_args) {
         log(Severity::Fatal, std::forward<Args>(param_args)...);
     }
 

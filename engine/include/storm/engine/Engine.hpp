@@ -36,6 +36,9 @@
 
 #include <storm/engine/mesh/StaticMesh.hpp>
 
+#include <storm/engine/drawable/Mesh.hpp>
+#include <storm/engine/drawable/Model.hpp>
+
 namespace storm::engine {
     class STORM_PUBLIC Engine {
       public:
@@ -73,6 +76,14 @@ namespace storm::engine {
         [[nodiscard]] inline StaticMeshOwnedPtr createStaticMeshPtr(
             render::TaggedVertexInputAttributeDescriptionArray vertex_attributes,
             render::VertexBindingDescriptionArray vertex_bindings);
+
+        [[nodiscard]] inline Mesh createMesh(const Material &material);
+        [[nodiscard]] inline MeshOwnedPtr createMeshPtr(const Material &material);
+
+        [[nodiscard]] inline v2::Model createModel(TexturePool &texture_pool,
+                                                   MaterialPool &material_pool);
+        [[nodiscard]] inline v2::ModelOwnedPtr createModelPtr(TexturePool &texture_pool,
+                                                              MaterialPool &material_pool);
 
         [[nodiscard]] inline Transform createTransform();
         [[nodiscard]] inline TransformOwnedPtr createTransformPtr();

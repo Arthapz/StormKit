@@ -7,25 +7,25 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::Semaphore Semaphore::vkSemaphore() const noexcept {
+     vk::Semaphore Semaphore::vkSemaphore() const noexcept {
         STORM_EXPECTS(m_vk_semaphore);
         return *m_vk_semaphore;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline Semaphore::operator vk::Semaphore() const noexcept {
+     Semaphore::operator vk::Semaphore() const noexcept {
         STORM_EXPECTS(m_vk_semaphore);
         return *m_vk_semaphore;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::Semaphore Semaphore::vkHandle() const noexcept { return vkSemaphore(); }
+     vk::Semaphore Semaphore::vkHandle() const noexcept { return vkSemaphore(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::UInt64 Semaphore::vkDebugHandle() const noexcept {
+     core::UInt64 Semaphore::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkSemaphore_T *());
     }
 } // namespace storm::render

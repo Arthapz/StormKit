@@ -7,7 +7,7 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline render::Texture &FrameGraphTexture::texture() noexcept {
+     render::Texture &FrameGraphTexture::texture() noexcept {
         if (std::holds_alternative<render::TextureOwnedPtr>(storage))
             return *std::get<render::TextureOwnedPtr>(storage);
         else
@@ -15,7 +15,7 @@ namespace storm::engine {
     }
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const render::Texture &FrameGraphTexture::texture() const noexcept {
+     const render::Texture &FrameGraphTexture::texture() const noexcept {
         if (std::holds_alternative<render::TextureOwnedPtr>(storage))
             return *std::get<render::TextureOwnedPtr>(storage);
         else
@@ -24,7 +24,7 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline render::HardwareBuffer &FrameGraphBuffer::buffer() noexcept {
+     render::HardwareBuffer &FrameGraphBuffer::buffer() noexcept {
         if (std::holds_alternative<render::HardwareBufferOwnedPtr>(storage))
             return *std::get<render::HardwareBufferOwnedPtr>(storage);
         else
@@ -32,7 +32,7 @@ namespace storm::engine {
     }
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const render::HardwareBuffer &FrameGraphBuffer::buffer() const noexcept {
+     const render::HardwareBuffer &FrameGraphBuffer::buffer() const noexcept {
         if (std::holds_alternative<render::HardwareBufferOwnedPtr>(storage))
             return *std::get<render::HardwareBufferOwnedPtr>(storage);
         else
@@ -41,35 +41,35 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline std::string_view FramePassResourceBase::name() const noexcept { return m_name; }
+     std::string_view FramePassResourceBase::name() const noexcept { return m_name; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline core::UInt32 FramePassResourceBase::id() const noexcept { return m_id; }
+     core::UInt32 FramePassResourceBase::id() const noexcept { return m_id; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline bool FramePassResourceBase::isTransient() const noexcept { return m_is_transient; }
+     bool FramePassResourceBase::isTransient() const noexcept { return m_is_transient; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline core::UInt32 FramePassResourceBase::createdBy() const noexcept { return m_created_by; }
+     core::UInt32 FramePassResourceBase::createdBy() const noexcept { return m_created_by; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline core::UInt32 FramePassResourceBase::destroyedIn() const noexcept {
+     core::UInt32 FramePassResourceBase::destroyedIn() const noexcept {
         return m_destroyed_in;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline core::span<const core::UInt32> FramePassResourceBase::readIn() const noexcept {
+     core::span<const core::UInt32> FramePassResourceBase::readIn() const noexcept {
         return m_read_in;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline core::span<const core::UInt32> FramePassResourceBase::writeIn() const noexcept {
+     core::span<const core::UInt32> FramePassResourceBase::writeIn() const noexcept {
         return m_write_in;
     }
 
@@ -114,7 +114,7 @@ namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Resource>
-    inline const typename Resource::Descriptor &FramePassResource<Resource>::descriptor() const
+     const typename Resource::Descriptor &FramePassResource<Resource>::descriptor() const
         noexcept {
         return m_descriptor;
     }
@@ -122,28 +122,28 @@ namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Resource>
-    inline void FramePassResource<Resource>::realize(const render::Device &device) noexcept {
+     void FramePassResource<Resource>::realize(const render::Device &device) noexcept {
         if (m_is_transient) m_resource.realize(device, m_descriptor);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Resource>
-    inline void FramePassResource<Resource>::derealize() noexcept {
+     void FramePassResource<Resource>::derealize() noexcept {
         if (m_is_transient) m_resource.derealize();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Resource>
-    inline Resource &FramePassResource<Resource>::resource() noexcept {
+     Resource &FramePassResource<Resource>::resource() noexcept {
         return m_resource;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Resource>
-    inline const Resource &FramePassResource<Resource>::resource() const noexcept {
+     const Resource &FramePassResource<Resource>::resource() const noexcept {
         return m_resource;
     }
 } // namespace storm::engine

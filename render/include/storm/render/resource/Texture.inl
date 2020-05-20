@@ -7,35 +7,35 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::Extentu Texture::extent() const noexcept { return m_extent; }
+     core::Extentu Texture::extent() const noexcept { return m_extent; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline PixelFormat Texture::format() const noexcept { return m_format; }
+     PixelFormat Texture::format() const noexcept { return m_format; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline TextureType Texture::type() const noexcept { return m_type; }
+     TextureType Texture::type() const noexcept { return m_type; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline SampleCountFlag Texture::samples() const noexcept { return m_samples; }
+     SampleCountFlag Texture::samples() const noexcept { return m_samples; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::UInt32 Texture::mipLevels() const noexcept { return m_mip_levels; }
+     core::UInt32 Texture::mipLevels() const noexcept { return m_mip_levels; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::UInt32 Texture::layers() const noexcept { return m_layers; }
+     core::UInt32 Texture::layers() const noexcept { return m_layers; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const Device &Texture::device() const noexcept { return *m_device; }
+     const Device &Texture::device() const noexcept { return *m_device; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::Image Texture::vkImage() const noexcept {
+     vk::Image Texture::vkImage() const noexcept {
         if (m_non_owning_texture) { return m_non_owning_texture; }
 
         STORM_EXPECTS(m_vk_texture);
@@ -44,15 +44,15 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline Texture::operator vk::Image() const noexcept { return vkImage(); }
+     Texture::operator vk::Image() const noexcept { return vkImage(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::Image Texture::vkHandle() const noexcept { return vkImage(); }
+     vk::Image Texture::vkHandle() const noexcept { return vkImage(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::UInt64 Texture::vkDebugHandle() const noexcept {
+     core::UInt64 Texture::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkImage_T *());
     }
 } // namespace storm::render

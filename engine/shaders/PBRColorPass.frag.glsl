@@ -39,13 +39,10 @@ vec3 specularReflection(vec3 reflectance0, vec3 reflectance90, float VdotH);
 float geometricOcclusion(float NdotL, float NdotV, float alpha_roughness);
 float microfacetDistribution(float alpha_roughness, float NdotH);
 
-const float light_rotation_x = radians(75.f);
-const float light_rotation_y = radians(40.f);
-
-const vec3 light_color     = vec3(5.f, 5.f, 5.f);
-const vec3 light_direction = vec3(sin(light_rotation_x) * cos(light_rotation_y),
-                                  sin(light_rotation_y),
-                                  cos(light_rotation_x) * cos(light_rotation_y));
+const vec3 light_color     = vec3(3.f, 3.f, 3.f);
+const vec3 light_direction = vec3(0,
+                                  0,
+                                  2.f);
 
 const float pi = 3.141592653589f;
 const float min_roughness = 0.04f;

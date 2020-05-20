@@ -29,20 +29,28 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
 
+#include <storm/engine/Engine.hpp>
+
+#include <storm/engine/drawable/Mesh.hpp>
+
 #include <storm/engine/scene/Camera.hpp>
 
 namespace storm::engine {
     class STORM_PUBLIC Scene: public core::NonCopyable {
       public:
-        using ShaderPool   = core::ResourcesPool<std::string, render::Shader>;
-        using TexturePool  = core::ResourcesPool<std::string, render::Texture>;
-        using MaterialPool = core::ResourcesPool<std::string, MaterialOwnedPtr>;
+        static constexpr auto DEFAULT_PBR_MATERIAL_NAME = "StormKit:DefaultPBRMaterial";
 
         explicit Scene(engine::Engine &engine);
         virtual ~Scene();
 
         Scene(Scene &&);
         Scene &operator=(Scene &&);
+
+        [[nodiscard]] inline Mesh createPBRMesh();
+        [[nodiscard]] inline MeshOwnedPtr createPBRMeshPtr();
+
+        [[nodiscard]] inline v2::Model createModel();
+        [[nodiscard]] inline v2::ModelOwnedPtr createModelPtr();
 
         void update(float delta) noexcept;
         void render(FrameGraph &framegraph, storm::engine::FramePassTextureID backbuffer) noexcept;

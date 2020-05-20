@@ -7,33 +7,33 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline core::UInt32 FramePassResourceHandle::index() const noexcept { return m_index; }
+     core::UInt32 FramePassResourceHandle::index() const noexcept { return m_index; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline bool FramePassResourceHandle::isValid() const noexcept { return m_index != INVALID; }
+     bool FramePassResourceHandle::isValid() const noexcept { return m_index != INVALID; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void FramePassResourceHandle::invalidate() noexcept { m_index = INVALID; }
+     void FramePassResourceHandle::invalidate() noexcept { m_index = INVALID; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline bool FramePassResourceHandle::operator<(const FramePassResourceHandle &rhs) const
+     bool FramePassResourceHandle::operator<(const FramePassResourceHandle &rhs) const
         noexcept {
         return rhs.index() < INVALID;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline bool FramePassResourceHandle::operator==(const FramePassResourceHandle &rhs) const
+     bool FramePassResourceHandle::operator==(const FramePassResourceHandle &rhs) const
         noexcept {
         return rhs.index() == INVALID;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline bool FramePassResourceHandle::operator!=(const FramePassResourceHandle &rhs) const
+     bool FramePassResourceHandle::operator!=(const FramePassResourceHandle &rhs) const
         noexcept {
         return !operator==(rhs);
     }

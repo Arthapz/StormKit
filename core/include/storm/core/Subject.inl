@@ -8,14 +8,14 @@ namespace storm::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Event, typename CustomData, bool lifo>
-    inline void Subject<Event, CustomData, lifo>::resetObserver() {
+     void Subject<Event, CustomData, lifo>::resetObserver() {
         m_observer = nullptr;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Event, typename CustomData, bool lifo>
-    inline typename Subject<Event, CustomData, lifo>::ObserverType &
+     typename Subject<Event, CustomData, lifo>::ObserverType &
         Subject<Event, CustomData, lifo>::observer() noexcept {
         return *m_observer;
     }
@@ -23,7 +23,7 @@ namespace storm::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Event, typename CustomData, bool lifo>
-    inline const typename Subject<Event, CustomData, lifo>::ObserverType &
+     const typename Subject<Event, CustomData, lifo>::ObserverType &
         Subject<Event, CustomData, lifo>::observer() const noexcept {
         return *m_observer;
     }
@@ -31,7 +31,7 @@ namespace storm::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename Event, typename CustomData, bool lifo>
-    inline bool Subject<Event, CustomData, lifo>::observer() const noexcept {
+     bool Subject<Event, CustomData, lifo>::observer() const noexcept {
         return m_observer != nullptr;
     }
 

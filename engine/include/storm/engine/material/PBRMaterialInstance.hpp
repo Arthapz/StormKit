@@ -30,6 +30,7 @@ namespace storm::engine {
         static constexpr auto AMBIANT_OCCLUSION_FACTOR_NAME =
             std::string_view { "ambiant_occlusion_factor" };
         static constexpr auto EMISSIVE_FACTOR_NAME = std::string_view { "emissive_factor" };
+        static constexpr auto DEBUG_VIEW_NAME      = std::string_view { "PAD0" };
 
         enum class DebugView : core::UInt32 {
             None                  = 0u,

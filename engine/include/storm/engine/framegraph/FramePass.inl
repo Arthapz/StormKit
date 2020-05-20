@@ -7,63 +7,63 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline std::string_view FramePassBase::name() const noexcept { return m_name; }
+     std::string_view FramePassBase::name() const noexcept { return m_name; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline core::UInt32 FramePassBase::id() const noexcept { return m_id; }
+     core::UInt32 FramePassBase::id() const noexcept { return m_id; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline FramePassBase::PassType FramePassBase::type() const noexcept { return m_type; }
+     FramePassBase::PassType FramePassBase::type() const noexcept { return m_type; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline FramePassResourceHandleConstSpan FramePassBase::creates() const noexcept {
+     FramePassResourceHandleConstSpan FramePassBase::creates() const noexcept {
         return m_creates;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline FramePassResourceHandleConstSpan FramePassBase::reads() const noexcept {
+     FramePassResourceHandleConstSpan FramePassBase::reads() const noexcept {
         return m_reads;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline FramePassResourceHandleConstSpan FramePassBase::writes() const noexcept {
+     FramePassResourceHandleConstSpan FramePassBase::writes() const noexcept {
         return m_writes;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline FramePassResourceHandleConstSpan FramePassBase::samples() const noexcept {
+     FramePassResourceHandleConstSpan FramePassBase::samples() const noexcept {
         return m_samples;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline FramePassResourceHandleConstSpan FramePassBase::resolves() const noexcept {
+     FramePassResourceHandleConstSpan FramePassBase::resolves() const noexcept {
         return m_resolves;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void FramePassBase::setCullImune(bool imune) noexcept { m_cull_imune = imune; }
+     void FramePassBase::setCullImune(bool imune) noexcept { m_cull_imune = imune; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline bool FramePassBase::isCullImune() const noexcept { return m_cull_imune; }
+     bool FramePassBase::isCullImune() const noexcept { return m_cull_imune; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void FramePassBase::useSubCommandBuffer(bool use) noexcept {
+     void FramePassBase::useSubCommandBuffer(bool use) noexcept {
         m_use_secondary_command_buffers = use;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline bool FramePassBase::isUsingSubCommandBuffer() const noexcept {
+     bool FramePassBase::isUsingSubCommandBuffer() const noexcept {
         return m_use_secondary_command_buffers;
     }
 
@@ -112,14 +112,14 @@ namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename PassData>
-    inline PassData &FramePass<PassData>::data() noexcept {
+     PassData &FramePass<PassData>::data() noexcept {
         return m_data;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename PassData>
-    inline const PassData &FramePass<PassData>::data() const noexcept {
+     const PassData &FramePass<PassData>::data() const noexcept {
         return m_data;
     }
 } // namespace storm::engine

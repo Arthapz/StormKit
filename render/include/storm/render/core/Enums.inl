@@ -69,7 +69,7 @@ namespace storm::render {
 
     AS_AND_FROM(physical_device_map, PhysicalDeviceType, vk::PhysicalDeviceType)
 
-    inline std::string to_string(PhysicalDeviceType type) {
+    std::string to_string(PhysicalDeviceType type) {
         switch (type) {
             case PhysicalDeviceType::CPU: return "CPU";
             case PhysicalDeviceType::Virtual_GPU: return "Virtual_GPU";

@@ -58,7 +58,7 @@ namespace storm::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename _Key, typename _Value>
-    inline bool ResourcesPool<_Key, _Value>::has(const _Key &key) const noexcept {
+     bool ResourcesPool<_Key, _Value>::has(const _Key &key) const noexcept {
         return getIt(key) != std::cend(m_resources);
     }
 
@@ -72,14 +72,14 @@ namespace storm::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename _Key, typename _Value>
-    inline auto ResourcesPool<_Key, _Value>::getIt(const _Key &key) noexcept {
+     auto ResourcesPool<_Key, _Value>::getIt(const _Key &key) noexcept {
         return m_resources.find(key);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename _Key, typename _Value>
-    inline auto ResourcesPool<_Key, _Value>::getIt(const _Key &key) const noexcept {
+     auto ResourcesPool<_Key, _Value>::getIt(const _Key &key) const noexcept {
         return m_resources.find(key);
     }
 } // namespace storm::core
