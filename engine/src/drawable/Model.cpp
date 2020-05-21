@@ -170,7 +170,7 @@ MeshArray Model::createMeshes() noexcept {
             auto &material = submesh.materialInstance();
 
             for (const auto &[name, sampler] : _submesh.samplers) {
-                material.setSamplerTexture(name, *sampler);
+                material.setSampledTexture(name, *sampler);
             }
 
             for (const auto &[name, data] : _submesh.datas) {

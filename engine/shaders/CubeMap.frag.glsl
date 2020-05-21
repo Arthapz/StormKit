@@ -2,7 +2,7 @@
 
 #pragma shader_stage(fragment)
 
-layout(location = 3) in vec3 in_texcoord;
+layout(location = 0) in vec3 in_texcoord;
 
 layout(location = 0) out vec4 out_color;
 

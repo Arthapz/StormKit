@@ -39,6 +39,13 @@ namespace storm::render {
                            core::UInt32 mip_levels    = 1,
                            TextureUsage usage         = TextureUsage::Sampled |
                                                 TextureUsage::Transfert_Dst);
+        void loadLayersFromImages(std::vector<image::ImageConstObserverPtr> data,
+                                  core::Extentu layer_extent,
+                                  render::PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
+                                  SampleCountFlag samples            = SampleCountFlag::C1_BIT,
+                                  core::UInt32 mip_levels            = 1,
+                                  TextureUsage usage                 = TextureUsage::Sampled |
+                                                       TextureUsage::Transfert_Dst);
         void loadFromMemory(core::ByteConstSpan data,
                             core::Extentu extent,
                             PixelFormat load_format,

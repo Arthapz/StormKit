@@ -7,9 +7,14 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void CubeMapMaterialInstance::setCubeMap(const render::Texture &map) noexcept {
+    void CubeMapMaterialInstance::setCubeMap(const render::Texture &map,
+                                             render::Sampler::Settings sampler_settings) noexcept {
         STORM_EXPECTS(map.layers() == 6);
 
-        setSamplerTexture("cubemap", map, render::TextureViewType::Cube, { .layer_count = 6u });
+        setSampledTexture("cubemap",
+                          map,
+                          render::TextureViewType::Cube,
+                          { .layer_count = 6u },
+                          std::move(sampler_settings));
     }
 } // namespace storm::engine

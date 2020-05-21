@@ -84,6 +84,27 @@ void Texture::loadFromImage(image::Image &image,
 
 /////////////////////////////////////
 /////////////////////////////////////
+void Texture::loadLayersFromImages(std::vector<image::ImageConstObserverPtr> data,
+                                   core::Extentu layer_extent,
+                                   render::PixelFormat storage_format,
+                                   SampleCountFlag samples,
+                                   core::UInt32 mip_levels,
+                                   TextureUsage usage) {
+    auto bytes = std::vector<core::ByteConstSpan> {};
+    bytes.reserve(std::size(data));
+
+    for (const auto &img : data) bytes.emplace_back(std::data(*img));
+
+    loadLayersFromMemory(std::move(bytes),
+                         layer_extent,
+                         storage_format,
+                         samples,
+                         mip_levels,
+                         usage);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
 void Texture::loadFromMemory(
     storm::core::span<const core::Byte> data,
     core::Extentu extent,
@@ -146,21 +167,49 @@ void Texture::loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
 
     auto staging_buffer = m_device->createStagingBuffer(total_size);
     auto i              = 0u;
-    for (const auto offset : offsets) { staging_buffer.upload<const core::Byte>(data[i], offset); }
+    for (const auto offset : offsets) {
+        staging_buffer.upload<const core::Byte>(data[i++], offset);
+    }
 
     auto fence = m_device->createFence();
-
-    auto command_buffer = m_device->graphicsQueue().createCommandBuffer();
-    command_buffer.begin(true);
-    command_buffer.transitionTextureLayout(*this,
-                                           TextureLayout::Undefined,
-                                           TextureLayout::Transfer_Dst_Optimal);
 
     auto buffer_copies = std::vector<render::BufferTextureCopy> {};
     buffer_copies.reserve(std::size(offsets));
 
+    auto before_copie_barriers = ImageMemoryBarriers {};
+    before_copie_barriers.reserve(std::size(offsets));
+
+    auto after_copie_barriers = ImageMemoryBarriers {};
+    before_copie_barriers.reserve(std::size(offsets));
+
     i = 0u;
     for (const auto offset : offsets) {
+        auto before_barrier =
+            ImageMemoryBarrier { .src = AccessFlag::None,
+                                 .dst = AccessFlag::Transfer_Write,
+
+                                 .old_layout = TextureLayout::Undefined,
+                                 .new_layout = TextureLayout::Transfer_Dst_Optimal,
+
+                                 .texture = *this,
+
+                                 .range = { .base_array_layer = i } };
+
+        before_copie_barriers.emplace_back(std::move(before_barrier));
+
+        auto after_barrier =
+            ImageMemoryBarrier { .src = AccessFlag::Transfer_Write,
+                                 .dst = AccessFlag::Shader_Read,
+
+                                 .old_layout = TextureLayout::Transfer_Dst_Optimal,
+                                 .new_layout = TextureLayout::Shader_Read_Only_Optimal,
+
+                                 .texture = *this,
+
+                                 .range = { .base_array_layer = i } };
+
+        after_copie_barriers.emplace_back(std::move(after_barrier));
+
         auto copy = render::BufferTextureCopy { .buffer_offset      = offset,
                                                 .subresource_layers = { .base_array_layer = i++ },
                                                 .extent             = layer_extent };
@@ -168,10 +217,21 @@ void Texture::loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
         buffer_copies.emplace_back(std::move(copy));
     }
 
+    auto command_buffer = m_device->graphicsQueue().createCommandBuffer();
+    command_buffer.begin(true);
+    command_buffer.pipelineBarrier(PipelineStageFlag::Top_Of_Pipe,
+                                   PipelineStageFlag::Transfer,
+                                   DependencyFlag::None,
+                                   {},
+                                   {},
+                                   std::move(before_copie_barriers));
     command_buffer.copyBufferToTexture(staging_buffer, *this, buffer_copies);
-    command_buffer.transitionTextureLayout(*this,
-                                           TextureLayout::Transfer_Dst_Optimal,
-                                           TextureLayout::Shader_Read_Only_Optimal);
+    command_buffer.pipelineBarrier(PipelineStageFlag::Transfer,
+                                   PipelineStageFlag::Fragment_Shader,
+                                   DependencyFlag::None,
+                                   {},
+                                   {},
+                                   std::move(after_copie_barriers));
     command_buffer.end();
     command_buffer.build();
 

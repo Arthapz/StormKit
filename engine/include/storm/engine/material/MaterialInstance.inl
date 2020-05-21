@@ -27,10 +27,11 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void MaterialInstance::setSamplerTexture(std::string_view name,
+    void MaterialInstance::setSampledTexture(std::string_view name,
                                              const render::Texture &texture,
                                              render::TextureViewType type,
-                                             render::TextureSubresourceRange subresource_range) {
+                                             render::TextureSubresourceRange subresource_range,
+                                             render::Sampler::Settings sampler_settings) {
         const auto it = core::ranges::find_if(m_sampled_textures, [&name](const auto &pair) {
             return name == pair.first;
         });
@@ -39,6 +40,25 @@ namespace storm::engine {
 
         auto &[_, binding] = *it;
         binding.view       = texture.createViewPtr(type, std::move(subresource_range));
+        binding.sampler    = m_engine->device().createSamplerPtr(std::move(sampler_settings));
+        binding.dirty      = true;
+
+        m_dirty      = true;
+        m_dirty_hash = true;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    void MaterialInstance::setSamplerSettings(std::string_view name,
+                                              render::Sampler::Settings sampler_settings) {
+        const auto it = core::ranges::find_if(m_sampled_textures, [&name](const auto &pair) {
+            return name == pair.first;
+        });
+
+        STORM_EXPECTS(it != core::ranges::cend(m_sampled_textures));
+
+        auto &[_, binding] = *it;
+        binding.sampler    = m_engine->device().createSamplerPtr(std::move(sampler_settings));
         binding.dirty      = true;
 
         m_dirty      = true;
