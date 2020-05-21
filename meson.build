@@ -24,7 +24,7 @@ lib_extension   = ''
 
 if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
     project_arguments += ['/DSTORM_BUILD', '/std:c++latest', '/permissive-', '/DFMT_HEADER_ONLY', '/DNOMINMAX']
-    examples_arguments += ['/std:c++latest', '/permissive-', '/NOMINMAX', '/DEXAMPLES_DATA_DIR="' + examples_data_dir + '"']
+    examples_arguments += ['/std:c++latest', '/permissive-', '/NOMINMAX']
     lib_extension = '.lib'
 
     message(meson.get_compiler('cpp').get_id())
@@ -40,7 +40,7 @@ if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
     endif
 else
     project_arguments += ['-DSTORM_BUILD', '-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
-    examples_arguments += ['-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DEXAMPLES_DATA_DIR="' + examples_data_dir + '"']
+    examples_arguments += ['-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas']
     if get_option('buildtype') == 'debug'
         project_arguments += ['-DSTORM_BUILD_DEBUG -O0']
     endif
