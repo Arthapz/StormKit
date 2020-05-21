@@ -29,7 +29,7 @@
 
 #define AS_AND_FROM_FLAGS(M, X, Y)                       \
     inline X fromVK(Y vk_flag) {                         \
-        auto flag = X {};                                \
+        auto flag = X { 0 };                             \
                                                          \
         for (const auto &[key, value] : M) {             \
             if ((vk_flag & key) == key) flag |= value;   \
@@ -38,7 +38,7 @@
         return flag;                                     \
     }                                                    \
     inline Y toVK(X flag) {                              \
-        auto vk_flag = Y {};                             \
+        auto vk_flag = Y { 0 };                          \
                                                          \
         for (const auto &[key, value] : M) {             \
             if ((flag & value) == value) vk_flag |= key; \
@@ -69,7 +69,7 @@ namespace storm::render {
 
     AS_AND_FROM(physical_device_map, PhysicalDeviceType, vk::PhysicalDeviceType)
 
-    inline std::string to_string(PhysicalDeviceType type) {
+    std::string to_string(PhysicalDeviceType type) {
         switch (type) {
             case PhysicalDeviceType::CPU: return "CPU";
             case PhysicalDeviceType::Virtual_GPU: return "Virtual_GPU";
@@ -675,10 +675,12 @@ namespace storm::render {
 
     static const auto pipeline_stage_flag_map =
         std::unordered_map<vk::PipelineStageFlagBits, PipelineStageFlag> {
+            { vk::PipelineStageFlagBits {}, PipelineStageFlag::None },
             { vk::PipelineStageFlagBits::eTopOfPipe, PipelineStageFlag::Top_Of_Pipe },
             { vk::PipelineStageFlagBits::eDrawIndirect, PipelineStageFlag::Draw_Indirect },
             { vk::PipelineStageFlagBits::eVertexInput, PipelineStageFlag::Vertex_Input },
             { vk::PipelineStageFlagBits::eVertexShader, PipelineStageFlag::Vertex_Shader },
+            { vk::PipelineStageFlagBits::eFragmentShader, PipelineStageFlag::Fragment_Shader },
             { vk::PipelineStageFlagBits::eTessellationControlShader,
               PipelineStageFlag::Tessellation_Control_Shader },
             { vk::PipelineStageFlagBits::eTessellationEvaluationShader,

@@ -23,7 +23,7 @@ namespace storm::engine {
     template<typename T>
     using PassHandle = std::variant<std::unique_ptr<T>, _std::observer_ptr<T>>;
 
-    struct FrameGraphTexture {
+    struct STORM_PUBLIC FrameGraphTexture {
         struct Descriptor {
             render::TextureType type;
             render::PixelFormat format;
@@ -45,7 +45,7 @@ namespace storm::engine {
         PassHandle<render::Texture> storage;
     };
 
-    struct FrameGraphBuffer {
+    struct STORM_PUBLIC FrameGraphBuffer {
         struct Descriptor {
             core::ArraySize size;
         };
@@ -59,7 +59,7 @@ namespace storm::engine {
         PassHandle<render::HardwareBuffer> storage;
     };
 
-    class FramePassResourceBase: public core::NonCopyable {
+    class STORM_PUBLIC FramePassResourceBase: public core::NonCopyable {
       public:
         FramePassResourceBase(FramePassResourceBase &&);
         FramePassResourceBase &operator=(FramePassResourceBase &&);
@@ -102,7 +102,7 @@ namespace storm::engine {
     };
 
     template<typename Resource>
-    class FramePassResource: public FramePassResourceBase {
+    class STORM_PUBLIC FramePassResource: public FramePassResourceBase {
       public:
         using Descriptor = typename Resource::Descriptor;
 

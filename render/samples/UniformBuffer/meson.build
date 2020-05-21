@@ -12,5 +12,6 @@ executable(
     'stormkit_UniformBuffer',
     [sources, shader_files],
     dependencies: dependencies,
+    cpp_args: examples_arguments,
     install: true
 )

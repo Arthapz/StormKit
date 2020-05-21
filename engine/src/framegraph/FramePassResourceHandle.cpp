@@ -1,5 +1,7 @@
 #include <storm/engine/framegraph/FramePassResourceHandle.hpp>
 
+#include <storm/render/resource/Texture.hpp>
+
 using namespace storm;
 using namespace storm::engine;
 

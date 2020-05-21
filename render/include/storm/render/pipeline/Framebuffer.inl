@@ -7,37 +7,37 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const core::Extentu &Framebuffer::extent() const noexcept { return m_extent; }
+     const core::Extentu &Framebuffer::extent() const noexcept { return m_extent; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const Device &Framebuffer::device() const noexcept { return m_render_pass->device(); }
+     const Device &Framebuffer::device() const noexcept { return m_render_pass->device(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline storm::core::span<const TextureViewConstObserverPtr> Framebuffer::attachments() const
+     storm::core::span<const TextureViewConstObserverPtr> Framebuffer::attachments() const
         noexcept {
         return m_attachments;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::Framebuffer Framebuffer::vkFramebuffer() const noexcept {
+     vk::Framebuffer Framebuffer::vkFramebuffer() const noexcept {
         STORM_EXPECTS(m_vk_framebuffer);
         return *m_vk_framebuffer;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline Framebuffer::operator vk::Framebuffer() const noexcept { return vkFramebuffer(); }
+     Framebuffer::operator vk::Framebuffer() const noexcept { return vkFramebuffer(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::Framebuffer Framebuffer::vkHandle() const noexcept { return vkFramebuffer(); }
+     vk::Framebuffer Framebuffer::vkHandle() const noexcept { return vkFramebuffer(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::UInt64 Framebuffer::vkDebugHandle() const noexcept {
+     core::UInt64 Framebuffer::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkFramebuffer_T *());
     }
 } // namespace storm::render

@@ -1,5 +1,5 @@
 #version 460 core
-#extension GL_ARB_separate_shader_objects : enable
+
 #pragma shader_stage(vertex)
 
 layout(location = 0) in vec3 position;
@@ -16,8 +16,15 @@ layout(set = 1, binding = 0, std140) uniform MeshData {
     mat4 model;
 } mesh_data;
 
+out gl_PerVertex  {
+    vec4 gl_Position;
+};
+
 void main() {
-    gl_Position = camera.projection * camera.view * mesh_data.model * vec4(position, 1.f);
+    vec4 p = vec4(position, 1.f);
+    p.y = -p.y;
+
+    gl_Position = camera.projection * camera.view * mesh_data.model * p;
 
     frag_color = color;
 }

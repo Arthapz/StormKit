@@ -1,5 +1,6 @@
 option('enable_doc', type: 'boolean', value: false, description: 'Generate documentation')
 option('enable_examples', type: 'boolean', value: false, description: 'Build examples')
+option('examples_data_dir', type: 'string', value: './', description: 'Examples data dir')
 
 option('enable_log', type: 'boolean', value: true, description: 'Build StormKit log library')
 option('enable_entities', type: 'boolean', value: true, description: 'Build StormKit entities library')

@@ -30,4 +30,10 @@ namespace storm::engine {
 
     class PipelineBuilder;
     DECLARE_PTR_AND_REF(PipelineBuilder);
+
+    class BindableBase;
+    DECLARE_PTR_AND_REF(BindableBase);
+
+    class Bindable;
+    DECLARE_PTR_AND_REF(Bindable);
 } // namespace storm::engine

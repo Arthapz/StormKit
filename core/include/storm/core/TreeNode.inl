@@ -7,43 +7,43 @@
 namespace storm::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline std::string_view TreeNode::name() const noexcept { return m_name; }
+     std::string_view TreeNode::name() const noexcept { return m_name; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void TreeNode::setName(std::string name) noexcept { m_name = std::move(name); }
+     void TreeNode::setName(std::string name) noexcept { m_name = std::move(name); }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline TreeNode::IndexType TreeNode::parent() const noexcept { return m_parent; }
+     TreeNode::IndexType TreeNode::parent() const noexcept { return m_parent; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void TreeNode::setParent(IndexType index) noexcept { m_parent = index; }
+     void TreeNode::setParent(IndexType index) noexcept { m_parent = index; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline TreeNode::IndexType TreeNode::nextSibling() const noexcept { return m_next_sibling; }
+     TreeNode::IndexType TreeNode::nextSibling() const noexcept { return m_next_sibling; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void TreeNode::setNextSibling(IndexType index) noexcept { m_next_sibling = index; }
+     void TreeNode::setNextSibling(IndexType index) noexcept { m_next_sibling = index; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline TreeNode::IndexType TreeNode::firstChild() const noexcept { return m_first_child; }
+     TreeNode::IndexType TreeNode::firstChild() const noexcept { return m_first_child; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void TreeNode::setFirstChild(IndexType index) noexcept { m_first_child = index; }
+     void TreeNode::setFirstChild(IndexType index) noexcept { m_first_child = index; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline const TreeNode::DirtyBitType &TreeNode::dirtyBits() const noexcept {
+     const TreeNode::DirtyBitType &TreeNode::dirtyBits() const noexcept {
         return m_dirty_bits;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void TreeNode::setDirtyBits(DirtyBitType bits) noexcept { m_dirty_bits = bits; }
+     void TreeNode::setDirtyBits(DirtyBitType bits) noexcept { m_dirty_bits = bits; }
 } // namespace storm::core

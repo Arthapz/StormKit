@@ -7,54 +7,54 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const PhysicalDeviceInfo &PhysicalDevice::info() const noexcept { return m_device_info; }
+     const PhysicalDeviceInfo &PhysicalDevice::info() const noexcept { return m_device_info; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const RenderCapabilities &PhysicalDevice::capabilities() const noexcept {
+     const RenderCapabilities &PhysicalDevice::capabilities() const noexcept {
         return m_capabilities;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline PhysicalDevice::MemoryPropertiesSpan PhysicalDevice::memoryProperties() const noexcept {
+     PhysicalDevice::MemoryPropertiesSpan PhysicalDevice::memoryProperties() const noexcept {
         return m_memory_properties;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline storm::core::span<const QueueFamily> PhysicalDevice::queueFamilies() const noexcept {
+     storm::core::span<const QueueFamily> PhysicalDevice::queueFamilies() const noexcept {
         return m_queue_families;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const vk::PhysicalDeviceMemoryProperties &PhysicalDevice::vkMemoryProperties() const
+     const vk::PhysicalDeviceMemoryProperties &PhysicalDevice::vkMemoryProperties() const
         noexcept {
         return m_vk_memory_properties;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::PhysicalDevice PhysicalDevice::vkPhysicalDevice() const noexcept {
+     vk::PhysicalDevice PhysicalDevice::vkPhysicalDevice() const noexcept {
         return m_vk_physical_device;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline PhysicalDevice::operator vk::PhysicalDevice() const noexcept {
+     PhysicalDevice::operator vk::PhysicalDevice() const noexcept {
         return m_vk_physical_device;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::PhysicalDevice PhysicalDevice::vkHandle() const noexcept {
+     vk::PhysicalDevice PhysicalDevice::vkHandle() const noexcept {
         return vkPhysicalDevice();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::UInt64 PhysicalDevice::vkDebugHandle() const noexcept {
+     core::UInt64 PhysicalDevice::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkPhysicalDevice());
     }
 } // namespace storm::render
