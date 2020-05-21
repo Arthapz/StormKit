@@ -133,6 +133,9 @@ framegraph_inls = files([
 
 sources = files([
     'src/Engine.cpp', 
+    'src/Tinyobj.cpp',
+    'src/stb_image.c',
+    'src/stb_image_write.c',
 
     'src/core/imgui/imconfig.hpp',
     'src/core/imgui/imgui_internal.hpp',

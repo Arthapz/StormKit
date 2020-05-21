@@ -11,6 +11,7 @@
 #include <storm/engine/scene/Camera.hpp>
 #include <storm/engine/scene/Scene.hpp>
 
+#include <storm/engine/material/CubeMapMaterial.hpp>
 #include <storm/engine/material/PBRMaterial.hpp>
 
 using namespace storm;
@@ -49,10 +50,7 @@ Scene::Scene(Engine &engine) : m_engine { &engine } {
         std::vector { render::Scissor { .offset = { 0, 0 }, .extent = extent } };
 
     materialPool().create(DEFAULT_PBR_MATERIAL_NAME, std::make_unique<PBRMaterial>(*this));
-    auto &material =
-        materialPool().create(CUBEMAP_MATERIAL_NAME, std::make_unique<Material>(*this));
-    material->addSampler(0, "cubemap");
-    material->finalize();
+    materialPool().create(CUBEMAP_MATERIAL_NAME, std::make_unique<CubeMapMaterial>(*this));
 }
 
 ////////////////////////////////////////

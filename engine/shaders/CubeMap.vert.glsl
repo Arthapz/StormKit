@@ -10,48 +10,49 @@ layout(set = 0, binding = 0, std140) uniform Camera {
     mat4 view;
 } camera;
 
+const float size = 20.f;
 vec3 positions[36] = vec3[](
-    vec3(-1.0f,  1.0f, -1.0f),
-    vec3(-1.0f, -1.0f, -1.0f),
-    vec3(1.0f, -1.0f, -1.0f),
-    vec3(1.0f, -1.0f, -1.0f),
-    vec3(1.0f,  1.0f, -1.0f),
-    vec3(-1.0f,  1.0f, -1.0f),
+    vec3(-size,  size, -size),
+    vec3(-size, -size, -size),
+    vec3(size, -size, -size),
+    vec3(size, -size, -size),
+    vec3(size,  size, -size),
+    vec3(-size,  size, -size),
 
-    vec3(-1.0f, -1.0f,  1.0f),
-    vec3(-1.0f, -1.0f, -1.0f),
-    vec3(-1.0f,  1.0f, -1.0f),
-    vec3(-1.0f,  1.0f, -1.0f),
-    vec3(-1.0f,  1.0f,  1.0f),
-    vec3(-1.0f, -1.0f,  1.0f),
+    vec3(-size, -size,  size),
+    vec3(-size, -size, -size),
+    vec3(-size,  size, -size),
+    vec3(-size,  size, -size),
+    vec3(-size,  size,  size),
+    vec3(-size, -size,  size),
 
-    vec3(1.0f, -1.0f, -1.0f),
-    vec3(1.0f, -1.0f,  1.0f),
-    vec3(1.0f,  1.0f,  1.0f),
-    vec3(1.0f,  1.0f,  1.0f),
-    vec3(1.0f,  1.0f, -1.0f),
-    vec3(1.0f, -1.0f, -1.0f),
+    vec3(size, -size, -size),
+    vec3(size, -size,  size),
+    vec3(size,  size,  size),
+    vec3(size,  size,  size),
+    vec3(size,  size, -size),
+    vec3(size, -size, -size),
 
-    vec3(-1.0f, -1.0f,  1.0f),
-    vec3(-1.0f,  1.0f,  1.0f),
-    vec3(1.0f,  1.0f,  1.0f),
-    vec3(1.0f,  1.0f,  1.0f),
-    vec3(1.0f, -1.0f,  1.0f),
-    vec3(-1.0f, -1.0f,  1.0f),
+    vec3(-size, -size,  size),
+    vec3(-size,  size,  size),
+    vec3(size,  size,  size),
+    vec3(size,  size,  size),
+    vec3(size, -size,  size),
+    vec3(-size, -size,  size),
 
-    vec3(-1.0f,  1.0f, -1.0f),
-    vec3(1.0f,  1.0f, -1.0f),
-    vec3(1.0f,  1.0f,  1.0f),
-    vec3(1.0f,  1.0f,  1.0f),
-    vec3(-1.0f,  1.0f,  1.0f),
-    vec3(-1.0f,  1.0f, -1.0f),
+    vec3(-size,  size, -size),
+    vec3(size,  size, -size),
+    vec3(size,  size,  size),
+    vec3(size,  size,  size),
+    vec3(-size,  size,  size),
+    vec3(-size,  size, -size),
 
-    vec3(-1.0f, -1.0f, -1.0f),
-    vec3(-1.0f, -1.0f,  1.0f),
-    vec3(1.0f, -1.0f, -1.0f),
-    vec3(1.0f, -1.0f, -1.0f),
-    vec3(-1.0f, -1.0f,  1.0f),
-    vec3(1.0f, -1.0f,  1.0f)
+    vec3(-size, -size, -size),
+    vec3(-size, -size,  size),
+    vec3(size, -size, -size),
+    vec3(size, -size, -size),
+    vec3(-size, -size,  size),
+    vec3(size, -size,  size)
 );
 
 out gl_PerVertex  {
@@ -65,5 +66,6 @@ void main()
     out_texcoord = position;
     out_texcoord.x *= -1.0;
 
-    gl_Position = camera.projection * camera.view * vec4(position, 1.0);
+    vec4 out_position = camera.projection * mat4(mat3(camera.view)) * vec4(position, 1.0);
+    gl_Position = out_position.xyww;
 }

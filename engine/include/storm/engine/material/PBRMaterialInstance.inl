@@ -7,38 +7,69 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setAlbedoMap(const render::Texture &map) noexcept {
-        setSamplerTexture(ALBEDO_MAP_NAME, map);
+    void PBRMaterialInstance::setAlbedoMap(const render::Texture &map,
+                                           render::Sampler::Settings sampler_settings) noexcept {
+        setSampledTexture(ALBEDO_MAP_NAME,
+                          map,
+                          render::TextureViewType::T2D,
+                          {},
+                          std::move(sampler_settings));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setNormalMap(const render::Texture &map) noexcept {
-        setSamplerTexture(NORMAL_MAP_NAME, map);
+    void PBRMaterialInstance::setNormalMap(const render::Texture &map,
+                                           render::Sampler::Settings sampler_settings) noexcept {
+        setSampledTexture(NORMAL_MAP_NAME,
+                          map,
+                          render::TextureViewType::T2D,
+                          {},
+                          std::move(sampler_settings));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setMetallicMap(const render::Texture &map) noexcept {
-        setSamplerTexture(METALLIC_MAP_NAME, map);
+    void PBRMaterialInstance::setMetallicMap(const render::Texture &map,
+                                             render::Sampler::Settings sampler_settings) noexcept {
+        setSampledTexture(METALLIC_MAP_NAME,
+                          map,
+                          render::TextureViewType::T2D,
+                          {},
+                          std::move(sampler_settings));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setRoughnessMap(const render::Texture &map) noexcept {
-        setSamplerTexture(ROUGHNESS_MAP_NAME, map);
+    void PBRMaterialInstance::setRoughnessMap(const render::Texture &map,
+                                              render::Sampler::Settings sampler_settings) noexcept {
+        setSampledTexture(ROUGHNESS_MAP_NAME,
+                          map,
+                          render::TextureViewType::T2D,
+                          {},
+                          std::move(sampler_settings));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setAmbiantOcclusionMap(const render::Texture &map) noexcept {
-        setSamplerTexture(AMBIANT_OCCLUSION_MAP_NAME, map);
+    void PBRMaterialInstance::setAmbiantOcclusionMap(
+        const render::Texture &map,
+        render::Sampler::Settings sampler_settings) noexcept {
+        setSampledTexture(AMBIANT_OCCLUSION_MAP_NAME,
+                          map,
+                          render::TextureViewType::T2D,
+                          {},
+                          std::move(sampler_settings));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setEmissiveMap(const render::Texture &map) {
-        setSamplerTexture(EMISSIVE_MAP_NAME, map);
+    void PBRMaterialInstance::setEmissiveMap(const render::Texture &map,
+                                             render::Sampler::Settings sampler_settings) {
+        setSampledTexture(EMISSIVE_MAP_NAME,
+                          map,
+                          render::TextureViewType::T2D,
+                          {},
+                          std::move(sampler_settings));
     }
 
     ////////////////////////////////////////

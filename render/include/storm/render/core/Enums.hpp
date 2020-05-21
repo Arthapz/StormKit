@@ -450,22 +450,23 @@ namespace storm::render {
     };
 
     enum class PipelineStageFlag : core::UInt16 {
-        Top_Of_Pipe                    = 0,
-        Draw_Indirect                  = 1,
-        Vertex_Input                   = 2,
-        Vertex_Shader                  = 4,
-        Tessellation_Control_Shader    = 8,
-        Tessellation_Evaluation_Shader = 16,
-        Geometry_Shader                = 32,
-        Fragment_Shader                = 64,
-        Early_Fragment_Tests           = 128,
-        Late_Fragment_Tests            = 256,
-        Color_Attachment_Output        = 512,
-        Transfer                       = 1024,
-        Bottom_Of_Pipe                 = 2048,
-        Host                           = 4096,
-        All_Graphics                   = 8192,
-        All_Commands                   = 16384
+        None                           = 0,
+        Top_Of_Pipe                    = 1,
+        Draw_Indirect                  = 2,
+        Vertex_Input                   = 4,
+        Vertex_Shader                  = 8,
+        Tessellation_Control_Shader    = 16,
+        Tessellation_Evaluation_Shader = 32,
+        Geometry_Shader                = 64,
+        Fragment_Shader                = 128,
+        Early_Fragment_Tests           = 256,
+        Late_Fragment_Tests            = 512,
+        Color_Attachment_Output        = 1024,
+        Transfer                       = 2048,
+        Bottom_Of_Pipe                 = 4096,
+        Host                           = 8192,
+        All_Graphics                   = 16384,
+        All_Commands                   = 32768
     };
 
     enum class DependencyFlag : core::UInt8 {

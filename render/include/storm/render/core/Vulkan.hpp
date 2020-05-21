@@ -167,6 +167,7 @@ namespace storm::render {
 #ifdef STORM_OS_LINUX
         "VK_LAYER_MESA_overlay",
 #endif
+        "VK_LAYER_LUNARG_monitor",
     };
 
     static constexpr auto VALIDATION_FEATURES =
