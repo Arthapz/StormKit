@@ -25,13 +25,11 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    v2::Model Scene::createModel() {
-        return m_engine->createModel(m_texture_pool, m_material_pool);
-    }
+    Model Scene::createModel() { return m_engine->createModel(m_texture_pool, m_material_pool); }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline v2::ModelOwnedPtr Scene::createModelPtr() {
+    inline ModelOwnedPtr Scene::createModelPtr() {
         return m_engine->createModelPtr(m_texture_pool, m_material_pool);
     }
 

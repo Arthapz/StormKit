@@ -17,7 +17,7 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
 
-#include <storm/engine/mesh/BoundingBox.hpp>
+#include <storm/engine/drawable/BoundingBox.hpp>
 
 namespace storm::engine {
     class STORM_PUBLIC Drawable: public core::NonCopyable {

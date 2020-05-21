@@ -34,8 +34,6 @@
 
 #include <storm/engine/material/Material.hpp>
 
-#include <storm/engine/mesh/StaticMesh.hpp>
-
 #include <storm/engine/drawable/Mesh.hpp>
 #include <storm/engine/drawable/Model.hpp>
 
@@ -70,20 +68,13 @@ namespace storm::engine {
 
         inline void setScene(Scene &scene) noexcept;
 
-        [[nodiscard]] inline StaticMesh
-            createStaticMesh(render::TaggedVertexInputAttributeDescriptionArray vertex_attributes,
-                             render::VertexBindingDescriptionArray vertex_bindings);
-        [[nodiscard]] inline StaticMeshOwnedPtr createStaticMeshPtr(
-            render::TaggedVertexInputAttributeDescriptionArray vertex_attributes,
-            render::VertexBindingDescriptionArray vertex_bindings);
-
         [[nodiscard]] inline Mesh createMesh(const Material &material);
         [[nodiscard]] inline MeshOwnedPtr createMeshPtr(const Material &material);
 
-        [[nodiscard]] inline v2::Model createModel(TexturePool &texture_pool,
-                                                   MaterialPool &material_pool);
-        [[nodiscard]] inline v2::ModelOwnedPtr createModelPtr(TexturePool &texture_pool,
-                                                              MaterialPool &material_pool);
+        [[nodiscard]] inline Model createModel(TexturePool &texture_pool,
+                                               MaterialPool &material_pool);
+        [[nodiscard]] inline ModelOwnedPtr createModelPtr(TexturePool &texture_pool,
+                                                          MaterialPool &material_pool);
 
         [[nodiscard]] inline Transform createTransform();
         [[nodiscard]] inline TransformOwnedPtr createTransformPtr();

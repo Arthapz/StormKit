@@ -8,10 +8,6 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
-#include <storm/engine/mesh/StaticMesh.hpp>
-
-#include <storm/engine/mesh/Model.hpp>
-
 #include <storm/engine/scene/FPSCamera.hpp>
 
 #include <storm/engine/framegraph/FrameGraph.hpp>
