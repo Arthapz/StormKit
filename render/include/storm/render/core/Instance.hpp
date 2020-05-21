@@ -20,7 +20,7 @@ namespace storm::render {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Instance;
 
-        Instance();
+        Instance(std::string app_name = "");
         ~Instance();
 
         Instance(Instance &&);
@@ -41,17 +41,17 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
 #if defined(STORM_OS_WINDOWS)
-        vk::UniqueSurfaceKHR createVkSurface(const vk::Win32SurfaceCreateInfoKHR &create_info) const
-            noexcept;
+        vk::UniqueSurfaceKHR
+            createVkSurface(const vk::Win32SurfaceCreateInfoKHR &create_info) const noexcept;
 #elif defined(STORM_OS_MACOS)
-        vk::UniqueSurfaceKHR createVkSurface(const vk::MacOSSurfaceCreateInfoMVK &create_info) const
-            noexcept;
+        vk::UniqueSurfaceKHR
+            createVkSurface(const vk::MacOSSurfaceCreateInfoMVK &create_info) const noexcept;
 #elif defined(STORM_OS_LINUX)
-        vk::UniqueSurfaceKHR createVkSurface(const vk::XcbSurfaceCreateInfoKHR &create_info) const
-            noexcept;
+        vk::UniqueSurfaceKHR
+            createVkSurface(const vk::XcbSurfaceCreateInfoKHR &create_info) const noexcept;
 #elif defined(STORM_OS_IOS)
-        vk::UniqueSurfaceKHR createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const
-            noexcept;
+        vk::UniqueSurfaceKHR
+            createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const noexcept;
 #endif
       private:
         void createInstance() noexcept;
@@ -67,6 +67,8 @@ namespace storm::render {
         DynamicLoader m_loader;
         vk::UniqueInstance m_vk_instance;
         vk::UniqueDebugUtilsMessengerEXT m_vk_messenger;
+
+        std::string m_app_name;
 
         std::vector<std::string> m_extensions;
     };

@@ -124,5 +124,5 @@ void App::doInitWindow() {
             m_scene->toggleWireframe();
     });
 
-    m_engine = std::make_unique<engine::Engine>(*m_window);
+    m_engine = std::make_unique<engine::Engine>(*m_window, "ModelLoading");
 }

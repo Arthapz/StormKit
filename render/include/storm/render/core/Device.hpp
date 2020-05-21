@@ -35,14 +35,13 @@ namespace storm::render {
         Device &operator=(Device &&);
 
         void waitIdle() const noexcept;
-        void waitForFences(storm::core::span<const FenceCRef> fences,
-                           bool wait_all        = true,
-                           core::UInt64 timeout = std::numeric_limits<core::UInt64>::max()) const
-            noexcept;
-        inline void
-            waitForFence(const Fence &fence,
-                         core::UInt64 timeout = std::numeric_limits<core::UInt64>::max()) const
-            noexcept;
+        void waitForFences(
+            storm::core::span<const FenceCRef> fences,
+            bool wait_all        = true,
+            core::UInt64 timeout = std::numeric_limits<core::UInt64>::max()) const noexcept;
+        inline void waitForFence(
+            const Fence &fence,
+            core::UInt64 timeout = std::numeric_limits<core::UInt64>::max()) const noexcept;
 
         Shader createShader(std::filesystem::path filepath, ShaderStage type) const;
         ShaderOwnedPtr createShaderPtr(std::filesystem::path filepath, ShaderStage type) const;
@@ -102,8 +101,8 @@ namespace storm::render {
         Sampler createSampler(Sampler::Settings settings = Sampler::Settings {}) const;
         SamplerOwnedPtr createSamplerPtr(Sampler::Settings settings = Sampler::Settings {}) const;
 
-        PipelineCache createPipelineCache() const;
-        PipelineCacheOwnedPtr createPipelineCachePtr() const;
+        PipelineCache createPipelineCache(std::filesystem::path path = "") const;
+        PipelineCacheOwnedPtr createPipelineCachePtr(std::filesystem::path path = "") const;
 
         inline HardwareBuffer createVertexBuffer(
             core::ArraySize size,
@@ -200,10 +199,9 @@ namespace storm::render {
 
         inline VmaAllocator vmaAllocator() const noexcept;
 
-        inline vk::Result
-            waitForVkFence(vk::Fence fence,
-                           core::UInt64 wait_for = std::numeric_limits<core::UInt64>::max()) const
-            noexcept {
+        inline vk::Result waitForVkFence(
+            vk::Fence fence,
+            core::UInt64 wait_for = std::numeric_limits<core::UInt64>::max()) const noexcept {
             auto fences = std::array { std::move(fence) };
 
             return waitForVkFences(fences, wait_for);
@@ -225,16 +223,15 @@ namespace storm::render {
 
         void updateVkDescriptorSets(gsl::span<const vk::WriteDescriptorSet> writes,
                                     gsl::span<const vk::CopyDescriptorSet> copies) const noexcept;
-        RAIIVkSwapchain createVkSwapchain(const vk::SwapchainCreateInfoKHR &create_info) const
-            noexcept;
+        RAIIVkSwapchain
+            createVkSwapchain(const vk::SwapchainCreateInfoKHR &create_info) const noexcept;
 
-        RAIIVkShaderModule createVkShaderModule(const vk::ShaderModuleCreateInfo &create_info) const
-            noexcept;
+        RAIIVkShaderModule
+            createVkShaderModule(const vk::ShaderModuleCreateInfo &create_info) const noexcept;
 
-        RAIIVkPipeline
-            createVkGraphicsPipeline(const vk::GraphicsPipelineCreateInfo &create_info,
-                                     const vk::PipelineCache &cache = VK_NULL_HANDLE) const
-            noexcept;
+        RAIIVkPipeline createVkGraphicsPipeline(
+            const vk::GraphicsPipelineCreateInfo &create_info,
+            const vk::PipelineCache &cache = VK_NULL_HANDLE) const noexcept;
         RAIIVkPipeline
             createVkComputePipeline(const vk::ComputePipelineCreateInfo &create_info,
                                     const vk::PipelineCache &cache = VK_NULL_HANDLE) const noexcept;
@@ -245,47 +242,44 @@ namespace storm::render {
         RAIIVkPipelineLayout
             createVkPipelineLayout(const vk::PipelineLayoutCreateInfo &create_info) const noexcept;
 
-        RAIIVkRenderPass createVkRenderPass(const vk::RenderPassCreateInfo &create_info) const
-            noexcept;
+        RAIIVkRenderPass
+            createVkRenderPass(const vk::RenderPassCreateInfo &create_info) const noexcept;
 
         RAIIVkImage createVkImage(const vk::ImageCreateInfo &create_info) const noexcept;
 
-        RAIIVkImageView createVkImageView(const vk::ImageViewCreateInfo &create_info) const
-            noexcept;
+        RAIIVkImageView
+            createVkImageView(const vk::ImageViewCreateInfo &create_info) const noexcept;
 
         RAIIVkSampler createVkSampler(const vk::SamplerCreateInfo &create_info) const noexcept;
 
-        RAIIVkFramebuffer createVkFramebuffer(const vk::FramebufferCreateInfo &create_info) const
-            noexcept;
+        RAIIVkFramebuffer
+            createVkFramebuffer(const vk::FramebufferCreateInfo &create_info) const noexcept;
 
-        RAIIVkCommandPool createVkCommandPool(const vk::CommandPoolCreateInfo &create_info) const
-            noexcept;
+        RAIIVkCommandPool
+            createVkCommandPool(const vk::CommandPoolCreateInfo &create_info) const noexcept;
 
         RAIIVkFence createVkFence(const vk::FenceCreateInfo &create_info) const noexcept;
 
-        RAIIVkSemaphore createVkSemaphore(const vk::SemaphoreCreateInfo &create_info) const
-            noexcept;
+        RAIIVkSemaphore
+            createVkSemaphore(const vk::SemaphoreCreateInfo &create_info) const noexcept;
 
         RAIIVkBuffer createVkBuffer(const vk::BufferCreateInfo &create_info) const noexcept;
 
-        RAIIVkDescriptorSetLayout
-            createVkDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo &create_info) const
-            noexcept;
+        RAIIVkDescriptorSetLayout createVkDescriptorSetLayout(
+            const vk::DescriptorSetLayoutCreateInfo &create_info) const noexcept;
 
         RAIIVkDescriptorPool
             createVkDescriptorPool(const vk::DescriptorPoolCreateInfo &create_info) const noexcept;
 
-        std::vector<RAIIVkCommandBuffer>
-            allocateVkCommandBuffers(const vk::CommandBufferAllocateInfo &allocate_info) const
-            noexcept;
+        std::vector<RAIIVkCommandBuffer> allocateVkCommandBuffers(
+            const vk::CommandBufferAllocateInfo &allocate_info) const noexcept;
 
-        std::vector<RAIIVkDescriptorSet>
-            allocateVkDescriptorSets(const vk::DescriptorSetAllocateInfo &allocate_info) const
-            noexcept;
+        std::vector<RAIIVkDescriptorSet> allocateVkDescriptorSets(
+            const vk::DescriptorSetAllocateInfo &allocate_info) const noexcept;
 
-        VmaAllocation allocateVmaAllocation(const VmaAllocationCreateInfo &allocate_info,
-                                            const vk::MemoryRequirements &requirements) const
-            noexcept;
+        VmaAllocation
+            allocateVmaAllocation(const VmaAllocationCreateInfo &allocate_info,
+                                  const vk::MemoryRequirements &requirements) const noexcept;
         void deallocateVmaAllocation(VmaAllocation allocation) const noexcept;
 
         void bindVmaBufferMemory(VmaAllocation allocation, vk::Buffer buffer) const noexcept;
