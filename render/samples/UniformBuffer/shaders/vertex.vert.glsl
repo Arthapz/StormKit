@@ -22,7 +22,6 @@ out gl_PerVertex  {
 
 void main() {
     vec4 p = vec4(position, 1.f);
-    p.y = -p.y;
 
     gl_Position = camera.projection * camera.view * mesh_data.model * p;
 

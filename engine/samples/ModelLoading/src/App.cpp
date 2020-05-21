@@ -77,7 +77,7 @@ void App::doInitWindow() {
     /*   const auto video_settings =
            window::VideoSettings { .size = core::Extentu { .width  = WINDOW_WIDTH<core::UInt32>,
                                                            .height = WINDOW_HEIGHT<core::UInt32> }
-       };*/
+        ;*/
     const auto video_settings = window::Window::getDesktopFullscreenSize();
     const auto window_style   = window::WindowStyle::Fullscreen;
 
