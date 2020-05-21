@@ -14,6 +14,7 @@
 #include <storm/engine/scene/Scene.hpp>
 
 #include <storm/engine/material/Material.hpp>
+#include <storm/engine/material/MaterialInstance.hpp>
 
 using namespace storm;
 using namespace storm::engine;
