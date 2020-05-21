@@ -1,5 +1,5 @@
 #version 460 core
-#extension GL_ARB_separate_shader_objects : enable
+
 #pragma shader_stage(fragment)
 
 layout(location = 0) in vec3 in_position;
@@ -22,7 +22,7 @@ layout(set = 0, binding = 0, std140) uniform Camera {
     mat4 view;
 } camera;
 
-layout(set = 2, binding = 6, std140) uniform Transform {
+layout(set = 2, binding = 6, std140) uniform Material {
     vec4 albedo_factor;
     float metallic_factor;
     float roughness_factor;

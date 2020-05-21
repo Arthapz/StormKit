@@ -19,4 +19,10 @@ namespace storm::engine {
 
     class PBRMaterialInstance;
     DECLARE_PTR_AND_REF(PBRMaterialInstance);
+
+    class CubeMapMaterial;
+    DECLARE_PTR_AND_REF(CubeMapMaterial);
+
+    class CubeMapMaterialInstance;
+    DECLARE_PTR_AND_REF(CubeMapMaterialInstance);
 } // namespace storm::engine

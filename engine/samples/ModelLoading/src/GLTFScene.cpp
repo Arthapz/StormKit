@@ -66,6 +66,36 @@ GLTFScene::GLTFScene(engine::Engine &engine,
 
     m_engine->debugGUI().setSkipFrameCount(40);
 
+    m_cube_map = createCubeMapPtr();
+
+    auto right  = image::Image {};
+    auto left   = image::Image {};
+    auto top    = image::Image {};
+    auto bottom = image::Image {};
+    auto front  = image::Image {};
+    auto back   = image::Image {};
+
+    right.loadFromFile("textures/right.jpg");
+    left.loadFromFile("textures/left.jpg");
+    top.loadFromFile("textures/top.jpg");
+    bottom.loadFromFile("textures/bottom.jpg");
+    front.loadFromFile("textures/front.jpg");
+    back.loadFromFile("textures/back.jpg");
+
+    auto &cube_map_texture = texturePool().create("CubeMap",
+                                                  m_engine->device(),
+                                                  render::TextureType::T2D,
+                                                  render::TextureCreateFlag::Cube_Compatible);
+    cube_map_texture.loadLayersFromMemory({ std::data(right),
+                                            std::data(left),
+                                            std::data(top),
+                                            std::data(bottom),
+                                            std::data(front),
+                                            std::data(back) },
+                                          right.extent());
+
+    m_cube_map->setTexture(cube_map_texture);
+
     enableDepthTest(true);
     toggleMSAA();
 }
@@ -224,8 +254,8 @@ void GLTFScene::doRenderScene(storm::engine::FrameGraph &framegraph,
             render::GraphicsPipelineColorBlendAttachmentState {}
         };
 
-        for (auto &mesh : m_meshes)
-            mesh.render(cmb, resources.renderPass(), std::move(bindables), mesh_state);
+        m_cube_map->render(cmb, resources.renderPass(), bindables, mesh_state);
+        for (auto &mesh : m_meshes) mesh.render(cmb, resources.renderPass(), bindables, mesh_state);
     };
 
     auto &color_pass =

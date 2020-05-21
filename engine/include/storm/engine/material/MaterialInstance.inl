@@ -28,7 +28,9 @@ namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
     void MaterialInstance::setSamplerTexture(std::string_view name,
-                                             const render::Texture &texture) {
+                                             const render::Texture &texture,
+                                             render::TextureViewType type,
+                                             render::TextureSubresourceRange subresource_range) {
         const auto it = core::ranges::find_if(m_sampled_textures, [&name](const auto &pair) {
             return name == pair.first;
         });
@@ -36,7 +38,7 @@ namespace storm::engine {
         STORM_EXPECTS(it != core::ranges::cend(m_sampled_textures));
 
         auto &[_, binding] = *it;
-        binding.view       = texture.createViewPtr();
+        binding.view       = texture.createViewPtr(type, std::move(subresource_range));
         binding.dirty      = true;
 
         m_dirty      = true;
