@@ -72,6 +72,22 @@ const storm::window::VideoSettings *getDesktopFullscreenSize() {
     static auto video_setting = storm::window::VideoSettings {};
     static auto init          = false;
 
-    if (!init) { init = true; }
+    if (!init) {
+        auto display = xcb_connect(nullptr, nullptr);
+        auto screen  = xcb_setup_roots_iterator(xcb_get_setup(display)).data;
+        auto root    = screen->root;
+
+        auto reply = xcb_get_geometry(display, root);
+        auto attr  = xcb_get_geometry_reply(display, reply, nullptr);
+        std::cout << attr->width << ':' << attr->height << std::endl;
+
+        video_setting.size.width  = attr->width;
+        video_setting.size.height = attr->height;
+        video_setting.size.depth  = attr->depth;
+
+        init = true;
+    }
+
+    std::cout << video_setting.size.width << ':' << video_setting.size.height << std::endl;
     return &video_setting;
 }

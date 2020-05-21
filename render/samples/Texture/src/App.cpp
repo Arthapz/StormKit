@@ -262,7 +262,7 @@ void App::doInitMeshRenderObjects() {
 
     m_image = std::make_unique<image::Image>(EXAMPLES_DATA_DIR "textures/texture.png",
                                              image::Image::Codec::PNG);
-    // m_image = std::make_unique<image::Image>(image::Image::flipY(*m_image));
+    m_image = std::make_unique<image::Image>(image::Image::flipY(*m_image));
 
     m_texture = m_device->createTexturePtr();
     m_texture->loadFromImage(*m_image);
