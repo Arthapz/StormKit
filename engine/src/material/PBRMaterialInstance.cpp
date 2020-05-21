@@ -1,13 +1,3 @@
-/////////// - StormKit::render - ///////////
-#include <storm/render/core/CommandBuffer.hpp>
-#include <storm/render/core/Device.hpp>
-
-/////////// - StormKit::core - ///////////
-#include <storm/core/Ranges.hpp>
-
-#include <storm/render/pipeline/DescriptorSetLayout.hpp>
-#include <storm/render/pipeline/PipelineCache.hpp>
-
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
@@ -26,6 +16,7 @@ PBRMaterialInstance::PBRMaterialInstance(const Scene &scene, const PBRMaterial &
     setRoughnessFactor(1.f);
     setAmbiantOcclusionFactor(1.f);
     setEmissiveFactor({ 0.f, 0.f, 0.f, 0.f });
+    setDebugView(DebugView::None);
 
     flush();
 }

@@ -46,6 +46,7 @@ class GLTFScene final: public storm::engine::Scene {
 
     storm::window::InputHandler m_input_handler;
 
+    storm::engine::CubeMapOwnedPtr m_cube_map;
     storm::engine::ModelOwnedPtr m_model;
     storm::engine::MeshArray m_meshes;
 

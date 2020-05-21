@@ -148,6 +148,8 @@ engine/include/storm/engine/core/TransformComponent.hpp
 engine/include/storm/engine/core/Vertex.hpp
 engine/include/storm/engine/core/Vertex.inl
 engine/include/storm/engine/drawable/BoundingBox.hpp
+engine/include/storm/engine/drawable/CubeMap.hpp
+engine/include/storm/engine/drawable/CubeMap.inl
 engine/include/storm/engine/drawable/Drawable.hpp
 engine/include/storm/engine/drawable/Drawable.inl
 engine/include/storm/engine/drawable/Fwd.hpp
@@ -172,6 +174,10 @@ engine/include/storm/engine/framegraph/FramePassResources.inl
 engine/include/storm/engine/framegraph/Fwd.hpp
 engine/include/storm/engine/graphics/RenderQueue.hpp
 engine/include/storm/engine/graphics/RenderQueue.inl
+engine/include/storm/engine/material/CubeMapMaterial.hpp
+engine/include/storm/engine/material/CubeMapMaterial.inl
+engine/include/storm/engine/material/CubeMapMaterialInstance.hpp
+engine/include/storm/engine/material/CubeMapMaterialInstance.inl
 engine/include/storm/engine/material/Fwd.hpp
 engine/include/storm/engine/material/Material.hpp
 engine/include/storm/engine/material/Material.inl
@@ -218,6 +224,8 @@ engine/samples/PostFX/src/App.cpp
 engine/samples/PostFX/src/App.hpp
 engine/samples/PostFX/src/main.cpp
 engine/samples/meson.build
+engine/shaders/CubeMap.frag.glsl
+engine/shaders/CubeMap.vert.glsl
 engine/shaders/PBRColorPass.frag.glsl
 engine/shaders/PBRColorPass.vert.glsl
 engine/src/Engine.cpp
@@ -246,6 +254,7 @@ engine/src/core/imgui/imgui_widgets.cpp
 engine/src/core/imgui/imstb_rectpack.hpp
 engine/src/core/imgui/imstb_textedit.hpp
 engine/src/core/imgui/imstb_truetype.hpp
+engine/src/drawable/CubeMap.cpp
 engine/src/drawable/Drawable.cpp
 engine/src/drawable/Mesh.cpp
 engine/src/drawable/Model.cpp
@@ -257,6 +266,8 @@ engine/src/framegraph/FramePassResource.cpp
 engine/src/framegraph/FramePassResourceHandle.cpp
 engine/src/framegraph/FramePassResources.cpp
 engine/src/graphics/RenderQueue.cpp
+engine/src/material/CubeMapMaterial.cpp
+engine/src/material/CubeMapMaterialInstance.cpp
 engine/src/material/Material.cpp
 engine/src/material/MaterialInstance.cpp
 engine/src/material/PBRMaterial.cpp

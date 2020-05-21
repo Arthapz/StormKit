@@ -88,6 +88,7 @@ namespace storm::engine {
 
         friend class MaterialInstance;
         friend class Mesh;
+        friend class CubeMap;
     }; // namespace storm::engine
 } // namespace storm::engine
 

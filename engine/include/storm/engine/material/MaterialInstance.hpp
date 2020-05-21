@@ -41,7 +41,10 @@ namespace storm::engine {
         inline void setDoubleSided(bool double_sided) noexcept;
         inline void setWireFrameEnabled(bool enabled) noexcept;
 
-        inline void setSamplerTexture(std::string_view name, const render::Texture &texture);
+        inline void setSamplerTexture(std::string_view name,
+                                      const render::Texture &texture,
+                                      render::TextureViewType type = render::TextureViewType::T2D,
+                                      render::TextureSubresourceRange subresource_range = {});
         inline void setRawDataValue(std::string_view name, core::ByteConstSpan bytes);
         template<typename T>
         inline void setDataValue(std::string_view name, T &&value);
