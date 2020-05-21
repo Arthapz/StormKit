@@ -41,7 +41,7 @@ App::App() {
 App::~App() = default;
 
 void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
-    auto model_filepath = std::filesystem::path { "./models/Sword.glb" };
+    auto model_filepath = std::filesystem::path { EXAMPLES_DATA_DIR "models/Sword.glb" };
 
     if (argc > 1) { model_filepath = std::filesystem::path { argv[1] }; }
 
