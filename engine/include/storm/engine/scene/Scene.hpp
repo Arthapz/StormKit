@@ -31,6 +31,7 @@
 
 #include <storm/engine/Engine.hpp>
 
+#include <storm/engine/drawable/CubeMap.hpp>
 #include <storm/engine/drawable/Mesh.hpp>
 
 #include <storm/engine/scene/Camera.hpp>
@@ -39,6 +40,7 @@ namespace storm::engine {
     class STORM_PUBLIC Scene: public core::NonCopyable {
       public:
         static constexpr auto DEFAULT_PBR_MATERIAL_NAME = "StormKit:DefaultPBRMaterial";
+        static constexpr auto CUBEMAP_MATERIAL_NAME     = "StormKit:CubeMap";
 
         explicit Scene(engine::Engine &engine);
         virtual ~Scene();
@@ -51,6 +53,9 @@ namespace storm::engine {
 
         [[nodiscard]] inline Model createModel();
         [[nodiscard]] inline ModelOwnedPtr createModelPtr();
+
+        [[nodiscard]] inline CubeMap createCubeMap();
+        [[nodiscard]] inline CubeMapOwnedPtr createCubeMapPtr();
 
         void update(float delta) noexcept;
         void render(FrameGraph &framegraph, storm::engine::FramePassTextureID backbuffer) noexcept;

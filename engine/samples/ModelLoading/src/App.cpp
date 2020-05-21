@@ -74,10 +74,12 @@ void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 }
 
 void App::doInitWindow() {
-    const auto video_settings =
-        window::VideoSettings { .size = core::Extentu { .width  = WINDOW_WIDTH<core::UInt32>,
-                                                        .height = WINDOW_HEIGHT<core::UInt32> } };
-    const auto window_style = window::WindowStyle::Fullscreen;
+    /*   const auto video_settings =
+           window::VideoSettings { .size = core::Extentu { .width  = WINDOW_WIDTH<core::UInt32>,
+                                                           .height = WINDOW_HEIGHT<core::UInt32> }
+       };*/
+    const auto video_settings = window::Window::getDesktopFullscreenSize();
+    const auto window_style   = window::WindowStyle::Fullscreen;
 
     m_window        = std::make_unique<window::Window>(WINDOW_TITLE, video_settings, window_style);
     m_event_handler = std::make_unique<window::EventHandler>(*m_window);

@@ -19,4 +19,7 @@ namespace storm::engine {
 
     class Model;
     DECLARE_PTR_AND_REF(Model);
+
+    class CubeMap;
+    DECLARE_PTR_AND_REF(CubeMap);
 } // namespace storm::engine

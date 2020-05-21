@@ -17,12 +17,14 @@
 
 #include <storm/render/core/Types.hpp>
 
+#include <storm/render/resource/Sampler.hpp>
 #include <storm/render/resource/Texture.hpp>
 
 #include <storm/render/pipeline/DescriptorSetLayout.hpp>
 #include <storm/render/pipeline/GraphicsPipelineState.hpp>
 
 /////////// - StormKit::engine - ///////////
+#include <storm/engine/Engine.hpp>
 #include <storm/engine/Fwd.hpp>
 
 #include <storm/engine/core/Bindable.hpp>
@@ -41,7 +43,12 @@ namespace storm::engine {
         inline void setDoubleSided(bool double_sided) noexcept;
         inline void setWireFrameEnabled(bool enabled) noexcept;
 
-        inline void setSamplerTexture(std::string_view name, const render::Texture &texture);
+        inline void setSampledTexture(std::string_view name,
+                                      const render::Texture &texture,
+                                      render::TextureViewType type = render::TextureViewType::T2D,
+                                      render::TextureSubresourceRange subresource_range = {},
+                                      render::Sampler::Settings sampler_settings        = {});
+        inline void setSamplerSettings(std::string_view name, render::Sampler::Settings settings);
         inline void setRawDataValue(std::string_view name, core::ByteConstSpan bytes);
         template<typename T>
         inline void setDataValue(std::string_view name, T &&value);
@@ -59,6 +66,7 @@ namespace storm::engine {
             Material::Binding binding;
 
             render::TextureViewOwnedPtr view;
+            render::SamplerOwnedPtr sampler;
 
             bool dirty = true;
         };
@@ -78,14 +86,13 @@ namespace storm::engine {
 
         std::unordered_map<std::string, SampledBinding> m_sampled_textures;
 
-        render::SamplerOwnedPtr m_sampler;
-
         bool m_dirty = true;
 
         mutable bool m_dirty_hash   = true;
         mutable core::Hash64 m_hash = 0u;
 
         friend class SubMesh;
+        friend class CubeMap;
     }; // namespace storm::engine
 } // namespace storm::engine
 

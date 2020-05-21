@@ -54,12 +54,19 @@ namespace storm::engine {
         PBRMaterialInstance(PBRMaterialInstance &&);
         PBRMaterialInstance &operator=(PBRMaterialInstance &&);
 
-        inline void setAlbedoMap(const render::Texture &map) noexcept;
-        inline void setNormalMap(const render::Texture &map) noexcept;
-        inline void setMetallicMap(const render::Texture &map) noexcept;
-        inline void setRoughnessMap(const render::Texture &map) noexcept;
-        inline void setAmbiantOcclusionMap(const render::Texture &map) noexcept;
-        inline void setEmissiveMap(const render::Texture &map);
+        inline void setAlbedoMap(const render::Texture &map,
+                                 render::Sampler::Settings sampler_settings = {}) noexcept;
+        inline void setNormalMap(const render::Texture &map,
+                                 render::Sampler::Settings sampler_settings = {}) noexcept;
+        inline void setMetallicMap(const render::Texture &map,
+                                   render::Sampler::Settings sampler_settings = {}) noexcept;
+        inline void setRoughnessMap(const render::Texture &map,
+                                    render::Sampler::Settings sampler_settings = {}) noexcept;
+        inline void
+            setAmbiantOcclusionMap(const render::Texture &map,
+                                   render::Sampler::Settings sampler_settings = {}) noexcept;
+        inline void setEmissiveMap(const render::Texture &map,
+                                   render::Sampler::Settings sampler_settings = {});
 
         inline void setAlbedoFactor(core::Vector4f factor) noexcept;
         inline void setMetallicFactor(float factor) noexcept;

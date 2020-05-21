@@ -66,6 +66,32 @@ GLTFScene::GLTFScene(engine::Engine &engine,
 
     m_engine->debugGUI().setSkipFrameCount(40);
 
+    m_cube_map = createCubeMapPtr();
+
+    auto right  = image::Image {};
+    auto left   = image::Image {};
+    auto top    = image::Image {};
+    auto bottom = image::Image {};
+    auto front  = image::Image {};
+    auto back   = image::Image {};
+
+    right.loadFromFile("textures/right.png");
+    left.loadFromFile("textures/left.png");
+    top.loadFromFile("textures/top.png");
+    bottom.loadFromFile("textures/bottom.png");
+    front.loadFromFile("textures/front.png");
+    back.loadFromFile("textures/back.png");
+
+    auto &cube_map_texture = texturePool().create("CubeMap",
+                                                  m_engine->device(),
+                                                  render::TextureType::T2D,
+                                                  render::TextureCreateFlag::Cube_Compatible);
+    cube_map_texture
+        .loadLayersFromImages(core::makeConstObservers(right, left, top, bottom, front, back),
+                              right.extent());
+
+    m_cube_map->setTexture(cube_map_texture);
+
     enableDepthTest(true);
     toggleMSAA();
 }
@@ -139,11 +165,11 @@ void GLTFScene::update(float time) {
         const auto position = [&camera_inputs, &extent, this]() {
             auto position = m_input_handler.getMousePositionOnWindow();
 
-            if (position->x < 0 || position->x > extent.w) {
+            if (position->x <= 5 || position->x > (extent.w - 5)) {
                 position->x                = extent.w / 2;
                 camera_inputs.mouse_ignore = true;
             }
-            if (position->y < 0 || position->y > extent.h) {
+            if (position->y <= 5 || position->y > (extent.h - 5)) {
                 position->y                = extent.h / 2;
                 camera_inputs.mouse_ignore = true;
             }
@@ -224,8 +250,8 @@ void GLTFScene::doRenderScene(storm::engine::FrameGraph &framegraph,
             render::GraphicsPipelineColorBlendAttachmentState {}
         };
 
-        for (auto &mesh : m_meshes)
-            mesh.render(cmb, resources.renderPass(), std::move(bindables), mesh_state);
+        for (auto &mesh : m_meshes) mesh.render(cmb, resources.renderPass(), bindables, mesh_state);
+        m_cube_map->render(cmb, resources.renderPass(), bindables, mesh_state);
     };
 
     auto &color_pass =

@@ -12,21 +12,21 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
 
-#include <storm/engine/material/PBRMaterialInstance.hpp>
+#include <storm/engine/material/Material.hpp>
 
 namespace storm::engine {
-    class STORM_PUBLIC PBRMaterial final: public Material {
+    class STORM_PUBLIC CubeMapMaterial final: public Material {
       public:
-        static inline const auto PBR_COLOR_PASS_VERT_SHADER_NAME =
-            std::string { "StormKit:PBRColorPass:Vert" };
-        static inline const auto PBR_COLOR_PASS_FRAG_SHADER_NAME =
-            std::string { "StormKit:PBRColorPass:Frag" };
+        static inline const auto CUBE_MAP_VERT_SHADER_NAME =
+            std::string { "StormKit:CubeMap:Vert" };
+        static inline const auto CUBE_MAP_FRAG_SHADER_NAME =
+            std::string { "StormKit:CubeMap:Frag" };
 
-        explicit PBRMaterial(Scene &scene);
-        virtual ~PBRMaterial();
+        explicit CubeMapMaterial(Scene &scene);
+        virtual ~CubeMapMaterial();
 
-        PBRMaterial(PBRMaterial &&);
-        PBRMaterial &operator=(PBRMaterial &&);
+        CubeMapMaterial(CubeMapMaterial &&);
+        CubeMapMaterial &operator=(CubeMapMaterial &&);
 
         [[nodiscard]] MaterialInstanceOwnedPtr createInstancePtr() const noexcept override;
 
@@ -35,6 +35,4 @@ namespace storm::engine {
     };
 } // namespace storm::engine
 
-HASH_FUNC(storm::engine::PBRMaterial)
-
-#include "PBRMaterial.inl"
+HASH_FUNC(storm::engine::CubeMapMaterial)

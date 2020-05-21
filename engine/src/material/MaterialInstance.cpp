@@ -20,8 +20,8 @@ using namespace storm;
 using namespace storm::engine;
 
 namespace std {
-    core::Hash64 hash<MaterialInstance>::operator()(const MaterialInstance &material) const
-        noexcept {
+    core::Hash64
+        hash<MaterialInstance>::operator()(const MaterialInstance &material) const noexcept {
         return material.hash();
     }
 } // namespace std
@@ -90,7 +90,6 @@ MaterialInstance::MaterialInstance(const Scene &scene, const Material &material)
           layout = core::makeConstObserver(material.m_descriptor_set_layout);
       } },
       m_engine { &scene.engine() }, m_parent { &material } {
-    m_sampler                  = m_engine->device().createSamplerPtr();
     const auto buffering_count = m_engine->surface().bufferingCount();
     const auto &device         = m_engine->device();
 
@@ -105,7 +104,8 @@ MaterialInstance::MaterialInstance(const Scene &scene, const Material &material)
     for (const auto &[binding, name] : sampleds) {
         m_sampled_textures.emplace(name,
                                    SampledBinding { .binding = binding,
-                                                    .view    = default_map.createViewPtr() });
+                                                    .view    = default_map.createViewPtr(),
+                                                    .sampler = device.createSamplerPtr() });
 
         m_buffer_binding = std::max(m_buffer_binding, static_cast<core::Int32>(binding));
     }
@@ -155,24 +155,26 @@ void MaterialInstance::flush() {
             .binding      = sampled_texture.binding,
             .layout       = render::TextureLayout::Shader_Read_Only_Optimal,
             .texture_view = core::makeConstObserver(sampled_texture.view),
-            .sampler      = core::makeConstObserver(m_sampler) });
+            .sampler      = core::makeConstObserver(sampled_texture.sampler) });
 
         if (sampled_texture.dirty) { sampled_texture.dirty = false; }
     }
 
-    if (m_bytes_dirty) {
+    if (m_bytes_dirty && !std::empty(m_bytes)) {
         m_buffer->next();
         m_buffer->upload<core::Byte>(m_bytes);
 
         m_bytes_dirty = false;
     }
 
-    auto offset = m_buffer->currentOffset();
-    descriptors.emplace_back(
-        render::BufferDescriptor { .binding = static_cast<Material::Binding>(m_buffer_binding),
-                                   .buffer  = core::makeConstObserver(m_buffer->buffer()),
-                                   .range   = gsl::narrow_cast<core::UInt32>(std::size(m_bytes)),
-                                   .offset  = offset });
+    if (!std::empty(m_bytes)) {
+        auto offset = m_buffer->currentOffset();
+        descriptors.emplace_back(
+            render::BufferDescriptor { .binding = static_cast<Material::Binding>(m_buffer_binding),
+                                       .buffer  = core::makeConstObserver(m_buffer->buffer()),
+                                       .range  = gsl::narrow_cast<core::UInt32>(std::size(m_bytes)),
+                                       .offset = offset });
+    }
 
     if (!std::empty(descriptors)) {
         next();

@@ -33,6 +33,8 @@ shader_compiler = generator(
 shader_files = shader_compiler.process(
     'shaders/PBRColorPass.vert.glsl',
     'shaders/PBRColorPass.frag.glsl',
+    'shaders/CubeMap.vert.glsl',
+    'shaders/CubeMap.frag.glsl',
 )
 
 base_headers = files([
@@ -68,6 +70,8 @@ material_headers = files([
     'include/storm/engine/material/MaterialInstance.hpp',
     'include/storm/engine/material/PBRMaterial.hpp',
     'include/storm/engine/material/PBRMaterialInstance.hpp',
+    'include/storm/engine/material/CubeMapMaterial.hpp',
+    'include/storm/engine/material/CubeMapMaterialInstance.hpp',
 ])
 
 material_inls = files([
@@ -75,6 +79,8 @@ material_inls = files([
     'include/storm/engine/material/MaterialInstance.inl',
     'include/storm/engine/material/PBRMaterial.inl',
     'include/storm/engine/material/PBRMaterialInstance.inl',
+    'include/storm/engine/material/CubeMapMaterial.inl',
+    'include/storm/engine/material/CubeMapMaterialInstance.inl',
 ])
 
 scene_headers = files([
@@ -96,6 +102,7 @@ drawable_headers = files([
     'include/storm/engine/drawable/Mesh.hpp',
     'include/storm/engine/drawable/SubMesh.hpp',
     'include/storm/engine/drawable/Model.hpp',
+    'include/storm/engine/drawable/CubeMap.hpp',
 ])
 
 drawable_inls = files([
@@ -126,6 +133,9 @@ framegraph_inls = files([
 
 sources = files([
     'src/Engine.cpp', 
+    'src/Tinyobj.cpp',
+    'src/stb_image.c',
+    'src/stb_image_write.c',
 
     'src/core/imgui/imconfig.hpp',
     'src/core/imgui/imgui_internal.hpp',
@@ -155,6 +165,8 @@ sources = files([
     'src/material/MaterialInstance.cpp',
     'src/material/PBRMaterial.cpp',
     'src/material/PBRMaterialInstance.cpp',
+    'src/material/CubeMapMaterial.cpp',
+    'src/material/CubeMapMaterialInstance.cpp',
 
     'src/scene/Camera.cpp',
     'src/scene/FPSCamera.cpp',
@@ -164,6 +176,7 @@ sources = files([
     'src/drawable/Mesh.cpp',
     'src/drawable/SubMesh.cpp',
     'src/drawable/Model.cpp',
+    'src/drawable/CubeMap.cpp',
 
     'src/framegraph/FrameGraph.cpp',
     'src/framegraph/FramePass.cpp',

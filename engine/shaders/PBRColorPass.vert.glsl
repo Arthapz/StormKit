@@ -23,6 +23,9 @@ layout(set = 1, binding = 0, std140) uniform Transform {
     mat4 inverted_model;
 } transform;
 
+out gl_PerVertex  {
+    vec4 gl_Position;
+};
 
 void main() {
     vec4 model_space_position = transform.model * vec4(vertex_position, 1.f);
