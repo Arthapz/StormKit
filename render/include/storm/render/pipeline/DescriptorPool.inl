@@ -7,7 +7,7 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline DescriptorSet
+     DescriptorSet
         DescriptorPool::allocateDescriptorSet(const DescriptorSetLayout &layout) const {
         auto descriptor = std::move(allocateDescriptorSets(1u, layout)[0]);
 
@@ -16,7 +16,7 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline DescriptorSetOwnedPtr
+     DescriptorSetOwnedPtr
         DescriptorPool::allocateDescriptorSetPtr(const DescriptorSetLayout &layout) const {
         auto descriptor = std::move(allocateDescriptorSetsPtr(1u, layout)[0]);
 
@@ -24,28 +24,28 @@ namespace storm::render {
     }
     /////////////////////////////////////
     /////////////////////////////////////
-    inline const Device &DescriptorPool::device() const noexcept { return *m_device; }
+     const Device &DescriptorPool::device() const noexcept { return *m_device; }
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::DescriptorPool DescriptorPool::vkDescriptorPool() const noexcept {
+     vk::DescriptorPool DescriptorPool::vkDescriptorPool() const noexcept {
         STORM_EXPECTS(m_vk_descriptor_pool);
         return *m_vk_descriptor_pool;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline DescriptorPool::operator vk::DescriptorPool() const noexcept {
+     DescriptorPool::operator vk::DescriptorPool() const noexcept {
         return vkDescriptorPool();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline vk::DescriptorPool DescriptorPool::vkHandle() const noexcept {
+     vk::DescriptorPool DescriptorPool::vkHandle() const noexcept {
         return vkDescriptorPool();
     }
     /////////////////////////////////////
     /////////////////////////////////////
-    inline core::UInt64 DescriptorPool::vkDebugHandle() const noexcept {
+     core::UInt64 DescriptorPool::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkDescriptorPool_T *());
     }
 } // namespace storm::render

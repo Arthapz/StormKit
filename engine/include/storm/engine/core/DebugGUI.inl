@@ -7,4 +7,5 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-}
+     void DebugGUI::setSkipFrameCount(core::UInt32 count) noexcept { m_skip_frame = count; }
+} // namespace storm::engine

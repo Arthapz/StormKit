@@ -11,6 +11,7 @@
 /////////// - StormKit::render - ///////////
 #include <storm/render/Fwd.hpp>
 
+#include <storm/render/core/Device.hpp>
 #include <storm/render/core/Types.hpp>
 
 #include <storm/render/pipeline/DescriptorSet.hpp>
@@ -18,12 +19,14 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
 
+#include <storm/engine/core/Bindable.hpp>
 #include <storm/engine/core/RingHardwareBuffer.hpp>
 
 namespace storm::engine {
-    class STORM_PUBLIC Transform: public core::NonCopyable {
+    struct TransformFlag {};
+    class STORM_PUBLIC Transform: public StaticBindable<TransformFlag> {
       public:
-        Transform(const Engine &engine);
+        Transform(Engine &engine);
         ~Transform();
 
         Transform(Transform &&);
@@ -67,17 +70,15 @@ namespace storm::engine {
         inline void rotatePitch(float value) noexcept;
         inline void rotateRoll(float value) noexcept;
 
+        inline void setMatrix(core::Matrixf matrix) noexcept;
         [[nodiscard]] inline const core::Matrixf &matrix() const noexcept;
 
-        void ensureUpdated() noexcept;
-
-        [[nodiscard]] inline core::UOffset transformOffset() const noexcept;
-        [[nodiscard]] inline const render::BufferDescriptor &transformDescriptor() const noexcept;
+        void flush() noexcept;
 
       private:
         void recomputeMatrix() const noexcept;
 
-        EngineConstObserverPtr m_engine;
+        EngineObserverPtr m_engine;
 
         core::Vector3f m_position = core::Vector3f { 0.f, 0.f, 0.f };
         core::Quaternionf m_yaw   = core::Quaternionf { 1.f, 0.f, 0.f, 0.f };
@@ -85,10 +86,11 @@ namespace storm::engine {
         core::Quaternionf m_roll  = core::Quaternionf { 1.f, 0.f, 0.f, 0.f };
         core::Vector3f m_scale    = core::Vector3f { 1.f, 1.f, 1.f };
 
+        mutable bool m_dirty                     = true;
         mutable bool m_is_updated                = true;
         mutable core::Matrixf m_transform_matrix = core::Matrixf { 1.f };
+        core::Matrixf m_premultiplicative_matrix = core::Matrixf { 1.f };
 
-        render::BufferDescriptor m_transform_descriptor;
         RingHardwareBufferOwnedPtr m_transform_buffer;
     };
 } // namespace storm::engine

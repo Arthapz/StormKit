@@ -25,7 +25,7 @@ namespace storm::engine {
       public:
         using VertexData = std::vector<float>;
 
-        explicit VertexArray();
+        VertexArray();
         ~VertexArray();
 
         VertexArray(const VertexArray &);
@@ -72,12 +72,12 @@ namespace storm::engine {
         inline core::span<const float> data() const noexcept;
 
         inline core::span<std::byte> bytes() noexcept;
-        inline core::span<const std::byte> bytes() const noexcept;
+        inline core::ByteConstSpan bytes() const noexcept;
 
         // TODO raw access to bytes
         inline render::VertexBindingDescriptionConstSpan bindingDescriptions() const noexcept;
-        inline render::VertexInputAttributeDescriptionConstSpan
-            inputAttributeDescriptions() const noexcept;
+        inline render::VertexInputAttributeDescriptionConstSpan inputAttributeDescriptions() const
+            noexcept;
 
         inline core::Hash64 hash() const noexcept;
 

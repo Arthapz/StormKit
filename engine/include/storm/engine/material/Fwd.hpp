@@ -4,9 +4,25 @@
 
 #pragma once
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Memory.hpp>
 
 namespace storm::engine {
     class Material;
     DECLARE_PTR_AND_REF(Material);
+
+    class MaterialInstance;
+    DECLARE_PTR_AND_REF(MaterialInstance);
+
+    class PBRMaterial;
+    DECLARE_PTR_AND_REF(PBRMaterial);
+
+    class PBRMaterialInstance;
+    DECLARE_PTR_AND_REF(PBRMaterialInstance);
+
+    class CubeMapMaterial;
+    DECLARE_PTR_AND_REF(CubeMapMaterial);
+
+    class CubeMapMaterialInstance;
+    DECLARE_PTR_AND_REF(CubeMapMaterialInstance);
 } // namespace storm::engine

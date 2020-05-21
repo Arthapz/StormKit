@@ -45,8 +45,8 @@ void FPSCamera::update(float delta) noexcept {
 
     const auto rotation_speed = delta * m_rotation_speed;
     if ((m_inputs.mouse_updated || first_iteration) && !m_inputs.mouse_ignore) {
-        auto x_offset = m_last_x_mouse - m_inputs.x_mouse;
-        auto y_offset = m_inputs.y_mouse - m_last_y_mouse;
+        auto x_offset = m_inputs.x_mouse - m_last_x_mouse;
+        auto y_offset = m_last_y_mouse - m_inputs.y_mouse;
 
         x_offset *= rotation_speed.x;
         y_offset *= rotation_speed.y;
@@ -59,16 +59,16 @@ void FPSCamera::update(float delta) noexcept {
     }
 
     auto front = core::Vector3f {};
-    front.x    = cos(radians(m_orientation.x)) * cos(radians(m_orientation.y));
+    front.x    = sin(radians(m_orientation.x)) * cos(radians(m_orientation.y));
     front.y    = sin(radians(m_orientation.y));
-    front.z    = sin(radians(m_orientation.x)) * cos(radians(m_orientation.y));
+    front.z    = cos(radians(m_orientation.x)) * cos(radians(m_orientation.y));
     m_front    = core::normalize(front);
 
     const auto move_speed = delta * m_move_speed;
     if (m_inputs.up) m_position += front * move_speed;
     if (m_inputs.down) m_position -= front * move_speed;
-    if (m_inputs.left) m_position += core::normalize(core::cross(m_front, m_up)) * move_speed;
-    if (m_inputs.right) m_position -= core::normalize(core::cross(m_front, m_up)) * move_speed;
+    if (m_inputs.right) m_position += core::normalize(core::cross(m_front, m_up)) * move_speed;
+    if (m_inputs.left) m_position -= core::normalize(core::cross(m_front, m_up)) * move_speed;
 
     m_view_matrix = storm::core::lookAt(m_position, m_position + m_front, m_up);
 
@@ -78,6 +78,4 @@ void FPSCamera::update(float delta) noexcept {
     first_iteration = false;
 
     m_inputs = {};
-
-    updateBuffer();
 }
