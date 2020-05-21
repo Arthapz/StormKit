@@ -167,6 +167,7 @@ void Texture::loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
 
     auto staging_buffer = m_device->createStagingBuffer(total_size);
     auto i              = 0u;
+
     for (const auto offset : offsets) {
         staging_buffer.upload<const core::Byte>(data[i++], offset);
     }
@@ -232,6 +233,7 @@ void Texture::loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
                                    {},
                                    {},
                                    std::move(after_copie_barriers));
+
     command_buffer.end();
     command_buffer.build();
 
