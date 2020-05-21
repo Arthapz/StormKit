@@ -75,12 +75,12 @@ GLTFScene::GLTFScene(engine::Engine &engine,
     auto front  = image::Image {};
     auto back   = image::Image {};
 
-    right.loadFromFile("textures/right.png");
-    left.loadFromFile("textures/left.png");
-    top.loadFromFile("textures/top.png");
-    bottom.loadFromFile("textures/bottom.png");
-    front.loadFromFile("textures/front.png");
-    back.loadFromFile("textures/back.png");
+    right.loadFromFile(EXAMPLES_DATA_DIR "textures/right.png");
+    left.loadFromFile(EXAMPLES_DATA_DIR "textures/left.png");
+    top.loadFromFile(EXAMPLES_DATA_DIR "textures/top.png");
+    bottom.loadFromFile(EXAMPLES_DATA_DIR "textures/bottom.png");
+    front.loadFromFile(EXAMPLES_DATA_DIR "textures/front.png");
+    back.loadFromFile(EXAMPLES_DATA_DIR "textures/back.png");
 
     auto &cube_map_texture = texturePool().create("CubeMap",
                                                   m_engine->device(),
