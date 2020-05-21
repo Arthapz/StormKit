@@ -5,8 +5,8 @@
 
 namespace storm::image::private_ {
     struct ImageData {
-        Image::Extent extent               = { 0, 0 };
-        core::UInt8 channel                = 0;
+        core::Extentu extent               = { 0u, 0u, 1u };
+        core::UInt8 channel                = 0u;
         std::vector<Image::data_type> data = {};
     };
 } // namespace storm::image::private_

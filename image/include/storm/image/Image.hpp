@@ -8,6 +8,7 @@
 #include <filesystem>
 
 #include <storm/core/Assert.hpp>
+#include <storm/core/Math.hpp>
 #include <storm/core/Memory.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/core/Span.hpp>
@@ -30,11 +31,6 @@ namespace storm::image {
             ASCII // for ppm
         };
 
-        struct Extent {
-            core::UInt32 width;
-            core::UInt32 height;
-        };
-
         explicit Image();
         Image(core::UInt32 width, core::UInt32 height, core::UInt8 channel_count = 3u);
         Image(const std::filesystem::path &filepath, Codec codec = Codec::AUTODETECT);
@@ -50,14 +46,14 @@ namespace storm::image {
         span operator()(XOffset x_offset, YOffset offset);
         const_span operator()(XOffset x, YOffset offset) const noexcept;
 
-        Extent extent() const noexcept;
+        core::Extentu extent() const noexcept;
         core::UInt8 channels() const noexcept;
 
         size_type size() const noexcept;
         const_span data() const noexcept;
         span data();
 
-        static Image scale(const Image &src, const Extent &new_extent);
+        static Image scale(const Image &src, const core::Extentu &new_extent);
         static Image flipX(const Image &src);
         static Image flipY(const Image &src);
         static Image rotate90(const Image &src);

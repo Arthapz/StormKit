@@ -14,10 +14,7 @@
 #include <storm/engine/material/PBRMaterialInstance.hpp>
 
 /////////// - Tinygltf - ///////////
-#define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_USE_CPP14
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #define TINYGLTF_NOEXCEPTION
 #define JSON_NOEXCEPTION
 #include <tiny_gltf.h>
@@ -173,7 +170,7 @@ MeshArray Model::createMeshes() noexcept {
             auto &material = submesh.materialInstance();
 
             for (const auto &[name, sampler] : _submesh.samplers) {
-                material.setSamplerTexture(name, *sampler);
+                material.setSampledTexture(name, *sampler);
             }
 
             for (const auto &[name, data] : _submesh.datas) {

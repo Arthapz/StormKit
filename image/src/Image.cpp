@@ -143,7 +143,7 @@ Image::const_span Image::operator()(XOffset x_offset, YOffset y_offset) const no
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image::Extent Image::extent() const noexcept {
+core::Extentu Image::extent() const noexcept {
     STORM_EXPECTS(m_data != nullptr);
 
     return m_data->extent;
@@ -185,7 +185,7 @@ Image::span Image::data() {
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image Image::scale(const Image &src, [[maybe_unused]] const Image::Extent &) {
+Image Image::scale(const Image &src, [[maybe_unused]] const core::Extentu &) {
     return src;
 }
 

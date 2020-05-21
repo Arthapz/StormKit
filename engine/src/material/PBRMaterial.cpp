@@ -26,8 +26,8 @@ PBRMaterial::PBRMaterial(Scene &scene) : Material { scene } {
     buildShaders();
 
     const auto &shader_pool     = m_scene->shaderPool();
-    const auto &vertex_shader   = shader_pool.get(COLOR_PASS_VERT_SHADER_NAME);
-    const auto &fragment_shader = shader_pool.get(COLOR_PASS_FRAG_SHADER_NAME);
+    const auto &vertex_shader   = shader_pool.get(PBR_COLOR_PASS_VERT_SHADER_NAME);
+    const auto &fragment_shader = shader_pool.get(PBR_COLOR_PASS_FRAG_SHADER_NAME);
 
     addShader(vertex_shader);
     addShader(fragment_shader);
@@ -72,15 +72,15 @@ MaterialInstanceOwnedPtr PBRMaterial::createInstancePtr() const noexcept {
 ////////////////////////////////////////
 void PBRMaterial::buildShaders() {
     auto &shader_pool = m_scene->shaderPool();
-    if (!shader_pool.has(COLOR_PASS_VERT_SHADER_NAME)) {
-        shader_pool.create(COLOR_PASS_VERT_SHADER_NAME,
+    if (!shader_pool.has(PBR_COLOR_PASS_VERT_SHADER_NAME)) {
+        shader_pool.create(PBR_COLOR_PASS_VERT_SHADER_NAME,
                            COLOR_PASS_VERT_SHADER_DATA,
                            render::ShaderStage::Vertex,
                            m_scene->engine().device());
     }
 
-    if (!shader_pool.has(COLOR_PASS_FRAG_SHADER_NAME)) {
-        shader_pool.create(COLOR_PASS_FRAG_SHADER_NAME,
+    if (!shader_pool.has(PBR_COLOR_PASS_FRAG_SHADER_NAME)) {
+        shader_pool.create(PBR_COLOR_PASS_FRAG_SHADER_NAME,
                            COLOR_PASS_FRAG_SHADER_DATA,
                            render::ShaderStage::Fragment,
                            m_scene->engine().device());
