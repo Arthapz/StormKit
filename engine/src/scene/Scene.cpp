@@ -49,6 +49,10 @@ Scene::Scene(Engine &engine) : m_engine { &engine } {
         std::vector { render::Scissor { .offset = { 0, 0 }, .extent = extent } };
 
     materialPool().create(DEFAULT_PBR_MATERIAL_NAME, std::make_unique<PBRMaterial>(*this));
+    auto &material =
+        materialPool().create(CUBEMAP_MATERIAL_NAME, std::make_unique<Material>(*this));
+    material->addSampler(0, "cubemap");
+    material->finalize();
 }
 
 ////////////////////////////////////////
@@ -67,8 +71,6 @@ Scene &Scene::operator=(Scene &&) = default;
 ////////////////////////////////////////
 void Scene::update(float delta) noexcept {
     m_camera->update(delta);
-
-    m_entities.step(delta);
 }
 
 ////////////////////////////////////////

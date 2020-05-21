@@ -37,18 +37,23 @@ namespace storm::render {
                            PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
                            SampleCountFlag samples    = SampleCountFlag::C1_BIT,
                            core::UInt32 mip_levels    = 1,
-                           core::UInt32 layers        = 1,
                            TextureUsage usage         = TextureUsage::Sampled |
                                                 TextureUsage::Transfert_Dst);
-        void loadFromMemory(storm::core::span<const core::Byte> data,
+        void loadFromMemory(core::ByteConstSpan data,
                             core::Extentu extent,
                             PixelFormat load_format,
                             PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
                             SampleCountFlag samples    = SampleCountFlag::C1_BIT,
                             core::UInt32 mip_levels    = 1,
-                            core::UInt32 layers        = 1,
                             TextureUsage usage         = TextureUsage::Sampled |
                                                  TextureUsage::Transfert_Dst);
+        void loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
+                                  core::Extentu layer_extent,
+                                  render::PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
+                                  SampleCountFlag samples            = SampleCountFlag::C1_BIT,
+                                  core::UInt32 mip_levels            = 1,
+                                  TextureUsage usage                 = TextureUsage::Sampled |
+                                                       TextureUsage::Transfert_Dst);
         void createTextureData(core::Extentu extent,
                                PixelFormat format,
                                SampleCountFlag samples = SampleCountFlag::C1_BIT,

@@ -51,8 +51,8 @@ const storm::window::VideoSettings *getDesktopFullscreenSize() {
     static auto init          = false;
 
     if (!init) {
-        video_setting.size.width  = static_cast<storm::core::UInt16>(GetSystemMetrics(SM_CXSIZE));
-        video_setting.size.height = static_cast<storm::core::UInt16>(GetSystemMetrics(SM_CYSIZE));
+        video_setting.size.width  = static_cast<storm::core::UInt16>(GetSystemMetrics(SM_CXSCREEN));
+        video_setting.size.height = static_cast<storm::core::UInt16>(GetSystemMetrics(SM_CYSCREEN));
 
         init = true;
     }
