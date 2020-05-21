@@ -147,6 +147,7 @@ engine/include/storm/engine/core/Transform.inl
 engine/include/storm/engine/core/TransformComponent.hpp
 engine/include/storm/engine/core/Vertex.hpp
 engine/include/storm/engine/core/Vertex.inl
+engine/include/storm/engine/drawable/BoundingBox.hpp
 engine/include/storm/engine/drawable/Drawable.hpp
 engine/include/storm/engine/drawable/Drawable.inl
 engine/include/storm/engine/drawable/Fwd.hpp

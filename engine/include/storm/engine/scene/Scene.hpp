@@ -49,8 +49,8 @@ namespace storm::engine {
         [[nodiscard]] inline Mesh createPBRMesh();
         [[nodiscard]] inline MeshOwnedPtr createPBRMeshPtr();
 
-        [[nodiscard]] inline v2::Model createModel();
-        [[nodiscard]] inline v2::ModelOwnedPtr createModelPtr();
+        [[nodiscard]] inline Model createModel();
+        [[nodiscard]] inline ModelOwnedPtr createModelPtr();
 
         void update(float delta) noexcept;
         void render(FrameGraph &framegraph, storm::engine::FramePassTextureID backbuffer) noexcept;

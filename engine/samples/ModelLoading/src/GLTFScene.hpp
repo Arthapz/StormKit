@@ -46,7 +46,7 @@ class GLTFScene final: public storm::engine::Scene {
 
     storm::window::InputHandler m_input_handler;
 
-    storm::engine::v2::ModelOwnedPtr m_model;
+    storm::engine::ModelOwnedPtr m_model;
     storm::engine::MeshArray m_meshes;
 
     bool m_freeze_camera  = false;

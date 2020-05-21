@@ -27,7 +27,7 @@ namespace tinygltf {
     class Model;
 } // namespace tinygltf
 
-namespace storm::engine::v2 {
+namespace storm::engine {
     class STORM_PUBLIC Model final: public core::NonCopyable {
       public:
         Model(Engine &engine, TexturePool &texture_pool, MaterialPool &material_pool);
@@ -78,6 +78,6 @@ namespace storm::engine::v2 {
         std::vector<Mesh> m_meshes;
         bool m_loaded = false;
     };
-} // namespace storm::engine::v2
+} // namespace storm::engine
 
 #include "Model.inl"

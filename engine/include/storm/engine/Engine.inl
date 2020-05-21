@@ -13,24 +13,6 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    StaticMesh Engine::createStaticMesh(
-        render::TaggedVertexInputAttributeDescriptionArray vertex_attributes,
-        render::VertexBindingDescriptionArray vertex_bindings) {
-        return StaticMesh { *this, std::move(vertex_attributes), std::move(vertex_bindings) };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    StaticMeshOwnedPtr Engine::createStaticMeshPtr(
-        render::TaggedVertexInputAttributeDescriptionArray vertex_attributes,
-        render::VertexBindingDescriptionArray vertex_bindings) {
-        return std::make_unique<StaticMesh>(*this,
-                                            std::move(vertex_attributes),
-                                            std::move(vertex_bindings));
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
     Mesh Engine::createMesh(const Material &material) { return Mesh { *this, material }; }
 
     ////////////////////////////////////////
@@ -41,15 +23,14 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    v2::Model Engine::createModel(TexturePool &texture_pool, MaterialPool &material_pool) {
-        return v2::Model { *this, texture_pool, material_pool };
+    Model Engine::createModel(TexturePool &texture_pool, MaterialPool &material_pool) {
+        return Model { *this, texture_pool, material_pool };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    v2::ModelOwnedPtr Engine::createModelPtr(TexturePool &texture_pool,
-                                             MaterialPool &material_pool) {
-        return std::make_unique<v2::Model>(*this, texture_pool, material_pool);
+    ModelOwnedPtr Engine::createModelPtr(TexturePool &texture_pool, MaterialPool &material_pool) {
+        return std::make_unique<Model>(*this, texture_pool, material_pool);
     }
 
     ////////////////////////////////////////

@@ -17,8 +17,6 @@ namespace storm::engine {
     class SubMesh;
     DECLARE_PTR_AND_REF(SubMesh);
 
-    namespace v2 {
-        class Model;
-        DECLARE_PTR_AND_REF(Model);
-    } // namespace v2
+    class Model;
+    DECLARE_PTR_AND_REF(Model);
 } // namespace storm::engine

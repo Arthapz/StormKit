@@ -4,8 +4,8 @@
 
 #pragma once
 
-namespace storm::engine::v2 {
+namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     bool Model::loaded() const noexcept { return m_loaded; }
-} // namespace storm::engine::v2
+} // namespace storm::engine
