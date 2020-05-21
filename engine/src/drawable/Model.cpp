@@ -14,10 +14,7 @@
 #include <storm/engine/material/PBRMaterialInstance.hpp>
 
 /////////// - Tinygltf - ///////////
-#define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_USE_CPP14
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #define TINYGLTF_NOEXCEPTION
 #define JSON_NOEXCEPTION
 #include <tiny_gltf.h>
