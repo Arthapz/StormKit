@@ -81,7 +81,7 @@ VKAPI_ATTR VkBool32 vkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messa
 
 /////////////////////////////////////
 /////////////////////////////////////
-Instance::Instance() {
+Instance::Instance(std::string app_name) : m_app_name { app_name } {
     if (!m_loader.success()) {
         log::LogHandler::flog(log_module, "Failed to initialize vulkan");
         std::exit(EXIT_FAILURE);
@@ -135,15 +135,15 @@ void Instance::createInstance() noexcept {
     const auto app_info = vk::ApplicationInfo {}
                               .setPEngineName("StormKit C++")
                               .setEngineVersion(STORMKIT_VERSION)
-                              .setApiVersion(target_api_version);
+                              .setApiVersion(target_api_version)
+                              .setPApplicationName(std::data(m_app_name));
 
     auto create_info =
         vk::InstanceCreateInfo {}.setPApplicationInfo(&app_info).setEnabledLayerCount(0);
 
-    auto instance_extensions = std::vector<gsl::czstring<>>{};
-    for(auto ext : INSTANCE_EXTENSIONS) {
-        if(checkExtensionSupport(ext))
-            instance_extensions.emplace_back(ext);
+    auto instance_extensions = std::vector<gsl::czstring<>> {};
+    for (auto ext : INSTANCE_EXTENSIONS) {
+        if (checkExtensionSupport(ext)) instance_extensions.emplace_back(ext);
     }
 
     // auto has_base_exts = checkExtensionSupport(instance_extensions);
@@ -265,8 +265,8 @@ vk::UniqueSurfaceKHR
 #elif defined(STORM_OS_LINUX)
 /////////////////////////////////////
 /////////////////////////////////////
-vk::UniqueSurfaceKHR Instance::createVkSurface(const vk::XcbSurfaceCreateInfoKHR &create_info) const
-    noexcept {
+vk::UniqueSurfaceKHR
+    Instance::createVkSurface(const vk::XcbSurfaceCreateInfoKHR &create_info) const noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_instance->createXcbSurfaceKHRUnique(create_info), surface);
 
     return surface;
@@ -274,8 +274,8 @@ vk::UniqueSurfaceKHR Instance::createVkSurface(const vk::XcbSurfaceCreateInfoKHR
 #elif defined(STORM_OS_IOS)
 /////////////////////////////////////
 /////////////////////////////////////
-vk::UniqueSurfaceKHR Instance::createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const
-    noexcept {
+vk::UniqueSurfaceKHR
+    Instance::createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_instance->createIOSSurfaceMVKUnique(create_info), surface);
 
     return surface;

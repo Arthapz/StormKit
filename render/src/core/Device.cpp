@@ -424,14 +424,14 @@ SamplerOwnedPtr Device::createSamplerPtr(Sampler::Settings settings) const {
 
 /////////////////////////////////////
 /////////////////////////////////////
-PipelineCache Device::createPipelineCache() const {
-    return PipelineCache { *this };
+PipelineCache Device::createPipelineCache(std::filesystem::path path) const {
+    return PipelineCache { *this, path };
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-PipelineCacheOwnedPtr Device::createPipelineCachePtr() const {
-    return std::make_unique<PipelineCache>(*this);
+PipelineCacheOwnedPtr Device::createPipelineCachePtr(std::filesystem::path path) const {
+    return std::make_unique<PipelineCache>(*this, path);
 }
 
 /////////////////////////////////////

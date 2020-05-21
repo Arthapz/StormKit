@@ -71,6 +71,7 @@ DebugGUI::DebugGUI(Engine &engine) : m_engine { &engine } {
     auto &io         = ImGui::GetIO();
     io.DisplaySize.x = extent.width;
     io.DisplaySize.y = extent.height;
+    io.IniFilename   = nullptr;
     io.Fonts->AddFontDefault();
     io.Fonts->Build();
 
