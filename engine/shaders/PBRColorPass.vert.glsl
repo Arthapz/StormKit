@@ -29,7 +29,6 @@ out gl_PerVertex  {
 
 void main() {
     vec4 model_space_position = transform.model * vec4(vertex_position, 1.f);
-    //model_space_position.y = -model_space_position.y;
 
     out_position = model_space_position.xyz / model_space_position.w;
     out_normal   = normalize(transpose(inverse(mat3(transform.model))) * vertex_normal);

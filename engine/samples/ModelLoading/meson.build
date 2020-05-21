@@ -21,7 +21,7 @@ sources = files([
 ])
 
 executable(
-    'ModelLoading',
+    'stormkit_ModelLoading',
     sources,
     dependencies: dependencies,
     cpp_args: arguments,
