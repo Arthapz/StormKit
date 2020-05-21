@@ -12,5 +12,6 @@ executable(
     'stormkit_Triangle',
     [sources, shader_files],
     dependencies: dependencies,
+    cpp_args: examples_arguments,
     install: true
 )

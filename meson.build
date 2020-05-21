@@ -1,6 +1,6 @@
 project(
     'StormKit',
-    ['cpp'],
+    ['c', 'cpp'],
     version: '0.1.0',
     license: 'MIT',
     default_options : ['c_std=c17', 'default_library=static']
@@ -14,12 +14,17 @@ is_macos = system_name == 'darwin'
 is_ios = system_name == 'ios'
 is_android = system_name == 'android'
 
+examples_data_dir = get_option('examples_data_dir')
+
 lib_type = get_option('library_type')
 project_arguments = []
+examples_arguments = []
+
 lib_extension   = ''
 
 if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
     project_arguments += ['/DSTORM_BUILD', '/std:c++latest', '/permissive-', '/DFMT_HEADER_ONLY', '/DNOMINMAX']
+    examples_arguments += ['/std:c++latest', '/permissive-', '/NOMINMAX', '/DEXAMPLES_DATA_DIR="' + examples_data_dir + '"']
     lib_extension = '.lib'
 
     message(meson.get_compiler('cpp').get_id())
@@ -35,12 +40,14 @@ if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
     endif
 else
     project_arguments += ['-DSTORM_BUILD', '-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
+    examples_arguments += ['-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DEXAMPLES_DATA_DIR="' + examples_data_dir + '"']
     if get_option('buildtype') == 'debug'
         project_arguments += ['-DSTORM_BUILD_DEBUG -O0']
     endif
 
     if is_windows
         lib_extension = '.a'
+        examples_arguments += ['-DNOMINMAX']
     elif is_macos
         lib_extension = '.dylib'
     else
@@ -54,13 +61,13 @@ else
 endif
 add_project_arguments(project_arguments, language: ['c', 'cpp', 'objc', 'objcpp'])
 
-enable_entities = get_option('enable_entities')
-enable_log      = get_option('enable_log')
-enable_module   = get_option('enable_module')
-enable_window   = get_option('enable_window')
-enable_image    = get_option('enable_image')
-enable_render   = get_option('enable_render')
-enable_engine   = get_option('enable_engine')
+enable_entities   = get_option('enable_entities')
+enable_log        = get_option('enable_log')
+enable_module     = get_option('enable_module')
+enable_window     = get_option('enable_window')
+enable_image      = get_option('enable_image')
+enable_render     = get_option('enable_render')
+enable_engine     = get_option('enable_engine')
 
 major_version   = 0
 minor_version   = 1
