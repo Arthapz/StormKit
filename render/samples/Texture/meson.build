@@ -11,5 +11,7 @@ sources = files([
 executable(
     'stormkit_Texture',
     [sources, shader_files],
-    dependencies: dependencies
+    dependencies: dependencies,
+    cpp_args: examples_arguments,
+    install: true
 )

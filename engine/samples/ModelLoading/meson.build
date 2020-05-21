@@ -11,5 +11,7 @@ sources = files([
 executable(
     'ModelLoading',
     sources,
-    dependencies: dependencies
+    dependencies: dependencies,
+    cpp_args: examples_arguments,
+    install: true
 )
