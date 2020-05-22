@@ -1,7 +1,7 @@
 png_dep = dependency('libpng', method: 'pkg-config', required: false)
 
 if not png_dep.found()
-    png_dep = dependency('libpng', method: 'cmake', required: false)
+    png_dep = dependency('PNG', method: 'cmake', required: false)
     if not png_dep.found()
         png_dep = dependency('libpng', fallback: ['libpng', 'png_dep'])
     endif
