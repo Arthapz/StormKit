@@ -1,4 +1,4 @@
-png_dep = dependency('libpng', method: 'pkgconfig', required: false)
+png_dep = dependency('libpng', method: 'pkg-config', required: false)
 
 if not png_dep.found()
     png_dep = dependency('libpng', method: 'cmake', required: false)
