@@ -1,7 +1,5 @@
 cmake = import('cmake')
 
-tinygltf_dep = dependency('tinygltf', fallback: ['tinygltf', 'tinygltf_dep'])
-
 static = 'OFF'
 if lib_type == 'static'
     static = 'ON'
@@ -13,13 +11,7 @@ if build_type == 'release'
 endif
 
 public_dependencies = [core_dep, render_dep, log_dep]
-private_dependencies = [tinygltf_dep]
-
-if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
-    project_arguments += ['/DTINYGLTF_NO_STB_IMAGE', '/DTINYGLTF_NO_STB_IMAGE_WRITE']
-else
-    project_arguments += ['-DTINYGLTF_NO_STB_IMAGE', '-DTINYGLTF_NO_STB_IMAGE_WRITE']
-endif
+private_dependencies = []
 
 prog_glslang = find_program('glslangValidator')
 command_glslang = ['--target-env', 'vulkan1.0', '-V', '-x', '-o', '@OUTPUT@', '@INPUT@']
