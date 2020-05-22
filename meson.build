@@ -92,13 +92,13 @@ else
     if git_commit_hash_run.returncode() == 0
         git_commit_hash = git_commit_hash_run.stdout().strip()
     else
-        message('Failed to extract git commit hash: \n' + git_run.stderr())
+        message('Failed to extract git commit hash: \n' + git_commit_hash_run.stderr())
     endif
 
     if git_branch_run.returncode() == 0
         git_branch = git_branch_run.stdout().strip()
     else
-        message('Failed to extract git branch: \n' + git_run.stderr())
+        message('Failed to extract git branch: \n' + git_branch_run.stderr())
     endif
 endif
 
