@@ -7,7 +7,7 @@ if not png_dep.found()
     endif
 endif
 
-jpeg_dep = dependency('libjpeg-turbo')
+jpeg_dep = dependency('jpeg')
 
 public_dependencies = [core_dep]
 private_dependencies = [png_dep, jpeg_dep]
