@@ -8,9 +8,6 @@
 
 #include <storm/render/pipeline/PipelineCache.hpp>
 
-/////////// - StormKit::entities - ///////////
-#include <storm/entities/EntityManager.hpp>
-
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 

@@ -9,9 +9,6 @@
 /////////// - StormKit::window - ///////////
 #include <storm/window/Fwd.hpp>
 
-/////////// - StormKit::window - ///////////
-#include <storm/entities/Entity.hpp>
-
 /////////// - StormKit::render - ///////////
 #include <storm/render/Fwd.hpp>
 
