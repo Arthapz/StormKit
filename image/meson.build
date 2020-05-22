@@ -1,4 +1,12 @@
-png_dep = dependency('libpng', fallback: ['libpng', 'png_dep'])
+png_dep = dependency('libpng', method: 'pkgconfig', required: false)
+
+if not png_dep.found()
+    png_dep = dependency('libpng', method: 'cmake', required: false)
+    if not png_dep.found()
+        png_dep = dependency('libpng', fallback: ['libpng', 'png_dep'])
+    endif
+endif
+
 jpeg_dep = dependency('libjpeg', fallback: ['libjpeg', 'jpeg_dep'])
 
 public_dependencies = [core_dep]
