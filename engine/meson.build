@@ -12,7 +12,7 @@ if build_type == 'release'
     buildtype = 'Release'
 endif
 
-public_dependencies = [core_dep, render_dep, log_dep, entities_dep]
+public_dependencies = [core_dep, render_dep, log_dep]
 private_dependencies = [tinygltf_dep]
 
 if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
@@ -239,7 +239,7 @@ conf = configuration_data()
 conf.set_quoted('PACKAGE_LIBRARY_NAME', 'Engine')
 conf.set_quoted('PACKAGE_LIBRARY_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('libdir')))
 conf.set_quoted('PACKAGE_INCLUDE_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('includedir')))
-conf.set('PACKAGE_STORMKIT_DEPENDENCIES', 'StormKit::Core StormKit::Render StormKit::Log StormKit::Entities')
+conf.set('PACKAGE_STORMKIT_DEPENDENCIES', 'StormKit::Core StormKit::Render StormKit::Log')
 conf.set_quoted('PACKAGE_DEPENDENCIES', '')
 
 configure_file(input : '../StormKitTarget.cmake.in',
