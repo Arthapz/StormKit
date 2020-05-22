@@ -67,4 +67,4 @@ configure_file(input : '../StormKitTarget.cmake.in',
                output : 'StormKitEntitiesTarget.cmake',
                configuration : conf)
 
-install_data(meson.current_build_dir() / 'StormKitEngineTarget.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+install_data(meson.current_build_dir() / 'StormKitEntitiesTarget.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
