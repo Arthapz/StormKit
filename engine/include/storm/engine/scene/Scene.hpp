@@ -23,9 +23,6 @@
 #include <storm/render/resource/Shader.hpp>
 #include <storm/render/resource/Texture.hpp>
 
-/////////// - StormKit::entities - ///////////
-#include <storm/entities/EntityManager.hpp>
-
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
 
@@ -79,8 +76,6 @@ namespace storm::engine {
         [[nodiscard]] inline MaterialPool &materialPool() noexcept;
         [[nodiscard]] inline const MaterialPool &materialPool() const noexcept;
 
-        [[nodiscard]] inline entities::EntityManager &entities() noexcept;
-
         [[nodiscard]] inline Engine &engine() noexcept;
         [[nodiscard]] inline const Engine &engine() const noexcept;
 
@@ -97,8 +92,6 @@ namespace storm::engine {
         ShaderPool m_shader_pool;
         TexturePool m_texture_pool;
         MaterialPool m_material_pool;
-
-        entities::EntityManager m_entities;
 
         CameraObserverPtr m_camera;
 
