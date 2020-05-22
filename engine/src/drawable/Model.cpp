@@ -17,7 +17,7 @@
 #define TINYGLTF_USE_CPP14
 #define TINYGLTF_NOEXCEPTION
 #define JSON_NOEXCEPTION
-#include <tiny_gltf.h>
+#include "../tiny_gltf.h"
 
 using namespace storm;
 using namespace storm::engine;
