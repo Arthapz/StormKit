@@ -13,7 +13,7 @@ endif
 public_dependencies = [core_dep, render_dep, log_dep]
 private_dependencies = []
 
-prog_glslang = find_program('glslangValidator', ['tools'])
+prog_glslang = find_program('glslangValidator', dirs: ['tools'])
 command_glslang = ['--target-env', 'vulkan1.0', '-V', '-x', '-o', '@OUTPUT@', '@INPUT@']
 
 shader_compiler = generator(
