@@ -55,10 +55,16 @@ static constexpr auto initCameraLayout = [](const render::Device &device,
     layout->bake();
 };
 
+#ifdef STORM_OS_WINDOWS
+static constexpr auto PIPELINE_CACHE_PATH = std::string_view { "%LOCALAPPDATA%/{}/" };
+#else
+static constexpr auto PIPELINE_CACHE_PATH = std::string_view { "~/.cache/{}/" };
+#endif
+
 ////////////////////////////////////////
 ////////////////////////////////////////
-Engine::Engine(const window::Window &window) {
-    m_instance = std::make_unique<render::Instance>();
+Engine::Engine(const window::Window &window, std::string app_name) {
+    m_instance = std::make_unique<render::Instance>(app_name);
     log::LogHandler::ilog(LOG_MODULE, "Render backend successfully initialized");
 
     m_surface = m_instance->createSurfacePtr(window);
@@ -103,7 +109,7 @@ Engine::Engine(const window::Window &window) {
         },
         DESCRIPTOR_COUNT);
 
-    m_pipeline_cache = m_device->createPipelineCachePtr();
+    m_pipeline_cache = m_device->createPipelineCachePtr(fmt::format(PIPELINE_CACHE_PATH, app_name));
 
     m_last_tp = Clock::now();
 

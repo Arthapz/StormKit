@@ -60,7 +60,7 @@ namespace storm::engine {
 
         using Callback = std::function<void(FramePassTextureID &, FrameGraph &)>;
 
-        explicit Engine(const window::Window &window);
+        explicit Engine(const window::Window &window, std::string app_name);
         ~Engine();
 
         Engine(Engine &&);
