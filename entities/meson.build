@@ -64,7 +64,7 @@ conf.set('PACKAGE_STORMKIT_DEPENDENCIES', 'StormKit::Core')
 conf.set_quoted('PACKAGE_DEPENDENCIES', '')
 
 configure_file(input : '../StormKitTarget.cmake.in',
-               output : 'StormKitEngineTarget.cmake',
+               output : 'StormKitEntitiesTarget.cmake',
                configuration : conf)
 
 install_data(meson.current_build_dir() / 'StormKitEngineTarget.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
