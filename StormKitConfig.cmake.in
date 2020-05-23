@@ -18,6 +18,10 @@ endif()
 
 set(STORMKIT_TARGETS)
 foreach(component ${StormKit_FIND_COMPONENTS})
+    string(SUBSTRING ${component} 0 1 FIRST_LETTER)
+    string(TOUPPER ${FIRST_LETTER} FIRST_LETTER)
+    string(REGEX REPLACE "^.(.*)" "${FIRST_LETTER}\\1" component "${component}")
+    
     set(target_config_file "${CMAKE_CURRENT_LIST_DIR}/StormKit${component}Target.cmake")
 
     if(EXISTS "${target_config_file}")
