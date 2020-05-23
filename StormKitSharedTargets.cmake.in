@@ -89,6 +89,7 @@ endforeach()
 
 set(_IMPORT_PREFIX)
 
+
 foreach(target ${_IMPORT_CHECK_TARGETS} )
   foreach(file ${_IMPORT_CHECK_FILES_FOR_${target}} )
     if(NOT EXISTS "${file}" )
@@ -107,9 +108,6 @@ but not all the files it references.
 endforeach()
 unset(_IMPORT_CHECK_TARGETS)
 
-add_library(StormKit::StormKit IMPORTED)
-
-target_link_libraries(
 set(CMAKE_IMPORT_FILE_VERSION)
 cmake_policy(POP)
 
