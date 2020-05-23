@@ -167,8 +167,31 @@ cmake.configure_package_config_file(
     configuration: conf
 )
 
-install_data('StormKitConfigDependencies.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+configure_file(input : 'StormKitConfigDependencies.cmake.in',
+               output : 'StormKitConfigDependencies.cmake',
+               configuration : conf)
 
+#configure_file(input : 'StormKitStaticTargets.cmake.in',
+#               output : 'StormKitStaticTargets.cmake',
+#               configuration : conf)
+#configure_file(input : 'StormKitStaticTargets-debug.cmake.in',
+#               output : 'StormKitStaticTargets-debug.cmake',
+#               configuration : conf)
+#configure_file(input : 'StormKitStaticTargets-release.cmake.in',
+#               output : 'StormKitStaticTargets-release.cmake',
+#               configuration : conf)
+
+configure_file(input : 'StormKitSharedTargets.cmake.in',
+               output : 'StormKitSharedTargets.cmake',
+               configuration : conf)
+configure_file(input : 'StormKitSharedTargets-debug.cmake.in',
+               output : 'StormKitSharedTargets-debug.cmake',
+               configuration : conf)
+configure_file(input : 'StormKitSharedTargets-release.cmake.in',
+               output : 'StormKitSharedTargets-release.cmake',
+               configuration : conf)
+
+install_data('StormKitConfigDependencies.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
 if lib_type == 'static'
     install_data('StormKitStaticTargets.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
     if get_option('buildtype') == 'debug'
