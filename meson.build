@@ -167,21 +167,21 @@ cmake.configure_package_config_file(
     configuration: conf
 )
 
-install_data('StormKitConfigDependencies.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+install_data(meson.source_root() / 'StormKitConfigDependencies.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
 
 if lib_type == 'static'
-    install_data('StormKitStaticTargets.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+    install_data(meson.source_root() / 'StormKitStaticTargets.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
     if get_option('buildtype') == 'debug'
-        install_data('StormKitStaticTargets-debug.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+        install_data(meson.source_root() / 'StormKitStaticTargets-debug.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
     else
-        install_data('StormKitStaticTargets-release.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+        install_data(meson.source_root() / 'StormKitStaticTargets-release.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
     endif
 else
-    install_data('StormKitSharedTargets.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+    install_data(meson.source_root() / 'StormKitSharedTargets.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
     if get_option('buildtype') == 'debug'
-        install_data('StormKitSharedTargets-debug.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+        install_data(meson.source_root() / 'StormKitSharedTargets-debug.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
     else
-        install_data('StormKitSharedTargets-release.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+        install_data(meson.source_root() / 'StormKitSharedTargets-release.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
     endif
 endif
 
