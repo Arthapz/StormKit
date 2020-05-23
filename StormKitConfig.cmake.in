@@ -1,5 +1,15 @@
 @PACKAGE_INIT@
 
+macro(check_required_components _NAME)
+  foreach(comp ${${_NAME}_FIND_COMPONENTS})
+    if(NOT ${_NAME}_${comp}_FOUND)
+      if(${_NAME}_FIND_REQUIRED_${comp})
+        set(${_NAME}_FOUND FALSE)
+      endif()
+    endif()
+  endforeach(comp)
+endmacro()
+
 set(FIND_STORMKIT_CORE_DEPENDENCIES "")
 set(FIND_STORMKIT_ENGINE_DEPENDENCIES core render log)
 set(FIND_STORMKIT_ENTITIES_DEPENDENCIES core)
@@ -16,12 +26,12 @@ foreach(component ${STORMKIT_FIND_COMPONENTS})
 endforeach()
 list(REMOVE_DUPLICATES STORMKIT_FIND_COMPONENTS)
 
-include(${CMAKE_CURRENT_LIST_DIR}/StormKitDependencies.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/StormKitConfigDependencies.cmake)
 
 if(STORMKIT_STATIC_LIBRARIES)
-    include(${CMAKE_CURRENT_LIST_DIR}/StormKitStaticTargets-*.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/StormKitStaticTargets.cmake)
 else()
-    include(${CMAKE_CURRENT_LIST_DIR}/StormKitSharedTargets-*.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/StormKitSharedTargets.cmake)
 endif()
 
 check_required_components(StormKit)
