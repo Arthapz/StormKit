@@ -216,6 +216,10 @@ namespace storm::render {
         std::exit(EXIT_FAILURE);
     }
 
+    inline core::UInt32 computeMipLevel(const core::Extentu extent) noexcept {
+        return static_cast<core::UInt32>(std::floor(std::log2(std::max(extent.w, extent.h))));
+    }
+
 #define CHECK_VK_ERROR_VALUE(line, v)                                         \
     auto _result = line;                                                      \
     checkVkError(_result.result, __FILE__, STORM_CURRENT_FUNCTION, __LINE__); \
