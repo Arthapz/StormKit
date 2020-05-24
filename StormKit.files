@@ -13,10 +13,12 @@ StormKit.cxxflags
 StormKit.files
 StormKit.includes
 StormKitConfig.cmake.in
-StormKitConfigDependencies.cmake.in
 StormKitSharedTargets-debug.cmake.in
 StormKitSharedTargets-release.cmake.in
 StormKitSharedTargets.cmake.in
+StormKitStaticTargets-debug.cmake.in
+StormKitStaticTargets-release.cmake.in
+StormKitStaticTargets.cmake.in
 builddir/core/Configure.hpp
 builddir/engine/dab3991@@StormKit-engine-static-debug@sta/2D.frag.spv.hpp
 builddir/engine/dab3991@@StormKit-engine-static-debug@sta/2D.vert.spv.hpp
