@@ -10,7 +10,7 @@ if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
 
-set(CORE_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-core.a")
+set(CORE_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-core-debug.a")
 
 set_property(TARGET StormKit::Core APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(StormKit::Core PROPERTIES
@@ -21,7 +21,7 @@ set_target_properties(StormKit::Core PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS StormKit::Core)
 list(APPEND _IMPORT_CHECK_FILES_FOR_StormKit::Core ${CORE_LIB_NAME} ${CORE_BIN_NAME})
 
-set(ENGINE_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-engine.a")
+set(ENGINE_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-engine-debug.a")
 
 set_property(TARGET StormKit::Engine APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(StormKit::Engine PROPERTIES
@@ -32,7 +32,7 @@ set_target_properties(StormKit::Engine PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS StormKit::Engine)
 list(APPEND _IMPORT_CHECK_FILES_FOR_StormKit::Engine ${ENGINE_LIB_NAME} ${ENGINE_BIN_NAME})
 
-set(ENTITIES_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-entities.a")
+set(ENTITIES_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-entities-debug.a")
 
 set_property(TARGET StormKit::Entities APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(StormKit::Entities PROPERTIES
@@ -43,7 +43,7 @@ set_target_properties(StormKit::Entities PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS StormKit::Entities)
 list(APPEND _IMPORT_CHECK_FILES_FOR_StormKit::Entities ${ENTITIES_LIB_NAME} ${ENTITIES_BIN_NAME})
 
-set(IMAGE_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-image.a")
+set(IMAGE_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-image-debug.a")
 
 set_property(TARGET StormKit::Image APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(StormKit::Image PROPERTIES
@@ -54,7 +54,7 @@ set_target_properties(StormKit::Image PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS StormKit::Image)
 list(APPEND _IMPORT_CHECK_FILES_FOR_StormKit::Image ${IMAGE_LIB_NAME} ${IMAGE_BIN_NAME})
 
-set(LOG_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-log.a")
+set(LOG_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-log-debug.a")
 
 set_property(TARGET StormKit::Log APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(StormKit::Log PROPERTIES
@@ -65,7 +65,7 @@ set_target_properties(StormKit::Log PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS StormKit::Log)
 list(APPEND _IMPORT_CHECK_FILES_FOR_StormKit::Log ${LOG_LIB_NAME} ${LOG_BIN_NAME})
 
-set(MAIN_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-main.a")
+set(MAIN_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-main-debug.a")
 
 set_property(TARGET StormKit::Main APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(StormKit::Main PROPERTIES
@@ -76,7 +76,7 @@ set_target_properties(StormKit::Main PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS StormKit::Main)
 list(APPEND _IMPORT_CHECK_FILES_FOR_StormKit::Main ${MAIN_LIB_NAME})
 
-set(MODULE_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-module.a")
+set(MODULE_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-module-debug.a")
 
 set_property(TARGET StormKit::Module APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(StormKit::Module PROPERTIES
@@ -87,7 +87,7 @@ set_target_properties(StormKit::Module PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS StormKit::Module)
 list(APPEND _IMPORT_CHECK_FILES_FOR_StormKit::Module ${MODULE_LIB_NAME} ${MODULE_BIN_NAME})
 
-set(RENDER_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-render.a")
+set(RENDER_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-render-debug.a")
 
 set_property(TARGET StormKit::Render APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(StormKit::Render PROPERTIES
@@ -98,7 +98,7 @@ set_target_properties(StormKit::Render PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS StormKit::Render)
 list(APPEND _IMPORT_CHECK_FILES_FOR_StormKit::Render ${RENDER_LIB_NAME} ${RENDER_BIN_NAME})
 
-set(WINDOW_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-window.a")
+set(WINDOW_LIB_NAME "${_IMPORT_PREFIX}/lib/libStormKit-window-debug.a")
 
 set_property(TARGET StormKit::Window APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(StormKit::Window PROPERTIES
