@@ -10,7 +10,7 @@ endif
 jpeg_dep = dependency('libjpeg', method: 'pkg-config', required: false)
 
 if not jpeg_dep.found()
-    jpeg_dep = dependency('jpeg', method: 'cmake', required: false)
+    jpeg_dep = dependency('JPEG', method: 'cmake', required: false)
     if not jpeg_dep.found()
         jpeg_dep = dependency('libjpeg', fallback: ['libjpeg', 'jpeg_dep'])
     endif
