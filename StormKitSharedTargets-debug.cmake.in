@@ -21,7 +21,7 @@ if(UNIX)
 
     if(VCPKG_TOOLCHAIN)
        set(LIB_DIR "debug/lib")
-     endif
+     endif()
 endif()
 
 if(_IMPORT_PREFIX STREQUAL "/")
