@@ -226,16 +226,3 @@ install_headers(material_headers + material_inls, subdir : 'storm/engine/materia
 install_headers(scene_headers + scene_inls, subdir : 'storm/engine/scene')
 install_headers(drawable_headers + drawable_inls, subdir : 'storm/engine/drawable')
 install_headers(framegraph_headers + framegraph_inls, subdir : 'storm/engine/framegraph')
-
-conf = configuration_data()
-conf.set_quoted('PACKAGE_LIBRARY_NAME', 'Engine')
-conf.set_quoted('PACKAGE_LIBRARY_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('libdir')))
-conf.set_quoted('PACKAGE_INCLUDE_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('includedir')))
-conf.set('PACKAGE_STORMKIT_DEPENDENCIES', 'StormKit::Core StormKit::Render StormKit::Log')
-conf.set_quoted('PACKAGE_DEPENDENCIES', '')
-
-configure_file(input : '../StormKitTarget.cmake.in',
-               output : 'StormKitEngineTarget.cmake',
-               configuration : conf)
-
-install_data(meson.current_build_dir() / 'StormKitEngineTarget.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
