@@ -1,19 +1,14 @@
-png_dep = dependency('libpng', method: 'pkg-config', required: false)
 
-if not png_dep.found()
-    png_dep = dependency('PNG', method: 'cmake', required: false)
-    if not png_dep.found()
-        png_dep = dependency('libpng', fallback: ['libpng', 'png_dep'])
-    endif
+if is_windows
+   png_dep = dependency('PNG', fallback: ['libpng', 'png_dep'])
+else 
+   png_dep = dependency('libpng', fallback: ['libpng', 'png_dep'])
 endif
 
-jpeg_dep = dependency('libjpeg', method: 'pkg-config', required: false)
-
-if not jpeg_dep.found()
-    jpeg_dep = dependency('JPEG', method: 'cmake', required: false)
-    if not jpeg_dep.found()
-        jpeg_dep = dependency('libjpeg', fallback: ['libjpeg', 'jpeg_dep'])
-    endif
+if is_windows
+    jpeg_dep = dependency('JPEG', fallback: ['libjpeg', 'jpeg_dep'])
+else 
+    jpeg_dep = dependency('libjpeg', fallback: ['libjpeg', 'jpeg_dep'])
 endif
 
 public_dependencies = [core_dep]
