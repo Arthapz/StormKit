@@ -62,7 +62,7 @@ get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 if(UNIX)
     get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-endif
+endif()
 if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
