@@ -1,4 +1,3 @@
-
 if is_windows
    png_dep = dependency('PNG', fallback: ['libpng', 'png_dep'])
 else 
