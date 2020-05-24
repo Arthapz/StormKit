@@ -1,4 +1,4 @@
-png_dep = dependency('libpng', method: 'pkg-config', required: false)
+png_dep = dependency('libpng', required: false)
 
 if not png_dep.found()
     png_dep = dependency('PNG', method: 'cmake', required: false)
@@ -7,7 +7,14 @@ if not png_dep.found()
     endif
 endif
 
-jpeg_dep = dependency('jpeg')
+jpeg_dep = dependency('libjpeg', required: false)
+
+if not jpeg_dep.found()
+    jpeg_dep = dependency('jpeg', method: 'cmake', required: false)
+    if not jpeg_dep.found()
+        jpeg_dep = dependency('libjpeg', fallback: ['libjpeg', 'jpeg_dep'])
+    endif
+endif
 
 public_dependencies = [core_dep]
 private_dependencies = [png_dep, jpeg_dep]
