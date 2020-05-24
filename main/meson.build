@@ -59,16 +59,3 @@ main_dep = declare_dependency(
 )
 
 install_headers(headers + inls, subdir : 'storm/main')
-
-conf = configuration_data()
-conf.set_quoted('PACKAGE_LIBRARY_NAME', 'Main')
-conf.set_quoted('PACKAGE_LIBRARY_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('libdir')))
-conf.set_quoted('PACKAGE_INCLUDE_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('includedir')))
-conf.set('PACKAGE_STORMKIT_DEPENDENCIES', '')
-conf.set_quoted('PACKAGE_DEPENDENCIES', '')
-
-configure_file(input : 'StormKitTarget.cmake.in',
-               output : 'StormKitMainTarget.cmake',
-               configuration : conf)
-
-install_data(meson.current_build_dir() / 'StormKitMainTarget.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')

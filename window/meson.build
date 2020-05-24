@@ -66,16 +66,3 @@ if get_option('enable_examples')
 endif
 
 install_headers(headers + inls, subdir : 'storm/window')
-
-conf = configuration_data()
-conf.set_quoted('PACKAGE_LIBRARY_NAME', 'Window')
-conf.set_quoted('PACKAGE_LIBRARY_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('libdir')))
-conf.set_quoted('PACKAGE_INCLUDE_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('includedir')))
-conf.set('PACKAGE_STORMKIT_DEPENDENCIES', 'StormKit::Core')
-conf.set_quoted('PACKAGE_DEPENDENCIES', '')
-
-configure_file(input : '../StormKitTarget.cmake.in',
-               output : 'StormKitWindowTarget.cmake',
-               configuration : conf)
-
-install_data(meson.current_build_dir() / 'StormKitWindowTarget.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
