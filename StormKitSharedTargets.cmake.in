@@ -64,7 +64,7 @@ target_link_libraries(StormKit::Core INTERFACE ${STORMKIT_CORE_DEPENDENCIES})
 add_library(StormKit::Entities SHARED IMPORTED)
 target_include_directories(
     StormKit::Entities INTERFACE "${_IMPORT_PREFIX}/include")
-target_link_libraries(StormKit::Engine INTERFACE StormKit::Core)
+target_link_libraries(StormKit::Entities INTERFACE StormKit::Core)
 
 add_library(StormKit::Image SHARED IMPORTED)
 target_include_directories(
@@ -74,7 +74,7 @@ target_link_libraries(StormKit::Image INTERFACE StormKit::Core)
 add_library(StormKit::Log SHARED IMPORTED)
 target_include_directories(
     StormKit::Log INTERFACE "${_IMPORT_PREFIX}/include")
-target_link_libraries(StormKit::Engine INTERFACE StormKit::Core)
+target_link_libraries(StormKit::Log INTERFACE StormKit::Core)
 
 add_library(StormKit::Main STATIC IMPORTED)
 target_include_directories(
@@ -83,17 +83,17 @@ target_include_directories(
 add_library(StormKit::Module SHARED IMPORTED)
 target_include_directories(
     StormKit::Module INTERFACE "${_IMPORT_PREFIX}/include")
-target_link_libraries(StormKit::Engine INTERFACE StormKit::Core)
+target_link_libraries(StormKit::Module INTERFACE StormKit::Core)
 
 add_library(StormKit::Window SHARED IMPORTED)
 target_include_directories(
     StormKit::Window INTERFACE "${_IMPORT_PREFIX}/include")
-target_link_libraries(StormKit::Engine INTERFACE StormKit::Core StormKit::Module)
+target_link_libraries(StormKit::Window INTERFACE StormKit::Core StormKit::Module)
 
 add_library(StormKit::Render SHARED IMPORTED)
 target_include_directories(
     StormKit::Render INTERFACE "${_IMPORT_PREFIX}/include" ${STORMKIT_RENDER_INCLUDE_COMPONENTS})
-target_link_libraries(StormKit::Engine INTERFACE StormKit::Core StormKit::Log StormKit::Image StormKit::Window StormKit::Module)
+target_link_libraries(StormKit::Render INTERFACE StormKit::Core StormKit::Log StormKit::Image StormKit::Window StormKit::Module)
 
 add_library(StormKit::Engine SHARED IMPORTED)
 target_include_directories(
