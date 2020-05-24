@@ -167,10 +167,6 @@ cmake.configure_package_config_file(
     configuration: conf
 )
 
-configure_file(input : 'StormKitConfigDependencies.cmake.in',
-               output : 'StormKitConfigDependencies.cmake',
-               copy: true)
-
 configure_file(input : 'StormKitStaticTargets.cmake.in',
                output : 'StormKitStaticTargets.cmake',
                configuration : conf)
