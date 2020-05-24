@@ -121,16 +121,3 @@ core_dep = declare_dependency(
 
 install_headers(base_headers + inls, subdir : 'storm/core')
 install_headers(private_headers, subdir : 'storm/core/private')
-
-conf = configuration_data()
-conf.set_quoted('PACKAGE_LIBRARY_NAME', 'Core')
-conf.set_quoted('PACKAGE_LIBRARY_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('libdir')))
-conf.set_quoted('PACKAGE_INCLUDE_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('includedir')))
-conf.set('PACKAGE_STORMKIT_DEPENDENCIES', 'fmt::fmt Microsoft.GSL::GSL glm range-v3::range-v3')
-conf.set_quoted('PACKAGE_DEPENDENCIES', 'fmt;Microsoft.GSL;glm;range-v3')
-
-configure_file(input : '../StormKitTarget.cmake.in',
-               output : 'StormKitCoreTarget.cmake',
-               configuration : conf)
-
-install_data(meson.current_build_dir() / 'StormKitCoreTarget.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
