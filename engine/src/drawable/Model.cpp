@@ -1,6 +1,9 @@
 /////////// - StormKit::log - ///////////
 #include <storm/log/LogHandler.hpp>
 
+/////////// - StormKit::render - ///////////
+#include <storm/render/core/Vulkan.hpp>
+
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
@@ -259,11 +262,15 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
         else if (image.component == 3)
             load_format = render::PixelFormat::RGB8_UNorm;
 
+        const auto extent = core::Extentu { static_cast<core::UInt32>(image.width),
+                                            static_cast<core::UInt32>(image.height) };
         texture.loadFromMemory({ reinterpret_cast<const std::byte *>(std::data(image.image)),
                                  std::size(image.image) },
-                               { gsl::narrow_cast<core::UInt32>(image.width),
-                                 gsl::narrow_cast<core::UInt32>(image.height) },
-                               load_format);
+                               extent,
+                               load_format,
+                               render::PixelFormat::RGBA8_UNorm,
+                               render::SampleCountFlag::C1_BIT,
+                               render::computeMipLevel(extent));
 
         return &texture;
     };
