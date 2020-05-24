@@ -168,16 +168,3 @@ install_headers(core_headers + core_inls, subdir : 'storm/render/core')
 install_headers(resource_headers + resource_inls, subdir : 'storm/render/resource')
 install_headers(pipeline_headers + pipeline_inls, subdir : 'storm/render/pipeline')
 install_headers(sync_headers + sync_inls, subdir : 'storm/render/sync')
-
-conf = configuration_data()
-conf.set_quoted('PACKAGE_LIBRARY_NAME', 'Render')
-conf.set_quoted('PACKAGE_LIBRARY_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('libdir')))
-conf.set_quoted('PACKAGE_INCLUDE_PATH', join_paths('${PACKAGE_PREFIX_DIR}', get_option('includedir')))
-conf.set('PACKAGE_STORMKIT_DEPENDENCIES', 'StormKit::Core StormKit::Log StormKit::Image StormKit::Window StormKit::Module Vulkan::Vulkan')
-conf.set_quoted('PACKAGE_DEPENDENCIES', 'Vulkan')
-
-configure_file(input : '../StormKitTarget.cmake.in',
-               output : 'StormKitRenderTarget.cmake',
-               configuration : conf)
-
-install_data(meson.current_build_dir() / 'StormKitRenderTarget.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
