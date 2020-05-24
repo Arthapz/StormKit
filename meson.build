@@ -169,13 +169,13 @@ cmake.configure_package_config_file(
 
 configure_file(input : 'StormKitStaticTargets.cmake.in',
                output : 'StormKitStaticTargets.cmake',
-               configuration : conf)
+               copy: true)
 configure_file(input : 'StormKitStaticTargets-debug.cmake.in',
                output : 'StormKitStaticTargets-debug.cmake',
-               configuration : conf)
+               copy: true)
 configure_file(input : 'StormKitStaticTargets-release.cmake.in',
                output : 'StormKitStaticTargets-release.cmake',
-               configuration : conf)
+               copy: true)
 
 configure_file(input : 'StormKitSharedTargets.cmake.in',
                output : 'StormKitSharedTargets.cmake',
