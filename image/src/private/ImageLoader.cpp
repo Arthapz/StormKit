@@ -8,6 +8,7 @@
 #include <gsl/gsl_util>
 
 extern "C" {
+#include "stb_image.h"
 #include <jerror.h>
 #include <jpeglib.h>
 #include <png.h>

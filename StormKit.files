@@ -331,6 +331,8 @@ image/src/Image.cpp
 image/src/private/ImageData.hpp
 image/src/private/ImageLoader.cpp
 image/src/private/ImageLoader.hpp
+image/src/private/stb_image.c
+image/src/private/stb_image.h
 log/examples/console_logger/src/main.cpp
 log/examples/file_logger/src/main.cpp
 log/include/storm/log/ConsoleLogger.hpp
