@@ -23,7 +23,7 @@ namespace storm::render {
             SamplerAddressMode address_mode_w = SamplerAddressMode::Repeat;
 
             bool enable_anisotropy = false;
-            float max_anisotropy   = 16.f;
+            float max_anisotropy   = 0.f;
 
             BorderColor border_color = BorderColor::Int_Opaque_Black;
 

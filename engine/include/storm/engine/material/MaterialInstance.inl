@@ -7,9 +7,17 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void MaterialInstance::setDoubleSided(bool double_sided) noexcept {
-        m_rasterization_state.cull_mode =
-            (double_sided) ? render::CullMode::None : render::CullMode::Back;
+    inline void MaterialInstance::setFrontFace(render::FrontFace face) {
+        m_rasterization_state.front_face = face;
+
+        m_dirty      = true;
+        m_dirty_hash = true;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline void MaterialInstance::setCullMode(render::CullMode mode) {
+        m_rasterization_state.cull_mode = mode;
 
         m_dirty      = true;
         m_dirty_hash = true;
@@ -27,20 +35,30 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void MaterialInstance::setSampledTexture(std::string_view name,
-                                             const render::Texture &texture,
-                                             render::TextureViewType type,
-                                             render::TextureSubresourceRange subresource_range,
-                                             render::Sampler::Settings sampler_settings) {
-        const auto it = core::ranges::find_if(m_sampled_textures, [&name](const auto &pair) {
-            return name == pair.first;
-        });
+    void MaterialInstance::setSampledTexture(
+        std::string_view name,
+        const render::Texture &texture,
+        render::TextureViewType type,
+        std::optional<render::TextureSubresourceRange> subresource_range,
+        std::optional<render::Sampler::Settings> sampler_settings) {
+        auto settings = sampler_settings.value_or(
+            render::Sampler::Settings { .enable_anisotropy = true,
+                                        .max_anisotropy    = m_engine->maxAnisotropy(),
+                                        .compare_operation = render::CompareOperation::Never,
+                                        .max_lod = static_cast<float>(texture.mipLevels()) });
 
-        STORM_EXPECTS(it != core::ranges::cend(m_sampled_textures));
+        auto range = subresource_range.value_or(
+            render::TextureSubresourceRange { .level_count = texture.mipLevels() });
+
+        const auto it = std::find_if(m_sampled_textures.begin(),
+                                     m_sampled_textures.end(),
+                                     [&name](const auto &pair) { return name == pair.first; });
+
+        STORM_EXPECTS(it != m_sampled_textures.cend());
 
         auto &[_, binding] = *it;
-        binding.view       = texture.createViewPtr(type, std::move(subresource_range));
-        binding.sampler    = m_engine->device().createSamplerPtr(std::move(sampler_settings));
+        binding.view       = texture.createViewPtr(type, std::move(range));
+        binding.sampler    = m_engine->device().createSamplerPtr(std::move(settings));
         binding.dirty      = true;
 
         m_dirty      = true;
@@ -51,11 +69,11 @@ namespace storm::engine {
     ////////////////////////////////////////
     void MaterialInstance::setSamplerSettings(std::string_view name,
                                               render::Sampler::Settings sampler_settings) {
-        const auto it = core::ranges::find_if(m_sampled_textures, [&name](const auto &pair) {
-            return name == pair.first;
-        });
+        const auto it = std::find_if(m_sampled_textures.begin(),
+                                     m_sampled_textures.end(),
+                                     [&name](const auto &pair) { return name == pair.first; });
 
-        STORM_EXPECTS(it != core::ranges::cend(m_sampled_textures));
+        STORM_EXPECTS(it != m_sampled_textures.cend());
 
         auto &[_, binding] = *it;
         binding.sampler    = m_engine->device().createSamplerPtr(std::move(sampler_settings));
@@ -68,13 +86,13 @@ namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
     void MaterialInstance::setRawDataValue(std::string_view name, core::ByteConstSpan bytes) {
-        const auto it = core::ranges::find_if(m_data_offsets, [&name](const auto &pair) {
-            return name == pair.first;
-        });
+        const auto it = std::find_if(m_data_offsets.cbegin(),
+                                     m_data_offsets.cend(),
+                                     [&name](const auto &pair) { return name == pair.first; });
 
-        STORM_EXPECTS(it != core::ranges::cend(m_data_offsets));
+        STORM_EXPECTS(it != m_data_offsets.cend());
 
-        core::ranges::copy(bytes, core::ranges::begin(m_bytes) + it->second);
+        std::copy(bytes.cbegin(), bytes.cend(), m_bytes.begin() + it->second);
 
         m_dirty       = true;
         m_bytes_dirty = true;

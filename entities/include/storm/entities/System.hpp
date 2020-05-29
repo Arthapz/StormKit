@@ -5,8 +5,8 @@
 #pragma once
 
 #include <cstdint>
-#include <unordered_set>
 
+#include <storm/core/HashMap.hpp>
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
 
@@ -18,7 +18,7 @@ namespace storm::entities {
     class EntityManager;
     class STORM_PUBLIC System: public storm::core::NonCopyable {
       public:
-        using ComponentTypes = std::unordered_set<Component::Type>;
+        using ComponentTypes = storm::core::HashSet<Component::Type>;
 
         explicit System(EntityManager &manager, core::UInt32 priority, ComponentTypes &&types);
         explicit System(EntityManager &manager, core::UInt32 priority, const ComponentTypes &types);
@@ -39,8 +39,8 @@ namespace storm::entities {
         void removeEntity(Entity e);
 
         struct Predicate {
-            inline bool operator()(const SystemOwnedPtr &s1, const SystemOwnedPtr &s2) const
-                noexcept {
+            inline bool operator()(const SystemOwnedPtr &s1,
+                                   const SystemOwnedPtr &s2) const noexcept {
                 return s1->priority() < s2->priority();
             }
         };
@@ -49,7 +49,7 @@ namespace storm::entities {
         virtual void onMessageReceived(const Message &message) = 0;
 
         EntityManagerObserverPtr m_manager;
-        std::unordered_set<Entity> m_entities;
+        storm::core::HashSet<Entity> m_entities;
 
         friend class EntityManager;
 

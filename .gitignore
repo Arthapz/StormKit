@@ -53,6 +53,7 @@ _deps
 subprojects/*
 builddir/
 build/
+builddir-ru/
 
 ### CMake Patch ###
 # External projects

@@ -19,7 +19,7 @@ using namespace storm;
 using namespace storm::render;
 
 static const auto old_layout_access_map =
-    std::unordered_map<vk::ImageLayout, std::pair<vk::AccessFlags, vk::PipelineStageFlags>> {
+    storm::core::HashMap<vk::ImageLayout, std::pair<vk::AccessFlags, vk::PipelineStageFlags>> {
         { vk::ImageLayout::eUndefined,
           { vk::AccessFlags {}, vk::PipelineStageFlagBits::eTopOfPipe } },
         { vk::ImageLayout::ePreinitialized,
@@ -49,7 +49,7 @@ static const auto old_layout_access_map =
     };
 
 static const auto new_layout_access_map =
-    std::unordered_map<vk::ImageLayout, std::pair<vk::AccessFlags, vk::PipelineStageFlags>> {
+    storm::core::HashMap<vk::ImageLayout, std::pair<vk::AccessFlags, vk::PipelineStageFlags>> {
         { vk::ImageLayout::eUndefined, { vk::AccessFlags {}, {} } },
         { vk::ImageLayout::ePreinitialized, { vk::AccessFlags {}, {} } },
         { vk::ImageLayout::eGeneral,
@@ -123,8 +123,10 @@ void CommandBuffer::build() {
                     if (dispatcher.vkCmdBeginDebugUtilsLabelEXT &&
                         dispatcher.vkCmdEndDebugUtilsLabelEXT &&
                         dispatcher.vkCmdInsertDebugUtilsLabelEXT) {
+                        const auto &name = *m_debug_labels.emplace(command.name).first;
+
                         const auto label_info = vk::DebugUtilsLabelEXT {}
-                                                    .setPLabelName(std::data(command.name))
+                                                    .setPLabelName(std::data(name))
                                                     .setColor({ command.color.r,
                                                                 command.color.g,
                                                                 command.color.b,
@@ -137,8 +139,10 @@ void CommandBuffer::build() {
                     if (dispatcher.vkCmdBeginDebugUtilsLabelEXT &&
                         dispatcher.vkCmdEndDebugUtilsLabelEXT &&
                         dispatcher.vkCmdInsertDebugUtilsLabelEXT) {
+                        const auto &name = *m_debug_labels.emplace(command.name).first;
+
                         const auto label_info = vk::DebugUtilsLabelEXT {}
-                                                    .setPLabelName(std::data(command.name))
+                                                    .setPLabelName(std::data(name))
                                                     .setColor({ command.color.r,
                                                                 command.color.g,
                                                                 command.color.b,
@@ -340,7 +344,7 @@ void CommandBuffer::build() {
                 },
                 [this, &dispatcher](const CopyTextureCommand &command) {
                     const auto extent =
-                        vk::Extent3D { command.source.extent().w, command.source.extent().h, 1 };
+                        vk::Extent3D { command.copy_region.w, command.copy_region.h, 1 };
 
                     const auto src_subresource =
                         vk::ImageSubresourceLayers {}
@@ -373,8 +377,9 @@ void CommandBuffer::build() {
                                                    dispatcher);
                 },
                 [this, &dispatcher](const ResolveTextureCommand &command) {
-                    const auto extent =
-                        vk::Extent3D { command.source.extent().w, command.source.extent().h, 1 };
+                    const auto extent = vk::Extent3D { command.destination.extent().w,
+                                                       command.destination.extent().h,
+                                                       1 };
 
                     const auto src_subresource =
                         vk::ImageSubresourceLayers {}
@@ -405,6 +410,57 @@ void CommandBuffer::build() {
                                                       toVK(command.destination_layout),
                                                       regions,
                                                       dispatcher);
+                },
+                [this, &dispatcher](const BlitTextureCommand &command) {
+                    auto regions = std::vector<vk::ImageBlit> {};
+                    regions.reserve(std::size(command.regions));
+
+                    for (const auto &region : command.regions) {
+                        const auto src_subresource =
+                            vk::ImageSubresourceLayers {}
+                                .setMipLevel(region.source.mip_level)
+                                .setAspectMask(toVK(region.source.aspect_mask))
+                                .setLayerCount(region.source.layer_count)
+                                .setBaseArrayLayer(region.source.base_array_layer);
+                        const auto dst_subresource =
+                            vk::ImageSubresourceLayers {}
+                                .setMipLevel(region.destination.mip_level)
+                                .setAspectMask(toVK(region.destination.aspect_mask))
+                                .setLayerCount(region.destination.layer_count)
+                                .setBaseArrayLayer(region.destination.base_array_layer);
+
+                        auto src_offsets = std::array<vk::Offset3D, 2> {};
+                        src_offsets[0].setX(region.source_offset[0].x);
+                        src_offsets[0].setY(region.source_offset[0].y);
+                        src_offsets[0].setZ(region.source_offset[0].z);
+                        src_offsets[1].setX(region.source_offset[1].x);
+                        src_offsets[1].setY(region.source_offset[1].y);
+                        src_offsets[1].setZ(region.source_offset[1].z);
+
+                        auto dst_offsets = std::array<vk::Offset3D, 2> {};
+                        dst_offsets[0].setX(region.destination_offset[0].x);
+                        dst_offsets[0].setY(region.destination_offset[0].y);
+                        dst_offsets[0].setZ(region.destination_offset[0].z);
+                        dst_offsets[1].setX(region.destination_offset[1].x);
+                        dst_offsets[1].setY(region.destination_offset[1].y);
+                        dst_offsets[1].setZ(region.destination_offset[1].z);
+
+                        const auto vk_region = vk::ImageBlit {}
+                                                   .setSrcSubresource(std::move(src_subresource))
+                                                   .setSrcOffsets(std::move(src_offsets))
+                                                   .setDstSubresource(std::move(dst_subresource))
+                                                   .setDstOffsets(std::move(dst_offsets));
+
+                        regions.emplace_back(std::move(vk_region));
+                    }
+
+                    m_vk_command_buffer->blitImage(command.source,
+                                                   toVK(command.source_layout),
+                                                   command.destination,
+                                                   toVK(command.destination_layout),
+                                                   std::move(regions),
+                                                   toVK(command.filter),
+                                                   dispatcher);
                 },
                 [this, &dispatcher](const TransitionTextureLayoutCommand &command) {
                     const auto src_layout = toVK(command.source_layout);
@@ -450,6 +506,21 @@ void CommandBuffer::build() {
                     }
 
                     m_vk_command_buffer->executeCommands(vk_command_buffers, dispatcher);
+                },
+                [this, &dispatcher](const SetViewportCommand &command) {
+                    auto viewports = std::vector<vk::Viewport> {};
+                    viewports.reserve(std::size(command.viewports));
+
+                    for (const auto &viewport : command.viewports) {
+                        viewports.emplace_back(vk::Viewport { viewport.position.x,
+                                                              viewport.position.y,
+                                                              viewport.extent.w,
+                                                              viewport.extent.h,
+                                                              viewport.depth.x,
+                                                              viewport.depth.y });
+                    }
+
+                    m_vk_command_buffer->setViewport(command.first_viewport, viewports, dispatcher);
                 },
                 [this, &dispatcher](const SetScissorCommand &command) {
                     auto scissors = std::vector<vk::Rect2D> {};

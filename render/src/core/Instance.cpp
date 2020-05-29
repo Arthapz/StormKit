@@ -315,7 +315,7 @@ bool Instance::checkExtensionSupport(const gsl::czstring<> extension) const noex
 
 bool Instance::checkExtensionSupport(core::span<const gsl::czstring<>> extensions) const noexcept {
     auto required_extensions =
-        std::unordered_set<std::string_view> { core::ranges::begin(extensions),
+        storm::core::HashSet<std::string_view> { core::ranges::begin(extensions),
                                                core::ranges::end(extensions) };
 
     for (const auto &extension : m_extensions) required_extensions.erase(extension);

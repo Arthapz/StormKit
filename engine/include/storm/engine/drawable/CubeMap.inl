@@ -7,8 +7,18 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void CubeMap::setTexture(const render::Texture &texture) noexcept {
+    void CubeMap::setTexture(const render::Texture &texture,
+                             render::TextureSubresourceRange subresource_range) noexcept {
+        m_texture = core::makeConstObserver(texture);
+
         auto &instance = static_cast<CubeMapMaterialInstance &>(*m_material_instance);
-        instance.setCubeMap(texture);
+        instance.setCubeMap(texture, std::move(subresource_range));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    const render::Texture &CubeMap::texture() const noexcept {
+        STORM_EXPECTS(m_texture != nullptr);
+        return *m_texture;
     }
 } // namespace storm::engine

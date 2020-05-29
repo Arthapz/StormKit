@@ -107,6 +107,7 @@ namespace storm::engine {
         [[nodiscard]] inline Profiler &profiler() noexcept;
         [[nodiscard]] inline const Profiler &profiler() const noexcept;
 
+        [[nodiscard]] inline float maxAnisotropy() const noexcept;
         [[nodiscard]] inline render::SampleCountFlag maxSampleCount() const noexcept;
 
         FramePassTextureID doInitDebugGUIPasses(FramePassTextureID output, FrameGraph &frame_graph);
@@ -137,6 +138,7 @@ namespace storm::engine {
         ProfilerOwnedPtr m_profiler;
         DebugGUIOwnedPtr m_debug_gui;
 
+        float m_max_anisotropy                     = 1.f;
         render::SampleCountFlag m_max_sample_count = render::SampleCountFlag::C1_BIT;
     };
 } // namespace storm::engine

@@ -9,6 +9,7 @@
 #include <storm/core/Platform.hpp>
 
 /////////// - StormKit::engine - ///////////
+#include <storm/engine/Engine.hpp>
 #include <storm/engine/Fwd.hpp>
 
 #include <storm/engine/material/MaterialInstance.hpp>
@@ -54,19 +55,24 @@ namespace storm::engine {
         PBRMaterialInstance(PBRMaterialInstance &&);
         PBRMaterialInstance &operator=(PBRMaterialInstance &&);
 
-        inline void setAlbedoMap(const render::Texture &map,
-                                 render::Sampler::Settings sampler_settings = {}) noexcept;
-        inline void setNormalMap(const render::Texture &map,
-                                 render::Sampler::Settings sampler_settings = {}) noexcept;
-        inline void setMetallicMap(const render::Texture &map,
-                                   render::Sampler::Settings sampler_settings = {}) noexcept;
-        inline void setRoughnessMap(const render::Texture &map,
-                                    render::Sampler::Settings sampler_settings = {}) noexcept;
-        inline void
-            setAmbiantOcclusionMap(const render::Texture &map,
-                                   render::Sampler::Settings sampler_settings = {}) noexcept;
-        inline void setEmissiveMap(const render::Texture &map,
-                                   render::Sampler::Settings sampler_settings = {});
+        inline void setAlbedoMap(
+            const render::Texture &map,
+            std::optional<render::Sampler::Settings> sampler_settings = std::nullopt) noexcept;
+        inline void setNormalMap(
+            const render::Texture &map,
+            std::optional<render::Sampler::Settings> sampler_settings = std::nullopt) noexcept;
+        inline void setMetallicMap(
+            const render::Texture &map,
+            std::optional<render::Sampler::Settings> sampler_settings = std::nullopt) noexcept;
+        inline void setRoughnessMap(
+            const render::Texture &map,
+            std::optional<render::Sampler::Settings> sampler_settings = std::nullopt) noexcept;
+        inline void setAmbiantOcclusionMap(
+            const render::Texture &map,
+            std::optional<render::Sampler::Settings> sampler_settings = std::nullopt) noexcept;
+        inline void setEmissiveMap(
+            const render::Texture &map,
+            std::optional<render::Sampler::Settings> sampler_settings = std::nullopt) noexcept;
 
         inline void setAlbedoFactor(core::Vector4f factor) noexcept;
         inline void setMetallicFactor(float factor) noexcept;

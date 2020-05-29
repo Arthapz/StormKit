@@ -25,12 +25,12 @@
 
 namespace storm::render {
     struct BeginDebugRegionCommand {
-        std::string_view name;
+        std::string name;
         core::RGBColorF color = core::RGBColorDef::White<float>;
     };
 
     struct InsertDebugLabelCommand {
-        std::string_view name;
+        std::string name;
         core::RGBColorF color = core::RGBColorDef::White<float>;
     };
 
@@ -130,6 +130,8 @@ namespace storm::render {
         const Texture &destination;
         TextureLayout destination_layout;
         TextureSubresourceLayers destination_subresource_layers;
+
+        core::Extentu copy_region;
     };
 
     struct ResolveTextureCommand {
@@ -140,6 +142,26 @@ namespace storm::render {
         const Texture &destination;
         TextureLayout destination_layout;
         TextureSubresourceLayers destination_subresource_layers;
+    };
+
+    struct BlitRegion {
+        TextureSubresourceLayers source;
+        TextureSubresourceLayers destination;
+
+        std::array<core::Offset3u, 2> source_offset;
+        std::array<core::Offset3u, 2> destination_offset;
+    };
+
+    struct BlitTextureCommand {
+        const Texture &source;
+        TextureLayout source_layout;
+
+        const Texture &destination;
+        TextureLayout destination_layout;
+
+        std::vector<BlitRegion> regions;
+
+        Filter filter;
     };
 
     struct TransitionTextureLayoutCommand {
@@ -163,6 +185,11 @@ namespace storm::render {
         MemoryBarriers memory_barriers;
         BufferMemoryBarriers buffer_memory_barriers;
         ImageMemoryBarriers image_memory_barriers;
+    };
+
+    struct SetViewportCommand {
+        core::UInt32 first_viewport;
+        std::vector<Viewport> viewports;
     };
 
     struct SetScissorCommand {
@@ -194,8 +221,10 @@ namespace storm::render {
                                  CopyBufferToTextureCommand,
                                  CopyTextureCommand,
                                  ResolveTextureCommand,
+                                 BlitTextureCommand,
                                  TransitionTextureLayoutCommand,
                                  ExecuteSubCommandBuffersCommand,
+                                 SetViewportCommand,
                                  SetScissorCommand,
                                  PipelineBarrierCommand,
                                  PushConstantsCommand>;

@@ -18,20 +18,24 @@ layout(set = 0, binding = 0, std140) uniform Camera {
     mat4 view;
 } camera;
 
-layout(set = 1, binding = 0, std140) uniform Transform {
+layout(set = 2, binding = 0, std140) uniform Transform {
     mat4 model;
     mat4 inverted_model;
 } transform;
+
+layout(set = 3, binding = 0, std140) uniform MeshData {
+    mat4 matrix;
+} mesh_data;
 
 out gl_PerVertex  {
     vec4 gl_Position;
 };
 
 void main() {
-    vec4 model_space_position = transform.model * vec4(vertex_position, 1.f);
+    vec4 model_space_position = transform.model * mesh_data.matrix * vec4(vertex_position, 1.f);
 
     out_position = model_space_position.xyz / model_space_position.w;
-    out_normal   = normalize(transpose(inverse(mat3(transform.model))) * vertex_normal);
+    out_normal   = normalize(transpose(inverse(mat3(transform.model * mesh_data.matrix))) * vertex_normal);
     out_texcoord = vertex_texcoord;
     out_tangent  = vertex_tangent;
 

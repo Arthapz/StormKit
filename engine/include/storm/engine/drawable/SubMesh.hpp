@@ -32,6 +32,9 @@ namespace storm::engine {
         SubMesh(SubMesh &&);
         SubMesh &operator=(SubMesh &&);
 
+        inline void setMatrix(core::Matrixf matrix) noexcept;
+        [[nodiscard]] const core::Matrixf &matrix() const noexcept;
+
         [[nodiscard]] inline MaterialInstance &materialInstance() noexcept;
         [[nodiscard]] inline const MaterialInstance &materialInstance() const noexcept;
 
@@ -51,6 +54,8 @@ namespace storm::engine {
         MeshObserverPtr m_parent_mesh;
 
         MaterialInstanceOwnedPtr m_material_instance;
+
+        core::Matrixf m_matrix = core::Matrixf { 1.f };
 
         core::UInt32 m_vertex_count = 0u;
         core::UInt32 m_first_index  = 0u;

@@ -63,7 +63,9 @@ namespace storm::engine {
         inline void addShader(const render::Shader &shader);
 
         /* instance based data */
-        inline void addSampler(Binding binding, std::string name);
+        inline void addSampler(Binding binding,
+                               std::string name,
+                               render::TextureViewType = render::TextureViewType::T2D);
         inline void addUniform(std::string name, UniformType type);
 
         void finalize() noexcept;
@@ -78,7 +80,12 @@ namespace storm::engine {
         struct MaterialData {
             render::GraphicsPipelineShaderState shader_state;
 
-            std::vector<std::pair<Binding, std::string>> samplers;
+            struct Sampler {
+                std::string name;
+                render::TextureViewType type;
+            };
+
+            std::vector<std::pair<Binding, Sampler>> samplers;
             std::vector<std::pair<std::string, UniformType>> uniforms;
         } m_data;
 

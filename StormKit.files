@@ -96,6 +96,7 @@ core/include/storm/core/Execution.hpp
 core/include/storm/core/Flags.hpp
 core/include/storm/core/Fwd.hpp
 core/include/storm/core/Hash.hpp
+core/include/storm/core/HashMap.hpp
 core/include/storm/core/Math.hpp
 core/include/storm/core/Memory.hpp
 core/include/storm/core/NamedType.hpp
@@ -215,6 +216,8 @@ engine/include/storm/engine/scene/Camera.inl
 engine/include/storm/engine/scene/FPSCamera.hpp
 engine/include/storm/engine/scene/FPSCamera.inl
 engine/include/storm/engine/scene/Fwd.hpp
+engine/include/storm/engine/scene/PBRScene.hpp
+engine/include/storm/engine/scene/PBRScene.inl
 engine/include/storm/engine/scene/Scene.hpp
 engine/include/storm/engine/scene/Scene.inl
 engine/meson.build
@@ -237,6 +240,11 @@ engine/samples/PostFX/src/main.cpp
 engine/samples/meson.build
 engine/shaders/CubeMap.frag.glsl
 engine/shaders/CubeMap.vert.glsl
+engine/shaders/FilterCubeMap.vert.glsl
+engine/shaders/GenBRDF.frag.glsl
+engine/shaders/GenBRDF.vert.glsl
+engine/shaders/GenIrradienceCubeMap.frag.glsl
+engine/shaders/GenPrefilteredEnvCubeMap.frag.glsl
 engine/shaders/PBRColorPass.frag.glsl
 engine/shaders/PBRColorPass.vert.glsl
 engine/src/Engine.cpp
@@ -291,6 +299,7 @@ engine/src/mesh/StaticMeshRenderSystem.cpp
 engine/src/mesh/StaticSubMesh.cpp
 engine/src/scene/Camera.cpp
 engine/src/scene/FPSCamera.cpp
+engine/src/scene/PBRScene.cpp
 engine/src/scene/Scene.cpp
 engine/src/stb_image.c
 engine/src/stb_image_write.c
@@ -313,6 +322,8 @@ image/src/Image.cpp
 image/src/private/ImageData.hpp
 image/src/private/ImageLoader.cpp
 image/src/private/ImageLoader.hpp
+image/src/private/stb_image.c
+image/src/private/stb_image.h
 log/examples/console_logger/src/main.cpp
 log/examples/file_logger/src/main.cpp
 log/include/storm/log/ConsoleLogger.hpp

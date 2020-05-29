@@ -27,6 +27,11 @@ shader_files = shader_compiler.process(
     'shaders/PBRColorPass.frag.glsl',
     'shaders/CubeMap.vert.glsl',
     'shaders/CubeMap.frag.glsl',
+    'shaders/FilterCubeMap.vert.glsl',
+    'shaders/GenIrradienceCubeMap.frag.glsl',
+    'shaders/GenPrefilteredEnvCubeMap.frag.glsl',
+    'shaders/GenBRDF.frag.glsl',
+    'shaders/GenBRDF.vert.glsl',
 )
 
 base_headers = files([
@@ -80,12 +85,14 @@ scene_headers = files([
     'include/storm/engine/scene/Camera.hpp',
     'include/storm/engine/scene/FPSCamera.hpp',
     'include/storm/engine/scene/Scene.hpp',
+    'include/storm/engine/scene/PBRScene.hpp',
 ])
 
 scene_inls = files([
     'include/storm/engine/scene/Camera.inl',
     'include/storm/engine/scene/FPSCamera.inl',
     'include/storm/engine/scene/Scene.inl',
+    'include/storm/engine/scene/PBRScene.inl',
 ])
 
 drawable_headers = files([
@@ -163,6 +170,7 @@ sources = files([
     'src/scene/Camera.cpp',
     'src/scene/FPSCamera.cpp',
     'src/scene/Scene.cpp',
+    'src/scene/PBRScene.cpp',
 
     'src/drawable/Drawable.cpp',
     'src/drawable/Mesh.cpp',

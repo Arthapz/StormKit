@@ -10,9 +10,8 @@
  * @version 0.1
  **/
 
-#include <unordered_map>
-
 #include <storm/core/Assert.hpp>
+#include <storm/core/HashMap.hpp>
 #include <storm/core/NonCopyable.hpp>
 
 namespace storm::core {
@@ -43,7 +42,7 @@ namespace storm::core {
         void clear();
 
       private:
-        using Map = std::unordered_map<Key, Value>;
+        using Map = storm::core::HashMap<Key, Value>;
 
         inline auto getIt(const Key &key) noexcept;
         inline auto getIt(const Key &key) const noexcept;

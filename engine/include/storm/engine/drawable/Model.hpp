@@ -55,6 +55,8 @@ namespace storm::engine {
 
                 std::vector<std::pair<std::string_view, render::TextureConstObserverPtr>> samplers;
                 std::vector<std::pair<std::string_view, core::ByteArray>> datas;
+
+                bool double_sided = false;
             };
             render::VertexInputAttributeDescriptionArray attributes;
             render::VertexBindingDescriptionArray bindings;

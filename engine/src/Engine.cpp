@@ -42,6 +42,14 @@ static constexpr auto initTransformLayout =
     layout->bake();
 };
 
+static constexpr auto initMeshLayout = [](const render::Device &device,
+                                          render::DescriptorSetLayoutOwnedPtr &layout) -> void {
+    layout = device.createDescriptorSetLayoutPtr();
+    layout->addBinding(
+        { 0, render::DescriptorType::Uniform_Buffer_Dynamic, render::ShaderStage::Vertex, 1 });
+    layout->bake();
+};
+
 static constexpr auto initCameraLayout = [](const render::Device &device,
                                             render::DescriptorSetLayoutOwnedPtr &layout) -> void {
     layout = device.createDescriptorSetLayoutPtr();
@@ -113,8 +121,14 @@ Engine::Engine(const window::Window &window, std::string app_name) {
     m_profiler  = std::make_unique<Profiler>(*this);
     m_debug_gui = std::make_unique<DebugGUI>(*this);
 
-    auto count = m_device->physicalDevice().capabilities().limits.framebuffer_color_sample_counts;
-    count &= m_device->physicalDevice().capabilities().limits.framebuffer_depth_sample_counts;
+    const auto &limits   = physical_device.capabilities().limits;
+    const auto &features = physical_device.capabilities().features;
+
+    auto count = limits.framebuffer_color_sample_counts;
+    count &= limits.framebuffer_depth_sample_counts;
+
+    if (features.sampler_anisotropy)
+        m_max_anisotropy = m_device->physicalDevice().capabilities().limits.max_sampler_anisotropy;
 
     if ((count & render::SampleCountFlag::C2_BIT) == render::SampleCountFlag::C2_BIT)
         m_max_sample_count = render::SampleCountFlag::C2_BIT;
@@ -131,6 +145,7 @@ Engine::Engine(const window::Window &window, std::string app_name) {
 
     Camera::initDescriptorLayout(*m_device, initCameraLayout);
     Transform::initDescriptorLayout(*m_device, initTransformLayout);
+    Mesh::initDescriptorLayout(*m_device, initMeshLayout);
 }
 
 ////////////////////////////////////////
@@ -139,6 +154,10 @@ Engine::~Engine() {
     m_device->waitIdle();
 
     m_framegraphs.clear();
+
+    Mesh::destroyDescriptorLayout();
+    Transform::destroyDescriptorLayout();
+    Camera::destroyDescriptorLayout();
 }
 
 ////////////////////////////////////////

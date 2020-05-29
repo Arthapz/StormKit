@@ -163,98 +163,193 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::Quaternionf Transform::orientation() const noexcept { return m_yaw * m_pitch * m_roll; }
+    void Transform::scale(const core::Vector3f &scale) noexcept {
+        scaleX(scale.x);
+        scaleY(scale.y);
+        scaleZ(scale.z);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void Transform::scale(const core::Vector2f &scale) noexcept {
+        scaleX(scale.x);
+        scaleY(scale.y);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void Transform::scale(float x_scale, float y_scale, float z_scale) noexcept {
+        scaleX(x_scale);
+        scaleY(y_scale);
+        scaleZ(z_scale);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void Transform::scaleX(float scale) noexcept {
+        m_scale.x += scale;
+
+        m_is_updated = true;
+        m_dirty      = true;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void Transform::scaleY(float scale) noexcept {
+        m_scale.y += scale;
+
+        m_is_updated = true;
+        m_dirty      = true;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void Transform::scaleZ(float scale) noexcept {
+        m_scale.z += scale;
+
+        m_is_updated = true;
+        m_dirty      = true;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    const core::Quaternionf &Transform::orientation() const noexcept {
+        if (m_orientation_dirty) {
+            recomputeOrientation();
+            m_orientation_dirty = false;
+        }
+
+        return m_orientation;
+    }
+    /////////////////////////////////////
+    /////////////////////////////////////
+    const core::Vector3f &Transform::orientationEuler() const noexcept {
+        return m_orientation_euler;
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
     void Transform::setOrientation(const core::Vector3f &orientation) noexcept {
-        setYaw(orientation.x);
-        setPitch(orientation.y);
+        setPitch(orientation.x);
+        setYaw(orientation.y);
         setRoll(orientation.z);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    void Transform::setOrientation(float yaw, float pitch, float roll) noexcept {
-        setYaw(yaw);
+    void Transform::setOrientation(const core::Vector2f &orientation) noexcept {
+        setPitch(orientation.x);
+        setYaw(orientation.y);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void Transform::setOrientation(float pitch, float yaw, float roll) noexcept {
         setPitch(pitch);
+        setYaw(yaw);
         setRoll(roll);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     void Transform::setYaw(float yaw) noexcept {
-        m_yaw = core::angleAxis(core::radians(yaw), core::Vector3f { 1.f, 0.f, 0.f });
+        m_orientation_euler.y = yaw;
 
-        m_is_updated = true;
-        m_dirty      = true;
+        m_is_updated        = true;
+        m_dirty             = true;
+        m_orientation_dirty = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     void Transform::setPitch(float pitch) noexcept {
-        m_pitch = core::angleAxis(core::radians(pitch), core::Vector3f { 0.f, 1.f, 0.f });
+        m_orientation_euler.x = pitch;
 
-        m_is_updated = true;
-        m_dirty      = true;
+        m_is_updated        = true;
+        m_dirty             = true;
+        m_orientation_dirty = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     void Transform::setRoll(float roll) noexcept {
-        m_roll = core::angleAxis(core::radians(roll), core::Vector3f { 0.f, 0.f, 1.f });
+        m_orientation_euler.z = roll;
 
-        m_is_updated = true;
-        m_dirty      = true;
+        m_is_updated        = true;
+        m_dirty             = true;
+        m_orientation_dirty = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     void Transform::rotate(const core::Vector3f &rotation) noexcept {
-        rotateYaw(rotation.x);
-        rotatePitch(rotation.y);
+        rotatePitch(rotation.x);
+        rotateYaw(rotation.y);
         rotateRoll(rotation.z);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    void Transform::rotateYaw(float yaw) noexcept {
-        m_yaw = core::rotate(m_yaw, core::radians(yaw), core::Vector3f { 1.f, 0.f, 0.f });
+    void Transform::rotate(const core::Vector2f &rotation) noexcept {
+        rotatePitch(rotation.x);
+        rotateYaw(rotation.y);
+    }
 
-        m_is_updated = true;
-        m_dirty      = true;
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void Transform::rotate(float pitch, float yaw, float roll) noexcept {
+        rotatePitch(pitch);
+        rotateYaw(yaw);
+        rotateRoll(roll);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void Transform::rotateYaw(float yaw) noexcept {
+        m_orientation_euler.y += yaw;
+
+        m_is_updated        = true;
+        m_dirty             = true;
+        m_orientation_dirty = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     void Transform::rotatePitch(float pitch) noexcept {
-        m_pitch = core::rotate(m_pitch, core::radians(pitch), core::Vector3f { 0.f, 1.f, 0.f });
+        m_orientation_euler.x += pitch;
 
-        m_is_updated = true;
-        m_dirty      = true;
+        m_is_updated        = true;
+        m_dirty             = true;
+        m_orientation_dirty = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     void Transform::rotateRoll(float roll) noexcept {
-        m_roll = core::rotate(m_roll, core::radians(roll), core::Vector3f { 0.f, 0.f, 1.f });
+        m_orientation_euler.z += roll;
 
-        m_is_updated = true;
-        m_dirty      = true;
+        m_is_updated        = true;
+        m_dirty             = true;
+        m_orientation_dirty = true;
     }
 
-    void Transform::setMatrix(core::Matrixf matrix) noexcept {
-        m_premultiplicative_matrix = std::move(matrix);
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void Transform::setMatrix(const core::Matrixf &matrix) noexcept {
+        extract(matrix);
 
-        m_is_updated = true;
-        m_dirty      = true;
+        m_is_updated        = true;
+        m_dirty             = true;
+        m_orientation_dirty = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     const core::Matrixf &Transform::matrix() const noexcept {
-        if (m_is_updated) recomputeMatrix();
-        m_is_updated = false;
+        if (m_is_updated) {
+            recomputeMatrix();
+            m_is_updated = false;
+        }
 
         return m_transform_matrix;
     }

@@ -31,6 +31,7 @@ Camera::Camera(const Engine &engine, Type type, core::Extentf viewport)
                                                            device,
                                                            render::HardwareBufferUsage::Uniform,
                                                            sizeof(CameraData));
+    device.setObjectName(m_camera_buffer->buffer(), "StormKit:CameraBuffer");
 
     const auto descriptor =
         render::BufferDescriptor { .type    = render::DescriptorType::Uniform_Buffer_Dynamic,
@@ -42,6 +43,8 @@ Camera::Camera(const Engine &engine, Type type, core::Extentf viewport)
         render::DescriptorStaticArray<1> { render::Descriptor { std::move(descriptor) } };
 
     m_descriptor_sets = pool.allocateDescriptorSetsPtr(1, descriptorLayout());
+
+    for (auto &set : m_descriptor_sets) device.setObjectName(*set, "StormKit:CameraDescriptorSet");
 
     descriptorSet().update(descriptors);
 

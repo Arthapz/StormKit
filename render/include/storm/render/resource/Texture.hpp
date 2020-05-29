@@ -33,45 +33,40 @@ namespace storm::render {
         Texture(Texture &&);
         Texture &operator=(Texture &&);
 
-        void loadFromImage(image::Image &image,
-                           PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
-                           SampleCountFlag samples    = SampleCountFlag::C1_BIT,
-                           core::UInt32 mip_levels    = 1,
-                           TextureUsage usage         = TextureUsage::Sampled |
-                                                TextureUsage::Transfert_Dst);
+        struct LoadOperation {
+            bool generate_mip_map      = false;
+            PixelFormat storage_format = PixelFormat::RGBA8_UNorm;
+            SampleCountFlag samples    = SampleCountFlag::C1_BIT;
+            core::UInt32 mip_levels    = 1;
+            TextureUsage usage =
+                TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src;
+        };
+
+        struct CreateOperation {
+            SampleCountFlag samples = SampleCountFlag::C1_BIT;
+            core::UInt32 mip_levels = 1;
+            core::UInt32 layers     = 1;
+            TextureUsage usage =
+                TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src;
+        };
+
+        void loadFromKTX(const std::filesystem::path &filepath);
+        void loadFromImage(image::Image &image, LoadOperation op = {});
 
         void loadLayersFromImages(std::vector<image::ImageConstObserverPtr> data,
                                   core::Extentu layer_extent,
-                                  render::PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
-                                  SampleCountFlag samples            = SampleCountFlag::C1_BIT,
-                                  core::UInt32 mip_levels            = 1,
-                                  TextureUsage usage                 = TextureUsage::Sampled |
-                                                       TextureUsage::Transfert_Dst);
+                                  LoadOperation op = {});
 
         void loadFromMemory(core::ByteConstSpan data,
                             core::Extentu extent,
                             PixelFormat load_format,
-                            PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
-                            SampleCountFlag samples    = SampleCountFlag::C1_BIT,
-                            core::UInt32 mip_levels    = 1,
-                            TextureUsage usage         = TextureUsage::Sampled |
-                                                 TextureUsage::Transfert_Dst);
+                            LoadOperation op = {});
 
         void loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
                                   core::Extentu layer_extent,
-                                  render::PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
-                                  SampleCountFlag samples            = SampleCountFlag::C1_BIT,
-                                  core::UInt32 mip_levels            = 1,
-                                  TextureUsage usage                 = TextureUsage::Sampled |
-                                                       TextureUsage::Transfert_Dst);
+                                  LoadOperation op = {});
 
-        void createTextureData(core::Extentu extent,
-                               PixelFormat format,
-                               SampleCountFlag samples = SampleCountFlag::C1_BIT,
-                               core::UInt32 mip_levels = 1,
-                               core::UInt32 layers     = 1,
-                               TextureUsage usage      = TextureUsage::Sampled |
-                                                    TextureUsage::Transfert_Dst);
+        void createTextureData(core::Extentu extent, PixelFormat format, CreateOperation op = {});
 
         TextureView createView(TextureViewType type                      = TextureViewType::T2D,
                                TextureSubresourceRange subresource_range = {}) const noexcept;
@@ -93,6 +88,10 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
+        void generateMipmap(render::CommandBuffer &cmb,
+                            core::UInt32 mip_level,
+                            core::UInt32 base_array_layer = 0u);
+
         DeviceConstObserverPtr m_device;
 
         core::Extentu m_extent = { { 0 }, { 0 } };

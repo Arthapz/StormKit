@@ -75,4 +75,15 @@ namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     SubMeshConstSpan Mesh::subMeshes() const noexcept { return m_submeshes; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void Mesh::setMatrix(core::Matrixf matrix) noexcept {
+        m_matrix       = std::move(matrix);
+        m_matrix_dirty = true;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    const core::Matrixf &Mesh::matrix() const noexcept { return m_matrix; }
 } // namespace storm::engine

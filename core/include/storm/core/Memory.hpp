@@ -329,11 +329,11 @@ namespace storm::core {
         return core::span<const T> { reinterpret_cast<const T *>(&data), sizeof(V) };
     }
 
-#define DECLARE_ARRAYS_(x)                   \
-    using x##Array = std::vector<x>;         \
-    template<storm::core::ArraySize S>              \
-    using x##StaticArray = std::array<x, S>; \
-    using x##Span        = storm::core::span<x>;    \
+#define DECLARE_ARRAYS_(x)                       \
+    using x##Array = std::vector<x>;             \
+    template<storm::core::ArraySize S>           \
+    using x##StaticArray = std::array<x, S>;     \
+    using x##Span        = storm::core::span<x>; \
     using x##ConstSpan   = storm::core::span<const x>;
 
 #define DECLARE_PTR_AND_REF_(x)                                  \

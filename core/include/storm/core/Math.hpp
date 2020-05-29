@@ -14,8 +14,8 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_FORCE_RIGHT_HANDED
 
+#include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/hash.hpp>
@@ -133,7 +133,53 @@ namespace storm::core {
     using Extentf = ExtentBase<float>;
 
     inline std::string to_string(const storm::core::Extentu &extent) {
-        return fmt::format("Extent { width: %{1}, height: %{2} }", extent.width, extent.height);
+        return fmt::format("Extent { width: %{1}, height: %{2}, depth: %{3} }",
+                           extent.width,
+                           extent.height,
+                           extent.depth);
+    }
+
+    template<typename T>
+    struct OffsetBase {
+        using value_type = T;
+
+        T x;
+        T y;
+        T z;
+
+        inline bool operator==(const OffsetBase<T> &other) const noexcept {
+            if constexpr (std::is_floating_point_v<T>)
+                return realIsEqual(x, other.x) && realIsEqual(y, other.y) &&
+                       realIsEqual(z, other.z);
+            else
+                return x == other.x && y == other.y && z == other.z;
+        }
+
+        inline bool operator!=(const OffsetBase<T> &other) const noexcept {
+            return !operator==(other);
+        }
+
+        inline OffsetBase<T> operator*(T factor) const noexcept {
+            return { .x = x * factor, .y = y * factor, .z = z * factor };
+        }
+        inline OffsetBase<T> operator/(T factor) const noexcept {
+            return { .x = x / factor, .y = y / factor, .z = z / factor };
+        }
+
+        template<typename U>
+        inline U convertTo() const noexcept {
+            return { static_cast<typename U::value_type>(x),
+                     static_cast<typename U::value_type>(y),
+                     static_cast<typename U::value_type>(z) };
+        }
+    };
+
+    using Offset3i = OffsetBase<core::Int32>;
+    using Offset3u = OffsetBase<core::UInt32>;
+    using Offset3f = OffsetBase<float>;
+
+    inline std::string to_string(const storm::core::Offset3u &offset) {
+        return fmt::format("Offset { x: %{1}, y: %{2}, z: %{3} }", offset.x, offset.y, offset.z);
     }
 } // namespace storm::core
 

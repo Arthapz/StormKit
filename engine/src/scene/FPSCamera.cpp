@@ -45,32 +45,37 @@ void FPSCamera::update(float delta) noexcept {
 
     const auto rotation_speed = delta * m_rotation_speed;
     if ((m_inputs.mouse_updated || first_iteration) && !m_inputs.mouse_ignore) {
-        auto x_offset = m_inputs.x_mouse - m_last_x_mouse;
-        auto y_offset = m_last_y_mouse - m_inputs.y_mouse;
+        const auto dx = m_last_x_mouse - m_inputs.x_mouse;
+        const auto dy = m_last_y_mouse - m_inputs.y_mouse;
 
-        x_offset *= rotation_speed.x;
-        y_offset *= rotation_speed.y;
-
-        m_orientation.x += x_offset;
-        m_orientation.y += y_offset;
-
-        m_orientation.y = std::min(m_orientation.y, 89.f);
-        m_orientation.y = std::max(m_orientation.y, -89.f);
+        m_orientation.x += -dy * rotation_speed.y;
+        m_orientation.y += -dx * rotation_speed.x;
     }
 
     auto front = core::Vector3f {};
-    front.x    = sin(radians(m_orientation.x)) * cos(radians(m_orientation.y));
-    front.y    = sin(radians(m_orientation.y));
+    front.x    = -cos(radians(m_orientation.x)) * sin(radians(m_orientation.y));
+    front.y    = sin(radians(m_orientation.x));
     front.z    = cos(radians(m_orientation.x)) * cos(radians(m_orientation.y));
     m_front    = core::normalize(front);
 
     const auto move_speed = delta * m_move_speed;
     if (m_inputs.up) m_position += front * move_speed;
     if (m_inputs.down) m_position -= front * move_speed;
-    if (m_inputs.right) m_position += core::normalize(core::cross(m_front, m_up)) * move_speed;
     if (m_inputs.left) m_position -= core::normalize(core::cross(m_front, m_up)) * move_speed;
+    if (m_inputs.right) m_position += core::normalize(core::cross(m_front, m_up)) * move_speed;
 
-    m_view_matrix = storm::core::lookAt(m_position, m_position + m_front, m_up);
+    const auto rotation_matrix = [this]() {
+        auto mat = core::Matrixf { 1.f };
+
+        mat = core::rotate(mat, core::radians(m_orientation.x), core::vec3(1.f, 0.f, 0.f));
+        mat = core::rotate(mat, core::radians(m_orientation.y), core::vec3(0.f, 1.f, 0.f));
+        mat = core::rotate(mat, core::radians(m_orientation.z), core::vec3(0.f, 0.f, 1.f));
+
+        return mat;
+    }();
+    const auto translation_matrix = core::translate(core::Matrixf { 1.f }, m_position);
+
+    m_view_matrix = rotation_matrix * translation_matrix;
 
     m_last_x_mouse = m_inputs.x_mouse;
     m_last_y_mouse = m_inputs.y_mouse;

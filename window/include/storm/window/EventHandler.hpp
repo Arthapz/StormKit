@@ -5,10 +5,10 @@
 #pragma once
 
 /////////// - STL - ///////////
-#include <unordered_map>
 #include <vector>
 
 /////////// - StormKit::core - ///////////
+#include <storm/core/HashMap.hpp>
 #include <storm/core/Platform.hpp>
 
 /////////// - StormKit::window - ///////////
@@ -36,7 +36,7 @@ namespace storm::window {
       private:
         WindowObserverPtr m_window;
 
-        std::unordered_map<EventType, std::vector<Callback>> m_callback;
+        storm::core::HashMap<EventType, std::vector<Callback>> m_callback;
     };
 } // namespace storm::window
 

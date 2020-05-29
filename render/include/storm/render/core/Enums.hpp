@@ -7,6 +7,7 @@
 #include <cstdint>
 
 #include <storm/core/Flags.hpp>
+#include <storm/core/HashMap.hpp>
 #include <storm/core/Strings.hpp>
 
 #include <storm/render/core/Vulkan.hpp>
@@ -474,6 +475,18 @@ namespace storm::render {
         By_Region    = 1,
         Device_Group = 2,
         View_Local   = 4
+    };
+
+    enum class DynamicState : core::UInt8 {
+        Viewport             = 0,
+        Scissor              = 1,
+        Line_Width           = 2,
+        Depth_Bias           = 3,
+        Blend_Constants      = 4,
+        Depth_Bounds         = 5,
+        Stencil_Compare_Mask = 6,
+        Stencil_Write_Mask   = 7,
+        Stencil_Reference    = 8
     };
 
     constexpr inline bool isDepthOnlyFormat(PixelFormat format) noexcept {

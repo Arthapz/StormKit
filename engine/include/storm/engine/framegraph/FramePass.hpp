@@ -20,6 +20,10 @@ namespace storm::engine {
     class STORM_PUBLIC FramePassBase: public core::NonCopyable {
       public:
         enum class PassType { Graphics, Compute };
+
+        using PreExecuteCallback  = std::function<void(render::CommandBuffer &)>;
+        using PostExecuteCallback = std::function<void(render::CommandBuffer &)>;
+
         explicit FramePassBase(std::string name, core::UInt32 id, PassType type) noexcept;
         virtual ~FramePassBase() = 0;
 
@@ -29,22 +33,27 @@ namespace storm::engine {
         virtual void setup(FramePassBuilder &builder)                                         = 0;
         virtual void execute(const FramePassResources &resources, render::CommandBuffer &cmb) = 0;
 
-        inline std::string_view name() const noexcept;
-        inline core::UInt32 id() const noexcept;
+        [[nodiscard]] inline std::string_view name() const noexcept;
+        [[nodiscard]] inline core::UInt32 id() const noexcept;
+        [[nodiscard]] inline PassType type() const noexcept;
 
-        inline PassType type() const noexcept;
-
-        inline FramePassResourceHandleConstSpan creates() const noexcept;
-        inline FramePassResourceHandleConstSpan reads() const noexcept;
-        inline FramePassResourceHandleConstSpan writes() const noexcept;
-        inline FramePassResourceHandleConstSpan samples() const noexcept;
-        inline FramePassResourceHandleConstSpan resolves() const noexcept;
+        [[nodiscard]] inline FramePassResourceHandleConstSpan creates() const noexcept;
+        [[nodiscard]] inline FramePassResourceHandleConstSpan reads() const noexcept;
+        [[nodiscard]] inline FramePassResourceHandleConstSpan writes() const noexcept;
+        [[nodiscard]] inline FramePassResourceHandleConstSpan samples() const noexcept;
+        [[nodiscard]] inline FramePassResourceHandleConstSpan resolves() const noexcept;
 
         inline void setCullImune(bool imune) noexcept;
         inline bool isCullImune() const noexcept;
 
+        inline void setPreExecuteCallback(PreExecuteCallback callback);
+        [[nodiscard]] inline const PreExecuteCallback &preExecuteCallback() const noexcept;
+
+        inline void setPostExecuteCallback(PreExecuteCallback callback);
+        [[nodiscard]] inline const PostExecuteCallback &postExecuteCallback() const noexcept;
+
         inline void useSubCommandBuffer(bool use) noexcept;
-        inline bool isUsingSubCommandBuffer() const noexcept;
+        [[nodiscard]] inline bool isUsingSubCommandBuffer() const noexcept;
 
       private:
         std::string m_name;
@@ -56,6 +65,9 @@ namespace storm::engine {
         FramePassResourceHandleArray m_writes;
         FramePassResourceHandleArray m_samples;
         FramePassResourceHandleArray m_resolves;
+
+        PreExecuteCallback m_pre_execute_callback   = []([[maybe_unused]] auto &) {};
+        PostExecuteCallback m_post_execute_callback = []([[maybe_unused]] auto &) {};
 
         core::UInt32 m_ref_count = 0u;
 
@@ -87,8 +99,8 @@ namespace storm::engine {
         void setup(FramePassBuilder &builder) override;
         void execute(const FramePassResources &resources, render::CommandBuffer &cmb) override;
 
-        inline PassData &data() noexcept;
-        inline const PassData &data() const noexcept;
+        [[nodiscard]] inline PassData &data() noexcept;
+        [[nodiscard]] inline const PassData &data() const noexcept;
 
       private:
         PassData m_data;

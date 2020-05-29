@@ -75,10 +75,11 @@ void Material::finalize() noexcept {
 
     core::hash_combine(m_hash, m_data.shader_state);
 
-    for (const auto &[binding, name] : m_data.samplers) {
+    for (const auto &[binding, sampler] : m_data.samplers) {
         auto hash = core::Hash64 { 0u };
         core::hash_combine(hash, binding);
-        core::hash_combine(hash, name);
+        core::hash_combine(hash, sampler.name);
+        core::hash_combine(hash, sampler.type);
 
         core::hash_combine(m_hash, hash);
     }

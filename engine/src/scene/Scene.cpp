@@ -11,46 +11,29 @@
 #include <storm/engine/scene/Camera.hpp>
 #include <storm/engine/scene/Scene.hpp>
 
-#include <storm/engine/material/CubeMapMaterial.hpp>
-#include <storm/engine/material/PBRMaterial.hpp>
-
 using namespace storm;
 using namespace storm::engine;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 Scene::Scene(Engine &engine) : m_engine { &engine } {
-    auto &device = m_engine->device();
-
     m_default_camera =
         std::make_unique<Camera>(engine,
                                  Camera::Type::Perspective,
                                  m_engine->surface().extent().convertTo<core::Extentf>());
     m_camera = core::makeObserver(m_default_camera);
 
-    auto &texture = m_texture_pool.create("BlankTexture",
-                                          device,
-                                          render::TextureType::T2D,
-                                          render::TextureCreateFlag::None);
-
-    auto image = std::vector<float> { 1.f, 1.f, 1.f, 1.f };
-
-    texture.loadFromMemory({ reinterpret_cast<const std::byte *>(std::data(image)),
-                             std::size(image) },
-                           { 1, 1 },
-                           render::PixelFormat::RGBA8_UNorm);
-
     const auto &extent = m_engine->surface().extent();
 
+    auto viewport_extent = extent.convertTo<core::Extentf>();
+    viewport_extent.h    = -viewport_extent.h;
+
     m_pipeline_state.viewport_state.viewports =
-        std::vector { render::Viewport { .position = { 0, 0 },
-                                         .extent   = extent.convertTo<core::Extentf>(),
+        std::vector { render::Viewport { .position = { 0, extent.h },
+                                         .extent   = viewport_extent,
                                          .depth    = { 0.f, 1.f } } };
     m_pipeline_state.viewport_state.scissors =
         std::vector { render::Scissor { .offset = { 0, 0 }, .extent = extent } };
-
-    materialPool().create(DEFAULT_PBR_MATERIAL_NAME, std::make_unique<PBRMaterial>(*this));
-    materialPool().create(CUBEMAP_MATERIAL_NAME, std::make_unique<CubeMapMaterial>(*this));
 }
 
 ////////////////////////////////////////

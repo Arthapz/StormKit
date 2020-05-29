@@ -2,6 +2,7 @@
 #include <storm/render/core/CommandBuffer.hpp>
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/Queue.hpp>
+#include <storm/render/core/Surface.hpp>
 
 #include <storm/render/sync/Fence.hpp>
 
@@ -16,14 +17,33 @@ using namespace storm::engine;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-Mesh::Mesh(Engine &engine, const Material &material)
-    : Drawable { engine }, m_material { &material } {
-    auto &device      = m_engine->device();
-    const auto &queue = [&device]() -> const render::Queue & {
+Mesh::Mesh(Engine &engine, const Material &material, std::string name)
+    : Drawable { engine }, m_name { std::move(name) }, m_material { &material } {
+    const auto buffering_count = m_engine->surface().bufferingCount();
+    auto &device               = m_engine->device();
+    const auto &pool           = m_engine->descriptorPool();
+    const auto &queue          = [&device]() -> const render::Queue & {
         if (device.hasAsyncTransfertQueue()) return device.asyncTransfertQueue();
 
         return device.graphicsQueue();
     }();
+
+    m_mesh_data_buffer = std::make_unique<RingHardwareBuffer>(buffering_count,
+                                                              device,
+                                                              render::HardwareBufferUsage::Uniform,
+                                                              sizeof(core::Matrixf));
+
+    const auto descriptor =
+        render::BufferDescriptor { .type    = render::DescriptorType::Uniform_Buffer_Dynamic,
+                                   .binding = 0u,
+                                   .buffer  = core::makeConstObserver(m_mesh_data_buffer->buffer()),
+                                   .range   = sizeof(core::Matrixf),
+                                   .offset  = 0u };
+    const auto descriptors =
+        render::DescriptorStaticArray<1> { render::Descriptor { std::move(descriptor) } };
+
+    m_descriptor_sets = pool.allocateDescriptorSetsPtr(1, descriptorLayout());
+    descriptorSet().update(descriptors);
 
     m_update_cmb = queue.createCommandBufferPtr();
 
@@ -54,6 +74,7 @@ void Mesh::setVertexArray(VertexArray array,
     m_vertex_buffer = device.createVertexBufferPtr(std::size(m_vertex_array) * sizeof(float),
                                                    render::MemoryProperty::Device_Local,
                                                    true);
+    device.setObjectName(*m_vertex_buffer, fmt::format("{}:VertexArray", m_name));
 
     m_attributes = std::move(attributes);
     m_bindings   = std::move(bindings);
@@ -80,6 +101,7 @@ void Mesh::setIndexArray(IndexArrayProxy array) {
             m_index_buffer = device.createIndexBufferPtr(buffer_size,
                                                          render::MemoryProperty::Device_Local,
                                                          true);
+            device.setObjectName(*m_index_buffer, fmt::format("{}:VertexArray", m_name));
         },
         m_index_array);
 }
@@ -100,6 +122,7 @@ void Mesh::render(storm::render::CommandBuffer &cmb,
     if (indexed) { cmb.bindIndexBuffer(*m_index_buffer, 0, useLargeIndices()); }
 
     bindables.emplace_back(core::makeConstObserver(m_transform));
+    bindables.emplace_back(core::makeConstObserver(this));
 
     state.vertex_input_state.binding_descriptions         = m_bindings;
     state.vertex_input_state.input_attribute_descriptions = m_attributes;
@@ -129,57 +152,69 @@ void Mesh::recomputeBoundingBox() const noexcept {
 }
 
 void Mesh::flush() noexcept {
-    if (GSL_LIKELY(!m_dirty_vertices && !m_dirty_indices)) return;
+    if (GSL_LIKELY(!m_dirty_vertices && !m_dirty_indices && !m_matrix_dirty)) return;
 
-    auto &device = m_engine->device();
-    auto fence   = device.createFence();
+    if (m_matrix_dirty) {
+        m_mesh_data_buffer->next();
+        m_mesh_data_buffer->upload<core::Matrixf>({ &m_matrix, 1 });
 
-    auto vertex_byte_count = 0u;
-    auto index_byte_count  = 0u;
-    auto indices_data      = core::ByteConstSpan {};
+        m_offset = m_mesh_data_buffer->currentOffset();
 
-    if (m_dirty_vertices) vertex_byte_count = std::size(m_vertex_array) * sizeof(float);
-
-    if (m_dirty_indices) {
-        index_byte_count = std::visit(
-            [&indices_data](const auto &index_array) {
-                STORM_EXPECTS(!std::empty(index_array));
-
-                using IndexArrayType     = std::remove_reference_t<decltype(index_array)>;
-                using IndexArrayTypeType = typename IndexArrayType::value_type;
-
-                const auto buffer_size = sizeof(IndexArrayTypeType) * std::size(index_array);
-
-                indices_data = core::ByteConstSpan { reinterpret_cast<const core::Byte *>(
-                                                         std::data(index_array)),
-                                                     buffer_size };
-
-                return buffer_size;
-            },
-            m_index_array);
+        m_matrix_dirty = false;
     }
 
-    auto staging_buffer = device.createStagingBuffer(vertex_byte_count + index_byte_count);
+    if (m_dirty_vertices || m_dirty_indices) {
+        auto &device = m_engine->device();
+        auto fence   = device.createFence();
 
-    if (m_dirty_vertices) staging_buffer.upload<float>(std::data(m_vertex_array), 0u);
-    if (m_dirty_indices) staging_buffer.upload<const core::Byte>(indices_data, vertex_byte_count);
+        auto vertex_byte_count = 0u;
+        auto index_byte_count  = 0u;
+        auto indices_data      = core::ByteConstSpan {};
 
-    m_update_cmb->reset();
-    m_update_cmb->begin(true);
-    if (m_dirty_vertices)
-        m_update_cmb->copyBuffer(staging_buffer, *m_vertex_buffer, vertex_byte_count);
-    if (m_dirty_indices)
-        m_update_cmb->copyBuffer(staging_buffer,
-                                 *m_index_buffer,
-                                 index_byte_count,
-                                 vertex_byte_count);
-    m_update_cmb->end();
-    m_update_cmb->build();
+        if (m_dirty_vertices) vertex_byte_count = std::size(m_vertex_array) * sizeof(float);
 
-    m_update_cmb->submit({}, {}, core::makeObserver(fence));
+        if (m_dirty_indices) {
+            index_byte_count = std::visit(
+                [&indices_data](const auto &index_array) {
+                    STORM_EXPECTS(!std::empty(index_array));
 
-    fence.wait();
+                    using IndexArrayType     = std::remove_reference_t<decltype(index_array)>;
+                    using IndexArrayTypeType = typename IndexArrayType::value_type;
 
-    m_dirty_vertices = false;
-    m_dirty_indices  = false;
+                    const auto buffer_size = sizeof(IndexArrayTypeType) * std::size(index_array);
+
+                    indices_data = core::ByteConstSpan { reinterpret_cast<const core::Byte *>(
+                                                             std::data(index_array)),
+                                                         buffer_size };
+
+                    return buffer_size;
+                },
+                m_index_array);
+        }
+
+        auto staging_buffer = device.createStagingBuffer(vertex_byte_count + index_byte_count);
+
+        if (m_dirty_vertices) staging_buffer.upload<float>(std::data(m_vertex_array), 0u);
+        if (m_dirty_indices)
+            staging_buffer.upload<const core::Byte>(indices_data, vertex_byte_count);
+
+        m_update_cmb->reset();
+        m_update_cmb->begin(true);
+        if (m_dirty_vertices)
+            m_update_cmb->copyBuffer(staging_buffer, *m_vertex_buffer, vertex_byte_count);
+        if (m_dirty_indices)
+            m_update_cmb->copyBuffer(staging_buffer,
+                                     *m_index_buffer,
+                                     index_byte_count,
+                                     vertex_byte_count);
+        m_update_cmb->end();
+        m_update_cmb->build();
+
+        m_update_cmb->submit({}, {}, core::makeObserver(fence));
+
+        fence.wait();
+
+        m_dirty_vertices = false;
+        m_dirty_indices  = false;
+    }
 }

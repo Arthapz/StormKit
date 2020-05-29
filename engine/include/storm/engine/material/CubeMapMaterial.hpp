@@ -21,6 +21,8 @@ namespace storm::engine {
             std::string { "StormKit:CubeMap:Vert" };
         static inline const auto CUBE_MAP_FRAG_SHADER_NAME =
             std::string { "StormKit:CubeMap:Frag" };
+        static inline const auto DEFAULT_CUBE_MAP_TEXTURE =
+            std::string { "StormKit:DefaultCubeMap" };
 
         explicit CubeMapMaterial(Scene &scene);
         virtual ~CubeMapMaterial();

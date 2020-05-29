@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Bindable.hpp"
+
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -61,6 +63,14 @@ namespace storm::engine {
                                                  const InitFunc &func) {
         func(device, s_descriptor_set_layout);
     }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    void StaticBindable<T>::destroyDescriptorLayout() {
+        s_descriptor_set_layout.reset();
+    }
+
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
@@ -78,4 +88,5 @@ namespace storm::engine {
         else
             return *std::get<render::DescriptorSetLayoutConstObserverPtr>(m_descriptor_set_layout);
     }
+
 } // namespace storm::engine

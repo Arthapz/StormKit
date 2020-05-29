@@ -103,8 +103,9 @@ namespace storm::render {
                                 const Texture &destination,
                                 TextureLayout source_layout,
                                 TextureLayout destination_layout,
-                                TextureSubresourceLayers source_subresource_layers      = {},
-                                TextureSubresourceLayers destination_subresource_layers = {});
+                                TextureSubresourceLayers source_subresource_layers,
+                                TextureSubresourceLayers destination_subresource_layers,
+                                core::Extentu extent);
 
         inline void resolveTexture(const Texture &source,
                                    const Texture &destination,
@@ -113,12 +114,21 @@ namespace storm::render {
                                    TextureSubresourceLayers source_subresource_layers      = {},
                                    TextureSubresourceLayers destination_subresource_layers = {});
 
+        inline void blitTexture(const Texture &source,
+                                const Texture &destination,
+                                TextureLayout source_layout,
+                                TextureLayout destination_layout,
+                                std::vector<BlitRegion> regions,
+                                Filter filter);
+
         inline void transitionTextureLayout(const Texture &texture,
                                             TextureLayout source_layout,
                                             TextureLayout destination_layout,
                                             TextureSubresourceRange subresource_range = {});
 
         inline void executeSubCommandBuffers(std::vector<CommandBufferCRef> command_buffers);
+
+        inline void setViewport(core::UInt32 first_viewport, std::vector<Viewport> viewports);
 
         inline void setScissor(core::UInt32 first_scissor, std::vector<Scissor> scissors);
 
@@ -147,7 +157,9 @@ namespace storm::render {
 
         RAIIVkCommandBuffer m_vk_command_buffer;
 
-        std::unordered_map<TextureConstObserverPtr, TextureLayout> m_to_update_texture_layout;
+        core::HashMap<TextureConstObserverPtr, TextureLayout> m_to_update_texture_layout;
+
+        core::HashSet<std::string> m_debug_labels;
     };
 } // namespace storm::render
 

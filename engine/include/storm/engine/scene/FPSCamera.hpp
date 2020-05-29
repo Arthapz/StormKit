@@ -35,7 +35,7 @@ namespace storm::engine {
         Inputs m_inputs;
 
         core::Vector3f m_front               = { 0.f, 0.f, 0.f };
-        static constexpr core::Vector3f m_up = { 0.f, -1.f, 0.f };
+        static constexpr core::Vector3f m_up = { 0.f, 1.f, 0.f };
 
         float m_last_x_mouse = 0.f;
         float m_last_y_mouse = 0.f;

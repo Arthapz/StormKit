@@ -30,7 +30,9 @@ namespace storm::engine {
         CubeMap(CubeMap &&);
         CubeMap &operator=(CubeMap &&);
 
-        inline void setTexture(const render::Texture &texture) noexcept;
+        inline void setTexture(const render::Texture &texture,
+                               render::TextureSubresourceRange subresource_range = {}) noexcept;
+        inline const render::Texture &texture() const noexcept;
 
         void render(render::CommandBuffer &cmb,
                     const render::RenderPass &pass,
@@ -41,6 +43,10 @@ namespace storm::engine {
         void recomputeBoundingBox() const noexcept override;
 
       private:
+        SceneObserverPtr m_scene;
+
+        render::TextureConstObserverPtr m_texture;
+
         MaterialInstanceOwnedPtr m_material_instance;
     };
 } // namespace storm::engine
