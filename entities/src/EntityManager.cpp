@@ -50,10 +50,10 @@ void EntityManager::destroyEntity(Entity entity) {
 bool EntityManager::hasEntity(Entity entity) {
     STORM_EXPECTS(entity != INVALID_ENTITY);
 
-    auto it  = core::ranges::find(m_entities, entity);
-    auto it2 = core::ranges::find(m_added_entities, entity);
+    auto it  = m_entities.find(entity);
+    auto it2 = m_added_entities.find(entity);
 
-    return it != std::cend(m_entities) || it2 != std::cend(m_added_entities);
+    return it != m_entities.cend() || it2 != m_added_entities.cend();
 }
 
 /////////////////////////////////////
@@ -63,7 +63,7 @@ bool EntityManager::hasComponent(Entity entity) {
 
     auto it = m_components.find(entity);
 
-    if (it == core::ranges::end(m_components)) return false;
+    if (it == m_components.cend()) return false;
 
     return true;
 }
@@ -73,13 +73,14 @@ bool EntityManager::hasComponent(Entity entity) {
 bool EntityManager::hasComponent(Entity entity, Component::Type type) {
     STORM_EXPECTS(entity != INVALID_ENTITY && type != Component::INVALID_TYPE);
 
-    auto it = core::ranges::find_if(m_components[entity], [type](auto &i) {
-        if (i.first == type) return true;
+    auto it =
+        std::find_if(m_components[entity].cbegin(), m_components[entity].cend(), [type](auto &i) {
+            if (i.first == type) return true;
 
-        return false;
-    });
+            return false;
+        });
 
-    return (it != core::ranges::end(m_components[entity]));
+    return (it != m_components[entity].cend());
 }
 
 /////////////////////////////////////
@@ -106,7 +107,7 @@ void EntityManager::step(uint64_t delta) {
     m_updated_entities.clear();
 
     for (auto entity : m_removed_entities) {
-        auto it = core::ranges::find(m_entities, entity);
+        auto it = m_entities.find(entity);
 
         auto itMap = m_components.find(entity);
         if (hasComponent(entity)) m_components.erase(itMap);

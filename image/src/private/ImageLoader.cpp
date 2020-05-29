@@ -8,9 +8,15 @@
 #include <gsl/gsl_util>
 
 extern "C" {
+#include "stb_image.h"
 #include <jerror.h>
 #include <jpeglib.h>
 #include <png.h>
+
+struct PNGReadParam {
+    storm::core::ArraySize readed;
+    storm::image::Image::ConstSpan &data;
+};
 
 void jpeg_error_callback(jpeg_common_struct *st) noexcept {
     STORM_EXPECTS(st != nullptr);
@@ -29,6 +35,18 @@ void jpeg_error_callback(jpeg_common_struct *st) noexcept {
         //{1}", message));
     }
 }
+
+void png_read_func(png_struct *ps, png_byte *d, png_size_t length) {
+    auto &param = *reinterpret_cast<PNGReadParam *>(png_get_io_ptr(ps));
+
+    auto *_d = reinterpret_cast<storm::core::Byte *>(d);
+
+    std::copy(std::begin(param.data) + param.readed,
+              std::begin(param.data) + param.readed + length,
+              _d);
+
+    param.readed += length;
+}
 }
 
 using namespace storm;
@@ -44,42 +62,43 @@ reinterpret_cast<std::ifstream*>(png_get_io_ptr(png_ptr));
 ImageDataSharedPtr ImageLoader::loadPng(const std::filesystem::path &filename) {
     STORM_EXPECTS(!std::empty(filename));
 
-    auto data = std::make_shared<ImageData>();
+    auto data = core::ByteArray {};
 
     {
-#ifdef STORM_OS_WINDOWS
-        std::FILE *file = nullptr;
-        fopen_s(&file, filename.string().c_str(), "rb");
-#else
-        std::FILE *file = std::fopen(filename.string().c_str(), "rb");
-#endif
-        if (!file)
-            throw std::runtime_error(fmt::format("Failed to open file {}", filename.string()));
+        auto file = std::ifstream { filename, std::ios::binary };
 
-        auto header = std::array<core::Byte, 8> {};
+        file.seekg(0u, std::ios::end);
 
-        fread(std::data(header), 1, 8, file);
-        if (png_sig_cmp(reinterpret_cast<const unsigned char *>(std::data(header)), 0, 8))
-            throw std::runtime_error(
-                fmt::format("[libpng] Failed to read header of %{1}", filename.string()));
+        data.resize(file.tellg());
+
+        file.seekg(0);
+        file.read(reinterpret_cast<char *>(std::data(data)), std::size(data));
+    }
+
+    return loadPng(data);
+}
+
+ImageDataSharedPtr ImageLoader::loadPng(Image::ConstSpan data) {
+    STORM_EXPECTS(!std::empty(data));
+
+    auto image_data = std::make_shared<ImageData>();
+
+    auto read_param = PNGReadParam { 8u, data };
+
+    {
+        auto sig = reinterpret_cast<png_const_bytep>(std::data(data));
+        if (!png_check_sig(sig, 8u))
+            throw std::runtime_error { "[libpng] Failed to validate PNG signature" };
 
         auto png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         if (!png_ptr)
-            throw std::runtime_error(
-                fmt::format("[libpng] Failed to init (png_create_read_struct) %{1}",
-                            filename.string()));
+            throw std::runtime_error { "[libpng] Failed to init (png_create_read_struct)" };
 
         auto info_ptr = png_create_info_struct(png_ptr);
         if (!info_ptr)
-            throw std::runtime_error(
-                fmt::format("[libpng] Failed to init (png_create_info_struct) %f",
-                            filename.string()));
+            throw std::runtime_error { "[libpng] Failed to init (png_create_info_struct)" };
 
-        if (setjmp(png_jmpbuf(png_ptr)))
-            throw std::runtime_error(
-                fmt::format("[libpng] Failed to init io %{1}", filename.string()));
-
-        png_init_io(png_ptr, file);
+        png_set_read_fn(png_ptr, &read_param, png_read_func);
         png_set_sig_bytes(png_ptr, 8);
         png_read_info(png_ptr, info_ptr);
 
@@ -88,34 +107,34 @@ ImageDataSharedPtr ImageLoader::loadPng(const std::filesystem::path &filename) {
 
         png_get_IHDR(png_ptr,
                      info_ptr,
-                     &data->extent.width,
-                     &data->extent.height,
+                     &image_data->extent.width,
+                     &image_data->extent.height,
                      &bit_depth,
                      &color_type,
                      nullptr,
                      nullptr,
                      nullptr);
-        data->channel = png_get_channels(png_ptr, info_ptr);
+        image_data->channel = png_get_channels(png_ptr, info_ptr);
 
         switch (color_type) {
             case PNG_COLOR_TYPE_GRAY:
                 png_set_expand_gray_1_2_4_to_8(png_ptr);
-                data->channel = 1;
+                image_data->channel = 1;
                 break;
 
             case PNG_COLOR_TYPE_GRAY_ALPHA:
                 png_set_gray_to_rgb(png_ptr);
-                data->channel = 2;
+                image_data->channel = 2;
                 break;
 
-            case PNG_COLOR_TYPE_RGB: data->channel = 3; break;
+            case PNG_COLOR_TYPE_RGB: image_data->channel = 3; break;
 
-            case PNG_COLOR_TYPE_RGB_ALPHA: data->channel = 4; break;
+            case PNG_COLOR_TYPE_RGB_ALPHA: image_data->channel = 4; break;
             case PNG_COLOR_TYPE_PALETTE:
                 png_set_palette_to_rgb(png_ptr);
                 if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
                 png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
-                data->channel = 4;
+                image_data->channel = 4;
                 break;
 
             default: break;
@@ -129,90 +148,46 @@ ImageDataSharedPtr ImageLoader::loadPng(const std::filesystem::path &filename) {
         png_read_update_info(png_ptr, info_ptr);
 
         const auto row_bytes = png_get_rowbytes(png_ptr, info_ptr);
-        data->data.resize(data->extent.height * row_bytes);
+        image_data->data.resize(image_data->extent.height * row_bytes);
 
-        auto row_pointers = std::vector<core::Byte *> { data->extent.height, nullptr };
+        auto row_pointers = std::vector<core::Byte *> { image_data->extent.height, nullptr };
 
-        auto buff_pos = std::data(data->data);
+        auto buff_pos = std::data(image_data->data);
 
-        for (auto i = 0u; i < data->extent.height; ++i) row_pointers[i] = &buff_pos[row_bytes * i];
+        for (auto i = 0u; i < image_data->extent.height; ++i)
+            row_pointers[i] = &buff_pos[row_bytes * i];
 
         png_read_image(png_ptr, reinterpret_cast<png_bytepp>(std::data(row_pointers)));
         png_read_end(png_ptr, info_ptr);
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-
-        fclose(file);
     }
 
-    return data;
-}
-
-ImageDataSharedPtr ImageLoader::loadPng([[maybe_unused]] Image::const_span) {
-    // STORM_EXPECTS(!std::empty(data));
-
-    ASSERT(false, "Not implemented yet !");
-
-    return nullptr;
+    return image_data;
 }
 
 ImageDataSharedPtr ImageLoader::loadJpeg(const std::filesystem::path &filename) {
     STORM_EXPECTS(!std::empty(filename));
 
-    auto data = std::make_shared<ImageData>();
+    auto data = core::ByteArray {};
 
     {
-        struct jpeg_decompress_struct info;
-        struct jpeg_error_mgr error_mgr;
+        auto file = std::ifstream { filename, std::ios::binary };
 
-#ifdef STORM_OS_WINDOWS
-        std::FILE *file = nullptr;
-        fopen_s(&file, filename.string().c_str(), "rb");
-#else
-        auto file       = std::fopen(filename.string().c_str(), "rb");
-#endif
-        if (!file)
-            throw std::runtime_error(fmt::format("Failed to open file %{1}", filename.string()));
+        file.seekg(0u, std::ios::end);
 
-        // init
-        info.err             = jpeg_std_error(&error_mgr);
-        info.client_data     = const_cast<void *>(reinterpret_cast<const void *>(&filename));
-        error_mgr.error_exit = jpeg_error_callback;
+        data.resize(file.tellg());
 
-        jpeg_create_decompress(&info);
-
-        jpeg_stdio_src(&info, file);
-        jpeg_read_header(&info, TRUE);
-
-        jpeg_start_decompress(&info);
-
-        data->extent.width  = info.output_width;
-        data->extent.height = info.output_height;
-        data->channel       = gsl::narrow_cast<core::UInt8>(info.num_components);
-
-        data->data.resize(data->extent.width * data->extent.height * data->channel);
-
-        auto rowptr = std::array<core::Byte *, 1> { nullptr };
-        while (info.output_scanline < info.output_height) {
-            const auto index = data->extent.width * data->channel * info.output_scanline;
-            rowptr[0]        = data->data.data() + index;
-            jpeg_read_scanlines(&info,
-                                reinterpret_cast<core::UInt8 **>(std::data(rowptr)),
-                                static_cast<JDIMENSION>(std::size(rowptr)));
-        }
-
-        jpeg_finish_decompress(&info);
-
-        fclose(file);
-        file = nullptr;
+        file.seekg(0);
+        file.read(reinterpret_cast<char *>(std::data(data)), std::size(data));
     }
 
-    return data;
+    return loadJpeg(data);
 }
 
-ImageDataSharedPtr ImageLoader::loadJpeg(Image::const_span data) {
+ImageDataSharedPtr ImageLoader::loadJpeg(Image::ConstSpan data) {
     STORM_EXPECTS(!std::empty(data));
 
-    auto data_ = std::make_shared<ImageData>();
+    auto image_data = std::make_shared<ImageData>();
 
     {
         struct jpeg_decompress_struct info;
@@ -225,32 +200,33 @@ ImageDataSharedPtr ImageLoader::loadJpeg(Image::const_span data) {
         jpeg_create_decompress(&info);
 
         jpeg_mem_src(&info,
-                     reinterpret_cast<const core::UInt8 *>(std::data(data)),
-                     gsl::narrow_cast<unsigned long>(data.size()));
-
+                     reinterpret_cast<const unsigned char *>(std::data(data)),
+                     std::size(data));
         jpeg_read_header(&info, TRUE);
 
         jpeg_start_decompress(&info);
 
-        data_->extent.width  = info.output_width;
-        data_->extent.height = info.output_height;
-        data_->channel       = gsl::narrow_cast<core::UInt8>(info.num_components);
+        image_data->extent.width  = info.output_width;
+        image_data->extent.height = info.output_height;
+        image_data->channel       = gsl::narrow_cast<core::UInt8>(info.num_components);
 
-        data_->data.resize(data_->extent.width * data_->extent.height * data_->channel);
+        image_data->data.resize(image_data->extent.width * image_data->extent.height *
+                                image_data->channel);
 
-        auto rowptr = std::array<const core::Byte *, 1> { nullptr };
+        auto rowptr = std::array<core::Byte *, 1> { nullptr };
         while (info.output_scanline < info.output_height) {
-            const auto index = data_->extent.width * data_->channel * info.output_scanline;
-            rowptr[0]        = std::data(data) + index;
-
-            auto berk = const_cast<core::Byte **>(std::data(rowptr));
-            jpeg_read_scanlines(&info, reinterpret_cast<core::UInt8 **>(berk), 1);
+            const auto index =
+                image_data->extent.width * image_data->channel * info.output_scanline;
+            rowptr[0] = image_data->data.data() + index;
+            jpeg_read_scanlines(&info,
+                                reinterpret_cast<JSAMPARRAY>(std::data(rowptr)),
+                                static_cast<JDIMENSION>(std::size(rowptr)));
         }
 
         jpeg_finish_decompress(&info);
     }
 
-    return data_;
+    return image_data;
 }
 
 ImageDataSharedPtr ImageLoader::loadTga(const std::filesystem::path &filename) {
@@ -339,7 +315,7 @@ ImageDataSharedPtr ImageLoader::loadTga(const std::filesystem::path &filename) {
     return data;
 }
 
-ImageDataSharedPtr ImageLoader::loadTga([[maybe_unused]] Image::const_span) {
+ImageDataSharedPtr ImageLoader::loadTga([[maybe_unused]] Image::ConstSpan) {
     // STORM_EXPECTS(!std::empty(data));
 
     ASSERT(false, "Not implemented yet !");
@@ -355,7 +331,37 @@ ImageDataSharedPtr ImageLoader::loadPPM([[maybe_unused]] const std::filesystem::
     return nullptr;
 }
 
-ImageDataSharedPtr ImageLoader::loadPPM([[maybe_unused]] Image::const_span) {
+ImageDataSharedPtr ImageLoader::loadPPM([[maybe_unused]] Image::ConstSpan) {
+    // STORM_EXPECTS(!std::empty(data));
+
+    ASSERT(false, "Not implemented yet !");
+
+    return nullptr;
+}
+
+ImageDataSharedPtr ImageLoader::loadHDR(const std::filesystem::path &path) {
+    STORM_EXPECTS(!std::empty(path));
+
+    stbi_set_flip_vertically_on_load(true);
+    int width, height, components;
+
+    auto raw_data = stbi_loadf(path.string().c_str(), &width, &height, &components, 0);
+    if (!raw_data) throw std::runtime_error(fmt::format("Failed to open file %{1}", path.string()));
+    auto raw_data_span = core::ByteConstSpan { reinterpret_cast<const std::byte *>(raw_data),
+                                               width * height * components * sizeof(float) };
+
+    auto data           = std::make_shared<ImageData>();
+    data->channel       = components;
+    data->extent.width  = width;
+    data->extent.height = height;
+    data->data.resize(std::size(raw_data_span));
+
+    std::copy(std::cbegin(raw_data_span), std::cend(raw_data_span), std::begin(data->data));
+
+    return data;
+}
+
+ImageDataSharedPtr ImageLoader::loadHDR([[maybe_unused]] Image::ConstSpan) {
     // STORM_EXPECTS(!std::empty(data));
 
     ASSERT(false, "Not implemented yet !");
@@ -444,4 +450,12 @@ void ImageLoader::savePPM(const std::filesystem::path &filename,
     }
 
     stream.close();
+}
+
+void ImageLoader::saveHDR([[maybe_unused]] const std::filesystem::path &,
+                          [[maybe_unused]] ImageDataSharedPtr &,
+                          [[maybe_unused]] Image::CodecArgs) {
+    // STORM_EXPECTS(!std::empty(filename));
+
+    ASSERT(false, "Not implemented yet !");
 }

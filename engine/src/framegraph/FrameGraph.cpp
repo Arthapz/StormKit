@@ -141,7 +141,7 @@ void FrameGraph::execute() {
 
     auto i = 0u;
     for (auto &step : m_timeline) {
-        const auto step_stage = fmt::format("Step {} FrameBuffer creation", i);
+        const auto step_stage = fmt::format("Step {} FrameBuffer creation", step.pass_name);
         profiler.beginStage(step_stage, 2);
 
         if (!std::empty(m_derealize_queue)) {
@@ -185,28 +185,47 @@ void FrameGraph::execute() {
 
         step.frame_buffer =
             step.render_pass->createFramebufferPtr(step.framebuffer_extent, texture_views);
+        device.setObjectName(*step.frame_buffer, fmt::format("{}:FramePass", step.pass_name));
         profiler.endStage(step_stage);
 
         const auto step_execution = fmt::format("Step {} execution", i);
         profiler.beginStage(step_execution, 2);
         step.cmb->begin(true);
+
+        step.cmb->beginDebugRegion(fmt::format("{} pre-execution", step.pass_name),
+                                   core::RGBColorDef::Blue<float>);
+        step.pre_execute(*step.cmb);
+        step.cmb->endDebugRegion();
+
         step.cmb->beginRenderPass(*step.render_pass,
                                   *step.frame_buffer,
                                   step.clear_values,
                                   step.use_sub_command_buffers);
+        step.cmb->beginDebugRegion(fmt::format("{} execution", step.pass_name));
 
         for (auto subpass : step.pass_id) {
             const auto &pass = m_frame_passes[subpass];
-            auto resources =
-                FramePassResources { *this, *pass, *step.render_pass, *step.frame_buffer };
+            auto resources   = FramePassResources {
+                *this,
+                *pass,
+                *step.render_pass,
+                *step.frame_buffer,
+            };
 
-            const auto step_subpass = fmt::format("SubPass {} execution", pass->name());
+            const auto step_subpass = fmt::format("SubPass {} execution", step.pass_name);
             profiler.beginStage(step_subpass, 3);
             pass->execute(resources, *step.cmb);
             profiler.endStage(step_subpass);
         }
 
+        step.cmb->endDebugRegion();
         step.cmb->endRenderPass();
+
+        step.cmb->beginDebugRegion(fmt::format("{} post-execution", step.pass_name),
+                                   core::RGBColorDef::Blue<float>);
+        step.post_execute(*step.cmb);
+        step.cmb->endDebugRegion();
+
         step.cmb->end();
 
         step.cmb->build();
@@ -355,10 +374,25 @@ void FrameGraph::prepareGPUObjects() {
 
         auto attachments = std::vector<std::pair<FramePassTextureID, core::UInt32>> {};
 
+        auto pre_executes =
+            std::vector<_std::observer_ptr<const FramePassBase::PreExecuteCallback>> {};
+        pre_executes.reserve(std::size(step.pass_id));
+
+        auto post_executes =
+            std::vector<_std::observer_ptr<const FramePassBase::PreExecuteCallback>> {};
+        post_executes.reserve(std::size(step.pass_id));
+
         for (auto sub_step : step.pass_id) {
             auto &pass = m_frame_passes[sub_step];
-            auto sub_pass =
-                render::RenderPass::Subpass { .bind_point = render::PipelineBindPoint::Graphics };
+
+            pre_executes.emplace_back(core::makeConstObserver(pass->preExecuteCallback()));
+            post_executes.emplace_back(core::makeConstObserver(pass->postExecuteCallback()));
+
+            step.pass_name = pass->name();
+
+            auto sub_pass = render::RenderPass::Subpass {
+                .bind_point = render::PipelineBindPoint::Graphics,
+            };
 
             step.use_sub_command_buffers |= pass->isUsingSubCommandBuffer();
 
@@ -427,8 +461,10 @@ void FrameGraph::prepareGPUObjects() {
                 });
 
                 if (it != core::ranges::end(attachments)) {
-                    sub_pass.attachment_refs.emplace_back(
-                        render::RenderPass::Subpass::Ref { it->second, subpass_layout });
+                    sub_pass.attachment_refs.emplace_back(render::RenderPass::Subpass::Ref {
+                        it->second,
+                        subpass_layout,
+                    });
 
                     continue;
                 }
@@ -491,8 +527,18 @@ void FrameGraph::prepareGPUObjects() {
             step.render_pass->addSubpass(std::move(sub_pass));
         }
 
+        step.pre_execute = [pre_executes { std::move(pre_executes) }](render::CommandBuffer &cmb) {
+            for (auto &execute : pre_executes) (*execute)(cmb);
+        };
+        step.post_execute =
+            [post_executes { std::move(post_executes) }](render::CommandBuffer &cmb) {
+                for (auto &execute : post_executes) (*execute)(cmb);
+            };
+
         step.render_pass->build();
+        device.setObjectName(*step.render_pass, fmt::format("StormKit:{}", step.pass_name));
         step.cmb = device.graphicsQueue().createCommandBufferPtr();
+        device.setObjectName(*step.cmb, fmt::format("StormKit:{}:CommandBuffer", step.pass_name));
     }
 }
 

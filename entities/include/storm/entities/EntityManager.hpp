@@ -4,10 +4,13 @@
 
 #pragma once
 
+#include <algorithm>
 #include <memory>
 #include <set>
-#include <unordered_map>
+#include <vector>
 
+#include <storm/core/Assert.hpp>
+#include <storm/core/HashMap.hpp>
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/core/Ranges.hpp>
@@ -81,14 +84,14 @@ namespace storm::entities {
 
         Entity m_next_valid_entity = 1;
 
-        std::unordered_set<Entity> m_entities;
+        storm::core::HashSet<Entity> m_entities;
         std::set<SystemOwnedPtr, System::Predicate> m_systems;
-        std::unordered_map<Entity, std::unordered_map<Component::Type, ComponentOwnedPtr>>
+        storm::core::HashMap<Entity, storm::core::HashMap<Component::Type, ComponentOwnedPtr>>
             m_components;
 
-        std::unordered_set<Entity> m_added_entities;
-        std::unordered_set<Entity> m_updated_entities;
-        std::unordered_set<Entity> m_removed_entities;
+        storm::core::HashSet<Entity> m_added_entities;
+        storm::core::HashSet<Entity> m_updated_entities;
+        storm::core::HashSet<Entity> m_removed_entities;
 
         MessageBusOwnedPtr m_message_bus;
     };

@@ -100,11 +100,11 @@ MaterialInstance::MaterialInstance(const Scene &scene, const Material &material)
     const auto &sampleds = m_parent->m_data.samplers;
     m_sampled_textures.reserve(std::size(sampleds));
 
-    const auto &default_map = scene.texturePool().get("BlankTexture");
-    for (const auto &[binding, name] : sampleds) {
-        m_sampled_textures.emplace(name,
+    const auto &default_map = scene.texturePool().get("StormKit:BlankTexture");
+    for (const auto &[binding, sampler] : sampleds) {
+        m_sampled_textures.emplace(sampler.name,
                                    SampledBinding { .binding = binding,
-                                                    .view    = default_map.createViewPtr(),
+                                                    .view = default_map.createViewPtr(sampler.type),
                                                     .sampler = device.createSamplerPtr() });
 
         m_buffer_binding = std::max(m_buffer_binding, static_cast<core::Int32>(binding));

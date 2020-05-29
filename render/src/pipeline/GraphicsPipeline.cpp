@@ -154,8 +154,14 @@ void GraphicsPipeline::build() {
             .setPAttachments(std::data(blend_attachments))
             .setBlendConstants(m_state.color_blend_state.blend_constants);
 
-    const auto dynamic_state =
-        vk::PipelineDynamicStateCreateInfo {}.setDynamicStateCount(0).setPDynamicStates(nullptr);
+    auto states = std::vector<vk::DynamicState> {};
+    states.reserve(std::size(m_state.dynamic_state.dynamics));
+
+    for (auto state : m_state.dynamic_state.dynamics) { states.emplace_back(toVK(state)); }
+
+    const auto dynamic_state = vk::PipelineDynamicStateCreateInfo {}
+                                   .setDynamicStateCount(std::size(states))
+                                   .setPDynamicStates(std::data(states));
 
     auto shaders = std::vector<vk::PipelineShaderStageCreateInfo> {};
     shaders.reserve(std::size(m_state.shader_state.shaders));

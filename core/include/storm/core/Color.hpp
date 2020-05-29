@@ -5,6 +5,8 @@
 /// \file Color.hpp
 /// \author Arthapz
 
+#pragma once
+
 #include <cmath>
 #include <limits>
 #include <memory>

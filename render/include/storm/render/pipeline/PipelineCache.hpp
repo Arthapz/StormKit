@@ -69,7 +69,7 @@ namespace storm::render {
 
         std::filesystem::path m_path;
 
-        std::unordered_map<GraphicsPipelineState, GraphicsPipelineOwnedPtr> m_pipelines;
+        storm::core::HashMap<GraphicsPipelineState, GraphicsPipelineOwnedPtr> m_pipelines;
     };
 } // namespace storm::render
 

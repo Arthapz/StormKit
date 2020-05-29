@@ -158,9 +158,9 @@ namespace storm::render {
         return static_cast<std::remove_reference_t<T>>(static_cast<core::UInt32>(version & 0xfffu));
     }
 
-    static constexpr const auto DEVICE_EXTENSIONS = std::array {
-        gsl::czstring<> { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
-    };
+    static constexpr const auto DEVICE_EXTENSIONS =
+        std::array { gsl::czstring<> { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
+                     VK_KHR_MAINTENANCE1_EXTENSION_NAME };
 
     static constexpr const auto VALIDATION_LAYERS = std::array {
         gsl::czstring<> { "VK_LAYER_KHRONOS_validation" },
@@ -217,7 +217,7 @@ namespace storm::render {
     }
 
     inline core::UInt32 computeMipLevel(const core::Extentu extent) noexcept {
-        return static_cast<core::UInt32>(std::floor(std::log2(std::max(extent.w, extent.h))));
+        return static_cast<core::UInt32>(std::floor(std::log2(std::max(extent.w, extent.h)))) + 1;
     }
 
 #define CHECK_VK_ERROR_VALUE(line, v)                                         \

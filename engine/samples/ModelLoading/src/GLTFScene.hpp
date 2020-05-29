@@ -7,14 +7,17 @@
 /////////// - StormKit::window - ///////////
 #include <storm/window/InputHandler.hpp>
 
+/////////// - StormKit::core - ///////////
+#include <storm/render/core/Enums.hpp>
+
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
 
-#include <storm/engine/scene/Scene.hpp>
+#include <storm/engine/scene/PBRScene.hpp>
 
 #include <storm/engine/material/PBRMaterialInstance.hpp>
 
-class GLTFScene final: public storm::engine::Scene {
+class GLTFScene final: public storm::engine::PBRScene {
   public:
     explicit GLTFScene(storm::engine::Engine &engine,
                        const storm::window::Window &window,
@@ -46,12 +49,13 @@ class GLTFScene final: public storm::engine::Scene {
 
     storm::window::InputHandler m_input_handler;
 
-    storm::engine::CubeMapOwnedPtr m_cube_map;
     storm::engine::ModelOwnedPtr m_model;
     storm::engine::MeshArray m_meshes;
 
     bool m_freeze_camera  = false;
-    bool m_rotate_mesh    = true;
+    bool m_rotate_mesh    = false;
     bool m_wireframe      = false;
     bool m_show_debug_gui = false;
+
+    storm::render::SampleCountFlag m_sample_count = storm::render::SampleCountFlag::C1_BIT;
 };

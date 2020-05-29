@@ -17,6 +17,7 @@ PBRMaterialInstance::PBRMaterialInstance(const Scene &scene, const PBRMaterial &
     setAmbiantOcclusionFactor(1.f);
     setEmissiveFactor({ 0.f, 0.f, 0.f, 0.f });
     setDebugView(DebugView::None);
+    setFrontFace(render::FrontFace::Counter_Clockwise);
 
     flush();
 }

@@ -4,16 +4,7 @@
 
 #pragma once
 
-#include <algorithm>
-#include <cassert>
-#include <gsl/gsl_util>
-#include <memory>
-#include <storm/core/Assert.hpp>
-#include <storm/entities/System.hpp>
-#include <vector>
-
 namespace storm::entities {
-
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
@@ -193,7 +184,7 @@ namespace storm::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::ArraySize EntityManager::numberOfEntities() const noexcept {
+    core::ArraySize EntityManager::numberOfEntities() const noexcept {
         return std::size(m_entities);
     }
 } // namespace storm::entities

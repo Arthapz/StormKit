@@ -49,7 +49,7 @@ void FileLogger::write(Severity severity, Module module, const char *string) {
     if (std::strcmp(module.get(), "") != 0) {
         filepath = m_base_path / (module.get() + std::string { "-log.txt" });
 
-        if (m_streams.find(filepath.string()) == core::ranges::end(m_streams))
+        if (m_streams.find(filepath.string()) == m_streams.cend())
             m_streams[filepath.string()] = std::ofstream { filepath.string() };
     }
 

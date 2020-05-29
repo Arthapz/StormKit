@@ -24,9 +24,63 @@ namespace storm::image {
             return Image::Codec::TARGA;
         else if (core::toLower(ext) == ".ppm")
             return Image::Codec::PPM;
+        else if (core::toLower(ext) == ".hdr")
+            return Image::Codec::HDR;
 
         return Image::Codec::UNKNOW;
     }
+
+    Image::Codec headerToCodec(core::ByteConstSpan data) {
+        namespace ranges = core::ranges;
+        namespace views  = core::ranges::views;
+
+        using namespace core::ranges;
+        static constexpr auto KTX_HEADER = core::makeStaticByteArray(0xAB,
+                                                                     0x4B,
+                                                                     0x54,
+                                                                     0x58,
+                                                                     0x20,
+                                                                     0x31,
+                                                                     0x31,
+                                                                     0xBB,
+                                                                     0x0D,
+                                                                     0x0A,
+                                                                     0x1A,
+                                                                     0x0A);
+
+        static constexpr auto PNG_HEADER =
+            core::makeStaticByteArray(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
+
+        static constexpr auto JPEG_HEADER_1 = core::makeStaticByteArray(0xFF, 0xD8, 0xFF, 0xDB);
+        static constexpr auto JPEG_HEADER_2 = core::makeStaticByteArray(0xFF,
+                                                                        0xD8,
+                                                                        0xFF,
+                                                                        0xE0,
+                                                                        0x00,
+                                                                        0x10,
+                                                                        0x4A,
+                                                                        0x46,
+                                                                        0x49,
+                                                                        0x46,
+                                                                        0x00,
+                                                                        0x01);
+        static constexpr auto JPEG_HEADER_3 = core::makeStaticByteArray(0xFF, 0xD8, 0xFF, 0xEE);
+
+        if (auto range = data | views::take(ranges::size(KTX_HEADER));
+            ranges::equal(KTX_HEADER, range))
+            return Image::Codec::KTX;
+        else if (auto range = data | views::take(ranges::size(PNG_HEADER));
+                 ranges::equal(PNG_HEADER, range))
+            return Image::Codec::PNG;
+        else if (auto range = data | views::take(ranges::size(JPEG_HEADER_1));
+                 ranges::equal(JPEG_HEADER_1, range) | ranges::equal(JPEG_HEADER_3, range))
+            return Image::Codec::JPEG;
+        else if (auto range = data | views::take(ranges::size(JPEG_HEADER_2));
+                 ranges::equal(JPEG_HEADER_2, range))
+            return Image::Codec::JPEG;
+
+        return Image::Codec::UNKNOW;
+    } // namespace storm::image
 } // namespace storm::image
 
 /////////////////////////////////////
@@ -41,7 +95,7 @@ Image::Image(const std::filesystem::path &filepath, Image::Codec codec) : Image 
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image::Image(Image::const_span data, Image::Codec codec) : Image {} {
+Image::Image(Image::ConstSpan data, Image::Codec codec) : Image {} {
     loadFromMemory(data, codec);
 }
 
@@ -63,16 +117,20 @@ void Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec cod
         case Image::Codec::JPEG: m_data = private_::ImageLoader::loadJpeg(filepath); break;
         case Image::Codec::PNG: m_data = private_::ImageLoader::loadPng(filepath); break;
         case Image::Codec::TARGA: m_data = private_::ImageLoader::loadTga(filepath); break;
+        case Image::Codec::HDR: m_data = private_::ImageLoader::loadHDR(filepath); break;
         default: throw std::runtime_error("oops");
     }
+
+    m_codec = codec;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Image::loadFromMemory(Image::const_span data, Image::Codec codec) {
+void Image::loadFromMemory(Image::ConstSpan data, Image::Codec codec) {
     detach();
 
-    STORM_EXPECTS(codec != Image::Codec::AUTODETECT);
+    if (codec == Image::Codec::AUTODETECT) codec = headerToCodec(data);
+
     STORM_EXPECTS(codec != Image::Codec::UNKNOW);
 
     switch (codec) {
@@ -80,8 +138,11 @@ void Image::loadFromMemory(Image::const_span data, Image::Codec codec) {
         case Image::Codec::PNG: m_data = private_::ImageLoader::loadPng(data); break;
         case Image::Codec::TARGA: m_data = private_::ImageLoader::loadTga(data); break;
         case Image::Codec::PPM: m_data = private_::ImageLoader::loadPPM(data); break;
+        case Image::Codec::HDR: m_data = private_::ImageLoader::loadHDR(data); break;
         default: throw std::runtime_error("oops");
     }
+
+    m_codec = codec;
 }
 
 /////////////////////////////////////
@@ -93,6 +154,8 @@ void Image::create(core::UInt32 width, core::UInt32 height, core::UInt8 channel_
     m_data->extent  = { width, height };
     m_data->channel = channel_count;
     m_data->data.resize(width * height * m_data->channel);
+
+    m_codec = Codec::UNKNOW;
 
     STORM_ENSURES(m_data->data.size() == width * height * channel_count);
 }
@@ -110,7 +173,7 @@ Image::span Image::operator[](Image::size_type index) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image::const_span Image::operator[](Image::size_type index) const noexcept {
+Image::ConstSpan Image::operator[](Image::size_type index) const noexcept {
     STORM_EXPECTS(m_data != nullptr);
     STORM_EXPECTS(index < m_data->extent.width * m_data->extent.height);
 
@@ -132,7 +195,7 @@ Image::span Image::operator()(XOffset x_offset, YOffset y_offset) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image::const_span Image::operator()(XOffset x_offset, YOffset y_offset) const noexcept {
+Image::ConstSpan Image::operator()(XOffset x_offset, YOffset y_offset) const noexcept {
     STORM_EXPECTS(m_data != nullptr);
     STORM_EXPECTS(x_offset < m_data->extent.width && y_offset < m_data->extent.height);
 
@@ -167,7 +230,7 @@ Image::size_type Image::size() const noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image::const_span Image::data() const noexcept {
+Image::ConstSpan Image::data() const noexcept {
     STORM_EXPECTS(m_data != nullptr);
 
     return m_data->data;
@@ -267,6 +330,7 @@ void Image::saveToFile(const std::filesystem::path &filename, Codec codec, Codec
         case Image::Codec::JPEG: private_::ImageLoader::saveJpeg(filename, m_data, args); break;
         case Image::Codec::PNG: private_::ImageLoader::savePng(filename, m_data, args); break;
         case Image::Codec::TARGA: private_::ImageLoader::saveTga(filename, m_data, args); break;
+        case Image::Codec::HDR: private_::ImageLoader::saveHDR(filename, m_data, args); break;
         default: throw std::runtime_error("oops");
     }
 }

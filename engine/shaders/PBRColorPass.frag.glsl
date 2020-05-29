@@ -9,20 +9,29 @@ layout(location = 3) in vec4 in_tangent;
 
 layout(location = 0) out vec4 out_color;
 
-layout(set = 2, binding = 0) uniform sampler2D albedo_map;
-layout(set = 2, binding = 1) uniform sampler2D normal_map;
-layout(set = 2, binding = 2) uniform sampler2D metallic_map;
-layout(set = 2, binding = 3) uniform sampler2D roughness_map;
-layout(set = 2, binding = 4) uniform sampler2D ambiant_occlusion_map;
-layout(set = 2, binding = 5) uniform sampler2D emissive_map;
-
 layout(set = 0, binding = 0, std140) uniform Camera {
     vec4 position;
     mat4 projection;
     mat4 view;
 } camera;
 
-layout(set = 2, binding = 6, std140) uniform Material {
+layout(set = 1, binding = 0) uniform sampler2D brdf;
+layout(set = 1, binding = 1) uniform samplerCube irradience;
+layout(set = 1, binding = 2) uniform samplerCube prefiltered_env;
+layout(set = 1, binding = 3) uniform SceneData {
+   float exposure;
+   float gamma;
+   float prefiltered_cube_mip_levels;
+} scene_data;
+
+layout(set = 4, binding = 0) uniform sampler2D albedo_map;
+layout(set = 4, binding = 1) uniform sampler2D normal_map;
+layout(set = 4, binding = 2) uniform sampler2D metallic_map;
+layout(set = 4, binding = 3) uniform sampler2D roughness_map;
+layout(set = 4, binding = 4) uniform sampler2D ambiant_occlusion_map;
+layout(set = 4, binding = 5) uniform sampler2D emissive_map;
+
+layout(set = 4, binding = 6, std140) uniform Material {
     vec4 albedo_factor;
     float metallic_factor;
     float roughness_factor;
@@ -38,8 +47,10 @@ vec3 diffuseColor(vec3 diffuse);
 vec3 specularReflection(vec3 reflectance0, vec3 reflectance90, float VdotH);
 float geometricOcclusion(float NdotL, float NdotV, float alpha_roughness);
 float microfacetDistribution(float alpha_roughness, float NdotH);
+vec4 tonemap(vec4 color);
+vec3 getIBLContribution(float roughness, float NdotV, vec3 diffuse_color, vec3 specular_color, vec3 n, vec3 reflection);
 
-const vec3 light_color     = vec3(3.f, 3.f, 3.f);
+const vec3 light_color     = vec3(1.f, 1.f, 1.f);
 const vec3 light_direction = vec3(0,
                                   0,
                                   2.f);
@@ -51,6 +62,9 @@ const float pbr_workflow_metallic_roughness = 0.f;
 const float pbr_workflow_specular_glosiness = 1.f;
 
 const vec3 f0 = vec3(0.04f);
+
+const float exposure = 4.5f;
+const float gamma = 2.2f;
 
 void main() {
     vec4 albedo = material.albedo_factor * sRGBtoLinear(texture(albedo_map, in_texcoord));
@@ -99,6 +113,8 @@ void main() {
     vec3 specular_contribution = F * G * D / (4.f * NdotL * NdotV);
 
     vec3 color = NdotL * light_color * (diffuse_contribution + specular_contribution);
+
+    color += getIBLContribution(roughness, NdotV, diffuse_color, specular_color, n, reflection);
 
     color = mix(color, color * ambiant_occlusion, material.ambiant_occlusion_factor);
     color += emissive;
@@ -184,4 +200,38 @@ float microfacetDistribution(float alpha_roughness, float NdotH) {
     float f = (NdotH * alpha_roughness_pow_2 - NdotH) * NdotH + 1.f;
 
     return alpha_roughness_pow_2 / (pi * f * f);
+}
+
+vec3 Uncharted2Tonemap(vec3 color) {
+        float A = 0.15f;
+        float B = 0.50f;
+        float C = 0.10f;
+        float D = 0.20f;
+        float E = 0.02f;
+        float F = 0.30f;
+        float W = 11.2f;
+
+        return ((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F))-E/F;
+}
+
+vec4 tonemap(vec4 color) {
+    vec3 out_col = Uncharted2Tonemap(color.rgb * scene_data.exposure);
+
+    out_col = out_col * (1.0f / Uncharted2Tonemap(vec3(11.2f)));
+
+    return vec4(pow(out_col, vec3(1.0f / scene_data.gamma)), color.a);
+}
+
+vec3 getIBLContribution(float roughness, float NdotV, vec3 diffuse_color, vec3 specular_color, vec3 n, vec3 reflection) {
+    float lod = (roughness * scene_data.prefiltered_cube_mip_levels);
+
+    vec3 _brdf = (texture(brdf, vec2(NdotV, 1.f - roughness))).rgb;
+    vec3 diffuse_light = sRGBtoLinear(tonemap(texture(irradience, n))).rgb;
+
+    vec3 specular_light = sRGBtoLinear(tonemap(textureLod(prefiltered_env, reflection, lod))).rgb;
+
+    vec3 diffuse = diffuse_light * diffuse_color;
+    vec3 specular = specular_light * (specular_color * _brdf.x + _brdf.y);
+
+    return diffuse + specular;
 }

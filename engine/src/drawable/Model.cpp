@@ -7,7 +7,7 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
-#include <storm/engine/scene/Scene.hpp>
+#include <storm/engine/scene/PBRScene.hpp>
 
 #include <storm/engine/drawable/Mesh.hpp>
 #include <storm/engine/drawable/Model.hpp>
@@ -20,6 +20,7 @@
 #define TINYGLTF_USE_CPP14
 #define TINYGLTF_NOEXCEPTION
 #define JSON_NOEXCEPTION
+#define TINYGLTF_NO_STB_IMAGE
 #include "../tiny_gltf.h"
 
 using namespace storm;
@@ -27,6 +28,51 @@ using namespace storm::engine;
 
 using storm::log::operator""_module;
 static constexpr auto LOG_MODULE = "engine"_module;
+
+bool LoadImageData(tinygltf::Image *image,
+                   const int image_idx,
+                   std::string *err,
+                   std::string *warn,
+                   int req_width,
+                   int req_height,
+                   const unsigned char *bytes,
+                   int size,
+                   void *) {
+    try {
+        auto _image = image::Image { { reinterpret_cast<const core::Byte *>(bytes),
+                                       static_cast<core::ArraySize>(size) } };
+        // if (_image.codec() == image::Image::Codec::PNG) _image = image::Image::flipY(_image);
+
+        int pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+
+        image->width      = _image.extent().w;
+        image->height     = _image.extent().h;
+        image->component  = 4u;
+        image->pixel_type = pixel_type;
+
+        const auto size = image->width * image->height * 4u;
+        image->image.resize(size);
+
+        if (_image.channels() == 4)
+            core::ranges::copy(_image.data(),
+                               reinterpret_cast<core::Byte *>(std::data(image->image)));
+        else {
+            auto data_i   = 0u;
+            auto data_ptr = _image.data();
+            for (auto i = 0u; i < size; i += 4u) {
+                image->image[i]     = std::to_integer<unsigned char>(data_ptr[data_i++]);
+                image->image[i + 1] = std::to_integer<unsigned char>(data_ptr[data_i++]);
+                image->image[i + 2] = std::to_integer<unsigned char>(data_ptr[data_i++]);
+                image->image[i + 3] = 255u;
+            }
+        }
+        return true;
+    } catch (std::runtime_error &e) {
+        *err = e.what();
+
+        return false;
+    }
+}
 
 constexpr render::Format toStormKit(int type) noexcept {
     switch (type) {
@@ -63,6 +109,7 @@ void Model::load(const std::filesystem::path &path) {
     m_filepath = std::filesystem::absolute(path);
 
     auto loader = tinygltf::TinyGLTF {};
+    loader.SetImageLoader(LoadImageData, nullptr);
 
     auto model = tinygltf::Model {};
 
@@ -88,25 +135,27 @@ void Model::load(const std::filesystem::path &path) {
         std::vector<std::pair<_std::observer_ptr<const tinygltf::Mesh>, core::Matrixf>> {};
 
     const auto getNodeMatrix = [](const tinygltf::Node &node) {
-        auto matrix = core::Matrixf { 1.f };
-
         auto translation = core::Vector3f { 0.f };
         auto rotation    = core::Matrixf { 1.f };
         auto scale       = core::Vector3f { 1.f };
 
-        if (!std::empty(node.matrix)) matrix = core::make_mat4(std::data(node.matrix));
         if (!std::empty(node.translation))
             translation = core::make_vec3(std::data(node.translation));
         if (!std::empty(node.rotation)) {
-            const auto quat = core::Quaternionf { core::make_quat(std::data(node.rotation)) };
-            rotation        = core::Matrixf { std::move(quat) };
+            rotation =
+                core::Matrixf { core::Quaternionf { core::make_quat(std::data(node.rotation)) } };
         }
+
         if (!std::empty(node.scale)) scale = core::make_vec3(std::data(node.scale));
 
-        matrix = core::translate(core::Matrixf { 1.f }, translation) * rotation *
-                 core::scale(core::Matrixf { 1.f }, scale) * matrix;
+        auto matrix = core::Matrixf { 1.f };
+        if (!std::empty(node.matrix)) matrix = core::make_mat4(std::data(node.matrix));
 
-        return matrix;
+        auto result = core::translate(core::Matrixf { 1.f }, translation) *
+                      core::Matrixf { rotation } * core::scale(core::Matrixf { 1.f }, scale) *
+                      matrix;
+
+        return result;
     };
 
     auto node_queue = std::deque<std::pair<tinygltf::Node *, core::Matrixf>> {};
@@ -151,7 +200,7 @@ void Model::load(const std::filesystem::path &path) {
 MeshArray Model::createMeshes() noexcept {
     STORM_EXPECTS(m_loaded);
 
-    auto &material = *m_material_pool->get(Scene::DEFAULT_PBR_MATERIAL_NAME);
+    auto &material = *m_material_pool->get(PBRScene::DEFAULT_PBR_MATERIAL_NAME);
 
     auto meshes = MeshArray {};
 
@@ -161,7 +210,7 @@ MeshArray Model::createMeshes() noexcept {
         mesh.setVertexArray(_mesh.vertex_array, _mesh.attributes, _mesh.bindings);
         if (_mesh.has_indices) mesh.setIndexArray(_mesh.index_array);
 
-        mesh.transform().setMatrix(_mesh.initial_transform);
+        mesh.setMatrix(_mesh.initial_transform);
 
         for (auto _submesh : _mesh.submeshes) {
             auto &submesh = mesh.addSubmesh(_submesh.vertex_count,
@@ -173,12 +222,24 @@ MeshArray Model::createMeshes() noexcept {
             auto &material = submesh.materialInstance();
 
             for (const auto &[name, sampler] : _submesh.samplers) {
-                material.setSampledTexture(name, *sampler);
+                auto settings = render::Sampler::Settings {
+                    .enable_anisotropy = true,
+                    .max_anisotropy    = m_engine->maxAnisotropy(),
+                    .compare_operation = render::CompareOperation::Never,
+                    .max_lod           = static_cast<float>(sampler->mipLevels())
+                };
+                material.setSampledTexture(name,
+                                           *sampler,
+                                           render::TextureViewType::T2D,
+                                           {},
+                                           std::move(settings));
             }
 
             for (const auto &[name, data] : _submesh.datas) {
                 material.setRawDataValue(name, data);
             }
+
+            if (_submesh.double_sided) material.setCullMode(render::CullMode::None);
         }
 
         meshes.emplace_back(std::move(mesh));
@@ -268,9 +329,14 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
                                  std::size(image.image) },
                                extent,
                                load_format,
-                               render::PixelFormat::RGBA8_UNorm,
-                               render::SampleCountFlag::C1_BIT,
-                               render::computeMipLevel(extent));
+                               { .generate_mip_map = true,
+                                 .storage_format   = render::PixelFormat::RGBA8_UNorm,
+                                 .samples          = render::SampleCountFlag::C1_BIT,
+                                 .mip_levels       = render::computeMipLevel(extent),
+                                 .usage            = render::TextureUsage::Sampled |
+                                          render::TextureUsage::Transfert_Dst |
+                                          render::TextureUsage::Transfert_Src });
+        m_engine->device().setObjectName(texture, name);
 
         return &texture;
     };
@@ -288,6 +354,7 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
     };
 
     auto index_array   = std::vector<std::byte> {};
+    auto index_size    = 0u;
     auto large_indices = false;
 
     auto vertex_it         = 0u;
@@ -316,6 +383,7 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
 
             const auto count = accessor.count;
 
+            auto has_tangents = false;
             for (auto i = 0u; i < count; ++i) {
                 const auto it =
                     reinterpret_cast<const float *>(input + accessor.byteOffset + i * stride);
@@ -336,9 +404,16 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
                 } else if (attrib.first.compare("NORMAL") == 0) {
                     vertex.normal = { it[0], it[1], it[2] };
                 } else if (attrib.first.compare("TANGENT") == 0) {
+                    has_tangents   = true;
                     vertex.tangent = { it[0], it[1], it[2], it[4] };
                 } else if (attrib.first.compare("TEXCOORD_0") == 0) {
                     vertex.texcoord = { it[0], it[1] };
+                }
+            }
+
+            if (!has_tangents) {
+                for (auto i = 0u; i < count; ++i) {
+                    auto &vertex = mesh.vertex_array.at<Vertex>(vertex_it + i);
                 }
             }
         }
@@ -351,6 +426,7 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
             index_count = accessor.count;
 
             const auto size = tinygltf::GetComponentSizeInBytes(accessor.componentType);
+            index_size      = size;
 
             large_indices = size == sizeof(core::UInt32);
 
@@ -359,7 +435,8 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
 
             const auto *data = reinterpret_cast<const std::byte *>(
                 &buffer.data[buffer_view.byteOffset + accessor.byteOffset]);
-            std::copy(data, data + buffer_view.byteLength, std::data(index_array) + current_size);
+
+            std::copy(data, data + accessor.count * size, std::data(index_array) + current_size);
 
             first_index = current_size / size;
             auto span   = core::span<std::uint16_t> { reinterpret_cast<std::uint16_t *>(
@@ -423,6 +500,8 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
             if (auto texture = loadTexture(material_instance.emissiveTexture.index);
                 texture != nullptr)
                 submesh.samplers.emplace_back(PBRMaterialInstance::EMISSIVE_MAP_NAME, texture);
+
+            submesh.double_sided = material_instance.doubleSided;
         }
 
         submesh.min = std::move(vertex_min);
@@ -437,20 +516,20 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
     if (!std::empty(index_array)) {
         if (large_indices) {
             auto indices = LargeIndexArray {};
-            indices.resize(std::size(index_array) / sizeof(core::UInt32));
+            indices.resize(std::size(index_array) / index_size);
 
-            std::copy(core::ranges::begin(index_array),
-                      core::ranges::end(index_array),
-                      reinterpret_cast<std::byte *>(std::data(indices)));
+            core::ranges::copy(index_array, reinterpret_cast<std::byte *>(std::data(indices)));
 
             mesh.index_array = std::move(indices);
         } else {
             auto indices = IndexArray {};
-            indices.resize(std::size(index_array) / sizeof(core::UInt16));
+            indices.resize(std::size(index_array) / index_size);
 
-            std::copy(core::ranges::begin(index_array),
-                      core::ranges::end(index_array),
-                      reinterpret_cast<std::byte *>(std::data(indices)));
+            if (index_size == 1) {
+                auto j = 0u;
+                for (auto &i : indices) { i = static_cast<core::UInt16>(index_array[j++]); }
+            } else
+                core::ranges::copy(index_array, reinterpret_cast<std::byte *>(std::data(indices)));
 
             mesh.index_array = std::move(indices);
         }

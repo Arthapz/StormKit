@@ -4,25 +4,7 @@
 
 #pragma once
 
-#include "Scene.hpp"
-
 namespace storm::engine {
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    Mesh Scene::createPBRMesh() {
-        auto &default_pbr_material = m_material_pool.get(DEFAULT_PBR_MATERIAL_NAME);
-
-        return Mesh { *m_engine, *default_pbr_material };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    MeshOwnedPtr Scene::createPBRMeshPtr() {
-        auto &default_pbr_material = m_material_pool.get(DEFAULT_PBR_MATERIAL_NAME);
-
-        return std::make_unique<Mesh>(*m_engine, *default_pbr_material);
-    }
-
     ////////////////////////////////////////
     ////////////////////////////////////////
     Model Scene::createModel() { return m_engine->createModel(m_texture_pool, m_material_pool); }
@@ -32,14 +14,6 @@ namespace storm::engine {
     inline ModelOwnedPtr Scene::createModelPtr() {
         return m_engine->createModelPtr(m_texture_pool, m_material_pool);
     }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    CubeMap Scene::createCubeMap() { return CubeMap { *this }; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline CubeMapOwnedPtr Scene::createCubeMapPtr() { return std::make_unique<CubeMap>(*this); }
 
     ////////////////////////////////////////
     ////////////////////////////////////////

@@ -7,45 +7,49 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setAlbedoMap(const render::Texture &map,
-                                           render::Sampler::Settings sampler_settings) noexcept {
+    void PBRMaterialInstance::setAlbedoMap(
+        const render::Texture &map,
+        std::optional<render::Sampler::Settings> sampler_settings) noexcept {
         setSampledTexture(ALBEDO_MAP_NAME,
                           map,
                           render::TextureViewType::T2D,
-                          {},
+                          std::nullopt,
                           std::move(sampler_settings));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setNormalMap(const render::Texture &map,
-                                           render::Sampler::Settings sampler_settings) noexcept {
+    void PBRMaterialInstance::setNormalMap(
+        const render::Texture &map,
+        std::optional<render::Sampler::Settings> sampler_settings) noexcept {
         setSampledTexture(NORMAL_MAP_NAME,
                           map,
                           render::TextureViewType::T2D,
-                          {},
+                          std::nullopt,
                           std::move(sampler_settings));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setMetallicMap(const render::Texture &map,
-                                             render::Sampler::Settings sampler_settings) noexcept {
+    void PBRMaterialInstance::setMetallicMap(
+        const render::Texture &map,
+        std::optional<render::Sampler::Settings> sampler_settings) noexcept {
         setSampledTexture(METALLIC_MAP_NAME,
                           map,
                           render::TextureViewType::T2D,
-                          {},
+                          std::nullopt,
                           std::move(sampler_settings));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setRoughnessMap(const render::Texture &map,
-                                              render::Sampler::Settings sampler_settings) noexcept {
+    void PBRMaterialInstance::setRoughnessMap(
+        const render::Texture &map,
+        std::optional<render::Sampler::Settings> sampler_settings) noexcept {
         setSampledTexture(ROUGHNESS_MAP_NAME,
                           map,
                           render::TextureViewType::T2D,
-                          {},
+                          std::nullopt,
                           std::move(sampler_settings));
     }
 
@@ -53,22 +57,23 @@ namespace storm::engine {
     ////////////////////////////////////////
     void PBRMaterialInstance::setAmbiantOcclusionMap(
         const render::Texture &map,
-        render::Sampler::Settings sampler_settings) noexcept {
+        std::optional<render::Sampler::Settings> sampler_settings) noexcept {
         setSampledTexture(AMBIANT_OCCLUSION_MAP_NAME,
                           map,
                           render::TextureViewType::T2D,
-                          {},
+                          std::nullopt,
                           std::move(sampler_settings));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void PBRMaterialInstance::setEmissiveMap(const render::Texture &map,
-                                             render::Sampler::Settings sampler_settings) {
+    void PBRMaterialInstance::setEmissiveMap(
+        const render::Texture &map,
+        std::optional<render::Sampler::Settings> sampler_settings) noexcept {
         setSampledTexture(EMISSIVE_MAP_NAME,
                           map,
                           render::TextureViewType::T2D,
-                          {},
+                          std::nullopt,
                           std::move(sampler_settings));
     }
 

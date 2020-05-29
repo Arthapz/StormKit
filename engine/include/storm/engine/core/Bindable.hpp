@@ -27,8 +27,8 @@ namespace storm::engine {
         BindableBase(BindableBase &&);
         BindableBase &operator=(BindableBase &&);
 
-        [[nodiscard]] virtual const render::DescriptorSetLayout &descriptorLayout() const
-            noexcept = 0;
+        [[nodiscard]] virtual const render::DescriptorSetLayout &
+            descriptorLayout() const noexcept = 0;
         [[nodiscard]] inline const render::DescriptorSet &descriptorSet() const noexcept;
         [[nodiscard]] inline const std::optional<core::UOffset> &offset() const noexcept;
 
@@ -54,9 +54,10 @@ namespace storm::engine {
         StaticBindable &operator=(StaticBindable &&);
 
         static void initDescriptorLayout(const render::Device &device, const InitFunc &func);
+        static void destroyDescriptorLayout();
 
-        [[nodiscard]] inline const render::DescriptorSetLayout &descriptorLayout() const
-            noexcept final;
+        [[nodiscard]] inline const render::DescriptorSetLayout &
+            descriptorLayout() const noexcept final;
 
       private:
         static inline render::DescriptorSetLayoutOwnedPtr s_descriptor_set_layout;
@@ -74,8 +75,8 @@ namespace storm::engine {
         Bindable(Bindable &&);
         Bindable &operator=(Bindable &&);
 
-        [[nodiscard]] inline const render::DescriptorSetLayout &descriptorLayout() const
-            noexcept final;
+        [[nodiscard]] inline const render::DescriptorSetLayout &
+            descriptorLayout() const noexcept final;
 
       private:
         InitFunc m_doInitDescriptorSetLayout;

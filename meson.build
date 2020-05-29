@@ -24,7 +24,7 @@ lib_extension   = ''
 
 if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
     project_arguments += ['/DSTORM_BUILD', '/std:c++latest', '/permissive-', '/DFMT_HEADER_ONLY', '/DNOMINMAX']
-    examples_arguments += ['/std:c++latest', '/permissive-', '/NOMINMAX']
+    examples_arguments += ['/std:c++latest', '/permissive-', '/DNOMINMAX']
     lib_extension = '.lib'
 
     message(meson.get_compiler('cpp').get_id())

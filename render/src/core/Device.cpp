@@ -109,6 +109,8 @@ Device::Device(const PhysicalDevice &physical_device, const Instance &instance)
         m_physical_device->capabilities().features.fill_Mode_non_solid);
     enabled_features.setSampleRateShading(
         m_physical_device->capabilities().features.sampler_rate_shading);
+    enabled_features.setSamplerAnisotropy(
+        m_physical_device->capabilities().features.sampler_anisotropy);
 
     const auto create_info =
         vk::DeviceCreateInfo {}

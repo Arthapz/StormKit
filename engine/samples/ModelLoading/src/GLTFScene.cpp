@@ -18,19 +18,19 @@
 using namespace storm;
 using storm::log::operator""_module;
 
-static constexpr auto LOG_MODULE = "ModelLoading"_module;
+static constexpr auto GLTF_LOG_MODULE = "ModelLoading"_module;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 GLTFScene::GLTFScene(engine::Engine &engine,
                      const window::Window &window,
                      std::filesystem::path model_filepath)
-    : engine::Scene { engine }, m_window { &window }, m_input_handler { window } {
+    : engine::PBRScene { engine }, m_window { &window }, m_input_handler { window } {
     m_camera = std::make_unique<engine::FPSCamera>(
         *m_engine,
         m_engine->surface().extent().convertTo<core::Extentf>());
-    m_camera->setPosition({ 0.f, 0.f, 1.f });
-    m_camera->setRotation({ 180.f, 0.f, 0.f });
+    m_camera->setPosition({ 0.f, 0.f, -0.5f });
+    m_camera->setRotation({ 0.f, 0.f, 0.f });
 
     setCamera(*m_camera);
 
@@ -38,27 +38,42 @@ GLTFScene::GLTFScene(engine::Engine &engine,
     m_model->load(model_filepath);
 
     if (!m_model->loaded()) {
-        log::LogHandler::flog(LOG_MODULE, "Failed to load {}", model_filepath.string());
+        log::LogHandler::flog(GLTF_LOG_MODULE, "Failed to load {}", model_filepath.string());
         std::exit(EXIT_FAILURE);
     }
-    log::LogHandler::ilog(LOG_MODULE, "{} loaded", model_filepath.string());
+    log::LogHandler::ilog(GLTF_LOG_MODULE, "{} loaded", model_filepath.string());
 
     m_meshes = m_model->createMeshes();
 
+    auto bounding_box = engine::BoundingBox {};
+    bounding_box.min  = { 0.f, 0.f, 0.f };
+    bounding_box.max  = { 0.f, 0.f, 0.f };
+
+    for (const auto &mesh : m_meshes) {
+        const auto &_bounding_box = mesh.boundingBox();
+
+        bounding_box.min = core::min(bounding_box.min, _bounding_box.min);
+        bounding_box.max = core::max(bounding_box.max, _bounding_box.max);
+    }
+
+    const auto extent = bounding_box.max - bounding_box.min;
+
+    bounding_box.extent.width  = extent.x;
+    bounding_box.extent.height = extent.y;
+    bounding_box.extent.depth  = extent.z;
+
+    const auto max_length =
+        std::max(bounding_box.extent.width,
+                 std::max(bounding_box.extent.height, bounding_box.extent.depth));
+
+    const auto scale = (1.f / max_length) * 0.5f;
+
+    auto translation = -bounding_box.min;
+    translation +=
+        -0.5f *
+        core::Vector3f { bounding_box.extent.w, bounding_box.extent.h, bounding_box.extent.d };
+
     for (auto &mesh : m_meshes) {
-        const auto &bounding_box = mesh.boundingBox();
-
-        const auto max_length =
-            std::max(bounding_box.extent.width,
-                     std::max(bounding_box.extent.height, bounding_box.extent.depth));
-
-        const auto scale = (1.f / max_length) * 0.5f;
-
-        auto translation = core::Vector3f {};
-        translation.x    = -(bounding_box.max.x + bounding_box.min.x) / 2.f;
-        translation.y    = -(bounding_box.max.y + bounding_box.min.y) / 2.f;
-        translation.z    = -(bounding_box.max.z + bounding_box.min.z) / 2.f;
-
         auto &transform = mesh.transform();
         transform.setScale(scale, scale, scale);
         transform.setPosition(translation);
@@ -68,29 +83,15 @@ GLTFScene::GLTFScene(engine::Engine &engine,
 
     m_cube_map = createCubeMapPtr();
 
-    auto right  = image::Image {};
-    auto left   = image::Image {};
-    auto top    = image::Image {};
-    auto bottom = image::Image {};
-    auto front  = image::Image {};
-    auto back   = image::Image {};
-
-    right.loadFromFile(EXAMPLES_DATA_DIR "textures/right.png");
-    left.loadFromFile(EXAMPLES_DATA_DIR "textures/left.png");
-    top.loadFromFile(EXAMPLES_DATA_DIR "textures/top.png");
-    bottom.loadFromFile(EXAMPLES_DATA_DIR "textures/bottom.png");
-    front.loadFromFile(EXAMPLES_DATA_DIR "textures/front.png");
-    back.loadFromFile(EXAMPLES_DATA_DIR "textures/back.png");
-
     auto &cube_map_texture = texturePool().create("CubeMap",
                                                   m_engine->device(),
                                                   render::TextureType::T2D,
                                                   render::TextureCreateFlag::Cube_Compatible);
-    cube_map_texture
-        .loadLayersFromImages(core::makeConstObservers(right, left, top, bottom, front, back),
-                              right.extent());
+    cube_map_texture.loadFromKTX(EXAMPLES_DATA_DIR "textures/cubemap.ktx");
 
-    m_cube_map->setTexture(cube_map_texture);
+    m_cube_map->setTexture(cube_map_texture,
+                           { .level_count = cube_map_texture.mipLevels(),
+                             .layer_count = cube_map_texture.layers() });
 
     enableDepthTest(true);
     toggleMSAA();
@@ -113,7 +114,7 @@ GLTFScene &GLTFScene::operator=(GLTFScene &&) = default;
 void GLTFScene::toggleWireframe() {
     const auto &capabilities = m_engine->device().physicalDevice().capabilities();
     if (!capabilities.features.fill_Mode_non_solid) {
-        log::LogHandler::elog(LOG_MODULE, "Wireframe is not supported on this GPU");
+        log::LogHandler::elog(GLTF_LOG_MODULE, "Wireframe is not supported on this GPU");
         return;
     }
 
@@ -127,10 +128,14 @@ void GLTFScene::toggleWireframe() {
 ////////////////////////////////////////
 ////////////////////////////////////////
 void GLTFScene::toggleMSAA() noexcept {
-    const auto samples =
-        (isMSAAEnabled()) ? render::SampleCountFlag::C1_BIT : m_engine->maxSampleCount();
+    if (m_engine->maxSampleCount() != render::SampleCountFlag::C1_BIT) {
+        if (m_sample_count == m_engine->maxSampleCount())
+            m_sample_count = render::SampleCountFlag::C1_BIT;
 
-    setMSAASampleCount(samples);
+        m_sample_count = core::nextValue(m_sample_count);
+    }
+
+    setMSAASampleCount(m_sample_count);
 }
 
 ////////////////////////////////////////
@@ -147,11 +152,14 @@ void GLTFScene::setDebugView(engine::PBRMaterialInstance::DebugView debug_index)
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void GLTFScene::update(float time) {
+void GLTFScene::update(float delta) {
+    static constexpr auto degree_per_sec = 7.f;
+
     const auto extent = m_engine->surface().extent().convertTo<core::Extenti>();
 
     if (m_rotate_mesh) {
-        for (auto &mesh : m_meshes) { mesh.transform().setPitch(time * 90.f); }
+        const auto degrees = degree_per_sec * delta;
+        for (auto &mesh : m_meshes) { mesh.transform().rotateYaw(degrees); }
     }
 
     if (!m_freeze_camera) {
@@ -200,27 +208,32 @@ void GLTFScene::doRenderScene(storm::engine::FrameGraph &framegraph,
                               storm::render::GraphicsPipelineState &state) {
     const auto &surface = m_engine->surface();
 
+    if (m_cube_map_dirty) {
+        insertGenerateCubeMapPass(framegraph, *m_cube_map);
+        m_cube_map_dirty = false;
+    }
+
     struct ColorPassData {
         engine::FramePassTextureID depth;
         engine::FramePassTextureID msaa;
         engine::FramePassTextureID output;
     };
 
-    const auto sample_count = m_engine->maxSampleCount();
-
     const auto depth_descriptor = engine::FrameGraphTexture::Descriptor {
         .type    = render::TextureType::T2D,
         .format  = render::PixelFormat::Depth32F_Stencil8,
         .extent  = surface.extent(),
-        .samples = (isMSAAEnabled()) ? sample_count : render::SampleCountFlag::C1_BIT,
+        .samples = m_sample_count,
         .usage   = render::TextureUsage::Depth_Stencil_Attachment
     };
     const auto msaa_descriptor =
         engine::FrameGraphTexture::Descriptor { .type    = render::TextureType::T2D,
                                                 .format  = surface.pixelFormat(),
                                                 .extent  = surface.extent(),
-                                                .samples = sample_count,
+                                                .samples = m_sample_count,
                                                 .usage   = render::TextureUsage::Color_Attachment };
+
+    bindables.emplace_back(core::makeConstObserver(m_data));
 
     const auto setup =
         [&backbuffer, &depth_descriptor, &msaa_descriptor, this](engine::FramePassBuilder &builder,
@@ -250,8 +263,8 @@ void GLTFScene::doRenderScene(storm::engine::FrameGraph &framegraph,
             render::GraphicsPipelineColorBlendAttachmentState {}
         };
 
-        for (auto &mesh : m_meshes) mesh.render(cmb, resources.renderPass(), bindables, mesh_state);
         m_cube_map->render(cmb, resources.renderPass(), bindables, mesh_state);
+        for (auto &mesh : m_meshes) mesh.render(cmb, resources.renderPass(), bindables, mesh_state);
     };
 
     auto &color_pass =

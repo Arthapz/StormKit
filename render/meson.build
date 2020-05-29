@@ -1,8 +1,9 @@
 vulkan_dep  = dependency('vulkan')
+gli_dep = dependency('gli')
 
 vulkan_headers_dep = declare_dependency(dependencies: [vulkan_dep])
 
-public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, vulkan_headers_dep]
+public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, gli_dep, vulkan_headers_dep]
 private_dependencies = []
 
 core_headers = files([

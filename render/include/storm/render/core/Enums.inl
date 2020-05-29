@@ -4,9 +4,6 @@
 
 #pragma once
 
-#include <map>
-#include <unordered_map>
-
 #define AS_AND_FROM(M, X, Y)                                                              \
     inline X fromVK(Y value) { return M.at(value); }                                      \
     inline Y toVK(X value) {                                                              \
@@ -60,7 +57,7 @@
 
 namespace storm::render {
     static const auto physical_device_map =
-        std::unordered_map<vk::PhysicalDeviceType, PhysicalDeviceType> {
+        storm::core::HashMap<vk::PhysicalDeviceType, PhysicalDeviceType> {
             { vk::PhysicalDeviceType::eCpu, PhysicalDeviceType::CPU },
             { vk::PhysicalDeviceType::eDiscreteGpu, PhysicalDeviceType::Discrete_GPU },
             { vk::PhysicalDeviceType::eVirtualGpu, PhysicalDeviceType::Virtual_GPU },
@@ -80,7 +77,7 @@ namespace storm::render {
         return "Unknown";
     }
 
-    static const auto queue_flag_map = std::unordered_map<vk::QueueFlagBits, QueueFlag> {
+    static const auto queue_flag_map = storm::core::HashMap<vk::QueueFlagBits, QueueFlag> {
         { vk::QueueFlagBits::eGraphics, QueueFlag::Graphics },
         { vk::QueueFlagBits::eCompute, QueueFlag::Compute },
         { vk::QueueFlagBits::eTransfer, QueueFlag::Transfert },
@@ -89,18 +86,19 @@ namespace storm::render {
 
     AS_AND_FROM_FLAGS(queue_flag_map, QueueFlag, vk::QueueFlags)
 
-    static const auto shader_stage_map = std::unordered_map<vk::ShaderStageFlagBits, ShaderStage> {
-        { vk::ShaderStageFlagBits::eVertex, ShaderStage::Vertex },
-        { vk::ShaderStageFlagBits::eFragment, ShaderStage::Fragment },
-        { vk::ShaderStageFlagBits::eGeometry, ShaderStage::Geometry },
-        { vk::ShaderStageFlagBits::eCompute, ShaderStage::Compute }
-    };
+    static const auto shader_stage_map =
+        storm::core::HashMap<vk::ShaderStageFlagBits, ShaderStage> {
+            { vk::ShaderStageFlagBits::eVertex, ShaderStage::Vertex },
+            { vk::ShaderStageFlagBits::eFragment, ShaderStage::Fragment },
+            { vk::ShaderStageFlagBits::eGeometry, ShaderStage::Geometry },
+            { vk::ShaderStageFlagBits::eCompute, ShaderStage::Compute }
+        };
 
     AS_AND_FROM_FLAGS(shader_stage_map, ShaderStage, vk::ShaderStageFlags)
     AS_FLAGS_BITS(shader_stage_map, ShaderStage, vk::ShaderStageFlagBits)
 
     static const auto primitive_topology =
-        std::unordered_map<vk::PrimitiveTopology, PrimitiveTopology> {
+        storm::core::HashMap<vk::PrimitiveTopology, PrimitiveTopology> {
             { vk::PrimitiveTopology::ePointList, PrimitiveTopology::Point_List },
             { vk::PrimitiveTopology::eLineList, PrimitiveTopology::Line_List },
             { vk::PrimitiveTopology::eLineStrip, PrimitiveTopology::Line_Strip },
@@ -111,7 +109,7 @@ namespace storm::render {
 
     AS_AND_FROM(primitive_topology, PrimitiveTopology, vk::PrimitiveTopology)
 
-    static const auto polygon_mode = std::unordered_map<vk::PolygonMode, PolygonMode> {
+    static const auto polygon_mode = storm::core::HashMap<vk::PolygonMode, PolygonMode> {
         { vk::PolygonMode::eFill, PolygonMode::Fill },
         { vk::PolygonMode::eLine, PolygonMode::Line },
         { vk::PolygonMode::ePoint, PolygonMode::Point }
@@ -119,14 +117,14 @@ namespace storm::render {
 
     AS_AND_FROM(polygon_mode, PolygonMode, vk::PolygonMode)
 
-    static const auto cull_mode_map = std::unordered_map<vk::CullModeFlagBits, CullMode> {
+    static const auto cull_mode_map = storm::core::HashMap<vk::CullModeFlagBits, CullMode> {
         { vk::CullModeFlagBits::eFront, CullMode::Front },
         { vk::CullModeFlagBits::eBack, CullMode::Back }
     };
 
     AS_AND_FROM_FLAGS(cull_mode_map, CullMode, vk::CullModeFlags)
 
-    static const auto front_face_map = std::unordered_map<vk::FrontFace, FrontFace> {
+    static const auto front_face_map = storm::core::HashMap<vk::FrontFace, FrontFace> {
         { vk::FrontFace::eClockwise, FrontFace::Clockwise },
         { vk::FrontFace::eCounterClockwise, FrontFace::Counter_Clockwise }
     };
@@ -134,7 +132,7 @@ namespace storm::render {
     AS_AND_FROM(front_face_map, FrontFace, vk::FrontFace)
 
     static const auto sample_count_map =
-        std::unordered_map<vk::SampleCountFlagBits, SampleCountFlag> {
+        storm::core::HashMap<vk::SampleCountFlagBits, SampleCountFlag> {
             { vk::SampleCountFlagBits::e1, SampleCountFlag::C1_BIT },
             { vk::SampleCountFlagBits::e2, SampleCountFlag::C2_BIT },
             { vk::SampleCountFlagBits::e4, SampleCountFlag::C4_BIT },
@@ -148,7 +146,7 @@ namespace storm::render {
     AS_FLAGS_BITS(sample_count_map, SampleCountFlag, vk::SampleCountFlagBits)
 
     static const auto color_component_map =
-        std::unordered_map<vk::ColorComponentFlagBits, ColorComponent> {
+        storm::core::HashMap<vk::ColorComponentFlagBits, ColorComponent> {
             { vk::ColorComponentFlagBits::eR, ColorComponent::R },
             { vk::ColorComponentFlagBits::eG, ColorComponent::G },
             { vk::ColorComponentFlagBits::eB, ColorComponent::B },
@@ -157,7 +155,7 @@ namespace storm::render {
 
     AS_AND_FROM_FLAGS(color_component_map, ColorComponent, vk::ColorComponentFlags)
 
-    static const auto blend_factor_map = std::unordered_map<vk::BlendFactor, BlendFactor> {
+    static const auto blend_factor_map = storm::core::HashMap<vk::BlendFactor, BlendFactor> {
         { vk::BlendFactor::eOne, BlendFactor::One },
         { vk::BlendFactor::eZero, BlendFactor::Zero },
         { vk::BlendFactor::eSrcColor, BlendFactor::Src_Color },
@@ -179,7 +177,7 @@ namespace storm::render {
 
     AS_AND_FROM(blend_factor_map, BlendFactor, vk::BlendFactor)
 
-    static const auto blend_operation_map = std::unordered_map<vk::BlendOp, BlendOperation> {
+    static const auto blend_operation_map = storm::core::HashMap<vk::BlendOp, BlendOperation> {
         { vk::BlendOp::eAdd, BlendOperation::Add },
         { vk::BlendOp::eSubtract, BlendOperation::Substract },
         { vk::BlendOp::eReverseSubtract, BlendOperation::Reverse_Substract },
@@ -189,7 +187,7 @@ namespace storm::render {
 
     AS_AND_FROM(blend_operation_map, BlendOperation, vk::BlendOp)
 
-    static const auto logic_operation_map = std::unordered_map<vk::LogicOp, LogicOperation> {
+    static const auto logic_operation_map = storm::core::HashMap<vk::LogicOp, LogicOperation> {
         { vk::LogicOp::eClear, LogicOperation::Clear },
         { vk::LogicOp::eAnd, LogicOperation::And },
         { vk::LogicOp::eAndReverse, LogicOperation::And_Reverse },
@@ -210,7 +208,7 @@ namespace storm::render {
 
     AS_AND_FROM(logic_operation_map, LogicOperation, vk::LogicOp)
 
-    static const auto pixel_format_map = std::unordered_map<vk::Format, PixelFormat> {
+    static const auto pixel_format_map = storm::core::HashMap<vk::Format, PixelFormat> {
         { vk::Format::eR8Snorm, PixelFormat::R8_SNorm },
         { vk::Format::eR8G8Snorm, PixelFormat::RG8_SNorm },
         { vk::Format::eR8G8B8Snorm, PixelFormat::RGB8_SNorm },
@@ -302,7 +300,7 @@ namespace storm::render {
     AS_AND_FROM(pixel_format_map, PixelFormat, vk::Format)
 
     static const auto attachment_load_operation_map =
-        std::unordered_map<vk::AttachmentLoadOp, AttachmentLoadOperation> {
+        storm::core::HashMap<vk::AttachmentLoadOp, AttachmentLoadOperation> {
             { vk::AttachmentLoadOp::eLoad, AttachmentLoadOperation::Load },
             { vk::AttachmentLoadOp::eClear, AttachmentLoadOperation::Clear },
             { vk::AttachmentLoadOp::eDontCare, AttachmentLoadOperation::Dont_Care },
@@ -311,7 +309,7 @@ namespace storm::render {
     AS_AND_FROM(attachment_load_operation_map, AttachmentLoadOperation, vk::AttachmentLoadOp)
 
     static const auto attachment_store_operation_map =
-        std::unordered_map<vk::AttachmentStoreOp, AttachmentStoreOperation> {
+        storm::core::HashMap<vk::AttachmentStoreOp, AttachmentStoreOperation> {
             { vk::AttachmentStoreOp::eStore, AttachmentStoreOperation::Store },
             { vk::AttachmentStoreOp::eDontCare, AttachmentStoreOperation::Dont_Care },
         };
@@ -319,7 +317,7 @@ namespace storm::render {
     AS_AND_FROM(attachment_store_operation_map, AttachmentStoreOperation, vk::AttachmentStoreOp)
 
     static const auto texture_layout_operation_map =
-        std::unordered_map<vk::ImageLayout, TextureLayout> {
+        storm::core::HashMap<vk::ImageLayout, TextureLayout> {
             { vk::ImageLayout::eUndefined, TextureLayout::Undefined },
             { vk::ImageLayout::eGeneral, TextureLayout::General },
             { vk::ImageLayout::eColorAttachmentOptimal, TextureLayout::Color_Attachment_Optimal },
@@ -342,7 +340,7 @@ namespace storm::render {
     AS_AND_FROM(texture_layout_operation_map, TextureLayout, vk::ImageLayout)
 
     static const auto pipeline_bind_point_map =
-        std::unordered_map<vk::PipelineBindPoint, PipelineBindPoint> {
+        storm::core::HashMap<vk::PipelineBindPoint, PipelineBindPoint> {
             { vk::PipelineBindPoint::eGraphics, PipelineBindPoint::Graphics },
             { vk::PipelineBindPoint::eCompute, PipelineBindPoint::Compute },
         };
@@ -350,14 +348,14 @@ namespace storm::render {
     AS_AND_FROM(pipeline_bind_point_map, PipelineBindPoint, vk::PipelineBindPoint)
 
     static const auto vertex_input_rate_map =
-        std::unordered_map<vk::VertexInputRate, VertexInputRate> {
+        storm::core::HashMap<vk::VertexInputRate, VertexInputRate> {
             { vk::VertexInputRate::eVertex, VertexInputRate::Vertex },
             { vk::VertexInputRate::eInstance, VertexInputRate::Instance },
         };
 
     AS_AND_FROM(vertex_input_rate_map, VertexInputRate, vk::VertexInputRate)
 
-    static const auto format_map = std::unordered_map<vk::Format, Format> {
+    static const auto format_map = storm::core::HashMap<vk::Format, Format> {
         { vk::Format::eR8Sint, Format::Byte },
         { vk::Format::eR8G8Sint, Format::Byte2 },
         { vk::Format::eR8G8B8Sint, Format::Byte3 },
@@ -455,7 +453,7 @@ namespace storm::render {
     AS_AND_FROM_PROXY(format_map, Format, FormatProxy)
 
     static const auto buffer_usage_map =
-        std::unordered_map<vk::BufferUsageFlagBits, HardwareBufferUsage> {
+        storm::core::HashMap<vk::BufferUsageFlagBits, HardwareBufferUsage> {
             { vk::BufferUsageFlagBits::eVertexBuffer, HardwareBufferUsage::Vertex },
             { vk::BufferUsageFlagBits::eIndexBuffer, HardwareBufferUsage::Index },
             { vk::BufferUsageFlagBits::eUniformBuffer, HardwareBufferUsage::Uniform },
@@ -465,21 +463,23 @@ namespace storm::render {
 
     AS_AND_FROM_FLAGS(buffer_usage_map, HardwareBufferUsage, vk::BufferUsageFlags)
 
-    static const auto texture_usage_map = std::unordered_map<vk::ImageUsageFlagBits, TextureUsage> {
-        { vk::ImageUsageFlagBits::eTransferSrc, TextureUsage::Transfert_Src },
-        { vk::ImageUsageFlagBits::eTransferDst, TextureUsage::Transfert_Dst },
-        { vk::ImageUsageFlagBits::eSampled, TextureUsage::Sampled },
-        { vk::ImageUsageFlagBits::eStorage, TextureUsage::Storage },
-        { vk::ImageUsageFlagBits::eColorAttachment, TextureUsage::Color_Attachment },
-        { vk::ImageUsageFlagBits::eDepthStencilAttachment, TextureUsage::Depth_Stencil_Attachment },
-        { vk::ImageUsageFlagBits::eTransientAttachment, TextureUsage::Transient_Attachment },
-        { vk::ImageUsageFlagBits::eInputAttachment, TextureUsage::Input_Attachment },
-    };
+    static const auto texture_usage_map =
+        storm::core::HashMap<vk::ImageUsageFlagBits, TextureUsage> {
+            { vk::ImageUsageFlagBits::eTransferSrc, TextureUsage::Transfert_Src },
+            { vk::ImageUsageFlagBits::eTransferDst, TextureUsage::Transfert_Dst },
+            { vk::ImageUsageFlagBits::eSampled, TextureUsage::Sampled },
+            { vk::ImageUsageFlagBits::eStorage, TextureUsage::Storage },
+            { vk::ImageUsageFlagBits::eColorAttachment, TextureUsage::Color_Attachment },
+            { vk::ImageUsageFlagBits::eDepthStencilAttachment,
+              TextureUsage::Depth_Stencil_Attachment },
+            { vk::ImageUsageFlagBits::eTransientAttachment, TextureUsage::Transient_Attachment },
+            { vk::ImageUsageFlagBits::eInputAttachment, TextureUsage::Input_Attachment },
+        };
 
     AS_AND_FROM_FLAGS(texture_usage_map, TextureUsage, vk::ImageUsageFlags)
 
     static const auto memory_property_map =
-        std::unordered_map<vk::MemoryPropertyFlagBits, MemoryProperty> {
+        storm::core::HashMap<vk::MemoryPropertyFlagBits, MemoryProperty> {
             { vk::MemoryPropertyFlagBits::eDeviceLocal, MemoryProperty::Device_Local },
             { vk::MemoryPropertyFlagBits::eHostVisible, MemoryProperty::Host_Visible },
             { vk::MemoryPropertyFlagBits::eHostCoherent, MemoryProperty::Host_Coherent },
@@ -489,7 +489,7 @@ namespace storm::render {
     AS_AND_FROM_FLAGS(memory_property_map, MemoryProperty, vk::MemoryPropertyFlags)
 
     static const auto texture_aspect_mask_map =
-        std::unordered_map<vk::ImageAspectFlagBits, TextureAspectMask> {
+        storm::core::HashMap<vk::ImageAspectFlagBits, TextureAspectMask> {
             { vk::ImageAspectFlagBits::eColor, TextureAspectMask::Color },
             { vk::ImageAspectFlagBits::eDepth, TextureAspectMask::Depth },
             { vk::ImageAspectFlagBits::eStencil, TextureAspectMask::Stencil },
@@ -498,7 +498,7 @@ namespace storm::render {
     AS_AND_FROM_FLAGS(texture_aspect_mask_map, TextureAspectMask, vk::ImageAspectFlags)
 
     static const auto texture_flag_map =
-        std::unordered_map<vk::ImageCreateFlagBits, TextureCreateFlag> {
+        storm::core::HashMap<vk::ImageCreateFlagBits, TextureCreateFlag> {
             { vk::ImageCreateFlagBits {}, TextureCreateFlag::None },
             { vk::ImageCreateFlagBits::eSparseBinding, TextureCreateFlag::Sparse_Binding },
             { vk::ImageCreateFlagBits::eSparseResidency, TextureCreateFlag::Sparse_Residency },
@@ -517,44 +517,46 @@ namespace storm::render {
         };
     AS_AND_FROM_FLAGS(texture_flag_map, TextureCreateFlag, vk::ImageCreateFlags)
 
-    static const auto descriptor_type_map = std::unordered_map<vk::DescriptorType, DescriptorType> {
-        { vk::DescriptorType::eSampler, DescriptorType::Sampler },
-        { vk::DescriptorType::eCombinedImageSampler, DescriptorType::Combined_Texture_Sampler },
-        { vk::DescriptorType::eSampledImage, DescriptorType::Sampled_Image },
-        { vk::DescriptorType::eStorageImage, DescriptorType::Storage_Image },
-        { vk::DescriptorType::eUniformTexelBuffer, DescriptorType::Uniform_Texel_Buffer },
-        { vk::DescriptorType::eStorageTexelBuffer, DescriptorType::Storage_Texel_Buffer },
-        { vk::DescriptorType::eUniformBuffer, DescriptorType::Uniform_Buffer },
-        { vk::DescriptorType::eStorageBuffer, DescriptorType::Storage_Buffer },
-        { vk::DescriptorType::eUniformBufferDynamic, DescriptorType::Uniform_Buffer_Dynamic },
-        { vk::DescriptorType::eStorageBufferDynamic, DescriptorType::Storage_Buffer_Dynamic },
-        { vk::DescriptorType::eInputAttachment, DescriptorType::Input_Attachment },
-    };
+    static const auto descriptor_type_map =
+        storm::core::HashMap<vk::DescriptorType, DescriptorType> {
+            { vk::DescriptorType::eSampler, DescriptorType::Sampler },
+            { vk::DescriptorType::eCombinedImageSampler, DescriptorType::Combined_Texture_Sampler },
+            { vk::DescriptorType::eSampledImage, DescriptorType::Sampled_Image },
+            { vk::DescriptorType::eStorageImage, DescriptorType::Storage_Image },
+            { vk::DescriptorType::eUniformTexelBuffer, DescriptorType::Uniform_Texel_Buffer },
+            { vk::DescriptorType::eStorageTexelBuffer, DescriptorType::Storage_Texel_Buffer },
+            { vk::DescriptorType::eUniformBuffer, DescriptorType::Uniform_Buffer },
+            { vk::DescriptorType::eStorageBuffer, DescriptorType::Storage_Buffer },
+            { vk::DescriptorType::eUniformBufferDynamic, DescriptorType::Uniform_Buffer_Dynamic },
+            { vk::DescriptorType::eStorageBufferDynamic, DescriptorType::Storage_Buffer_Dynamic },
+            { vk::DescriptorType::eInputAttachment, DescriptorType::Input_Attachment },
+        };
 
     AS_AND_FROM(descriptor_type_map, DescriptorType, vk::DescriptorType)
 
     static const auto command_buffer_level_map =
-        std::unordered_map<vk::CommandBufferLevel, CommandBufferLevel> {
+        storm::core::HashMap<vk::CommandBufferLevel, CommandBufferLevel> {
             { vk::CommandBufferLevel::ePrimary, CommandBufferLevel::Primary },
             { vk::CommandBufferLevel::eSecondary, CommandBufferLevel::Secondary },
         };
 
     AS_AND_FROM(command_buffer_level_map, CommandBufferLevel, vk::CommandBufferLevel)
 
-    static const auto command_operation_map = std::unordered_map<vk::CompareOp, CompareOperation> {
-        { vk::CompareOp::eNever, CompareOperation::Never },
-        { vk::CompareOp::eLess, CompareOperation::Less },
-        { vk::CompareOp::eEqual, CompareOperation::Equal },
-        { vk::CompareOp::eLessOrEqual, CompareOperation::Less_Or_Equal },
-        { vk::CompareOp::eGreater, CompareOperation::Greater },
-        { vk::CompareOp::eNotEqual, CompareOperation::Not_Equal },
-        { vk::CompareOp::eGreaterOrEqual, CompareOperation::Greater_Or_Equal },
-        { vk::CompareOp::eAlways, CompareOperation::Always },
-    };
+    static const auto command_operation_map =
+        storm::core::HashMap<vk::CompareOp, CompareOperation> {
+            { vk::CompareOp::eNever, CompareOperation::Never },
+            { vk::CompareOp::eLess, CompareOperation::Less },
+            { vk::CompareOp::eEqual, CompareOperation::Equal },
+            { vk::CompareOp::eLessOrEqual, CompareOperation::Less_Or_Equal },
+            { vk::CompareOp::eGreater, CompareOperation::Greater },
+            { vk::CompareOp::eNotEqual, CompareOperation::Not_Equal },
+            { vk::CompareOp::eGreaterOrEqual, CompareOperation::Greater_Or_Equal },
+            { vk::CompareOp::eAlways, CompareOperation::Always },
+        };
 
     AS_AND_FROM(command_operation_map, CompareOperation, vk::CompareOp)
 
-    static const auto filter_map = std::unordered_map<vk::Filter, Filter> {
+    static const auto filter_map = storm::core::HashMap<vk::Filter, Filter> {
         { vk::Filter::eLinear, Filter::Linear },
         { vk::Filter::eNearest, Filter::Nearest },
     };
@@ -562,7 +564,7 @@ namespace storm::render {
     AS_AND_FROM(filter_map, Filter, vk::Filter)
 
     static const auto sampler_address_mode_map =
-        std::unordered_map<vk::SamplerAddressMode, SamplerAddressMode> {
+        storm::core::HashMap<vk::SamplerAddressMode, SamplerAddressMode> {
             { vk::SamplerAddressMode::eRepeat, SamplerAddressMode::Repeat },
             { vk::SamplerAddressMode::eMirroredRepeat, SamplerAddressMode::Mirrored_Repeat },
             { vk::SamplerAddressMode::eClampToEdge, SamplerAddressMode::Clamp_To_Edge },
@@ -573,7 +575,7 @@ namespace storm::render {
 
     AS_AND_FROM(sampler_address_mode_map, SamplerAddressMode, vk::SamplerAddressMode)
 
-    static const auto border_color_map = std::unordered_map<vk::BorderColor, BorderColor> {
+    static const auto border_color_map = storm::core::HashMap<vk::BorderColor, BorderColor> {
         { vk::BorderColor::eFloatTransparentBlack, BorderColor::Float_Transparent_Black },
         { vk::BorderColor::eIntTransparentBlack, BorderColor::Int_Transparent_Black },
         { vk::BorderColor::eFloatOpaqueBlack, BorderColor::Float_Opaque_Black },
@@ -585,14 +587,14 @@ namespace storm::render {
     AS_AND_FROM(border_color_map, BorderColor, vk::BorderColor)
 
     static const auto sampler_mipmap_mode_map =
-        std::unordered_map<vk::SamplerMipmapMode, SamplerMipmapMode> {
+        storm::core::HashMap<vk::SamplerMipmapMode, SamplerMipmapMode> {
             { vk::SamplerMipmapMode::eLinear, SamplerMipmapMode::Linear },
             { vk::SamplerMipmapMode::eNearest, SamplerMipmapMode::Nearest },
         };
 
     AS_AND_FROM(sampler_mipmap_mode_map, SamplerMipmapMode, vk::SamplerMipmapMode)
 
-    static const auto texture_type_map = std::unordered_map<vk::ImageType, TextureType> {
+    static const auto texture_type_map = storm::core::HashMap<vk::ImageType, TextureType> {
         { vk::ImageType::e1D, TextureType::T1D },
         { vk::ImageType::e2D, TextureType::T2D },
         { vk::ImageType::e3D, TextureType::T3D },
@@ -601,7 +603,7 @@ namespace storm::render {
     AS_AND_FROM(texture_type_map, TextureType, vk::ImageType)
 
     static const auto texture_view_type_map =
-        std::unordered_map<vk::ImageViewType, TextureViewType> {
+        storm::core::HashMap<vk::ImageViewType, TextureViewType> {
             { vk::ImageViewType::e1D, TextureViewType::T1D },
             { vk::ImageViewType::e2D, TextureViewType::T2D },
             { vk::ImageViewType::e3D, TextureViewType::T3D },
@@ -614,7 +616,7 @@ namespace storm::render {
     AS_AND_FROM(texture_view_type_map, TextureViewType, vk::ImageViewType)
 
     static const auto debug_report_object_type_map =
-        std::unordered_map<vk::ObjectType, DebugObjectType> {
+        storm::core::HashMap<vk::ObjectType, DebugObjectType> {
             { vk::ObjectType::eUnknown, DebugObjectType::Unknown },
             { vk::ObjectType::eInstance, DebugObjectType::Instance },
             { vk::ObjectType::ePhysicalDevice, DebugObjectType::Physical_Device },
@@ -649,7 +651,7 @@ namespace storm::render {
 
     AS_AND_FROM(debug_report_object_type_map, DebugObjectType, vk::ObjectType)
 
-    static const auto access_flag_map = std::unordered_map<vk::AccessFlagBits, AccessFlag> {
+    static const auto access_flag_map = storm::core::HashMap<vk::AccessFlagBits, AccessFlag> {
         { vk::AccessFlagBits {}, AccessFlag::None },
         { vk::AccessFlagBits::eIndirectCommandRead, AccessFlag::Indirect_Command_Read },
         { vk::AccessFlagBits::eVertexAttributeRead, AccessFlag::Vertex_Attribute_Read },
@@ -674,7 +676,7 @@ namespace storm::render {
     AS_AND_FROM_FLAGS(access_flag_map, AccessFlag, vk::AccessFlags)
 
     static const auto pipeline_stage_flag_map =
-        std::unordered_map<vk::PipelineStageFlagBits, PipelineStageFlag> {
+        storm::core::HashMap<vk::PipelineStageFlagBits, PipelineStageFlag> {
             { vk::PipelineStageFlagBits {}, PipelineStageFlag::None },
             { vk::PipelineStageFlagBits::eTopOfPipe, PipelineStageFlag::Top_Of_Pipe },
             { vk::PipelineStageFlagBits::eDrawIndirect, PipelineStageFlag::Draw_Indirect },
@@ -702,7 +704,7 @@ namespace storm::render {
     AS_AND_FROM_FLAGS(pipeline_stage_flag_map, PipelineStageFlag, vk::PipelineStageFlags)
 
     static const auto dependency_flag_map =
-        std::unordered_map<vk::DependencyFlagBits, DependencyFlag> {
+        storm::core::HashMap<vk::DependencyFlagBits, DependencyFlag> {
             { vk::DependencyFlagBits {}, DependencyFlag::None },
             { vk::DependencyFlagBits::eByRegion, DependencyFlag::By_Region },
             { vk::DependencyFlagBits::eDeviceGroup, DependencyFlag::Device_Group },
@@ -710,6 +712,19 @@ namespace storm::render {
         };
 
     AS_AND_FROM_FLAGS(dependency_flag_map, DependencyFlag, vk::DependencyFlags)
+
+    static const auto dynamic_state_map = storm::core::HashMap<vk::DynamicState, DynamicState> {
+        { vk::DynamicState::eViewport, DynamicState::Viewport },
+        { vk::DynamicState::eScissor, DynamicState::Scissor },
+        { vk::DynamicState::eLineWidth, DynamicState::Line_Width },
+        { vk::DynamicState::eDepthBias, DynamicState::Depth_Bias },
+        { vk::DynamicState::eBlendConstants, DynamicState::Blend_Constants },
+        { vk::DynamicState::eDepthBounds, DynamicState::Depth_Bounds },
+        { vk::DynamicState::eStencilCompareMask, DynamicState::Stencil_Compare_Mask },
+        { vk::DynamicState::eStencilReference, DynamicState::Stencil_Reference },
+    };
+
+    AS_AND_FROM(dynamic_state_map, DynamicState, vk::DynamicState)
 } // namespace storm::render
 
 #undef AS_AND_FROM
