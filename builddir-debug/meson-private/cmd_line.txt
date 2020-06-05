@@ -1,0 +1,7 @@
+[options]
+buildtype = debug
+library_type = static
+enable_examples = true
+
+[properties]
+

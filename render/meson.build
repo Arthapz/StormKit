@@ -6,6 +6,10 @@ vulkan_headers_dep = declare_dependency(dependencies: [vulkan_dep])
 public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, gli_dep, vulkan_headers_dep]
 private_dependencies = []
 
+general_headers = files([
+   'include/storm/render/Fwd.hpp'
+])
+
 core_headers = files([
     'include/storm/render/core/vk_mem_alloc.h',
     'include/storm/render/core/Fwd.hpp',
@@ -122,7 +126,7 @@ sources = files([
     'src/sync/Fence.cpp',
 ])
 
-headers = core_headers + resource_headers + pipeline_headers + sync_headers
+headers = general_headers + core_headers + resource_headers + pipeline_headers + sync_headers
 
 args = {}
 args += {'extra_files': inls, 'gnu_symbol_visibility': 'hidden'}
@@ -165,6 +169,7 @@ if get_option('enable_examples')
     subdir('samples')
 endif
 
+install_headers(general_headers, subdir : 'storm/render/')
 install_headers(core_headers + core_inls, subdir : 'storm/render/core')
 install_headers(resource_headers + resource_inls, subdir : 'storm/render/resource')
 install_headers(pipeline_headers + pipeline_inls, subdir : 'storm/render/pipeline')
