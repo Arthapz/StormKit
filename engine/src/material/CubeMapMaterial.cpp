@@ -57,7 +57,8 @@ CubeMapMaterial::CubeMapMaterial(Scene &scene) : Material { scene } {
 
         texture.loadLayersFromMemory(std::move(data),
                                      { 1u, 1u },
-                                     { .storage_format = render::PixelFormat::RGBA16F });
+                                     render::Texture::LoadOperation {
+                                         .storage_format = render::PixelFormat::RGBA16F });
     }
 }
 ////////////////////////////////////////

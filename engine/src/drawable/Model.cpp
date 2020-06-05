@@ -21,6 +21,7 @@
 #define TINYGLTF_NOEXCEPTION
 #define JSON_NOEXCEPTION
 #define TINYGLTF_NO_STB_IMAGE
+#define TINYGLTF_NO_STB_IMAGE_WRITE
 #include "../tiny_gltf.h"
 
 using namespace storm;
@@ -329,13 +330,14 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
                                  std::size(image.image) },
                                extent,
                                load_format,
-                               { .generate_mip_map = true,
-                                 .storage_format   = render::PixelFormat::RGBA8_UNorm,
-                                 .samples          = render::SampleCountFlag::C1_BIT,
-                                 .mip_levels       = render::computeMipLevel(extent),
-                                 .usage            = render::TextureUsage::Sampled |
-                                          render::TextureUsage::Transfert_Dst |
-                                          render::TextureUsage::Transfert_Src });
+                               render::Texture::LoadOperation {
+                                   .generate_mip_map = true,
+                                   .storage_format   = render::PixelFormat::RGBA8_UNorm,
+                                   .samples          = render::SampleCountFlag::C1_BIT,
+                                   .mip_levels       = render::computeMipLevel(extent),
+                                   .usage            = render::TextureUsage::Sampled |
+                                            render::TextureUsage::Transfert_Dst |
+                                            render::TextureUsage::Transfert_Src });
         m_engine->device().setObjectName(texture, name);
 
         return &texture;

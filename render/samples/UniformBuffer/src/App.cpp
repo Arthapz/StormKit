@@ -310,10 +310,11 @@ void App::doInitMeshRenderObjects() {
         auto depth = m_device->createTexturePtr();
         depth->createTextureData(surface_extent,
                                  render::PixelFormat::Depth32F_Stencil8,
-                                 { .samples    = render::SampleCountFlag::C1_BIT,
-                                   .mip_levels = 1,
-                                   .layers     = 1,
-                                   .usage      = render::TextureUsage::Depth_Stencil_Attachment });
+                                 render::Texture::CreateOperation {
+                                     .samples    = render::SampleCountFlag::C1_BIT,
+                                     .mip_levels = 1,
+                                     .layers     = 1,
+                                     .usage = render::TextureUsage::Depth_Stencil_Attachment });
 
         auto depth_view = depth->createViewPtr(render::TextureViewType::T2D,
                                                { .aspect_mask = render::TextureAspectMask::Depth });

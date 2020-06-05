@@ -2,4 +2,6 @@
 #define TINYGLTF_USE_CPP14
 #define TINYGLTF_NOEXCEPTION
 #define JSON_NOEXCEPTION
+#define TINYGLTF_NO_STB_IMAGE
+#define TINYGLTF_NO_STB_IMAGE_WRITE
 #include "tiny_gltf.h"

@@ -24,8 +24,6 @@ inls = files([
 
 sources = files([
     'src/Image.cpp',
-    'src/private/stb_image.c',
-    'src/private/stb_image.h',
     'src/private/ImageLoader.cpp',
     'src/private/ImageData.hpp',
     'src/private/ImageLoader.hpp',

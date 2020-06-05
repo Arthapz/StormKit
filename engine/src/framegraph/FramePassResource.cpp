@@ -16,10 +16,10 @@ void FrameGraphTexture::realize(const render::Device &device, const Descriptor &
     auto texture = device.createTexturePtr(descriptor.type);
     texture->createTextureData(descriptor.extent,
                                descriptor.format,
-                               { .samples    = descriptor.samples,
-                                 .mip_levels = descriptor.levels,
-                                 .layers     = 1u,
-                                 .usage      = descriptor.usage });
+                               render::Texture::CreateOperation { .samples    = descriptor.samples,
+                                                                  .mip_levels = descriptor.levels,
+                                                                  .layers     = 1u,
+                                                                  .usage      = descriptor.usage });
 
     storage = std::move(texture);
 }

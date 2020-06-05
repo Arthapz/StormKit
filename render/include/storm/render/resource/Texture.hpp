@@ -51,22 +51,24 @@ namespace storm::render {
         };
 
         void loadFromKTX(const std::filesystem::path &filepath);
-        void loadFromImage(image::Image &image, LoadOperation op = {});
+        void loadFromImage(image::Image &image, std::optional<LoadOperation> op = std::nullopt);
 
         void loadLayersFromImages(std::vector<image::ImageConstObserverPtr> data,
                                   core::Extentu layer_extent,
-                                  LoadOperation op = {});
+                                  std::optional<LoadOperation> op = std::nullopt);
 
         void loadFromMemory(core::ByteConstSpan data,
                             core::Extentu extent,
                             PixelFormat load_format,
-                            LoadOperation op = {});
+                            std::optional<LoadOperation> op = std::nullopt);
 
         void loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
                                   core::Extentu layer_extent,
-                                  LoadOperation op = {});
+                                  std::optional<LoadOperation> op = std::nullopt);
 
-        void createTextureData(core::Extentu extent, PixelFormat format, CreateOperation op = {});
+        void createTextureData(core::Extentu extent,
+                               PixelFormat format,
+                               std::optional<CreateOperation> op = std::nullopt);
 
         TextureView createView(TextureViewType type                      = TextureViewType::T2D,
                                TextureSubresourceRange subresource_range = {}) const noexcept;

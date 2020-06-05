@@ -8,7 +8,6 @@
 #include <gsl/gsl_util>
 
 extern "C" {
-#include "stb_image.h"
 #include <jerror.h>
 #include <jpeglib.h>
 #include <png.h>
@@ -342,23 +341,9 @@ ImageDataSharedPtr ImageLoader::loadPPM([[maybe_unused]] Image::ConstSpan) {
 ImageDataSharedPtr ImageLoader::loadHDR(const std::filesystem::path &path) {
     STORM_EXPECTS(!std::empty(path));
 
-    stbi_set_flip_vertically_on_load(true);
-    int width, height, components;
+    ASSERT(false, "Not implemented yet !");
 
-    auto raw_data = stbi_loadf(path.string().c_str(), &width, &height, &components, 0);
-    if (!raw_data) throw std::runtime_error(fmt::format("Failed to open file %{1}", path.string()));
-    auto raw_data_span = core::ByteConstSpan { reinterpret_cast<const std::byte *>(raw_data),
-                                               width * height * components * sizeof(float) };
-
-    auto data           = std::make_shared<ImageData>();
-    data->channel       = components;
-    data->extent.width  = width;
-    data->extent.height = height;
-    data->data.resize(std::size(raw_data_span));
-
-    std::copy(std::cbegin(raw_data_span), std::cend(raw_data_span), std::begin(data->data));
-
-    return data;
+    return nullptr;
 }
 
 ImageDataSharedPtr ImageLoader::loadHDR([[maybe_unused]] Image::ConstSpan) {

@@ -86,13 +86,13 @@ namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
     void MaterialInstance::setRawDataValue(std::string_view name, core::ByteConstSpan bytes) {
-        const auto it = std::find_if(m_data_offsets.cbegin(),
-                                     m_data_offsets.cend(),
+        const auto it = std::find_if(std::cbegin(m_data_offsets),
+                                     std::cend(m_data_offsets),
                                      [&name](const auto &pair) { return name == pair.first; });
 
-        STORM_EXPECTS(it != m_data_offsets.cend());
+        STORM_EXPECTS(it != std::cend(m_data_offsets));
 
-        std::copy(bytes.cbegin(), bytes.cend(), m_bytes.begin() + it->second);
+        std::copy(std::cbegin(bytes), std::cend(bytes), std::begin(m_bytes) + it->second);
 
         m_dirty       = true;
         m_bytes_dirty = true;

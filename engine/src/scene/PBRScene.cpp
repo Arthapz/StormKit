@@ -326,8 +326,9 @@ void PBRScene::generateBRDFLUT(FrameGraph &framegraph, std::string name) {
     m_brdf = core::makeObserver(brdf);
     m_brdf->createTextureData(brdf_dim,
                               brdf_format,
-                              { .usage = render::TextureUsage::Transfert_Dst |
-                                         render::TextureUsage::Sampled });
+                              render::Texture::CreateOperation {
+                                  .usage = render::TextureUsage::Transfert_Dst |
+                                           render::TextureUsage::Sampled });
     device.setObjectName(brdf, name);
 
     struct GenerateBRDFPassData {
@@ -347,7 +348,7 @@ void PBRScene::generateBRDFLUT(FrameGraph &framegraph, std::string name) {
     auto &pass = framegraph.addPass<GenerateBRDFPassData>(
         fmt::format("StormKit:Generate{}Pass", name),
         [descriptor, name](auto &builder, auto &pass_data) {
-            pass_data.brdf = builder.create<engine::FrameGraphTexture>(name, descriptor);
+            pass_data.brdf = builder.template create<engine::FrameGraphTexture>(name, descriptor);
             pass_data.brdf = builder.write(pass_data.brdf);
         },
         [this,
@@ -441,7 +442,7 @@ void PBRScene::generateIrradience(FrameGraph &framegraph, std::string name) {
     m_irradience = core::makeObserver(irradience);
     m_irradience->createTextureData(irradience_dim,
                                     irradience_format,
-                                    {
+                                    render::Texture::CreateOperation {
                                         .mip_levels = irradience_mip_level,
                                         .layers     = 6,
                                         .usage      = render::TextureUsage::Transfert_Dst |
@@ -480,10 +481,10 @@ void PBRScene::generateIrradience(FrameGraph &framegraph, std::string name) {
                 fmt::format("StormKit:Generate{}Pass:Mip{}", name, mip),
                 [descriptor, name, mip](auto &builder, auto &pass_data) {
                     pass_data.irradience =
-                        builder.create<engine::FrameGraphTexture>(fmt::format("{}:Mip{}",
-                                                                              name,
-                                                                              mip),
-                                                                  descriptor);
+                        builder.template create<engine::FrameGraphTexture>(fmt::format("{}:Mip{}",
+                                                                                       name,
+                                                                                       mip),
+                                                                           descriptor);
                     pass_data.irradience = builder.write(pass_data.irradience);
                 },
                 [this,
@@ -626,7 +627,7 @@ void PBRScene::generatePrefiltereredEnv(FrameGraph &framegraph, std::string name
     m_prefiltered_env     = core::makeObserver(prefiltered_env);
     m_prefiltered_env->createTextureData(prefiltered_env_dim,
                                          prefiltered_env_format,
-                                         {
+                                         render::Texture::CreateOperation {
                                              .mip_levels = prefiltered_env_mip_level,
                                              .layers     = 6,
                                              .usage      = render::TextureUsage::Transfert_Dst |
@@ -665,10 +666,10 @@ void PBRScene::generatePrefiltereredEnv(FrameGraph &framegraph, std::string name
                 fmt::format("StormKit:Generate{}Pass:{}", name, mip),
                 [descriptor, name, mip](auto &builder, auto &pass_data) {
                     pass_data.prefiltered_env =
-                        builder.create<engine::FrameGraphTexture>(fmt::format("{}:Mip{}",
-                                                                              name,
-                                                                              mip),
-                                                                  descriptor);
+                        builder.template create<engine::FrameGraphTexture>(fmt::format("{}:Mip{}",
+                                                                                       name,
+                                                                                       mip),
+                                                                           descriptor);
                     pass_data.prefiltered_env = builder.write(pass_data.prefiltered_env);
                 },
                 [this,

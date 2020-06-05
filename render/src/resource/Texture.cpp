@@ -72,7 +72,9 @@ void Texture::loadFromKTX(const std::filesystem::path &filepath) {
     const auto tex_extent = core::Extenti { image.extent().x, image.extent().y, image.extent().z }
                                 .convertTo<core::Extentu>();
 
-    createTextureData(tex_extent, format, { .mip_levels = mip_count, .layers = faces });
+    createTextureData(tex_extent,
+                      format,
+                      CreateOperation { .mip_levels = mip_count, .layers = faces });
 
     auto staging_buffer = m_device->createStagingBuffer(image.size());
     staging_buffer.upload<core::Byte>(
@@ -126,7 +128,7 @@ void Texture::loadFromKTX(const std::filesystem::path &filepath) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Texture::loadFromImage(image::Image &image, LoadOperation op) {
+void Texture::loadFromImage(image::Image &image, std::optional<LoadOperation> op) {
     STORM_EXPECTS(!m_non_owning_texture);
 
     const auto format = [&image]() {
@@ -150,7 +152,7 @@ void Texture::loadFromImage(image::Image &image, LoadOperation op) {
 /////////////////////////////////////
 void Texture::loadLayersFromImages(std::vector<image::ImageConstObserverPtr> data,
                                    core::Extentu layer_extent,
-                                   LoadOperation op) {
+                                   std::optional<LoadOperation> op) {
     auto bytes = std::vector<core::ByteConstSpan> {};
     bytes.reserve(std::size(data));
 
@@ -165,15 +167,17 @@ void Texture::loadFromMemory(
     storm::core::span<const core::Byte> data,
     core::Extentu extent,
     [[maybe_unused]] render::PixelFormat load_format, // TODO convert to storage format
-    LoadOperation op) {
+    std::optional<LoadOperation> _op) {
     STORM_EXPECTS(!m_non_owning_texture);
+
+    auto op = _op.value_or(LoadOperation {});
 
     createTextureData(extent,
                       op.storage_format,
-                      { .samples    = op.samples,
-                        .mip_levels = op.mip_levels,
-                        .layers     = 1,
-                        .usage      = op.usage });
+                      CreateOperation { .samples    = op.samples,
+                                        .mip_levels = op.mip_levels,
+                                        .layers     = 1,
+                                        .usage      = op.usage });
 
     auto staging_buffer =
         m_device->createStagingBuffer(gsl::narrow_cast<core::ArraySize>(std::size(data)));
@@ -218,15 +222,17 @@ void Texture::loadFromMemory(
 /////////////////////////////////////
 void Texture::loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
                                    core::Extentu layer_extent,
-                                   LoadOperation op) {
+                                   std::optional<LoadOperation> _op) {
     STORM_EXPECTS(!m_non_owning_texture);
+
+    auto op = _op.value_or(LoadOperation {});
 
     createTextureData(layer_extent,
                       op.storage_format,
-                      { .samples    = op.samples,
-                        .mip_levels = op.mip_levels,
-                        .layers     = gsl::narrow_cast<core::UInt32>(std::size(data)),
-                        .usage      = op.usage });
+                      CreateOperation { .samples    = op.samples,
+                                        .mip_levels = op.mip_levels,
+                                        .layers = gsl::narrow_cast<core::UInt32>(std::size(data)),
+                                        .usage  = op.usage });
 
     auto offsets          = std::vector<core::UOffset> {};
     const auto total_size = [&data, &offsets]() {
@@ -299,7 +305,9 @@ void Texture::loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
 /////////////////////////////////////
 void Texture::createTextureData(core::Extentu extent,
                                 render::PixelFormat format,
-                                CreateOperation op) {
+                                std::optional<CreateOperation> _op) {
+    auto op = _op.value_or(CreateOperation {});
+
     STORM_EXPECTS(op.mip_levels > 0);
     STORM_EXPECTS(op.layers > 0);
 
