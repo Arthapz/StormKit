@@ -79,11 +79,24 @@ namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     void Mesh::setMatrix(core::Matrixf matrix) noexcept {
-        m_matrix       = std::move(matrix);
-        m_matrix_dirty = true;
+        m_data.matrix = std::move(matrix);
+        m_dirty_data  = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    const core::Matrixf &Mesh::matrix() const noexcept { return m_matrix; }
+    const core::Matrixf &Mesh::matrix() const noexcept { return m_data.matrix; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline void Mesh::setJoints(core::span<const core::Matrixf> joints) noexcept {
+        m_data.joint_count = static_cast<float>(std::size(joints));
+        core::ranges::copy(joints, std::begin(m_data.joint_matrix));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    [[nodiscard]] inline core::span<const core::Matrixf> Mesh::joints() const noexcept {
+        return { std::data(m_data.joint_matrix), static_cast<core::ArraySize>(m_data.joint_count) };
+    }
 } // namespace storm::engine

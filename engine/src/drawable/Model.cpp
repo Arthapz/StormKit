@@ -132,8 +132,13 @@ void Model::load(const std::filesystem::path &path) {
 
     auto scene = model.scenes[model.defaultScene];
 
-    auto gltf_meshes =
-        std::vector<std::pair<_std::observer_ptr<const tinygltf::Mesh>, core::Matrixf>> {};
+    struct GLTFData {
+        _std::observer_ptr<const tinygltf::Node> node;
+        bool is_joint = false;
+        core::Matrixf matrix;
+    };
+
+    auto gltf_data_nodes = std::vector<GLTFData> {};
 
     const auto getNodeMatrix = [](const tinygltf::Node &node) {
         auto translation = core::Vector3f { 0.f };
@@ -183,14 +188,23 @@ void Model::load(const std::filesystem::path &path) {
         }
 
         if (node->mesh >= 0) {
-            gltf_meshes.emplace_back(core::makeConstObserver(model.meshes[node->mesh]),
-                                     std::move(matrix));
+            gltf_data_nodes.emplace_back(
+                GLTFData { core::makeConstObserver(node), std::move(matrix) });
         }
     }
 
-    for (const auto &[gltf_mesh, matrix] : gltf_meshes) {
-        auto &mesh             = m_meshes.emplace_back(doParseMesh(model, *gltf_mesh));
-        mesh.initial_transform = std::move(matrix);
+    for (const auto &node : gltf_data_nodes) {
+        auto mesh = Mesh {};
+
+        doParseMesh(model, model.meshes[node.node->mesh], mesh);
+
+        if (node.node->skin > 0) doParseSkin(model, model.skins[node.node->skin], mesh);
+        node.node->extras
+            .
+
+            mesh.initial_transform = std::move(node.matrix);
+
+        m_meshes.emplace_back(std::move(mesh));
     }
 
     m_loaded = true;
@@ -265,14 +279,16 @@ MeshOwnedPtrArray Model::createMeshesPtr() noexcept {
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf::Mesh &gltf_mesh) {
-    auto mesh = Model::Mesh {};
-
+void Model::doParseMesh(const tinygltf::Model &gltf_model,
+                        const tinygltf::Mesh &gltf_mesh,
+                        Mesh &mesh) {
     struct Vertex {
         core::Vector3f position;
         core::Vector3f normal;
         core::Vector2f texcoord;
         core::Vector4f tangent;
+        core::Vector4u join_id = { 0.f, 0.f, 0.f, 0.f };
+        core::Vector4f weight  = { 0.f, 0.f, 0.f, 0.f };
     };
 
     mesh.attributes = render::VertexInputAttributeDescriptionArray {
@@ -280,6 +296,8 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
         { 1u, 0u, render::Format::Float3, offsetof(Vertex, normal) },
         { 2u, 0u, render::Format::Float2, offsetof(Vertex, texcoord) },
         { 3u, 0u, render::Format::Float4, offsetof(Vertex, tangent) },
+        { 4u, 0u, render::Format::UInt4, offsetof(Vertex, join_id) },
+        { 5u, 0u, render::Format::Float4, offsetof(Vertex, weight) },
     };
 
     mesh.bindings = render::VertexBindingDescriptionArray { { 0u, sizeof(Vertex) } };
@@ -402,14 +420,18 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
                                                 accessor.minValues[1],
                                                 accessor.minValues[2]);
 
-                    vertex.position = { it[0], it[1], it[2] };
+                    vertex.position = core::make_vec3(it);
                 } else if (attrib.first.compare("NORMAL") == 0) {
-                    vertex.normal = { it[0], it[1], it[2] };
+                    vertex.normal = core::make_vec3(it);
                 } else if (attrib.first.compare("TANGENT") == 0) {
                     has_tangents   = true;
-                    vertex.tangent = { it[0], it[1], it[2], it[4] };
+                    vertex.tangent = core::make_vec4(it);
                 } else if (attrib.first.compare("TEXCOORD_0") == 0) {
-                    vertex.texcoord = { it[0], it[1] };
+                    vertex.texcoord = core::make_vec2(it);
+                } else if (attrib.first.compare("JOINTS_0") == 0) {
+                    vertex.join_id = core::make_vec4(it);
+                } else if (attrib.first.compare("WEIGHTS_0") == 0) {
+                    vertex.join_id = core::make_vec4(it);
                 }
             }
 
@@ -537,5 +559,10 @@ Model::Mesh Model::doParseMesh(const tinygltf::Model &gltf_model, const tinygltf
         }
         mesh.has_indices = true;
     }
-    return mesh;
+}
+
+void Model::doParseSkin(const tinygltf::Model &gltf_model,
+                        const tinygltf::Skin &gltf_skin,
+                        Model::Mesh &mesh) {
+    mesh.skin.joints;
 }

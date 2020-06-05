@@ -25,6 +25,8 @@ namespace storm::engine {
     struct MeshFlag;
     class STORM_PUBLIC Mesh final: public Drawable, public StaticBindable<MeshFlag> {
       public:
+        static constexpr auto MAX_NUM_JOINTS = 128u;
+
         explicit Mesh(Engine &engine, const Material &material, std::string name = "");
         ~Mesh() override;
 
@@ -65,10 +67,19 @@ namespace storm::engine {
         inline void setMatrix(core::Matrixf matrix) noexcept;
         [[nodiscard]] inline const core::Matrixf &matrix() const noexcept;
 
+        inline void setJoints(core::span<const core::Matrixf> joints) noexcept;
+        [[nodiscard]] inline core::span<const core::Matrixf> joints() const noexcept;
+
       protected:
         void recomputeBoundingBox() const noexcept override;
 
       private:
+        struct MeshData {
+            core::Matrixf matrix = core::Matrixf { 1.f };
+            std::array<core::Matrixf, MAX_NUM_JOINTS> joint_matrix;
+            float joint_count = 0u;
+        };
+
         std::string m_name;
 
         MaterialConstObserverPtr m_material;
@@ -88,8 +99,8 @@ namespace storm::engine {
 
         render::CommandBufferOwnedPtr m_update_cmb;
 
-        bool m_matrix_dirty    = true;
-        core::Matrixf m_matrix = core::Matrixf { 1.f };
+        bool m_dirty_data = true;
+        MeshData m_data;
         RingHardwareBufferOwnedPtr m_mesh_data_buffer;
     };
 } // namespace storm::engine

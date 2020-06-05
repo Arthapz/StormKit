@@ -19,31 +19,12 @@ using namespace storm::engine;
 ////////////////////////////////////////
 Mesh::Mesh(Engine &engine, const Material &material, std::string name)
     : Drawable { engine }, m_name { std::move(name) }, m_material { &material } {
-    const auto buffering_count = m_engine->surface().bufferingCount();
-    auto &device               = m_engine->device();
-    const auto &pool           = m_engine->descriptorPool();
-    const auto &queue          = [&device]() -> const render::Queue & {
+    auto &device      = m_engine->device();
+    const auto &queue = [&device]() -> const render::Queue & {
         if (device.hasAsyncTransfertQueue()) return device.asyncTransfertQueue();
 
         return device.graphicsQueue();
     }();
-
-    m_mesh_data_buffer = std::make_unique<RingHardwareBuffer>(buffering_count,
-                                                              device,
-                                                              render::HardwareBufferUsage::Uniform,
-                                                              sizeof(core::Matrixf));
-
-    const auto descriptor =
-        render::BufferDescriptor { .type    = render::DescriptorType::Uniform_Buffer_Dynamic,
-                                   .binding = 0u,
-                                   .buffer  = core::makeConstObserver(m_mesh_data_buffer->buffer()),
-                                   .range   = sizeof(core::Matrixf),
-                                   .offset  = 0u };
-    const auto descriptors =
-        render::DescriptorStaticArray<1> { render::Descriptor { std::move(descriptor) } };
-
-    m_descriptor_sets = pool.allocateDescriptorSetsPtr(1, descriptorLayout());
-    descriptorSet().update(descriptors);
 
     m_update_cmb = queue.createCommandBufferPtr();
 
@@ -152,15 +133,40 @@ void Mesh::recomputeBoundingBox() const noexcept {
 }
 
 void Mesh::flush() noexcept {
-    if (GSL_LIKELY(!m_dirty_vertices && !m_dirty_indices && !m_matrix_dirty)) return;
+    auto &device               = m_engine->device();
+    const auto buffering_count = m_engine->surface().bufferingCount();
+    const auto &pool           = m_engine->descriptorPool();
 
-    if (m_matrix_dirty) {
+    if (GSL_LIKELY(!m_dirty_vertices && !m_dirty_indices && !m_dirty_data)) return;
+
+    if (!m_mesh_data_buffer) {
+        m_mesh_data_buffer =
+            std::make_unique<RingHardwareBuffer>(buffering_count,
+                                                 device,
+                                                 render::HardwareBufferUsage::Uniform,
+                                                 sizeof(MeshData));
+
+        const auto descriptor =
+            render::BufferDescriptor { .type    = render::DescriptorType::Uniform_Buffer_Dynamic,
+                                       .binding = 0u,
+                                       .buffer =
+                                           core::makeConstObserver(m_mesh_data_buffer->buffer()),
+                                       .range  = sizeof(MeshData),
+                                       .offset = 0u };
+        const auto descriptors =
+            render::DescriptorStaticArray<1> { render::Descriptor { std::move(descriptor) } };
+
+        m_descriptor_sets = pool.allocateDescriptorSetsPtr(1, descriptorLayout());
+        descriptorSet().update(descriptors);
+    }
+
+    if (m_dirty_data) {
         m_mesh_data_buffer->next();
-        m_mesh_data_buffer->upload<core::Matrixf>({ &m_matrix, 1 });
+        m_mesh_data_buffer->upload<MeshData>({ &m_data, 1 });
 
         m_offset = m_mesh_data_buffer->currentOffset();
 
-        m_matrix_dirty = false;
+        m_dirty_data = false;
     }
 
     if (m_dirty_vertices || m_dirty_indices) {
