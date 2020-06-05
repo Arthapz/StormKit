@@ -42,11 +42,13 @@ base_headers = files([
       'include/storm/core/Span.hpp',
       'include/storm/core/Color.hpp',
       'include/storm/core/HashMap.hpp',
+      ''
 ])
 
 private_headers = files([
    'include/storm/core/private/Flags.hpp',
    'include/storm/core/private/incbin.h',
+   'include/storm/core/private/robin_hood.h',
 ])
 
 #ide:editable-filelist
