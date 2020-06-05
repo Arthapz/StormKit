@@ -42,7 +42,6 @@ base_headers = files([
       'include/storm/core/Span.hpp',
       'include/storm/core/Color.hpp',
       'include/storm/core/HashMap.hpp',
-      ''
 ])
 
 private_headers = files([
