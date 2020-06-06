@@ -8,6 +8,9 @@ set(LIB_SUFFIX "${CMAKE_LINK_LIBRARY_SUFFIX}")
 set(BIN_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}")
 set(BIN_DIR "bin")
 
+if(APPLE)
+   set(_IMPORT_PREFIX "/usr/local")
+endif
 if(UNIX)
     set(LIB_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}")
     get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)

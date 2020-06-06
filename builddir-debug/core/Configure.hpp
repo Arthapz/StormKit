@@ -8,5 +8,5 @@ static constexpr auto STORM_MINOR_VERSION = 1;
 static constexpr auto STORM_PATCH_VERSION = 0;
 static constexpr auto STORM_MILESTONE = std::string_view{"alpha"};
 static constexpr auto STORM_BUILD_TYPE = std::string_view{"debug"};
-static constexpr auto STORM_GIT_COMMIT_HASH = std::string_view{"c939d48"};
+static constexpr auto STORM_GIT_COMMIT_HASH = std::string_view{"49193c1"};
 static constexpr auto STORM_GIT_BRANCH = std::string_view{"dev"};

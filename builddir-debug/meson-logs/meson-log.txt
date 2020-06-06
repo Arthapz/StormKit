@@ -1,4 +1,4 @@
-Build started at 2020-06-05T20:16:45.219809
+Build started at 2020-06-06T16:40:35.388432
 Main binary: /usr/local/opt/python@3.8/bin/python3.8
 Build Options: -Dbuildtype=debug -Dlibrary_type=static -Denable_examples=true
 Python system: Darwin
@@ -91,7 +91,7 @@ meson.build:62: WARNING: Consider using the built-in option for language standar
 Program git found: YES (/usr/bin/git)
 Running command: /usr/bin/git log -1 --pretty=%h
 --- stdout ---
-c939d48
+49193c1
 
 --- stderr ---
 
@@ -124,8 +124,8 @@ Called `/usr/local/bin/pkg-config fmt --libs` -> 0
 -L/usr/local/Cellar/fmt/6.2.1/lib -lfmt
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp966g0d_y
-Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp966g0d_y/testfile.cpp -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp966g0d_y/output.exe -pipe -O0 -fpermissive 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp1hmj7bz0
+Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp1hmj7bz0/testfile.cpp -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp1hmj7bz0/output.exe -pipe -O0 -fpermissive 
 
 Code:
  #include<stdio.h>
@@ -146,8 +146,8 @@ Program stderr:
 
 
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpqcl3z0k3
-Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpqcl3z0k3/testfile.cpp -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpqcl3z0k3/output.obj -pipe -c -O0 -fpermissive --print-search-dirs 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpy_xfaacp
+Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpy_xfaacp/testfile.cpp -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpy_xfaacp/output.obj -pipe -c -O0 -fpermissive --print-search-dirs 
 
 Code:
  
@@ -276,8 +276,8 @@ Libraries:            []
 Run-time dependency range-v3 found: YES 0.10.0
 Configuring Configure.hpp using configuration
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp_dzlboxs
-Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp_dzlboxs/testfile.cpp -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp_dzlboxs/output.exe -pipe -O0 -fpermissive -ldl -Wl,-undefined,dynamic_lookup 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp5sgo_ziw
+Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp5sgo_ziw/testfile.cpp -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp5sgo_ziw/output.exe -pipe -O0 -fpermissive -ldl -Wl,-undefined,dynamic_lookup 
 
 Code:
  int main(void) { return 0; }
@@ -319,16 +319,16 @@ None of 'OBJCPP_LD' are defined in the environment, not changing global flags.
 Objective-C++ compiler for the host machine: c++ (clang 11.0.3)
 Objective-C++ linker for the host machine: c++ ld64 556.6
 Pkg-config binary for MachineChoice.HOST is cached.
-Determining dependency 'Cocoa' with pkg-config executable '/usr/local/bin/pkg-config'
+Determining dependency 'Foundation' with pkg-config executable '/usr/local/bin/pkg-config'
 PKG_CONFIG_PATH: 
-Called `/usr/local/bin/pkg-config --modversion Cocoa` -> 1
+Called `/usr/local/bin/pkg-config --modversion Foundation` -> 1
 
 Finding framework path by running:  c++ -v -E - -pipe 
 
-Looking for framework Cocoa in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks
+Looking for framework Foundation in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpfegxvsb1
-Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpfegxvsb1/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpfegxvsb1/output.exe -pipe -O0 -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks -framework Cocoa 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpt5hpx3ip
+Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpt5hpx3ip/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpt5hpx3ip/output.exe -pipe -O0 -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks -framework Foundation 
 
 Code:
  int main(void) { return 0; }
@@ -336,7 +336,7 @@ Compiler stdout:
  
 Compiler stderr:
  
-Run-time dependency cocoa found: YES (/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Cocoa.framework)
+Run-time dependency foundation found: YES (/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework)
 window/plugins/macOS/meson.build:1: WARNING: add_languages is missing native:, assuming languages are wanted for both host and build.
 Objective-C compiler for the build machine: cc (clang 11.0.3)
 Objective-C linker for the build machine: cc ld64 556.6
@@ -347,7 +347,25 @@ Objective-C++ compiler for the build machine: c++ (clang 11.0.3)
 Objective-C++ linker for the build machine: c++ ld64 556.6
 Objective-C++ compiler for the host machine: c++ (clang 11.0.3)
 Objective-C++ linker for the host machine: c++ ld64 556.6
-Dependency Cocoa found: YES unknown (cached)
+Pkg-config binary for MachineChoice.HOST is cached.
+Determining dependency 'Cocoa' with pkg-config executable '/usr/local/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/local/bin/pkg-config --modversion Cocoa` -> 1
+
+Finding framework path by running:  c++ -v -E - -pipe 
+
+Looking for framework Cocoa in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks
+Running compile:
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpgzgl3_1x
+Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpgzgl3_1x/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpgzgl3_1x/output.exe -pipe -O0 -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks -framework Cocoa 
+
+Code:
+ int main(void) { return 0; }
+Compiler stdout:
+ 
+Compiler stderr:
+ 
+Run-time dependency cocoa found: YES (/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Cocoa.framework)
 Pkg-config binary for MachineChoice.HOST is cached.
 Determining dependency 'QuartzCore' with pkg-config executable '/usr/local/bin/pkg-config'
 PKG_CONFIG_PATH: 
@@ -357,8 +375,8 @@ Finding framework path by running:  c++ -v -E - -pipe
 
 Looking for framework QuartzCore in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp_s3bk6ql
-Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp_s3bk6ql/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp_s3bk6ql/output.exe -pipe -O0 -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks -framework QuartzCore 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp9u0pt3yh
+Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp9u0pt3yh/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp9u0pt3yh/output.exe -pipe -O0 -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks -framework QuartzCore 
 
 Code:
  int main(void) { return 0; }
@@ -376,8 +394,8 @@ Finding framework path by running:  c++ -v -E - -pipe
 
 Looking for framework IOKit in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpfhwujnpk
-Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpfhwujnpk/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpfhwujnpk/output.exe -pipe -O0 -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks -framework IOKit 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpu66kj_9j
+Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpu66kj_9j/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpu66kj_9j/output.exe -pipe -O0 -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks -framework IOKit 
 
 Code:
  int main(void) { return 0; }
@@ -395,8 +413,8 @@ Finding framework path by running:  c++ -v -E - -pipe
 
 Looking for framework Carbon in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpvz3jrbh4
-Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpvz3jrbh4/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpvz3jrbh4/output.exe -pipe -O0 -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks -framework Carbon 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpwa6m42_a
+Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpwa6m42_a/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpwa6m42_a/output.exe -pipe -O0 -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks -framework Carbon 
 
 Code:
  int main(void) { return 0; }
@@ -421,8 +439,8 @@ Called `/usr/local/bin/pkg-config libpng --libs` -> 0
 -L/usr/local/Cellar/libpng/1.6.37/lib -lpng16 -lz
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp18zng942
-Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp18zng942/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp18zng942/output.exe -pipe -O0 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp2szjpp22
+Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp2szjpp22/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmp2szjpp22/output.exe -pipe -O0 
 
 Code:
  #include<stdio.h>
@@ -443,8 +461,8 @@ Program stderr:
 
 
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpd22y3wy4
-Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpd22y3wy4/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpd22y3wy4/output.obj -pipe -c -O0 --print-search-dirs 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmptfcrg5c9
+Command line:  c++ /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmptfcrg5c9/testfile.mm -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmptfcrg5c9/output.obj -pipe -c -O0 --print-search-dirs 
 
 Code:
  
@@ -514,8 +532,8 @@ Program glslangValidator found: YES (/usr/local/bin/glslangValidator)
 Program glslangValidator found: YES (/usr/local/bin/glslangValidator)
 Program cmake found: YES (/usr/local/bin/cmake)
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpem5pwbdk
-Command line:  cc /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpem5pwbdk/testfile.c -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpem5pwbdk/output.exe -pipe -O0 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpe3kybhh4
+Command line:  cc /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpe3kybhh4/testfile.c -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpe3kybhh4/output.exe -pipe -O0 
 
 Code:
  #include<stdio.h>
@@ -539,8 +557,8 @@ Build targets in project: 15
 
 Found ninja-1.10.0 at /usr/local/bin/ninja
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmppx_9cvny
-Command line:  cc /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmppx_9cvny/testfile.c -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmppx_9cvny/output.obj -pipe -c -O0 --print-search-dirs 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpt_g_eu3y
+Command line:  cc /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpt_g_eu3y/testfile.c -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpt_g_eu3y/output.obj -pipe -c -O0 --print-search-dirs 
 
 Code:
  
@@ -551,8 +569,8 @@ libraries: =/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.x
 Compiler stderr:
  
 Running compile:
-Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpejuguw1u
-Command line:  cc /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpejuguw1u/testfile.m -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpejuguw1u/output.obj -pipe -c -O0 --print-search-dirs 
+Working directory:  /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpc05qbzz4
+Command line:  cc /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpc05qbzz4/testfile.m -o /Users/arthurlaurent/Developpement/repos/stormkit/builddir-debug/meson-private/tmpc05qbzz4/output.obj -pipe -c -O0 --print-search-dirs 
 
 Code:
  

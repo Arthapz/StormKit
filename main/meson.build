@@ -27,9 +27,9 @@ elif is_macos
     ])
     #args += {'cpp_args': '-x objective-c++'}
 
-    cocoa_dep = dependency('Cocoa')
+    foundation_dep = dependency('Foundation')
 
-    dependencies += [cocoa_dep]
+    dependencies += [foundation_dep]
 elif is_ios
     sources += files([
         'src/iOS/Main.mm',

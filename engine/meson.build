@@ -36,6 +36,7 @@ shader_files = shader_compiler.process(
 
 base_headers = files([
     'include/storm/engine/Engine.hpp',
+    'include/storm/engine/Fwd.hpp',
 ])
 
 base_inls = files([

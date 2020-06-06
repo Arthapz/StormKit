@@ -14,6 +14,10 @@ if(VCPKG_TOOLCHAIN)
     set(BIN_DIR "debug/bin")
 endif()
 
+if(APPLE)
+   set(_IMPORT_PREFIX "/usr/local")
+endif
+
 if(UNIX)
     set(LIB_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}")
     get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
