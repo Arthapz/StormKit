@@ -1,5 +1,10 @@
 vulkan_dep  = dependency('vulkan')
-gli_dep = dependency('gli')
+
+if get_option('gli_include_dir') != ''
+    gli_dep = declare_dependency(include_directories: get_option('gli_include_dir'))
+else
+    gli_dep = dependency('gli')
+endif
 
 vulkan_headers_dep = declare_dependency(dependencies: [vulkan_dep])
 
