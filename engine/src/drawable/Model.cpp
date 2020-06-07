@@ -132,13 +132,16 @@ void Model::load(const std::filesystem::path &path) {
 
     auto scene = model.scenes[model.defaultScene];
 
-    struct GLTFData {
+    struct GLTFMesh {
         _std::observer_ptr<const tinygltf::Node> node;
-        bool is_joint = false;
         core::Matrixf matrix;
     };
+    struct GLTFJoint {
+        _std::observer_ptr<const tinygltf::Node> node;
+    };
 
-    auto gltf_data_nodes = std::vector<GLTFData> {};
+    auto gltf_meshes = std::vector<GLTFMesh> {};
+    auto gltf_joints = std::vector<GLTFJoint> {};
 
     const auto getNodeMatrix = [](const tinygltf::Node &node) {
         auto translation = core::Vector3f { 0.f };
@@ -188,21 +191,17 @@ void Model::load(const std::filesystem::path &path) {
         }
 
         if (node->mesh >= 0) {
-            gltf_data_nodes.emplace_back(
-                GLTFData { core::makeConstObserver(node), std::move(matrix) });
+            gltf_meshes.emplace_back(GLTFMesh { core::makeConstObserver(node), std::move(matrix) });
         }
     }
 
-    for (const auto &node : gltf_data_nodes) {
+    for (const auto &node : gltf_meshes) {
         auto mesh = Mesh {};
 
         doParseMesh(model, model.meshes[node.node->mesh], mesh);
 
         if (node.node->skin > 0) doParseSkin(model, model.skins[node.node->skin], mesh);
-        node.node->extras
-            .
-
-            mesh.initial_transform = std::move(node.matrix);
+        mesh.initial_transform = std::move(node.matrix);
 
         m_meshes.emplace_back(std::move(mesh));
     }
