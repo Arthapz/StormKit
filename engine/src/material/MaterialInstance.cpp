@@ -89,7 +89,7 @@ MaterialInstance::MaterialInstance(const Scene &scene, const Material &material)
     : Bindable { [&material](Bindable::DescriptorSetVariant &layout) {
           layout = core::makeConstObserver(material.m_descriptor_set_layout);
       } },
-      m_engine { &scene.engine() }, m_parent { &material } {
+      m_engine { &scene.engine() }, m_scene { &scene }, m_parent { &material } {
     const auto buffering_count = m_engine->surface().bufferingCount();
     const auto &device         = m_engine->device();
 
@@ -104,6 +104,7 @@ MaterialInstance::MaterialInstance(const Scene &scene, const Material &material)
     for (const auto &[binding, sampler] : sampleds) {
         m_sampled_textures.emplace(sampler.name,
                                    SampledBinding { .binding = binding,
+                                                    .texture = core::makeConstObserver(default_map),
                                                     .view = default_map.createViewPtr(sampler.type),
                                                     .sampler = device.createSamplerPtr() });
 
@@ -193,4 +194,33 @@ void MaterialInstance::recomputeHash() const noexcept {
     core::hash_combine(m_hash, m_rasterization_state);
 
     m_dirty_hash = false;
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+MaterialInstanceOwnedPtr MaterialInstance::clone() const {
+    const auto &device = m_engine->device();
+
+    auto material_instance                   = m_parent->createInstancePtr();
+    material_instance->m_rasterization_state = m_rasterization_state;
+    material_instance->m_data_offsets        = m_data_offsets;
+    material_instance->m_bytes               = m_bytes;
+    material_instance->m_bytes_dirty         = true;
+
+    for (const auto &[name, binding] : m_sampled_textures) {
+        auto copy    = SampledBinding {};
+        copy.binding = binding.binding;
+        copy.texture = binding.texture;
+        copy.view =
+            binding.texture->createViewPtr(binding.view->type(), binding.view->subresourceRange());
+        copy.sampler = device.createSamplerPtr(binding.sampler->settings());
+        copy.dirty   = true;
+
+        material_instance->m_sampled_textures.emplace(name, std::move(copy));
+    }
+
+    material_instance->m_dirty = true;
+    material_instance->flush();
+
+    return material_instance;
 }

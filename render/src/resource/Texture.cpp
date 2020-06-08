@@ -27,6 +27,7 @@ using namespace storm::render;
 constexpr auto toPixelFormat(gli::format format) {
     switch (format) {
         case gli::FORMAT_RGBA16_SFLOAT_PACK16: return render::PixelFormat::RGBA16F;
+        default: STORM_ENSURES(false);
     }
 }
 

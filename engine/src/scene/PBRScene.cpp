@@ -9,6 +9,8 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
+#include <storm/engine/drawable/3D/CubeMap.hpp>
+
 #include <storm/engine/scene/FPSCamera.hpp>
 #include <storm/engine/scene/PBRScene.hpp>
 

@@ -36,12 +36,6 @@ namespace storm::engine {
         PBRScene(PBRScene &&);
         PBRScene &operator=(PBRScene &&);
 
-        [[nodiscard]] inline Mesh createPBRMesh();
-        [[nodiscard]] inline MeshOwnedPtr createPBRMeshPtr();
-
-        [[nodiscard]] inline CubeMap createCubeMap();
-        [[nodiscard]] inline CubeMapOwnedPtr createCubeMapPtr();
-
       protected:
         void insertGenerateCubeMapPass(FrameGraph &framegraph, CubeMap &cube_map);
 

@@ -7,10 +7,9 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
-#include <storm/engine/scene/PBRScene.hpp>
-
-#include <storm/engine/drawable/3D/Mesh.hpp>
 #include <storm/engine/drawable/3D/Model.hpp>
+
+#include <storm/engine/scene/PBRScene.hpp>
 
 #include <storm/engine/material/PBRMaterial.hpp>
 #include <storm/engine/material/PBRMaterialInstance.hpp>
@@ -30,11 +29,11 @@ using storm::log::operator""_module;
 static constexpr auto LOG_MODULE = "engine"_module;
 
 bool LoadImageData(tinygltf::Image *image,
-                   const int image_idx,
+                   [[maybe_unused]] const int image_idx,
                    std::string *err,
-                   std::string *warn,
-                   int req_width,
-                   int req_height,
+                   [[maybe_unused]] std::string *warn,
+                   [[maybe_unused]] int req_width,
+                   [[maybe_unused]] int req_height,
                    const unsigned char *bytes,
                    int size,
                    void *) {
@@ -156,12 +155,10 @@ void Model::load(const std::filesystem::path &path) {
     const auto name      = scene.name;
     const auto &material = *m_material_pool->get(PBRScene::DEFAULT_PBR_MATERIAL_NAME);
 
-    m_mesh = m_engine->createMeshPtr(material, name);
+    m_mesh = std::make_unique<Mesh>(*m_engine, material, name);
 
     using NodeRef    = _std::observer_ptr<const tinygltf::Node>;
-    using NodeMatrix = std::pair<NodeRef, core::Matrixf>;
-
-    auto mesh_nodes = std::vector<NodeMatrix> {};
+    using NodeMatrix = std::tuple<NodeRef, core::Matrixf, core::TreeNode::IndexType>;
 
     auto node_queue = std::deque<NodeMatrix> {};
     for (const auto &node_id : scene.nodes) {
@@ -169,13 +166,24 @@ void Model::load(const std::filesystem::path &path) {
 
         auto matrix = getNodeMatrix(node);
 
-        node_queue.emplace_front(&node, std::move(matrix));
+        node_queue.emplace_front(&node, std::move(matrix), core::TreeNode::INVALID_INDEX);
     }
 
     while (!std::empty(node_queue)) {
-        auto [node_ref, matrix] = node_queue.front();
-        const auto &node        = node_ref.get();
+        auto [node_ref, matrix, parent] = node_queue.front();
+        const auto &node                = node_ref.get();
         node_queue.pop_front();
+
+        if (node->mesh >= 0) {
+            const auto &mesh = model.meshes[node->mesh];
+
+            auto mesh_node = doParseMesh(model, mesh);
+            mesh_node.setTransform(matrix);
+
+            auto index = m_mesh->addNode(std::move(mesh_node), parent);
+
+            parent = index;
+        }
 
         if (!std::empty(node->children)) {
             for (auto child_id : node->children) {
@@ -183,97 +191,36 @@ void Model::load(const std::filesystem::path &path) {
 
                 auto child_matrix = matrix * getNodeMatrix(child);
 
-                node_queue.emplace_front(&child, std::move(child_matrix));
+                node_queue.emplace_front(&child, std::move(child_matrix), parent);
             }
         }
-
-        if (node->mesh >= 0) {
-            mesh_nodes.emplace_back(core::makeConstObserver(node), std::move(matrix));
-        }
     }
 
-    for (const auto &[node, matrix] : mesh_nodes) {
-        const auto &mesh = model.meshes[node->mesh];
-
-        auto mesh_node = doParseMesh(model, mesh);
-
-        mesh_node.setTransform(std::move(matrix));
-    }
+    m_mesh->bake();
 
     m_loaded = true;
 } // namespace storm::engine::v2
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-MeshArray Model::createMeshes() noexcept {
+Mesh Model::createMesh() noexcept {
     STORM_EXPECTS(m_loaded);
 
-    auto &material = *m_material_pool->get(PBRScene::DEFAULT_PBR_MATERIAL_NAME);
-
-    auto meshes = MeshArray {};
-
-    for (auto &_mesh : m_meshes) {
-        auto mesh = m_engine->createMesh(material);
-
-        mesh.setVertexArray(_mesh.vertex_array, _mesh.attributes, _mesh.bindings);
-        if (_mesh.has_indices) mesh.setIndexArray(_mesh.index_array);
-
-        mesh.setMatrix(_mesh.initial_transform);
-
-        for (auto _submesh : _mesh.submeshes) {
-            auto &submesh = mesh.addSubmesh(_submesh.vertex_count,
-                                            _submesh.first_index,
-                                            _submesh.index_count,
-                                            _submesh.min,
-                                            _submesh.max);
-
-            auto &material = submesh.materialInstance();
-
-            for (const auto &[name, sampler] : _submesh.samplers) {
-                auto settings = render::Sampler::Settings {
-                    .enable_anisotropy = true,
-                    .max_anisotropy    = m_engine->maxAnisotropy(),
-                    .compare_operation = render::CompareOperation::Never,
-                    .max_lod           = static_cast<float>(sampler->mipLevels())
-                };
-                material.setSampledTexture(name,
-                                           *sampler,
-                                           render::TextureViewType::T2D,
-                                           {},
-                                           std::move(settings));
-            }
-
-            for (const auto &[name, data] : _submesh.datas) {
-                material.setRawDataValue(name, data);
-            }
-
-            if (_submesh.double_sided) material.setCullMode(render::CullMode::None);
-        }
-
-        meshes.emplace_back(std::move(mesh));
-    }
-
-    return meshes;
+    return m_mesh->clone();
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-MeshOwnedPtrArray Model::createMeshesPtr() noexcept {
-    auto meshes = createMeshes();
+MeshOwnedPtr Model::createMeshPtr() noexcept {
+    STORM_EXPECTS(m_loaded);
 
-    auto meshes_ptr = MeshOwnedPtrArray {};
-    meshes_ptr.reserve(std::size(meshes));
-
-    for (auto &mesh : meshes)
-        meshes_ptr.emplace_back(std::make_unique<engine::Mesh>(std::move(mesh)));
-
-    return meshes_ptr;
+    return m_mesh->clonePtr();
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 MeshNode Model::doParseMesh(const tinygltf::Model &model, const tinygltf::Mesh &mesh) {
-    auto mesh_node = MeshNode { mesh.name };
+    auto mesh_node = MeshNode { *m_engine, mesh.name };
 
     auto vertex_array = VertexArray {};
     for (const auto &primitive : mesh.primitives) {
@@ -287,15 +234,6 @@ MeshNode Model::doParseMesh(const tinygltf::Model &model, const tinygltf::Mesh &
 
 MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
                                       const tinygltf::Primitive &primitive) {
-    struct Vertex {
-        core::Vector3f position;
-        core::Vector3f normal;
-        core::Vector2f texcoord;
-        core::Vector4f tangent;
-        core::Vector4u join_id = { 0.f, 0.f, 0.f, 0.f };
-        core::Vector4f weight  = { 0.f, 0.f, 0.f, 0.f };
-    };
-
     auto mesh_primitive = MeshPrimitive {};
 
     mesh_primitive.attributes = render::VertexInputAttributeDescriptionArray {
@@ -329,6 +267,7 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
 
         if (std::empty(mesh_primitive.vertices))
             mesh_primitive.vertices.resize(count * sizeof(Vertex));
+        mesh_primitive.vertex_count = count;
 
         for (auto i = 0u; i < count; ++i) {
             const auto it =
@@ -357,6 +296,14 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
                 vertex.join_id = core::make_vec4(it);
         }
     }
+
+    mesh_primitive.bounding_box.min    = std::move(vertex_min);
+    mesh_primitive.bounding_box.max    = std::move(vertex_max);
+    mesh_primitive.bounding_box.extent = core::Extentf {
+        .w = mesh_primitive.bounding_box.max.x - mesh_primitive.bounding_box.min.x,
+        .h = mesh_primitive.bounding_box.max.y - mesh_primitive.bounding_box.min.y,
+        .d = mesh_primitive.bounding_box.max.z - mesh_primitive.bounding_box.min.z,
+    };
 
     if (primitive.indices >= 0) {
         const auto &accessor    = model.accessors[primitive.indices];
@@ -389,32 +336,43 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
             indices.resize(mesh_primitive.index_count);
 
             fill_indices(indices);
-            mesh_primitive.indices = std::move(indices);
+            mesh_primitive.indices       = std::move(indices);
+            mesh_primitive.large_indices = true;
         } else {
             auto indices = IndexArray {};
             indices.resize(mesh_primitive.index_count);
 
             fill_indices(indices);
-            mesh_primitive.indices = std::move(indices);
+            mesh_primitive.indices       = std::move(indices);
+            mesh_primitive.large_indices = false;
         }
     }
 
-    if (primitive.material >= 0) {}
+    if (primitive.material >= 0) {
+        const auto &material = model.materials[primitive.material];
+
+        auto material_instance = doParseMaterialInstance(model, material);
+
+        mesh_primitive.material_instance = std::move(material_instance);
+    } else {
+        mesh_primitive.material_instance = m_mesh->material().createInstancePtr();
+    }
+
+    return mesh_primitive;
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void Model::doParseMesh(const tinygltf::Model &gltf_model,
-                        const tinygltf::Mesh &gltf_mesh,
-                        Mesh &mesh) {
-    const auto loadTexture = [&gltf_model, this](auto index) -> render::Texture * {
+MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &model,
+                                                        const tinygltf::Material &material) {
+    const auto loadTexture = [&model, this](auto index) -> render::Texture * {
         if (index < 0) return nullptr;
 
-        auto &gltf_texture = gltf_model.textures[index];
+        auto &gltf_texture = model.textures[index];
 
         if (gltf_texture.source < 0) return nullptr;
 
-        auto &image = gltf_model.images[gltf_texture.source];
+        auto &image = model.images[gltf_texture.source];
 
         auto hash = core::Hash64 {};
         for (const auto c : image.image) core::hash_combine(hash, c);
@@ -435,8 +393,8 @@ void Model::doParseMesh(const tinygltf::Model &gltf_model,
         else if (image.component == 3)
             load_format = render::PixelFormat::RGB8_UNorm;
 
-        const auto extent = core::Extentu { static_cast<core::UInt32>(image.width),
-                                            static_cast<core::UInt32>(image.height) };
+        const auto extent = core::Extentu { .w = static_cast<core::UInt32>(image.width),
+                                            .h = static_cast<core::UInt32>(image.height) };
         texture.loadFromMemory({ reinterpret_cast<const std::byte *>(std::data(image.image)),
                                  std::size(image.image) },
                                extent,
@@ -454,7 +412,7 @@ void Model::doParseMesh(const tinygltf::Model &gltf_model,
         return &texture;
     };
 
-    const auto addMaterialComponent = [](const auto &src_data, auto &output, auto name) {
+    const auto addMaterialComponent = [](const auto &src_data, auto &material_instance, auto name) {
         auto data_size = sizeof(src_data);
         auto data      = core::ByteArray {};
         data.resize(data_size);
@@ -463,96 +421,111 @@ void Model::doParseMesh(const tinygltf::Model &gltf_model,
                   reinterpret_cast<const core::Byte *>(&src_data) + data_size,
                   std::begin(data));
 
-        output.emplace_back(name, std::move(data));
+        material_instance.setRawDataValue(std::move(name), data);
     };
 
-    submesh.first_index = first_index;
-    submesh.index_count = index_count;
+    auto material_instance = m_mesh->material().createInstancePtr();
 
-    if (primitive.material >= 0) {
-        auto &material_instance = gltf_model.materials[primitive.material];
+    const auto &gltf_color = material.pbrMetallicRoughness.baseColorFactor;
+    const auto color       = core::Vector4f { core::make_vec4(std::data(gltf_color)) };
 
-        const auto &gltf_color = material_instance.pbrMetallicRoughness.baseColorFactor;
-        const auto color       = core::Vector4f { core::make_vec4(std::data(gltf_color)) };
+    addMaterialComponent(0.f,
+                         *material_instance,
+                         PBRMaterialInstance::AMBIANT_OCCLUSION_FACTOR_NAME);
+    addMaterialComponent(color, *material_instance, PBRMaterialInstance::ALBEDO_FACTOR_NAME);
+    addMaterialComponent(static_cast<float>(material.pbrMetallicRoughness.metallicFactor),
+                         *material_instance,
+                         PBRMaterialInstance::METALLIC_FACTOR_NAME);
+    addMaterialComponent(static_cast<float>(material.pbrMetallicRoughness.roughnessFactor),
+                         *material_instance,
+                         PBRMaterialInstance::ROUGHNESS_FACTOR_NAME);
 
-        addMaterialComponent(0.f,
-                             submesh.datas,
+    const auto &gltf_emissive = material.emissiveFactor;
+    const auto emissive       = core::Vector4f { core::make_vec4(std::data(gltf_emissive)) };
+    addMaterialComponent(emissive, *material_instance, PBRMaterialInstance::EMISSIVE_FACTOR_NAME);
+
+    if (auto texture = loadTexture(material.pbrMetallicRoughness.baseColorTexture.index);
+        texture != nullptr) {
+        const auto settings =
+            render::Sampler::Settings { .enable_anisotropy = true,
+                                        .max_anisotropy    = m_engine->maxAnisotropy(),
+                                        .compare_operation = render::CompareOperation::Never,
+                                        .max_lod = static_cast<float>(texture->mipLevels()) };
+
+        material_instance->setSampledTexture(PBRMaterialInstance::ALBEDO_MAP_NAME,
+                                             *texture,
+                                             render::TextureViewType::T2D,
+                                             {},
+                                             std::move(settings));
+    }
+
+    if (auto texture = loadTexture(material.normalTexture.index); texture != nullptr) {
+        const auto settings =
+            render::Sampler::Settings { .enable_anisotropy = true,
+                                        .max_anisotropy    = m_engine->maxAnisotropy(),
+                                        .compare_operation = render::CompareOperation::Never,
+                                        .max_lod = static_cast<float>(texture->mipLevels()) };
+
+        material_instance->setSampledTexture(PBRMaterialInstance::NORMAL_MAP_NAME,
+                                             *texture,
+                                             render::TextureViewType::T2D,
+                                             {},
+                                             std::move(settings));
+    }
+
+    if (auto texture = loadTexture(material.pbrMetallicRoughness.metallicRoughnessTexture.index);
+        texture != nullptr) {
+        const auto settings =
+            render::Sampler::Settings { .enable_anisotropy = true,
+                                        .max_anisotropy    = m_engine->maxAnisotropy(),
+                                        .compare_operation = render::CompareOperation::Never,
+                                        .max_lod = static_cast<float>(texture->mipLevels()) };
+
+        material_instance->setSampledTexture(PBRMaterialInstance::METALLIC_MAP_NAME,
+                                             *texture,
+                                             render::TextureViewType::T2D,
+                                             {},
+                                             settings);
+
+        material_instance->setSampledTexture(PBRMaterialInstance::ROUGHNESS_MAP_NAME,
+                                             *texture,
+                                             render::TextureViewType::T2D,
+                                             {},
+                                             std::move(settings));
+    }
+
+    if (auto texture = loadTexture(material.occlusionTexture.index); texture != nullptr) {
+        const auto settings =
+            render::Sampler::Settings { .enable_anisotropy = true,
+                                        .max_anisotropy    = m_engine->maxAnisotropy(),
+                                        .compare_operation = render::CompareOperation::Never,
+                                        .max_lod = static_cast<float>(texture->mipLevels()) };
+
+        material_instance->setSampledTexture(PBRMaterialInstance::AMBIANT_OCCLUSION_MAP_NAME,
+                                             *texture,
+                                             render::TextureViewType::T2D,
+                                             {},
+                                             std::move(settings));
+        addMaterialComponent(1.f,
+                             *material_instance,
                              PBRMaterialInstance::AMBIANT_OCCLUSION_FACTOR_NAME);
-        addMaterialComponent(color, submesh.datas, PBRMaterialInstance::ALBEDO_FACTOR_NAME);
-
-        addMaterialComponent(static_cast<float>(
-                                 material_instance.pbrMetallicRoughness.metallicFactor),
-                             submesh.datas,
-                             PBRMaterialInstance::METALLIC_FACTOR_NAME);
-        addMaterialComponent(static_cast<float>(
-                                 material_instance.pbrMetallicRoughness.roughnessFactor),
-                             submesh.datas,
-                             PBRMaterialInstance::ROUGHNESS_FACTOR_NAME);
-
-        const auto &gltf_emissive = material_instance.emissiveFactor;
-        const auto emissive       = core::Vector4f { core::make_vec4(std::data(gltf_emissive)) };
-        addMaterialComponent(emissive, submesh.datas, PBRMaterialInstance::EMISSIVE_FACTOR_NAME);
-
-        if (auto texture =
-                loadTexture(material_instance.pbrMetallicRoughness.baseColorTexture.index);
-            texture != nullptr)
-            submesh.samplers.emplace_back(PBRMaterialInstance::ALBEDO_MAP_NAME, texture);
-        if (auto texture = loadTexture(material_instance.normalTexture.index); texture != nullptr)
-            submesh.samplers.emplace_back(PBRMaterialInstance::NORMAL_MAP_NAME, texture);
-        if (auto texture =
-                loadTexture(material_instance.pbrMetallicRoughness.metallicRoughnessTexture.index);
-            texture != nullptr) {
-            submesh.samplers.emplace_back(PBRMaterialInstance::METALLIC_MAP_NAME, texture);
-            submesh.samplers.emplace_back(PBRMaterialInstance::ROUGHNESS_MAP_NAME, texture);
-        }
-        if (auto texture = loadTexture(material_instance.occlusionTexture.index);
-            texture != nullptr) {
-            submesh.samplers.emplace_back(PBRMaterialInstance::AMBIANT_OCCLUSION_MAP_NAME, texture);
-            addMaterialComponent(1.f,
-                                 submesh.datas,
-                                 PBRMaterialInstance::AMBIANT_OCCLUSION_FACTOR_NAME);
-        }
-        if (auto texture = loadTexture(material_instance.emissiveTexture.index); texture != nullptr)
-            submesh.samplers.emplace_back(PBRMaterialInstance::EMISSIVE_MAP_NAME, texture);
-
-        submesh.double_sided = material_instance.doubleSided;
     }
 
-    submesh.min = std::move(vertex_min);
-    submesh.max = std::move(vertex_max);
+    if (auto texture = loadTexture(material.emissiveTexture.index); texture != nullptr) {
+        const auto settings =
+            render::Sampler::Settings { .enable_anisotropy = true,
+                                        .max_anisotropy    = m_engine->maxAnisotropy(),
+                                        .compare_operation = render::CompareOperation::Never,
+                                        .max_lod = static_cast<float>(texture->mipLevels()) };
 
-    mesh.submeshes.emplace_back(std::move(submesh));
-
-    vertex_it += vertex_count;
-    last_vertex_count += vertex_count;
-}
-
-if (!std::empty(index_array)) {
-    if (large_indices) {
-        auto indices = LargeIndexArray {};
-        indices.resize(std::size(index_array) / index_size);
-
-        core::ranges::copy(index_array, reinterpret_cast<std::byte *>(std::data(indices)));
-
-        mesh.index_array = std::move(indices);
-    } else {
-        auto indices = IndexArray {};
-        indices.resize(std::size(index_array) / index_size);
-
-        if (index_size == 1) {
-            auto j = 0u;
-            for (auto &i : indices) { i = static_cast<core::UInt16>(index_array[j++]); }
-        } else
-            core::ranges::copy(index_array, reinterpret_cast<std::byte *>(std::data(indices)));
-
-        mesh.index_array = std::move(indices);
+        material_instance->setSampledTexture(PBRMaterialInstance::EMISSIVE_MAP_NAME,
+                                             *texture,
+                                             render::TextureViewType::T2D,
+                                             {},
+                                             std::move(settings));
     }
-    mesh.has_indices = true;
-}
-}
 
-void Model::doParseSkin(const tinygltf::Model &gltf_model,
-                        const tinygltf::Skin &gltf_skin,
-                        Model::Mesh &mesh) {
-    mesh.skin.joints;
+    if (material.doubleSided) material_instance->setCullMode(render::CullMode::None);
+
+    return material_instance;
 }

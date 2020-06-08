@@ -12,4 +12,4 @@ option('enable_engine', type: 'boolean', value: true, description: 'Build StormK
 
 option('library_type', type: 'combo', choices: ['shared', 'static'], value: 'shared', description: 'Library type (default is shared)')
 
-option('gli_include_dir', type: 'string', value: '', description: 'Overwrite GLI include directory')
+option('gli_include_dir', type: 'string', value: '/usr/include', description: 'Overwrite GLI include directory')

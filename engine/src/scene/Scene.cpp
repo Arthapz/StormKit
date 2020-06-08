@@ -11,6 +11,8 @@
 #include <storm/engine/scene/Camera.hpp>
 #include <storm/engine/scene/Scene.hpp>
 
+#include <storm/engine/material/Material.hpp>
+
 using namespace storm;
 using namespace storm::engine;
 

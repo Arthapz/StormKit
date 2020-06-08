@@ -7,6 +7,9 @@ INSTALL.md
 LICENSE
 README.md
 
+meson.build
+meson_options.txt
+
 StormKit.cflags
 StormKit.config
 StormKit.creator
@@ -22,10 +25,6 @@ StormKitStaticTargets-debug.cmake.in
 StormKitStaticTargets-release.cmake.in
 StormKitStaticTargets.cmake.in
 
-meson.build
-meson_options.txt
-
-core/meson.build
 core/include/storm/core/App.hpp
 core/include/storm/core/Assert.hpp
 core/include/storm/core/CRTP.hpp
@@ -74,6 +73,7 @@ core/include/storm/core/TypeTraits.hpp
 core/include/storm/core/Types.hpp
 core/include/storm/core/private/Flags.hpp
 core/include/storm/core/private/incbin.h
+core/meson.build
 core/src/Math.cpp
 core/src/State.cpp
 core/src/StateManager.cpp
@@ -101,17 +101,19 @@ engine/include/storm/engine/core/Transform.inl
 engine/include/storm/engine/core/TransformComponent.hpp
 engine/include/storm/engine/core/Vertex.hpp
 engine/include/storm/engine/core/Vertex.inl
-engine/include/storm/engine/drawable/BoundingBox.hpp
-engine/include/storm/engine/drawable/Drawable.hpp
-engine/include/storm/engine/drawable/Drawable.inl
-engine/include/storm/engine/drawable/Fwd.hpp
 engine/include/storm/engine/drawable/3D/Fwd.hpp
+engine/include/storm/engine/drawable/3D/Mesh.hpp
 engine/include/storm/engine/drawable/3D/Model.hpp
-engine/include/storm/engine/drawable/3D/Model.inl
 engine/include/storm/engine/drawable/3D/Mesh.hpp
 engine/include/storm/engine/drawable/3D/Mesh.inl
 engine/include/storm/engine/drawable/3D/MeshNode.hpp
 engine/include/storm/engine/drawable/3D/MeshNode.inl
+engine/include/storm/engine/drawable/3D/CubeMap.hpp
+engine/include/storm/engine/drawable/3D/CubeMap.inl
+engine/include/storm/engine/drawable/BoundingBox.hpp
+engine/include/storm/engine/drawable/Drawable.hpp
+engine/include/storm/engine/drawable/Drawable.inl
+engine/include/storm/engine/drawable/Fwd.hpp
 engine/include/storm/engine/framegraph/FrameGraph.hpp
 engine/include/storm/engine/framegraph/FrameGraph.inl
 engine/include/storm/engine/framegraph/FramePass.hpp
@@ -214,10 +216,11 @@ engine/src/core/imgui/imgui_widgets.cpp
 engine/src/core/imgui/imstb_rectpack.hpp
 engine/src/core/imgui/imstb_textedit.hpp
 engine/src/core/imgui/imstb_truetype.hpp
-engine/src/drawable/Drawable.cpp
-engine/src/drawable/3D/Model.cpp
 engine/src/drawable/3D/Mesh.cpp
 engine/src/drawable/3D/MeshNode.cpp
+engine/src/drawable/3D/Model.cpp
+engine/src/drawable/3D/CubeMap.cpp
+engine/src/drawable/Drawable.cpp
 engine/src/framegraph/FrameGraph.cpp
 engine/src/framegraph/FramePass.cpp
 engine/src/framegraph/FramePassBuilder.cpp
@@ -254,10 +257,9 @@ entities/src/EntityManager.cpp
 entities/src/MessageBus.cpp
 entities/src/System.cpp
 
-engine/include/storm/engine/drawable/Fwd_copy.hpp
+image/meson.build
 image/include/storm/image/Fwd.hpp
 image/include/storm/image/Image.hpp
-image/meson.build
 image/src/Image.cpp
 image/src/private/ImageData.hpp
 image/src/private/ImageLoader.cpp
@@ -265,6 +267,8 @@ image/src/private/ImageLoader.hpp
 image/src/private/stb_image.c
 image/src/private/stb_image.h
 
+engine/include/storm/engine/drawable/3D/Model.inl
+log/meson.build
 log/examples/console_logger/src/main.cpp
 log/examples/file_logger/src/main.cpp
 log/include/storm/log/ConsoleLogger.hpp
@@ -277,7 +281,6 @@ log/include/storm/log/Logger.hpp
 log/include/storm/log/Logger.inl
 log/include/storm/log/Module.hpp
 log/include/storm/log/Severity.hpp
-log/meson.build
 log/src/ConsoleLogger.cpp
 log/src/FileLogger.cpp
 log/src/LogColorizer.cpp

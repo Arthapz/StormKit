@@ -20,13 +20,15 @@
 
 #include <storm/engine/core/Vertex.hpp>
 
-#include <storm/engine/drawable/Mesh.hpp>
+#include <storm/engine/drawable/3D/Mesh.hpp>
+#include <storm/engine/drawable/3D/MeshNode.hpp>
 
 namespace tinygltf {
     struct Mesh;
     class Node;
     class Scene;
     class Model;
+    class Material;
     class Primitive;
     class Skin;
 } // namespace tinygltf
@@ -34,6 +36,15 @@ namespace tinygltf {
 namespace storm::engine {
     class STORM_PUBLIC Model final: public core::NonCopyable {
       public:
+        struct Vertex {
+            core::Vector3f position;
+            core::Vector3f normal;
+            core::Vector2f texcoord;
+            core::Vector4f tangent;
+            core::Vector4u join_id = { 0.f, 0.f, 0.f, 0.f };
+            core::Vector4f weight  = { 0.f, 0.f, 0.f, 0.f };
+        };
+
         Model(Engine &engine, TexturePool &texture_pool, MaterialPool &material_pool);
         virtual ~Model();
 
@@ -45,8 +56,8 @@ namespace storm::engine {
         [[nodiscard]] inline const std::filesystem::path &filepath() const noexcept;
         [[nodiscard]] inline bool loaded() const noexcept;
 
-        [[nodiscard]] MeshArray createMeshes() noexcept;
-        [[nodiscard]] MeshOwnedPtrArray createMeshesPtr() noexcept;
+        [[nodiscard]] Mesh createMesh() noexcept;
+        [[nodiscard]] MeshOwnedPtr createMeshPtr() noexcept;
 
       private:
         MeshOwnedPtr m_mesh;
@@ -57,18 +68,12 @@ namespace storm::engine {
         MaterialInstanceOwnedPtr doParseMaterialInstance(const tinygltf::Model &model,
                                                          const tinygltf::Material &material);
 
-        void doParseScene(const tinygltf::Scene &scene);
-        void doParseSkin(const tinygltf::Model &gltf_model,
-                         const tinygltf::Skin &gltf_skin,
-                         Mesh &mesh);
-
         EngineObserverPtr m_engine;
         TexturePoolObserverPtr m_texture_pool;
         MaterialPoolObserverPtr m_material_pool;
 
         std::filesystem::path m_filepath;
 
-        std::vector<Mesh> m_meshes;
         bool m_loaded = false;
     };
 } // namespace storm::engine

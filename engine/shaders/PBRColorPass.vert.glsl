@@ -2,7 +2,7 @@
 #extension GL_ARB_separate_shader_objects : enable
 #pragma shader_stage(vertex)
 
-const uint MAX_NUM_JOINTS = 128;
+const uint MAX_JOINT_COUNT = 128;
 
 layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec3 vertex_normal;
@@ -29,7 +29,7 @@ layout(set = 2, binding = 0, std140) uniform Transform {
 
 layout(set = 3, binding = 0, std140) uniform MeshData {
     mat4 matrix;
-    mat4 joint_matrix[MAX_NUM_JOINTS];
+    mat4 joint_matrix[MAX_JOINT_COUNT];
     float joint_count;
 } mesh_data;
 

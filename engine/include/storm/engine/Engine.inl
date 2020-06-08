@@ -11,38 +11,6 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    Mesh Engine::createMesh(const Material &material, std::string name) {
-        return Mesh { *this, material, std::move(name) };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    MeshOwnedPtr Engine::createMeshPtr(const Material &material, std::string name) {
-        return std::make_unique<Mesh>(*this, material, std::move(name));
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    Model Engine::createModel(TexturePool &texture_pool, MaterialPool &material_pool) {
-        return Model { *this, texture_pool, material_pool };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    ModelOwnedPtr Engine::createModelPtr(TexturePool &texture_pool, MaterialPool &material_pool) {
-        return std::make_unique<Model>(*this, texture_pool, material_pool);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    Transform Engine::createTransform() { return Transform { *this }; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    TransformOwnedPtr Engine::createTransformPtr() { return std::make_unique<Transform>(*this); }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
     render::Instance &Engine::instance() noexcept { return *m_instance; }
 
     ////////////////////////////////////////

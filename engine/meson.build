@@ -103,9 +103,9 @@ drawable_headers = files([
 ])
 
 threed_drawable_headers = files([
-    'include/storm/engine/drawable/3D/Mesh.hpp',
     'include/storm/engine/drawable/3D/Model.hpp',
-    'include/storm/engine/drawable/3D/ModelNode.hpp',
+    'include/storm/engine/drawable/3D/Mesh.hpp',
+    'include/storm/engine/drawable/3D/MeshNode.hpp',
     'include/storm/engine/drawable/3D/CubeMap.hpp',
 ])
 
@@ -179,10 +179,10 @@ sources = files([
     'src/scene/PBRScene.cpp',
 
     'src/drawable/Drawable.cpp',
-    'src/drawable/Mesh.cpp',
-    'src/drawable/SubMesh.cpp',
-    'src/drawable/Model.cpp',
-    'src/drawable/CubeMap.cpp',
+    'src/drawable/3D/Mesh.cpp',
+    'src/drawable/3D/MeshNode.cpp',
+    'src/drawable/3D/Model.cpp',
+    'src/drawable/3D/CubeMap.cpp',
 
     'src/framegraph/FrameGraph.cpp',
     'src/framegraph/FramePass.cpp',

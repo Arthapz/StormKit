@@ -7,16 +7,6 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    Model Scene::createModel() { return m_engine->createModel(m_texture_pool, m_material_pool); }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline ModelOwnedPtr Scene::createModelPtr() {
-        return m_engine->createModelPtr(m_texture_pool, m_material_pool);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
     void Scene::setCamera(Camera &camera) noexcept { m_camera = core::makeObserver(camera); }
 
     ////////////////////////////////////////

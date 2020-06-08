@@ -18,14 +18,19 @@ namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     void MeshNode::setTransform(core::Matrixf transform) noexcept {
-        m_transform = std::move(transform);
+        m_data.transform = std::move(transform);
+        m_bitset |= TRANSFORM_DIRTY;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    const core::Matrixf &MeshNode::transform() const noexcept { return m_transform; }
+    const core::Matrixf &MeshNode::transform() const noexcept { return m_data.transform; }
 
     /////////////////////////////////////
     /////////////////////////////////////
     std::string_view MeshNode::name() const noexcept { return m_name; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    core::span<MeshPrimitive> MeshNode::primitives() noexcept { return m_primitives; }
 } // namespace storm::engine

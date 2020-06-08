@@ -15,6 +15,7 @@
 /////////// - StormKit::render - ///////////
 #include <storm/render/Fwd.hpp>
 
+#include <storm/render/core/Device.hpp>
 #include <storm/render/core/Types.hpp>
 
 #include <storm/render/resource/Sampler.hpp>
@@ -41,8 +42,13 @@ namespace storm::engine {
         MaterialInstance &operator=(MaterialInstance &&);
 
         inline void setFrontFace(render::FrontFace face);
+        [[nodiscard]] inline render::FrontFace frontFace() const noexcept;
+
         inline void setCullMode(render::CullMode mode);
+        [[nodiscard]] inline render::CullMode cullMode() const noexcept;
+
         inline void setWireFrameEnabled(bool enabled) noexcept;
+        [[nodiscard]] inline bool isWireFrameEnabled() const noexcept;
 
         inline void setSampledTexture(
             std::string_view name,
@@ -61,6 +67,8 @@ namespace storm::engine {
 
         [[nodiscard]] inline core::Hash64 hash() const noexcept;
 
+        MaterialInstanceOwnedPtr clone() const;
+
       protected:
         EngineConstObserverPtr m_engine;
 
@@ -70,12 +78,14 @@ namespace storm::engine {
         struct SampledBinding {
             Material::Binding binding;
 
+            render::TextureConstObserverPtr texture;
             render::TextureViewOwnedPtr view;
             render::SamplerOwnedPtr sampler;
 
             bool dirty = true;
         };
 
+        SceneConstObserverPtr m_scene;
         MaterialConstObserverPtr m_parent;
 
         render::GraphicsPipelineRasterizationState m_rasterization_state;
@@ -95,7 +105,7 @@ namespace storm::engine {
         mutable bool m_dirty_hash   = true;
         mutable core::Hash64 m_hash = 0u;
 
-        friend class SubMesh;
+        friend class MeshNode;
         friend class CubeMap;
     }; // namespace storm::engine
 } // namespace storm::engine

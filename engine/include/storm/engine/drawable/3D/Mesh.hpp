@@ -29,8 +29,8 @@ namespace storm::engine {
         Mesh(Mesh &&);
         Mesh &operator=(Mesh &&);
 
-        MeshNode::IndexType addNode(MeshNode &&node, MeshNode::IndexType parent);
-        const MeshNode &getNode(MeshNode::IndexType id) const noexcept;
+        core::TreeNode::IndexType addNode(MeshNode &&node, core::TreeNode::IndexType parent);
+        const MeshNode &getNode(core::TreeNode::IndexType id) const noexcept;
 
         [[nodiscard]] inline const Material &material() const noexcept;
 
@@ -42,7 +42,7 @@ namespace storm::engine {
                     std::vector<BindableBaseConstObserverPtr> bindables,
                     render::GraphicsPipelineState state) override;
 
-        [[nodiscard]] std::string_view name() const noexcept;
+        [[nodiscard]] inline std::string_view name() const noexcept;
 
         void bake();
 
@@ -61,7 +61,13 @@ namespace storm::engine {
         render::HardwareBufferOwnedPtr m_vertex_buffer;
         render::HardwareBufferOwnedPtr m_index_buffer;
 
-        core::Tree<MeshNode> m_nodes;
+        core::Tree<> m_tree;
+        core::TreeNode::IndexType m_root_node = core::TreeNode::INVALID_INDEX;
+
+        std::vector<MeshNode> m_nodes;
+        core::HashMap<core::TreeNode::IndexType, MeshNodeObserverPtr> m_node_link;
+
+        bool m_large_indices = false;
     };
 } // namespace storm::engine
 

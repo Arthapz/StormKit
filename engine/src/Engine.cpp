@@ -18,6 +18,8 @@
 #include <storm/engine/scene/Camera.hpp>
 #include <storm/engine/scene/Scene.hpp>
 
+#include <storm/engine/drawable/3D/MeshNode.hpp>
+
 #include <storm/engine/framegraph/FrameGraph.hpp>
 #include <storm/engine/framegraph/FramePass.hpp>
 #include <storm/engine/framegraph/FramePassBuilder.hpp>
@@ -42,8 +44,8 @@ static constexpr auto initTransformLayout =
     layout->bake();
 };
 
-static constexpr auto initMeshLayout = [](const render::Device &device,
-                                          render::DescriptorSetLayoutOwnedPtr &layout) -> void {
+static constexpr auto initMeshNodeLayout = [](const render::Device &device,
+                                              render::DescriptorSetLayoutOwnedPtr &layout) -> void {
     layout = device.createDescriptorSetLayoutPtr();
     layout->addBinding(
         { 0, render::DescriptorType::Uniform_Buffer_Dynamic, render::ShaderStage::Vertex, 1 });
@@ -70,6 +72,7 @@ static constexpr auto PIPELINE_CACHE_PATH = std::string_view { "~/.cache/{}/" };
 ////////////////////////////////////////
 Engine::Engine(const window::Window &window, std::string app_name) {
     m_instance = std::make_unique<render::Instance>(app_name);
+
     log::LogHandler::ilog(LOG_MODULE, "Render backend successfully initialized");
 
     m_surface = m_instance->createSurfacePtr(window);
@@ -145,7 +148,7 @@ Engine::Engine(const window::Window &window, std::string app_name) {
 
     Camera::initDescriptorLayout(*m_device, initCameraLayout);
     Transform::initDescriptorLayout(*m_device, initTransformLayout);
-    Mesh::initDescriptorLayout(*m_device, initMeshLayout);
+    MeshNode::initDescriptorLayout(*m_device, initMeshNodeLayout);
 }
 
 ////////////////////////////////////////
@@ -155,7 +158,7 @@ Engine::~Engine() {
 
     m_framegraphs.clear();
 
-    Mesh::destroyDescriptorLayout();
+    MeshNode::destroyDescriptorLayout();
     Transform::destroyDescriptorLayout();
     Camera::destroyDescriptorLayout();
 }
