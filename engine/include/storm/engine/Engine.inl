@@ -11,12 +11,14 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    Mesh Engine::createMesh(const Material &material) { return Mesh { *this, material }; }
+    Mesh Engine::createMesh(const Material &material, std::string name) {
+        return Mesh { *this, material, std::move(name) };
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    MeshOwnedPtr Engine::createMeshPtr(const Material &material) {
-        return std::make_unique<Mesh>(*this, material);
+    MeshOwnedPtr Engine::createMeshPtr(const Material &material, std::string name) {
+        return std::make_unique<Mesh>(*this, material, std::move(name));
     }
 
     ////////////////////////////////////////

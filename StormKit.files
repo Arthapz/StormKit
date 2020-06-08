@@ -22,7 +22,10 @@ StormKitStaticTargets-debug.cmake.in
 StormKitStaticTargets-release.cmake.in
 StormKitStaticTargets.cmake.in
 
-StormKit.cflags
+meson.build
+meson_options.txt
+
+core/meson.build
 core/include/storm/core/App.hpp
 core/include/storm/core/Assert.hpp
 core/include/storm/core/CRTP.hpp
@@ -71,12 +74,12 @@ core/include/storm/core/TypeTraits.hpp
 core/include/storm/core/Types.hpp
 core/include/storm/core/private/Flags.hpp
 core/include/storm/core/private/incbin.h
-core/meson.build
 core/src/Math.cpp
 core/src/State.cpp
 core/src/StateManager.cpp
 core/src/TreeNode.cpp
 
+engine/meson.build
 engine/include/storm/engine/Engine.hpp
 engine/include/storm/engine/Engine.inl
 engine/include/storm/engine/Fwd.hpp
@@ -99,17 +102,16 @@ engine/include/storm/engine/core/TransformComponent.hpp
 engine/include/storm/engine/core/Vertex.hpp
 engine/include/storm/engine/core/Vertex.inl
 engine/include/storm/engine/drawable/BoundingBox.hpp
-engine/include/storm/engine/drawable/CubeMap.hpp
-engine/include/storm/engine/drawable/CubeMap.inl
 engine/include/storm/engine/drawable/Drawable.hpp
 engine/include/storm/engine/drawable/Drawable.inl
 engine/include/storm/engine/drawable/Fwd.hpp
-engine/include/storm/engine/drawable/Mesh.hpp
-engine/include/storm/engine/drawable/Mesh.inl
-engine/include/storm/engine/drawable/Model.hpp
-engine/include/storm/engine/drawable/Model.inl
-engine/include/storm/engine/drawable/SubMesh.hpp
-engine/include/storm/engine/drawable/SubMesh.inl
+engine/include/storm/engine/drawable/3D/Fwd.hpp
+engine/include/storm/engine/drawable/3D/Model.hpp
+engine/include/storm/engine/drawable/3D/Model.inl
+engine/include/storm/engine/drawable/3D/Mesh.hpp
+engine/include/storm/engine/drawable/3D/Mesh.inl
+engine/include/storm/engine/drawable/3D/MeshNode.hpp
+engine/include/storm/engine/drawable/3D/MeshNode.inl
 engine/include/storm/engine/framegraph/FrameGraph.hpp
 engine/include/storm/engine/framegraph/FrameGraph.inl
 engine/include/storm/engine/framegraph/FramePass.hpp
@@ -159,7 +161,6 @@ engine/include/storm/engine/scene/PBRScene.hpp
 engine/include/storm/engine/scene/PBRScene.inl
 engine/include/storm/engine/scene/Scene.hpp
 engine/include/storm/engine/scene/Scene.inl
-engine/meson.build
 engine/samples/ModelLoading/meson.build
 engine/samples/ModelLoading/shaders/mesh.frag.glsl
 engine/samples/ModelLoading/shaders/mesh.vert.glsl
@@ -213,11 +214,10 @@ engine/src/core/imgui/imgui_widgets.cpp
 engine/src/core/imgui/imstb_rectpack.hpp
 engine/src/core/imgui/imstb_textedit.hpp
 engine/src/core/imgui/imstb_truetype.hpp
-engine/src/drawable/CubeMap.cpp
 engine/src/drawable/Drawable.cpp
-engine/src/drawable/Mesh.cpp
-engine/src/drawable/Model.cpp
-engine/src/drawable/SubMesh.cpp
+engine/src/drawable/3D/Model.cpp
+engine/src/drawable/3D/Mesh.cpp
+engine/src/drawable/3D/MeshNode.cpp
 engine/src/framegraph/FrameGraph.cpp
 engine/src/framegraph/FramePass.cpp
 engine/src/framegraph/FramePassBuilder.cpp
@@ -241,6 +241,7 @@ engine/src/scene/FPSCamera.cpp
 engine/src/scene/PBRScene.cpp
 engine/src/scene/Scene.cpp
 
+entities/meson.build
 entities/include/storm/entities/Component.hpp
 entities/include/storm/entities/Entity.hpp
 entities/include/storm/entities/EntityManager.hpp
@@ -248,19 +249,12 @@ entities/include/storm/entities/EntityManager.inl
 entities/include/storm/entities/Fwd.hpp
 entities/include/storm/entities/MessageBus.hpp
 entities/include/storm/entities/System.hpp
-entities/meson.build
 entities/src/Component.cpp
 entities/src/EntityManager.cpp
 entities/src/MessageBus.cpp
 entities/src/System.cpp
 
-StormKit.config
-StormKit.cxxflags
-engine/include/storm/engine/drawable/3D/Mesh.hpp
-engine/include/storm/engine/drawable/3D/Mesh.inl
-engine/include/storm/engine/drawable/3D/MeshNode.hpp
-engine/src/drawable/3D/Mesh.cpp
-engine/src/drawable/3D/MeshNode.cpp
+engine/include/storm/engine/drawable/Fwd_copy.hpp
 image/include/storm/image/Fwd.hpp
 image/include/storm/image/Image.hpp
 image/meson.build
@@ -290,19 +284,17 @@ log/src/LogColorizer.cpp
 log/src/LogHandler.cpp
 log/src/Logger.cpp
 
-main/include/storm/main/Main.hpp
 main/meson.build
+main/include/storm/main/Main.hpp
 main/src/linux/Main.cpp
 main/src/win32/Main.cpp
-meson.build
-meson_options.txt
 
+module/meson.build
 module/include/storm/module/AbstractModule.hpp
 module/include/storm/module/AbstractModule.inl
 module/include/storm/module/Fwd.hpp
 module/include/storm/module/Module.hpp
 module/include/storm/module/Module.inl
-module/meson.build
 module/src/AbstractModule.cpp
 module/src/Module.cpp
 module/src/posix/ModuleImpl.cpp
@@ -310,6 +302,7 @@ module/src/posix/ModuleImpl.hpp
 module/src/win32/ModuleImpl.cpp
 module/src/win32/ModuleImpl.hpp
 
+render/meson.build
 render/include/storm/render/Fwd.hpp
 render/include/storm/render/core/Command.hpp
 render/include/storm/render/core/CommandBuffer.hpp
@@ -372,7 +365,6 @@ render/include/storm/render/sync/Fence.inl
 render/include/storm/render/sync/Fwd.hpp
 render/include/storm/render/sync/Semaphore.hpp
 render/include/storm/render/sync/Semaphore.inl
-render/meson.build
 render/samples/Texture/meson.build
 render/samples/Texture/shaders/fragment.frag.glsl
 render/samples/Texture/shaders/vertex.vert.glsl
@@ -419,6 +411,7 @@ render/src/resource/TextureView.cpp
 render/src/sync/Fence.cpp
 render/src/sync/Semaphore.cpp
 
+window/meson.build
 window/include/storm/window/AbstractInputHandler.hpp
 window/include/storm/window/AbstractWindow.hpp
 window/include/storm/window/AbstractWindow.inl
@@ -434,7 +427,6 @@ window/include/storm/window/VideoSettings.hpp
 window/include/storm/window/Window.hpp
 window/include/storm/window/Window.inl
 window/include/storm/window/WindowStyle.hpp
-window/meson.build
 window/plugins/Win32/src/Plugin.cpp
 window/plugins/X11/src/Plugin.cpp
 window/plugins/iOS/src/AppDelegate.hpp

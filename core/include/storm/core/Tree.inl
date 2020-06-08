@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Tree.hpp"
-
 #include <deque>
 #include <fstream>
 
@@ -167,7 +165,7 @@ namespace storm::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     const typename Tree<TreeNodeClass>::TreeNodeType &
+    const typename Tree<TreeNodeClass>::TreeNodeType &
         Tree<TreeNodeClass>::operator[](TreeNodeIndexType index) const noexcept {
         STORM_EXPECTS(index < std::size(m_tree));
 
@@ -176,7 +174,7 @@ namespace storm::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     typename Tree<TreeNodeClass>::TreeNodeType &
+    typename Tree<TreeNodeClass>::TreeNodeType &
         Tree<TreeNodeClass>::operator[](TreeNodeIndexType index) noexcept {
         STORM_EXPECTS(index < std::size(m_tree));
 
@@ -186,56 +184,56 @@ namespace storm::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     core::ArraySize Tree<TreeNodeClass>::size() const noexcept {
+    core::ArraySize Tree<TreeNodeClass>::size() const noexcept {
         return std::size(m_tree);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     auto Tree<TreeNodeClass>::begin() noexcept {
+    auto Tree<TreeNodeClass>::begin() noexcept {
         return core::ranges::begin(m_tree);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     auto Tree<TreeNodeClass>::begin() const noexcept {
+    auto Tree<TreeNodeClass>::begin() const noexcept {
         return std::cbegin(m_tree);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     auto Tree<TreeNodeClass>::cbegin() const noexcept {
+    auto Tree<TreeNodeClass>::cbegin() const noexcept {
         return std::cbegin(m_tree);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     auto Tree<TreeNodeClass>::end() noexcept {
+    auto Tree<TreeNodeClass>::end() noexcept {
         return core::ranges::end(m_tree);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     auto Tree<TreeNodeClass>::end() const noexcept {
+    auto Tree<TreeNodeClass>::end() const noexcept {
         return std::cend(m_tree);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     auto Tree<TreeNodeClass>::cend() const noexcept {
+    auto Tree<TreeNodeClass>::cend() const noexcept {
         return std::cend(m_tree);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     void Tree<TreeNodeClass>::clearDirties() noexcept {
+    void Tree<TreeNodeClass>::clearDirties() noexcept {
         if (std::empty(m_dirties)) return;
 
         for (auto i : m_dirties) { m_tree[i].setDirtyBits(0); }
@@ -245,7 +243,7 @@ namespace storm::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename TreeNodeClass>
-     storm::core::span<const typename Tree<TreeNodeClass>::TreeNodeIndexType>
+    storm::core::span<const typename Tree<TreeNodeClass>::TreeNodeIndexType>
         Tree<TreeNodeClass>::dirties() const noexcept {
         return m_dirties;
     }

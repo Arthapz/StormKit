@@ -34,8 +34,8 @@
 
 #include <storm/engine/material/Material.hpp>
 
-#include <storm/engine/drawable/Mesh.hpp>
-#include <storm/engine/drawable/Model.hpp>
+#include <storm/engine/drawable/3D/Mesh.hpp>
+#include <storm/engine/drawable/3D/Model.hpp>
 
 namespace storm::engine {
     class STORM_PUBLIC Engine {
@@ -68,8 +68,9 @@ namespace storm::engine {
 
         inline void setScene(Scene &scene) noexcept;
 
-        [[nodiscard]] inline Mesh createMesh(const Material &material);
-        [[nodiscard]] inline MeshOwnedPtr createMeshPtr(const Material &material);
+        [[nodiscard]] inline Mesh createMesh(const Material &material, std::string name = "");
+        [[nodiscard]] inline MeshOwnedPtr createMeshPtr(const Material &material,
+                                                        std::string name = "");
 
         [[nodiscard]] inline Model createModel(TexturePool &texture_pool,
                                                MaterialPool &material_pool);

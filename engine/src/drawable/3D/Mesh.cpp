@@ -9,8 +9,8 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
-#include <storm/engine/drawable/Mesh.hpp>
-#include <storm/engine/drawable/SubMesh.hpp>
+#include <storm/engine/drawable/3D/Mesh.hpp>
+#include <storm/engine/drawable/3D/MeshNode.hpp>
 
 using namespace storm;
 using namespace storm::engine;
@@ -33,3 +33,32 @@ Mesh::Mesh(Mesh &&) = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 Mesh &Mesh::operator=(Mesh &&) = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+core::TreeNode::IndexType Mesh::addNode(MeshNode &&node, core::TreeNode::IndexType parent) {
+    auto index = m_nodes.insert(std::move(node), parent, MeshNode::INVALID_INDEX);
+
+    return index;
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+const MeshNode &Mesh::getNode(core::TreeNode::IndexType id) const noexcept {
+    return m_nodes[id];
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+void Mesh::bake() {
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+MeshOwnedPtr Mesh::clonePtr() const {
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+Mesh Mesh::clone() const {
+}

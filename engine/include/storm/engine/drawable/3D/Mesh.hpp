@@ -9,25 +9,28 @@
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
 
+#include <storm/core/Tree.hpp>
+
 /////////// - StormKit::render - ///////////
 #include <storm/render/Fwd.hpp>
 
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
 
+#include <storm/engine/drawable/3D/MeshNode.hpp>
 #include <storm/engine/drawable/Drawable.hpp>
 
 namespace storm::engine {
-    struct MeshFlag;
     class STORM_PUBLIC Mesh final: public Drawable {
       public:
-        static constexpr auto MAX_NUM_JOINTS = 128u;
-
         Mesh(Engine &engine, const Material &material, std::string name = "");
         ~Mesh() override;
 
         Mesh(Mesh &&);
         Mesh &operator=(Mesh &&);
+
+        MeshNode::IndexType addNode(MeshNode &&node, MeshNode::IndexType parent);
+        const MeshNode &getNode(MeshNode::IndexType id) const noexcept;
 
         [[nodiscard]] inline const Material &material() const noexcept;
 
@@ -38,6 +41,13 @@ namespace storm::engine {
                     const render::RenderPass &pass,
                     std::vector<BindableBaseConstObserverPtr> bindables,
                     render::GraphicsPipelineState state) override;
+
+        [[nodiscard]] std::string_view name() const noexcept;
+
+        void bake();
+
+        Mesh clone() const;
+        MeshOwnedPtr clonePtr() const;
 
       protected:
         void recomputeBoundingBox() const noexcept override;
@@ -50,6 +60,8 @@ namespace storm::engine {
 
         render::HardwareBufferOwnedPtr m_vertex_buffer;
         render::HardwareBufferOwnedPtr m_index_buffer;
+
+        core::Tree<MeshNode> m_nodes;
     };
 } // namespace storm::engine
 

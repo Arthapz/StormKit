@@ -99,17 +99,24 @@ scene_inls = files([
 drawable_headers = files([
     'include/storm/engine/drawable/Fwd.hpp',
     'include/storm/engine/drawable/Drawable.hpp',
-    'include/storm/engine/drawable/Mesh.hpp',
-    'include/storm/engine/drawable/SubMesh.hpp',
-    'include/storm/engine/drawable/Model.hpp',
-    'include/storm/engine/drawable/CubeMap.hpp',
+    'include/storm/engine/drawable/BoundingBox.hpp',
+])
+
+threed_drawable_headers = files([
+    'include/storm/engine/drawable/3D/Mesh.hpp',
+    'include/storm/engine/drawable/3D/Model.hpp',
+    'include/storm/engine/drawable/3D/ModelNode.hpp',
+    'include/storm/engine/drawable/3D/CubeMap.hpp',
 ])
 
 drawable_inls = files([
     'include/storm/engine/drawable/Drawable.inl',
-    'include/storm/engine/drawable/Mesh.inl',
-    'include/storm/engine/drawable/SubMesh.inl',
-    'include/storm/engine/drawable/Model.inl',
+])
+
+threed_drawable_inls = files([
+    'include/storm/engine/drawable/3D/Mesh.inl',
+    'include/storm/engine/drawable/3D/MeshNode.inl',
+    'include/storm/engine/drawable/3D/Model.inl',
 ])
 
 framegraph_headers = files([
@@ -185,7 +192,7 @@ sources = files([
     'src/framegraph/FramePassResources.cpp',
 ])
 
-headers = base_headers + core_headers + material_headers + scene_headers + drawable_headers + framegraph_headers
+headers = base_headers + core_headers + material_headers + scene_headers + drawable_headers + framegraph_headers + threed_drawable_headers
 
 engine_inc = ['include/']
 
@@ -232,4 +239,5 @@ install_headers(core_headers + core_inls, subdir : 'storm/engine/core')
 install_headers(material_headers + material_inls, subdir : 'storm/engine/material')
 install_headers(scene_headers + scene_inls, subdir : 'storm/engine/scene')
 install_headers(drawable_headers + drawable_inls, subdir : 'storm/engine/drawable')
+install_headers(threed_drawable_headers + threed_drawable_inls, subdir : 'storm/engine/drawable/3D')
 install_headers(framegraph_headers + framegraph_inls, subdir : 'storm/engine/framegraph')
