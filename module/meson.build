@@ -4,17 +4,20 @@ dl_dep = compiler.find_library('dl', required: false)
 
 dependencies = [core_dep, dl_dep]
 
+#ide:editable-filelist
 headers = files([
     'include/storm/module/Fwd.hpp',
     'include/storm/module/Module.hpp',
     'include/storm/module/AbstractModule.hpp',
 ])
 
+#ide:editable-filelist
 inls = files([
     'include/storm/module/Module.inl',
     'include/storm/module/AbstractModule.inl',
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/Module.cpp',
     'src/AbstractModule.cpp',

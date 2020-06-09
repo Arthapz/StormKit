@@ -22,6 +22,7 @@ shader_compiler = generator(
     arguments: command_glslang
 )
 
+#ide:editable-filelist
 shader_files = shader_compiler.process(
     'shaders/PBRColorPass.vert.glsl',
     'shaders/PBRColorPass.frag.glsl',
@@ -34,15 +35,18 @@ shader_files = shader_compiler.process(
     'shaders/GenBRDF.vert.glsl',
 )
 
+#ide:editable-filelist
 base_headers = files([
     'include/storm/engine/Engine.hpp',
     'include/storm/engine/Fwd.hpp',
 ])
 
+#ide:editable-filelist
 base_inls = files([
     'include/storm/engine/Engine.inl',
 ])
 
+#ide:editable-filelist
 core_headers = files([
     'include/storm/engine/core/Fwd.hpp',
     'include/storm/engine/core/Bindable.hpp',
@@ -53,6 +57,7 @@ core_headers = files([
     'include/storm/engine/core/Vertex.hpp',
 ])
 
+#ide:editable-filelist
 core_inls = files([
     'include/storm/engine/core/Bindable.inl',
     'include/storm/engine/core/DebugGUI.inl',
@@ -62,6 +67,7 @@ core_inls = files([
     'include/storm/engine/core/Vertex.inl',
 ])
 
+#ide:editable-filelist
 material_headers = files([
     'include/storm/engine/material/Fwd.hpp',
     'include/storm/engine/material/Material.hpp',
@@ -72,6 +78,7 @@ material_headers = files([
     'include/storm/engine/material/CubeMapMaterialInstance.hpp',
 ])
 
+#ide:editable-filelist
 material_inls = files([
     'include/storm/engine/material/Material.inl',
     'include/storm/engine/material/MaterialInstance.inl',
@@ -81,6 +88,7 @@ material_inls = files([
     'include/storm/engine/material/CubeMapMaterialInstance.inl',
 ])
 
+#ide:editable-filelist
 scene_headers = files([
     'include/storm/engine/scene/Fwd.hpp',
     'include/storm/engine/scene/Camera.hpp',
@@ -89,6 +97,7 @@ scene_headers = files([
     'include/storm/engine/scene/PBRScene.hpp',
 ])
 
+#ide:editable-filelist
 scene_inls = files([
     'include/storm/engine/scene/Camera.inl',
     'include/storm/engine/scene/FPSCamera.inl',
@@ -96,12 +105,14 @@ scene_inls = files([
     'include/storm/engine/scene/PBRScene.inl',
 ])
 
+#ide:editable-filelist
 drawable_headers = files([
     'include/storm/engine/drawable/Fwd.hpp',
     'include/storm/engine/drawable/Drawable.hpp',
     'include/storm/engine/drawable/BoundingBox.hpp',
 ])
 
+#ide:editable-filelist
 threed_drawable_headers = files([
     'include/storm/engine/drawable/3D/Model.hpp',
     'include/storm/engine/drawable/3D/Mesh.hpp',
@@ -109,16 +120,19 @@ threed_drawable_headers = files([
     'include/storm/engine/drawable/3D/CubeMap.hpp',
 ])
 
+#ide:editable-filelist
 drawable_inls = files([
     'include/storm/engine/drawable/Drawable.inl',
 ])
 
+#ide:editable-filelist
 threed_drawable_inls = files([
     'include/storm/engine/drawable/3D/Mesh.inl',
     'include/storm/engine/drawable/3D/MeshNode.inl',
     'include/storm/engine/drawable/3D/Model.inl',
 ])
 
+#ide:editable-filelist
 framegraph_headers = files([
     'include/storm/engine/framegraph/Fwd.hpp',
     'include/storm/engine/framegraph/FrameGraph.hpp',
@@ -129,6 +143,7 @@ framegraph_headers = files([
     'include/storm/engine/framegraph/FramePassResources.hpp',
 ])
 
+#ide:editable-filelist
 framegraph_inls = files([
     'include/storm/engine/framegraph/FrameGraph.inl',
     'include/storm/engine/framegraph/FramePass.inl',
@@ -138,6 +153,7 @@ framegraph_inls = files([
     'include/storm/engine/framegraph/FramePassResources.inl',
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/Engine.cpp', 
     'src/Tinyobj.cpp',

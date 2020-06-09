@@ -11,10 +11,12 @@ vulkan_headers_dep = declare_dependency(dependencies: [vulkan_dep])
 public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, gli_dep, vulkan_headers_dep]
 private_dependencies = []
 
+#ide:editable-filelist
 general_headers = files([
    'include/storm/render/Fwd.hpp'
 ])
 
+#ide:editable-filelist
 core_headers = files([
     'include/storm/render/core/vk_mem_alloc.h',
     'include/storm/render/core/Fwd.hpp',
@@ -35,6 +37,7 @@ core_headers = files([
     'include/storm/render/core/Types.hpp',
 ])
 
+#ide:editable-filelist
 core_inls = files([
     'include/storm/render/core/Enums.inl',
     'include/storm/render/core/Instance.inl',
@@ -45,6 +48,7 @@ core_inls = files([
     'include/storm/render/core/CommandBuffer.inl',
 ])
 
+#ide:editable-filelist
 resource_headers = files([
     'include/storm/render/resource/Fwd.hpp',
     'include/storm/render/resource/Shader.hpp',
@@ -57,6 +61,7 @@ resource_headers = files([
     'include/storm/render/resource/HardwareBuffer.hpp',
 ])
 
+#ide:editable-filelist
 resource_inls = files([
     'include/storm/render/resource/Shader.inl',
     'include/storm/render/resource/Texture.inl',
@@ -65,6 +70,7 @@ resource_inls = files([
     'include/storm/render/resource/HardwareBuffer.inl',
 ])
 
+#ide:editable-filelist
 pipeline_headers = files([
     'include/storm/render/pipeline/Fwd.hpp',
     'include/storm/render/pipeline/GraphicsPipeline.hpp',
@@ -79,6 +85,7 @@ pipeline_headers = files([
     'include/storm/render/pipeline/PipelineCache.hpp',
 ])
 
+#ide:editable-filelist
 pipeline_inls = files([
     'include/storm/render/pipeline/GraphicsPipeline.inl',
     'include/storm/render/pipeline/RenderPass.inl',
@@ -88,17 +95,20 @@ pipeline_inls = files([
     'include/storm/render/pipeline/DescriptorSet.inl',
 ])
 
+#ide:editable-filelist
 sync_headers = files([
     'include/storm/render/sync/Fwd.hpp',
     'include/storm/render/sync/Semaphore.hpp',
     'include/storm/render/sync/Fence.hpp',
 ])
 
+#ide:editable-filelist
 sync_inls = files([
     'include/storm/render/sync/Semaphore.inl',
     'include/storm/render/sync/Fence.inl',
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/core/Instance.cpp',
     'src/core/DynamicLoader.cpp',

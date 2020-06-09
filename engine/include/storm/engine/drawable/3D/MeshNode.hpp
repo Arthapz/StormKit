@@ -4,6 +4,9 @@
 
 #pragma once
 
+/////////// - STL - ///////////
+#include <bitset>
+
 /////////// - StormKit::core - ///////////
 #include <storm/core/Hash.hpp>
 #include <storm/core/Math.hpp>
