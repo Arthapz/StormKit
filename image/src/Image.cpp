@@ -66,17 +66,18 @@ namespace storm::image {
                                                                         0x01);
         static constexpr auto JPEG_HEADER_3 = core::makeStaticByteArray(0xFF, 0xD8, 0xFF, 0xEE);
 
-        if (auto range = data | views::take(ranges::size(KTX_HEADER));
-            ranges::equal(KTX_HEADER, range))
+        if (std::memcmp(std::data(data), std::data(KTX_HEADER), std::size(KTX_HEADER)) == 0)
             return Image::Codec::KTX;
-        else if (auto range = data | views::take(ranges::size(PNG_HEADER));
-                 ranges::equal(PNG_HEADER, range))
+        else if (std::memcmp(std::data(data), std::data(PNG_HEADER), std::size(PNG_HEADER)) == 0)
             return Image::Codec::PNG;
-        else if (auto range = data | views::take(ranges::size(JPEG_HEADER_1));
-                 ranges::equal(JPEG_HEADER_1, range) | ranges::equal(JPEG_HEADER_3, range))
+        else if (std::memcmp(std::data(data), std::data(JPEG_HEADER_1), std::size(JPEG_HEADER_1)) ==
+                 0)
             return Image::Codec::JPEG;
-        else if (auto range = data | views::take(ranges::size(JPEG_HEADER_2));
-                 ranges::equal(JPEG_HEADER_2, range))
+        else if (std::memcmp(std::data(data), std::data(JPEG_HEADER_2), std::size(JPEG_HEADER_2)) ==
+                 0)
+            return Image::Codec::JPEG;
+        else if (std::memcmp(std::data(data), std::data(JPEG_HEADER_3), std::size(JPEG_HEADER_3)) ==
+                 0)
             return Image::Codec::JPEG;
 
         return Image::Codec::UNKNOW;

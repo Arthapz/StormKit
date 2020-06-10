@@ -21,7 +21,7 @@
 #include <storm/engine/core/Vertex.hpp>
 
 #include <storm/engine/drawable/3D/Mesh.hpp>
-#include <storm/engine/drawable/3D/MeshNode.hpp>
+#include <storm/engine/drawable/3D/SubMesh.hpp>
 
 namespace tinygltf {
     struct Mesh;
@@ -31,6 +31,7 @@ namespace tinygltf {
     class Material;
     class Primitive;
     class Skin;
+    class Animation;
 } // namespace tinygltf
 
 namespace storm::engine {
@@ -62,11 +63,14 @@ namespace storm::engine {
       private:
         MeshOwnedPtr m_mesh;
 
-        MeshNode doParseMesh(const tinygltf::Model &model, const tinygltf::Mesh &mesh);
+        SubMesh doParseMesh(const tinygltf::Model &model, const tinygltf::Mesh &mesh);
         MeshPrimitive doParsePrimitive(const tinygltf::Model &model,
                                        const tinygltf::Primitive &primitive);
         MaterialInstanceOwnedPtr doParseMaterialInstance(const tinygltf::Model &model,
                                                          const tinygltf::Material &material);
+        Mesh::Skin doParseSkin(const tinygltf::Model &model, const tinygltf::Skin &skin);
+        Mesh::Animation doParseAnimation(const tinygltf::Model &model,
+                                         const tinygltf::Animation &animation);
 
         EngineObserverPtr m_engine;
         TexturePoolObserverPtr m_texture_pool;

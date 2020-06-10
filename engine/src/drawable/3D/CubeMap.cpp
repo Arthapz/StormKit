@@ -43,7 +43,8 @@ CubeMap &CubeMap::operator=(CubeMap &&) = default;
 void CubeMap::render(render::CommandBuffer &cmb,
                      const render::RenderPass &pass,
                      std::vector<BindableBaseConstObserverPtr> bindables,
-                     render::GraphicsPipelineState state) {
+                     render::GraphicsPipelineState state,
+                     [[maybe_unused]] float delta_time) {
     m_material_instance->flush();
 
     bindables.emplace_back(core::makeConstObserver(m_material_instance));

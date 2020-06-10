@@ -52,6 +52,7 @@ GLTFScene::GLTFScene(engine::Engine &engine,
     log::LogHandler::ilog(GLTF_LOG_MODULE, "{} loaded", model_filepath.string());
 
     m_mesh = m_model->createMeshPtr();
+    m_mesh->playAnimation(0u, true);
 
     const auto &bounding_box = m_mesh->boundingBox();
 
@@ -112,8 +113,8 @@ void GLTFScene::toggleWireframe() {
     m_wireframe = !m_wireframe;
 
     /*    for (auto &mesh : m_meshes)
-            for (auto &submesh : mesh.subMeshes())
-                submesh.materialInstance().setWireFrameEnabled(m_wireframe);*/
+            for (auto &SubMesh : mesh.SubMeshes())
+                SubMesh.materialInstance().setWireFrameEnabled(m_wireframe);*/
 }
 
 ////////////////////////////////////////
@@ -133,9 +134,9 @@ void GLTFScene::toggleMSAA() noexcept {
 ////////////////////////////////////////
 void GLTFScene::setDebugView(engine::PBRMaterialInstance::DebugView debug_index) {
     /*for (auto &mesh : m_meshes) {
-        for (auto &submesh : mesh.subMeshes()) {
+        for (auto &SubMesh : mesh.SubMeshes()) {
             auto &pbr_material =
-                static_cast<engine::PBRMaterialInstance &>(submesh.materialInstance());
+                static_cast<engine::PBRMaterialInstance &>(SubMesh.materialInstance());
             pbr_material.setDebugView(debug_index);
         }
     }*/
@@ -189,6 +190,8 @@ void GLTFScene::update(float delta) {
         auto &debug_gui = m_engine->debugGUI();
         debug_gui.update(*m_window);
     }
+
+    m_delta_time = delta;
 }
 
 ////////////////////////////////////////
@@ -255,7 +258,7 @@ void GLTFScene::doRenderScene(storm::engine::FrameGraph &framegraph,
         };
 
         m_cube_map->render(cmb, resources.renderPass(), bindables, mesh_state);
-        m_mesh->render(cmb, resources.renderPass(), bindables, mesh_state);
+        m_mesh->render(cmb, resources.renderPass(), bindables, mesh_state, m_delta_time);
     };
 
     auto &color_pass =

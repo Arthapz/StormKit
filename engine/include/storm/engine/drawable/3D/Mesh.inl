@@ -7,17 +7,17 @@
 namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
-    [[nodiscard]] const Material &Mesh::material() const noexcept { return *m_material; }
+    const Material &Mesh::material() const noexcept { return *m_material; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    [[nodiscard]] Transform &Mesh::transform() noexcept { return *m_transform; }
+    Transform &Mesh::transform() noexcept { return *m_transform; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    [[nodiscard]] const Transform &Mesh::transform() const noexcept { return *m_transform; }
+    const Transform &Mesh::transform() const noexcept { return *m_transform; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    [[nodiscard]] std::string_view Mesh::name() const noexcept { return m_name; }
+    std::string_view Mesh::name() const noexcept { return m_name; }
 } // namespace storm::engine

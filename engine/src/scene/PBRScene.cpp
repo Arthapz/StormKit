@@ -161,30 +161,6 @@ PBRScene::PBRScene(Engine &engine) : Scene { engine } {
 
     const auto &device = m_engine->device();
 
-    const auto white = core::RGBColorDef::White<core::UInt8>.toVector4();
-    const auto black = core::RGBColorDef::Black<core::UInt8>.toVector4();
-
-    auto &blank_texture = m_texture_pool.create("StormKit:BlankTexture",
-                                                device,
-                                                render::TextureType::T2D,
-                                                render::TextureCreateFlag::None);
-    blank_texture.loadFromMemory({ reinterpret_cast<const std::byte *>(glm::value_ptr(white)),
-                                   sizeof(white) },
-                                 { 1, 1 },
-                                 render::PixelFormat::RGBA8_UNorm);
-    device.setObjectName(blank_texture, "StormKit:BlankTexture");
-
-    auto &black_texture = m_texture_pool.create("StormKit:BlackTexture",
-                                                device,
-                                                render::TextureType::T2D,
-                                                render::TextureCreateFlag::None);
-
-    black_texture.loadFromMemory({ reinterpret_cast<const std::byte *>(glm::value_ptr(black)),
-                                   sizeof(black) },
-                                 { 1, 1 },
-                                 render::PixelFormat::RGBA8_UNorm);
-    device.setObjectName(black_texture, "StormKit:BlackTexture");
-
     m_material_pool.create(DEFAULT_PBR_MATERIAL_NAME, std::make_unique<PBRMaterial>(*this));
     m_material_pool.create(CUBEMAP_MATERIAL_NAME, std::make_unique<CubeMapMaterial>(*this));
 
@@ -252,8 +228,9 @@ PBRScene &PBRScene::operator=(PBRScene &&) = default;
 void PBRScene::insertGenerateCubeMapPass(FrameGraph &framegraph, CubeMap &cube_map) {
     const auto &texture = cube_map.texture();
 
-    m_gen_cube_view = texture.createViewPtr(render::TextureViewType::Cube,
-                                            { .level_count = texture.mipLevels() });
+    m_gen_cube_view =
+        texture.createViewPtr(render::TextureViewType::Cube,
+                              { .level_count = texture.mipLevels(), .layer_count = 6 });
 
     auto hash = core::Hash64 {};
     core::hash_combine(hash, &texture);
@@ -298,9 +275,14 @@ void PBRScene::insertGenerateCubeMapPass(FrameGraph &framegraph, CubeMap &cube_m
     generateIrradience(framegraph, irradience_name);
     generatePrefiltereredEnv(framegraph, prefiltered_env_name);
 
-    m_brdf_view            = m_brdf->createViewPtr();
-    m_irradience_view      = m_irradience->createViewPtr(render::TextureViewType::Cube);
-    m_prefiltered_env_view = m_prefiltered_env->createViewPtr(render::TextureViewType::Cube);
+    m_brdf_view = m_brdf->createViewPtr();
+    m_irradience_view =
+        m_irradience->createViewPtr(render::TextureViewType::Cube,
+                                    { .level_count = m_irradience->mipLevels(), .layer_count = 6 });
+    m_prefiltered_env_view =
+        m_prefiltered_env->createViewPtr(render::TextureViewType::Cube,
+                                         { .level_count = m_prefiltered_env->mipLevels(),
+                                           .layer_count = 6 });
 
     const auto mip = static_cast<float>(render::computeMipLevel(m_prefiltered_env->extent()));
 

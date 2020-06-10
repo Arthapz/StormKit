@@ -106,10 +106,10 @@ engine/include/storm/engine/drawable/3D/Mesh.hpp
 engine/include/storm/engine/drawable/3D/Model.hpp
 engine/include/storm/engine/drawable/3D/Mesh.hpp
 engine/include/storm/engine/drawable/3D/Mesh.inl
-engine/include/storm/engine/drawable/3D/MeshNode.hpp
-engine/include/storm/engine/drawable/3D/MeshNode.inl
 engine/include/storm/engine/drawable/3D/CubeMap.hpp
 engine/include/storm/engine/drawable/3D/CubeMap.inl
+engine/include/storm/engine/drawable/3D/SubMesh.hpp
+engine/include/storm/engine/drawable/3D/SubMesh.inl
 engine/include/storm/engine/drawable/BoundingBox.hpp
 engine/include/storm/engine/drawable/Drawable.hpp
 engine/include/storm/engine/drawable/Drawable.inl
@@ -217,7 +217,7 @@ engine/src/core/imgui/imstb_rectpack.hpp
 engine/src/core/imgui/imstb_textedit.hpp
 engine/src/core/imgui/imstb_truetype.hpp
 engine/src/drawable/3D/Mesh.cpp
-engine/src/drawable/3D/MeshNode.cpp
+engine/src/drawable/3D/SubMesh.cpp
 engine/src/drawable/3D/Model.cpp
 engine/src/drawable/3D/CubeMap.cpp
 engine/src/drawable/Drawable.cpp

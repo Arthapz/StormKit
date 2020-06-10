@@ -11,8 +11,8 @@ namespace storm::engine {
     class Mesh;
     DECLARE_PTR_AND_REF(Mesh);
 
-    class MeshNode;
-    DECLARE_PTR_AND_REF(MeshNode);
+    class SubMesh;
+    DECLARE_PTR_AND_REF(SubMesh);
 
     struct MeshPrimitive;
 

@@ -116,7 +116,7 @@ drawable_headers = files([
 threed_drawable_headers = files([
     'include/storm/engine/drawable/3D/Model.hpp',
     'include/storm/engine/drawable/3D/Mesh.hpp',
-    'include/storm/engine/drawable/3D/MeshNode.hpp',
+    'include/storm/engine/drawable/3D/SubMesh.hpp',
     'include/storm/engine/drawable/3D/CubeMap.hpp',
 ])
 
@@ -128,7 +128,7 @@ drawable_inls = files([
 #ide:editable-filelist
 threed_drawable_inls = files([
     'include/storm/engine/drawable/3D/Mesh.inl',
-    'include/storm/engine/drawable/3D/MeshNode.inl',
+    'include/storm/engine/drawable/3D/SubMesh.inl',
     'include/storm/engine/drawable/3D/Model.inl',
 ])
 
@@ -196,7 +196,7 @@ sources = files([
 
     'src/drawable/Drawable.cpp',
     'src/drawable/3D/Mesh.cpp',
-    'src/drawable/3D/MeshNode.cpp',
+    'src/drawable/3D/SubMesh.cpp',
     'src/drawable/3D/Model.cpp',
     'src/drawable/3D/CubeMap.cpp',
 

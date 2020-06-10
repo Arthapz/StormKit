@@ -52,6 +52,8 @@ class GLTFScene final: public storm::engine::PBRScene {
     storm::engine::ModelOwnedPtr m_model;
     storm::engine::MeshOwnedPtr m_mesh;
 
+    float m_delta_time = 0.f;
+
     bool m_freeze_camera  = false;
     bool m_rotate_mesh    = false;
     bool m_wireframe      = false;

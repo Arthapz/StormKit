@@ -100,13 +100,24 @@ MaterialInstance::MaterialInstance(const Scene &scene, const Material &material)
     const auto &sampleds = m_parent->m_data.samplers;
     m_sampled_textures.reserve(std::size(sampleds));
 
-    const auto &default_map = scene.texturePool().get("StormKit:BlankTexture");
+    const auto getDefaultMapFor = [&texture_pool = scene.texturePool()](
+                                      render::TextureViewType type) -> const render::Texture & {
+        if (type == render::TextureViewType::T2D)
+            return texture_pool.get("StormKit:BlankTexture:2D");
+        else if (type == render::TextureViewType::Cube)
+            return texture_pool.get("StormKit:BlankTexture:Cube");
+    };
+
     for (const auto &[binding, sampler] : sampleds) {
+        const auto &map = getDefaultMapFor(sampler.type);
+
         m_sampled_textures.emplace(sampler.name,
-                                   SampledBinding { .binding = binding,
-                                                    .texture = core::makeConstObserver(default_map),
-                                                    .view = default_map.createViewPtr(sampler.type),
-                                                    .sampler = device.createSamplerPtr() });
+                                   SampledBinding {
+                                       .binding = binding,
+                                       .texture = core::makeConstObserver(map),
+                                       .view    = map.createViewPtr(sampler.type,
+                                                                 { .layer_count = map.layers() }),
+                                       .sampler = device.createSamplerPtr() });
 
         m_buffer_binding = std::max(m_buffer_binding, static_cast<core::Int32>(binding));
     }
@@ -152,13 +163,15 @@ void MaterialInstance::flush() {
     auto descriptors = render::DescriptorArray {};
 
     for (auto &[_, sampled_texture] : m_sampled_textures) {
-        descriptors.emplace_back(render::TextureDescriptor {
-            .binding      = sampled_texture.binding,
-            .layout       = render::TextureLayout::Shader_Read_Only_Optimal,
-            .texture_view = core::makeConstObserver(sampled_texture.view),
-            .sampler      = core::makeConstObserver(sampled_texture.sampler) });
+        if (sampled_texture.dirty) {
+            descriptors.emplace_back(render::TextureDescriptor {
+                .binding      = sampled_texture.binding,
+                .layout       = render::TextureLayout::Shader_Read_Only_Optimal,
+                .texture_view = core::makeConstObserver(sampled_texture.view),
+                .sampler      = core::makeConstObserver(sampled_texture.sampler) });
 
-        if (sampled_texture.dirty) { sampled_texture.dirty = false; }
+            if (sampled_texture.dirty) { sampled_texture.dirty = false; }
+        }
     }
 
     if (m_bytes_dirty && !std::empty(m_bytes)) {
@@ -216,7 +229,7 @@ MaterialInstanceOwnedPtr MaterialInstance::clone() const {
         copy.sampler = device.createSamplerPtr(binding.sampler->settings());
         copy.dirty   = true;
 
-        material_instance->m_sampled_textures.emplace(name, std::move(copy));
+        material_instance->m_sampled_textures[name] = std::move(copy);
     }
 
     material_instance->m_dirty = true;

@@ -84,28 +84,6 @@ constexpr render::Format toStormKit(int type) noexcept {
     return render::Format::Float;
 }
 
-core::Matrixf getNodeMatrix(const tinygltf::Node &node) {
-    auto translation = core::Vector3f { 0.f };
-    auto rotation    = core::Matrixf { 1.f };
-    auto scale       = core::Vector3f { 1.f };
-
-    if (!std::empty(node.translation)) translation = core::make_vec3(std::data(node.translation));
-    if (!std::empty(node.rotation)) {
-        rotation =
-            core::Matrixf { core::Quaternionf { core::make_quat(std::data(node.rotation)) } };
-    }
-
-    if (!std::empty(node.scale)) scale = core::make_vec3(std::data(node.scale));
-
-    auto matrix = core::Matrixf { 1.f };
-    if (!std::empty(node.matrix)) matrix = core::make_mat4(std::data(node.matrix));
-
-    auto result = core::translate(core::Matrixf { 1.f }, translation) * core::Matrixf { rotation } *
-                  core::scale(core::Matrixf { 1.f }, scale) * matrix;
-
-    return result;
-}
-
 ////////////////////////////////////////
 ////////////////////////////////////////
 Model::Model(Engine &engine, TexturePool &texture_pool, MaterialPool &material_pool)
@@ -157,43 +135,63 @@ void Model::load(const std::filesystem::path &path) {
 
     m_mesh = std::make_unique<Mesh>(*m_engine, material, name);
 
-    using NodeRef    = _std::observer_ptr<const tinygltf::Node>;
-    using NodeMatrix = std::tuple<NodeRef, core::Matrixf, core::TreeNode::IndexType>;
+    for (const auto &skin : model.skins) {
+        auto mesh_skin = doParseSkin(model, skin);
 
-    auto node_queue = std::deque<NodeMatrix> {};
-    for (const auto &node_id : scene.nodes) {
-        auto &node = model.nodes[node_id];
-
-        auto matrix = getNodeMatrix(node);
-
-        node_queue.emplace_front(&node, std::move(matrix), core::TreeNode::INVALID_INDEX);
+        m_mesh->addSkin(std::move(mesh_skin));
     }
 
-    while (!std::empty(node_queue)) {
-        auto [node_ref, matrix, parent] = node_queue.front();
-        const auto &node                = node_ref.get();
-        node_queue.pop_front();
+    for (const auto &animation : model.animations) {
+        auto mesh_animation = doParseAnimation(model, animation);
 
-        if (node->mesh >= 0) {
-            const auto &mesh = model.meshes[node->mesh];
+        m_mesh->addAnimation(std::move(mesh_animation));
+    }
 
-            auto mesh_node = doParseMesh(model, mesh);
-            mesh_node.setTransform(matrix);
+    auto parents = core::HashMap<Mesh::Node::ID, Mesh::Node::ID> {};
 
-            auto index = m_mesh->addNode(std::move(mesh_node), parent);
+    auto nodes = std::deque<Mesh::Node::ID> {};
+    for (const auto node_id : scene.nodes) {
+        nodes.emplace_back(node_id);
 
-            parent = index;
+        parents[node_id] = Mesh::Node::INVALID;
+    }
+
+    while (!std::empty(nodes)) {
+        const auto node_id = nodes.front();
+        nodes.pop_front();
+
+        const auto &node = model.nodes[node_id];
+
+        for (const auto child_id : node.children) {
+            parents[child_id] = node_id;
+
+            nodes.emplace_back(child_id);
+        }
+    }
+
+    auto i = 0;
+    for (const auto &node : model.nodes) {
+        auto mesh_node   = Mesh::Node {};
+        mesh_node.parent = parents[i++];
+
+        if (!std::empty(node.translation))
+            mesh_node.translation = core::make_vec3(std::data(node.translation));
+        if (!std::empty(node.rotation))
+            mesh_node.rotation = core::Quaternionf { core::make_quat(std::data(node.rotation)) };
+        if (!std::empty(node.scale)) mesh_node.scale = core::make_vec3(std::data(node.scale));
+        if (!std::empty(node.matrix)) mesh_node.matrix = core::make_mat4(std::data(node.matrix));
+
+        if (node.mesh >= 0) {
+            const auto &mesh = model.meshes[node.mesh];
+
+            mesh_node.submesh = doParseMesh(model, mesh);
         }
 
-        if (!std::empty(node->children)) {
-            for (auto child_id : node->children) {
-                auto &child = model.nodes[child_id];
+        if (node.skin >= 0) mesh_node.skin = node.skin;
 
-                auto child_matrix = matrix * getNodeMatrix(child);
+        for (const auto child_id : node.children) mesh_node.childs.emplace_back(child_id);
 
-                node_queue.emplace_front(&child, std::move(child_matrix), parent);
-            }
-        }
+        m_mesh->addNode(std::move(mesh_node));
     }
 
     m_mesh->bake();
@@ -219,8 +217,8 @@ MeshOwnedPtr Model::createMeshPtr() noexcept {
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-MeshNode Model::doParseMesh(const tinygltf::Model &model, const tinygltf::Mesh &mesh) {
-    auto mesh_node = MeshNode { *m_engine, mesh.name };
+SubMesh Model::doParseMesh(const tinygltf::Model &model, const tinygltf::Mesh &mesh) {
+    auto mesh_node = SubMesh { *m_engine, mesh.name };
 
     auto vertex_array = VertexArray {};
     for (const auto &primitive : mesh.primitives) {
@@ -265,9 +263,10 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
 
         const auto count = accessor.count;
 
-        if (std::empty(mesh_primitive.vertices))
+        if (count > std::size(mesh_primitive.vertices)) {
             mesh_primitive.vertices.resize(count * sizeof(Vertex));
-        mesh_primitive.vertex_count = count;
+            mesh_primitive.vertex_count = count;
+        }
 
         for (auto i = 0u; i < count; ++i) {
             const auto it =
@@ -319,15 +318,15 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
         auto large_indices = size == sizeof(core::UInt32);
 
         const auto fill_indices = [&buffer_data, &mesh_primitive, &size](auto &indices) {
-            using IndexType = typename std::remove_reference_t<decltype(indices)>::value_type;
-
-            for (auto i = 0u; i < mesh_primitive.index_count; ++i) {
-                const auto it = &buffer_data[i * size];
-
-                auto index = IndexType {};
-                for (auto j = 0; j < size; ++j) { index |= static_cast<IndexType>(it[j]) << j; }
-
-                indices[i] = index;
+            if (size == 1) {
+                const auto data = reinterpret_cast<const std::uint8_t *>(buffer_data);
+                for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; }
+            } else if (size == 2) {
+                const auto data = reinterpret_cast<const std::uint16_t *>(buffer_data);
+                for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; }
+            } else if (size == 4) {
+                const auto data = reinterpret_cast<const std::uint32_t *>(buffer_data);
+                for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; }
             }
         };
 
@@ -378,7 +377,6 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
         for (const auto c : image.image) core::hash_combine(hash, c);
 
         auto name = fmt::format("{:x}", hash);
-
         if (m_texture_pool->has(name)) { return &m_texture_pool->get(name); }
 
         auto &texture = m_texture_pool->create(std::move(name),
@@ -528,4 +526,114 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
     if (material.doubleSided) material_instance->setCullMode(render::CullMode::None);
 
     return material_instance;
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+Mesh::Skin Model::doParseSkin(const tinygltf::Model &model, const tinygltf::Skin &skin) {
+    auto mesh_skin = Mesh::Skin {};
+    mesh_skin.name = skin.name;
+
+    for (const auto joint_id : skin.joints) mesh_skin.joints.emplace_back(joint_id);
+
+    if (skin.inverseBindMatrices >= 0) {
+        const auto &accessor    = model.accessors[skin.inverseBindMatrices];
+        const auto &buffer_view = model.bufferViews[accessor.bufferView];
+        const auto &buffer      = model.buffers[buffer_view.buffer];
+
+        const auto offset = accessor.byteOffset + buffer_view.byteOffset;
+
+        mesh_skin.inverse_bind_matrices.resize(accessor.count);
+        for (auto i = 0u; i < accessor.count; ++i) {
+            const auto *data = &buffer.data[offset + i * sizeof(core::Matrixf)];
+
+            mesh_skin.inverse_bind_matrices[i] = core::make_mat4x4(data);
+        }
+    }
+
+    return mesh_skin;
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+Mesh::Animation Model::doParseAnimation(const tinygltf::Model &model,
+                                        const tinygltf::Animation &animation) {
+    auto mesh_animation = Mesh::Animation {};
+    mesh_animation.samplers.reserve(std::size(animation.samplers));
+    mesh_animation.channels.reserve(std::size(animation.channels));
+    mesh_animation.name = animation.name;
+
+    for (auto &sampler : animation.samplers) {
+        auto &mesh_sampler = mesh_animation.samplers.emplace_back();
+
+        if (sampler.interpolation == "LINEAR")
+            mesh_sampler.interpolation = Mesh::InterpolationType::Linear;
+        else if (sampler.interpolation == "STEP")
+            mesh_sampler.interpolation = Mesh::InterpolationType::Step;
+        else if (sampler.interpolation == "CUBICSPLINE")
+            mesh_sampler.interpolation = Mesh::InterpolationType::Cubic_Spline;
+
+        {
+            const auto &accessor    = model.accessors[sampler.input];
+            const auto &buffer_view = model.bufferViews[accessor.bufferView];
+            const auto &buffer      = model.buffers[buffer_view.buffer];
+
+            const auto offset = accessor.byteOffset + buffer_view.byteOffset;
+
+            const auto data = reinterpret_cast<const float *>(&buffer.data[offset]);
+
+            mesh_sampler.inputs.resize(accessor.count);
+            core::ranges::copy(data,
+                               data + accessor.count,
+                               core::ranges::begin(mesh_sampler.inputs));
+
+            for (auto input : mesh_sampler.inputs) {
+                const auto input_time = Mesh::Animation::Seconds { input };
+                if (input_time < mesh_animation.start) mesh_animation.start = input_time;
+                if (input_time > mesh_animation.end) mesh_animation.end = input_time;
+            }
+        }
+
+        {
+            const auto &accessor    = model.accessors[sampler.output];
+            const auto &buffer_view = model.bufferViews[accessor.bufferView];
+            const auto &buffer      = model.buffers[buffer_view.buffer];
+
+            const auto offset = accessor.byteOffset + buffer_view.byteOffset;
+
+            const auto data = reinterpret_cast<const float *>(&buffer.data[offset]);
+
+            mesh_sampler.outputs.reserve(accessor.count);
+            switch (accessor.type) {
+                case TINYGLTF_TYPE_VEC3:
+                    for (auto i = 0u; i < accessor.count; ++i) {
+                        mesh_sampler.outputs.emplace_back(
+                            core::make_vec4(core::make_vec3(&data[i * 3])));
+                    }
+                    break;
+                case TINYGLTF_TYPE_VEC4:
+                    for (auto i = 0u; i < accessor.count; ++i) {
+                        mesh_sampler.outputs.emplace_back(core::make_vec4(&data[i * 4]));
+                    }
+                    break;
+            }
+        }
+    }
+
+    for (const auto &channel : animation.channels) {
+        auto &mesh_channel = mesh_animation.channels.emplace_back();
+
+        mesh_channel.node = channel.target_node;
+        if (channel.target_path == "translation") mesh_channel.path = Mesh::Path::Translation;
+        else if (channel.target_path == "rotation")
+            mesh_channel.path = Mesh::Path::Rotation;
+        else if (channel.target_path == "scale")
+            mesh_channel.path = Mesh::Path::Scale;
+        else if (channel.target_path == "weight")
+            mesh_channel.path = Mesh::Path::Weights;
+
+        mesh_channel.sampler = channel.sampler;
+    }
+
+    return mesh_animation;
 }

@@ -18,7 +18,7 @@
 #include <storm/engine/scene/Camera.hpp>
 #include <storm/engine/scene/Scene.hpp>
 
-#include <storm/engine/drawable/3D/MeshNode.hpp>
+#include <storm/engine/drawable/3D/Mesh.hpp>
 
 #include <storm/engine/framegraph/FrameGraph.hpp>
 #include <storm/engine/framegraph/FramePass.hpp>
@@ -44,11 +44,19 @@ static constexpr auto initTransformLayout =
     layout->bake();
 };
 
-static constexpr auto initMeshNodeLayout = [](const render::Device &device,
-                                              render::DescriptorSetLayoutOwnedPtr &layout) -> void {
+static constexpr auto initSubMeshLayout = [](const render::Device &device,
+                                             render::DescriptorSetLayoutOwnedPtr &layout) -> void {
     layout = device.createDescriptorSetLayoutPtr();
     layout->addBinding(
-        { 0, render::DescriptorType::Uniform_Buffer_Dynamic, render::ShaderStage::Vertex, 1 });
+        { 0, render::DescriptorType::Uniform_Buffer, render::ShaderStage::Vertex, 1 });
+    layout->bake();
+};
+
+static constexpr auto initMeshLayout = [](const render::Device &device,
+                                          render::DescriptorSetLayoutOwnedPtr &layout) -> void {
+    layout = device.createDescriptorSetLayoutPtr();
+    layout->addBinding(
+        { 0, render::DescriptorType::Storage_Buffer_Dynamic, render::ShaderStage::Vertex, 1 });
     layout->bake();
 };
 
@@ -63,9 +71,30 @@ static constexpr auto initCameraLayout = [](const render::Device &device,
 };
 
 #ifdef STORM_OS_WINDOWS
-static constexpr auto PIPELINE_CACHE_PATH = std::string_view { "%LOCALAPPDATA%/{}/" };
+std::string getPipelineCacheDir() {
+    auto path[] = TCHAR[MAX_PATH] {};
+
+    SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, path));
+    PathAppend(szPath, _T("\\{}\\"));
+
+    auto str = std::string { path };
+
+    return str;
+}
 #else
-static constexpr auto PIPELINE_CACHE_PATH = std::string_view { "~/.cache/{}/" };
+    #include <pwd.h>
+    #include <sys/types.h>
+    #include <unistd.h>
+
+std::string getPipelineCacheDir() {
+    auto pw = getpwuid(getuid());
+
+    auto str = std::string { pw->pw_dir };
+    str += "/.cache/{}/";
+
+    return str;
+}
+
 #endif
 
 ////////////////////////////////////////
@@ -117,7 +146,11 @@ Engine::Engine(const window::Window &window, std::string app_name) {
         },
         DESCRIPTOR_COUNT);
 
-    m_pipeline_cache = m_device->createPipelineCachePtr(fmt::format(PIPELINE_CACHE_PATH, app_name));
+    auto cache_directory = fmt::format(getPipelineCacheDir(), app_name);
+    if (!std::filesystem::exists(cache_directory))
+        std::filesystem::create_directory(cache_directory);
+
+    m_pipeline_cache = m_device->createPipelineCachePtr(cache_directory + "pipeline_cache.bin");
 
     m_last_tp = Clock::now();
 
@@ -148,7 +181,7 @@ Engine::Engine(const window::Window &window, std::string app_name) {
 
     Camera::initDescriptorLayout(*m_device, initCameraLayout);
     Transform::initDescriptorLayout(*m_device, initTransformLayout);
-    MeshNode::initDescriptorLayout(*m_device, initMeshNodeLayout);
+    Mesh::initDescriptorLayout(*m_device, initMeshLayout);
 }
 
 ////////////////////////////////////////
@@ -158,7 +191,7 @@ Engine::~Engine() {
 
     m_framegraphs.clear();
 
-    MeshNode::destroyDescriptorLayout();
+    Mesh::destroyDescriptorLayout();
     Transform::destroyDescriptorLayout();
     Camera::destroyDescriptorLayout();
 }

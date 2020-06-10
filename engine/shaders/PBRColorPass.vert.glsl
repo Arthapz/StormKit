@@ -27,9 +27,9 @@ layout(set = 2, binding = 0, std140) uniform Transform {
     mat4 inverted_model;
 } transform;
 
-layout(set = 3, binding = 0, std140) uniform MeshData {
+layout(set = 3, binding = 0, std430) readonly buffer MeshData {
     mat4 matrix;
-    mat4 joint_matrix[MAX_JOINT_COUNT];
+    mat4 inverse_bind_matrices[MAX_JOINT_COUNT];
     float joint_count;
 } mesh_data;
 
@@ -41,10 +41,10 @@ void main() {
     vec4 model_space_position;
 
     if(mesh_data.joint_count > 0u) {
-        mat4 skin_matrix = vertex_weigth.x * mesh_data.joint_matrix[vertex_joint_id.x] +
-                           vertex_weigth.y * mesh_data.joint_matrix[vertex_joint_id.y] +
-                           vertex_weigth.z * mesh_data.joint_matrix[vertex_joint_id.z] +
-                           vertex_weigth.w * mesh_data.joint_matrix[vertex_joint_id.w];
+        mat4 skin_matrix = vertex_weigth.x * mesh_data.inverse_bind_matrices[vertex_joint_id.x] +
+                           vertex_weigth.y * mesh_data.inverse_bind_matrices[vertex_joint_id.y] +
+                           vertex_weigth.z * mesh_data.inverse_bind_matrices[vertex_joint_id.z] +
+                           vertex_weigth.w * mesh_data.inverse_bind_matrices[vertex_joint_id.w];
 
         model_space_position = transform.model * mesh_data.matrix * skin_matrix * vec4(vertex_position, 1.f);
         out_normal   = normalize(transpose(inverse(mat3(transform.model * mesh_data.matrix * skin_matrix))) * vertex_normal);

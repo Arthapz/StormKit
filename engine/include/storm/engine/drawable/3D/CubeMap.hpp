@@ -37,7 +37,8 @@ namespace storm::engine {
         void render(render::CommandBuffer &cmb,
                     const render::RenderPass &pass,
                     std::vector<BindableBaseConstObserverPtr> bindables,
-                    render::GraphicsPipelineState state) override;
+                    render::GraphicsPipelineState state,
+                    float delta_time = 0.f) override;
 
       protected:
         void recomputeBoundingBox() const noexcept override;

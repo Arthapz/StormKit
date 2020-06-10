@@ -105,7 +105,7 @@ namespace storm::engine {
         mutable bool m_dirty_hash   = true;
         mutable core::Hash64 m_hash = 0u;
 
-        friend class MeshNode;
+        friend class SubMesh;
         friend class CubeMap;
     }; // namespace storm::engine
 } // namespace storm::engine

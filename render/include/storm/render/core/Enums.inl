@@ -456,9 +456,12 @@ namespace storm::render {
         storm::core::HashMap<vk::BufferUsageFlagBits, HardwareBufferUsage> {
             { vk::BufferUsageFlagBits::eVertexBuffer, HardwareBufferUsage::Vertex },
             { vk::BufferUsageFlagBits::eIndexBuffer, HardwareBufferUsage::Index },
-            { vk::BufferUsageFlagBits::eUniformBuffer, HardwareBufferUsage::Uniform },
             { vk::BufferUsageFlagBits::eTransferSrc, HardwareBufferUsage::Transfert_Src },
             { vk::BufferUsageFlagBits::eTransferDst, HardwareBufferUsage::Transfert_Dst },
+            { vk::BufferUsageFlagBits::eUniformBuffer, HardwareBufferUsage::Uniform },
+            { vk::BufferUsageFlagBits::eStorageBuffer, HardwareBufferUsage::Storage },
+            { vk::BufferUsageFlagBits::eUniformTexelBuffer, HardwareBufferUsage::Uniform_Texel },
+            { vk::BufferUsageFlagBits::eStorageTexelBuffer, HardwareBufferUsage::Storage_Texel },
         };
 
     AS_AND_FROM_FLAGS(buffer_usage_map, HardwareBufferUsage, vk::BufferUsageFlags)
