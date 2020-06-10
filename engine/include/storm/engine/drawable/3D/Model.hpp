@@ -26,12 +26,12 @@
 namespace tinygltf {
     struct Mesh;
     class Node;
-    class Scene;
+    struct Scene;
     class Model;
-    class Material;
-    class Primitive;
-    class Skin;
-    class Animation;
+    struct Material;
+    struct Primitive;
+    struct Skin;
+    struct Animation;
 } // namespace tinygltf
 
 namespace storm::engine {

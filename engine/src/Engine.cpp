@@ -75,7 +75,6 @@ std::string getPipelineCacheDir() {
     auto path[] = TCHAR[MAX_PATH] {};
 
     SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, path));
-    PathAppend(szPath, _T("\\{}\\"));
 
     auto str = std::string { path };
 
@@ -90,7 +89,7 @@ std::string getPipelineCacheDir() {
     auto pw = getpwuid(getuid());
 
     auto str = std::string { pw->pw_dir };
-    str += "/.cache/{}/";
+    str += "/.cache/";
 
     return str;
 }
@@ -146,11 +145,16 @@ Engine::Engine(const window::Window &window, std::string app_name) {
         },
         DESCRIPTOR_COUNT);
 
-    auto cache_directory = fmt::format(getPipelineCacheDir(), app_name);
+    auto cache_directory = std::filesystem::path { getPipelineCacheDir() };
     if (!std::filesystem::exists(cache_directory))
         std::filesystem::create_directory(cache_directory);
 
-    m_pipeline_cache = m_device->createPipelineCachePtr(cache_directory + "pipeline_cache.bin");
+    cache_directory /= app_name;
+
+    if (!std::filesystem::exists(cache_directory))
+        std::filesystem::create_directory(cache_directory);
+
+    m_pipeline_cache = m_device->createPipelineCachePtr(cache_directory / "pipeline_cache.bin");
 
     m_last_tp = Clock::now();
 
