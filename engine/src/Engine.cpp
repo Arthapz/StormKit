@@ -56,7 +56,7 @@ static constexpr auto initMeshLayout = [](const render::Device &device,
                                           render::DescriptorSetLayoutOwnedPtr &layout) -> void {
     layout = device.createDescriptorSetLayoutPtr();
     layout->addBinding(
-        { 0, render::DescriptorType::Storage_Buffer_Dynamic, render::ShaderStage::Vertex, 1 });
+        { 0, render::DescriptorType::Uniform_Buffer_Dynamic, render::ShaderStage::Vertex, 1 });
     layout->bake();
 };
 
@@ -71,12 +71,13 @@ static constexpr auto initCameraLayout = [](const render::Device &device,
 };
 
 #ifdef STORM_OS_WINDOWS
+    #include <shlobj_core.h>
 std::string getPipelineCacheDir() {
-    auto path[] = TCHAR[MAX_PATH] {};
+    auto path = std::array<char, MAX_PATH> {};
 
-    SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, path));
+    SHGetFolderPathA(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, std::data(path));
 
-    auto str = std::string { path };
+    auto str = std::string { std::data(path) };
 
     return str;
 }

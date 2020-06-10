@@ -274,12 +274,8 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
             auto &vertex = mesh_primitive.vertices.at<Vertex>(i);
 
             if (attribute.first.compare("POSITION") == 0) {
-                vertex_max = core::Vector3f(accessor.maxValues[0],
-                                            accessor.maxValues[1],
-                                            accessor.maxValues[2]);
-                vertex_min = core::Vector3f(accessor.minValues[0],
-                                            accessor.minValues[1],
-                                            accessor.minValues[2]);
+                vertex_max = core::make_vec3(std::data(accessor.maxValues));
+                vertex_min = core::make_vec3(std::data(accessor.minValues));
 
                 vertex.position = core::make_vec3(reinterpret_cast<const float *>(it));
             } else if (attribute.first.compare("NORMAL") == 0)
@@ -345,7 +341,7 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
                 for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; }
             } else if (size == 2) {
                 const auto data = reinterpret_cast<const std::uint16_t *>(buffer_data);
-                for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; }
+                for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; log::LogHandler::ilog("{}", data[i]); }
             } else if (size == 4) {
                 const auto data = reinterpret_cast<const std::uint32_t *>(buffer_data);
                 for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; }
@@ -566,11 +562,7 @@ Mesh::Skin Model::doParseSkin(const tinygltf::Model &model, const tinygltf::Skin
         const auto offset = accessor.byteOffset + buffer_view.byteOffset;
 
         mesh_skin.inverse_bind_matrices.resize(accessor.count);
-        for (auto i = 0u; i < accessor.count; ++i) {
-            const auto *data = &buffer.data[offset + i * sizeof(core::Matrixf)];
-
-            mesh_skin.inverse_bind_matrices[i] = core::make_mat4x4(data);
-        }
+        std::memcpy(std::data(mesh_skin.inverse_bind_matrices), &buffer.data[offset], accessor.count * sizeof(core::Matrixf));
     }
 
     return mesh_skin;

@@ -27,7 +27,7 @@ layout(set = 2, binding = 0, std140) uniform Transform {
     mat4 inverted_model;
 } transform;
 
-layout(set = 3, binding = 0, std430) readonly buffer MeshData {
+layout(set = 3, binding = 0, std140) uniform MeshData {
     mat4 matrix;
     mat4 inverse_bind_matrices[MAX_JOINT_COUNT];
     float joint_count;

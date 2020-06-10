@@ -79,7 +79,7 @@ void Mesh::render(render::CommandBuffer &cmb,
                   float delta_time) {
     m_transform->flush();
 
-    if (m_current_animation) updateAnimation(delta_time);
+    // if (m_current_animation) updateAnimation(delta_time);
 
     if (m_need_to_update_nodes) {
         updateNodes();
@@ -202,7 +202,7 @@ void Mesh::bake() {
     m_mesh_data_buffer =
         std::make_unique<RingHardwareBuffer>((!std::empty(m_skins)) ? buffering_count : 1u,
                                              device,
-                                             render::HardwareBufferUsage::Storage,
+                                             render::HardwareBufferUsage::Uniform,
                                              sizeof(Data) * std::size(m_submesh_nodes));
 
     if (!std::empty(m_name)) {
@@ -217,7 +217,7 @@ void Mesh::bake() {
     }
 
     const auto descriptor =
-        render::BufferDescriptor { .type    = render::DescriptorType::Storage_Buffer_Dynamic,
+        render::BufferDescriptor { .type    = render::DescriptorType::Uniform_Buffer_Dynamic,
                                    .binding = 0u,
                                    .buffer  = core::makeConstObserver(m_mesh_data_buffer->buffer()),
                                    .range   = sizeof(Data),
