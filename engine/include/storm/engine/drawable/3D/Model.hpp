@@ -42,8 +42,8 @@ namespace storm::engine {
             core::Vector3f normal;
             core::Vector2f texcoord;
             core::Vector4f tangent;
-            core::Vector4u join_id = { 0.f, 0.f, 0.f, 0.f };
-            core::Vector4f weight  = { 0.f, 0.f, 0.f, 0.f };
+            core::Vector4u joint_id = { 0.f, 0.f, 0.f, 0.f };
+            core::Vector4f weight   = { 0.f, 0.f, 0.f, 0.f };
         };
 
         Model(Engine &engine, TexturePool &texture_pool, MaterialPool &material_pool);

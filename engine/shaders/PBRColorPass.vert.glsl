@@ -40,7 +40,7 @@ out gl_PerVertex  {
 void main() {
     vec4 model_space_position;
 
-    if(mesh_data.joint_count > 0u) {
+    if(mesh_data.joint_count > 0.f) {
         mat4 skin_matrix = vertex_weigth.x * mesh_data.inverse_bind_matrices[vertex_joint_id.x] +
                            vertex_weigth.y * mesh_data.inverse_bind_matrices[vertex_joint_id.y] +
                            vertex_weigth.z * mesh_data.inverse_bind_matrices[vertex_joint_id.z] +

@@ -239,7 +239,7 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
         { 1u, 0u, render::Format::Float3, offsetof(Vertex, normal) },
         { 2u, 0u, render::Format::Float2, offsetof(Vertex, texcoord) },
         { 3u, 0u, render::Format::Float4, offsetof(Vertex, tangent) },
-        { 4u, 0u, render::Format::UInt4, offsetof(Vertex, join_id) },
+        { 4u, 0u, render::Format::UInt4, offsetof(Vertex, joint_id) },
         { 5u, 0u, render::Format::Float4, offsetof(Vertex, weight) },
     };
 
@@ -269,8 +269,7 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
         }
 
         for (auto i = 0u; i < count; ++i) {
-            const auto it =
-                reinterpret_cast<const float *>(buffer_data + accessor.byteOffset + i * stride);
+            const auto it = buffer_data + accessor.byteOffset + i * stride;
 
             auto &vertex = mesh_primitive.vertices.at<Vertex>(i);
 
@@ -282,17 +281,40 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
                                             accessor.minValues[1],
                                             accessor.minValues[2]);
 
-                vertex.position = core::make_vec3(it);
+                vertex.position = core::make_vec3(reinterpret_cast<const float *>(it));
             } else if (attribute.first.compare("NORMAL") == 0)
-                vertex.normal = core::make_vec3(it);
+                vertex.normal = core::make_vec3(reinterpret_cast<const float *>(it));
             else if (attribute.first.compare("TANGENT") == 0)
-                vertex.tangent = core::make_vec4(it);
-            else if (attribute.first.compare("TEXCOORD_0") == 0)
-                vertex.texcoord = core::make_vec2(it);
-            else if (attribute.first.compare("JOINTS_0") == 0)
-                vertex.join_id = core::make_vec4(it);
-            else if (attribute.first.compare("WEIGHTS_0") == 0)
-                vertex.weight = core::make_vec4(it);
+                vertex.tangent = core::make_vec4(reinterpret_cast<const float *>(it));
+            else if (attribute.first.compare("TEXCOORD_0") == 0) {
+                if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
+                    vertex.texcoord = core::make_vec2<float>(reinterpret_cast<const float *>(it));
+                } else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+                    vertex.texcoord =
+                        core::make_vec2<core::UInt8>(reinterpret_cast<const core::UInt8 *>(it));
+                } else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+                    vertex.texcoord =
+                        core::make_vec2<core::UInt16>(reinterpret_cast<const core::UInt16 *>(it));
+                }
+            } else if (attribute.first.compare("JOINTS_0") == 0) {
+                if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+                    vertex.joint_id =
+                        core::make_vec4<core::UInt8>(reinterpret_cast<const core::UInt8 *>(it));
+                } else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+                    vertex.joint_id =
+                        core::make_vec4<core::UInt16>(reinterpret_cast<const core::UInt16 *>(it));
+                }
+            } else if (attribute.first.compare("WEIGHTS_0") == 0) {
+                if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
+                    vertex.weight = core::make_vec4<float>(reinterpret_cast<const float *>(it));
+                } else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+                    vertex.weight =
+                        core::make_vec4<core::UInt8>(reinterpret_cast<const core::UInt8 *>(it));
+                } else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+                    vertex.weight =
+                        core::make_vec4<core::UInt16>(reinterpret_cast<const core::UInt16 *>(it));
+                }
+            }
         }
     }
 
