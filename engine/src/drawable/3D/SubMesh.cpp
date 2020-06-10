@@ -75,7 +75,7 @@ void SubMesh::render(render::CommandBuffer &cmb,
         if (primitive.index_count > 0u)
             cmb.drawIndexed(primitive.index_count,
                             1u,
-                            0u,
+                            primitive.first_index,
                             primitive.first_vertex);
         else
             cmb.draw(primitive.vertex_count, 0u, primitive.first_vertex);

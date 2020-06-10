@@ -259,6 +259,7 @@ StormKit.cxxflags
 engine/include/storm/engine/drawable/3D/Mesh.hpp
 engine/include/storm/engine/drawable/3D/Mesh.inl
 engine/include/storm/engine/drawable/3D/MeshNode.hpp
+engine/src/drawable/3D/CubeMap.cpp
 engine/src/drawable/3D/Mesh.cpp
 engine/src/drawable/3D/MeshNode.cpp
 image/include/storm/image/Fwd.hpp
@@ -290,6 +291,9 @@ log/src/LogColorizer.cpp
 log/src/LogHandler.cpp
 log/src/Logger.cpp
 
+engine/src/drawable/3D/Mesh.cpp
+engine/src/drawable/3D/Model.cpp
+engine/src/drawable/3D/SubMesh.cpp
 main/include/storm/main/Main.hpp
 main/meson.build
 main/src/linux/Main.cpp

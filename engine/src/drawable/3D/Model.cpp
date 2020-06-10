@@ -326,8 +326,8 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
         const auto &accessor    = model.accessors[primitive.indices];
         const auto &buffer_view = model.bufferViews[accessor.bufferView];
         const auto &buffer      = model.buffers[buffer_view.buffer];
-        const auto *buffer_data =
-            reinterpret_cast<const std::byte *>(&buffer.data[buffer_view.byteOffset]);
+        const auto *buffer_data = reinterpret_cast<const std::byte *>(
+            &buffer.data[accessor.byteOffset + buffer_view.byteOffset]);
 
         mesh_primitive.index_count = accessor.count;
 
@@ -337,13 +337,13 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
 
         const auto fill_indices = [&buffer_data, &mesh_primitive, &size](auto &indices) {
             if (size == 1) {
-                const auto data = reinterpret_cast<const std::uint8_t *>(buffer_data);
+                const auto data = reinterpret_cast<const core::UInt8 *>(buffer_data);
                 for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; }
             } else if (size == 2) {
-                const auto data = reinterpret_cast<const std::uint16_t *>(buffer_data);
-                for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; log::LogHandler::ilog("{}", data[i]); }
+                const auto data = reinterpret_cast<const core::UInt16 *>(buffer_data);
+                for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; }
             } else if (size == 4) {
-                const auto data = reinterpret_cast<const std::uint32_t *>(buffer_data);
+                const auto data = reinterpret_cast<const core::UInt32 *>(buffer_data);
                 for (auto i = 0u; i < mesh_primitive.index_count; ++i) { indices[i] = data[i]; }
             }
         };
@@ -562,7 +562,9 @@ Mesh::Skin Model::doParseSkin(const tinygltf::Model &model, const tinygltf::Skin
         const auto offset = accessor.byteOffset + buffer_view.byteOffset;
 
         mesh_skin.inverse_bind_matrices.resize(accessor.count);
-        std::memcpy(std::data(mesh_skin.inverse_bind_matrices), &buffer.data[offset], accessor.count * sizeof(core::Matrixf));
+        std::memcpy(std::data(mesh_skin.inverse_bind_matrices),
+                    &buffer.data[offset],
+                    accessor.count * sizeof(core::Matrixf));
     }
 
     return mesh_skin;
