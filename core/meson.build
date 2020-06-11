@@ -44,6 +44,7 @@ base_headers = files([
       'include/storm/core/HashMap.hpp',
 ])
 
+#ide:editable-filelist
 private_headers = files([
    'include/storm/core/private/Flags.hpp',
    'include/storm/core/private/incbin.h',

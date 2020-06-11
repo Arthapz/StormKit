@@ -7,7 +7,7 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void MaterialInstance::setFrontFace(render::FrontFace face) {
+    void MaterialInstance::setFrontFace(render::FrontFace face) {
         m_rasterization_state.front_face = face;
 
         m_dirty      = true;
@@ -16,11 +16,22 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline void MaterialInstance::setCullMode(render::CullMode mode) {
+    render::FrontFace MaterialInstance::frontFace() const noexcept {
+        return m_rasterization_state.front_face;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    void MaterialInstance::setCullMode(render::CullMode mode) {
         m_rasterization_state.cull_mode = mode;
 
         m_dirty      = true;
         m_dirty_hash = true;
+    }
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    render::CullMode MaterialInstance::cullMode() const noexcept {
+        return m_rasterization_state.cull_mode;
     }
 
     ////////////////////////////////////////
@@ -31,6 +42,11 @@ namespace storm::engine {
 
         m_dirty      = true;
         m_dirty_hash = true;
+    }
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    bool MaterialInstance::isWireFrameEnabled() const noexcept {
+        return m_rasterization_state.polygon_mode == render::PolygonMode::Line;
     }
 
     ////////////////////////////////////////
@@ -57,6 +73,7 @@ namespace storm::engine {
         STORM_EXPECTS(it != m_sampled_textures.cend());
 
         auto &[_, binding] = *it;
+        binding.texture    = core::makeConstObserver(texture);
         binding.view       = texture.createViewPtr(type, std::move(range));
         binding.sampler    = m_engine->device().createSamplerPtr(std::move(settings));
         binding.dirty      = true;

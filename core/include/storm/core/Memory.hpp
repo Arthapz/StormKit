@@ -321,12 +321,12 @@ namespace storm::core {
 
     template<typename T, typename V>
     core::span<T> makeSpan(V &data) {
-        return core::span<T> { reinterpret_cast<T *>(&data), sizeof(V) };
+        return core::span<T> { reinterpret_cast<T *>(&data), sizeof(V) / sizeof(T) };
     }
 
     template<typename T, typename V>
     core::span<const T> makeConstSpan(const V &data) {
-        return core::span<const T> { reinterpret_cast<const T *>(&data), sizeof(V) };
+        return core::span<const T> { reinterpret_cast<const T *>(&data), sizeof(V) / sizeof(T) };
     }
 
 #define DECLARE_ARRAYS_(x)                       \

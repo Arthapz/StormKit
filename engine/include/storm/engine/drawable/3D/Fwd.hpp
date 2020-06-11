@@ -7,10 +7,18 @@
 /////////// - StormKit::core - ///////////
 #include <storm/core/Memory.hpp>
 
-/////////// - StormKit::engine - ///////////
-#include <storm/engine/drawable/3D/Fwd.hpp>
-
 namespace storm::engine {
-    class Drawable;
-    DECLARE_PTR_AND_REF(Drawable);
+    class Mesh;
+    DECLARE_PTR_AND_REF(Mesh);
+
+    class SubMesh;
+    DECLARE_PTR_AND_REF(SubMesh);
+
+    struct MeshPrimitive;
+
+    class Model;
+    DECLARE_PTR_AND_REF(Model);
+
+    class CubeMap;
+    DECLARE_PTR_AND_REF(CubeMap);
 } // namespace storm::engine

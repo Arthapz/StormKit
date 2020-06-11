@@ -1,4 +1,3 @@
-
 if is_windows
    png_dep = dependency('PNG', fallback: ['libpng', 'png_dep'])
 else 
@@ -14,14 +13,17 @@ endif
 public_dependencies = [core_dep]
 private_dependencies = [png_dep, jpeg_dep]
 
+#ide:editable-filelist
 headers = files([
     'include/storm/image/Fwd.hpp',
     'include/storm/image/Image.hpp',
 ])
 
+#ide:editable-filelist
 inls = files([
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/Image.cpp',
     'src/private/ImageLoader.cpp',

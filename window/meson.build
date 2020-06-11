@@ -1,6 +1,7 @@
 public_dependencies = [core_dep, module_dep]
 private_dependencies = []
 
+#ide:editable-filelist
 headers = files([
     'include/storm/window/InputHandler.hpp',
     'include/storm/window/AbstractInputHandler.hpp',
@@ -15,6 +16,7 @@ headers = files([
     'include/storm/window/Fwd.hpp',
 ])
 
+#ide:editable-filelist
 inls = files([
     'include/storm/window/InputHandler.inl',
     'include/storm/window/EventHandler.inl',
@@ -22,6 +24,7 @@ inls = files([
     'include/storm/window/AbstractWindow.inl',
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/Window.cpp',
     'src/AbstractWindow.cpp',

@@ -25,9 +25,6 @@
 
 #include <storm/engine/Engine.hpp>
 
-#include <storm/engine/drawable/CubeMap.hpp>
-#include <storm/engine/drawable/Mesh.hpp>
-
 #include <storm/engine/scene/Camera.hpp>
 
 namespace storm::engine {
@@ -38,9 +35,6 @@ namespace storm::engine {
 
         Scene(Scene &&);
         Scene &operator=(Scene &&);
-
-        [[nodiscard]] inline Model createModel();
-        [[nodiscard]] inline ModelOwnedPtr createModelPtr();
 
         void update(float delta) noexcept;
         void render(FrameGraph &framegraph, storm::engine::FramePassTextureID backbuffer) noexcept;

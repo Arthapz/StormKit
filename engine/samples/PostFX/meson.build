@@ -7,6 +7,7 @@ shader_files = shader_compiler.process(
     'shaders/sepia.frag.glsl'
 )
 
+#ide:editable-filelist
 sources = files([
     'src/main.cpp',
     'src/App.cpp',

@@ -18,6 +18,8 @@
 #include <storm/engine/scene/Camera.hpp>
 #include <storm/engine/scene/Scene.hpp>
 
+#include <storm/engine/drawable/3D/Mesh.hpp>
+
 #include <storm/engine/framegraph/FrameGraph.hpp>
 #include <storm/engine/framegraph/FramePass.hpp>
 #include <storm/engine/framegraph/FramePassBuilder.hpp>
@@ -42,6 +44,14 @@ static constexpr auto initTransformLayout =
     layout->bake();
 };
 
+static constexpr auto initSubMeshLayout = [](const render::Device &device,
+                                             render::DescriptorSetLayoutOwnedPtr &layout) -> void {
+    layout = device.createDescriptorSetLayoutPtr();
+    layout->addBinding(
+        { 0, render::DescriptorType::Uniform_Buffer, render::ShaderStage::Vertex, 1 });
+    layout->bake();
+};
+
 static constexpr auto initMeshLayout = [](const render::Device &device,
                                           render::DescriptorSetLayoutOwnedPtr &layout) -> void {
     layout = device.createDescriptorSetLayoutPtr();
@@ -61,15 +71,37 @@ static constexpr auto initCameraLayout = [](const render::Device &device,
 };
 
 #ifdef STORM_OS_WINDOWS
-static constexpr auto PIPELINE_CACHE_PATH = std::string_view { "%LOCALAPPDATA%/{}/" };
+    #include <shlobj_core.h>
+std::string getPipelineCacheDir() {
+    auto path = std::array<char, MAX_PATH> {};
+
+    SHGetFolderPathA(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, std::data(path));
+
+    auto str = std::string { std::data(path) };
+
+    return str;
+}
 #else
-static constexpr auto PIPELINE_CACHE_PATH = std::string_view { "~/.cache/{}/" };
+    #include <pwd.h>
+    #include <sys/types.h>
+    #include <unistd.h>
+
+std::string getPipelineCacheDir() {
+    auto pw = getpwuid(getuid());
+
+    auto str = std::string { pw->pw_dir };
+    str += "/.cache/";
+
+    return str;
+}
+
 #endif
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 Engine::Engine(const window::Window &window, std::string app_name) {
     m_instance = std::make_unique<render::Instance>(app_name);
+
     log::LogHandler::ilog(LOG_MODULE, "Render backend successfully initialized");
 
     m_surface = m_instance->createSurfacePtr(window);
@@ -114,7 +146,16 @@ Engine::Engine(const window::Window &window, std::string app_name) {
         },
         DESCRIPTOR_COUNT);
 
-    m_pipeline_cache = m_device->createPipelineCachePtr(fmt::format(PIPELINE_CACHE_PATH, app_name));
+    auto cache_directory = std::filesystem::path { getPipelineCacheDir() };
+    if (!std::filesystem::exists(cache_directory))
+        std::filesystem::create_directory(cache_directory);
+
+    cache_directory /= app_name;
+
+    if (!std::filesystem::exists(cache_directory))
+        std::filesystem::create_directory(cache_directory);
+
+    m_pipeline_cache = m_device->createPipelineCachePtr(cache_directory / "pipeline_cache.bin");
 
     m_last_tp = Clock::now();
 

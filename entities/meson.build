@@ -1,5 +1,6 @@
 dependencies = [core_dep]
 
+#ide:editable-filelist
 headers = files([
     'include/storm/entities/Fwd.hpp',
     'include/storm/entities/Component.hpp',
@@ -9,10 +10,12 @@ headers = files([
     'include/storm/entities/MessageBus.hpp',
 ])
 
+#ide:editable-filelist
 inls = files([
     'include/storm/entities/EntityManager.inl',
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/EntityManager.cpp',
     'src/System.cpp',
