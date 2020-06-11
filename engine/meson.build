@@ -216,8 +216,7 @@ if lib_type == 'shared'
     engine_lib_name = 'StormKit-engine' + suffix
     engine_lib = shared_library(
         engine_lib_name,
-        sources,
-        headers,
+        sources + headers,
         shader_files,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
@@ -229,8 +228,7 @@ else
     engine_lib_name = 'StormKit-engine-static' + suffix
     engine_lib = static_library(
         engine_lib_name,
-        sources,
-        headers,
+        sources + headers,
         shader_files,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',

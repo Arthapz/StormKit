@@ -39,8 +39,7 @@ if lib_type == 'shared'
     window_lib_name = 'StormKit-window' + suffix
     window_lib = shared_library(
         window_lib_name,
-        sources,
-        headers,
+        sources + headers,
         dependencies: public_dependencies + private_dependencies,
         include_directories: window_inc,
         install: true
@@ -49,8 +48,7 @@ else
     window_lib_name = 'StormKit-window-static' + suffix
     window_lib = static_library(
         window_lib_name,
-        sources,
-        headers,
+        sources + headers,
         dependencies: public_dependencies + private_dependencies,
         include_directories: window_inc,
         install: true

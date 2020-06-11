@@ -41,8 +41,7 @@ if lib_type == 'shared'
     module_lib_name = 'StormKit-module' + suffix
     module_lib = shared_library(
         module_lib_name,
-        sources,
-        headers,
+        sources + headers,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,
@@ -53,8 +52,7 @@ else
     module_lib_name = 'StormKit-module-static' + suffix
     module_lib = static_library(
         module_lib_name,
-        sources,
-        headers,
+        sources + headers,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,

@@ -294,6 +294,7 @@ log/src/Logger.cpp
 engine/src/drawable/3D/Mesh.cpp
 engine/src/drawable/3D/Model.cpp
 engine/src/drawable/3D/SubMesh.cpp
+image/include/storm/image/Image.inl
 main/include/storm/main/Main.hpp
 main/meson.build
 main/src/linux/Main.cpp

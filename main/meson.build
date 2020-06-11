@@ -49,8 +49,7 @@ args += {
 
 main_lib = static_library(
     'StormKit-main' + suffix, 
-    sources, 
-    headers, 
+    sources + headers,
     kwargs: args,
     install: true
 )

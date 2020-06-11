@@ -4,75 +4,93 @@
 
 #pragma once
 
-#include <cstdint>
+/////////// - STL - ///////////
 #include <filesystem>
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Assert.hpp>
 #include <storm/core/Math.hpp>
 #include <storm/core/Memory.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/core/Span.hpp>
 
+/////////// - StormKit::image - ///////////
 #include <storm/image/Fwd.hpp>
 
-// based on https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Copy-on-write
 namespace storm::image {
     class STORM_PUBLIC Image {
       public:
-        using data_type = core::Byte;
-        using size_type = core::ArraySize;
-        using span      = storm::core::span<data_type>;
-        using ConstSpan = storm::core::span<const data_type>;
-
-        enum class Format { RGB24, ARGB32, RGB16 };
-        enum class Codec { AUTODETECT, JPEG, PNG, TARGA, PPM, HDR, KTX, RAW, UNKNOW };
+        enum class Format { R, RG, RGB, RGBA, BGR, BGRA, UNKNOW };
+        enum class Codec { AUTODETECT, JPEG, PNG, TARGA, PPM, HDR, KTX, UNKNOW };
         enum class CodecArgs {
             BINARY,
             ASCII // for ppm
         };
 
-        explicit Image();
-        Image(core::UInt32 width, core::UInt32 height, core::UInt8 channel_count = 3u);
-        Image(const std::filesystem::path &filepath, Codec codec = Codec::AUTODETECT);
-        Image(ConstSpan data, Codec codec = Codec::AUTODETECT);
-        ~Image();
+        explicit Image() noexcept;
+        Image(core::Extentu extent, Format format) noexcept;
+        Image(const std::filesystem::path &filepath, Codec codec = Codec::AUTODETECT) noexcept;
+        Image(core::ByteConstSpan data, Codec codec = Codec::AUTODETECT) noexcept;
+        ~Image() noexcept;
 
-        void loadFromFile(const std::filesystem::path &filepath, Codec codec = Codec::AUTODETECT);
-        void loadFromMemory(ConstSpan data, Codec codec = Codec::AUTODETECT);
-        void create(core::UInt32 width, core::UInt32 height, core::UInt8 channel_count = 3u);
+        bool loadFromFile(const std::filesystem::path &filepath,
+                          Codec codec = Codec::AUTODETECT) noexcept;
+        bool loadFromMemory(core::ByteConstSpan data, Codec codec = Codec::AUTODETECT) noexcept;
+        bool saveToFile(const std::filesystem::path &filename,
+                        Codec codec,
+                        CodecArgs args = CodecArgs::BINARY) const noexcept;
 
-        span operator[](size_type index);
-        ConstSpan operator[](size_type index) const noexcept;
-        span operator()(XOffset x_offset, YOffset offset);
-        ConstSpan operator()(XOffset x, YOffset offset) const noexcept;
+        void create(core::Extentu extent, Format format) noexcept;
 
-        core::Extentu extent() const noexcept;
-        core::UInt8 channels() const noexcept;
+        Image toFormat(Format format) noexcept;
+        Image scale(const core::Extentu &scale_to) noexcept;
+        Image flipX() noexcept;
+        Image flipY() noexcept;
+        Image flipZ() noexcept;
+        Image rotate90() noexcept;
+        Image rotate180() noexcept;
+        Image rotate270() noexcept;
 
-        size_type size() const noexcept;
-        ConstSpan data() const noexcept;
-        span data();
+        [[nodiscard]] inline core::ByteSpan operator[](core::ArraySize index) noexcept;
+        [[nodiscard]] inline core::ByteConstSpan operator[](core::ArraySize index) const noexcept;
+        [[nodiscard]] inline core::ByteSpan operator()(core::Offset3u offset);
+        [[nodiscard]] inline core::ByteConstSpan operator()(core::Offset3u offset) const noexcept;
 
-        static Image scale(const Image &src, const core::Extentu &new_extent);
-        static Image flipX(const Image &src);
-        static Image flipY(const Image &src);
-        static Image rotate90(const Image &src);
-        static Image rotate180(const Image &src);
-        static Image rotate270(const Image &src);
+        [[nodiscard]] inline const core::Extentu &extent() const noexcept;
+        [[nodiscard]] inline core::UInt8 channelCount() const noexcept;
+        [[nodiscard]] inline Format format() const noexcept;
 
-        void saveToFile(const std::filesystem::path &filename,
-                        Codec codec    = Codec::AUTODETECT,
-                        CodecArgs args = CodecArgs::BINARY);
+        [[nodiscard]] inline core::ArraySize size() const noexcept;
+        [[nodiscard]] inline core::ByteSpan data() noexcept;
+        [[nodiscard]] inline core::ByteConstSpan data() const noexcept;
 
-        void addChannels(core::UInt8 count = 1);
+        [[nodiscard]] inline core::ByteArray::iterator begin() noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator begin() const noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator cbegin() const noexcept;
 
-        inline Codec codec() const noexcept { return m_codec; }
+        [[nodiscard]] inline core::ByteArray::iterator end() noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator end() const noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator cend() const noexcept;
 
       private:
-        void detach();
+        std::optional<std::string> loadJPEG(core::ByteConstSpan data) noexcept;
+        std::optional<std::string> loadPNG(core::ByteConstSpan data) noexcept;
+        std::optional<std::string> loadTARGA(core::ByteConstSpan data) noexcept;
+        std::optional<std::string> loadPPM(core::ByteConstSpan data) noexcept;
+        std::optional<std::string> loadHDR(core::ByteConstSpan data) noexcept;
+        std::optional<std::string> loadKTX(core::ByteConstSpan data) noexcept;
 
-        Codec m_codec;
+        std::optional<std::string> saveJPEG(const std::filesystem::path &filepath) const noexcept;
+        std::optional<std::string> saveTGA(const std::filesystem::path &filepath) const noexcept;
+        std::optional<std::string> savePNG(const std::filesystem::path &filepath) const noexcept;
+        std::optional<std::string> savePPM(const std::filesystem::path &filepath, CodecArgs args) const noexcept;
+        std::optional<std::string> saveTARGA(const std::filesystem::path &filepath) const noexcept;
+        std::optional<std::string> saveHDR(const std::filesystem::path &filepath) const noexcept;
+        std::optional<std::string> saveKTX(const std::filesystem::path &filepath) const noexcept;
 
-        private_::ImageDataSharedPtr m_data = nullptr;
+        core::Extentu m_extent      = { .width = 0u, .height = 0u, .depth = 1u };
+        core::UInt8 m_channel_count = 0u;
+        Format m_format             = Format::UNKNOW;
+        core::ByteArray m_data;
     };
 } // namespace storm::image

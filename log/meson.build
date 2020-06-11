@@ -33,8 +33,7 @@ if lib_type == 'shared'
     log_lib_name = 'StormKit-log' + suffix
     log_lib = shared_library(
         log_lib_name,
-        sources,
-        headers,
+        sources + headers,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,
@@ -46,8 +45,7 @@ else
     log_lib_name = 'StormKit-log-static' + suffix
     log_lib = static_library(
         log_lib_name,
-        sources,
-        headers,
+        sources + headers,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,

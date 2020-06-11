@@ -26,9 +26,13 @@ inls = files([
 #ide:editable-filelist
 sources = files([
     'src/Image.cpp',
-    'src/private/ImageLoader.cpp',
-    'src/private/ImageData.hpp',
-    'src/private/ImageLoader.hpp',
+
+    'src/JPEGImage.cpp',
+    'src/PNGImage.cpp',
+    'src/TARGAImage.cpp',
+    'src/PPMImage.cpp',
+    'src/HDRImage.cpp',
+    'src/KTXImage.cpp',
 ])
 
 image_inc = ['include/']

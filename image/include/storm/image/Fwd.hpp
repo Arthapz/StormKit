@@ -7,7 +7,25 @@
 #include <storm/core/Memory.hpp>
 #include <storm/core/NamedType.hpp>
 
+#ifndef STORM_IMAGE_NO_LOG
+/////////// - StormKit::log - ///////////
+#include <storm/log/LogHandler.hpp>
+#endif
+
 namespace storm::image {
+#ifndef STORM_IMAGE_NO_LOG
+template <typename ... Args>
+inline void elog(Args ... &&args) {
+    using storm::log::operator""_module;
+    static constexpr auto LOG_MODULE = "image"_module;
+
+    storm::log::LogHandler::elog(LOG_MODULE, std::forward<Args>(args)...);
+}
+#else
+template <typename ... Args>
+inline void elog([[maybe_unused]] Args ... &&args) { }
+#endif
+
     class Image;
     DECLARE_PTR_AND_REF(Image)
 
