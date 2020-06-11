@@ -79,7 +79,7 @@ void Mesh::render(render::CommandBuffer &cmb,
                   float delta_time) {
     m_transform->flush();
 
-    // if (m_current_animation) updateAnimation(delta_time);
+    if (m_current_animation) updateAnimation(delta_time);
 
     if (m_need_to_update_nodes) {
         updateNodes();
