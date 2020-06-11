@@ -44,14 +44,6 @@ static constexpr auto initTransformLayout =
     layout->bake();
 };
 
-static constexpr auto initSubMeshLayout = [](const render::Device &device,
-                                             render::DescriptorSetLayoutOwnedPtr &layout) -> void {
-    layout = device.createDescriptorSetLayoutPtr();
-    layout->addBinding(
-        { 0, render::DescriptorType::Uniform_Buffer, render::ShaderStage::Vertex, 1 });
-    layout->bake();
-};
-
 static constexpr auto initMeshLayout = [](const render::Device &device,
                                           render::DescriptorSetLayoutOwnedPtr &layout) -> void {
     layout = device.createDescriptorSetLayoutPtr();
@@ -94,7 +86,6 @@ std::string getPipelineCacheDir() {
 
     return str;
 }
-
 #endif
 
 ////////////////////////////////////////
