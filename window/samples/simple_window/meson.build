@@ -1,5 +1,6 @@
 dependencies = [core_dep, log_dep, window_dep, main_dep]
 
+#ide:editable-filelist
 sources = files([
     'src/main.cpp',
 ])

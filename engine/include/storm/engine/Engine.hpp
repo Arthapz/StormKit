@@ -27,15 +27,9 @@
 #include <storm/engine/Fwd.hpp>
 
 #include <storm/engine/core/DebugGUI.hpp>
-#include <storm/engine/core/Transform.hpp>
 
 #include <storm/engine/framegraph/FramePassResource.hpp>
 #include <storm/engine/framegraph/FramePassResourceHandle.hpp>
-
-#include <storm/engine/material/Material.hpp>
-
-#include <storm/engine/drawable/Mesh.hpp>
-#include <storm/engine/drawable/Model.hpp>
 
 namespace storm::engine {
     class STORM_PUBLIC Engine {
@@ -67,17 +61,6 @@ namespace storm::engine {
         Engine &operator=(Engine &&);
 
         inline void setScene(Scene &scene) noexcept;
-
-        [[nodiscard]] inline Mesh createMesh(const Material &material);
-        [[nodiscard]] inline MeshOwnedPtr createMeshPtr(const Material &material);
-
-        [[nodiscard]] inline Model createModel(TexturePool &texture_pool,
-                                               MaterialPool &material_pool);
-        [[nodiscard]] inline ModelOwnedPtr createModelPtr(TexturePool &texture_pool,
-                                                          MaterialPool &material_pool);
-
-        [[nodiscard]] inline Transform createTransform();
-        [[nodiscard]] inline TransformOwnedPtr createTransformPtr();
 
         void update();
         void render();

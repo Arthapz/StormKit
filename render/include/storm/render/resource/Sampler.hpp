@@ -46,6 +46,8 @@ namespace storm::render {
         Sampler(Sampler &&);
         Sampler &operator=(Sampler &&);
 
+        [[nodiscard]] inline const Settings &settings() const noexcept;
+
         inline vk::Sampler vkSampler() const noexcept;
         inline operator vk::Sampler() const noexcept;
         inline vk::Sampler vkHandle() const noexcept;

@@ -33,7 +33,8 @@ namespace storm::engine {
         virtual void render(render::CommandBuffer &cmb,
                             const render::RenderPass &pass,
                             std::vector<BindableBaseConstObserverPtr> bindables,
-                            render::GraphicsPipelineState state) = 0;
+                            render::GraphicsPipelineState state,
+                            float delta_time = 0.f) = 0;
 
       protected:
         virtual void recomputeBoundingBox() const noexcept = 0;

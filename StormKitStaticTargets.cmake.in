@@ -104,9 +104,13 @@ get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 if(UNIX)
     get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 endif()
+<<<<<<< HEAD
 if(APPLE)
    set(_IMPORT_PREFIX "/usr/local")
 endif()
+=======
+
+>>>>>>> f025146... Fix path on linux
 if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()

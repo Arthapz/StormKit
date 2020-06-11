@@ -7,25 +7,29 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::Sampler Sampler::vkSampler() const noexcept {
+    const Sampler::Settings &Sampler::settings() const noexcept { return m_settings; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    vk::Sampler Sampler::vkSampler() const noexcept {
         STORM_EXPECTS(m_vk_sampler);
         return *m_vk_sampler;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     Sampler::operator vk::Sampler() const noexcept {
+    Sampler::operator vk::Sampler() const noexcept {
         STORM_EXPECTS(m_vk_sampler);
         return *m_vk_sampler;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::Sampler Sampler::vkHandle() const noexcept { return vkSampler(); }
+    vk::Sampler Sampler::vkHandle() const noexcept { return vkSampler(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt64 Sampler::vkDebugHandle() const noexcept {
+    core::UInt64 Sampler::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkSampler_T *());
     }
 } // namespace storm::render

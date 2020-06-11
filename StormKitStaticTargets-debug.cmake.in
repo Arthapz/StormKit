@@ -6,9 +6,11 @@ get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 if(UNIX)
     get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 endif()
+
 if(APPLE)
    set(_IMPORT_PREFIX "/usr/local")
 endif()
+
 if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()

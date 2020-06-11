@@ -8,6 +8,8 @@
 #include <variant>
 #include <vector>
 
+#include <stddef.h>
+
 /////////// - StormKit::core - ///////////
 #include <storm/core/Hash.hpp>
 #include <storm/core/Math.hpp>
@@ -23,7 +25,7 @@
 namespace storm::engine {
     class STORM_PUBLIC VertexArray {
       public:
-        using VertexData = std::vector<float>;
+        using VertexData = std::vector<core::Byte>;
 
         VertexArray();
         ~VertexArray();
@@ -51,11 +53,15 @@ namespace storm::engine {
         inline void resize(core::ArraySize size);
         inline void reserve(core::ArraySize size);
 
-        inline void push_back(float value);
+        inline void push_back(core::Byte value);
+        template<typename VertexType>
+        inline void push_back(VertexType &&value);
+        inline void pop_back();
+        template<typename VertexType>
         inline void pop_back();
 
-        inline float &operator[](core::ArraySize index) noexcept;
-        inline const float &operator[](core::ArraySize index) const noexcept;
+        inline core::Byte &operator[](core::ArraySize index) noexcept;
+        inline const core::Byte &operator[](core::ArraySize index) const noexcept;
 
         template<typename VertexType>
         inline VertexType &at(core::ArraySize index);
@@ -68,16 +74,13 @@ namespace storm::engine {
         inline core::ArraySize size() const noexcept;
         inline bool empty() const noexcept;
 
-        inline core::span<float> data() noexcept;
-        inline core::span<const float> data() const noexcept;
-
-        inline core::span<std::byte> bytes() noexcept;
-        inline core::ByteConstSpan bytes() const noexcept;
+        inline core::span<core::Byte> data() noexcept;
+        inline core::ByteConstSpan data() const noexcept;
 
         // TODO raw access to bytes
         inline render::VertexBindingDescriptionConstSpan bindingDescriptions() const noexcept;
-        inline render::VertexInputAttributeDescriptionConstSpan inputAttributeDescriptions() const
-            noexcept;
+        inline render::VertexInputAttributeDescriptionConstSpan
+            inputAttributeDescriptions() const noexcept;
 
         inline core::Hash64 hash() const noexcept;
 

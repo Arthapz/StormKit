@@ -1,13 +1,16 @@
 dependencies = []
 
+#ide:editable-filelist
 headers = files([
     'include/storm/main/Main.hpp',
 ])
 
+#ide:editable-filelist
 inls = files([
     'include/storm/main/Main.hpp',
 ])
 
+#ide:editable-filelist
 sources = files([])
 args = {}
 

@@ -8,6 +8,14 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
+#include <storm/engine/core/Transform.hpp>
+
+#include <storm/engine/material/Material.hpp>
+
+#include <storm/engine/drawable/3D/CubeMap.hpp>
+#include <storm/engine/drawable/3D/Mesh.hpp>
+#include <storm/engine/drawable/3D/Model.hpp>
+
 #include <storm/engine/scene/FPSCamera.hpp>
 
 #include <storm/engine/framegraph/FrameGraph.hpp>
@@ -34,7 +42,7 @@ GLTFScene::GLTFScene(engine::Engine &engine,
 
     setCamera(*m_camera);
 
-    m_model = createModelPtr();
+    m_model = std::make_unique<engine::Model>(*m_engine, m_texture_pool, m_material_pool);
     m_model->load(model_filepath);
 
     if (!m_model->loaded()) {
@@ -43,24 +51,10 @@ GLTFScene::GLTFScene(engine::Engine &engine,
     }
     log::LogHandler::ilog(GLTF_LOG_MODULE, "{} loaded", model_filepath.string());
 
-    m_meshes = m_model->createMeshes();
+    m_mesh = m_model->createMeshPtr();
+    m_mesh->playAnimation(0u, true);
 
-    auto bounding_box = engine::BoundingBox {};
-    bounding_box.min  = { 0.f, 0.f, 0.f };
-    bounding_box.max  = { 0.f, 0.f, 0.f };
-
-    for (const auto &mesh : m_meshes) {
-        const auto &_bounding_box = mesh.boundingBox();
-
-        bounding_box.min = core::min(bounding_box.min, _bounding_box.min);
-        bounding_box.max = core::max(bounding_box.max, _bounding_box.max);
-    }
-
-    const auto extent = bounding_box.max - bounding_box.min;
-
-    bounding_box.extent.width  = extent.x;
-    bounding_box.extent.height = extent.y;
-    bounding_box.extent.depth  = extent.z;
+    const auto &bounding_box = m_mesh->boundingBox();
 
     const auto max_length =
         std::max(bounding_box.extent.width,
@@ -73,15 +67,13 @@ GLTFScene::GLTFScene(engine::Engine &engine,
         -0.5f *
         core::Vector3f { bounding_box.extent.w, bounding_box.extent.h, bounding_box.extent.d };
 
-    for (auto &mesh : m_meshes) {
-        auto &transform = mesh.transform();
-        transform.setScale(scale, scale, scale);
-        transform.setPosition(translation);
-    }
+    auto &transform = m_mesh->transform();
+    transform.setScale(scale, scale, scale);
+    transform.setPosition(translation);
 
     m_engine->debugGUI().setSkipFrameCount(40);
 
-    m_cube_map = createCubeMapPtr();
+    m_cube_map = std::make_unique<engine::CubeMap>(*this);
 
     auto &cube_map_texture = texturePool().create("CubeMap",
                                                   m_engine->device(),
@@ -120,9 +112,9 @@ void GLTFScene::toggleWireframe() {
 
     m_wireframe = !m_wireframe;
 
-    for (auto &mesh : m_meshes)
-        for (auto &submesh : mesh.subMeshes())
-            submesh.materialInstance().setWireFrameEnabled(m_wireframe);
+    /*    for (auto &mesh : m_meshes)
+            for (auto &SubMesh : mesh.SubMeshes())
+                SubMesh.materialInstance().setWireFrameEnabled(m_wireframe);*/
 }
 
 ////////////////////////////////////////
@@ -141,13 +133,13 @@ void GLTFScene::toggleMSAA() noexcept {
 ////////////////////////////////////////
 ////////////////////////////////////////
 void GLTFScene::setDebugView(engine::PBRMaterialInstance::DebugView debug_index) {
-    for (auto &mesh : m_meshes) {
-        for (auto &submesh : mesh.subMeshes()) {
+    /*for (auto &mesh : m_meshes) {
+        for (auto &SubMesh : mesh.SubMeshes()) {
             auto &pbr_material =
-                static_cast<engine::PBRMaterialInstance &>(submesh.materialInstance());
+                static_cast<engine::PBRMaterialInstance &>(SubMesh.materialInstance());
             pbr_material.setDebugView(debug_index);
         }
-    }
+    }*/
 }
 
 ////////////////////////////////////////
@@ -159,7 +151,7 @@ void GLTFScene::update(float delta) {
 
     if (m_rotate_mesh) {
         const auto degrees = degree_per_sec * delta;
-        for (auto &mesh : m_meshes) { mesh.transform().rotateYaw(degrees); }
+        m_mesh->transform().rotateYaw(degrees);
     }
 
     if (!m_freeze_camera) {
@@ -198,6 +190,8 @@ void GLTFScene::update(float delta) {
         auto &debug_gui = m_engine->debugGUI();
         debug_gui.update(*m_window);
     }
+
+    m_delta_time = delta;
 }
 
 ////////////////////////////////////////
@@ -264,7 +258,7 @@ void GLTFScene::doRenderScene(storm::engine::FrameGraph &framegraph,
         };
 
         m_cube_map->render(cmb, resources.renderPass(), bindables, mesh_state);
-        for (auto &mesh : m_meshes) mesh.render(cmb, resources.renderPass(), bindables, mesh_state);
+        m_mesh->render(cmb, resources.renderPass(), bindables, mesh_state, m_delta_time);
     };
 
     auto &color_pass =

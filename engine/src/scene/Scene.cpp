@@ -11,12 +11,16 @@
 #include <storm/engine/scene/Camera.hpp>
 #include <storm/engine/scene/Scene.hpp>
 
+#include <storm/engine/material/Material.hpp>
+
 using namespace storm;
 using namespace storm::engine;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 Scene::Scene(Engine &engine) : m_engine { &engine } {
+    const auto &device = m_engine->device();
+
     m_default_camera =
         std::make_unique<Camera>(engine,
                                  Camera::Type::Perspective,
@@ -34,6 +38,46 @@ Scene::Scene(Engine &engine) : m_engine { &engine } {
                                          .depth    = { 0.f, 1.f } } };
     m_pipeline_state.viewport_state.scissors =
         std::vector { render::Scissor { .offset = { 0, 0 }, .extent = extent } };
+
+    const auto white = core::RGBColorDef::White<core::UInt8>.toVector4();
+    const auto black = core::RGBColorDef::Black<core::UInt8>.toVector4();
+
+    const auto white_data  = core::makeSpan<const std::byte>(white);
+    const auto black_data  = core::makeSpan<const std::byte>(black);
+    auto &blank_texture_2d = m_texture_pool.create("StormKit:BlankTexture:2D",
+                                                   device,
+                                                   render::TextureType::T2D,
+                                                   render::TextureCreateFlag::None);
+    blank_texture_2d.loadFromMemory(white_data, { 1, 1 }, render::PixelFormat::RGBA8_UNorm);
+    device.setObjectName(blank_texture_2d, "StormKit:BlankTexture:2D");
+
+    auto &blank_texture_cube = m_texture_pool.create("StormKit:BlankTexture:Cube",
+                                                     device,
+                                                     render::TextureType::T2D,
+                                                     render::TextureCreateFlag::Cube_Compatible);
+    blank_texture_cube.loadLayersFromMemory(
+        { white_data, white_data, white_data, white_data, white_data, white_data },
+        { 1, 1 });
+
+    device.setObjectName(blank_texture_cube, "StormKit:BlankTexture:Cube");
+
+    auto &black_texture_2d = m_texture_pool.create("StormKit:BlackTexture:2D",
+                                                   device,
+                                                   render::TextureType::T2D,
+                                                   render::TextureCreateFlag::None);
+
+    black_texture_2d.loadFromMemory(black_data, { 1, 1 }, render::PixelFormat::RGBA8_UNorm);
+    device.setObjectName(black_texture_2d, "StormKit:BlackTexture:2D");
+
+    auto &black_texture_cube = m_texture_pool.create("StormKit:BlackTexture:Cube",
+                                                     device,
+                                                     render::TextureType::T2D,
+                                                     render::TextureCreateFlag::Cube_Compatible);
+
+    black_texture_cube.loadLayersFromMemory(
+        { black_data, black_data, black_data, black_data, black_data, black_data },
+        { 1, 1 });
+    device.setObjectName(black_texture_cube, "StormKit:BlackTexture:Cube");
 }
 
 ////////////////////////////////////////

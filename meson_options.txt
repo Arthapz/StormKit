@@ -11,3 +11,5 @@ option('enable_render', type: 'boolean', value: true, description: 'Build StormK
 option('enable_engine', type: 'boolean', value: true, description: 'Build StormKit engine library')
 
 option('library_type', type: 'combo', choices: ['shared', 'static'], value: 'shared', description: 'Library type (default is shared)')
+
+option('gli_include_dir', type: 'string', value: '', description: 'Overwrite GLI include directory')
