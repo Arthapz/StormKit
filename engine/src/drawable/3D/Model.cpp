@@ -2,7 +2,12 @@
 #include <storm/log/LogHandler.hpp>
 
 /////////// - StormKit::render - ///////////
+#include <storm/render/core/CommandBuffer.hpp>
 #include <storm/render/core/Vulkan.hpp>
+
+#include <storm/render/resource/HardwareBuffer.hpp>
+
+#include <storm/render/sync/Fence.hpp>
 
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
@@ -30,7 +35,7 @@ static constexpr auto LOG_MODULE = "engine"_module;
 
 bool LoadImageData(tinygltf::Image *image,
                    [[maybe_unused]] const int image_idx,
-                   std::string *err,
+                   [[maybe_unused]] std::string *err,
                    [[maybe_unused]] std::string *warn,
                    [[maybe_unused]] int req_width,
                    [[maybe_unused]] int req_height,
@@ -38,7 +43,7 @@ bool LoadImageData(tinygltf::Image *image,
                    int size,
                    void *) {
     auto _image = image::Image { core::toConstSpan<core::Byte>(bytes, size) }.toFormat(
-        image::Image::Format::RGBA);
+        image::Image::Format::RGBA8_UNorm);
     // if (_image.codec() == image::Image::Codec::PNG) _image = image::Image::flipY(_image);
 
     int pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
@@ -366,6 +371,8 @@ MeshPrimitive Model::doParsePrimitive(const tinygltf::Model &model,
 MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &model,
                                                         const tinygltf::Material &material) {
     const auto loadTexture = [&model, this](auto index) -> render::Texture * {
+        const auto &device = m_engine->device();
+
         if (index < 0) return nullptr;
 
         auto &gltf_texture = model.textures[index];
@@ -380,11 +387,6 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
         auto name = fmt::format("{:x}", hash);
         if (m_texture_pool->has(name)) { return &m_texture_pool->get(name); }
 
-        auto &texture = m_texture_pool->create(std::move(name),
-                                               m_engine->device(),
-                                               render::TextureType::T2D,
-                                               render::TextureCreateFlag::None);
-
         auto load_format = render::PixelFormat::RGBA8_UNorm;
         if (image.component == 1) load_format = render::PixelFormat::R8_UNorm;
         else if (image.component == 2)
@@ -394,19 +396,43 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
 
         const auto extent = core::Extentu { static_cast<core::UInt32>(image.width),
                                             static_cast<core::UInt32>(image.height) };
-        texture.loadFromMemory({ reinterpret_cast<const std::byte *>(std::data(image.image)),
-                                 std::size(image.image) },
-                               extent,
-                               load_format,
-                               render::Texture::LoadOperation {
-                                   .generate_mip_map = true,
-                                   .storage_format   = render::PixelFormat::RGBA8_UNorm,
-                                   .samples          = render::SampleCountFlag::C1_BIT,
-                                   .mip_levels       = render::computeMipLevel(extent),
-                                   .usage            = render::TextureUsage::Sampled |
-                                            render::TextureUsage::Transfert_Dst |
-                                            render::TextureUsage::Transfert_Src });
+
+        const auto mip_levels = render::computeMipLevel(extent);
+
+        auto &texture = m_texture_pool->create(std::move(name),
+                                               m_engine->device(),
+                                               render::TextureType::T2D,
+                                               render::TextureCreateFlag::None);
+        texture.createTextureData(extent,
+                                  load_format,
+                                  render::Texture::CreateOperation { .mip_levels = mip_levels });
         m_engine->device().setObjectName(texture, name);
+
+        auto staging_buffer = device.createStagingBuffer(std::size(image.image));
+        staging_buffer.template upload<core::Byte>(core::toConstSpan<core::Byte>(image.image));
+
+        auto fence = device.createFence();
+        auto command_buffer =
+            device.graphicsQueue().createCommandBuffer(render::CommandBufferLevel::Primary);
+
+        command_buffer.begin(true);
+
+        texture.fillMemory(std::size(image.image),
+                           { .width  = static_cast<core::UInt32>(image.width),
+                             .height = static_cast<core::UInt32>(image.height) },
+                           0u,
+                           1u,
+                           command_buffer,
+                           staging_buffer,
+                           0u);
+
+        for (auto i = 0u; i < mip_levels; ++i) texture.generateMipmap(command_buffer, i);
+
+        command_buffer.end();
+        command_buffer.build();
+        command_buffer.submit({}, {}, core::makeObserver(fence));
+
+        fence.wait();
 
         return &texture;
     };

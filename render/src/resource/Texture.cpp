@@ -127,62 +127,24 @@ Texture &Texture::operator=(Texture &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Texture::loadFromKTX(const std::filesystem::path &filepath) {
-    auto image = gli::load(filepath.string());
+void Texture::loadFromImage(const image::Image &image, std::optional<LoadOperation> op) {
+    const auto total_size = [&image]() {
+        auto size = core::ArraySize { 0u };
+        for (auto i = 0u; i < image.mipLevels(); ++i) size += image.size(i);
 
-    const auto faces      = static_cast<core::UInt32>(image.faces());
-    const auto mip_count  = static_cast<core::UInt32>(image.levels());
-    const auto format     = toPixelFormat(image.format());
-    const auto tex_extent = core::Extenti { image.extent().x, image.extent().y, image.extent().z }
-                                .convertTo<core::Extentu>();
+        return size;
+    }();
 
-    createTextureData(tex_extent,
-                      format,
-                      CreateOperation { .mip_levels = mip_count, .layers = faces });
+    auto staging_buffer = m_device->createStagingBuffer(total_size);
 
-    auto staging_buffer = m_device->createStagingBuffer(image.size());
-    staging_buffer.upload<core::Byte>(
-        { reinterpret_cast<core::Byte *>(image.data()), image.size() });
+    auto fence = m_device->createFence();
+    auto command_buffer =
+        m_device->graphicsQueue().createCommandBuffer(CommandBufferLevel::Primary);
 
-    auto copy_regions = std::vector<BufferTextureCopy> {};
-    copy_regions.reserve(faces * mip_count);
-
-    auto offset = 0u;
-    for (auto face = 0u; face < faces; ++face) {
-        for (auto level = 0u; level < mip_count; ++level) {
-            const auto extent =
-                core::Extentu { tex_extent.w >> level, tex_extent.h >> level, tex_extent.d };
-
-            copy_regions.emplace_back(BufferTextureCopy {
-                .buffer_offset      = offset,
-                .subresource_layers = { .mip_level = level, .base_array_layer = face },
-                .extent             = extent,
-            });
-
-            offset += image.size(level);
-        }
-    }
-
-    auto subresource_range =
-        TextureSubresourceRange { .level_count = m_mip_levels, .layer_count = m_layers };
-
-    auto fence          = m_device->createFence();
-    auto command_buffer = m_device->graphicsQueue().createCommandBuffer();
     command_buffer.begin(true);
-    command_buffer.beginDebugRegion("KTX Upload Texture", core::RGBColorDef::Lime<float>);
-    command_buffer.transitionTextureLayout(*this,
-                                           TextureLayout::Undefined,
-                                           TextureLayout::Transfer_Dst_Optimal,
-                                           subresource_range);
 
-    command_buffer.copyBufferToTexture(staging_buffer, *this, std::move(copy_regions));
+    loadFromImage(image, command_buffer, staging_buffer, 0u, std::move(op));
 
-    command_buffer.transitionTextureLayout(*this,
-                                           TextureLayout::Transfer_Dst_Optimal,
-                                           TextureLayout::Shader_Read_Only_Optimal,
-                                           subresource_range);
-
-    command_buffer.endDebugRegion();
     command_buffer.end();
     command_buffer.build();
     command_buffer.submit({}, {}, core::makeObserver(fence));
@@ -192,38 +154,49 @@ void Texture::loadFromKTX(const std::filesystem::path &filepath) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Texture::loadFromImage(const image::Image &image, std::optional<LoadOperation> _op) {
+void Texture::loadFromImage(const image::Image &image,
+                            render::CommandBuffer &command_buffer,
+                            render::HardwareBuffer &staging_buffer,
+                            core::UOffset offset,
+                            std::optional<LoadOperation> _op) {
     STORM_EXPECTS(!m_non_owning_texture);
 
-    const auto format = toPixelFormat(image.format());
+    auto _offset = 0u;
+    for (auto i = 0u; i < image.mipLevels(); ++i) {
+        staging_buffer.upload<core::Byte>(image.data(i), _offset);
+
+        _offset += image.size(i);
+    }
+
+    const auto &image_extent = image.extent();
 
     const auto &op = _op.value_or(LoadOperation {});
 
-    createTextureData({ .width = image.extent().width, .height = image.extent().depth },
-                      format,
+    createTextureData({ .width = image_extent.width, .height = image_extent.height, .depth = 1u },
+                      toPixelFormat(image.format()),
                       CreateOperation { .samples    = op.samples,
                                         .mip_levels = image.mipLevels(),
-                                        .layers     = image.extent().depth,
+                                        .layers     = image_extent.depth,
                                         .usage      = op.usage });
 
+    auto mip_offset = 0u;
     for (auto mip_level = 0u; mip_level < image.mipLevels(); ++mip_level) {
-        loadFromMemory(image.data(mip_level),
-                       image.extent(mip_level),
-                       mip_level,
-                       image.extent(mip_level).depth,
-                       op);
+        const auto &image_extent = image.extent(mip_level);
+        const auto _extent       = core::Extentu { .width  = image_extent.width,
+                                             .height = image_extent.height,
+                                             .depth  = 1u };
+
+        fillMemory(image_extent.width * image_extent.height * image.channelCount() *
+                       image.bytesPerChannel(),
+                   _extent,
+                   mip_level,
+                   image_extent.depth,
+                   command_buffer,
+                   staging_buffer,
+                   offset + mip_offset);
+
+        mip_offset += image.size(mip_level);
     }
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-void Texture::loadFromMemory(core::ByteConstSpan data,
-                             core::Extentu layer_extent,
-                             core::UInt8 mip_level,
-                             core::UInt8 layers) {
-    STORM_EXPECTS(!m_non_owning_texture);
-
-    if (!m_vk_texture) { const auto &op = _op.value_or(LoadOperation {}); }
 }
 
 /////////////////////////////////////
@@ -330,24 +303,25 @@ void Texture::generateMipmap(render::CommandBuffer &cmb,
     cmb.endDebugRegion();
 }
 
-void Texture::fillMemory(CommandBuffer &command_buffer,
-                         core::ByteConstSpan data,
+void Texture::fillMemory(core::ArraySize layer_size,
                          core::Extentu layer_extent,
                          core::UInt8 mip_level,
-                         core::UInt8 layers) {
-    auto staging_buffer = m_device->createStagingBuffer(std::size(data));
-    staging_buffer.upload<core::Byte>(data);
-
+                         core::UInt8 layers,
+                         CommandBuffer &command_buffer,
+                         render::HardwareBuffer &staging_buffer,
+                         core::UOffset staging_offset) {
     auto copy_regions = std::vector<BufferTextureCopy> {};
     copy_regions.reserve(layers);
 
-    auto offset = 0u;
+    auto offset = staging_offset;
     for (auto layer = 0u; layer < layers; ++layer) {
         copy_regions.emplace_back(BufferTextureCopy {
             .buffer_offset      = offset,
             .subresource_layers = { .mip_level = mip_level, .base_array_layer = layer },
             .extent             = layer_extent,
         });
+
+        offset += layer_size;
     }
 
     auto subresource_range =

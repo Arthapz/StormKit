@@ -75,11 +75,13 @@ GLTFScene::GLTFScene(engine::Engine &engine,
 
     m_cube_map = std::make_unique<engine::CubeMap>(*this);
 
+    auto image = image::Image { EXAMPLES_DATA_DIR "texture/cubemap.ktx" };
+
     auto &cube_map_texture = texturePool().create("CubeMap",
                                                   m_engine->device(),
                                                   render::TextureType::T2D,
                                                   render::TextureCreateFlag::Cube_Compatible);
-    cube_map_texture.loadFromKTX(EXAMPLES_DATA_DIR "textures/cubemap.ktx");
+    cube_map_texture.loadFromImage(image);
 
     m_cube_map->setTexture(cube_map_texture,
                            { .level_count = cube_map_texture.mipLevels(),

@@ -2,12 +2,17 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+/////////// - StormKit::device - ///////////
+#include <storm/render/core/CommandBuffer.hpp>
+#include <storm/render/core/Queue.hpp>
+
+#include <storm/render/sync/Fence.hpp>
+
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/material/CubeMapMaterial.hpp>
 
 #include <storm/engine/material/CubeMapMaterialInstance.hpp>
 
-/////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
 #include <storm/engine/scene/PBRScene.hpp>
@@ -42,23 +47,42 @@ CubeMapMaterial::CubeMapMaterial(Scene &scene) : Material { scene } {
     finalize();
 
     if (!texture_pool.has(DEFAULT_CUBE_MAP_TEXTURE)) {
-        const auto silver = core::RGBColorDef::Silver<float>.toVector4();
-        const auto silver_span =
-            core::ByteConstSpan { reinterpret_cast<const std::byte *>(glm::value_ptr(silver)),
-                                  sizeof(silver) };
+        constexpr auto silver  = core::RGBColorDef::Silver<float>.toVector4();
+        constexpr auto silvers = std::array { silver, silver, silver, silver, silver, silver };
+
+        constexpr auto size = sizeof(silver[0]);
 
         auto &texture = texture_pool.create(DEFAULT_CUBE_MAP_TEXTURE,
                                             device,
                                             render::TextureType::T2D,
                                             render::TextureCreateFlag::Cube_Compatible);
+        texture.createTextureData({ .width = 1u, .height = 1u },
+                                  render::PixelFormat::RGBA8_UNorm,
+                                  render::Texture::CreateOperation { .layers = 6u });
+        device.setObjectName(texture, "StormKit:DefaultCubeMapMaterial:DefaultTexture");
 
-        auto data = std::vector<core::ByteConstSpan> {};
-        data.resize(6, silver_span);
+        auto staging_buffer = device.createStagingBuffer(size * 6u);
+        staging_buffer.upload<core::Byte>(core::toConstSpan<core::Byte>(silvers));
 
-        texture.loadLayersFromMemory(std::move(data),
-                                     { 1u, 1u },
-                                     render::Texture::LoadOperation {
-                                         .storage_format = render::PixelFormat::RGBA16F });
+        auto fence = device.createFence();
+        auto command_buffer =
+            device.graphicsQueue().createCommandBuffer(render::CommandBufferLevel::Primary);
+
+        command_buffer.begin(true);
+
+        texture.fillMemory(size,
+                           { .width = 1u, .height = 1u },
+                           0u,
+                           6u,
+                           command_buffer,
+                           staging_buffer,
+                           0u);
+
+        command_buffer.end();
+        command_buffer.build();
+        command_buffer.submit({}, {}, core::makeObserver(fence));
+
+        fence.wait();
     }
 }
 ////////////////////////////////////////

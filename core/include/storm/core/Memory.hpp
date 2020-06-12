@@ -326,7 +326,7 @@ namespace storm::core {
 
     template<typename T, typename V>
     core::span<const T> makeConstSpan(const V &data) noexcept {
-        return makeSpan<const T, V>(data);
+        return makeSpan<const T, const V>(data);
     }
 
 #if __cpp_concepts
@@ -349,18 +349,18 @@ namespace storm::core {
 
     template<typename V, ITERABLE_CONCEPT Range>
     core::span<const V> toConstSpan(const Range &data) noexcept {
-        return toSpan<const Range, const V>(data);
+        return toSpan<const V, const Range>(data);
     }
 
     template<typename V, POINTER_CONCEPT Range>
     core::span<V> toSpan(Range data, std::size_t size) noexcept {
         return core::span<V> { reinterpret_cast<V *>(data),
-                               (size / sizeof(typename Range::value_type)) * sizeof(V) };
+                               (size / sizeof(std::remove_pointer_t<Range>)) * sizeof(V) };
     }
 
     template<typename V, POINTER_CONCEPT Range>
     core::span<const V> toConstSpan(const Range data, std::size_t size) noexcept {
-        return toSpan<const Range, const V>(data, size);
+        return toSpan<const V, const Range>(data, size);
     }
 
 #define DECLARE_ARRAYS_(x)                       \

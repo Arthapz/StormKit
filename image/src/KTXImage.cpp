@@ -1,4 +1,7 @@
 /////////// - StormKit::image - ///////////
+#include <storm/core/Ranges.hpp>
+
+/////////// - StormKit::image - ///////////
 #include <storm/image/Image.hpp>
 
 /////////// - STL - ///////////
@@ -12,8 +15,6 @@ using namespace storm;
 using namespace storm::image;
 
 namespace storm::image {
-    extern constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept;
-
     constexpr auto toStormFormat(gli::format format) noexcept {
         switch (format) {
             case gli::FORMAT_R8_SNORM_PACK8: return Image::Format::R8_SNorm;
@@ -83,15 +84,33 @@ namespace storm::image {
 std::optional<std::string> Image::loadKTX(core::ByteConstSpan data) noexcept {
     auto image = gli::load(reinterpret_cast<const char *>(std::data(data)), std::size(data));
 
-    const auto faces     = static_cast<core::UInt32>(image.faces());
-    const auto mip_count = static_cast<core::UInt32>(image.levels());
-    const auto format    = toStormFormat(image.format());
-    const auto extent    = core::Extenti { .width  = image.extent().x,
+    const auto faces      = static_cast<core::UInt32>(image.faces());
+    const auto mip_levels = static_cast<core::UInt32>(image.levels());
+    const auto format     = toStormFormat(image.format());
+    const auto extent     = core::Extenti { .width  = image.extent().x,
                                         .height = image.extent().y,
                                         .depth  = image.extent().z }
                             .convertTo<core::Extentu>();
 
     if (format == Image::Format::Undefined) return "Unsupported pixel format";
+
+    auto _data = std::vector<MipLevel> {};
+    _data.reserve(mip_levels);
+
+    auto offset = 0u;
+    for (auto mip_level = 0u; mip_level < mip_levels; ++mip_level) {
+        auto &mip = _data.emplace_back(MipLevel {});
+        mip.data.resize(extent.width * extent.height * extent.depth * faces *
+                        getChannelCountFor(format) * getByteCountByChannelFor(format));
+
+        auto _data =
+            core::toConstSpan<core::Byte>(reinterpret_cast<const core::Byte *>(image.data()) +
+                                              offset,
+                                          image.size(mip_level));
+        core::ranges::copy(_data, core::ranges::begin(mip.data));
+
+        offset += image.size(mip_level);
+    }
 
     return std::nullopt;
 }

@@ -181,6 +181,9 @@ namespace storm::image {
 
         std::vector<MipLevel> m_data;
     };
+
+    STORM_PUBLIC constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept;
+    STORM_PUBLIC constexpr core::UInt8 getByteCountByChannelFor(Image::Format format) noexcept;
 } // namespace storm::image
 
 #include "Image.inl"

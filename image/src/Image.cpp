@@ -304,6 +304,22 @@ Image::Image(core::ByteConstSpan data, Image::Codec codec) noexcept : Image {} {
 /////////////////////////////////////
 Image::~Image() noexcept = default;
 
+////////////////////////////////////////
+////////////////////////////////////////
+Image::Image(const Image &) noexcept = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+Image &Image::operator=(const Image &) noexcept = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+Image::Image(Image &&) noexcept = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+Image &Image::operator=(Image &&) noexcept = default;
+
 /////////////////////////////////////
 /////////////////////////////////////
 bool Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec codec) noexcept {
@@ -552,18 +568,25 @@ Image Image::toFormat(Format format) const noexcept {
     image.m_bytes_per_channel = getByteCountByChannelFor(format);
     image.m_mip_levels        = m_mip_levels;
     image.m_format            = format;
-    image.m_data.resize(std::size(m_data));
+    image.m_data.reserve(std::size(m_data));
 
     const auto channel_delta =
         static_cast<core::UInt8>(std::min(0,
                                           static_cast<core::Int8>(image.m_channel_count) -
                                               static_cast<core::Int8>(m_channel_count)));
 
+    auto mip_level = 0;
     for (auto &mip : m_data) {
+        auto &_mip  = image.m_data.emplace_back();
+        _mip.extent = mip.extent;
+        _mip.data.resize(_mip.extent.width * _mip.extent.height * _mip.extent.depth *
+                         image.m_channel_count * image.m_bytes_per_channel);
+
         const auto pixel_count = mip.extent.width * mip.extent.height * mip.extent.depth;
         for (auto i = 0u; i < pixel_count; i += m_bytes_per_channel * m_channel_count) {
-            const auto from_image = map(pixel(i), m_bytes_per_channel, image.m_bytes_per_channel);
-            auto to_image         = image.pixel(i);
+            const auto from_image =
+                map(pixel(i, mip_level), m_bytes_per_channel, image.m_bytes_per_channel);
+            auto to_image = image.pixel(i, mip_level);
 
             core::ranges::copy_n(core::ranges::begin(from_image),
                                  image.m_channel_count,
@@ -573,6 +596,8 @@ Image Image::toFormat(Format format) const noexcept {
                                  channel_delta,
                                  core::Byte { 0u });
         }
+
+        mip_level++;
     }
 
     return image;
@@ -603,9 +628,10 @@ Image Image::flipX() const noexcept {
                 for (auto z = 0u; z < extent.depth; ++z) {
                     const auto inv_x = extent.width - x;
 
+                    auto output = image.pixel(core::Offset3u { inv_x, y, z }, i);
+
                     core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
-                                       core::ranges::begin(
-                                           image.pixel(core::Offset3u { inv_x, y, z }, i)));
+                                       core::ranges::begin(output));
                 }
     }
 
@@ -631,9 +657,10 @@ Image Image::flipY() const noexcept {
                 for (auto z = 0u; z < extent.depth; ++z) {
                     const auto inv_y = extent.height - y;
 
+                    auto output = image.pixel(core::Offset3u { x, inv_y, z }, i);
+
                     core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
-                                       core::ranges::begin(
-                                           image.pixel(core::Offset3u { x, inv_y, z }, i)));
+                                       core::ranges::begin(output));
                 }
     }
 
@@ -659,9 +686,10 @@ Image Image::flipZ() const noexcept {
                 for (auto z = 0u; z < extent.depth; ++z) {
                     const auto inv_z = extent.depth - z;
 
+                    auto output = image.pixel(core::Offset3u { x, y, inv_z }, i);
+
                     core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
-                                       core::ranges::begin(
-                                           image.pixel(core::Offset3u { x, y, inv_z }, i)));
+                                       core::ranges::begin(output));
                 }
     }
 

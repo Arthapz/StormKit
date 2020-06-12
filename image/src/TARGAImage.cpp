@@ -4,10 +4,6 @@
 using namespace storm;
 using namespace storm::image;
 
-namespace storm::image {
-    extern constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept;
-}
-
 std::optional<std::string> Image::loadTARGA(core::ByteConstSpan data) noexcept {
     return std::nullopt;
 }

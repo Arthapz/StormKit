@@ -50,20 +50,19 @@ namespace storm::render {
         void loadFromImage(const image::Image &image,
                            std::optional<LoadOperation> op = std::nullopt);
 
-        void loadFromImage(render::CommandBuffer &cmb,
-                           const image::Image &image,
+        void loadFromImage(const image::Image &image,
+                           render::CommandBuffer &command_buffer,
+                           render::HardwareBuffer &staging_buffer,
+                           core::UOffset offset = 0u,
                            std::optional<LoadOperation> op = std::nullopt);
 
-        void loadFromMemory(std::vector<core::ByteConstSpan> data,
-                            core::Extentu layer_extent,
-                            core::UInt8 layers              = 1u,
-                            std::optional<LoadOperation> op = std::nullopt);
-
-        void loadFromMemory(render::CommandBuffer &cmb,
-                            std::vector<core::ByteConstSpan> data,
-                            core::Extentu layer_extent,
-                            core::UInt8 layers              = 1u,
-                            std::optional<LoadOperation> op = std::nullopt);
+        void fillMemory(core::ArraySize layer_size,
+                        core::Extentu layer_extent,
+                        core::UInt8 mip_level,
+                        core::UInt8 layers,
+                        render::CommandBuffer &command_buffer,
+                        render::HardwareBuffer &staging_buffer,
+                        core::UOffset offset);
 
         void createTextureData(core::Extentu extent,
                                PixelFormat format,
@@ -93,11 +92,7 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
-        void fillMemory(render::CommandBuffer &command_buffer,
-                        core::ByteConstSpan data,
-                        core::Extentu layer_extent,
-                        core::UInt8 mip_level,
-                        core::UInt8 layers);
+
 
         DeviceConstObserverPtr m_device;
 

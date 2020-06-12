@@ -12,10 +12,6 @@
 using namespace storm;
 using namespace storm::image;
 
-namespace storm::image {
-    extern constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept;
-}
-
 struct JpegErrorData {
     std::jmp_buf setjmp_buffer;
     std::string msg;
@@ -98,21 +94,17 @@ std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath
 
     auto this_rgb = toFormat(Format::RGB8_UNorm);
 
-    using FilePtr = std::FILE *;
-
     auto info      = jpeg_compress_struct {};
     auto error_mgr = jpeg_error_mgr {};
 
     auto error_data = JpegErrorData {};
     for (auto i = 0u; i < this_rgb.mipLevels(); ++i) {
-        auto file = FilePtr { nullptr };
-
         if (i >= 1u) _filename += fmt::format("_mip{}", i);
 
-        auto res = fopen_s(&file, _filename.string().c_str(), "w");
-        if (res != 0) {
+        auto file = std::fopen(_filename.string().c_str(), "w");
+        if (file == nullptr) {
             auto error = std::string { 95 };
-            strerror_s(std::data(error), std::size(error), res);
+            strerror_s(std::data(error), std::size(error), errno);
             error.shrink_to_fit();
 
             return error;
