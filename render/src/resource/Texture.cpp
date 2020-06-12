@@ -31,6 +31,69 @@ constexpr auto toPixelFormat(gli::format format) {
     }
 }
 
+constexpr auto toPixelFormat(image::Image::Format format) noexcept {
+    switch (format) {
+        case image::Image::Format::R8_SNorm: return PixelFormat::R8_SNorm;
+        case image::Image::Format::R8_UNorm: return PixelFormat::R8_UNorm;
+        case image::Image::Format::RG8_SNorm: return PixelFormat::RG8_SNorm;
+        case image::Image::Format::RG8_UNorm: return PixelFormat::RG8_UNorm;
+        case image::Image::Format::R8I: return PixelFormat::R8I;
+        case image::Image::Format::R8U: return PixelFormat::R8U;
+        case image::Image::Format::RG8I: return PixelFormat::RG8I;
+        case image::Image::Format::RG8U: return PixelFormat::RG8U;
+        case image::Image::Format::RGB8_SNorm: return PixelFormat::RGB8_SNorm;
+        case image::Image::Format::RGB8_UNorm: return PixelFormat::RGB8_UNorm;
+        case image::Image::Format::BGR8_UNorm: return PixelFormat::BGR8_UNorm;
+        case image::Image::Format::RGB8I: return PixelFormat::RGB8I;
+        case image::Image::Format::RGB8U: return PixelFormat::RGB8U;
+        case image::Image::Format::RGBA8_SNorm: return PixelFormat::RGBA8_SNorm;
+        case image::Image::Format::RGBA8_UNorm: return PixelFormat::RGBA8_UNorm;
+        case image::Image::Format::RGBA16_SNorm: return PixelFormat::RGBA16_SNorm;
+        case image::Image::Format::BGRA8_UNorm: return PixelFormat::BGRA8_UNorm;
+        case image::Image::Format::sRGB8: return PixelFormat::sRGB8;
+        case image::Image::Format::sBGR8: return PixelFormat::sBGR8;
+        case image::Image::Format::sRGBA8: return PixelFormat::sRGBA8;
+        case image::Image::Format::sBGRA8: return PixelFormat::sBGRA8;
+
+        case image::Image::Format::R16_SNorm: return PixelFormat::R16_SNorm;
+        case image::Image::Format::R16_UNorm: return PixelFormat::R16_UNorm;
+        case image::Image::Format::R16I: return PixelFormat::R16I;
+        case image::Image::Format::R16U: return PixelFormat::R16U;
+        case image::Image::Format::RG16_SNorm: return PixelFormat::RG16_SNorm;
+        case image::Image::Format::RG16_UNorm: return PixelFormat::RG16_UNorm;
+        case image::Image::Format::RG16I: return PixelFormat::RG16I;
+        case image::Image::Format::RG16U: return PixelFormat::RG16U;
+        case image::Image::Format::RG16F: return PixelFormat::RG16F;
+        case image::Image::Format::RGB16I: return PixelFormat::RGB16I;
+        case image::Image::Format::RGB16U: return PixelFormat::RGB16U;
+        case image::Image::Format::RGB16F: return PixelFormat::RGB16F;
+        case image::Image::Format::RGBA16I: return PixelFormat::RGBA16I;
+        case image::Image::Format::RGBA16U: return PixelFormat::RGBA16U;
+        case image::Image::Format::RGBA16F: return PixelFormat::RGBA16F;
+        case image::Image::Format::R16F: return PixelFormat::R16F;
+
+        case image::Image::Format::R32I: return PixelFormat::R32I;
+        case image::Image::Format::R32U: return PixelFormat::R32U;
+        case image::Image::Format::R32F: return PixelFormat::R32F;
+        case image::Image::Format::RG32I: return PixelFormat::RG32I;
+        case image::Image::Format::RG32U: return PixelFormat::RG32U;
+        case image::Image::Format::RG32F: return PixelFormat::RG32F;
+        case image::Image::Format::RGB16_SNorm: return PixelFormat::RGB16_SNorm;
+        case image::Image::Format::RGB32I: return PixelFormat::RGB32I;
+        case image::Image::Format::RGB32U: return PixelFormat::RGB32U;
+        case image::Image::Format::RGB32F: return PixelFormat::RGB32F;
+        case image::Image::Format::RGBA8I: return PixelFormat::RGBA8I;
+        case image::Image::Format::RGBA8U: return PixelFormat::RGBA8U;
+        case image::Image::Format::RGBA32I: return PixelFormat::RGBA32I;
+        case image::Image::Format::RGBA32U: return PixelFormat::RGBA32U;
+        case image::Image::Format::RGBA32F: return PixelFormat::RGBA32F;
+
+        default: return PixelFormat::Undefined;
+    }
+
+    return PixelFormat::Undefined;
+}
+
 /////////////////////////////////////
 /////////////////////////////////////
 Texture::Texture(const Device &device, TextureType type, TextureCreateFlag flags)
@@ -129,177 +192,38 @@ void Texture::loadFromKTX(const std::filesystem::path &filepath) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Texture::loadFromImage(image::Image &image, std::optional<LoadOperation> op) {
+void Texture::loadFromImage(const image::Image &image, std::optional<LoadOperation> _op) {
     STORM_EXPECTS(!m_non_owning_texture);
 
-    const auto format = [&image]() {
-        switch (image.channels()) {
-            case 1: return render::PixelFormat::R8_UNorm;
-            case 2: return render::PixelFormat::RG8_UNorm;
-            case 3: return render::PixelFormat::RGB8_UNorm;
-            case 4: return render::PixelFormat::RGBA8_UNorm;
-        }
+    const auto format = toPixelFormat(image.format());
 
-        return render::PixelFormat::Undefined;
-    }();
+    const auto &op = _op.value_or(LoadOperation {});
 
-    loadFromMemory(image.data(),
-                   { .width = image.extent().width, .height = image.extent().height },
-                   format,
-                   std::move(op));
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-void Texture::loadLayersFromImages(std::vector<image::ImageConstObserverPtr> data,
-                                   core::Extentu layer_extent,
-                                   std::optional<LoadOperation> op) {
-    auto bytes = std::vector<core::ByteConstSpan> {};
-    bytes.reserve(std::size(data));
-
-    for (const auto &img : data) bytes.emplace_back(std::data(*img));
-
-    loadLayersFromMemory(std::move(bytes), layer_extent, std::move(op));
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-void Texture::loadFromMemory(
-    storm::core::span<const core::Byte> data,
-    core::Extentu extent,
-    [[maybe_unused]] render::PixelFormat load_format, // TODO convert to storage format
-    std::optional<LoadOperation> _op) {
-    STORM_EXPECTS(!m_non_owning_texture);
-
-    auto op = _op.value_or(LoadOperation {});
-
-    createTextureData(extent,
-                      op.storage_format,
+    createTextureData({ .width = image.extent().width, .height = image.extent().depth },
+                      format,
                       CreateOperation { .samples    = op.samples,
-                                        .mip_levels = op.mip_levels,
-                                        .layers     = 1,
+                                        .mip_levels = image.mipLevels(),
+                                        .layers     = image.extent().depth,
                                         .usage      = op.usage });
 
-    auto staging_buffer =
-        m_device->createStagingBuffer(gsl::narrow_cast<core::ArraySize>(std::size(data)));
-    staging_buffer.upload<const core::Byte>(data);
-
-    auto fence = m_device->createFence();
-
-    const auto subresource_range = TextureSubresourceRange { .level_count = op.mip_levels };
-
-    auto command_buffer = m_device->graphicsQueue().createCommandBuffer();
-    command_buffer.begin(true);
-    command_buffer.beginDebugRegion("Upload Texture", core::RGBColorDef::Lime<float>);
-    command_buffer.transitionTextureLayout(*this,
-                                           TextureLayout::Undefined,
-                                           TextureLayout::Transfer_Dst_Optimal,
-                                           subresource_range);
-    command_buffer.copyBufferToTexture(staging_buffer, *this);
-
-    auto layout = TextureLayout::Transfer_Dst_Optimal;
-    if (op.generate_mip_map) {
-        command_buffer.transitionTextureLayout(*this,
-                                               TextureLayout::Transfer_Dst_Optimal,
-                                               TextureLayout::Transfer_Src_Optimal);
-        layout = TextureLayout::Transfer_Src_Optimal;
-
-        generateMipmap(command_buffer, op.mip_levels);
+    for (auto mip_level = 0u; mip_level < image.mipLevels(); ++mip_level) {
+        loadFromMemory(image.data(mip_level),
+                       image.extent(mip_level),
+                       mip_level,
+                       image.extent(mip_level).depth,
+                       op);
     }
-    command_buffer.transitionTextureLayout(*this,
-                                           layout,
-                                           TextureLayout::Shader_Read_Only_Optimal,
-                                           subresource_range);
-
-    command_buffer.endDebugRegion();
-    command_buffer.end();
-    command_buffer.build();
-    command_buffer.submit({}, {}, core::makeObserver(fence));
-
-    fence.wait();
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Texture::loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
-                                   core::Extentu layer_extent,
-                                   std::optional<LoadOperation> _op) {
+void Texture::loadFromMemory(core::ByteConstSpan data,
+                             core::Extentu layer_extent,
+                             core::UInt8 mip_level,
+                             core::UInt8 layers) {
     STORM_EXPECTS(!m_non_owning_texture);
 
-    auto op = _op.value_or(LoadOperation {});
-
-    createTextureData(layer_extent,
-                      op.storage_format,
-                      CreateOperation { .samples    = op.samples,
-                                        .mip_levels = op.mip_levels,
-                                        .layers = gsl::narrow_cast<core::UInt32>(std::size(data)),
-                                        .usage  = op.usage });
-
-    auto offsets          = std::vector<core::UOffset> {};
-    const auto total_size = [&data, &offsets]() {
-        auto s = core::ByteCount { 0u };
-        for (const auto &d : data) {
-            offsets.emplace_back(s);
-            s += std::size(d);
-        }
-
-        return s;
-    }();
-
-    auto staging_buffer = m_device->createStagingBuffer(total_size);
-    auto i              = 0u;
-
-    for (const auto offset : offsets) {
-        staging_buffer.upload<const core::Byte>(data[i++], offset);
-    }
-
-    auto fence = m_device->createFence();
-
-    auto copy_command_buffer = m_device->graphicsQueue().createCommandBuffer();
-    copy_command_buffer.begin(true);
-    copy_command_buffer.beginDebugRegion("Upload Texture", core::RGBColorDef::Lime<float>);
-
-    i = 0u;
-    for (const auto offset : offsets) {
-        const auto subresource_range =
-            TextureSubresourceRange { .level_count = op.mip_levels, .base_array_layer = i };
-
-        copy_command_buffer.transitionTextureLayout(*this,
-                                                    TextureLayout::Undefined,
-                                                    TextureLayout::Transfer_Dst_Optimal,
-                                                    subresource_range);
-
-        auto copy = render::BufferTextureCopy { .buffer_offset      = offset,
-                                                .subresource_layers = { .base_array_layer = i },
-                                                .extent             = layer_extent };
-
-        copy_command_buffer.copyBufferToTexture(staging_buffer, *this, { copy });
-
-        auto layout = TextureLayout::Transfer_Dst_Optimal;
-        if (op.generate_mip_map) {
-            const auto first_subresource_range = TextureSubresourceRange { .base_array_layer = i };
-            copy_command_buffer.transitionTextureLayout(*this,
-                                                        TextureLayout::Transfer_Dst_Optimal,
-                                                        TextureLayout::Transfer_Src_Optimal,
-                                                        first_subresource_range);
-            layout = TextureLayout::Transfer_Src_Optimal;
-
-            generateMipmap(copy_command_buffer, op.mip_levels, i);
-        }
-        copy_command_buffer.transitionTextureLayout(*this,
-                                                    layout,
-                                                    TextureLayout::Shader_Read_Only_Optimal,
-                                                    subresource_range);
-
-        ++i;
-    }
-
-    copy_command_buffer.endDebugRegion();
-    copy_command_buffer.end();
-    copy_command_buffer.build();
-    copy_command_buffer.submit({}, {}, core::makeObserver(fence));
-
-    fence.wait();
+    if (!m_vk_texture) { const auto &op = _op.value_or(LoadOperation {}); }
 }
 
 /////////////////////////////////////
@@ -404,4 +328,44 @@ void Texture::generateMipmap(render::CommandBuffer &cmb,
                                     mip_subresource_range);
     }
     cmb.endDebugRegion();
+}
+
+void Texture::fillMemory(CommandBuffer &command_buffer,
+                         core::ByteConstSpan data,
+                         core::Extentu layer_extent,
+                         core::UInt8 mip_level,
+                         core::UInt8 layers) {
+    auto staging_buffer = m_device->createStagingBuffer(std::size(data));
+    staging_buffer.upload<core::Byte>(data);
+
+    auto copy_regions = std::vector<BufferTextureCopy> {};
+    copy_regions.reserve(layers);
+
+    auto offset = 0u;
+    for (auto layer = 0u; layer < layers; ++layer) {
+        copy_regions.emplace_back(BufferTextureCopy {
+            .buffer_offset      = offset,
+            .subresource_layers = { .mip_level = mip_level, .base_array_layer = layer },
+            .extent             = layer_extent,
+        });
+    }
+
+    auto subresource_range =
+        TextureSubresourceRange { .level_count = m_mip_levels, .layer_count = m_layers };
+
+    command_buffer.beginDebugRegion(fmt::format("Upload Texture mip {}", mip_level),
+                                    core::RGBColorDef::Lime<float>);
+    command_buffer.transitionTextureLayout(*this,
+                                           TextureLayout::Undefined,
+                                           TextureLayout::Transfer_Dst_Optimal,
+                                           subresource_range);
+
+    command_buffer.copyBufferToTexture(staging_buffer, *this, std::move(copy_regions));
+
+    command_buffer.transitionTextureLayout(*this,
+                                           TextureLayout::Transfer_Dst_Optimal,
+                                           TextureLayout::Shader_Read_Only_Optimal,
+                                           subresource_range);
+
+    command_buffer.endDebugRegion();
 }

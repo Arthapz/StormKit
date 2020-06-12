@@ -272,6 +272,8 @@ image/src/private/ImageLoader.hpp
 image/src/private/stb_image.c
 image/src/private/stb_image.h
 
+image/src/PPMImage.cpp
+image/src/TARGAImage.cpp
 log/examples/console_logger/src/main.cpp
 log/examples/file_logger/src/main.cpp
 log/include/storm/log/ConsoleLogger.hpp
@@ -302,6 +304,11 @@ main/src/win32/Main.cpp
 meson.build
 meson_options.txt
 
+image/src/HDRImage.cpp
+image/src/Image.cpp
+image/src/JPEGImage.cpp
+image/src/KTXImage.cpp
+image/src/PNGImage.cpp
 module/include/storm/module/AbstractModule.hpp
 module/include/storm/module/AbstractModule.inl
 module/include/storm/module/Fwd.hpp

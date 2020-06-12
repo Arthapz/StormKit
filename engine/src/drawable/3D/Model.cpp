@@ -37,40 +37,23 @@ bool LoadImageData(tinygltf::Image *image,
                    const unsigned char *bytes,
                    int size,
                    void *) {
-    try {
-        auto _image = image::Image { { reinterpret_cast<const core::Byte *>(bytes),
-                                       static_cast<core::ArraySize>(size) } };
-        // if (_image.codec() == image::Image::Codec::PNG) _image = image::Image::flipY(_image);
+    auto _image = image::Image { core::toConstSpan<core::Byte>(bytes, size) }.toFormat(
+        image::Image::Format::RGBA);
+    // if (_image.codec() == image::Image::Codec::PNG) _image = image::Image::flipY(_image);
 
-        int pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+    int pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
 
-        image->width      = _image.extent().w;
-        image->height     = _image.extent().h;
-        image->component  = 4u;
-        image->pixel_type = pixel_type;
+    image->width      = _image.extent().w;
+    image->height     = _image.extent().h;
+    image->component  = 4u;
+    image->pixel_type = pixel_type;
 
-        const auto size = image->width * image->height * 4u;
-        image->image.resize(size);
+    const auto _size = image->width * image->height * 4u;
+    image->image.resize(_size);
 
-        if (_image.channels() == 4)
-            core::ranges::copy(_image.data(),
-                               reinterpret_cast<core::Byte *>(std::data(image->image)));
-        else {
-            auto data_i   = 0u;
-            auto data_ptr = _image.data();
-            for (auto i = 0u; i < size; i += 4u) {
-                image->image[i]     = std::to_integer<unsigned char>(data_ptr[data_i++]);
-                image->image[i + 1] = std::to_integer<unsigned char>(data_ptr[data_i++]);
-                image->image[i + 2] = std::to_integer<unsigned char>(data_ptr[data_i++]);
-                image->image[i + 3] = 255u;
-            }
-        }
-        return true;
-    } catch (std::runtime_error &e) {
-        *err = e.what();
+    core::ranges::copy(_image.data(), reinterpret_cast<core::Byte *>(std::data(image->image)));
 
-        return false;
-    }
+    return true;
 }
 
 constexpr render::Format toStormKit(int type) noexcept {

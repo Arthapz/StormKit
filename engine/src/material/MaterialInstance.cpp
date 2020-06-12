@@ -102,10 +102,10 @@ MaterialInstance::MaterialInstance(const Scene &scene, const Material &material)
 
     const auto getDefaultMapFor = [&texture_pool = scene.texturePool()](
                                       render::TextureViewType type) -> const render::Texture & {
-        if (type == render::TextureViewType::T2D)
-            return texture_pool.get("StormKit:BlankTexture:2D");
-        else if (type == render::TextureViewType::Cube)
+        if (type == render::TextureViewType::Cube)
             return texture_pool.get("StormKit:BlankTexture:Cube");
+
+        return texture_pool.get("StormKit:BlankTexture:2D");
     };
 
     for (const auto &[binding, sampler] : sampleds) {

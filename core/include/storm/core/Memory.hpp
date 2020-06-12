@@ -320,13 +320,47 @@ namespace storm::core {
     }
 
     template<typename T, typename V>
-    core::span<T> makeSpan(V &data) {
+    core::span<T> makeSpan(V &data) noexcept {
         return core::span<T> { reinterpret_cast<T *>(&data), sizeof(V) / sizeof(T) };
     }
 
     template<typename T, typename V>
-    core::span<const T> makeConstSpan(const V &data) {
-        return core::span<const T> { reinterpret_cast<const T *>(&data), sizeof(V) / sizeof(T) };
+    core::span<const T> makeConstSpan(const V &data) noexcept {
+        return makeSpan<const T, V>(data);
+    }
+
+#if __cpp_concepts
+    template<class T>
+    concept input_range = std::input_iterator<typename T::const_iterator>;
+    #define ITERABLE_CONCEPT input_range
+
+    template<class T>
+    concept pointer = std::is_pointer_v<T>;
+    #define POINTER_CONCEPT pointer
+#else
+    #define ITERABLE_CONCEPT typename
+#endif
+
+    template<typename V, ITERABLE_CONCEPT Range>
+    core::span<V> toSpan(Range &data) noexcept {
+        return core::span<V> { reinterpret_cast<V *>(std::data(data)),
+                               (std::size(data) / sizeof(typename Range::value_type)) * sizeof(V) };
+    }
+
+    template<typename V, ITERABLE_CONCEPT Range>
+    core::span<const V> toConstSpan(const Range &data) noexcept {
+        return toSpan<const Range, const V>(data);
+    }
+
+    template<typename V, POINTER_CONCEPT Range>
+    core::span<V> toSpan(Range data, std::size_t size) noexcept {
+        return core::span<V> { reinterpret_cast<V *>(data),
+                               (size / sizeof(typename Range::value_type)) * sizeof(V) };
+    }
+
+    template<typename V, POINTER_CONCEPT Range>
+    core::span<const V> toConstSpan(const Range data, std::size_t size) noexcept {
+        return toSpan<const Range, const V>(data, size);
     }
 
 #define DECLARE_ARRAYS_(x)                       \

@@ -1,4 +1,4 @@
-
+dependencies = [core_dep]
 
 #ide:editable-filelist
 headers = files([

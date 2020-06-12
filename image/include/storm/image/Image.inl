@@ -4,54 +4,59 @@
 
 #pragma once
 
-#include "Image.hpp"
-
 namespace storm::image {
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan Image::operator[](core::ArraySize index) noexcept {
-        STORM_EXPECTS(index < m_extent.width * m_extent.height);
+    core::ByteSpan Image::pixel(core::ArraySize index, core::UInt8 mip_level) noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
 
-        return { std::data(m_data) + index, std::data(m_data) + index + channelCount() };
+        auto &mip = m_data[mip_level];
+
+        STORM_EXPECTS(index < mip.extent.width * mip.extent.height * mip.extent.depth);
+
+        return { std::data(mip.data) + index,
+                 std::data(mip.data) + index + m_channel_count + m_bytes_per_channel };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan Image::operator[](core::ArraySize index) const noexcept {
-        STORM_EXPECTS(index < m_extent.width * m_extent.height);
+    core::ByteConstSpan Image::pixel(core::ArraySize index, core::UInt8 mip_level) const noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
 
-        return { std::data(data()) + index, std::data(data()) + index + channelCount() };
+        const auto &mip = m_data[mip_level];
+
+        STORM_EXPECTS(index < mip.extent.width * mip.extent.height * mip.extent.depth);
+
+        return { std::data(mip.data) + index,
+                 std::data(mip.data) + index + m_channel_count + m_bytes_per_channel };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan Image::operator()(core::Offset3u offset) {
-        STORM_EXPECTS(offset.x < m_extent.width && offset.y < m_extent.height &&
-                      offset.z < m_extent.depth);
+    core::ByteSpan Image::pixel(core::Offset3u offset, core::UInt8 mip_level) {
+        const auto &mip = m_data[mip_level];
 
-        const auto id = offset.x + m_extent.width * (offset.y + m_extent.height * offset.z);
+        const auto id = offset.x + mip.extent.width * (offset.y + mip.extent.height * offset.z);
 
-        auto pointer = &m_data[id * m_channel_count];
-
-        return { pointer, pointer + m_channel_count };
+        return pixel(id, mip_level);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan Image::operator()(core::Offset3u offset) const noexcept {
-        STORM_EXPECTS(offset.x < m_extent.width && offset.y < m_extent.height &&
-                      offset.z < m_extent.depth);
+    core::ByteConstSpan Image::pixel(core::Offset3u offset, core::UInt8 mip_level) const noexcept {
+        const auto &mip = m_data[mip_level];
 
-        const auto id = offset.x + m_extent.width * (offset.y + m_extent.height * offset.z);
+        const auto id = offset.x + mip.extent.width * (offset.y + mip.extent.height * offset.z);
 
-        const auto pointer = &m_data[id * m_channel_count];
-
-        return { pointer, pointer + m_channel_count };
+        return pixel(id, mip_level);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    const core::Extentu &Image::extent() const noexcept { return m_extent; }
+    const core::Extentu &Image::extent(core::UInt8 mip_level) const noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
+        return m_data[mip_level].extent;
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -59,41 +64,72 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    core::UInt8 Image::bytesPerChannel() const noexcept { return m_bytes_per_channel; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     Image::Format Image::Image::format() const noexcept { return m_format; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ArraySize Image::size() const noexcept { return std::size(m_data); }
+    core::ArraySize Image::size(core::UInt8 mip_level) const noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
+        return std::size(m_data[mip_level].data);
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan Image::data() noexcept { return m_data; }
+    core::ByteSpan Image::data(core::UInt8 mip_level) noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
+        return m_data[mip_level].data;
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan Image::data() const noexcept { return m_data; }
+    core::ByteConstSpan Image::data(core::UInt8 mip_level) const noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
+        return m_data[mip_level].data;
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::iterator Image::begin() noexcept { return std::begin(m_data); }
+    core::ByteArray::iterator Image::begin(core::UInt8 mip_level) noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
+        return std::begin(m_data[mip_level].data);
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::begin() const noexcept { return std::begin(m_data); }
+    core::ByteArray::const_iterator Image::begin(core::UInt8 mip_level) const noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
+        return std::begin(m_data[mip_level].data);
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::cbegin() const noexcept { return std::cbegin(m_data); }
+    core::ByteArray::const_iterator Image::cbegin(core::UInt8 mip_level) const noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
+        return std::cbegin(m_data[mip_level].data);
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::iterator Image::end() noexcept { return std::end(m_data); }
+    core::ByteArray::iterator Image::end(core::UInt8 mip_level) noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
+        return std::end(m_data[mip_level].data);
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::end() const noexcept { return std::end(m_data); }
+    core::ByteArray::const_iterator Image::end(core::UInt8 mip_level) const noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
+        return std::end(m_data[mip_level].data);
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::cend() const noexcept { return std::cend(m_data); }
+    core::ByteArray::const_iterator Image::cend(core::UInt8 mip_level) const noexcept {
+        STORM_EXPECTS(m_mip_levels > mip_level);
+        return std::cend(m_data[mip_level].data);
+    }
 } // namespace storm::image

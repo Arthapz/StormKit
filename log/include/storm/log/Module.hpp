@@ -4,13 +4,21 @@
 
 #pragma once
 
+/////////// - GSL - ///////////
+#include <gsl/string_span>
+
+/////////// - StormKit::core - ///////////
 #include <storm/core/NamedType.hpp>
 
 namespace storm::log {
-    using Module = core::NamedType<const char *, struct LogModuleParameter>;
+    using Module = core::NamedType<gsl::czstring<>, struct LogModuleParameter>;
+
+    constexpr storm::log::Module makeModule(gsl::czstring<> str) {
+        return core::makeNamed<Module>(str);
+    }
 
     constexpr storm::log::Module operator"" _module(const char *str,
                                                     [[maybe_unused]] core::ArraySize sz) {
-        return storm::core::makeNamed<Module>(str);
+        return makeModule(str);
     }
 } // namespace storm::log
