@@ -306,11 +306,28 @@ Image::~Image() noexcept = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-Image::Image(const Image &) noexcept = default;
+Image::Image(const Image &rhs) noexcept
+    : m_channel_count{rhs.m_channel_count},
+      m_bytes_per_channel{rhs.m_bytes_per_channel},
+      m_mip_levels{rhs.m_mip_levels},
+      m_format{rhs.m_format},
+      m_data{rhs.m_data} {
+
+}
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-Image &Image::operator=(const Image &) noexcept = default;
+Image &Image::operator=(const Image &rhs) noexcept {
+    if(&rhs == this) return *this;
+
+    m_channel_count = rhs.m_channel_count;
+    m_bytes_per_channel = rhs.m_bytes_per_channel;
+    m_mip_levels = rhs.m_mip_levels;
+    m_format = rhs.m_format;
+    m_data = rhs.m_data;
+
+    return *this;
+};
 
 ////////////////////////////////////////
 ////////////////////////////////////////
@@ -325,6 +342,13 @@ Image &Image::operator=(Image &&) noexcept = default;
 bool Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec codec) noexcept {
     STORM_EXPECTS(codec != Image::Codec::Unknown);
 
+    if(!std::filesystem::exists(filepath)) {
+        elog("Failed to open file\n    file: {}\n    reason: Incorrect path",
+             filepath.string());
+
+        return false;
+    }
+
     STORM_EXPECTS(std::filesystem::exists(filepath));
 
     auto file = std::basic_ifstream<std::byte> { filepath, std::ios::binary };
@@ -336,7 +360,7 @@ bool Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec cod
     switch (codec) {
         case Image::Codec::JPEG: {
             if (auto result = loadJPEG(data); result.has_value()) {
-                elog("Failed to open JPEG file\n    file: {}\n    reason{}",
+                elog("Failed to open JPEG file\n    file: {}\n    reason: {}",
                      filepath.string(),
                      result.value());
                 return false;
@@ -346,7 +370,7 @@ bool Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec cod
         }
         case Image::Codec::PNG: {
             if (auto result = loadPNG(data); result.has_value()) {
-                elog("Failed to open PNG file\n    file: {}\n    reason{}",
+                elog("Failed to open PNG file\n    file: {}\n    reason: {}",
                      filepath.string(),
                      result.value());
                 return false;
@@ -356,7 +380,7 @@ bool Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec cod
         }
         case Image::Codec::TARGA: {
             if (auto result = loadTARGA(data); result.has_value()) {
-                elog("Failed to open TARGA file\n    file: {}\n    reason{}",
+                elog("Failed to open TARGA file\n    file: {}\n    reason: {}",
                      filepath.string(),
                      result.value());
                 return false;
@@ -366,7 +390,7 @@ bool Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec cod
         }
         case Image::Codec::PPM: {
             if (auto result = loadPPM(data); result.has_value()) {
-                elog("Failed to open PPM file\n    file: {}\n    reason{}",
+                elog("Failed to open PPM file\n    file: {}\n    reason: {}",
                      filepath.string(),
                      result.value());
                 return false;
@@ -376,7 +400,7 @@ bool Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec cod
         }
         case Image::Codec::HDR: {
             if (auto result = loadHDR(data); result.has_value()) {
-                elog("Failed to open HDR file\n    file: {}\n    reason{}",
+                elog("Failed to open HDR file\n    file: {}\n    reason: {}",
                      filepath.string(),
                      result.value());
                 return false;
@@ -386,7 +410,7 @@ bool Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec cod
         }
         case Image::Codec::KTX: {
             if (auto result = loadHDR(data); result.has_value()) {
-                elog("Failed to open HDR file\n    file: {}\n    reason{}",
+                elog("Failed to open HDR file\n    file: {}\n    reason: {}",
                      filepath.string(),
                      result.value());
                 return false;
@@ -411,7 +435,7 @@ bool Image::loadFromMemory(core::ByteConstSpan data, Image::Codec codec) noexcep
     switch (codec) {
         case Image::Codec::JPEG: {
             if (auto result = loadJPEG(data); result.has_value()) {
-                elog("Failed to parse JPEG data\n    reason{}", result.value());
+                elog("Failed to parse JPEG data\n    reason: {}", result.value());
                 return false;
             }
 
@@ -419,7 +443,7 @@ bool Image::loadFromMemory(core::ByteConstSpan data, Image::Codec codec) noexcep
         }
         case Image::Codec::PNG: {
             if (auto result = loadPNG(data); result.has_value()) {
-                elog("Failed to parse PNG data\n    reason{}", result.value());
+                elog("Failed to parse PNG data\n    reason: {}", result.value());
                 return false;
             }
 
@@ -427,7 +451,7 @@ bool Image::loadFromMemory(core::ByteConstSpan data, Image::Codec codec) noexcep
         }
         case Image::Codec::TARGA: {
             if (auto result = loadTARGA(data); result.has_value()) {
-                elog("Failed to open TARGA file\n    file: {}\n    reason{}", result.value());
+                elog("Failed to open TARGA file\n    file: {}\n    reason: {}", result.value());
                 return false;
             }
 
@@ -435,7 +459,7 @@ bool Image::loadFromMemory(core::ByteConstSpan data, Image::Codec codec) noexcep
         }
         case Image::Codec::PPM: {
             if (auto result = loadPPM(data); result.has_value()) {
-                elog("Failed to parse PPM data\n    reason{}", result.value());
+                elog("Failed to parse PPM data\n    reason: {}", result.value());
                 return false;
             }
 
@@ -443,7 +467,7 @@ bool Image::loadFromMemory(core::ByteConstSpan data, Image::Codec codec) noexcep
         }
         case Image::Codec::HDR: {
             if (auto result = loadHDR(data); result.has_value()) {
-                elog("Failed to parse HDR data\n    reason{}", result.value());
+                elog("Failed to parse HDR data\n    reason: {}", result.value());
                 return false;
             }
 
@@ -451,7 +475,7 @@ bool Image::loadFromMemory(core::ByteConstSpan data, Image::Codec codec) noexcep
         }
         case Image::Codec::KTX: {
             if (auto result = loadKTX(data); result.has_value()) {
-                elog("Failed to parse KTX data\n    reason{}", result.value());
+                elog("Failed to parse KTX data\n    reason: {}", result.value());
                 return false;
             }
 

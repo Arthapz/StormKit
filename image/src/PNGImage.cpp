@@ -67,44 +67,39 @@ std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
 
     switch (color_type) {
         case PNG_COLOR_TYPE_GRAY: {
-            auto channels = png_get_channels(png_ptr, info_ptr);
-            if (channels == 8) format = Format::R8_UNorm;
-            else if (channels == 16)
+            if (bit_depth == 8) format = Format::R8_UNorm;
+            else if (bit_depth == 16)
                 format = Format::R16_UNorm;
 
             break;
         }
         case PNG_COLOR_TYPE_GRAY_ALPHA: {
             if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
-            auto channels = png_get_channels(png_ptr, info_ptr);
-            if (channels == 8) format = Format::RG8_UNorm;
-            else if (channels == 16)
+            if (bit_depth == 8) format = Format::RG8_UNorm;
+            else if (bit_depth == 16)
                 format = Format::RG16_UNorm;
 
             break;
         }
         case PNG_COLOR_TYPE_RGB: {
-            auto channels = png_get_channels(png_ptr, info_ptr);
-            if (channels == 8) format = Format::RGB8_UNorm;
-            else if (channels == 16)
+            if (bit_depth == 8) format = Format::RGB8_UNorm;
+            else if (bit_depth == 16)
                 format = Format::RGB16_UNorm;
 
             break;
         }
         case PNG_COLOR_TYPE_RGB_ALPHA: {
             if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
-            auto channels = png_get_channels(png_ptr, info_ptr);
-            if (channels == 8) format = Format::RGBA8_UNorm;
-            else if (channels == 16)
+            if (bit_depth == 8) format = Format::RGBA8_UNorm;
+            else if (bit_depth == 16)
                 format = Format::RGBA16_UNorm;
 
             break;
         }
         case PNG_COLOR_TYPE_PALETTE: {
             if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
-            auto channels = png_get_channels(png_ptr, info_ptr);
-            if (channels == 8) format = Format::RGBA8_UNorm;
-            else if (channels == 16)
+            if (bit_depth == 8) format = Format::RGBA8_UNorm;
+            else if (bit_depth == 16)
                 format = Format::RGBA16_UNorm;
 
             break;
@@ -134,9 +129,9 @@ std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
 
     m_data.clear();
     m_data.emplace_back(std::move(mip));
-    m_channel_count     = getChannelCountFor(m_format);
+    m_channel_count     = getChannelCountFor(format);
     m_format            = format;
-    m_bytes_per_channel = getByteCountByChannelFor(m_format);
+    m_bytes_per_channel = getByteCountByChannelFor(format);
 
     return std::nullopt;
 }
