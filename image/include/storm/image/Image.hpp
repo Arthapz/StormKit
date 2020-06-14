@@ -122,35 +122,61 @@ namespace storm::image {
         Image rotate270() const noexcept;
 
         [[nodiscard]] inline core::ByteSpan pixel(core::ArraySize id,
-                                                  core::UInt8 mip_level = 0u) noexcept;
+                                                  core::UInt32 layer = 0u,
+                                                  core::UInt32 face = 0u,
+                                                  core::UInt32 level = 0u) noexcept;
         [[nodiscard]] inline core::ByteConstSpan pixel(core::ArraySize id,
-                                                       core::UInt8 mip_level = 0u) const noexcept;
+                                                       core::UInt32 layer = 0u,
+                                                       core::UInt32 face = 0u,
+                                                       core::UInt32 level = 0u) const noexcept;
         [[nodiscard]] inline core::ByteSpan pixel(core::Offset3u offset,
-                                                  core::UInt8 mip_level = 0u);
+                                                  core::UInt32 layer = 0u,
+                                                  core::UInt32 face = 0u,
+                                                  core::UInt32 level = 0u);
         [[nodiscard]] inline core::ByteConstSpan pixel(core::Offset3u offset,
-                                                       core::UInt8 mip_level = 0u) const noexcept;
+                                                       core::UInt32 layer = 0u,
+                                                       core::UInt32 face = 0u,
+                                                       core::UInt32 level = 0u) const noexcept;
 
-        [[nodiscard]] inline core::UInt8 channelCount() const noexcept;
-        [[nodiscard]] inline core::UInt8 bytesPerChannel() const noexcept;
-        [[nodiscard]] inline core::UInt8 mipLevels() const noexcept;
+        [[nodiscard]] inline const core::Extentu &extent(core::UInt32 level = 0u) const noexcept;
+        [[nodiscard]] inline core::UInt32 channelCount() const noexcept;
+        [[nodiscard]] inline core::UInt32 bytesPerChannel() const noexcept;
+        [[nodiscard]] inline core::UInt32 mipLevels() const noexcept;
+        [[nodiscard]] inline core::UInt32 layers() const noexcept;
         [[nodiscard]] inline Format format() const noexcept;
-        [[nodiscard]] inline const core::Extentu &extent(core::UInt8 mip_level = 0u) const noexcept;
 
-        [[nodiscard]] inline core::ArraySize size(core::UInt8 mip_level = 0u) const noexcept;
-        [[nodiscard]] inline core::ByteSpan data(core::UInt8 mip_level = 0u) noexcept;
-        [[nodiscard]] inline core::ByteConstSpan data(core::UInt8 mip_level = 0u) const noexcept;
+        [[nodiscard]] inline core::ArraySize size() const noexcept;
+        [[nodiscard]] inline core::ArraySize size(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
+        [[nodiscard]] inline core::ByteSpan data() noexcept;
+        [[nodiscard]] inline core::ByteSpan data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept;
+        [[nodiscard]] inline core::ByteConstSpan data() const noexcept;
+        [[nodiscard]] inline core::ByteConstSpan data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
 
-        [[nodiscard]] inline core::ByteArray::iterator begin(core::UInt8 mip_level = 0u) noexcept;
+        [[nodiscard]] inline core::ByteArray::iterator
+            begin() noexcept;
+        [[nodiscard]] inline core::ByteArray::iterator
+            begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept;
         [[nodiscard]] inline core::ByteArray::const_iterator
-            begin(core::UInt8 mip_level = 0u) const noexcept;
+            begin() const noexcept;
         [[nodiscard]] inline core::ByteArray::const_iterator
-            cbegin(core::UInt8 mip_level = 0u) const noexcept;
+            begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator
+            cbegin() const noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator
+            cbegin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
 
-        [[nodiscard]] inline core::ByteArray::iterator end(core::UInt8 mip_level = 0u) noexcept;
+        [[nodiscard]] inline core::ByteArray::iterator
+            end() noexcept;
+        [[nodiscard]] inline core::ByteArray::iterator
+            end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept;
         [[nodiscard]] inline core::ByteArray::const_iterator
-            end(core::UInt8 mip_level = 0u) const noexcept;
+            end() const noexcept;
         [[nodiscard]] inline core::ByteArray::const_iterator
-            cend(core::UInt8 mip_level = 0u) const noexcept;
+            end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator
+            cend() const noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator
+            cend(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
 
       private:
         std::optional<std::string> loadJPEG(core::ByteConstSpan data) noexcept;
@@ -169,17 +195,15 @@ namespace storm::image {
         std::optional<std::string> saveHDR(const std::filesystem::path &filepath) const noexcept;
         std::optional<std::string> saveKTX(const std::filesystem::path &filepath) const noexcept;
 
-        core::UInt8 m_channel_count     = 0u;
-        core::UInt8 m_bytes_per_channel = 0u;
-        core::UInt8 m_mip_levels        = 1u;
-        Format m_format                 = Format::Undefined;
+        core::Extentu m_extent            = {0u, 0u, 0u};
+        core::UInt32  m_channel_count     = 0u;
+        core::UInt32  m_bytes_per_channel = 0u;
+        core::UInt32  m_mip_levels        = 1u;
+        core::UInt32  m_faces             = 1u;
+        core::UInt32  m_layers            = 1u;
+        Format m_format                   = Format::Undefined;
 
-        struct MipLevel {
-            core::Extentu extent;
-            core::ByteArray data;
-        };
-
-        std::vector<MipLevel> m_data;
+        std::vecore::ByteArray m_data;
     };
 
     STORM_PUBLIC constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept;

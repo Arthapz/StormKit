@@ -85,40 +85,30 @@ std::optional<std::string> Image::loadKTX(core::ByteConstSpan data) noexcept {
     auto image = gli::load(reinterpret_cast<const char *>(std::data(data)), std::size(data));
 
     const auto faces      = static_cast<core::UInt32>(image.faces());
+    const auto _layers     = static_cast<core::UInt32>(image.layers());
     const auto mip_levels = static_cast<core::UInt32>(image.levels());
     const auto format     = toStormFormat(image.format());
 
+    const auto layers = std::max(faces, _layers);
+
     if (format == Image::Format::Undefined) return "Unsupported pixel format";
 
-    auto _data = std::vector<MipLevel> {};
+    auto _data = std::vector<core::ByteArray> {};
     _data.reserve(mip_levels);
 
-    auto offset = 0u;
-    for (auto mip_level = 0u; mip_level < mip_levels; ++mip_level) {
-        const auto extent = core::Extenti { .width  = image.extent(mip_level).x,
-                                            .height = image.extent(mip_level).y,
-                                            .depth  = static_cast<core::Int32>(faces) }
-                                .convertTo<core::Extentu>();
+    core::ranges::copy(image.data(), _data);
 
-        auto &mip  = _data.emplace_back(MipLevel {});
-        mip.extent = extent;
-        mip.data.resize(extent.width * extent.height * extent.depth * faces *
-                        getChannelCountFor(format) * getByteCountByChannelFor(format));
-
-        auto _data =
-            core::toConstSpan<core::Byte>(reinterpret_cast<const core::Byte *>(image.data()) +
-                                              offset,
-                                          image.size(mip_level));
-        core::ranges::copy(_data, core::ranges::begin(mip.data));
-
-        offset += image.size(mip_level);
-    }
-
-    m_data              = std::move(_data);
+    m_extent            = core::Extenti { .width  = image.extent().x,
+                                          .height = image.extent().y,
+                                          .depth  = image.extent().z }
+                          .convertTo<core::Extentu>();
     m_channel_count     = getChannelCountFor(format);
-    m_format            = format;
     m_bytes_per_channel = getByteCountByChannelFor(format);
     m_mip_levels        = mip_levels;
+    m_faces             = faces;
+    m_layers            = layers;
+    m_data              = std::move(_data);
+    m_format            = format;
 
     return std::nullopt;
 }

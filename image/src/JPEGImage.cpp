@@ -73,13 +73,14 @@ std::optional<std::string> Image::loadJPEG(core::ByteConstSpan data) noexcept {
     jpeg_finish_decompress(&info);
     jpeg_destroy_decompress(&info);
 
-    auto mip = MipLevel { .extent = std::move(extent), .data = std::move(image_data) };
-
-    m_data.clear();
-    m_data.emplace_back(std::move(mip));
-    m_channel_count     = getChannelCountFor(m_format);
-    m_format            = format;
+    m_extent            = std::move(extent);
+    m_channel_count     = getChannelCountFor(format);
     m_bytes_per_channel = 1u;
+    m_mip_levels        = 1u;
+    m_faces             = 1u;
+    m_layers            = 1u;
+    m_data              = std::move(image_data);
+    m_format            = format;
 
     return std::nullopt;
 
@@ -90,7 +91,8 @@ std::optional<std::string> Image::loadJPEG(core::ByteConstSpan data) noexcept {
 }
 
 std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath) const noexcept {
-    auto _filename = filepath;
+    /*
+     * auto _filename = filepath;
 
     auto this_rgb = toFormat(Format::RGB8_UNorm);
 
@@ -154,7 +156,7 @@ std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath
     if (setjmp(error_data.setjmp_buffer)) {
         jpeg_destroy_compress(&info);
         return error_data.msg;
-    }
+    }*/
 
     return std::nullopt;
 }

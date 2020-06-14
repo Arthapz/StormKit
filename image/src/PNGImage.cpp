@@ -125,13 +125,14 @@ std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
     png_destroy_info_struct(png_ptr, &info_ptr);
     png_destroy_read_struct(&png_ptr, nullptr, nullptr);
 
-    auto mip = MipLevel { .extent = std::move(extent), .data = std::move(image_data) };
-
-    m_data.clear();
-    m_data.emplace_back(std::move(mip));
+    m_extent            = std::move(extent);
     m_channel_count     = getChannelCountFor(format);
-    m_format            = format;
     m_bytes_per_channel = getByteCountByChannelFor(format);
+    m_mip_levels        = 1u;
+    m_faces             = 1u;
+    m_layers            = 1u;
+    m_data              = std::move(image_data);
+    m_format            = format;
 
     return std::nullopt;
 }

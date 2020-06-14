@@ -307,8 +307,19 @@ Image::~Image() noexcept = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 Image::Image(const Image &rhs) noexcept
-    : m_channel_count { rhs.m_channel_count }, m_bytes_per_channel { rhs.m_bytes_per_channel },
-      m_mip_levels { rhs.m_mip_levels }, m_format { rhs.m_format }, m_data { rhs.m_data } {
+    : m_channel_count { rhs.m_channel_count },
+      m_bytes_per_channel { rhs.m_bytes_per_channel },
+      m_mip_levels        { rhs.m_mip_levels },
+      m_format            { rhs.m_format },
+      m_data              { rhs.m_data },
+      m_extent            { rhs.m_extent },
+      m_channel_count     { rhs.m_channel_count },
+      m_bytes_per_channel { rhs.m_bytes_per_channel },
+      m_mip_levels        { rhs.m_mip_levels },
+      m_faces             { rhs.m_faces },
+      m_layers            { rhs.m_layers },
+      m_data              { rhs.m_data },
+      m_format            { rhs.m_format } {
 }
 
 ////////////////////////////////////////
@@ -321,6 +332,14 @@ Image &Image::operator=(const Image &rhs) noexcept {
     m_mip_levels        = rhs.m_mip_levels;
     m_format            = rhs.m_format;
     m_data              = rhs.m_data;
+    m_extent            = rhs.m_extent;
+    m_channel_count     = rhs.m_channel_count;
+    m_bytes_per_channel = rhs.m_bytes_per_channel;
+    m_mip_levels        = rhs.m_mip_levels;
+    m_faces             = rhs.m_faces;
+    m_layers            = rhs.m_layers;
+    m_data              = rhs.m_data;
+    m_format            = rhs.m_format;
 
     return *this;
 };
@@ -575,13 +594,15 @@ void Image::create(core::Extentu extent, Format format) noexcept {
                   format != Format::Undefined);
     m_data.clear();
 
-    m_format            = format;
+    m_extent            = {0u, 0u, 0u};
     m_channel_count     = getChannelCountFor(format);
     m_bytes_per_channel = getByteCountByChannelFor(format);
+    m_mip_levels        = 1u;
+    m_faces             = 1u;
+    m_layers            = 1u;
+    m_format            = format;
 
-    auto &mip = m_data.emplace_back(MipLevel { .extent = std::move(extent) });
-    mip.data.resize(extent.width * extent.height * extent.depth * m_channel_count *
-                    m_bytes_per_channel);
+    data.resize(extent.width * extent.height * extent.depth * m_channel_count * m_bytes_per_channel);
 }
 
 /////////////////////////////////////
@@ -590,41 +611,55 @@ Image Image::toFormat(Format format) const noexcept {
     STORM_EXPECTS(!std::empty(m_data));
     STORM_EXPECTS(format != Format::Undefined);
 
+    if(m_format == format) return *this;
+
     auto image                = Image {};
+    image.m_extent            = m_extent;
     image.m_channel_count     = getChannelCountFor(format);
     image.m_bytes_per_channel = getByteCountByChannelFor(format);
     image.m_mip_levels        = m_mip_levels;
+    image.m_faces             = m_faces;
+    image.m_layers            = m_layers;
     image.m_format            = format;
-    image.m_data.reserve(std::size(m_data));
 
     const auto channel_delta =
         static_cast<core::UInt8>(std::min(0,
                                           static_cast<core::Int8>(image.m_channel_count) -
                                               static_cast<core::Int8>(m_channel_count)));
+    const auto pixel_count = m_extent.width * m_extent.height * m_extent.depth;
 
-    auto mip_level = 0;
-    for (auto &mip : m_data) {
-        auto &_mip  = image.m_data.emplace_back();
-        _mip.extent = mip.extent;
-        _mip.data.resize(_mip.extent.width * _mip.extent.height * _mip.extent.depth *
-                         image.m_channel_count * image.m_bytes_per_channel);
+    image.m_data.resize(pixel_count * image.m_channel_count * image.m_bytes_per_channel);
+    for(auto layer = 0u; layer < image.m_layers; ++layer) {
+        for(auto face = 0u; face < image.m_faces; ++face) {
+            for(auto level = 0u; level < image.m_layers; ++level) {
+                for(auto i = 0;i < pixel_count; i += )
+                    const auto from_image = map(pixel(i, layer, face, level), m_bytes_per_channel, image.m_bytes_per_channel);
+                    auto to_image = image.pixel(i, layer, face, level);
 
-        const auto pixel_count = mip.extent.width * mip.extent.height * mip.extent.depth;
-        for (auto i = 0u; i < pixel_count; i += m_bytes_per_channel * m_channel_count) {
-            const auto from_image =
-                map(pixel(i, mip_level), m_bytes_per_channel, image.m_bytes_per_channel);
-            auto to_image = image.pixel(i, mip_level);
+                    core::ranges::copy_n(core::ranges::begin(from_image),
+                                         image.m_channel_count,
+                                         core::ranges::begin(to_image));
 
-            core::ranges::copy_n(core::ranges::begin(from_image),
-                                 image.m_channel_count,
-                                 core::ranges::begin(to_image));
-
-            core::ranges::fill_n(core::ranges::begin(to_image) + m_channel_count,
-                                 channel_delta,
-                                 core::Byte { 0u });
+                    core::ranges::fill_n(core::ranges::begin(to_image) + m_channel_count,
+                                         channel_delta,
+                                         core::Byte { 0u });
+                }
+            }
         }
+    }
 
-        mip_level++;
+
+    for(auto i = 0u; i < pixel_count; i += m_bytes_per_channel * m_channel_count) {
+        const auto from_image = map(pixel(i, mip_level), m_bytes_per_channel, image.m_bytes_per_channel);
+        auto to_image = image.pixel(i, mip_level);
+
+        core::ranges::copy_n(core::ranges::begin(from_image),
+                             image.m_channel_count,
+                             core::ranges::begin(to_image));
+
+        core::ranges::fill_n(core::ranges::begin(to_image) + m_channel_count,
+                             channel_delta,
+                             core::Byte { 0u });
     }
 
     return image;
