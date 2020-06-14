@@ -45,35 +45,21 @@ Scene::Scene(Engine &engine) : m_engine { &engine } {
                                                    device,
                                                    render::TextureType::T2D,
                                                    render::TextureCreateFlag::None);
-    blank_texture_2d.createTextureData({ .width = 1u, .height = 1u },
-                                       render::PixelFormat::RGBA8_UNorm);
-    device.setObjectName(blank_texture_2d, "StormKit:BlankTexture:2D");
 
     auto &blank_texture_cube = m_texture_pool.create("StormKit:BlankTexture:Cube",
                                                      device,
                                                      render::TextureType::T2D,
                                                      render::TextureCreateFlag::Cube_Compatible);
-    blank_texture_cube.createTextureData({ .width = 1u, .height = 1u },
-                                         render::PixelFormat::RGBA8_UNorm,
-                                         render::Texture::CreateOperation { .layers = 6u });
-    device.setObjectName(blank_texture_cube, "StormKit:BlankTexture:Cube");
 
     auto &black_texture_2d = m_texture_pool.create("StormKit:BlackTexture:2D",
                                                    device,
                                                    render::TextureType::T2D,
                                                    render::TextureCreateFlag::None);
-    black_texture_2d.createTextureData({ .width = 1u, .height = 1u },
-                                       render::PixelFormat::RGBA8_UNorm);
-    device.setObjectName(black_texture_2d, "StormKit:BlackTexture:2D");
 
     auto &black_texture_cube = m_texture_pool.create("StormKit:BlackTexture:Cube",
                                                      device,
                                                      render::TextureType::T2D,
                                                      render::TextureCreateFlag::Cube_Compatible);
-    black_texture_cube.createTextureData({ .width = 1u, .height = 1u },
-                                         render::PixelFormat::RGBA8_UNorm,
-                                         render::Texture::CreateOperation { .layers = 6u });
-    device.setObjectName(black_texture_cube, "StormKit:BlackTexture:Cube");
 
     constexpr auto white  = core::RGBColorDef::White<core::UInt8>.toVector4();
     constexpr auto black  = core::RGBColorDef::Black<core::UInt8>.toVector4();
@@ -99,46 +85,47 @@ Scene::Scene(Engine &engine) : m_engine { &engine } {
     command_buffer.begin(true);
 
     offset = 0u;
-    blank_texture_2d.fillMemory(white_size,
-                                { .width = 1u, .height = 1u },
-                                0u,
-                                1u,
-                                command_buffer,
-                                staging_buffer,
-                                offset);
-    offset += white_size;
+    blank_texture_2d.loadFromMemory(1,
+                                    { .width = 1u, .height = 1u, .depth = 1u },
+                                    command_buffer,
+                                    staging_buffer,
+                                    offset,
+                                    render::Texture::MemoryLoadOperation { .layers = 6u });
 
-    blank_texture_cube.fillMemory(white_size,
-                                  { .width = 1u, .height = 1u },
-                                  0u,
-                                  6u,
-                                  command_buffer,
-                                  staging_buffer,
-                                  offset);
+    offset += white_size;
+    blank_texture_cube.loadFromMemory(1,
+                                      { .width = 1u, .height = 1u, .depth = 1u },
+                                      command_buffer,
+                                      staging_buffer,
+                                      offset,
+                                      render::Texture::MemoryLoadOperation { .layers = 6u });
+
     offset += white_size * 6u;
+    black_texture_2d.loadFromMemory(1,
+                                    { .width = 1u, .height = 1u, .depth = 1u },
+                                    command_buffer,
+                                    staging_buffer,
+                                    offset,
+                                    render::Texture::MemoryLoadOperation { .layers = 6u });
 
-    black_texture_2d.fillMemory(white_size,
-                                { .width = 1u, .height = 1u },
-                                0u,
-                                1u,
-                                command_buffer,
-                                staging_buffer,
-                                offset);
     offset += white_size;
-
-    black_texture_cube.fillMemory(white_size,
-                                  { .width = 1u, .height = 1u },
-                                  0u,
-                                  6u,
-                                  command_buffer,
-                                  staging_buffer,
-                                  offset);
+    black_texture_cube.loadFromMemory(1,
+                                      { .width = 1u, .height = 1u, .depth = 1u },
+                                      command_buffer,
+                                      staging_buffer,
+                                      offset,
+                                      render::Texture::MemoryLoadOperation { .layers = 6u });
 
     command_buffer.end();
     command_buffer.build();
     command_buffer.submit({}, {}, core::makeObserver(fence));
 
     fence.wait();
+
+    device.setObjectName(blank_texture_2d, "StormKit:BlankTexture:2D");
+    device.setObjectName(blank_texture_cube, "StormKit:BlankTexture:Cube");
+    device.setObjectName(black_texture_2d, "StormKit:BlackTexture:2D");
+    device.setObjectName(black_texture_cube, "StormKit:BlackTexture:Cube");
 }
 
 ////////////////////////////////////////

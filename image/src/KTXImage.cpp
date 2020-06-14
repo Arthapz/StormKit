@@ -87,10 +87,6 @@ std::optional<std::string> Image::loadKTX(core::ByteConstSpan data) noexcept {
     const auto faces      = static_cast<core::UInt32>(image.faces());
     const auto mip_levels = static_cast<core::UInt32>(image.levels());
     const auto format     = toStormFormat(image.format());
-    const auto extent     = core::Extenti { .width  = image.extent().x,
-                                        .height = image.extent().y,
-                                        .depth  = image.extent().z }
-                            .convertTo<core::Extentu>();
 
     if (format == Image::Format::Undefined) return "Unsupported pixel format";
 
@@ -99,7 +95,13 @@ std::optional<std::string> Image::loadKTX(core::ByteConstSpan data) noexcept {
 
     auto offset = 0u;
     for (auto mip_level = 0u; mip_level < mip_levels; ++mip_level) {
-        auto &mip = _data.emplace_back(MipLevel {});
+        const auto extent = core::Extenti { .width  = image.extent(mip_level).x,
+                                            .height = image.extent(mip_level).y,
+                                            .depth  = static_cast<core::Int32>(faces) }
+                                .convertTo<core::Extentu>();
+
+        auto &mip  = _data.emplace_back(MipLevel {});
+        mip.extent = extent;
         mip.data.resize(extent.width * extent.height * extent.depth * faces *
                         getChannelCountFor(format) * getByteCountByChannelFor(format));
 
@@ -111,6 +113,12 @@ std::optional<std::string> Image::loadKTX(core::ByteConstSpan data) noexcept {
 
         offset += image.size(mip_level);
     }
+
+    m_data              = std::move(_data);
+    m_channel_count     = getChannelCountFor(format);
+    m_format            = format;
+    m_bytes_per_channel = getByteCountByChannelFor(format);
+    m_mip_levels        = mip_levels;
 
     return std::nullopt;
 }

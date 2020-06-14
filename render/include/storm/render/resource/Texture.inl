@@ -7,6 +7,14 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
+    void Texture::loadFromMemory(core::ByteConstSpan data,
+                                 core::Extentu layer_extent,
+                                 std::optional<MemoryLoadOperation> op) {
+        loadFromMemory(std::vector<core::ByteConstSpan>{{data}}, layer_extent, std::move(op));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
      core::Extentu Texture::extent() const noexcept { return m_extent; }
 
     /////////////////////////////////////

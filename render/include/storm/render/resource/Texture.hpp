@@ -33,7 +33,21 @@ namespace storm::render {
         Texture(Texture &&);
         Texture &operator=(Texture &&);
 
-        struct LoadOperation {
+        struct ImageLoadOperation {
+            static constexpr auto SAME_AS_IMAGE = std::numeric_limits<core::UInt32>::max();
+
+            core::UInt32 create_mip_levels = SAME_AS_IMAGE;
+            bool generate_mips = false;
+            SampleCountFlag samples = SampleCountFlag::C1_BIT;
+            TextureUsage usage =
+                TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src;
+        };
+
+        struct MemoryLoadOperation {
+            core::UInt32 create_mip_levels = 1u;
+            bool generate_mips = false;
+            core::UInt32 layers = 1u;
+            render::PixelFormat format = render::PixelFormat::RGBA8_UNorm;
             SampleCountFlag samples = SampleCountFlag::C1_BIT;
             TextureUsage usage =
                 TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src;
@@ -48,18 +62,30 @@ namespace storm::render {
         };
 
         void loadFromImage(const image::Image &image,
-                           std::optional<LoadOperation> op = std::nullopt);
+                           std::optional<ImageLoadOperation> op = std::nullopt);
 
         void loadFromImage(const image::Image &image,
                            render::CommandBuffer &command_buffer,
                            render::HardwareBuffer &staging_buffer,
                            core::UOffset offset = 0u,
-                           std::optional<LoadOperation> op = std::nullopt);
+                           std::optional<ImageLoadOperation> op = std::nullopt);
 
-        void fillMemory(core::ArraySize layer_size,
-                        core::Extentu layer_extent,
-                        core::UInt8 mip_level,
-                        core::UInt8 layers,
+        inline void loadFromMemory(core::ByteConstSpan data,
+                                   core::Extentu layer_extent,
+                                   std::optional<MemoryLoadOperation> op = std::nullopt);
+        void loadFromMemory(std::vector<core::ByteConstSpan> data,
+                            core::Extentu layer_extent,
+                            std::optional<MemoryLoadOperation> op = std::nullopt);
+        void loadFromMemory(core::UInt32 mip_count,
+                            core::Extentu layer_extent,
+                            render::CommandBuffer &command_buffer,
+                            render::HardwareBuffer &staging_buffer,
+                            core::UOffset offset,
+                            std::optional<MemoryLoadOperation> op = std::nullopt);
+
+        void fillMemory(core::Extentu layer_extent,
+                        core::UInt32 mip_level,
+                        core::UInt32 layers,
                         render::CommandBuffer &command_buffer,
                         render::HardwareBuffer &staging_buffer,
                         core::UOffset offset);
@@ -74,8 +100,7 @@ namespace storm::render {
                                           TextureSubresourceRange subresource_range = {}) const;
 
         void generateMipmap(render::CommandBuffer &cmb,
-                            core::UInt32 mip_level,
-                            core::UInt32 base_array_layer = 0u);
+                            core::UInt32 mip_level);
 
         inline core::Extentu extent() const noexcept;
         inline PixelFormat format() const noexcept;

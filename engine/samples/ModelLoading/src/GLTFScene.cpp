@@ -75,7 +75,7 @@ GLTFScene::GLTFScene(engine::Engine &engine,
 
     m_cube_map = std::make_unique<engine::CubeMap>(*this);
 
-    auto image = image::Image { EXAMPLES_DATA_DIR "texture/cubemap.ktx" };
+    auto image = image::Image { EXAMPLES_DATA_DIR "textures/cubemap.ktx" };
 
     auto &cube_map_texture = texturePool().create("CubeMap",
                                                   m_engine->device(),

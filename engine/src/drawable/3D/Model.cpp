@@ -395,7 +395,8 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
             load_format = render::PixelFormat::RGB8_UNorm;
 
         const auto extent = core::Extentu { static_cast<core::UInt32>(image.width),
-                                            static_cast<core::UInt32>(image.height) };
+                                            static_cast<core::UInt32>(image.height),
+                                            1u };
 
         const auto mip_levels = render::computeMipLevel(extent);
 
@@ -403,10 +404,6 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
                                                m_engine->device(),
                                                render::TextureType::T2D,
                                                render::TextureCreateFlag::None);
-        texture.createTextureData(extent,
-                                  load_format,
-                                  render::Texture::CreateOperation { .mip_levels = mip_levels });
-        m_engine->device().setObjectName(texture, name);
 
         auto staging_buffer = device.createStagingBuffer(std::size(image.image));
         staging_buffer.template upload<core::Byte>(core::toConstSpan<core::Byte>(image.image));
@@ -417,22 +414,22 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
 
         command_buffer.begin(true);
 
-        texture.fillMemory(std::size(image.image),
-                           { .width  = static_cast<core::UInt32>(image.width),
-                             .height = static_cast<core::UInt32>(image.height) },
-                           0u,
-                           1u,
-                           command_buffer,
-                           staging_buffer,
-                           0u);
-
-        for (auto i = 0u; i < mip_levels; ++i) texture.generateMipmap(command_buffer, i);
+        texture.loadFromMemory(1u,
+                               extent,
+                               command_buffer,
+                               staging_buffer,
+                               0u,
+                               render::Texture::MemoryLoadOperation { .create_mip_levels =
+                                                                          mip_levels,
+                                                                      .generate_mips = true,
+                                                                      .format = load_format });
 
         command_buffer.end();
         command_buffer.build();
         command_buffer.submit({}, {}, core::makeObserver(fence));
 
         fence.wait();
+        m_engine->device().setObjectName(texture, name);
 
         return &texture;
     };

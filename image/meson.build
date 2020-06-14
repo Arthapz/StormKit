@@ -61,7 +61,6 @@ if lib_type == 'shared'
         include_directories: image_inc,
         c_args: cpp_args,
         cpp_args: cpp_args,
-        input: headers,
         install: true
     )
 else
@@ -76,7 +75,6 @@ else
         include_directories: image_inc,
         c_args: cpp_args,
         cpp_args: cpp_args,
-        input: headers,
         install: true
     )
 endif

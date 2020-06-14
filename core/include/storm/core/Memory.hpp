@@ -344,7 +344,7 @@ namespace storm::core {
     template<typename V, ITERABLE_CONCEPT Range>
     core::span<V> toSpan(Range &data) noexcept {
         return core::span<V> { reinterpret_cast<V *>(std::data(data)),
-                               (std::size(data) / sizeof(typename Range::value_type)) * sizeof(V) };
+                               (std::size(data) * sizeof(typename Range::value_type)) * sizeof(V) };
     }
 
     template<typename V, ITERABLE_CONCEPT Range>
@@ -355,7 +355,7 @@ namespace storm::core {
     template<typename V, POINTER_CONCEPT Range>
     core::span<V> toSpan(Range data, std::size_t size) noexcept {
         return core::span<V> { reinterpret_cast<V *>(data),
-                               (size / sizeof(std::remove_pointer_t<Range>)) * sizeof(V) };
+                               (size * sizeof(std::remove_pointer_t<Range>)) * sizeof(V) };
     }
 
     template<typename V, POINTER_CONCEPT Range>
