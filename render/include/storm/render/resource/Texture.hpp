@@ -22,8 +22,15 @@ namespace storm::render {
         static constexpr auto DEBUG_TYPE = DebugObjectType::Image;
 
         Texture(const Device &device,
-                TextureType type        = TextureType::T2D,
-                TextureCreateFlag flags = TextureCreateFlag::None);
+                core::Extentu extent,
+                render::PixelFormat format = render::PixelFormat::RGBA8_UNorm,
+                core::UInt32 layers        = 1u,
+                core::UInt32 mip_levels    = 1u,
+                TextureType type           = TextureType::T2D,
+                TextureCreateFlag flags    = TextureCreateFlag::None,
+                SampleCountFlag samples    = SampleCountFlag::C1_BIT,
+                TextureUsage usage =
+                    TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src);
         Texture(const Device &device,
                 core::Extentu extent,
                 render::PixelFormat format,
@@ -49,14 +56,6 @@ namespace storm::render {
             core::UInt32 layers = 1u;
             render::PixelFormat format = render::PixelFormat::RGBA8_UNorm;
             SampleCountFlag samples = SampleCountFlag::C1_BIT;
-            TextureUsage usage =
-                TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src;
-        };
-
-        struct CreateOperation {
-            SampleCountFlag samples = SampleCountFlag::C1_BIT;
-            core::UInt32 mip_levels = 1;
-            core::UInt32 layers     = 1;
             TextureUsage usage =
                 TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src;
         };
@@ -117,8 +116,6 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
-
-
         DeviceConstObserverPtr m_device;
 
         core::Extentu m_extent = { { 0 }, { 0 } };

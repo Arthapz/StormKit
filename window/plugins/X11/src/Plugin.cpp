@@ -1,4 +1,4 @@
-#include "InputHandlerImpl.hpp"
+
 #include "WindowImpl.hpp"
 
 /////////// - STL - ///////////

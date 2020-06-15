@@ -96,9 +96,15 @@ constexpr auto toPixelFormat(image::Image::Format format) noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-Texture::Texture(const Device &device, TextureType type, TextureCreateFlag flags)
-    : m_device { &device }, m_type { type }, m_flags { flags }, m_vma_texture_memory { DELETER,
-                                                                                       *m_device } {
+Texture::Texture(const Device &device,
+                 core::Extentu extent,
+                 render::PixelFormat format,
+                 core::UInt32 layers,
+                 core::UInt32 mip_levels,
+                 TextureType type,
+                 TextureCreateFlag flags)
+    : m_device { &device }, m_extent { std::move(extent) }, m_type { type }, m_flags { flags },
+      m_vma_texture_memory { DELETER, *m_device } {
 }
 
 /////////////////////////////////////
