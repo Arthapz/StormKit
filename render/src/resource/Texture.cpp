@@ -268,7 +268,7 @@ void Texture::loadFromMemory(core::ByteConstSpan data,
                 copy_regions.emplace_back(BufferTextureCopy {
                     .buffer_offset      = offset + _offset,
                     .subresource_layers = { .mip_level        = mip_level,
-                                            .base_array_layer = layer * face },
+                                            .base_array_layer = layer + (face * m_layers) },
                     .extent             = extent,
                 });
 
