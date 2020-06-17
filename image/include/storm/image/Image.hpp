@@ -103,10 +103,10 @@ namespace storm::image {
         Image(Image &&rhs) noexcept;
         Image &operator=(Image &&rhs) noexcept;
 
-        bool loadFromFile(const std::filesystem::path &filepath,
+        bool loadFromFile(std::filesystem::path filepath,
                           Codec codec = Codec::Autodetect) noexcept;
         bool loadFromMemory(core::ByteConstSpan data, Codec codec = Codec::Autodetect) noexcept;
-        bool saveToFile(const std::filesystem::path &filename,
+        bool saveToFile(std::filesystem::path filename,
                         Codec codec,
                         CodecArgs args = CodecArgs::Binary) const noexcept;
 

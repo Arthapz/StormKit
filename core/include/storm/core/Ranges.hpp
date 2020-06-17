@@ -11,7 +11,7 @@
 #include <storm/core/Configure.hpp>
 #include <storm/core/Platform.hpp>
 
-/*#if __has_include(<ranges>) && defined(__cpp_lib_concepts) &&defined(__cpp_lib_ranges)
+#if __has_include(<ranges>) && defined(__cpp_lib_concepts) &&defined(__cpp_lib_ranges)
     #include <algorithm>
     #include <ranges>
 namespace storm::core {
@@ -22,9 +22,10 @@ namespace storm::core {
 namespace storm::core {
     namespace ranges = std::experimental::ranges;
 } // namespace storm::core
-#elif __has_include(<range/v3/all.hpp>)*/
+#elif __has_include(<range/v3/all.hpp>)
 #include <range/v3/all.hpp>
 namespace storm::core {
     namespace ranges = ranges;
 } // namespace storm::core
-//#endif
+
+#endif

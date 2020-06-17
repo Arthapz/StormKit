@@ -216,8 +216,11 @@ Image &Image::operator=(Image &&) noexcept = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec codec) noexcept {
+bool Image::loadFromFile(std::filesystem::path filepath, Image::Codec codec) noexcept {
+    filepath = std::filesystem::canonical(filepath);
+
     STORM_EXPECTS(codec != Image::Codec::Unknown);
+    STORM_EXPECTS(!std::empty(filepath));
 
     if (!std::filesystem::exists(filepath)) {
         elog("Failed to open file\n    file: {}\n    reason: Incorrect path", filepath.string());
@@ -373,9 +376,9 @@ bool Image::loadFromMemory(core::ByteConstSpan data, Image::Codec codec) noexcep
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool Image::saveToFile(const std::filesystem::path &filepath,
-                       Codec codec,
-                       CodecArgs args) const noexcept {
+bool Image::saveToFile(std::filesystem::path filepath, Codec codec, CodecArgs args) const noexcept {
+    filepath = std::filesystem::canonical(filepath.parent_path()) / filepath.filename();
+
     STORM_EXPECTS(codec != Image::Codec::Unknown);
     STORM_EXPECTS(codec != Image::Codec::Autodetect);
     STORM_EXPECTS(!std::empty(filepath));

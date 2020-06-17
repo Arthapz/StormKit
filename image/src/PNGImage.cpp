@@ -64,6 +64,17 @@ std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
         png_set_palette_to_rgb(png_ptr);
         png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
     }
+    if (bit_depth < 8) png_set_packing(png_ptr);
+
+    png_get_IHDR(png_ptr,
+                 info_ptr,
+                 &extent.width,
+                 &extent.height,
+                 &bit_depth,
+                 &color_type,
+                 nullptr,
+                 nullptr,
+                 nullptr);
 
     switch (color_type) {
         case PNG_COLOR_TYPE_GRAY: {

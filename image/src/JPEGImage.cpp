@@ -91,8 +91,7 @@ std::optional<std::string> Image::loadJPEG(core::ByteConstSpan data) noexcept {
 }
 
 std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath) const noexcept {
-    /*
-     * auto _filename = filepath;
+    auto _filename = filepath;
 
     auto this_rgb = toFormat(Format::RGB8_UNorm);
 
@@ -112,7 +111,7 @@ std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath
             return error;
         }
 
-        auto data          = this_rgb.data(i);
+        auto data          = this_rgb.data(0, 0, i);
         const auto &extent = this_rgb.extent(i);
 
         info.err             = jpeg_std_error(&error_mgr);
@@ -156,7 +155,7 @@ std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath
     if (setjmp(error_data.setjmp_buffer)) {
         jpeg_destroy_compress(&info);
         return error_data.msg;
-    }*/
+    }
 
     return std::nullopt;
 }

@@ -44,19 +44,25 @@ bool LoadImageData(tinygltf::Image *image,
                    void *) {
     auto _image = image::Image { core::toConstSpan<core::Byte>(bytes, size) }.toFormat(
         image::Image::Format::RGBA8_UNorm);
+    //_image.saveToFile(fmt::format("./{}.jpg", image_idx), image::Image::Codec::JPEG);
     // if (_image.codec() == image::Image::Codec::PNG) _image = image::Image::flipY(_image);
 
     int pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
 
     image->width      = _image.extent().w;
     image->height     = _image.extent().h;
-    image->component  = 4u;
+    image->component  = _image.channelCount();
+    image->bits       = 8 * _image.bytesPerChannel();
     image->pixel_type = pixel_type;
 
-    const auto _size = image->width * image->height * 4u;
+    const auto _size = image->width * image->height * image->component * image->bits / 8u;
     image->image.resize(_size);
 
-    core::ranges::copy(_image.data(), reinterpret_cast<core::Byte *>(std::data(image->image)));
+    const auto data = _image.data();
+
+    core::ranges::copy(core::ranges::begin(data),
+                       core::ranges::begin(data) + _size,
+                       reinterpret_cast<core::Byte *>(std::data(image->image)));
 
     return true;
 }
