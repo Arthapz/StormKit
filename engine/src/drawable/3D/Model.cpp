@@ -402,11 +402,14 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
 
         auto &texture = m_texture_pool->create(std::move(name),
                                                m_engine->device(),
+                                               extent,
+                                               render::PixelFormat::RGBA8_UNorm,
+                                               1u,
+                                               mip_levels,
                                                render::TextureType::T2D,
                                                render::TextureCreateFlag::None);
 
         auto staging_buffer = device.createStagingBuffer(std::size(image.image));
-        staging_buffer.template upload<core::Byte>(core::toConstSpan<core::Byte>(image.image));
 
         auto fence = device.createFence();
         auto command_buffer =
@@ -414,15 +417,13 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
 
         command_buffer.begin(true);
 
-        texture.loadFromMemory(1u,
-                               extent,
+        texture.loadFromMemory(core::toConstSpan<core::Byte>(image.image),
+                               1u,
+                               1u,
+                               1u,
                                command_buffer,
                                staging_buffer,
-                               0u,
-                               render::Texture::MemoryLoadOperation { .create_mip_levels =
-                                                                          mip_levels,
-                                                                      .generate_mips = true,
-                                                                      .format = load_format });
+                               0u);
 
         command_buffer.end();
         command_buffer.build();

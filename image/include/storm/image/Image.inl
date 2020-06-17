@@ -14,12 +14,12 @@ namespace storm::image {
         STORM_EXPECTS(m_faces > face);
         STORM_EXPECTS(m_layers > layer);
 
-        auto &data = data(layer, face, level);
+        auto _data = data(layer, face, level);
 
-        STORM_EXPECTS(index < mip.extent.width * mip.extent.height * mip.extent.depth);
+        STORM_EXPECTS(index < m_extent.width * m_extent.height * m_extent.depth);
 
-        return { std::data(data) + index,
-                 std::data(data) + index + m_channel_count + m_bytes_per_channel };
+        return { std::data(_data) + index,
+                 std::data(_data) + index + m_channel_count + m_bytes_per_channel };
     }
 
     /////////////////////////////////////
@@ -29,37 +29,37 @@ namespace storm::image {
         STORM_EXPECTS(m_faces > face);
         STORM_EXPECTS(m_layers > layer);
 
-        auto &data = data(layer, face, level);
+        auto _data = data(layer, face, level);
 
-        STORM_EXPECTS(index < mip.extent.width * mip.extent.height * mip.extent.depth);
+        STORM_EXPECTS(index < m_extent.width * m_extent.height * m_extent.depth);
 
-        return { std::data(data) + index,
-                 std::data(data) + index + m_channel_count + m_bytes_per_channel };
+        return { std::data(_data) + index,
+                 std::data(_data) + index + m_channel_count + m_bytes_per_channel };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan Image::pixel(core::Offset3u offset, core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
+    core::ByteSpan Image::pixel(core::Offset3u position, core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
         const auto mip_extent = extent(level);
 
-        const auto id = offset.x + mip_extent.width * (offset.y + mip_extent.height * offset.z);
+        const auto id = position.x + mip_extent.width * (position.y + mip_extent.height * position.z);
 
         return pixel(id, layer, face, level);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan Image::pixel(core::Offset3u offset, core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+    core::ByteConstSpan Image::pixel(core::Offset3u position, core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
         const auto mip_extent = extent(level);
 
-        const auto id = offset.x + mip_extent.width * (offset.y + mip_extent.height * offset.z);
+        const auto id = position.x + mip_extent.width * (position.y + mip_extent.height * position.z);
 
         return pixel(id, layer, face, level);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    const core::Extentu &Image::extent(core::UInt32 level) const noexcept {
+    core::Extentu Image::extent(core::UInt32 level) const noexcept {
         STORM_EXPECTS(m_mip_levels > level);
 
         return { .width = m_extent.width >> level, .height = m_extent.height >> level, .depth = m_extent.depth >> level };
@@ -67,20 +67,24 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::UInt8 Image::channelCount() const noexcept { return m_channel_count; }
+    core::UInt32 Image::channelCount() const noexcept { return m_channel_count; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::UInt8 Image::bytesPerChannel() const noexcept { return m_bytes_per_channel; }
+    core::UInt32 Image::bytesPerChannel() const noexcept { return m_bytes_per_channel; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::UInt8 Image::mipLevels() const noexcept { return m_mip_levels; }
+    core::UInt32 Image::layers() const noexcept { return m_layers; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Image::Format Image::layers() const noexcept { return m_layers; }
-    .
+    core::UInt32 Image::faces() const noexcept { return m_faces; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    core::UInt32 Image::mipLevels() const noexcept { return m_mip_levels; }
+
     /////////////////////////////////////
     /////////////////////////////////////
     Image::Format Image::format() const noexcept { return m_format; }
@@ -105,14 +109,19 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan Image::data() const noexcept {
+    core::ByteSpan Image::data() noexcept {
         return m_data;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan Image::data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
-        return {begin(layer, face, level), end(layer, face, level)};
+    core::ByteSpan Image::data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
+        const auto mip_extent = extent(level);
+
+        const auto layer_size = m_extent.width * m_extent.height * m_extent.depth * m_channel_count * m_bytes_per_channel;
+        const auto mip_size = mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count * m_bytes_per_channel;
+
+        return {std::data(m_data) + layer * layer_size + face * layer_size + level * mip_size, mip_size};
     }
 
     /////////////////////////////////////
@@ -124,7 +133,12 @@ namespace storm::image {
     /////////////////////////////////////
     /////////////////////////////////////
     core::ByteConstSpan Image::data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
-        return {cbegin(layer, face, level), cend(layer, face, level)};
+        const auto mip_extent = extent(level);
+
+        const auto layer_size = m_extent.width * m_extent.height * m_extent.depth * m_channel_count * m_bytes_per_channel;
+        const auto mip_size = mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count * m_bytes_per_channel;
+
+        return {std::data(m_data) + layer * layer_size + face * layer_size + level * mip_size, mip_size};
     }
 
     /////////////////////////////////////
@@ -135,7 +149,7 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::iterator Image::begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
+    core::ByteSpan::iterator Image::begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
         STORM_EXPECTS(m_mip_levels > level);
         STORM_EXPECTS(m_faces > face);
         STORM_EXPECTS(m_layers > layer);
@@ -151,17 +165,8 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
-        STORM_EXPECTS(m_mip_levels > level);
-        STORM_EXPECTS(m_faces > face);
-        STORM_EXPECTS(m_layers > layer);
-
-        const auto mip_extent = extent(level);
-
-        const auto layer_size = m_extent.width * m_extent.height * m_extent.depth * m_channel_count * m_bytes_per_channel;
-        const auto mip_size = mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count * m_bytes_per_channel;
-
-        return std::begin(m_data) + layer * layer_size + face * layer_size + level * mip_size;
+    core::ByteConstSpan::iterator Image::begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+        return std::begin(data(layer, face, level));
     }
 
     /////////////////////////////////////
@@ -172,17 +177,8 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::cbegin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
-        STORM_EXPECTS(m_mip_levels > level);
-        STORM_EXPECTS(m_faces > face);
-        STORM_EXPECTS(m_layers > layer);
-
-        const auto mip_extent = extent(level);
-
-        const auto layer_size = m_extent.width * m_extent.height * m_extent.depth * m_channel_count * m_bytes_per_channel;
-        const auto mip_size = mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count * m_bytes_per_channel;
-
-        return std::begin(m_data) + layer * layer_size + face * layer_size + level * mip_size;
+    core::ByteConstSpan::iterator Image::cbegin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+        return std::cbegin(data(layer, face, level));
     }
 
     /////////////////////////////////////
@@ -193,17 +189,8 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::iterator Image::end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
-        STORM_EXPECTS(m_mip_levels > level);
-        STORM_EXPECTS(m_faces > face);
-        STORM_EXPECTS(m_layers > layer);
-
-        const auto mip_extent = extent(level);
-
-        const auto layer_size = m_extent.width * m_extent.height * m_extent.depth * m_channel_count * m_bytes_per_channel;
-        const auto mip_size = mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count * m_bytes_per_channel;
-
-        return std::begin(m_data) + layer * layer_size + face * layer_size + level * mip_size + size(layer, face, level);
+    core::ByteSpan::iterator Image::end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
+        return std::end(data(layer, face, level));
     }
 
     /////////////////////////////////////
@@ -214,17 +201,8 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
-        STORM_EXPECTS(m_mip_levels > level);
-        STORM_EXPECTS(m_faces > face);
-        STORM_EXPECTS(m_layers > layer);
-
-        const auto mip_extent = extent(level);
-
-        const auto layer_size = m_extent.width * m_extent.height * m_extent.depth * m_channel_count * m_bytes_per_channel;
-        const auto mip_size = mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count * m_bytes_per_channel;
-
-        return std::begin(m_data) + layer * layer_size + face * layer_size + level * mip_size + size(layer, face, level);
+    core::ByteConstSpan::iterator Image::end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+        return std::end(data(layer, face, level));
     }
 
     /////////////////////////////////////
@@ -235,16 +213,140 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::cend(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
-        STORM_EXPECTS(m_mip_levels > level);
-        STORM_EXPECTS(m_faces > face);
-        STORM_EXPECTS(m_layers > layer);
+    core::ByteConstSpan::iterator Image::cend(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+        return std::cend(data(layer, face, level));
+    }
 
-        const auto mip_extent = extent(level);
+    /////////////////////////////////////
+    /////////////////////////////////////
+    constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept {
+        switch (format) {
+            case Image::Format::R8_SNorm:
+            case Image::Format::R8_UNorm:
+            case Image::Format::R16_SNorm:
+            case Image::Format::R16_UNorm:
+            case Image::Format::R8I:
+            case Image::Format::R8U:
+            case Image::Format::R16I:
+            case Image::Format::R16U:
+            case Image::Format::R32I:
+            case Image::Format::R32U:
+            case Image::Format::R16F:
+            case Image::Format::R32F: return 1;
 
-        const auto layer_size = m_extent.width * m_extent.height * m_extent.depth * m_channel_count * m_bytes_per_channel;
-        const auto mip_size = mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count * m_bytes_per_channel;
+            case Image::Format::RG8_SNorm:
+            case Image::Format::RG8_UNorm:
+            case Image::Format::RG16_SNorm:
+            case Image::Format::RG16_UNorm:
+            case Image::Format::RG8I:
+            case Image::Format::RG8U:
+            case Image::Format::RG16I:
+            case Image::Format::RG16U:
+            case Image::Format::RG32I:
+            case Image::Format::RG32U:
+            case Image::Format::RG16F:
+            case Image::Format::RG32F: return 2;
 
-        return std::cbegin(m_data) + layer * layer_size + face * layer_size + level * mip_size + size(layer, face, level);
+            case Image::Format::RGB8_SNorm:
+            case Image::Format::RGB8_UNorm:
+            case Image::Format::RGB16_SNorm:
+            case Image::Format::RGB16_UNorm:
+            case Image::Format::BGR8_UNorm:
+            case Image::Format::RGB8I:
+            case Image::Format::RGB8U:
+            case Image::Format::RGB16I:
+            case Image::Format::RGB16U:
+            case Image::Format::RGB32I:
+            case Image::Format::RGB32U:
+            case Image::Format::RGB16F:
+            case Image::Format::RGB32F:
+            case Image::Format::sRGB8:
+            case Image::Format::sBGR8: return 3;
+
+            case Image::Format::RGBA8_SNorm:
+            case Image::Format::RGBA8_UNorm:
+            case Image::Format::RGBA16_SNorm:
+            case Image::Format::RGBA16_UNorm:
+            case Image::Format::BGRA8_UNorm:
+            case Image::Format::RGBA8I:
+            case Image::Format::RGBA8U:
+            case Image::Format::RGBA16I:
+            case Image::Format::RGBA16U:
+            case Image::Format::RGBA32I:
+            case Image::Format::RGBA32U:
+            case Image::Format::RGBA16F:
+            case Image::Format::RGBA32F:
+            case Image::Format::sRGBA8:
+            case Image::Format::sBGRA8: return 4;
+
+            default: return 0u;
+        }
+
+        return 0u;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    constexpr core::UInt8 getByteCountByChannelFor(Image::Format format) noexcept {
+        switch (format) {
+            case Image::Format::R8_SNorm:
+            case Image::Format::R8_UNorm:
+            case Image::Format::RG8_SNorm:
+            case Image::Format::RG8_UNorm:
+            case Image::Format::R8I:
+            case Image::Format::R8U:
+            case Image::Format::RG8I:
+            case Image::Format::RG8U:
+            case Image::Format::RGB8_SNorm:
+            case Image::Format::RGB8_UNorm:
+            case Image::Format::BGR8_UNorm:
+            case Image::Format::RGB8I:
+            case Image::Format::RGB8U:
+            case Image::Format::RGBA8_SNorm:
+            case Image::Format::RGBA8_UNorm:
+            case Image::Format::RGBA16_SNorm:
+            case Image::Format::BGRA8_UNorm:
+            case Image::Format::sRGB8:
+            case Image::Format::sBGR8:
+            case Image::Format::sRGBA8:
+            case Image::Format::sBGRA8: return 1u;
+
+            case Image::Format::R16_SNorm:
+            case Image::Format::R16_UNorm:
+            case Image::Format::R16I:
+            case Image::Format::R16U:
+            case Image::Format::RG16_SNorm:
+            case Image::Format::RG16_UNorm:
+            case Image::Format::RG16I:
+            case Image::Format::RG16U:
+            case Image::Format::RG16F:
+            case Image::Format::RGB16I:
+            case Image::Format::RGB16U:
+            case Image::Format::RGB16F:
+            case Image::Format::RGBA16I:
+            case Image::Format::RGBA16U:
+            case Image::Format::RGBA16F:
+            case Image::Format::R16F: return 2u;
+
+            case Image::Format::R32I:
+            case Image::Format::R32U:
+            case Image::Format::R32F:
+            case Image::Format::RG32I:
+            case Image::Format::RG32U:
+            case Image::Format::RG32F:
+            case Image::Format::RGB16_SNorm:
+            case Image::Format::RGB32I:
+            case Image::Format::RGB32U:
+            case Image::Format::RGB32F:
+            case Image::Format::RGBA8I:
+            case Image::Format::RGBA8U:
+            case Image::Format::RGBA32I:
+            case Image::Format::RGBA32U:
+            case Image::Format::RGBA32F: return 4u;
+
+            default: return 0u;
+        }
+
+        return 0u;
     }
 } // namespace storm::image

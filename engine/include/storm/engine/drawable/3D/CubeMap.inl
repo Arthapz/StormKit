@@ -8,7 +8,7 @@ namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
     void CubeMap::setTexture(const render::Texture &texture,
-                             render::TextureSubresourceRange subresource_range) noexcept {
+                             std::optional<render::TextureSubresourceRange> subresource_range) noexcept {
         m_texture = core::makeConstObserver(texture);
 
         auto &instance = static_cast<CubeMapMaterialInstance &>(*m_material_instance);

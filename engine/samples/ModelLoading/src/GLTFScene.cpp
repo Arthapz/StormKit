@@ -79,13 +79,15 @@ GLTFScene::GLTFScene(engine::Engine &engine,
 
     auto &cube_map_texture = texturePool().create("CubeMap",
                                                   m_engine->device(),
+                                                  image.extent(),
+                                                  render::PixelFormat::RGBA16F,
+                                                  1u,
+                                                  12u,
                                                   render::TextureType::T2D,
                                                   render::TextureCreateFlag::Cube_Compatible);
     cube_map_texture.loadFromImage(image);
 
-    m_cube_map->setTexture(cube_map_texture,
-                           { .level_count = cube_map_texture.mipLevels(),
-                             .layer_count = cube_map_texture.layers() });
+    m_cube_map->setTexture(cube_map_texture);
 
     enableDepthTest(true);
     toggleMSAA();

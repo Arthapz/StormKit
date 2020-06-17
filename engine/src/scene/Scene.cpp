@@ -41,23 +41,39 @@ Scene::Scene(Engine &engine) : m_engine { &engine } {
     m_pipeline_state.viewport_state.scissors =
         std::vector { render::Scissor { .offset = { 0, 0 }, .extent = extent } };
 
+    static constexpr auto EXTENT = core::Extentu { .width = 1u, .height = 1u, .depth = 1u };
+
     auto &blank_texture_2d = m_texture_pool.create("StormKit:BlankTexture:2D",
                                                    device,
-                                                   render::TextureType::T2D,
-                                                   render::TextureCreateFlag::None);
+                                                   EXTENT,
+                                                   render::PixelFormat::RGBA8_UNorm,
+                                                   1u,
+                                                   1u,
+                                                   render::TextureType::T2D);
 
     auto &blank_texture_cube = m_texture_pool.create("StormKit:BlankTexture:Cube",
                                                      device,
+                                                     EXTENT,
+                                                     render::PixelFormat::RGBA8_UNorm,
+                                                     1u,
+                                                     1u,
                                                      render::TextureType::T2D,
                                                      render::TextureCreateFlag::Cube_Compatible);
 
     auto &black_texture_2d = m_texture_pool.create("StormKit:BlackTexture:2D",
                                                    device,
-                                                   render::TextureType::T2D,
-                                                   render::TextureCreateFlag::None);
+                                                   EXTENT,
+                                                   render::PixelFormat::RGBA8_UNorm,
+                                                   1u,
+                                                   1u,
+                                                   render::TextureType::T2D);
 
     auto &black_texture_cube = m_texture_pool.create("StormKit:BlackTexture:Cube",
                                                      device,
+                                                     EXTENT,
+                                                     render::PixelFormat::RGBA8_UNorm,
+                                                     1u,
+                                                     1u,
                                                      render::TextureType::T2D,
                                                      render::TextureCreateFlag::Cube_Compatible);
 
@@ -68,15 +84,7 @@ Scene::Scene(Engine &engine) : m_engine { &engine } {
 
     constexpr auto white_size = sizeof(white);
 
-    auto offset         = 0u;
     auto staging_buffer = device.createStagingBuffer(white_size * 2u + white_size * 12);
-    staging_buffer.upload<core::Byte>(core::toConstSpan<core::Byte>(&white, sizeof(white)), offset);
-    offset += white_size;
-    staging_buffer.upload<core::Byte>(core::toConstSpan<core::Byte>(whites), offset);
-    offset += white_size * 6u;
-    staging_buffer.upload<core::Byte>(core::toConstSpan<core::Byte>(&black, sizeof(white)), offset);
-    offset += white_size;
-    staging_buffer.upload<core::Byte>(core::toConstSpan<core::Byte>(blacks), offset);
 
     auto fence = device.createFence();
     auto command_buffer =
@@ -84,37 +92,41 @@ Scene::Scene(Engine &engine) : m_engine { &engine } {
 
     command_buffer.begin(true);
 
-    offset = 0u;
-    blank_texture_2d.loadFromMemory(1,
-                                    { .width = 1u, .height = 1u, .depth = 1u },
+    auto offset = 0u;
+    blank_texture_2d.loadFromMemory(core::toConstSpan<core::Byte>(&white, 1u),
+                                    1u,
+                                    1u,
+                                    1u,
                                     command_buffer,
                                     staging_buffer,
-                                    offset,
-                                    render::Texture::MemoryLoadOperation { .layers = 6u });
+                                    offset);
 
     offset += white_size;
-    blank_texture_cube.loadFromMemory(1,
-                                      { .width = 1u, .height = 1u, .depth = 1u },
+    blank_texture_cube.loadFromMemory(core::toConstSpan<core::Byte>(whites),
+                                      1u,
+                                      6u,
+                                      1u,
                                       command_buffer,
                                       staging_buffer,
-                                      offset,
-                                      render::Texture::MemoryLoadOperation { .layers = 6u });
+                                      offset);
 
     offset += white_size * 6u;
-    black_texture_2d.loadFromMemory(1,
-                                    { .width = 1u, .height = 1u, .depth = 1u },
+    black_texture_2d.loadFromMemory(core::toConstSpan<core::Byte>(&black, 1u),
+                                    1u,
+                                    1u,
+                                    1u,
                                     command_buffer,
                                     staging_buffer,
-                                    offset,
-                                    render::Texture::MemoryLoadOperation { .layers = 6u });
+                                    offset);
 
     offset += white_size;
-    black_texture_cube.loadFromMemory(1,
-                                      { .width = 1u, .height = 1u, .depth = 1u },
+    black_texture_cube.loadFromMemory(core::toConstSpan<core::Byte>(blacks),
+                                      1u,
+                                      6u,
+                                      1u,
                                       command_buffer,
                                       staging_buffer,
-                                      offset,
-                                      render::Texture::MemoryLoadOperation { .layers = 6u });
+                                      offset);
 
     command_buffer.end();
     command_buffer.build();

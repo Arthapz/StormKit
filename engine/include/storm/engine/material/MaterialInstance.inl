@@ -64,7 +64,7 @@ namespace storm::engine {
                                         .max_lod = static_cast<float>(texture.mipLevels()) });
 
         auto range = subresource_range.value_or(
-            render::TextureSubresourceRange { .level_count = texture.mipLevels() });
+            render::TextureSubresourceRange { .level_count = texture.mipLevels(), .layer_count = texture.layers() * texture.faces() });
 
         const auto it = std::find_if(m_sampled_textures.begin(),
                                      m_sampled_textures.end(),

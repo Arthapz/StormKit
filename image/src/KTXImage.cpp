@@ -85,23 +85,23 @@ std::optional<std::string> Image::loadKTX(core::ByteConstSpan data) noexcept {
     auto image = gli::load(reinterpret_cast<const char *>(std::data(data)), std::size(data));
 
     const auto faces      = static_cast<core::UInt32>(image.faces());
-    const auto _layers     = static_cast<core::UInt32>(image.layers());
+    const auto layers     = static_cast<core::UInt32>(image.layers());
     const auto mip_levels = static_cast<core::UInt32>(image.levels());
     const auto format     = toStormFormat(image.format());
 
-    const auto layers = std::max(faces, _layers);
-
     if (format == Image::Format::Undefined) return "Unsupported pixel format";
 
-    auto _data = std::vector<core::ByteArray> {};
-    _data.reserve(mip_levels);
+    auto _data = core::ByteArray {};
+    _data.resize(image.size());
 
-    core::ranges::copy(image.data(), _data);
+    core::ranges::copy(core::toConstSpan<core::Byte>(static_cast<const char *>(image.data()),
+                                                     image.size()),
+                       std::begin(_data));
 
-    m_extent            = core::Extenti { .width  = image.extent().x,
-                                          .height = image.extent().y,
-                                          .depth  = image.extent().z }
-                          .convertTo<core::Extentu>();
+    m_extent = core::Extenti { .width  = image.extent().x,
+                               .height = image.extent().y,
+                               .depth  = image.extent().z }
+                   .convertTo<core::Extentu>();
     m_channel_count     = getChannelCountFor(format);
     m_bytes_per_channel = getByteCountByChannelFor(format);
     m_mip_levels        = mip_levels;

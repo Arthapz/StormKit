@@ -7,14 +7,6 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-    void Texture::loadFromMemory(core::ByteConstSpan data,
-                                 core::Extentu layer_extent,
-                                 std::optional<MemoryLoadOperation> op) {
-        loadFromMemory(std::vector<core::ByteConstSpan>{{data}}, layer_extent, std::move(op));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
      core::Extentu Texture::extent() const noexcept { return m_extent; }
 
     /////////////////////////////////////
@@ -31,11 +23,15 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt32 Texture::mipLevels() const noexcept { return m_mip_levels; }
+     core::UInt32 Texture::layers() const noexcept { return m_layers; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt32 Texture::layers() const noexcept { return m_layers; }
+     core::UInt32 Texture::faces() const noexcept { return m_faces; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+     core::UInt32 Texture::mipLevels() const noexcept { return m_mip_levels; }
 
     /////////////////////////////////////
     /////////////////////////////////////

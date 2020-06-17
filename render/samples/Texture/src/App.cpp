@@ -264,7 +264,7 @@ void App::doInitMeshRenderObjects() {
         image::Image { EXAMPLES_DATA_DIR "textures/texture.png", image::Image::Codec::PNG }
             .flipY());
 
-    m_texture = m_device->createTexturePtr();
+    m_texture = m_device->createTexturePtr(m_image->extent());
     m_texture->loadFromImage(*m_image);
 
     m_texture_view = m_texture->createViewPtr();

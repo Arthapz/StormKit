@@ -1,4 +1,4 @@
-
+#include "InputHandlerImpl.hpp"
 #include "WindowImpl.hpp"
 
 /////////// - STL - ///////////
@@ -58,6 +58,7 @@ const storm::window::VideoSettings *getDesktopModes(storm::core::ArraySize &size
             // free
         }
 
+        xcb_disconnect(display);
         init = true;
     }
 

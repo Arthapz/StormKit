@@ -50,13 +50,17 @@ CubeMapMaterial::CubeMapMaterial(Scene &scene) : Material { scene } {
         constexpr auto silver  = core::RGBColorDef::Silver<float>.toVector4();
         constexpr auto silvers = std::array { silver, silver, silver, silver, silver, silver };
 
+        static constexpr auto EXTENT = core::Extentu { .width = 1u, .height = 1u, .depth = 1u };
+
         auto &texture = texture_pool.create(DEFAULT_CUBE_MAP_TEXTURE,
                                             device,
+                                            EXTENT,
+                                            render::PixelFormat::RGBA8_UNorm,
+                                            1u,
+                                            1u,
                                             render::TextureType::T2D,
                                             render::TextureCreateFlag::Cube_Compatible);
-        texture.loadFromMemory(core::toConstSpan<core::Byte>(silvers),
-                               { .width = 1u, .height = 1u, .depth = 1u },
-                               render::Texture::MemoryLoadOperation { .layers = 6u });
+        texture.loadFromMemory(core::toConstSpan<core::Byte>(silvers), 1u, 6u, 1u);
 
         device.setObjectName(texture, "StormKit:DefaultCubeMapMaterial:DefaultTexture");
     }

@@ -31,7 +31,7 @@ namespace storm::engine {
         CubeMap &operator=(CubeMap &&);
 
         inline void setTexture(const render::Texture &texture,
-                               render::TextureSubresourceRange subresource_range = {}) noexcept;
+                               std::optional<render::TextureSubresourceRange> subresource_range = std::nullopt) noexcept;
         inline const render::Texture &texture() const noexcept;
 
         void render(render::CommandBuffer &cmb,

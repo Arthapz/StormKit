@@ -116,7 +116,8 @@ MaterialInstance::MaterialInstance(const Scene &scene, const Material &material)
                                        .binding = binding,
                                        .texture = core::makeConstObserver(map),
                                        .view    = map.createViewPtr(sampler.type,
-                                                                 { .layer_count = map.layers() }),
+                                                                 { .layer_count = map.layers() *
+                                                                                  map.faces() }),
                                        .sampler = device.createSamplerPtr() });
 
         m_buffer_binding = std::max(m_buffer_binding, static_cast<core::Int32>(binding));

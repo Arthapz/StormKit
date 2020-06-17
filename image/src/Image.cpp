@@ -35,135 +35,6 @@ namespace storm::image {
 
     static constexpr auto JPEG_HEADER = core::makeStaticByteArray(0xFF, 0xD8);
 
-    constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept {
-        switch (format) {
-            case Image::Format::R8_SNorm:
-            case Image::Format::R8_UNorm:
-            case Image::Format::R16_SNorm:
-            case Image::Format::R16_UNorm:
-            case Image::Format::R8I:
-            case Image::Format::R8U:
-            case Image::Format::R16I:
-            case Image::Format::R16U:
-            case Image::Format::R32I:
-            case Image::Format::R32U:
-            case Image::Format::R16F:
-            case Image::Format::R32F: return 1;
-
-            case Image::Format::RG8_SNorm:
-            case Image::Format::RG8_UNorm:
-            case Image::Format::RG16_SNorm:
-            case Image::Format::RG16_UNorm:
-            case Image::Format::RG8I:
-            case Image::Format::RG8U:
-            case Image::Format::RG16I:
-            case Image::Format::RG16U:
-            case Image::Format::RG32I:
-            case Image::Format::RG32U:
-            case Image::Format::RG16F:
-            case Image::Format::RG32F: return 2;
-
-            case Image::Format::RGB8_SNorm:
-            case Image::Format::RGB8_UNorm:
-            case Image::Format::RGB16_SNorm:
-            case Image::Format::RGB16_UNorm:
-            case Image::Format::BGR8_UNorm:
-            case Image::Format::RGB8I:
-            case Image::Format::RGB8U:
-            case Image::Format::RGB16I:
-            case Image::Format::RGB16U:
-            case Image::Format::RGB32I:
-            case Image::Format::RGB32U:
-            case Image::Format::RGB16F:
-            case Image::Format::RGB32F:
-            case Image::Format::sRGB8:
-            case Image::Format::sBGR8: return 3;
-
-            case Image::Format::RGBA8_SNorm:
-            case Image::Format::RGBA8_UNorm:
-            case Image::Format::RGBA16_SNorm:
-            case Image::Format::RGBA16_UNorm:
-            case Image::Format::BGRA8_UNorm:
-            case Image::Format::RGBA8I:
-            case Image::Format::RGBA8U:
-            case Image::Format::RGBA16I:
-            case Image::Format::RGBA16U:
-            case Image::Format::RGBA32I:
-            case Image::Format::RGBA32U:
-            case Image::Format::RGBA16F:
-            case Image::Format::RGBA32F:
-            case Image::Format::sRGBA8:
-            case Image::Format::sBGRA8: return 4;
-
-            default: return 0u;
-        }
-
-        return 0u;
-    }
-
-    constexpr core::UInt8 getByteCountByChannelFor(Image::Format format) noexcept {
-        switch (format) {
-            case Image::Format::R8_SNorm:
-            case Image::Format::R8_UNorm:
-            case Image::Format::RG8_SNorm:
-            case Image::Format::RG8_UNorm:
-            case Image::Format::R8I:
-            case Image::Format::R8U:
-            case Image::Format::RG8I:
-            case Image::Format::RG8U:
-            case Image::Format::RGB8_SNorm:
-            case Image::Format::RGB8_UNorm:
-            case Image::Format::BGR8_UNorm:
-            case Image::Format::RGB8I:
-            case Image::Format::RGB8U:
-            case Image::Format::RGBA8_SNorm:
-            case Image::Format::RGBA8_UNorm:
-            case Image::Format::RGBA16_SNorm:
-            case Image::Format::BGRA8_UNorm:
-            case Image::Format::sRGB8:
-            case Image::Format::sBGR8:
-            case Image::Format::sRGBA8:
-            case Image::Format::sBGRA8: return 1u;
-
-            case Image::Format::R16_SNorm:
-            case Image::Format::R16_UNorm:
-            case Image::Format::R16I:
-            case Image::Format::R16U:
-            case Image::Format::RG16_SNorm:
-            case Image::Format::RG16_UNorm:
-            case Image::Format::RG16I:
-            case Image::Format::RG16U:
-            case Image::Format::RG16F:
-            case Image::Format::RGB16I:
-            case Image::Format::RGB16U:
-            case Image::Format::RGB16F:
-            case Image::Format::RGBA16I:
-            case Image::Format::RGBA16U:
-            case Image::Format::RGBA16F:
-            case Image::Format::R16F: return 2u;
-
-            case Image::Format::R32I:
-            case Image::Format::R32U:
-            case Image::Format::R32F:
-            case Image::Format::RG32I:
-            case Image::Format::RG32U:
-            case Image::Format::RG32F:
-            case Image::Format::RGB16_SNorm:
-            case Image::Format::RGB32I:
-            case Image::Format::RGB32U:
-            case Image::Format::RGB32F:
-            case Image::Format::RGBA8I:
-            case Image::Format::RGBA8U:
-            case Image::Format::RGBA32I:
-            case Image::Format::RGBA32U:
-            case Image::Format::RGBA32F: return 4u;
-
-            default: return 0u;
-        }
-
-        return 0u;
-    }
-
     Image::Codec filenameToCodec(const std::filesystem::path &filename) noexcept {
         STORM_EXPECTS(std::filesystem::exists(filename));
         STORM_EXPECTS(filename.has_extension());
@@ -307,19 +178,10 @@ Image::~Image() noexcept = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 Image::Image(const Image &rhs) noexcept
-    : m_channel_count { rhs.m_channel_count },
-      m_bytes_per_channel { rhs.m_bytes_per_channel },
-      m_mip_levels        { rhs.m_mip_levels },
-      m_format            { rhs.m_format },
-      m_data              { rhs.m_data },
-      m_extent            { rhs.m_extent },
-      m_channel_count     { rhs.m_channel_count },
-      m_bytes_per_channel { rhs.m_bytes_per_channel },
-      m_mip_levels        { rhs.m_mip_levels },
-      m_faces             { rhs.m_faces },
-      m_layers            { rhs.m_layers },
-      m_data              { rhs.m_data },
-      m_format            { rhs.m_format } {
+    : m_extent { rhs.m_extent }, m_channel_count { rhs.m_channel_count },
+      m_bytes_per_channel { rhs.m_bytes_per_channel }, m_layers { rhs.m_layers },
+      m_faces { rhs.m_faces },
+      m_mip_levels { rhs.m_mip_levels }, m_format { rhs.m_format }, m_data { rhs.m_data } {
 }
 
 ////////////////////////////////////////
@@ -594,15 +456,16 @@ void Image::create(core::Extentu extent, Format format) noexcept {
                   format != Format::Undefined);
     m_data.clear();
 
-    m_extent            = {0u, 0u, 0u};
+    m_extent            = extent;
     m_channel_count     = getChannelCountFor(format);
     m_bytes_per_channel = getByteCountByChannelFor(format);
-    m_mip_levels        = 1u;
-    m_faces             = 1u;
     m_layers            = 1u;
+    m_faces             = 1u;
+    m_mip_levels        = 1u;
     m_format            = format;
 
-    data.resize(extent.width * extent.height * extent.depth * m_channel_count * m_bytes_per_channel);
+    m_data.resize(m_extent.width * m_extent.height * m_extent.depth * m_layers * m_faces *
+                  m_mip_levels * m_channel_count * m_bytes_per_channel);
 }
 
 /////////////////////////////////////
@@ -611,7 +474,7 @@ Image Image::toFormat(Format format) const noexcept {
     STORM_EXPECTS(!std::empty(m_data));
     STORM_EXPECTS(format != Format::Undefined);
 
-    if(m_format == format) return *this;
+    if (m_format == format) return *this;
 
     auto image                = Image {};
     image.m_extent            = m_extent;
@@ -629,12 +492,14 @@ Image Image::toFormat(Format format) const noexcept {
     const auto pixel_count = m_extent.width * m_extent.height * m_extent.depth;
 
     image.m_data.resize(pixel_count * image.m_channel_count * image.m_bytes_per_channel);
-    for(auto layer = 0u; layer < image.m_layers; ++layer) {
-        for(auto face = 0u; face < image.m_faces; ++face) {
-            for(auto level = 0u; level < image.m_layers; ++level) {
-                for(auto i = 0;i < pixel_count; i += )
-                    const auto from_image = map(pixel(i, layer, face, level), m_bytes_per_channel, image.m_bytes_per_channel);
-                    auto to_image = image.pixel(i, layer, face, level);
+    for (auto layer = 0u; layer < image.m_layers; ++layer) {
+        for (auto face = 0u; face < image.m_faces; ++face) {
+            for (auto level = 0u; level < image.m_layers; ++level) {
+                for (auto i = 0u; i < pixel_count; ++i) {
+                    const auto from_image = map(pixel(i, layer, face, level),
+                                                m_bytes_per_channel,
+                                                image.m_bytes_per_channel);
+                    auto to_image         = image.pixel(i, layer, face, level);
 
                     core::ranges::copy_n(core::ranges::begin(from_image),
                                          image.m_channel_count,
@@ -646,20 +511,6 @@ Image Image::toFormat(Format format) const noexcept {
                 }
             }
         }
-    }
-
-
-    for(auto i = 0u; i < pixel_count; i += m_bytes_per_channel * m_channel_count) {
-        const auto from_image = map(pixel(i, mip_level), m_bytes_per_channel, image.m_bytes_per_channel);
-        auto to_image = image.pixel(i, mip_level);
-
-        core::ranges::copy_n(core::ranges::begin(from_image),
-                             image.m_channel_count,
-                             core::ranges::begin(to_image));
-
-        core::ranges::fill_n(core::ranges::begin(to_image) + m_channel_count,
-                             channel_delta,
-                             core::Byte { 0u });
     }
 
     return image;
@@ -675,27 +526,28 @@ Image Image::scale([[maybe_unused]] const core::Extentu &) const noexcept {
 /////////////////////////////////////
 Image Image::flipX() const noexcept {
     auto image                = Image {};
+    image.m_extent            = m_extent;
     image.m_channel_count     = m_channel_count;
     image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
     image.m_mip_levels        = m_mip_levels;
     image.m_format            = m_format;
     image.m_data.resize(std::size(m_data));
 
-    for (auto i = 0u; i < m_mip_levels; ++i) {
-        auto &extent = image.m_data[i].extent;
-        extent       = m_data[i].extent;
+    for (auto layer = 0u; layer < m_layers; ++layer)
+        for (auto face = 0u; face < m_faces; ++face)
+            for (auto i = 0u; i < m_mip_levels; ++i)
+                for (auto x = 0u; x < m_extent.width; ++x)
+                    for (auto y = 0u; y < m_extent.height; ++y)
+                        for (auto z = 0u; z < m_extent.depth; ++z) {
+                            const auto inv_x = m_extent.width - x;
 
-        for (auto x = 0u; x < extent.width; ++x)
-            for (auto y = 0u; y < extent.height; ++y)
-                for (auto z = 0u; z < extent.depth; ++z) {
-                    const auto inv_x = extent.width - x;
+                            auto output = image.pixel(core::Offset3u { inv_x, y, z }, i);
 
-                    auto output = image.pixel(core::Offset3u { inv_x, y, z }, i);
-
-                    core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
-                                       core::ranges::begin(output));
-                }
-    }
+                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
+                                               core::ranges::begin(output));
+                        }
 
     return image;
 }
@@ -704,27 +556,28 @@ Image Image::flipX() const noexcept {
 /////////////////////////////////////
 Image Image::flipY() const noexcept {
     auto image                = Image {};
+    image.m_extent            = m_extent;
     image.m_channel_count     = m_channel_count;
     image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
     image.m_mip_levels        = m_mip_levels;
     image.m_format            = m_format;
     image.m_data.resize(std::size(m_data));
 
-    for (auto i = 0u; i < m_mip_levels; ++i) {
-        auto &extent = image.m_data[i].extent;
-        extent       = m_data[i].extent;
+    for (auto layer = 0u; layer < m_layers; ++layer)
+        for (auto face = 0u; face < m_faces; ++face)
+            for (auto i = 0u; i < m_mip_levels; ++i)
+                for (auto x = 0u; x < m_extent.width; ++x)
+                    for (auto y = 0u; y < m_extent.height; ++y)
+                        for (auto z = 0u; z < m_extent.depth; ++z) {
+                            const auto inv_y = m_extent.height - y;
 
-        for (auto x = 0u; x < extent.width; ++x)
-            for (auto y = 0u; y < extent.height; ++y)
-                for (auto z = 0u; z < extent.depth; ++z) {
-                    const auto inv_y = extent.height - y;
+                            auto output = image.pixel(core::Offset3u { x, inv_y, z }, i);
 
-                    auto output = image.pixel(core::Offset3u { x, inv_y, z }, i);
-
-                    core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
-                                       core::ranges::begin(output));
-                }
-    }
+                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
+                                               core::ranges::begin(output));
+                        }
 
     return image;
 }
@@ -733,27 +586,28 @@ Image Image::flipY() const noexcept {
 /////////////////////////////////////
 Image Image::flipZ() const noexcept {
     auto image                = Image {};
+    image.m_extent            = m_extent;
     image.m_channel_count     = m_channel_count;
     image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
     image.m_mip_levels        = m_mip_levels;
     image.m_format            = m_format;
     image.m_data.resize(std::size(m_data));
 
-    for (auto i = 0u; i < m_mip_levels; ++i) {
-        auto &extent = image.m_data[i].extent;
-        extent       = m_data[i].extent;
+    for (auto layer = 0u; layer < m_layers; ++layer)
+        for (auto face = 0u; face < m_faces; ++face)
+            for (auto i = 0u; i < m_mip_levels; ++i)
+                for (auto x = 0u; x < m_extent.width; ++x)
+                    for (auto y = 0u; y < m_extent.height; ++y)
+                        for (auto z = 0u; z < m_extent.depth; ++z) {
+                            const auto inv_z = m_extent.depth - z;
 
-        for (auto x = 0u; x < extent.width; ++x)
-            for (auto y = 0u; y < extent.height; ++y)
-                for (auto z = 0u; z < extent.depth; ++z) {
-                    const auto inv_z = extent.depth - z;
+                            auto output = image.pixel(core::Offset3u { x, z, inv_z }, i);
 
-                    auto output = image.pixel(core::Offset3u { x, y, inv_z }, i);
-
-                    core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
-                                       core::ranges::begin(output));
-                }
-    }
+                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
+                                               core::ranges::begin(output));
+                        }
 
     return image;
 }
@@ -762,17 +616,17 @@ Image Image::flipZ() const noexcept {
 /////////////////////////////////////
 Image Image::rotate90() const noexcept {
     auto image                = Image {};
+    image.m_extent.width      = m_extent.height;
+    image.m_extent.height     = m_extent.width;
     image.m_channel_count     = m_channel_count;
     image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
     image.m_mip_levels        = m_mip_levels;
     image.m_format            = m_format;
     image.m_data.resize(std::size(m_data));
 
-    for (auto i = 0u; i < m_mip_levels; ++i) {
-        auto &extent = image.m_data[i].extent;
-        extent       = m_data[i].extent;
-        std::swap(extent.width, extent.height);
-    }
+    // TODO implement
 
     return image;
 }
@@ -781,16 +635,14 @@ Image Image::rotate90() const noexcept {
 /////////////////////////////////////
 Image Image::rotate180() const noexcept {
     auto image                = Image {};
+    image.m_extent            = m_extent;
     image.m_channel_count     = m_channel_count;
     image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
     image.m_mip_levels        = m_mip_levels;
     image.m_format            = m_format;
     image.m_data.resize(std::size(m_data));
-
-    for (auto i = 0u; i < m_mip_levels; ++i) {
-        auto &extent = image.m_data[i].extent;
-        extent       = m_data[i].extent;
-    }
 
     return image;
 }
@@ -799,17 +651,15 @@ Image Image::rotate180() const noexcept {
 /////////////////////////////////////
 Image Image::rotate270() const noexcept {
     auto image                = Image {};
+    image.m_extent.width      = m_extent.height;
+    image.m_extent.height     = m_extent.width;
     image.m_channel_count     = m_channel_count;
     image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
     image.m_mip_levels        = m_mip_levels;
     image.m_format            = m_format;
     image.m_data.resize(std::size(m_data));
-
-    for (auto i = 0u; i < m_mip_levels; ++i) {
-        auto &extent = image.m_data[i].extent;
-        extent       = m_data[i].extent;
-        std::swap(extent.width, extent.height);
-    }
 
     return image;
 }

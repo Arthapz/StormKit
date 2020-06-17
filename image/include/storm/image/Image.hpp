@@ -129,20 +129,21 @@ namespace storm::image {
                                                        core::UInt32 layer = 0u,
                                                        core::UInt32 face = 0u,
                                                        core::UInt32 level = 0u) const noexcept;
-        [[nodiscard]] inline core::ByteSpan pixel(core::Offset3u offset,
+        [[nodiscard]] inline core::ByteSpan pixel(core::Offset3u position,
                                                   core::UInt32 layer = 0u,
                                                   core::UInt32 face = 0u,
-                                                  core::UInt32 level = 0u);
-        [[nodiscard]] inline core::ByteConstSpan pixel(core::Offset3u offset,
+                                                  core::UInt32 level = 0u) noexcept;
+        [[nodiscard]] inline core::ByteConstSpan pixel(core::Offset3u position,
                                                        core::UInt32 layer = 0u,
                                                        core::UInt32 face = 0u,
                                                        core::UInt32 level = 0u) const noexcept;
 
-        [[nodiscard]] inline const core::Extentu &extent(core::UInt32 level = 0u) const noexcept;
+        [[nodiscard]] inline core::Extentu extent(core::UInt32 level = 0u) const noexcept;
         [[nodiscard]] inline core::UInt32 channelCount() const noexcept;
         [[nodiscard]] inline core::UInt32 bytesPerChannel() const noexcept;
-        [[nodiscard]] inline core::UInt32 mipLevels() const noexcept;
         [[nodiscard]] inline core::UInt32 layers() const noexcept;
+        [[nodiscard]] inline core::UInt32 faces() const noexcept;
+        [[nodiscard]] inline core::UInt32 mipLevels() const noexcept;
         [[nodiscard]] inline Format format() const noexcept;
 
         [[nodiscard]] inline core::ArraySize size() const noexcept;
@@ -154,28 +155,28 @@ namespace storm::image {
 
         [[nodiscard]] inline core::ByteArray::iterator
             begin() noexcept;
-        [[nodiscard]] inline core::ByteArray::iterator
+        [[nodiscard]] inline core::ByteSpan::iterator
             begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept;
         [[nodiscard]] inline core::ByteArray::const_iterator
             begin() const noexcept;
-        [[nodiscard]] inline core::ByteArray::const_iterator
+        [[nodiscard]] inline core::ByteConstSpan::iterator
             begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
         [[nodiscard]] inline core::ByteArray::const_iterator
             cbegin() const noexcept;
-        [[nodiscard]] inline core::ByteArray::const_iterator
+        [[nodiscard]] inline core::ByteConstSpan::iterator
             cbegin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
 
         [[nodiscard]] inline core::ByteArray::iterator
             end() noexcept;
-        [[nodiscard]] inline core::ByteArray::iterator
+        [[nodiscard]] inline core::ByteSpan::iterator
             end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept;
         [[nodiscard]] inline core::ByteArray::const_iterator
             end() const noexcept;
-        [[nodiscard]] inline core::ByteArray::const_iterator
+        [[nodiscard]] inline core::ByteConstSpan::iterator
             end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
         [[nodiscard]] inline core::ByteArray::const_iterator
             cend() const noexcept;
-        [[nodiscard]] inline core::ByteArray::const_iterator
+        [[nodiscard]] inline core::ByteConstSpan::iterator
             cend(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
 
       private:
@@ -198,12 +199,12 @@ namespace storm::image {
         core::Extentu m_extent            = {0u, 0u, 0u};
         core::UInt32  m_channel_count     = 0u;
         core::UInt32  m_bytes_per_channel = 0u;
-        core::UInt32  m_mip_levels        = 1u;
-        core::UInt32  m_faces             = 1u;
         core::UInt32  m_layers            = 1u;
+        core::UInt32  m_faces             = 1u;
+        core::UInt32  m_mip_levels        = 1u;
         Format m_format                   = Format::Undefined;
 
-        std::vecore::ByteArray m_data;
+        core::ByteArray m_data;
     };
 
     STORM_PUBLIC constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept;
