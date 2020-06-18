@@ -53,11 +53,10 @@ namespace storm::core {
     constexpr inline Result ComponentHash(gsl::czstring_span<size> str) noexcept {
         return size == 0
                    ? 0xcbf29ce484222325UL
-                   : (static_cast<core::Hash64>(str[0]) ^ ComponentHash<Result, size - 1>(str[1])) *
+                   : (static_cast<core::Hash64>(str[0]) ^ ComponentHash<Result, std::size(str) - 1>(str[1])) *
                          0x100000001b3UL;
     }
 
-    /// \exclude
     template<typename Result>
     constexpr inline Result ComponentHash(const char *str, core::ArraySize size) noexcept {
         return size == 0 ? 0xcbf29ce484222325UL
@@ -66,13 +65,11 @@ namespace storm::core {
                                0x100000001b3UL;
     }
 
-    /// \exclude
     template<typename Result>
-    inline Result ComponentHash(const std::string &str) noexcept {
-        return ComponentHash<Result>(str.c_str(), std::size(str));
+    constexpr inline Result ComponentHash(std::string_view str) noexcept {
+        return ComponentHash<Result>(std::data(str), std::size(str));
     }
 
-    /// \exclude
     constexpr inline core::Hash64 operator"" _hash(const char *str, core::ArraySize size) noexcept {
         return ComponentHash<core::Hash64>(str, size);
     }

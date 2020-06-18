@@ -65,6 +65,7 @@ std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
         png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
     }
     if (bit_depth < 8) png_set_packing(png_ptr);
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
 
     png_get_IHDR(png_ptr,
                  info_ptr,
@@ -85,7 +86,6 @@ std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
             break;
         }
         case PNG_COLOR_TYPE_GRAY_ALPHA: {
-            if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
             if (bit_depth == 8) format = Format::RG8_UNorm;
             else if (bit_depth == 16)
                 format = Format::RG16_UNorm;
@@ -100,7 +100,6 @@ std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
             break;
         }
         case PNG_COLOR_TYPE_RGB_ALPHA: {
-            if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
             if (bit_depth == 8) format = Format::RGBA8_UNorm;
             else if (bit_depth == 16)
                 format = Format::RGBA16_UNorm;
@@ -108,7 +107,6 @@ std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
             break;
         }
         case PNG_COLOR_TYPE_PALETTE: {
-            if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
             if (bit_depth == 8) format = Format::RGBA8_UNorm;
             else if (bit_depth == 16)
                 format = Format::RGBA16_UNorm;
