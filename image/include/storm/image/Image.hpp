@@ -148,6 +148,8 @@ namespace storm::image {
 
         [[nodiscard]] inline core::ArraySize size() const noexcept;
         [[nodiscard]] inline core::ArraySize size(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
+        [[nodiscard]] inline core::ArraySize size(core::UInt32 layer, core::UInt32 face) const noexcept;
+        [[nodiscard]] inline core::ArraySize size(core::UInt32 layer) const noexcept;
         [[nodiscard]] inline core::ByteSpan data() noexcept;
         [[nodiscard]] inline core::ByteSpan data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept;
         [[nodiscard]] inline core::ByteConstSpan data() const noexcept;

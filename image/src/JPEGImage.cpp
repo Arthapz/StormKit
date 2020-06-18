@@ -134,9 +134,9 @@ std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath
         jpeg_mem_dest(&info, &buffer, &buffer_size);
 
         jpeg_set_defaults(&info);
-        jpeg_set_quality(&info, 70, true);
+        jpeg_set_quality(&info, 70, static_cast<boolean>(true));
 
-        jpeg_start_compress(&info, true);
+        jpeg_start_compress(&info, static_cast<boolean>(true));
 
         auto row_ptr = std::array<core::Byte *, 1> { nullptr };
         while (info.next_scanline < info.image_height) {

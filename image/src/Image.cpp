@@ -540,17 +540,18 @@ Image Image::flipX() const noexcept {
 
     for (auto layer = 0u; layer < m_layers; ++layer)
         for (auto face = 0u; face < m_faces; ++face)
-            for (auto i = 0u; i < m_mip_levels; ++i)
-                for (auto x = 0u; x < m_extent.width; ++x)
+            for (auto mip = 0u; mip < m_mip_levels; ++mip)
+                for (auto x = 0u; x < m_extent.width; ++x) {
+                    const auto inv_x = m_extent.width - x - 1u;
                     for (auto y = 0u; y < m_extent.height; ++y)
                         for (auto z = 0u; z < m_extent.depth; ++z) {
-                            const auto inv_x = m_extent.width - x;
+                            auto output =
+                                image.pixel(core::Offset3u { inv_x, y, z }, layer, face, mip);
 
-                            auto output = image.pixel(core::Offset3u { inv_x, y, z }, i);
-
-                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
+                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, layer, face, mip),
                                                core::ranges::begin(output));
                         }
+                }
 
     return image;
 }
@@ -570,17 +571,18 @@ Image Image::flipY() const noexcept {
 
     for (auto layer = 0u; layer < m_layers; ++layer)
         for (auto face = 0u; face < m_faces; ++face)
-            for (auto i = 0u; i < m_mip_levels; ++i)
+            for (auto mip = 0u; mip < m_mip_levels; ++mip)
                 for (auto x = 0u; x < m_extent.width; ++x)
-                    for (auto y = 0u; y < m_extent.height; ++y)
+                    for (auto y = 0u; y < m_extent.height; ++y) {
+                        const auto inv_y = m_extent.height - 1u - y;
                         for (auto z = 0u; z < m_extent.depth; ++z) {
-                            const auto inv_y = m_extent.height - y;
+                            auto output =
+                                image.pixel(core::Offset3u { x, inv_y, z }, layer, face, mip);
+                            const auto data = pixel(core::Offset3u { x, y, z }, layer, face, mip);
 
-                            auto output = image.pixel(core::Offset3u { x, inv_y, z }, i);
-
-                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
-                                               core::ranges::begin(output));
+                            core::ranges::copy(data, core::ranges::begin(output));
                         }
+                    }
 
     return image;
 }
@@ -600,15 +602,16 @@ Image Image::flipZ() const noexcept {
 
     for (auto layer = 0u; layer < m_layers; ++layer)
         for (auto face = 0u; face < m_faces; ++face)
-            for (auto i = 0u; i < m_mip_levels; ++i)
+            for (auto mip = 0u; mip < m_mip_levels; ++mip)
                 for (auto x = 0u; x < m_extent.width; ++x)
                     for (auto y = 0u; y < m_extent.height; ++y)
                         for (auto z = 0u; z < m_extent.depth; ++z) {
-                            const auto inv_z = m_extent.depth - z;
+                            const auto inv_z = m_extent.depth - 1u - z;
 
-                            auto output = image.pixel(core::Offset3u { x, z, inv_z }, i);
+                            auto output =
+                                image.pixel(core::Offset3u { x, z, inv_z }, layer, face, mip);
 
-                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, i),
+                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, layer, face, mip),
                                                core::ranges::begin(output));
                         }
 

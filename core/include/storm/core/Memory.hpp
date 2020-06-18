@@ -339,6 +339,7 @@ namespace storm::core {
     #define POINTER_CONCEPT pointer
 #else
     #define ITERABLE_CONCEPT typename
+    #define POINTER_CONCEPT typename
 #endif
 
     template<typename V, ITERABLE_CONCEPT Range>

@@ -18,8 +18,10 @@ namespace storm::image {
 
         STORM_EXPECTS(index < m_extent.width * m_extent.height * m_extent.depth);
 
-        return { std::data(_data) + index,
-                 std::data(_data) + index + m_channel_count + m_bytes_per_channel };
+        const auto block_size = m_channel_count * m_bytes_per_channel;
+
+        return { std::data(_data) + index * block_size,
+                 block_size };
     }
 
     /////////////////////////////////////
@@ -31,10 +33,13 @@ namespace storm::image {
 
         auto _data = data(layer, face, level);
 
-        STORM_EXPECTS(index < m_extent.width * m_extent.height * m_extent.depth);
+        const auto mip_extent = extent(level);
+        STORM_EXPECTS(index < mip_extent.width * mip_extent.height * mip_extent.depth);
 
-        return { std::data(_data) + index,
-                 std::data(_data) + index + m_channel_count + m_bytes_per_channel };
+        const auto block_size = m_channel_count * m_bytes_per_channel;
+
+        return { std::data(_data) + index * block_size,
+                 block_size };
     }
 
     /////////////////////////////////////
@@ -42,7 +47,7 @@ namespace storm::image {
     core::ByteSpan Image::pixel(core::Offset3u position, core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
         const auto mip_extent = extent(level);
 
-        const auto id = position.x + mip_extent.width * (position.y + mip_extent.height * position.z);
+        const auto id = position.x + (position.y * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z);
 
         return pixel(id, layer, face, level);
     }
@@ -52,7 +57,7 @@ namespace storm::image {
     core::ByteConstSpan Image::pixel(core::Offset3u position, core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
         const auto mip_extent = extent(level);
 
-        const auto id = position.x + mip_extent.width * (position.y + mip_extent.height * position.z);
+        const auto id = position.x + (position.y * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z);
 
         return pixel(id, layer, face, level);
     }
@@ -62,7 +67,7 @@ namespace storm::image {
     core::Extentu Image::extent(core::UInt32 level) const noexcept {
         STORM_EXPECTS(m_mip_levels > level);
 
-        return { .width = m_extent.width >> level, .height = m_extent.height >> level, .depth = m_extent.depth >> level };
+        return { .width = std::max(1u, m_extent.width >> level), .height = std::max(1u, m_extent.height >> level), .depth = std::max(1u, m_extent.depth >> level) };
     }
 
     /////////////////////////////////////
@@ -109,6 +114,26 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    core::ArraySize Image::size(core::UInt32 layer, core::UInt32 face) const noexcept {
+        auto _size = core::ArraySize{0u};
+        for(auto i = 0u;i < m_mip_levels; ++i)
+            _size += size(layer, face, i);
+
+        return _size;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    core::ArraySize Image::size(core::UInt32 layer) const noexcept {
+        auto _size = core::ArraySize{0u};
+        for(auto i = 0u;i < m_faces; ++i)
+            _size += size(layer, i);
+
+        return _size;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     core::ByteSpan Image::data() noexcept {
         return m_data;
     }
@@ -116,12 +141,20 @@ namespace storm::image {
     /////////////////////////////////////
     /////////////////////////////////////
     core::ByteSpan Image::data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
-        const auto mip_extent = extent(level);
+        const auto mip_size = size(layer, face, level);
 
-        const auto layer_size = m_extent.width * m_extent.height * m_extent.depth * m_channel_count * m_bytes_per_channel;
-        const auto mip_size = mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count * m_bytes_per_channel;
+        auto offset = 0u;
 
-        return {std::data(m_data) + layer * layer_size + face * layer_size + level * mip_size, mip_size};
+        for(auto i = 0;i < layer; ++i)
+            offset += size(i);
+
+        for(auto j = 0;j < face; ++j)
+            offset += size(layer, j);
+
+        for(auto k = 0;k < level; ++k)
+            offset += size(layer, face, k);
+
+        return {std::data(m_data) + offset, mip_size};
     }
 
     /////////////////////////////////////
@@ -133,12 +166,20 @@ namespace storm::image {
     /////////////////////////////////////
     /////////////////////////////////////
     core::ByteConstSpan Image::data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
-        const auto mip_extent = extent(level);
+        const auto mip_size = size(layer, face, level);
 
-        const auto layer_size = m_extent.width * m_extent.height * m_extent.depth * m_channel_count * m_bytes_per_channel;
-        const auto mip_size = mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count * m_bytes_per_channel;
+        auto offset = 0u;
 
-        return {std::data(m_data) + layer * layer_size + face * layer_size + level * mip_size, mip_size};
+        for(auto i = 0;i < layer; ++i)
+            offset += size(i);
+
+        for(auto j = 0;j < face; ++j)
+            offset += size(layer, j);
+
+        for(auto k = 0;k < level; ++k)
+            offset += size(layer, face, k);
+
+        return {std::data(m_data) + offset, mip_size};
     }
 
     /////////////////////////////////////
