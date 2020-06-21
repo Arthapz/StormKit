@@ -61,6 +61,7 @@ inls = files([
     'include/storm/core/Tree.inl',
     'include/storm/core/TreeNode.inl',
     'include/storm/core/RingBuffer.inl',
+    'include/storm/core/ResourcesPool.inl',
 ])
 
 #ide:editable-filelist
