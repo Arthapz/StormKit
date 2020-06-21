@@ -82,12 +82,12 @@ std::optional<std::string> Image::loadJPEG(core::ByteConstSpan data) noexcept {
     m_data              = std::move(image_data);
     m_format            = format;
 
-    return std::nullopt;
-
     if (setjmp(error_data.setjmp_buffer)) {
         jpeg_destroy_decompress(&info);
         return error_data.msg;
     }
+
+    return std::nullopt;
 }
 
 std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath) const noexcept {

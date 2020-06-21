@@ -99,6 +99,7 @@ void Window::initPlugin() {
                 case WM::Wayland: return WAYLAND_MODULE_FILEPATH;
                 case WM::iOS: return IOS_MODULE_FILEPATH;
                 case WM::Android: return ANDROID_MODULE_FILEPATH;
+                default: break;
             }
 
             STORM_ENSURES(true);

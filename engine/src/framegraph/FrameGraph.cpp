@@ -444,7 +444,7 @@ void FrameGraph::prepareGPUObjects() {
                     std::max(step.framebuffer_extent.height, descriptor.extent.height);
             }
 
-            for (const auto &handle : read_only_attachments) {}
+            // for (const auto &handle : read_only_attachments) {}
             for (const auto &handle : write_only_attachments) {
                 const auto &resource   = getResource<FrameGraphTexture>(handle);
                 const auto &descriptor = resource.descriptor();
@@ -566,7 +566,7 @@ render::RenderPass::AttachmentDescription
 ////////////////////////////////////////
 render::RenderPass::AttachmentDescription
     FrameGraph::createReadOnlyDescription(const FramePassTexture &resource) {
-    const auto &descriptor = resource.descriptor();
+    // const auto &descriptor = resource.descriptor();
 
     return {};
     // createDescription(resource);

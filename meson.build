@@ -39,7 +39,7 @@ if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
         project_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
     endif
 else
-    project_arguments += ['-DSTORM_BUILD', '-std=c11' ,'-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
+    project_arguments += ['-DSTORM_BUILD', '-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
     examples_arguments += ['-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas']
     if get_option('buildtype') == 'debug'
         project_arguments += ['-DSTORM_BUILD_DEBUG -O0']

@@ -287,7 +287,6 @@ storm::window::NativeHandle WindowImpl::nativeHandle() const noexcept {
 /////////////////////////////////////
 /////////////////////////////////////
 void WindowImpl::processEvents(xcb_generic_event_t xevent, void *native_event) {
-    bool ignore = false;
     switch (xevent.response_type & ~0x80) {
         case XCB_KEY_PRESS: {
             auto keyboard_event = reinterpret_cast<xcb_key_press_event_t *>(&xevent);
@@ -312,7 +311,6 @@ void WindowImpl::processEvents(xcb_generic_event_t xevent, void *native_event) {
         case XCB_MOTION_NOTIFY: {
             auto mouse_event = reinterpret_cast<xcb_motion_notify_event_t *>(&xevent);
             if (m_mouse_x == mouse_event->event_x && m_mouse_y == mouse_event->event_y) {
-                ignore = true;
                 break;
             }
 

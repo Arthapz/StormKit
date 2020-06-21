@@ -392,13 +392,6 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
         auto name = fmt::format("{:x}", hash);
         if (m_texture_pool->has(name)) { return &m_texture_pool->get(name); }
 
-        auto load_format = render::PixelFormat::RGBA8_UNorm;
-        if (image.component == 1) load_format = render::PixelFormat::R8_UNorm;
-        else if (image.component == 2)
-            load_format = render::PixelFormat::RG8_UNorm;
-        else if (image.component == 3)
-            load_format = render::PixelFormat::RGB8_UNorm;
-
         const auto extent = core::Extentu { static_cast<core::UInt32>(image.width),
                                             static_cast<core::UInt32>(image.height),
                                             1u };
