@@ -114,6 +114,7 @@ drawable_headers = files([
 
 #ide:editable-filelist
 threed_drawable_headers = files([
+    'include/storm/engine/drawable/3D/Fwd.hpp',
     'include/storm/engine/drawable/3D/Model.hpp',
     'include/storm/engine/drawable/3D/Mesh.hpp',
     'include/storm/engine/drawable/3D/SubMesh.hpp',
@@ -127,7 +128,6 @@ drawable_inls = files([
 
 #ide:editable-filelist
 threed_drawable_inls = files([
-    'include/storm/engine/drawable/3D/Fwd.inl',
     'include/storm/engine/drawable/3D/Mesh.inl',
     'include/storm/engine/drawable/3D/SubMesh.inl',
     'include/storm/engine/drawable/3D/Model.inl',
