@@ -49,7 +49,7 @@ namespace storm::engine {
         core::UInt32 m_max_fps           = 300u;
 
         core::UInt32 m_last_entry_index   = 0u;
-        core::UInt32 m_skip_frame         = m_skip_frame;
+        core::UInt32 m_skip_frame         = 0u;
         core::UInt32 m_skip_frame_counter = m_skip_frame;
     };
 } // namespace storm::engine

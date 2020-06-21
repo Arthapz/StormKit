@@ -62,28 +62,29 @@ namespace storm::render {
                             core::UOffset offset = 0u,
                             bool generate_mips = false);
 
-        TextureView createView(TextureViewType type                      = TextureViewType::T2D,
+        [[nodiscard]] TextureView createView(TextureViewType type                      = TextureViewType::T2D,
                                TextureSubresourceRange subresource_range = {}) const noexcept;
-        TextureViewOwnedPtr createViewPtr(TextureViewType type = TextureViewType::T2D,
+        [[nodiscard]] TextureViewOwnedPtr createViewPtr(TextureViewType type = TextureViewType::T2D,
                                           TextureSubresourceRange subresource_range = {}) const;
 
         void generateMipmap(render::CommandBuffer &cmb,
                             core::UInt32 mip_level);
 
-        inline core::Extentu extent() const noexcept;
-        inline PixelFormat format() const noexcept;
-        inline TextureType type() const noexcept;
-        inline SampleCountFlag samples() const noexcept;
-        inline core::UInt32 layers() const noexcept;
-        inline core::UInt32 faces() const noexcept;
-        inline core::UInt32 mipLevels() const noexcept;
+        [[nodiscard]] inline core::Extentu extent() const noexcept;
+        [[nodiscard]] inline PixelFormat format() const noexcept;
+        [[nodiscard]] inline TextureType type() const noexcept;
+        [[nodiscard]] inline SampleCountFlag samples() const noexcept;
+        [[nodiscard]] inline core::UInt32 layers() const noexcept;
+        [[nodiscard]] inline core::UInt32 faces() const noexcept;
+        [[nodiscard]] inline core::UInt32 mipLevels() const noexcept;
+        [[nodiscard]] inline TextureUsage usage() const noexcept;
 
-        inline const Device &device() const noexcept;
+        [[nodiscard]] inline const Device &device() const noexcept;
 
-        inline vk::Image vkImage() const noexcept;
-        inline operator vk::Image() const noexcept;
-        inline vk::Image vkHandle() const noexcept;
-        inline core::UInt64 vkDebugHandle() const noexcept;
+        [[nodiscard]] inline vk::Image vkImage() const noexcept;
+        [[nodiscard]] inline operator vk::Image() const noexcept;
+        [[nodiscard]] inline vk::Image vkHandle() const noexcept;
+        [[nodiscard]] inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
         DeviceConstObserverPtr m_device;

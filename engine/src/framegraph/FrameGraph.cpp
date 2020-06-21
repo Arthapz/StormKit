@@ -396,10 +396,10 @@ void FrameGraph::prepareGPUObjects() {
 
             step.use_sub_command_buffers |= pass->isUsingSubCommandBuffer();
 
-            const auto creates  = pass->creates();
+            //const auto creates  = pass->creates();
             const auto reads    = pass->reads();
             const auto writes   = pass->writes();
-            const auto samples  = pass->samples();
+            //const auto samples  = pass->samples();
             const auto resolves = pass->resolves();
 
             auto read_only_attachments  = std::vector<FramePassTextureID> {};

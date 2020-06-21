@@ -23,15 +23,19 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt32 Texture::layers() const noexcept { return m_layers; }
+    core::UInt32 Texture::layers() const noexcept { return m_layers; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt32 Texture::faces() const noexcept { return m_faces; }
+    core::UInt32 Texture::faces() const noexcept { return m_faces; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt32 Texture::mipLevels() const noexcept { return m_mip_levels; }
+    core::UInt32 Texture::mipLevels() const noexcept { return m_mip_levels; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    TextureUsage Texture::usage() const noexcept { return m_usage; }
 
     /////////////////////////////////////
     /////////////////////////////////////
