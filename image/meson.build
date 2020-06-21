@@ -35,6 +35,7 @@ headers = files([
 
 #ide:editable-filelist
 inls = files([
+    'include/storm/image/Image.inl',
 ])
 
 #ide:editable-filelist
