@@ -1,14 +1,8 @@
 vulkan_dep  = dependency('vulkan')
 
-if get_option('gli_include_dir') != ''
-    gli_dep = declare_dependency(include_directories: get_option('gli_include_dir'))
-else
-    gli_dep = dependency('gli')
-endif
-
 vulkan_headers_dep = declare_dependency(dependencies: [vulkan_dep])
 
-public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, gli_dep, vulkan_headers_dep]
+public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, vulkan_headers_dep]
 private_dependencies = []
 
 #ide:editable-filelist

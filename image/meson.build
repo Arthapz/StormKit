@@ -10,8 +10,10 @@ else
     jpeg_dep = dependency('libjpeg', fallback: ['libjpeg', 'jpeg_dep'])
 endif
 
+gli_dep = dependency('gli')
+
 public_dependencies = [core_dep]
-private_dependencies = [png_dep, jpeg_dep]
+private_dependencies = [png_dep, jpeg_dep, gli_dep]
 
 cpp_args = []
 

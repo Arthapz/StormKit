@@ -16,7 +16,7 @@ endif()
 
 if(APPLE)
    set(_IMPORT_PREFIX "/usr/local")
-endif
+endif()
 
 if(UNIX)
     set(LIB_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}")
