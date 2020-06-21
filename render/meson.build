@@ -158,8 +158,7 @@ if lib_type == 'shared'
     render_lib_name = 'StormKit-render' + suffix
     render_lib = shared_library(
         render_lib_name,
-        sources,
-        headers,
+        sources + headers,
         kwargs: args,
         install: true
     )
@@ -167,8 +166,7 @@ else
     render_lib_name = 'StormKit-render-static' + suffix
     render_lib = static_library(
         render_lib_name,
-        sources,
-        headers,
+        sources + headers,
         kwargs: args,
         install: true
     )

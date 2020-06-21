@@ -2,12 +2,17 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+/////////// - StormKit::device - ///////////
+#include <storm/render/core/CommandBuffer.hpp>
+#include <storm/render/core/Queue.hpp>
+
+#include <storm/render/sync/Fence.hpp>
+
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/material/CubeMapMaterial.hpp>
 
 #include <storm/engine/material/CubeMapMaterialInstance.hpp>
 
-/////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
 #include <storm/engine/scene/PBRScene.hpp>
@@ -42,23 +47,22 @@ CubeMapMaterial::CubeMapMaterial(Scene &scene) : Material { scene } {
     finalize();
 
     if (!texture_pool.has(DEFAULT_CUBE_MAP_TEXTURE)) {
-        const auto silver = core::RGBColorDef::Silver<float>.toVector4();
-        const auto silver_span =
-            core::ByteConstSpan { reinterpret_cast<const std::byte *>(glm::value_ptr(silver)),
-                                  sizeof(silver) };
+        constexpr auto silver  = core::RGBColorDef::Silver<float>.toVector4();
+        constexpr auto silvers = std::array { silver, silver, silver, silver, silver, silver };
+
+        static constexpr auto EXTENT = core::Extentu { .width = 1u, .height = 1u, .depth = 1u };
 
         auto &texture = texture_pool.create(DEFAULT_CUBE_MAP_TEXTURE,
                                             device,
+                                            EXTENT,
+                                            render::PixelFormat::RGBA8_UNorm,
+                                            1u,
+                                            1u,
                                             render::TextureType::T2D,
                                             render::TextureCreateFlag::Cube_Compatible);
+        texture.loadFromMemory(core::toConstSpan<core::Byte>(silvers), 1u, 6u, 1u);
 
-        auto data = std::vector<core::ByteConstSpan> {};
-        data.resize(6, silver_span);
-
-        texture.loadLayersFromMemory(std::move(data),
-                                     { 1u, 1u },
-                                     render::Texture::LoadOperation {
-                                         .storage_format = render::PixelFormat::RGBA16F });
+        device.setObjectName(texture, "StormKit:DefaultCubeMapMaterial:DefaultTexture");
     }
 }
 ////////////////////////////////////////

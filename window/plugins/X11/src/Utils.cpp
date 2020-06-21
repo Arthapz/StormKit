@@ -231,7 +231,8 @@ xcb_keysym_t stormkeyToX11Key(storm::window::Key key) {
         case Key::F14: return XK_F14;
         case Key::F15: return XK_F15;
         case Key::Pause: return XK_Pause;
-        case Key::Unknow: return {};
+        case Key::Unknow:
+        default: return {};
     }
 
     return {};

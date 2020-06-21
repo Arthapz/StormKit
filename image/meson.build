@@ -13,6 +13,18 @@ endif
 public_dependencies = [core_dep]
 private_dependencies = [png_dep, jpeg_dep]
 
+cpp_args = []
+
+if get_option('image_enable_log')
+    public_dependencies += [log_dep]
+else
+    if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
+        cpp_args += ['/DSTORM_IMAGE_NO_LOGGING']
+    else
+        cpp_args += ['-DSTORM_IMAGE_NO_LOGGING']
+    endif
+endif
+
 #ide:editable-filelist
 headers = files([
     'include/storm/image/Fwd.hpp',
@@ -26,9 +38,13 @@ inls = files([
 #ide:editable-filelist
 sources = files([
     'src/Image.cpp',
-    'src/private/ImageLoader.cpp',
-    'src/private/ImageData.hpp',
-    'src/private/ImageLoader.hpp',
+
+    'src/JPEGImage.cpp',
+    'src/PNGImage.cpp',
+    'src/TARGAImage.cpp',
+    'src/PPMImage.cpp',
+    'src/HDRImage.cpp',
+    'src/KTXImage.cpp',
 ])
 
 image_inc = ['include/']
@@ -43,6 +59,8 @@ if lib_type == 'shared'
         gnu_symbol_visibility: 'hidden',
         dependencies: public_dependencies + private_dependencies,
         include_directories: image_inc,
+        c_args: cpp_args,
+        cpp_args: cpp_args,
         install: true
     )
 else
@@ -55,6 +73,8 @@ else
         gnu_symbol_visibility: 'hidden',
         dependencies: public_dependencies + private_dependencies,
         include_directories: image_inc,
+        c_args: cpp_args,
+        cpp_args: cpp_args,
         install: true
     )
 endif

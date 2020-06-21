@@ -167,7 +167,9 @@ namespace storm::render {
 #ifdef STORM_OS_LINUX
         "VK_LAYER_MESA_overlay",
 #endif
+#ifndef STORM_OS_MAXOS
         "VK_LAYER_LUNARG_monitor",
+#endif
     };
 
     static constexpr auto VALIDATION_FEATURES =
@@ -190,7 +192,7 @@ namespace storm::render {
     static constexpr const auto STORMKIT_VERSION =
         vkMakeVersion(STORM_MAJOR_VERSION, STORM_MINOR_VERSION, STORM_PATCH_VERSION);
 
-#ifdef STORM_BUILD_DEBUG
+#if defined(STORM_BUILD_DEBUG) || defined(STORM_ENABLE_VALIDATION_LAYERS)
     static constexpr const auto ENABLE_VALIDATION = true;
 #else
     static constexpr const auto ENABLE_VALIDATION = false;

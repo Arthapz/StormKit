@@ -302,17 +302,19 @@ void PBRScene::generateBRDFLUT(FrameGraph &framegraph, std::string name) {
     const auto brdf_dim    = core::Extentu { 512u, 512u };
     const auto brdf_dimf   = brdf_dim.convertTo<core::Extentf>();
 
-    auto &brdf = m_texture_pool.create(name,
-                                       device,
-                                       render::TextureType::T2D,
-                                       render::TextureCreateFlag::None);
+    auto &brdf =
+        m_texture_pool.create(name,
+                              device,
+                              brdf_dim,
+                              brdf_format,
+                              1u,
+                              1u,
+                              render::TextureType::T2D,
+                              render::TextureCreateFlag::Cube_Compatible,
+                              render::SampleCountFlag::C1_BIT,
+                              render::TextureUsage::Transfert_Dst | render::TextureUsage::Sampled);
 
     m_brdf = core::makeObserver(brdf);
-    m_brdf->createTextureData(brdf_dim,
-                              brdf_format,
-                              render::Texture::CreateOperation {
-                                  .usage = render::TextureUsage::Transfert_Dst |
-                                           render::TextureUsage::Sampled });
     device.setObjectName(brdf, name);
 
     struct GenerateBRDFPassData {
@@ -418,20 +420,19 @@ void PBRScene::generateIrradience(FrameGraph &framegraph, std::string name) {
 
     m_gen_cube_descriptor_set->update(descriptors);
 
-    auto &irradience = m_texture_pool.create(name,
-                                             device,
-                                             render::TextureType::T2D,
-                                             render::TextureCreateFlag::Cube_Compatible);
+    auto &irradience =
+        m_texture_pool.create(name,
+                              device,
+                              irradience_dim,
+                              irradience_format,
+                              1u,
+                              irradience_mip_level,
+                              render::TextureType::T2D,
+                              render::TextureCreateFlag::Cube_Compatible,
+                              render::SampleCountFlag::C1_BIT,
+                              render::TextureUsage::Transfert_Dst | render::TextureUsage::Sampled);
 
     m_irradience = core::makeObserver(irradience);
-    m_irradience->createTextureData(irradience_dim,
-                                    irradience_format,
-                                    render::Texture::CreateOperation {
-                                        .mip_levels = irradience_mip_level,
-                                        .layers     = 6,
-                                        .usage      = render::TextureUsage::Transfert_Dst |
-                                                 render::TextureUsage::Sampled,
-                                    });
     device.setObjectName(irradience, name);
 
     const auto descriptor =
@@ -604,19 +605,19 @@ void PBRScene::generatePrefiltereredEnv(FrameGraph &framegraph, std::string name
 
     m_gen_cube_descriptor_set->update(descriptors);
 
-    auto &prefiltered_env = m_texture_pool.create(name,
-                                                  device,
-                                                  render::TextureType::T2D,
-                                                  render::TextureCreateFlag::Cube_Compatible);
-    m_prefiltered_env     = core::makeObserver(prefiltered_env);
-    m_prefiltered_env->createTextureData(prefiltered_env_dim,
-                                         prefiltered_env_format,
-                                         render::Texture::CreateOperation {
-                                             .mip_levels = prefiltered_env_mip_level,
-                                             .layers     = 6,
-                                             .usage      = render::TextureUsage::Transfert_Dst |
-                                                      render::TextureUsage::Sampled,
-                                         });
+    auto &prefiltered_env =
+        m_texture_pool.create(name,
+                              device,
+                              prefiltered_env_dim,
+                              prefiltered_env_format,
+                              1u,
+                              prefiltered_env_mip_level,
+                              render::TextureType::T2D,
+                              render::TextureCreateFlag::Cube_Compatible,
+                              render::SampleCountFlag::C1_BIT,
+                              render::TextureUsage::Transfert_Dst | render::TextureUsage::Sampled);
+
+    m_prefiltered_env = core::makeObserver(prefiltered_env);
     device.setObjectName(*m_prefiltered_env, name);
 
     const auto descriptor =

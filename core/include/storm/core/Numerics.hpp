@@ -49,8 +49,8 @@ namespace storm::core {
 
     // TODO write conf of map function
     /// \exclude
-    template<typename T>
-    inline constexpr T map(T x, T in_min, T in_max, T out_min, T out_max) noexcept;
+    template<typename T, typename V>
+    inline constexpr T map(V x, V in_min, V in_max, T out_min, T out_max) noexcept;
 
     /// \brief storm::core::pi<T> is a templated variable which store PI
     /// \tparam T the required type for representing PI

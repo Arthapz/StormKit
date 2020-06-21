@@ -19,14 +19,10 @@ namespace storm::engine {
                                         .max_anisotropy    = m_engine->maxAnisotropy(),
                                         .border_color = render::BorderColor::Float_Opaque_White,
                                         .compare_operation = render::CompareOperation::Never });
-
-        auto range = subresource_range.value_or(
-            render::TextureSubresourceRange { .level_count = map.mipLevels(), .layer_count = 6 });
-
         setSampledTexture("cubemap",
                           map,
                           render::TextureViewType::Cube,
-                          std::move(range),
+                          std::move(subresource_range),
                           std::move(settings));
     }
 } // namespace storm::engine

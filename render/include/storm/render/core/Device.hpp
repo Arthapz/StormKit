@@ -93,10 +93,24 @@ namespace storm::render {
         DescriptorPoolOwnedPtr createDescriptorPoolPtr(std::vector<DescriptorPool::Size> sizes,
                                                        core::ArraySize max_sets) const;
 
-        Texture createTexture(TextureType type        = TextureType::T2D,
-                              TextureCreateFlag flags = TextureCreateFlag::None) const;
-        TextureOwnedPtr createTexturePtr(TextureType type        = TextureType::T2D,
-                                         TextureCreateFlag flags = TextureCreateFlag::None) const;
+        Texture createTexture(core::Extentu extent,
+                              render::PixelFormat format = render::PixelFormat::RGBA8_UNorm,
+                              core::UInt32 layers        = 1u,
+                              core::UInt32 mip_levels    = 1u,
+                              TextureType type           = TextureType::T2D,
+                              TextureCreateFlag flags    = TextureCreateFlag::None,
+                              SampleCountFlag samples    = SampleCountFlag::C1_BIT,
+                              TextureUsage usage =
+                                  TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src) const;
+        TextureOwnedPtr createTexturePtr(core::Extentu extent,
+                                         render::PixelFormat format = render::PixelFormat::RGBA8_UNorm,
+                                         core::UInt32 layers        = 1u,
+                                         core::UInt32 mip_levels    = 1u,
+                                         TextureType type           = TextureType::T2D,
+                                         TextureCreateFlag flags    = TextureCreateFlag::None,
+                                         SampleCountFlag samples    = SampleCountFlag::C1_BIT,
+                                         TextureUsage usage =
+                                             TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src) const;
 
         Sampler createSampler(Sampler::Settings settings = Sampler::Settings {}) const;
         SamplerOwnedPtr createSamplerPtr(Sampler::Settings settings = Sampler::Settings {}) const;

@@ -522,7 +522,7 @@ void FrameGraph::prepareGPUObjects() {
                 attachments.emplace_back(handle, id);
             }
 
-            for (const auto [id, _] : attachments) step.framebuffer_attachments.emplace_back(id);
+            for (const auto &[id, _] : attachments) step.framebuffer_attachments.emplace_back(id);
 
             step.render_pass->addSubpass(std::move(sub_pass));
         }
