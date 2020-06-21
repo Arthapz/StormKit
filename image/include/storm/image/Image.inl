@@ -145,13 +145,13 @@ namespace storm::image {
 
         auto offset = 0u;
 
-        for(auto i = 0;i < layer; ++i)
+        for(auto i = 0u; i < layer; ++i)
             offset += size(i);
 
-        for(auto j = 0;j < face; ++j)
+        for(auto j = 0u; j < face; ++j)
             offset += size(layer, j);
 
-        for(auto k = 0;k < level; ++k)
+        for(auto k = 0u; k < level; ++k)
             offset += size(layer, face, k);
 
         return {std::data(m_data) + offset, mip_size};
@@ -170,13 +170,13 @@ namespace storm::image {
 
         auto offset = 0u;
 
-        for(auto i = 0;i < layer; ++i)
+        for(auto i = 0u; i < layer; ++i)
             offset += size(i);
 
-        for(auto j = 0;j < face; ++j)
+        for(auto j = 0u; j < face; ++j)
             offset += size(layer, j);
 
-        for(auto k = 0;k < level; ++k)
+        for(auto k = 0u; k < level; ++k)
             offset += size(layer, face, k);
 
         return {std::data(m_data) + offset, mip_size};
