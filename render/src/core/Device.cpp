@@ -200,7 +200,8 @@ Device::Device(const PhysicalDevice &physical_device, const Instance &instance)
     const auto alloc_create_info =
         VmaAllocatorCreateInfo { .physicalDevice   = physical_device.vkPhysicalDevice(),
                                  .device           = *m_vk_device,
-                                 .pVulkanFunctions = &m_vma_device_table };
+                                 .pVulkanFunctions = &m_vma_device_table,
+                                 .instance         = m_instance->vkInstance() };
 
     auto result = vmaCreateAllocator(&alloc_create_info, &m_vma_allocator.handle());
     STORM_ENSURES(result == VK_SUCCESS);
