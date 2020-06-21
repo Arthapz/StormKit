@@ -127,6 +127,7 @@ drawable_inls = files([
 
 #ide:editable-filelist
 threed_drawable_inls = files([
+    'include/storm/engine/drawable/3D/Fwd.inl',
     'include/storm/engine/drawable/3D/Mesh.inl',
     'include/storm/engine/drawable/3D/SubMesh.inl',
     'include/storm/engine/drawable/3D/Model.inl',
