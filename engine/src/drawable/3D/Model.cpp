@@ -44,7 +44,6 @@ bool LoadImageData(tinygltf::Image *image,
                    void *) {
     auto _image = image::Image { core::toConstSpan<core::Byte>(bytes, size) }.toFormat(
         image::Image::Format::RGBA8_UNorm);
-    //_image.saveToFile(fmt::format("./{}.jpg", image_idx), image::Image::Codec::JPEG);
     // if (_image.codec() == image::Image::Codec::PNG) _image = image::Image::flipY(_image);
 
     int pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
@@ -429,7 +428,7 @@ MaterialInstanceOwnedPtr Model::doParseMaterialInstance(const tinygltf::Model &m
                                1u,
                                command_buffer,
                                staging_buffer,
-                               0u);
+                               0u, true);
 
         command_buffer.end();
         command_buffer.build();
