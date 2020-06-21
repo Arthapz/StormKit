@@ -1,7 +1,7 @@
 project(
     'StormKit',
     ['c', 'cpp'],
-    version: '0.1.0',
+    version: '0.2.0',
     license: 'MIT',
     default_options : ['c_std=c11', 'default_library=static']
 )
@@ -70,7 +70,7 @@ enable_render     = get_option('enable_render')
 enable_engine     = get_option('enable_engine')
 
 major_version   = 0
-minor_version   = 1
+minor_version   = 2
 patch_version   = 0
 milestone       = 'alpha'
 build_type      = get_option('buildtype')
