@@ -157,7 +157,7 @@ framegraph_inls = files([
 #ide:editable-filelist
 sources = files([
     'src/Engine.cpp', 
-    'src/Tinyobj.cpp',
+    'src/tiny_gltf.cpp',
 
     'src/core/imgui/imconfig.hpp',
     'src/core/imgui/imgui_internal.hpp',
