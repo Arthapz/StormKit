@@ -1,6 +1,7 @@
 public_dependencies = [core_dep, module_dep]
 private_dependencies = []
 
+#ide:editable-filelist
 headers = files([
     'include/storm/window/InputHandler.hpp',
     'include/storm/window/AbstractInputHandler.hpp',
@@ -15,6 +16,7 @@ headers = files([
     'include/storm/window/Fwd.hpp',
 ])
 
+#ide:editable-filelist
 inls = files([
     'include/storm/window/InputHandler.inl',
     'include/storm/window/EventHandler.inl',
@@ -22,6 +24,7 @@ inls = files([
     'include/storm/window/AbstractWindow.inl',
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/Window.cpp',
     'src/AbstractWindow.cpp',
@@ -36,8 +39,7 @@ if lib_type == 'shared'
     window_lib_name = 'StormKit-window' + suffix
     window_lib = shared_library(
         window_lib_name,
-        sources,
-        headers,
+        sources + headers,
         dependencies: public_dependencies + private_dependencies,
         include_directories: window_inc,
         install: true
@@ -46,8 +48,7 @@ else
     window_lib_name = 'StormKit-window-static' + suffix
     window_lib = static_library(
         window_lib_name,
-        sources,
-        headers,
+        sources + headers,
         dependencies: public_dependencies + private_dependencies,
         include_directories: window_inc,
         install: true

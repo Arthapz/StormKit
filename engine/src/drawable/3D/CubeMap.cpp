@@ -8,9 +8,9 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 
-#include <storm/engine/scene/Scene.hpp>
+#include <storm/engine/scene/PBRScene.hpp>
 
-#include <storm/engine/drawable/CubeMap.hpp>
+#include <storm/engine/drawable/3D/CubeMap.hpp>
 
 #include <storm/engine/material/Material.hpp>
 #include <storm/engine/material/MaterialInstance.hpp>
@@ -20,8 +20,8 @@ using namespace storm::engine;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-CubeMap::CubeMap(Scene &scene) : Drawable { scene.engine() } {
-    auto &material = scene.materialPool().get(Scene::CUBEMAP_MATERIAL_NAME);
+CubeMap::CubeMap(Scene &scene) : Drawable { scene.engine() }, m_scene { &scene } {
+    auto &material = m_scene->materialPool().get(PBRScene::CUBEMAP_MATERIAL_NAME);
 
     m_material_instance = material->createInstancePtr();
 }
@@ -43,7 +43,8 @@ CubeMap &CubeMap::operator=(CubeMap &&) = default;
 void CubeMap::render(render::CommandBuffer &cmb,
                      const render::RenderPass &pass,
                      std::vector<BindableBaseConstObserverPtr> bindables,
-                     render::GraphicsPipelineState state) {
+                     render::GraphicsPipelineState state,
+                     [[maybe_unused]] float delta_time) {
     m_material_instance->flush();
 
     bindables.emplace_back(core::makeConstObserver(m_material_instance));

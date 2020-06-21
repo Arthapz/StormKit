@@ -30,17 +30,24 @@ namespace storm::engine {
         CubeMap(CubeMap &&);
         CubeMap &operator=(CubeMap &&);
 
-        inline void setTexture(const render::Texture &texture) noexcept;
+        inline void setTexture(const render::Texture &texture,
+                               std::optional<render::TextureSubresourceRange> subresource_range = std::nullopt) noexcept;
+        inline const render::Texture &texture() const noexcept;
 
         void render(render::CommandBuffer &cmb,
                     const render::RenderPass &pass,
                     std::vector<BindableBaseConstObserverPtr> bindables,
-                    render::GraphicsPipelineState state) override;
+                    render::GraphicsPipelineState state,
+                    float delta_time = 0.f) override;
 
       protected:
         void recomputeBoundingBox() const noexcept override;
 
       private:
+        SceneObserverPtr m_scene;
+
+        render::TextureConstObserverPtr m_texture;
+
         MaterialInstanceOwnedPtr m_material_instance;
     };
 } // namespace storm::engine

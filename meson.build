@@ -1,9 +1,9 @@
 project(
     'StormKit',
     ['c', 'cpp'],
-    version: '0.1.0',
+    version: '0.2.0',
     license: 'MIT',
-    default_options : ['c_std=c17', 'default_library=static']
+    default_options : ['c_std=c11', 'default_library=static']
 )
 
 system_name = host_machine.system()
@@ -24,7 +24,7 @@ lib_extension   = ''
 
 if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
     project_arguments += ['/DSTORM_BUILD', '/std:c++latest', '/permissive-', '/DFMT_HEADER_ONLY', '/DNOMINMAX']
-    examples_arguments += ['/std:c++latest', '/permissive-', '/NOMINMAX']
+    examples_arguments += ['/std:c++latest', '/permissive-', '/DNOMINMAX']
     lib_extension = '.lib'
 
     message(meson.get_compiler('cpp').get_id())
@@ -39,7 +39,7 @@ if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
         project_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
     endif
 else
-    project_arguments += ['-DSTORM_BUILD', '-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
+    project_arguments += ['-DSTORM_BUILD', '-std=c11' ,'-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
     examples_arguments += ['-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas']
     if get_option('buildtype') == 'debug'
         project_arguments += ['-DSTORM_BUILD_DEBUG -O0']
@@ -70,7 +70,7 @@ enable_render     = get_option('enable_render')
 enable_engine     = get_option('enable_engine')
 
 major_version   = 0
-minor_version   = 1
+minor_version   = 2
 patch_version   = 0
 milestone       = 'alpha'
 build_type      = get_option('buildtype')

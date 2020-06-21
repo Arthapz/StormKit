@@ -73,8 +73,13 @@ namespace storm::engine {
         struct Step {
             std::vector<core::UInt32> pass_id;
 
+            std::string pass_name;
+
             std::vector<FramePassResourceHandle> realize_resource;
             std::vector<FramePassResourceHandle> derealize_resource;
+
+            std::function<void(render::CommandBuffer &)> pre_execute;
+            std::function<void(render::CommandBuffer &)> post_execute;
 
             render::FenceOwnedPtr fence;
             render::CommandBufferOwnedPtr cmb;

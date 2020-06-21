@@ -20,7 +20,7 @@ namespace storm::render {
     };
 
     using TaggedVertexInputAttributeDescriptionArray =
-        std::unordered_map<std::string, VertexInputAttributeDescription>;
+        storm::core::HashMap<std::string, VertexInputAttributeDescription>;
     DECLARE_ARRAYS(VertexInputAttributeDescription)
 } // namespace storm::render
 

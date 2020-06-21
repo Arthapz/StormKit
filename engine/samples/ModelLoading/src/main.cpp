@@ -8,6 +8,8 @@
 int main(int argc, char **argv) {
     using namespace storm;
 
+    STORM_EXPECTS(std::filesystem::exists("./stormkit/ModelLoading"));
+
     // log::LogHandler::setupLogger<log::FileLogger>("log.txt");
     log::LogHandler::setupDefaultLogger();
 

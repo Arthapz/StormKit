@@ -22,21 +22,31 @@ shader_compiler = generator(
     arguments: command_glslang
 )
 
+#ide:editable-filelist
 shader_files = shader_compiler.process(
     'shaders/PBRColorPass.vert.glsl',
     'shaders/PBRColorPass.frag.glsl',
     'shaders/CubeMap.vert.glsl',
     'shaders/CubeMap.frag.glsl',
+    'shaders/FilterCubeMap.vert.glsl',
+    'shaders/GenIrradienceCubeMap.frag.glsl',
+    'shaders/GenPrefilteredEnvCubeMap.frag.glsl',
+    'shaders/GenBRDF.frag.glsl',
+    'shaders/GenBRDF.vert.glsl',
 )
 
+#ide:editable-filelist
 base_headers = files([
     'include/storm/engine/Engine.hpp',
+    'include/storm/engine/Fwd.hpp',
 ])
 
+#ide:editable-filelist
 base_inls = files([
     'include/storm/engine/Engine.inl',
 ])
 
+#ide:editable-filelist
 core_headers = files([
     'include/storm/engine/core/Fwd.hpp',
     'include/storm/engine/core/Bindable.hpp',
@@ -47,6 +57,7 @@ core_headers = files([
     'include/storm/engine/core/Vertex.hpp',
 ])
 
+#ide:editable-filelist
 core_inls = files([
     'include/storm/engine/core/Bindable.inl',
     'include/storm/engine/core/DebugGUI.inl',
@@ -56,6 +67,7 @@ core_inls = files([
     'include/storm/engine/core/Vertex.inl',
 ])
 
+#ide:editable-filelist
 material_headers = files([
     'include/storm/engine/material/Fwd.hpp',
     'include/storm/engine/material/Material.hpp',
@@ -66,6 +78,7 @@ material_headers = files([
     'include/storm/engine/material/CubeMapMaterialInstance.hpp',
 ])
 
+#ide:editable-filelist
 material_inls = files([
     'include/storm/engine/material/Material.inl',
     'include/storm/engine/material/MaterialInstance.inl',
@@ -75,35 +88,51 @@ material_inls = files([
     'include/storm/engine/material/CubeMapMaterialInstance.inl',
 ])
 
+#ide:editable-filelist
 scene_headers = files([
     'include/storm/engine/scene/Fwd.hpp',
     'include/storm/engine/scene/Camera.hpp',
     'include/storm/engine/scene/FPSCamera.hpp',
     'include/storm/engine/scene/Scene.hpp',
+    'include/storm/engine/scene/PBRScene.hpp',
 ])
 
+#ide:editable-filelist
 scene_inls = files([
     'include/storm/engine/scene/Camera.inl',
     'include/storm/engine/scene/FPSCamera.inl',
     'include/storm/engine/scene/Scene.inl',
+    'include/storm/engine/scene/PBRScene.inl',
 ])
 
+#ide:editable-filelist
 drawable_headers = files([
     'include/storm/engine/drawable/Fwd.hpp',
     'include/storm/engine/drawable/Drawable.hpp',
-    'include/storm/engine/drawable/Mesh.hpp',
-    'include/storm/engine/drawable/SubMesh.hpp',
-    'include/storm/engine/drawable/Model.hpp',
-    'include/storm/engine/drawable/CubeMap.hpp',
+    'include/storm/engine/drawable/BoundingBox.hpp',
 ])
 
+#ide:editable-filelist
+threed_drawable_headers = files([
+    'include/storm/engine/drawable/3D/Model.hpp',
+    'include/storm/engine/drawable/3D/Mesh.hpp',
+    'include/storm/engine/drawable/3D/SubMesh.hpp',
+    'include/storm/engine/drawable/3D/CubeMap.hpp',
+])
+
+#ide:editable-filelist
 drawable_inls = files([
     'include/storm/engine/drawable/Drawable.inl',
-    'include/storm/engine/drawable/Mesh.inl',
-    'include/storm/engine/drawable/SubMesh.inl',
-    'include/storm/engine/drawable/Model.inl',
 ])
 
+#ide:editable-filelist
+threed_drawable_inls = files([
+    'include/storm/engine/drawable/3D/Mesh.inl',
+    'include/storm/engine/drawable/3D/SubMesh.inl',
+    'include/storm/engine/drawable/3D/Model.inl',
+])
+
+#ide:editable-filelist
 framegraph_headers = files([
     'include/storm/engine/framegraph/Fwd.hpp',
     'include/storm/engine/framegraph/FrameGraph.hpp',
@@ -114,6 +143,7 @@ framegraph_headers = files([
     'include/storm/engine/framegraph/FramePassResources.hpp',
 ])
 
+#ide:editable-filelist
 framegraph_inls = files([
     'include/storm/engine/framegraph/FrameGraph.inl',
     'include/storm/engine/framegraph/FramePass.inl',
@@ -123,11 +153,10 @@ framegraph_inls = files([
     'include/storm/engine/framegraph/FramePassResources.inl',
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/Engine.cpp', 
     'src/Tinyobj.cpp',
-    'src/stb_image.c',
-    'src/stb_image_write.c',
 
     'src/core/imgui/imconfig.hpp',
     'src/core/imgui/imgui_internal.hpp',
@@ -163,12 +192,13 @@ sources = files([
     'src/scene/Camera.cpp',
     'src/scene/FPSCamera.cpp',
     'src/scene/Scene.cpp',
+    'src/scene/PBRScene.cpp',
 
     'src/drawable/Drawable.cpp',
-    'src/drawable/Mesh.cpp',
-    'src/drawable/SubMesh.cpp',
-    'src/drawable/Model.cpp',
-    'src/drawable/CubeMap.cpp',
+    'src/drawable/3D/Mesh.cpp',
+    'src/drawable/3D/SubMesh.cpp',
+    'src/drawable/3D/Model.cpp',
+    'src/drawable/3D/CubeMap.cpp',
 
     'src/framegraph/FrameGraph.cpp',
     'src/framegraph/FramePass.cpp',
@@ -178,7 +208,7 @@ sources = files([
     'src/framegraph/FramePassResources.cpp',
 ])
 
-headers = base_headers + core_headers + material_headers + scene_headers + drawable_headers + framegraph_headers
+headers = base_headers + core_headers + material_headers + scene_headers + drawable_headers + framegraph_headers + threed_drawable_headers
 
 engine_inc = ['include/']
 
@@ -186,8 +216,7 @@ if lib_type == 'shared'
     engine_lib_name = 'StormKit-engine' + suffix
     engine_lib = shared_library(
         engine_lib_name,
-        sources,
-        headers,
+        sources + headers,
         shader_files,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
@@ -199,8 +228,7 @@ else
     engine_lib_name = 'StormKit-engine-static' + suffix
     engine_lib = static_library(
         engine_lib_name,
-        sources,
-        headers,
+        sources + headers,
         shader_files,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
@@ -225,4 +253,5 @@ install_headers(core_headers + core_inls, subdir : 'storm/engine/core')
 install_headers(material_headers + material_inls, subdir : 'storm/engine/material')
 install_headers(scene_headers + scene_inls, subdir : 'storm/engine/scene')
 install_headers(drawable_headers + drawable_inls, subdir : 'storm/engine/drawable')
+install_headers(threed_drawable_headers + threed_drawable_inls, subdir : 'storm/engine/drawable/3D')
 install_headers(framegraph_headers + framegraph_inls, subdir : 'storm/engine/framegraph')

@@ -4,9 +4,6 @@
 
 #pragma once
 
-/////////// - STL - ///////////
-#include <unordered_map>
-
 /////////// - StormKit::core - ///////////
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
@@ -28,31 +25,16 @@
 
 #include <storm/engine/Engine.hpp>
 
-#include <storm/engine/drawable/CubeMap.hpp>
-#include <storm/engine/drawable/Mesh.hpp>
-
 #include <storm/engine/scene/Camera.hpp>
 
 namespace storm::engine {
     class STORM_PUBLIC Scene: public core::NonCopyable {
       public:
-        static constexpr auto DEFAULT_PBR_MATERIAL_NAME = "StormKit:DefaultPBRMaterial";
-        static constexpr auto CUBEMAP_MATERIAL_NAME     = "StormKit:CubeMap";
-
         explicit Scene(engine::Engine &engine);
         virtual ~Scene();
 
         Scene(Scene &&);
         Scene &operator=(Scene &&);
-
-        [[nodiscard]] inline Mesh createPBRMesh();
-        [[nodiscard]] inline MeshOwnedPtr createPBRMeshPtr();
-
-        [[nodiscard]] inline Model createModel();
-        [[nodiscard]] inline ModelOwnedPtr createModelPtr();
-
-        [[nodiscard]] inline CubeMap createCubeMap();
-        [[nodiscard]] inline CubeMapOwnedPtr createCubeMapPtr();
 
         void update(float delta) noexcept;
         void render(FrameGraph &framegraph, storm::engine::FramePassTextureID backbuffer) noexcept;
@@ -84,6 +66,8 @@ namespace storm::engine {
                                    FramePassTextureID backbuffer,
                                    std::vector<BindableBaseConstObserverPtr> bindables,
                                    render::GraphicsPipelineState &state) = 0;
+
+        void insertGenerateCubeMapPass(FrameGraph &framegraph, const CubeMap &cube_map);
 
         CameraOwnedPtr m_default_camera;
 

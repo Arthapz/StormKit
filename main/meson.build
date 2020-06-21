@@ -1,13 +1,16 @@
 dependencies = []
 
+#ide:editable-filelist
 headers = files([
     'include/storm/main/Main.hpp',
 ])
 
+#ide:editable-filelist
 inls = files([
     'include/storm/main/Main.hpp',
 ])
 
+#ide:editable-filelist
 sources = files([])
 args = {}
 
@@ -27,9 +30,9 @@ elif is_macos
     ])
     #args += {'cpp_args': '-x objective-c++'}
 
-    cocoa_dep = dependency('Cocoa')
+    foundation_dep = dependency('Foundation')
 
-    dependencies += [cocoa_dep]
+    dependencies += [foundation_dep]
 elif is_ios
     sources += files([
         'src/iOS/Main.mm',
@@ -46,8 +49,7 @@ args += {
 
 main_lib = static_library(
     'StormKit-main' + suffix, 
-    sources, 
-    headers, 
+    sources + headers,
     kwargs: args,
     install: true
 )

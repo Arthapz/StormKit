@@ -35,8 +35,18 @@ namespace storm::core {
     using ByteArray = std::vector<Byte>;
 
     template<ArraySize size>
-    using StaticByteArray = std::array<Byte, size>;
+    using ByteStaticArray = std::array<Byte, size>;
 
     using ByteSpan      = core::span<std::byte>;
     using ByteConstSpan = core::span<const std::byte>;
+
+    template<typename... Args>
+    inline auto makeByteArray(Args... args) {
+        return ByteArray { (static_cast<std::byte>(args), ...) };
+    }
+
+    template<typename... Args>
+    inline constexpr auto makeStaticByteArray(Args... args) noexcept {
+        return core::ByteStaticArray<sizeof...(args)> { static_cast<core::Byte>(args)... };
+    }
 } // namespace storm::core

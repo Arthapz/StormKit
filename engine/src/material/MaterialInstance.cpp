@@ -89,7 +89,7 @@ MaterialInstance::MaterialInstance(const Scene &scene, const Material &material)
     : Bindable { [&material](Bindable::DescriptorSetVariant &layout) {
           layout = core::makeConstObserver(material.m_descriptor_set_layout);
       } },
-      m_engine { &scene.engine() }, m_parent { &material } {
+      m_engine { &scene.engine() }, m_scene { &scene }, m_parent { &material } {
     const auto buffering_count = m_engine->surface().bufferingCount();
     const auto &device         = m_engine->device();
 
@@ -100,12 +100,25 @@ MaterialInstance::MaterialInstance(const Scene &scene, const Material &material)
     const auto &sampleds = m_parent->m_data.samplers;
     m_sampled_textures.reserve(std::size(sampleds));
 
-    const auto &default_map = scene.texturePool().get("BlankTexture");
-    for (const auto &[binding, name] : sampleds) {
-        m_sampled_textures.emplace(name,
-                                   SampledBinding { .binding = binding,
-                                                    .view    = default_map.createViewPtr(),
-                                                    .sampler = device.createSamplerPtr() });
+    const auto getDefaultMapFor = [&texture_pool = scene.texturePool()](
+                                      render::TextureViewType type) -> const render::Texture & {
+        if (type == render::TextureViewType::Cube)
+            return texture_pool.get("StormKit:BlankTexture:Cube");
+
+        return texture_pool.get("StormKit:BlankTexture:2D");
+    };
+
+    for (const auto &[binding, sampler] : sampleds) {
+        const auto &map = getDefaultMapFor(sampler.type);
+
+        m_sampled_textures.emplace(sampler.name,
+                                   SampledBinding {
+                                       .binding = binding,
+                                       .texture = core::makeConstObserver(map),
+                                       .view    = map.createViewPtr(sampler.type,
+                                                                 { .layer_count = map.layers() *
+                                                                                  map.faces() }),
+                                       .sampler = device.createSamplerPtr() });
 
         m_buffer_binding = std::max(m_buffer_binding, static_cast<core::Int32>(binding));
     }
@@ -151,13 +164,15 @@ void MaterialInstance::flush() {
     auto descriptors = render::DescriptorArray {};
 
     for (auto &[_, sampled_texture] : m_sampled_textures) {
-        descriptors.emplace_back(render::TextureDescriptor {
-            .binding      = sampled_texture.binding,
-            .layout       = render::TextureLayout::Shader_Read_Only_Optimal,
-            .texture_view = core::makeConstObserver(sampled_texture.view),
-            .sampler      = core::makeConstObserver(sampled_texture.sampler) });
+        if (sampled_texture.dirty) {
+            descriptors.emplace_back(render::TextureDescriptor {
+                .binding      = sampled_texture.binding,
+                .layout       = render::TextureLayout::Shader_Read_Only_Optimal,
+                .texture_view = core::makeConstObserver(sampled_texture.view),
+                .sampler      = core::makeConstObserver(sampled_texture.sampler) });
 
-        if (sampled_texture.dirty) { sampled_texture.dirty = false; }
+            if (sampled_texture.dirty) { sampled_texture.dirty = false; }
+        }
     }
 
     if (m_bytes_dirty && !std::empty(m_bytes)) {
@@ -193,4 +208,33 @@ void MaterialInstance::recomputeHash() const noexcept {
     core::hash_combine(m_hash, m_rasterization_state);
 
     m_dirty_hash = false;
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+MaterialInstanceOwnedPtr MaterialInstance::clone() const {
+    const auto &device = m_engine->device();
+
+    auto material_instance                   = m_parent->createInstancePtr();
+    material_instance->m_rasterization_state = m_rasterization_state;
+    material_instance->m_data_offsets        = m_data_offsets;
+    material_instance->m_bytes               = m_bytes;
+    material_instance->m_bytes_dirty         = true;
+
+    for (const auto &[name, binding] : m_sampled_textures) {
+        auto copy    = SampledBinding {};
+        copy.binding = binding.binding;
+        copy.texture = binding.texture;
+        copy.view =
+            binding.texture->createViewPtr(binding.view->type(), binding.view->subresourceRange());
+        copy.sampler = device.createSamplerPtr(binding.sampler->settings());
+        copy.dirty   = true;
+
+        material_instance->m_sampled_textures[name] = std::move(copy);
+    }
+
+    material_instance->m_dirty = true;
+    material_instance->flush();
+
+    return material_instance;
 }

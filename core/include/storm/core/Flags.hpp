@@ -24,4 +24,12 @@ namespace storm::core {
     constexpr inline bool checkFlag(Enum value, Enum2 flag) {
         return (value & flag) == value;
     }
+
+    template<typename E>
+    constexpr typename std::enable_if<enable_bitmask_operators<E>::enable, E>::type
+        nextValue(E value) noexcept {
+        using underlying_type = std::underlying_type_t<E>;
+
+        return static_cast<E>(static_cast<underlying_type>(value) << 1);
+    }
 } // namespace storm::core

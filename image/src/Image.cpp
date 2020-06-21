@@ -1,19 +1,46 @@
-#include "private/ImageData.hpp"
-#include "private/ImageLoader.hpp"
+/////////// - StormKit::image - ///////////
+#include <storm/image/Image.hpp>
 
-#include <gsl/gsl_util>
-
+/////////// - StormKit::core - ///////////
+#include <storm/core/Numerics.hpp>
 #include <storm/core/Ranges.hpp>
-#include <storm/core/Span.hpp>
 #include <storm/core/Strings.hpp>
 
-#include <storm/image/Image.hpp>
+/////////// - STL - ///////////
+#include <fstream>
+#include <streambuf>
+
+/////////// - GSL - ///////////
+#include <gsl/gsl_util>
 
 using namespace storm;
 using namespace storm::image;
 
 namespace storm::image {
-    Image::Codec filenameToCodec(const std::filesystem::path &filename) {
+    static constexpr auto KTX_HEADER = core::makeStaticByteArray(0xAB,
+                                                                 0x4B,
+                                                                 0x54,
+                                                                 0x58,
+                                                                 0x20,
+                                                                 0x31,
+                                                                 0x31,
+                                                                 0xBB,
+                                                                 0x0D,
+                                                                 0x0A,
+                                                                 0x1A,
+                                                                 0x0A);
+
+    static constexpr auto PNG_HEADER =
+        core::makeStaticByteArray(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
+
+    static constexpr auto JPEG_HEADER = core::makeStaticByteArray(0xFF, 0xD8);
+
+    Image::Codec filenameToCodec(const std::filesystem::path &filename) noexcept {
+        STORM_EXPECTS(std::filesystem::exists(filename));
+        STORM_EXPECTS(filename.has_extension());
+        STORM_EXPECTS(!std::filesystem::is_directory(filename));
+        STORM_EXPECTS(std::filesystem::is_regular_file(filename));
+
         const std::string ext = filename.extension().string();
 
         if (core::toLower(ext) == ".jpg" || core::toLower(ext) == ".jpeg")
@@ -24,281 +51,621 @@ namespace storm::image {
             return Image::Codec::TARGA;
         else if (core::toLower(ext) == ".ppm")
             return Image::Codec::PPM;
+        else if (core::toLower(ext) == ".hdr")
+            return Image::Codec::HDR;
+        else if (core::toLower(ext) == ".ktx")
+            return Image::Codec::KTX;
 
-        return Image::Codec::UNKNOW;
+        return Image::Codec::Unknown;
+    }
+
+    Image::Codec headerToCodec(core::ByteConstSpan data) noexcept {
+        STORM_EXPECTS(std::size(data) >= 12);
+
+        if (std::memcmp(std::data(data), std::data(KTX_HEADER), std::size(KTX_HEADER)) == 0)
+            return Image::Codec::KTX;
+        else if (std::memcmp(std::data(data), std::data(PNG_HEADER), std::size(PNG_HEADER)) == 0)
+            return Image::Codec::PNG;
+        else if (std::memcmp(std::data(data), std::data(JPEG_HEADER), std::size(JPEG_HEADER)) == 0)
+            return Image::Codec::JPEG;
+
+        return Image::Codec::Unknown;
+    }
+
+    core::ByteArray map(core::ByteConstSpan bytes,
+                        core::UInt8 source_count,
+                        core::UInt8 destination_count) noexcept {
+        STORM_EXPECTS(source_count <= 4u && source_count > 0u && destination_count <= 4u &&
+                      destination_count > 0u);
+
+        static constexpr auto byte_1_min = std::numeric_limits<core::UInt8>::min();
+        static constexpr auto byte_1_max = std::numeric_limits<core::UInt8>::max();
+        static constexpr auto byte_2_min = std::numeric_limits<core::UInt16>::min();
+        static constexpr auto byte_2_max = std::numeric_limits<core::UInt16>::max();
+        static constexpr auto byte_4_min = std::numeric_limits<core::UInt32>::min();
+        static constexpr auto byte_4_max = std::numeric_limits<core::UInt32>::max();
+
+        auto data = core::ByteArray {};
+        data.resize(std::size(bytes) * destination_count);
+
+        if (source_count == 1u && destination_count == 2u) {
+            const auto input_it = reinterpret_cast<const core::UInt8 *>(std::data(data));
+            auto output_it      = reinterpret_cast<core::UInt16 *>(std::data(data));
+
+            for (auto i = 0u; i < std::size(bytes); ++i)
+                output_it[i] = core::map<core::UInt16>(input_it[i],
+                                                       byte_1_min,
+                                                       byte_1_max,
+                                                       byte_2_min,
+                                                       byte_2_max);
+        } else if (source_count == 1u && destination_count == 4u) {
+            const auto input_it = reinterpret_cast<const core::UInt8 *>(std::data(data));
+            auto output_it      = reinterpret_cast<core::UInt32 *>(std::data(data));
+
+            for (auto i = 0u; i < std::size(bytes); ++i)
+                output_it[i] = core::map<core::UInt32>(input_it[i],
+                                                       byte_1_min,
+                                                       byte_1_max,
+                                                       byte_4_min,
+                                                       byte_4_max);
+        } else if (source_count == 2u && destination_count == 1u) {
+            const auto input_it = reinterpret_cast<const core::UInt16 *>(std::data(data));
+            auto output_it      = reinterpret_cast<core::UInt8 *>(std::data(data));
+
+            for (auto i = 0u; i < std::size(bytes); ++i)
+                output_it[i] = core::map<core::UInt8>(input_it[i],
+                                                      byte_2_min,
+                                                      byte_2_max,
+                                                      byte_1_min,
+                                                      byte_1_max);
+        } else if (source_count == 2u && destination_count == 4u) {
+            const auto input_it = reinterpret_cast<const core::UInt16 *>(std::data(data));
+            auto output_it      = reinterpret_cast<core::UInt32 *>(std::data(data));
+
+            for (auto i = 0u; i < std::size(bytes); ++i)
+                output_it[i] = core::map<core::UInt32>(input_it[i],
+                                                       byte_2_min,
+                                                       byte_2_max,
+                                                       byte_4_min,
+                                                       byte_4_max);
+        } else if (source_count == 4u && destination_count == 1u) {
+            const auto input_it = reinterpret_cast<const core::UInt32 *>(std::data(data));
+            auto output_it      = reinterpret_cast<core::UInt8 *>(std::data(data));
+
+            for (auto i = 0u; i < std::size(bytes); ++i)
+                output_it[i] = core::map<core::UInt8>(input_it[i],
+                                                      byte_4_min,
+                                                      byte_4_max,
+                                                      byte_1_min,
+                                                      byte_1_max);
+        } else if (source_count == 4u && destination_count == 2u) {
+            const auto input_it = reinterpret_cast<const core::UInt32 *>(std::data(data));
+            auto output_it      = reinterpret_cast<core::UInt16 *>(std::data(data));
+
+            for (auto i = 0u; i < std::size(bytes); ++i)
+                output_it[i] = core::map<core::UInt16>(input_it[i],
+                                                       byte_4_min,
+                                                       byte_4_max,
+                                                       byte_2_min,
+                                                       byte_2_max);
+        } else
+            data = { core::ranges::begin(bytes), core::ranges::end(bytes) };
+
+        return data;
     }
 } // namespace storm::image
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image::Image() = default;
+Image::Image() noexcept = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image::Image(const std::filesystem::path &filepath, Image::Codec codec) : Image {} {
+Image::Image(const std::filesystem::path &filepath, Image::Codec codec) noexcept : Image {} {
     loadFromFile(filepath, codec);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image::Image(Image::const_span data, Image::Codec codec) : Image {} {
+Image::Image(core::ByteConstSpan data, Image::Codec codec) noexcept : Image {} {
     loadFromMemory(data, codec);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image::~Image() = default;
+Image::~Image() noexcept = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+Image::Image(const Image &rhs) noexcept
+    : m_extent { rhs.m_extent }, m_channel_count { rhs.m_channel_count },
+      m_bytes_per_channel { rhs.m_bytes_per_channel }, m_layers { rhs.m_layers },
+      m_faces { rhs.m_faces },
+      m_mip_levels { rhs.m_mip_levels }, m_format { rhs.m_format }, m_data { rhs.m_data } {
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+Image &Image::operator=(const Image &rhs) noexcept {
+    if (&rhs == this) return *this;
+
+    m_channel_count     = rhs.m_channel_count;
+    m_bytes_per_channel = rhs.m_bytes_per_channel;
+    m_mip_levels        = rhs.m_mip_levels;
+    m_format            = rhs.m_format;
+    m_data              = rhs.m_data;
+    m_extent            = rhs.m_extent;
+    m_channel_count     = rhs.m_channel_count;
+    m_bytes_per_channel = rhs.m_bytes_per_channel;
+    m_mip_levels        = rhs.m_mip_levels;
+    m_faces             = rhs.m_faces;
+    m_layers            = rhs.m_layers;
+    m_data              = rhs.m_data;
+    m_format            = rhs.m_format;
+
+    return *this;
+};
+
+////////////////////////////////////////
+////////////////////////////////////////
+Image::Image(Image &&) noexcept = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+Image &Image::operator=(Image &&) noexcept = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Image::loadFromFile(const std::filesystem::path &filepath, Image::Codec codec) {
-    detach();
+bool Image::loadFromFile(std::filesystem::path filepath, Image::Codec codec) noexcept {
+    filepath = std::filesystem::canonical(filepath);
 
-    if (codec == Image::Codec::AUTODETECT) codec = filenameToCodec(filepath);
+    STORM_EXPECTS(codec != Image::Codec::Unknown);
+    STORM_EXPECTS(!std::empty(filepath));
 
-    STORM_EXPECTS(codec != Image::Codec::UNKNOW);
+    if (!std::filesystem::exists(filepath)) {
+        elog("Failed to open file\n    file: {}\n    reason: Incorrect path", filepath.string());
 
-    switch (codec) {
-        case Image::Codec::PPM: m_data = private_::ImageLoader::loadPPM(filepath); break;
-        case Image::Codec::JPEG: m_data = private_::ImageLoader::loadJpeg(filepath); break;
-        case Image::Codec::PNG: m_data = private_::ImageLoader::loadPng(filepath); break;
-        case Image::Codec::TARGA: m_data = private_::ImageLoader::loadTga(filepath); break;
-        default: throw std::runtime_error("oops");
+        return false;
     }
-}
 
-/////////////////////////////////////
-/////////////////////////////////////
-void Image::loadFromMemory(Image::const_span data, Image::Codec codec) {
-    detach();
+    STORM_EXPECTS(std::filesystem::exists(filepath));
 
-    STORM_EXPECTS(codec != Image::Codec::AUTODETECT);
-    STORM_EXPECTS(codec != Image::Codec::UNKNOW);
+    const auto data = [&filepath]() {
+        auto file = std::ifstream { filepath, std::ios::binary };
 
+        file.seekg(0, std::ios::end);
+        auto file_size = static_cast<std::size_t>(file.tellg());
+        file.seekg(0, std::ios::beg);
+
+        auto data = core::ByteArray { file_size };
+        file.read(reinterpret_cast<char *>(std::data(data)), file_size);
+
+        return data;
+    }();
+
+    if (codec == Image::Codec::Autodetect) codec = filenameToCodec(filepath);
     switch (codec) {
-        case Image::Codec::JPEG: m_data = private_::ImageLoader::loadJpeg(data); break;
-        case Image::Codec::PNG: m_data = private_::ImageLoader::loadPng(data); break;
-        case Image::Codec::TARGA: m_data = private_::ImageLoader::loadTga(data); break;
-        case Image::Codec::PPM: m_data = private_::ImageLoader::loadPPM(data); break;
-        default: throw std::runtime_error("oops");
-    }
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-void Image::create(core::UInt32 width, core::UInt32 height, core::UInt8 channel_count) {
-    STORM_EXPECTS(width > 0 && height > 0 && channel_count > 0);
-
-    m_data          = std::make_shared<private_::ImageData>();
-    m_data->extent  = { width, height };
-    m_data->channel = channel_count;
-    m_data->data.resize(width * height * m_data->channel);
-
-    STORM_ENSURES(m_data->data.size() == width * height * channel_count);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Image::span Image::operator[](Image::size_type index) {
-    STORM_EXPECTS(m_data != nullptr);
-    STORM_EXPECTS(index < m_data->extent.width * m_data->extent.height);
-
-    detach();
-
-    return { std::data(data()) + index, std::data(data()) + index + channels() };
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Image::const_span Image::operator[](Image::size_type index) const noexcept {
-    STORM_EXPECTS(m_data != nullptr);
-    STORM_EXPECTS(index < m_data->extent.width * m_data->extent.height);
-
-    return { std::data(data()) + index, std::data(data()) + index + channels() };
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Image::span Image::operator()(XOffset x_offset, YOffset y_offset) {
-    STORM_EXPECTS(m_data != nullptr);
-    STORM_EXPECTS(x_offset < m_data->extent.width && y_offset < m_data->extent.height);
-
-    detach();
-
-    auto pointer = &m_data->data[(y_offset * extent().width + x_offset) * channels()];
-
-    return { pointer, pointer + channels() };
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Image::const_span Image::operator()(XOffset x_offset, YOffset y_offset) const noexcept {
-    STORM_EXPECTS(m_data != nullptr);
-    STORM_EXPECTS(x_offset < m_data->extent.width && y_offset < m_data->extent.height);
-
-    const auto pointer = &m_data->data[(y_offset * extent().width + x_offset) * channels()];
-
-    return { pointer, pointer + channels() };
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-core::Extentu Image::extent() const noexcept {
-    STORM_EXPECTS(m_data != nullptr);
-
-    return m_data->extent;
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-core::UInt8 Image::channels() const noexcept {
-    STORM_EXPECTS(m_data != nullptr);
-
-    return m_data->channel;
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Image::size_type Image::size() const noexcept {
-    STORM_EXPECTS(m_data != nullptr);
-
-    return std::size(m_data->data);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Image::const_span Image::data() const noexcept {
-    STORM_EXPECTS(m_data != nullptr);
-
-    return m_data->data;
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Image::span Image::data() {
-    STORM_EXPECTS(m_data != nullptr);
-
-    detach();
-
-    return m_data->data;
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Image Image::scale(const Image &src, [[maybe_unused]] const core::Extentu &) {
-    return src;
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Image Image::flipX(const Image &src) {
-    Image out = src;
-    out.detach();
-
-    auto src_data = src.data();
-    auto out_data = out.data();
-
-    std::fill(core::ranges::begin(out_data), core::ranges::end(out_data), core::Byte { 0 });
-
-    for (auto x = 0u; x < out.extent().width; ++x)
-        for (auto y = 0u; y < out.extent().height; ++y)
-            for (auto k = 0u; k < src.channels(); ++k) {
-                const auto out_index = (x + y * out.extent().width) * src.channels() + k;
-                const auto src_index =
-                    (x + (out.extent().height) * out.extent().width - 1u - x) * src.channels() + k;
-
-                out_data[out_index] = src_data[src_index];
+        case Image::Codec::JPEG: {
+            if (auto result = loadJPEG(data); result.has_value()) {
+                elog("Failed to open JPEG file\n    file: {}\n    reason: {}",
+                     filepath.string(),
+                     result.value());
+                return false;
             }
 
-    return out;
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Image Image::flipY(const Image &src) {
-    Image out = src;
-    out.detach();
-
-    auto src_data = src.data();
-    auto out_data = out.data();
-
-    std::fill(core::ranges::begin(out_data), core::ranges::end(out_data), core::Byte { 0 });
-
-    for (auto x = 0u; x < out.extent().width; ++x)
-        for (auto y = 0u; y < out.extent().height; ++y)
-            for (auto k = 0u; k < src.channels(); ++k) {
-                const auto out_index = (x + y * out.extent().width) * src.channels() + k;
-                const auto src_index =
-                    (x + (out.extent().height - 1u - y) * out.extent().width) * src.channels() + k;
-
-                out_data[out_index] = src_data[src_index];
+            return true;
+        }
+        case Image::Codec::PNG: {
+            if (auto result = loadPNG(data); result.has_value()) {
+                elog("Failed to open PNG file\n    file: {}\n    reason: {}",
+                     filepath.string(),
+                     result.value());
+                return false;
             }
-    return out;
+
+            return true;
+        }
+        case Image::Codec::TARGA: {
+            if (auto result = loadTARGA(data); result.has_value()) {
+                elog("Failed to open TARGA file\n    file: {}\n    reason: {}",
+                     filepath.string(),
+                     result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::PPM: {
+            if (auto result = loadPPM(data); result.has_value()) {
+                elog("Failed to open PPM file\n    file: {}\n    reason: {}",
+                     filepath.string(),
+                     result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::HDR: {
+            if (auto result = loadHDR(data); result.has_value()) {
+                elog("Failed to open HDR file\n    file: {}\n    reason: {}",
+                     filepath.string(),
+                     result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::KTX: {
+            if (auto result = loadKTX(data); result.has_value()) {
+                elog("Failed to open KTX file\n    file: {}\n    reason: {}",
+                     filepath.string(),
+                     result.value());
+                return false;
+            }
+
+            return true;
+        }
+
+        default: return false;
+    }
+
+    return false;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image Image::rotate90(const Image &src) {
-    return src;
+bool Image::loadFromMemory(core::ByteConstSpan data, Image::Codec codec) noexcept {
+    STORM_EXPECTS(codec != Image::Codec::Unknown);
+    STORM_EXPECTS(!std::empty(data));
+
+    if (codec == Image::Codec::Autodetect) codec = headerToCodec(data);
+    switch (codec) {
+        case Image::Codec::JPEG: {
+            if (auto result = loadJPEG(data); result.has_value()) {
+                elog("Failed to parse JPEG data\n    reason: {}", result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::PNG: {
+            if (auto result = loadPNG(data); result.has_value()) {
+                elog("Failed to parse PNG data\n    reason: {}", result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::TARGA: {
+            if (auto result = loadTARGA(data); result.has_value()) {
+                elog("Failed to open TARGA file\n    file: {}\n    reason: {}", result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::PPM: {
+            if (auto result = loadPPM(data); result.has_value()) {
+                elog("Failed to parse PPM data\n    reason: {}", result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::HDR: {
+            if (auto result = loadHDR(data); result.has_value()) {
+                elog("Failed to parse HDR data\n    reason: {}", result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::KTX: {
+            if (auto result = loadKTX(data); result.has_value()) {
+                elog("Failed to parse KTX data\n    reason: {}", result.value());
+                return false;
+            }
+
+            return true;
+        }
+        default: return false;
+    }
+
+    return false;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-Image Image::rotate180(const Image &src) {
-    return src;
-}
+bool Image::saveToFile(std::filesystem::path filepath, Codec codec, CodecArgs args) const noexcept {
+    filepath = std::filesystem::canonical(filepath.parent_path()) / filepath.filename();
 
-/////////////////////////////////////
-/////////////////////////////////////
-Image Image::rotate270(const Image &src) {
-    return src;
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-void Image::saveToFile(const std::filesystem::path &filename, Codec codec, CodecArgs args) {
-    STORM_EXPECTS(m_data != nullptr);
-    STORM_EXPECTS(!std::empty(filename));
-
-    if (codec == Image::Codec::AUTODETECT) codec = filenameToCodec(filename);
+    STORM_EXPECTS(codec != Image::Codec::Unknown);
+    STORM_EXPECTS(codec != Image::Codec::Autodetect);
+    STORM_EXPECTS(!std::empty(filepath));
+    STORM_EXPECTS(!std::empty(m_data));
+    STORM_EXPECTS(std::filesystem::exists(filepath.root_directory()));
 
     switch (codec) {
-        case Image::Codec::PPM: private_::ImageLoader::savePPM(filename, m_data, args); break;
-        case Image::Codec::JPEG: private_::ImageLoader::saveJpeg(filename, m_data, args); break;
-        case Image::Codec::PNG: private_::ImageLoader::savePng(filename, m_data, args); break;
-        case Image::Codec::TARGA: private_::ImageLoader::saveTga(filename, m_data, args); break;
-        default: throw std::runtime_error("oops");
+        case Image::Codec::JPEG: {
+            if (auto result = saveJPEG(filepath); result.has_value()) {
+                elog("Failed to parse JPEG data\n    file: {}\n    reason{}",
+                     filepath.string(),
+                     result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::PNG: {
+            if (auto result = savePNG(filepath); result.has_value()) {
+                elog("Failed to save PNG file\n    file: {}\n    reason{}",
+                     filepath.string(),
+                     result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::TARGA: {
+            if (auto result = saveTARGA(filepath); result.has_value()) {
+                elog("Failed to open TARGA file\n    file: {}\n    reason{}",
+                     filepath.string(),
+                     result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::PPM: {
+            if (auto result = savePPM(filepath, args); result.has_value()) {
+                elog("Failed to parse PPM data\n    file: {}\n    reason{}",
+                     filepath.string(),
+                     result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::HDR: {
+            if (auto result = saveHDR(filepath); result.has_value()) {
+                elog("Failed to parse HDR data\n    file: {}\n    reason{}",
+                     filepath.string(),
+                     result.value());
+                return false;
+            }
+
+            return true;
+        }
+        case Image::Codec::KTX: {
+            if (auto result = saveKTX(filepath); result.has_value()) {
+                elog("Failed to parse KTX data\n    file: {}\n    reason{}",
+                     filepath.string(),
+                     result.value());
+                return false;
+            }
+
+            return true;
+        }
+        default: return false;
     }
-}
 
-void Image::addChannels(core::UInt8 count) {
-    STORM_EXPECTS(m_data != nullptr);
-    STORM_EXPECTS(count > 0u);
-
-    detach();
-
-    const auto pixel_count = m_data->extent.width * m_data->extent.height;
-
-    auto image_data = std::vector<Image::data_type> {};
-    image_data.reserve(pixel_count * (m_data->channel + count));
-
-    for (auto i = 0u; i < pixel_count; ++i) {
-        std::copy_n(core::ranges::begin(m_data->data) + (i * m_data->channel),
-                    m_data->channel,
-                    std::back_inserter(image_data));
-
-        for (auto j = 0u; j < count; ++j) image_data.emplace_back(core::Byte {});
-    }
-
-    m_data->channel += count;
-    m_data->data = std::move(image_data);
+    return false;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Image::detach() {
-    if (m_data && m_data.use_count() > 1) {
-        private_::ImageData *tmp = m_data.get();
-        m_data                   = std::make_shared<private_::ImageData>(*tmp);
+void Image::create(core::Extentu extent, Format format) noexcept {
+    STORM_EXPECTS(extent.width > 0u && extent.height > 0u && extent.depth > 0u &&
+                  format != Format::Undefined);
+    m_data.clear();
+
+    m_extent            = extent;
+    m_channel_count     = getChannelCountFor(format);
+    m_bytes_per_channel = getByteCountByChannelFor(format);
+    m_layers            = 1u;
+    m_faces             = 1u;
+    m_mip_levels        = 1u;
+    m_format            = format;
+
+    m_data.resize(m_extent.width * m_extent.height * m_extent.depth * m_layers * m_faces *
+                  m_mip_levels * m_channel_count * m_bytes_per_channel);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+Image Image::toFormat(Format format) const noexcept {
+    STORM_EXPECTS(!std::empty(m_data));
+    STORM_EXPECTS(format != Format::Undefined);
+
+    if (m_format == format) return *this;
+
+    auto image                = Image {};
+    image.m_extent            = m_extent;
+    image.m_channel_count     = getChannelCountFor(format);
+    image.m_bytes_per_channel = getByteCountByChannelFor(format);
+    image.m_mip_levels        = m_mip_levels;
+    image.m_faces             = m_faces;
+    image.m_layers            = m_layers;
+    image.m_format            = format;
+
+    const auto channel_delta =
+        static_cast<core::UInt8>(std::min(0,
+                                          static_cast<core::Int8>(image.m_channel_count) -
+                                              static_cast<core::Int8>(m_channel_count)));
+    const auto pixel_count = m_extent.width * m_extent.height * m_extent.depth;
+
+    image.m_data.resize(pixel_count * image.m_channel_count * image.m_bytes_per_channel);
+    for (auto layer = 0u; layer < image.m_layers; ++layer) {
+        for (auto face = 0u; face < image.m_faces; ++face) {
+            for (auto level = 0u; level < image.m_layers; ++level) {
+                for (auto i = 0u; i < pixel_count; ++i) {
+                    const auto from_image = map(pixel(i, layer, face, level),
+                                                m_bytes_per_channel,
+                                                image.m_bytes_per_channel);
+                    auto to_image         = image.pixel(i, layer, face, level);
+
+                    core::ranges::copy_n(core::ranges::begin(from_image),
+                                         image.m_channel_count,
+                                         core::ranges::begin(to_image));
+
+                    core::ranges::fill_n(core::ranges::begin(to_image) + m_channel_count,
+                                         channel_delta,
+                                         core::Byte { 0u });
+                }
+            }
+        }
     }
+
+    return image;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+Image Image::scale([[maybe_unused]] const core::Extentu &) const noexcept {
+    return *this;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+Image Image::flipX() const noexcept {
+    auto image                = Image {};
+    image.m_extent            = m_extent;
+    image.m_channel_count     = m_channel_count;
+    image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
+    image.m_mip_levels        = m_mip_levels;
+    image.m_format            = m_format;
+    image.m_data.resize(std::size(m_data));
+
+    for (auto layer = 0u; layer < m_layers; ++layer)
+        for (auto face = 0u; face < m_faces; ++face)
+            for (auto mip = 0u; mip < m_mip_levels; ++mip)
+                for (auto x = 0u; x < m_extent.width; ++x) {
+                    const auto inv_x = m_extent.width - x - 1u;
+                    for (auto y = 0u; y < m_extent.height; ++y)
+                        for (auto z = 0u; z < m_extent.depth; ++z) {
+                            auto output =
+                                image.pixel(core::Offset3u { inv_x, y, z }, layer, face, mip);
+
+                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, layer, face, mip),
+                                               core::ranges::begin(output));
+                        }
+                }
+
+    return image;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+Image Image::flipY() const noexcept {
+    auto image                = Image {};
+    image.m_extent            = m_extent;
+    image.m_channel_count     = m_channel_count;
+    image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
+    image.m_mip_levels        = m_mip_levels;
+    image.m_format            = m_format;
+    image.m_data.resize(std::size(m_data));
+
+    for (auto layer = 0u; layer < m_layers; ++layer)
+        for (auto face = 0u; face < m_faces; ++face)
+            for (auto mip = 0u; mip < m_mip_levels; ++mip)
+                for (auto x = 0u; x < m_extent.width; ++x)
+                    for (auto y = 0u; y < m_extent.height; ++y) {
+                        const auto inv_y = m_extent.height - 1u - y;
+                        for (auto z = 0u; z < m_extent.depth; ++z) {
+                            auto output =
+                                image.pixel(core::Offset3u { x, inv_y, z }, layer, face, mip);
+                            const auto data = pixel(core::Offset3u { x, y, z }, layer, face, mip);
+
+                            core::ranges::copy(data, core::ranges::begin(output));
+                        }
+                    }
+
+    return image;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+Image Image::flipZ() const noexcept {
+    auto image                = Image {};
+    image.m_extent            = m_extent;
+    image.m_channel_count     = m_channel_count;
+    image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
+    image.m_mip_levels        = m_mip_levels;
+    image.m_format            = m_format;
+    image.m_data.resize(std::size(m_data));
+
+    for (auto layer = 0u; layer < m_layers; ++layer)
+        for (auto face = 0u; face < m_faces; ++face)
+            for (auto mip = 0u; mip < m_mip_levels; ++mip)
+                for (auto x = 0u; x < m_extent.width; ++x)
+                    for (auto y = 0u; y < m_extent.height; ++y)
+                        for (auto z = 0u; z < m_extent.depth; ++z) {
+                            const auto inv_z = m_extent.depth - 1u - z;
+
+                            auto output =
+                                image.pixel(core::Offset3u { x, z, inv_z }, layer, face, mip);
+
+                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, layer, face, mip),
+                                               core::ranges::begin(output));
+                        }
+
+    return image;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+Image Image::rotate90() const noexcept {
+    auto image                = Image {};
+    image.m_extent.width      = m_extent.height;
+    image.m_extent.height     = m_extent.width;
+    image.m_channel_count     = m_channel_count;
+    image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
+    image.m_mip_levels        = m_mip_levels;
+    image.m_format            = m_format;
+    image.m_data.resize(std::size(m_data));
+
+    // TODO implement
+
+    return image;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+Image Image::rotate180() const noexcept {
+    auto image                = Image {};
+    image.m_extent            = m_extent;
+    image.m_channel_count     = m_channel_count;
+    image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
+    image.m_mip_levels        = m_mip_levels;
+    image.m_format            = m_format;
+    image.m_data.resize(std::size(m_data));
+
+    return image;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+Image Image::rotate270() const noexcept {
+    auto image                = Image {};
+    image.m_extent.width      = m_extent.height;
+    image.m_extent.height     = m_extent.width;
+    image.m_channel_count     = m_channel_count;
+    image.m_bytes_per_channel = m_bytes_per_channel;
+    image.m_layers            = m_layers;
+    image.m_faces             = m_faces;
+    image.m_mip_levels        = m_mip_levels;
+    image.m_format            = m_format;
+    image.m_data.resize(std::size(m_data));
+
+    return image;
 }

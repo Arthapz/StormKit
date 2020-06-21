@@ -24,13 +24,10 @@ namespace storm::engine {
         CubeMapMaterialInstance(CubeMapMaterialInstance &&);
         CubeMapMaterialInstance &operator=(CubeMapMaterialInstance &&);
 
-        inline void setCubeMap(const render::Texture &map,
-                               render::Sampler::Settings sampler_settings = {
-                                   .address_mode_u    = render::SamplerAddressMode::Clamp_To_Edge,
-                                   .address_mode_v    = render::SamplerAddressMode::Clamp_To_Edge,
-                                   .address_mode_w    = render::SamplerAddressMode::Clamp_To_Edge,
-                                   .border_color      = render::BorderColor::Float_Opaque_White,
-                                   .compare_operation = render::CompareOperation::Never }) noexcept;
+        inline void setCubeMap(
+            const render::Texture &map,
+            std::optional<render::TextureSubresourceRange> subresource_range = std::nullopt,
+            std::optional<render::Sampler::Settings> sampler_settings = std::nullopt) noexcept;
     }; // namespace storm::engine
 } // namespace storm::engine
 

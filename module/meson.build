@@ -4,17 +4,20 @@ dl_dep = compiler.find_library('dl', required: false)
 
 dependencies = [core_dep, dl_dep]
 
+#ide:editable-filelist
 headers = files([
     'include/storm/module/Fwd.hpp',
     'include/storm/module/Module.hpp',
     'include/storm/module/AbstractModule.hpp',
 ])
 
+#ide:editable-filelist
 inls = files([
     'include/storm/module/Module.inl',
     'include/storm/module/AbstractModule.inl',
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/Module.cpp',
     'src/AbstractModule.cpp',
@@ -38,8 +41,7 @@ if lib_type == 'shared'
     module_lib_name = 'StormKit-module' + suffix
     module_lib = shared_library(
         module_lib_name,
-        sources,
-        headers,
+        sources + headers,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,
@@ -50,8 +52,7 @@ else
     module_lib_name = 'StormKit-module-static' + suffix
     module_lib = static_library(
         module_lib_name,
-        sources,
-        headers,
+        sources + headers,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,

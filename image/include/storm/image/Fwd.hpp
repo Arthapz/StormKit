@@ -4,10 +4,28 @@
 
 #pragma once
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Memory.hpp>
 #include <storm/core/NamedType.hpp>
 
+#ifndef STORM_IMAGE_NO_LOGGING
+    /////////// - StormKit::log - ///////////
+    #include <storm/log/LogHandler.hpp>
+#endif
+
 namespace storm::image {
+#ifndef STORM_IMAGE_NO_LOGGING
+    template<typename... Args>
+    inline void elog(Args &&... args) {
+        static constexpr auto LOG_MODULE = log::makeModule("image");
+
+        log::LogHandler::elog(LOG_MODULE, std::forward<Args>(args)...);
+    }
+#else
+    template<typename... Args>
+    inline void elog([[maybe_unused]] Args... &&args) {}
+#endif
+
     class Image;
     DECLARE_PTR_AND_REF(Image)
 

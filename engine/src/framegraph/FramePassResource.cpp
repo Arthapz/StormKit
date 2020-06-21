@@ -13,13 +13,14 @@ using namespace storm::engine;
 ////////////////////////////////////////
 ////////////////////////////////////////
 void FrameGraphTexture::realize(const render::Device &device, const Descriptor &descriptor) {
-    auto texture = device.createTexturePtr(descriptor.type);
-    texture->createTextureData(descriptor.extent,
-                               descriptor.format,
-                               descriptor.samples,
-                               descriptor.levels,
-                               1,
-                               descriptor.usage);
+    auto texture = device.createTexturePtr(descriptor.extent,
+                                           descriptor.format,
+                                           1u,
+                                           descriptor.levels,
+                                           descriptor.type,
+                                           render::TextureCreateFlag::None,
+                                           descriptor.samples,
+                                           descriptor.usage);
 
     storage = std::move(texture);
 }

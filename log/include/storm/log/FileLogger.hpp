@@ -4,13 +4,14 @@
 
 #pragma once
 
-#include <storm/core/Platform.hpp>
-
 #include <filesystem>
 #include <fstream>
+
+#include <storm/core/HashMap.hpp>
 #include <storm/core/NonCopyable.hpp>
+#include <storm/core/Platform.hpp>
+
 #include <storm/log/Logger.hpp>
-#include <unordered_map>
 
 #ifdef STORM_COMPILER_MSVC
     #pragma warning(push)
@@ -32,7 +33,7 @@ namespace storm::log {
         void flush() override;
 
       private:
-        std::unordered_map<std::string, std::ofstream> m_streams;
+        storm::core::HashMap<std::string, std::ofstream> m_streams;
 
         std::filesystem::path m_base_path;
     };

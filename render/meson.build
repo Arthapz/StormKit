@@ -1,10 +1,22 @@
 vulkan_dep  = dependency('vulkan')
 
+if get_option('gli_include_dir') != ''
+    gli_dep = declare_dependency(include_directories: get_option('gli_include_dir'))
+else
+    gli_dep = dependency('gli')
+endif
+
 vulkan_headers_dep = declare_dependency(dependencies: [vulkan_dep])
 
-public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, vulkan_headers_dep]
+public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, gli_dep, vulkan_headers_dep]
 private_dependencies = []
 
+#ide:editable-filelist
+general_headers = files([
+   'include/storm/render/Fwd.hpp'
+])
+
+#ide:editable-filelist
 core_headers = files([
     'include/storm/render/core/vk_mem_alloc.h',
     'include/storm/render/core/Fwd.hpp',
@@ -25,6 +37,7 @@ core_headers = files([
     'include/storm/render/core/Types.hpp',
 ])
 
+#ide:editable-filelist
 core_inls = files([
     'include/storm/render/core/Enums.inl',
     'include/storm/render/core/Instance.inl',
@@ -35,6 +48,7 @@ core_inls = files([
     'include/storm/render/core/CommandBuffer.inl',
 ])
 
+#ide:editable-filelist
 resource_headers = files([
     'include/storm/render/resource/Fwd.hpp',
     'include/storm/render/resource/Shader.hpp',
@@ -47,6 +61,7 @@ resource_headers = files([
     'include/storm/render/resource/HardwareBuffer.hpp',
 ])
 
+#ide:editable-filelist
 resource_inls = files([
     'include/storm/render/resource/Shader.inl',
     'include/storm/render/resource/Texture.inl',
@@ -55,6 +70,7 @@ resource_inls = files([
     'include/storm/render/resource/HardwareBuffer.inl',
 ])
 
+#ide:editable-filelist
 pipeline_headers = files([
     'include/storm/render/pipeline/Fwd.hpp',
     'include/storm/render/pipeline/GraphicsPipeline.hpp',
@@ -69,6 +85,7 @@ pipeline_headers = files([
     'include/storm/render/pipeline/PipelineCache.hpp',
 ])
 
+#ide:editable-filelist
 pipeline_inls = files([
     'include/storm/render/pipeline/GraphicsPipeline.inl',
     'include/storm/render/pipeline/RenderPass.inl',
@@ -78,17 +95,20 @@ pipeline_inls = files([
     'include/storm/render/pipeline/DescriptorSet.inl',
 ])
 
+#ide:editable-filelist
 sync_headers = files([
     'include/storm/render/sync/Fwd.hpp',
     'include/storm/render/sync/Semaphore.hpp',
     'include/storm/render/sync/Fence.hpp',
 ])
 
+#ide:editable-filelist
 sync_inls = files([
     'include/storm/render/sync/Semaphore.inl',
     'include/storm/render/sync/Fence.inl',
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/core/Instance.cpp',
     'src/core/DynamicLoader.cpp',
@@ -121,7 +141,7 @@ sources = files([
     'src/sync/Fence.cpp',
 ])
 
-headers = core_headers + resource_headers + pipeline_headers + sync_headers
+headers = general_headers + core_headers + resource_headers + pipeline_headers + sync_headers
 
 args = {}
 args += {'extra_files': inls, 'gnu_symbol_visibility': 'hidden'}
@@ -138,8 +158,7 @@ if lib_type == 'shared'
     render_lib_name = 'StormKit-render' + suffix
     render_lib = shared_library(
         render_lib_name,
-        sources,
-        headers,
+        sources + headers,
         kwargs: args,
         install: true
     )
@@ -147,8 +166,7 @@ else
     render_lib_name = 'StormKit-render-static' + suffix
     render_lib = static_library(
         render_lib_name,
-        sources,
-        headers,
+        sources + headers,
         kwargs: args,
         install: true
     )
@@ -164,6 +182,7 @@ if get_option('enable_examples')
     subdir('samples')
 endif
 
+install_headers(general_headers, subdir : 'storm/render/')
 install_headers(core_headers + core_inls, subdir : 'storm/render/core')
 install_headers(resource_headers + resource_inls, subdir : 'storm/render/resource')
 install_headers(pipeline_headers + pipeline_inls, subdir : 'storm/render/pipeline')

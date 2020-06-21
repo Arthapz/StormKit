@@ -23,8 +23,9 @@ namespace storm::core {
     namespace ranges = std::experimental::ranges;
 } // namespace storm::core
 #elif __has_include(<range/v3/all.hpp>)
-    #include <range/v3/all.hpp>
+#include <range/v3/all.hpp>
 namespace storm::core {
     namespace ranges = ranges;
 } // namespace storm::core
+
 #endif

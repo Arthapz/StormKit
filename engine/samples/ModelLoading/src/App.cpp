@@ -21,9 +21,9 @@ using namespace storm;
 using storm::log::operator""_module;
 
 template<typename T>
-static constexpr auto WINDOW_WIDTH = T { 2560 };
+static constexpr auto WINDOW_WIDTH = T { 1280 };
 template<typename T>
-static constexpr auto WINDOW_HEIGHT = T { 1440 };
+static constexpr auto WINDOW_HEIGHT = T { 768 };
 static constexpr auto WINDOW_TITLE  = "StormKit ModelLoading Example";
 static constexpr auto LOG_MODULE    = "ModelLoading"_module;
 
@@ -35,7 +35,6 @@ App::App() {
                           STORM_PATCH_VERSION,
                           STORM_GIT_BRANCH,
                           STORM_GIT_COMMIT_HASH);
-    doInitWindow();
 }
 
 App::~App() = default;
@@ -43,12 +42,16 @@ App::~App() = default;
 void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
     auto model_filepath = std::filesystem::path { EXAMPLES_DATA_DIR "models/Sword.glb" };
 
-    if (argc > 1) { model_filepath = std::filesystem::path { argv[1] }; }
+    for (auto i = 1; i < argc; ++i) {
+        if (std::filesystem::exists(argv[i])) model_filepath = std::filesystem::path { argv[1] };
+        else if (std::string { argv[i] } == std::string { "--fullscreen" })
+            m_fullscreen = true;
+    }
+
+    doInitWindow();
 
     namespace Chrono = std::chrono;
     using Clock      = std::chrono::high_resolution_clock;
-
-    auto start_time = Clock::now();
 
     auto input_handler = window::InputHandler { *m_window };
 
@@ -58,14 +61,17 @@ void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
     m_scene = std::make_unique<GLTFScene>(*m_engine, *m_window, std::move(model_filepath));
     m_engine->setScene(*m_scene);
 
+    auto last_timepoint = Clock::now();
     while (m_window->isOpen()) {
+        const auto now_timepoint = Clock::now();
+        const auto delta =
+            Chrono::duration<float, Chrono::seconds::period> { now_timepoint - last_timepoint }
+                .count();
+        last_timepoint = now_timepoint;
+
         m_event_handler->update();
 
-        const auto now_timepoint = Clock::now();
-        const auto time =
-            Chrono::duration<float, Chrono::seconds::period> { now_timepoint - start_time }.count();
-
-        m_scene->update(time);
+        m_scene->update(delta);
 
         m_engine->render();
     }
@@ -74,12 +80,15 @@ void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 }
 
 void App::doInitWindow() {
-    /*   const auto video_settings =
-           window::VideoSettings { .size = core::Extentu { .width  = WINDOW_WIDTH<core::UInt32>,
-                                                           .height = WINDOW_HEIGHT<core::UInt32> }
-        ;*/
-    const auto video_settings = window::Window::getDesktopFullscreenSize();
-    const auto window_style   = window::WindowStyle::Fullscreen;
+    auto video_settings =
+        window::VideoSettings { .size = core::Extentu { .width  = WINDOW_WIDTH<core::UInt32>,
+                                                        .height = WINDOW_HEIGHT<core::UInt32> } };
+    auto window_style = window::WindowStyle::Close;
+
+    if (m_fullscreen) {
+        video_settings = window::Window::getDesktopFullscreenSize();
+        window_style   = window::WindowStyle::Fullscreen;
+    }
 
     m_window        = std::make_unique<window::Window>(WINDOW_TITLE, video_settings, window_style);
     m_event_handler = std::make_unique<window::EventHandler>(*m_window);

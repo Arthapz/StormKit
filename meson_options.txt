@@ -10,4 +10,8 @@ option('enable_image', type: 'boolean', value: true, description: 'Build StormKi
 option('enable_render', type: 'boolean', value: true, description: 'Build StormKit render library')
 option('enable_engine', type: 'boolean', value: true, description: 'Build StormKit engine library')
 
+option('image_enable_log', type: 'boolean', value: true, description: 'Enable image module logging')
+
 option('library_type', type: 'combo', choices: ['shared', 'static'], value: 'shared', description: 'Library type (default is shared)')
+
+option('gli_include_dir', type: 'string', value: '', description: 'Overwrite GLI include directory')

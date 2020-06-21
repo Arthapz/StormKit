@@ -23,7 +23,7 @@ namespace storm::render {
             SamplerAddressMode address_mode_w = SamplerAddressMode::Repeat;
 
             bool enable_anisotropy = false;
-            float max_anisotropy   = 16.f;
+            float max_anisotropy   = 0.f;
 
             BorderColor border_color = BorderColor::Int_Opaque_Black;
 
@@ -45,6 +45,8 @@ namespace storm::render {
 
         Sampler(Sampler &&);
         Sampler &operator=(Sampler &&);
+
+        [[nodiscard]] inline const Settings &settings() const noexcept;
 
         inline vk::Sampler vkSampler() const noexcept;
         inline operator vk::Sampler() const noexcept;

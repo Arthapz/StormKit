@@ -320,20 +320,55 @@ namespace storm::core {
     }
 
     template<typename T, typename V>
-    core::span<T> makeSpan(V &data) {
-        return core::span<T> { reinterpret_cast<T *>(&data), sizeof(V) };
+    core::span<T> makeSpan(V &data) noexcept {
+        return core::span<T> { reinterpret_cast<T *>(&data), sizeof(V) / sizeof(T) };
     }
 
     template<typename T, typename V>
-    core::span<const T> makeConstSpan(const V &data) {
-        return core::span<const T> { reinterpret_cast<const T *>(&data), sizeof(V) };
+    core::span<const T> makeConstSpan(const V &data) noexcept {
+        return makeSpan<const T, const V>(data);
     }
 
-#define DECLARE_ARRAYS_(x)                   \
-    using x##Array = std::vector<x>;         \
-    template<storm::core::ArraySize S>              \
-    using x##StaticArray = std::array<x, S>; \
-    using x##Span        = storm::core::span<x>;    \
+#if __cpp_concepts
+    template<class T>
+    concept input_range = std::input_iterator<typename T::const_iterator>;
+    #define ITERABLE_CONCEPT input_range
+
+    template<class T>
+    concept pointer = std::is_pointer_v<T>;
+    #define POINTER_CONCEPT pointer
+#else
+    #define ITERABLE_CONCEPT typename
+    #define POINTER_CONCEPT typename
+#endif
+
+    template<typename V, ITERABLE_CONCEPT Range>
+    core::span<V> toSpan(Range &data) noexcept {
+        return core::span<V> { reinterpret_cast<V *>(std::data(data)),
+                               (std::size(data) * sizeof(typename Range::value_type)) * sizeof(V) };
+    }
+
+    template<typename V, ITERABLE_CONCEPT Range>
+    core::span<const V> toConstSpan(const Range &data) noexcept {
+        return toSpan<const V, const Range>(data);
+    }
+
+    template<typename V, POINTER_CONCEPT Range>
+    core::span<V> toSpan(Range data, std::size_t size) noexcept {
+        return core::span<V> { reinterpret_cast<V *>(data),
+                               (size * sizeof(std::remove_pointer_t<Range>)) * sizeof(V) };
+    }
+
+    template<typename V, POINTER_CONCEPT Range>
+    core::span<const V> toConstSpan(const Range data, std::size_t size) noexcept {
+        return toSpan<const V, const Range>(data, size);
+    }
+
+#define DECLARE_ARRAYS_(x)                       \
+    using x##Array = std::vector<x>;             \
+    template<storm::core::ArraySize S>           \
+    using x##StaticArray = std::array<x, S>;     \
+    using x##Span        = storm::core::span<x>; \
     using x##ConstSpan   = storm::core::span<const x>;
 
 #define DECLARE_PTR_AND_REF_(x)                                  \

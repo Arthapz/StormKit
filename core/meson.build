@@ -41,11 +41,14 @@ base_headers = files([
       'include/storm/core/RingBuffer.hpp',
       'include/storm/core/Span.hpp',
       'include/storm/core/Color.hpp',
+      'include/storm/core/HashMap.hpp',
 ])
 
+#ide:editable-filelist
 private_headers = files([
    'include/storm/core/private/Flags.hpp',
    'include/storm/core/private/incbin.h',
+   'include/storm/core/private/robin_hood.h',
 ])
 
 #ide:editable-filelist
@@ -93,7 +96,7 @@ if lib_type == 'shared'
         core_lib_name,
         sources,
         headers,
-        extra_files: inls,
+        extra_files: headers + inls,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,
         include_directories: core_inc,
@@ -105,7 +108,7 @@ else
         core_lib_name,
         sources,
         headers + private_headers,
-        extra_files: inls,
+        extra_files: headers + inls,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,
         include_directories: core_inc,

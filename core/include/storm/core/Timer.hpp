@@ -91,7 +91,7 @@ namespace storm::core {
         std::thread m_worker;
         std::condition_variable m_wake_up;
 
-        std::unordered_map<DeferredTaskId, DeferredTask> m_tasks;
+        storm::core::HashMap<DeferredTaskId, DeferredTask> m_tasks;
         std::multiset<typename DeferredTask::Ref, std::less<DeferredTask>> m_task_queue;
     };
 } // namespace storm::core

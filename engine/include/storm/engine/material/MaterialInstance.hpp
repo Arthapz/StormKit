@@ -6,15 +6,16 @@
 
 /////////// - STL - ///////////
 #include <string>
-#include <unordered_map>
 
 /////////// - StormKit::core - ///////////
+#include <storm/core/HashMap.hpp>
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
 
 /////////// - StormKit::render - ///////////
 #include <storm/render/Fwd.hpp>
 
+#include <storm/render/core/Device.hpp>
 #include <storm/render/core/Types.hpp>
 
 #include <storm/render/resource/Sampler.hpp>
@@ -40,14 +41,21 @@ namespace storm::engine {
         MaterialInstance(MaterialInstance &&);
         MaterialInstance &operator=(MaterialInstance &&);
 
-        inline void setDoubleSided(bool double_sided) noexcept;
-        inline void setWireFrameEnabled(bool enabled) noexcept;
+        inline void setFrontFace(render::FrontFace face);
+        [[nodiscard]] inline render::FrontFace frontFace() const noexcept;
 
-        inline void setSampledTexture(std::string_view name,
-                                      const render::Texture &texture,
-                                      render::TextureViewType type = render::TextureViewType::T2D,
-                                      render::TextureSubresourceRange subresource_range = {},
-                                      render::Sampler::Settings sampler_settings        = {});
+        inline void setCullMode(render::CullMode mode);
+        [[nodiscard]] inline render::CullMode cullMode() const noexcept;
+
+        inline void setWireFrameEnabled(bool enabled) noexcept;
+        [[nodiscard]] inline bool isWireFrameEnabled() const noexcept;
+
+        inline void setSampledTexture(
+            std::string_view name,
+            const render::Texture &texture,
+            render::TextureViewType type = render::TextureViewType::T2D,
+            std::optional<render::TextureSubresourceRange> subresource_range = std::nullopt,
+            std::optional<render::Sampler::Settings> sampler_settings        = std::nullopt);
         inline void setSamplerSettings(std::string_view name, render::Sampler::Settings settings);
         inline void setRawDataValue(std::string_view name, core::ByteConstSpan bytes);
         template<typename T>
@@ -59,24 +67,30 @@ namespace storm::engine {
 
         [[nodiscard]] inline core::Hash64 hash() const noexcept;
 
+        MaterialInstanceOwnedPtr clone() const;
+
+      protected:
+        EngineConstObserverPtr m_engine;
+
       private:
         void recomputeHash() const noexcept;
 
         struct SampledBinding {
             Material::Binding binding;
 
+            render::TextureConstObserverPtr texture;
             render::TextureViewOwnedPtr view;
             render::SamplerOwnedPtr sampler;
 
             bool dirty = true;
         };
 
-        EngineConstObserverPtr m_engine;
+        SceneConstObserverPtr m_scene;
         MaterialConstObserverPtr m_parent;
 
         render::GraphicsPipelineRasterizationState m_rasterization_state;
 
-        std::unordered_map<std::string, core::UOffset> m_data_offsets;
+        storm::core::HashMap<std::string, core::UOffset> m_data_offsets;
         RingHardwareBufferOwnedPtr m_buffer;
         core::Int32 m_buffer_binding = -1;
 
@@ -84,7 +98,7 @@ namespace storm::engine {
 
         bool m_bytes_dirty = true;
 
-        std::unordered_map<std::string, SampledBinding> m_sampled_textures;
+        storm::core::HashMap<std::string, SampledBinding> m_sampled_textures;
 
         bool m_dirty = true;
 

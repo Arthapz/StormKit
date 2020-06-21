@@ -1,37 +1,50 @@
-png_dep = dependency('libpng', required: false)
-
-if not png_dep.found()
-    png_dep = dependency('PNG', method: 'cmake', required: false)
-    if not png_dep.found()
-        png_dep = dependency('libpng', fallback: ['libpng', 'png_dep'])
-    endif
+if is_windows
+   png_dep = dependency('PNG', fallback: ['libpng', 'png_dep'])
+else 
+   png_dep = dependency('libpng', fallback: ['libpng', 'png_dep'])
 endif
 
-jpeg_dep = dependency('libjpeg', required: false)
-
-if not jpeg_dep.found()
-    jpeg_dep = dependency('jpeg', method: 'cmake', required: false)
-    if not jpeg_dep.found()
-        jpeg_dep = dependency('libjpeg', fallback: ['libjpeg', 'jpeg_dep'])
-    endif
+if is_windows
+    jpeg_dep = dependency('JPEG', fallback: ['libjpeg', 'jpeg_dep'])
+else 
+    jpeg_dep = dependency('libjpeg', fallback: ['libjpeg', 'jpeg_dep'])
 endif
 
 public_dependencies = [core_dep]
 private_dependencies = [png_dep, jpeg_dep]
 
+cpp_args = []
+
+if get_option('image_enable_log')
+    public_dependencies += [log_dep]
+else
+    if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
+        cpp_args += ['/DSTORM_IMAGE_NO_LOGGING']
+    else
+        cpp_args += ['-DSTORM_IMAGE_NO_LOGGING']
+    endif
+endif
+
+#ide:editable-filelist
 headers = files([
     'include/storm/image/Fwd.hpp',
     'include/storm/image/Image.hpp',
 ])
 
+#ide:editable-filelist
 inls = files([
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/Image.cpp',
-    'src/private/ImageLoader.cpp',
-    'src/private/ImageData.hpp',
-    'src/private/ImageLoader.hpp',
+
+    'src/JPEGImage.cpp',
+    'src/PNGImage.cpp',
+    'src/TARGAImage.cpp',
+    'src/PPMImage.cpp',
+    'src/HDRImage.cpp',
+    'src/KTXImage.cpp',
 ])
 
 image_inc = ['include/']
@@ -46,6 +59,8 @@ if lib_type == 'shared'
         gnu_symbol_visibility: 'hidden',
         dependencies: public_dependencies + private_dependencies,
         include_directories: image_inc,
+        c_args: cpp_args,
+        cpp_args: cpp_args,
         install: true
     )
 else
@@ -58,6 +73,8 @@ else
         gnu_symbol_visibility: 'hidden',
         dependencies: public_dependencies + private_dependencies,
         include_directories: image_inc,
+        c_args: cpp_args,
+        cpp_args: cpp_args,
         install: true
     )
 endif

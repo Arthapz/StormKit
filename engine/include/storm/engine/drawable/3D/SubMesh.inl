@@ -7,23 +7,19 @@
 namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
-    MaterialInstance &SubMesh::materialInstance() noexcept { return *m_material_instance; }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    const MaterialInstance &SubMesh::materialInstance() const noexcept {
-        return *m_material_instance;
+    void SubMesh::addPrimitive(MeshPrimitive &&primitive) {
+        m_primitives.emplace_back(std::move(primitive));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::UInt32 SubMesh::vertexCount() const noexcept { return m_vertex_count; }
+    core::span<const MeshPrimitive> SubMesh::primitives() const noexcept { return m_primitives; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::UInt32 SubMesh::indexCount() const noexcept { return m_index_count; }
+    std::string_view SubMesh::name() const noexcept { return m_name; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::UInt32 SubMesh::firstIndex() const noexcept { return m_first_index; }
+    core::span<MeshPrimitive> SubMesh::primitives() noexcept { return m_primitives; }
 } // namespace storm::engine

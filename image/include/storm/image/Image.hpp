@@ -4,71 +4,213 @@
 
 #pragma once
 
-#include <cstdint>
+/////////// - STL - ///////////
 #include <filesystem>
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Assert.hpp>
 #include <storm/core/Math.hpp>
 #include <storm/core/Memory.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/core/Span.hpp>
 
+/////////// - StormKit::image - ///////////
 #include <storm/image/Fwd.hpp>
 
-// based on https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Copy-on-write
 namespace storm::image {
     class STORM_PUBLIC Image {
       public:
-        using data_type  = core::Byte;
-        using size_type  = core::ArraySize;
-        using span       = storm::core::span<data_type>;
-        using const_span = storm::core::span<const data_type>;
-
-        enum class Format { RGB24, ARGB32, RGB16 };
-        enum class Codec { AUTODETECT, JPEG, PNG, TARGA, PPM, UNKNOW };
-        enum class CodecArgs {
-            BINARY,
-            ASCII // for ppm
+        enum class Format : core::UInt8 {
+            R8_SNorm     = 0,
+            RG8_SNorm    = 1,
+            RGB8_SNorm   = 2,
+            RGBA8_SNorm  = 3,
+            R8_UNorm     = 4,
+            RG8_UNorm    = 5,
+            RGB8_UNorm   = 6,
+            RGBA8_UNorm  = 7,
+            R16_SNorm    = 8,
+            RG16_SNorm   = 9,
+            RGB16_SNorm  = 10,
+            RGBA16_SNorm = 11,
+            R16_UNorm    = 12,
+            RG16_UNorm   = 13,
+            RGB16_UNorm  = 14,
+            RGBA16_UNorm = 15,
+            RGBA4_UNorm  = 17,
+            BGR8_UNorm   = 20,
+            BGRA8_UNorm  = 21,
+            R8I          = 22,
+            RG8I         = 23,
+            RGB8I        = 24,
+            RGBA8I       = 25,
+            R8U          = 26,
+            RG8U         = 27,
+            RGB8U        = 28,
+            RGBA8U       = 29,
+            R16I         = 30,
+            RG16I        = 31,
+            RGB16I       = 32,
+            RGBA16I      = 33,
+            R16U         = 34,
+            RG16U        = 35,
+            RGB16U       = 36,
+            RGBA16U      = 37,
+            R32I         = 38,
+            RG32I        = 39,
+            RGB32I       = 40,
+            RGBA32I      = 41,
+            R32U         = 42,
+            RG32U        = 43,
+            RGB32U       = 44,
+            RGBA32U      = 45,
+            R16F         = 47,
+            RG16F        = 48,
+            RGB16F       = 49,
+            RGBA16F      = 50,
+            R32F         = 51,
+            RG32F        = 52,
+            RGB32F       = 53,
+            RGBA32F      = 54,
+            sRGB8        = 56,
+            sRGBA8       = 57,
+            sBGR8        = 58,
+            sBGRA8       = 59,
+            Undefined    = 254
         };
 
-        explicit Image();
-        Image(core::UInt32 width, core::UInt32 height, core::UInt8 channel_count = 3u);
-        Image(const std::filesystem::path &filepath, Codec codec = Codec::AUTODETECT);
-        Image(const_span data, Codec codec = Codec::AUTODETECT);
-        ~Image();
+        enum class Codec : std::uint8_t {
+            Autodetect = 0,
+            JPEG       = 1,
+            PNG        = 2,
+            TARGA      = 3,
+            PPM        = 4,
+            HDR        = 5,
+            KTX        = 6,
+            Unknown    = 255
+        };
+        enum class CodecArgs : std::uint8_t { Binary = 0, Ascii = 1 };
 
-        void loadFromFile(const std::filesystem::path &filepath, Codec codec = Codec::AUTODETECT);
-        void loadFromMemory(const_span data, Codec codec = Codec::AUTODETECT);
-        void create(core::UInt32 width, core::UInt32 height, core::UInt8 channel_count = 3u);
+        explicit Image() noexcept;
+        Image(core::Extentu extent, Format format) noexcept;
+        Image(const std::filesystem::path &filepath, Codec codec = Codec::Autodetect) noexcept;
+        Image(core::ByteConstSpan data, Codec codec = Codec::Autodetect) noexcept;
+        ~Image() noexcept;
 
-        span operator[](size_type index);
-        const_span operator[](size_type index) const noexcept;
-        span operator()(XOffset x_offset, YOffset offset);
-        const_span operator()(XOffset x, YOffset offset) const noexcept;
+        Image(const Image &rhs) noexcept;
+        Image &operator=(const Image &rhs) noexcept;
 
-        core::Extentu extent() const noexcept;
-        core::UInt8 channels() const noexcept;
+        Image(Image &&rhs) noexcept;
+        Image &operator=(Image &&rhs) noexcept;
 
-        size_type size() const noexcept;
-        const_span data() const noexcept;
-        span data();
+        bool loadFromFile(std::filesystem::path filepath,
+                          Codec codec = Codec::Autodetect) noexcept;
+        bool loadFromMemory(core::ByteConstSpan data, Codec codec = Codec::Autodetect) noexcept;
+        bool saveToFile(std::filesystem::path filename,
+                        Codec codec,
+                        CodecArgs args = CodecArgs::Binary) const noexcept;
 
-        static Image scale(const Image &src, const core::Extentu &new_extent);
-        static Image flipX(const Image &src);
-        static Image flipY(const Image &src);
-        static Image rotate90(const Image &src);
-        static Image rotate180(const Image &src);
-        static Image rotate270(const Image &src);
+        void create(core::Extentu extent, Format format) noexcept;
 
-        void saveToFile(const std::filesystem::path &filename,
-                        Codec codec    = Codec::AUTODETECT,
-                        CodecArgs args = CodecArgs::BINARY);
+        Image toFormat(Format format) const noexcept;
+        Image scale(const core::Extentu &scale_to) const noexcept;
+        Image flipX() const noexcept;
+        Image flipY() const noexcept;
+        Image flipZ() const noexcept;
+        Image rotate90() const noexcept;
+        Image rotate180() const noexcept;
+        Image rotate270() const noexcept;
 
-        void addChannels(core::UInt8 count = 1);
+        [[nodiscard]] inline core::ByteSpan pixel(core::ArraySize id,
+                                                  core::UInt32 layer = 0u,
+                                                  core::UInt32 face = 0u,
+                                                  core::UInt32 level = 0u) noexcept;
+        [[nodiscard]] inline core::ByteConstSpan pixel(core::ArraySize id,
+                                                       core::UInt32 layer = 0u,
+                                                       core::UInt32 face = 0u,
+                                                       core::UInt32 level = 0u) const noexcept;
+        [[nodiscard]] inline core::ByteSpan pixel(core::Offset3u position,
+                                                  core::UInt32 layer = 0u,
+                                                  core::UInt32 face = 0u,
+                                                  core::UInt32 level = 0u) noexcept;
+        [[nodiscard]] inline core::ByteConstSpan pixel(core::Offset3u position,
+                                                       core::UInt32 layer = 0u,
+                                                       core::UInt32 face = 0u,
+                                                       core::UInt32 level = 0u) const noexcept;
+
+        [[nodiscard]] inline core::Extentu extent(core::UInt32 level = 0u) const noexcept;
+        [[nodiscard]] inline core::UInt32 channelCount() const noexcept;
+        [[nodiscard]] inline core::UInt32 bytesPerChannel() const noexcept;
+        [[nodiscard]] inline core::UInt32 layers() const noexcept;
+        [[nodiscard]] inline core::UInt32 faces() const noexcept;
+        [[nodiscard]] inline core::UInt32 mipLevels() const noexcept;
+        [[nodiscard]] inline Format format() const noexcept;
+
+        [[nodiscard]] inline core::ArraySize size() const noexcept;
+        [[nodiscard]] inline core::ArraySize size(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
+        [[nodiscard]] inline core::ArraySize size(core::UInt32 layer, core::UInt32 face) const noexcept;
+        [[nodiscard]] inline core::ArraySize size(core::UInt32 layer) const noexcept;
+        [[nodiscard]] inline core::ByteSpan data() noexcept;
+        [[nodiscard]] inline core::ByteSpan data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept;
+        [[nodiscard]] inline core::ByteConstSpan data() const noexcept;
+        [[nodiscard]] inline core::ByteConstSpan data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
+
+        [[nodiscard]] inline core::ByteArray::iterator
+            begin() noexcept;
+        [[nodiscard]] inline core::ByteSpan::iterator
+            begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator
+            begin() const noexcept;
+        [[nodiscard]] inline core::ByteConstSpan::iterator
+            begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator
+            cbegin() const noexcept;
+        [[nodiscard]] inline core::ByteConstSpan::iterator
+            cbegin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
+
+        [[nodiscard]] inline core::ByteArray::iterator
+            end() noexcept;
+        [[nodiscard]] inline core::ByteSpan::iterator
+            end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator
+            end() const noexcept;
+        [[nodiscard]] inline core::ByteConstSpan::iterator
+            end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
+        [[nodiscard]] inline core::ByteArray::const_iterator
+            cend() const noexcept;
+        [[nodiscard]] inline core::ByteConstSpan::iterator
+            cend(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept;
 
       private:
-        void detach();
+        std::optional<std::string> loadJPEG(core::ByteConstSpan data) noexcept;
+        std::optional<std::string> loadPNG(core::ByteConstSpan data) noexcept;
+        std::optional<std::string> loadTARGA(core::ByteConstSpan data) noexcept;
+        std::optional<std::string> loadPPM(core::ByteConstSpan data) noexcept;
+        std::optional<std::string> loadHDR(core::ByteConstSpan data) noexcept;
+        std::optional<std::string> loadKTX(core::ByteConstSpan data) noexcept;
 
-        private_::ImageDataSharedPtr m_data = nullptr;
+        std::optional<std::string> saveJPEG(const std::filesystem::path &filepath) const noexcept;
+        std::optional<std::string> saveTGA(const std::filesystem::path &filepath) const noexcept;
+        std::optional<std::string> savePNG(const std::filesystem::path &filepath) const noexcept;
+        std::optional<std::string> savePPM(const std::filesystem::path &filepath,
+                                           CodecArgs args) const noexcept;
+        std::optional<std::string> saveTARGA(const std::filesystem::path &filepath) const noexcept;
+        std::optional<std::string> saveHDR(const std::filesystem::path &filepath) const noexcept;
+        std::optional<std::string> saveKTX(const std::filesystem::path &filepath) const noexcept;
+
+        core::Extentu m_extent            = {0u, 0u, 0u};
+        core::UInt32  m_channel_count     = 0u;
+        core::UInt32  m_bytes_per_channel = 0u;
+        core::UInt32  m_layers            = 1u;
+        core::UInt32  m_faces             = 1u;
+        core::UInt32  m_mip_levels        = 1u;
+        Format m_format                   = Format::Undefined;
+
+        core::ByteArray m_data;
     };
+
+    STORM_PUBLIC constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept;
+    STORM_PUBLIC constexpr core::UInt8 getByteCountByChannelFor(Image::Format format) noexcept;
 } // namespace storm::image
+
+#include "Image.inl"

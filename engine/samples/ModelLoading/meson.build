@@ -4,14 +4,14 @@ directory = 'stormkit/ModelLoading/'
 
 arguments = []
 if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
-    arguments += ['/DEXAMPLES_DATA_DIR="' + examples_data_dir / directory + '"']
+    arguments += ['/DEXAMPLES_DATA_DIR="' + examples_data_dir / directory + '"', '/DSTORM_ENABLE_VALIDATION_LAYERS']
 else
-    arguments += ['-DEXAMPLES_DATA_DIR="' + examples_data_dir / directory + '"']
+    arguments += ['-DEXAMPLES_DATA_DIR="' + examples_data_dir / directory + '"', '-DSTORM_ENABLE_VALIDATION_LAYERS']
 endif
-
 
 arguments += examples_arguments
 
+#ide:editable-filelist
 sources = files([
     'src/main.cpp',
     'src/App.cpp',

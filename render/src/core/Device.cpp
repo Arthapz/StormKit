@@ -109,6 +109,8 @@ Device::Device(const PhysicalDevice &physical_device, const Instance &instance)
         m_physical_device->capabilities().features.fill_Mode_non_solid);
     enabled_features.setSampleRateShading(
         m_physical_device->capabilities().features.sampler_rate_shading);
+    enabled_features.setSamplerAnisotropy(
+        m_physical_device->capabilities().features.sampler_anisotropy);
 
     const auto create_info =
         vk::DeviceCreateInfo {}
@@ -398,16 +400,37 @@ DescriptorPoolOwnedPtr Device::createDescriptorPoolPtr(std::vector<DescriptorPoo
     return std::make_unique<DescriptorPool>(*this, std::move(sizes), max_sets);
 }
 
-/////////////////////////////////////
-/////////////////////////////////////
-Texture Device::createTexture(TextureType type, TextureCreateFlag flags) const {
-    return Texture { *this, type, flags };
+Texture Device::createTexture(core::Extentu extent,
+                              render::PixelFormat format,
+                              core::UInt32 layers,
+                              core::UInt32 mip_levels,
+                              TextureType type,
+                              TextureCreateFlag flags,
+                              SampleCountFlag samples,
+                              TextureUsage usage) const {
+    return Texture { *this, std::move(extent), format, layers, mip_levels, type,
+                     flags, samples,           usage };
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-TextureOwnedPtr Device::createTexturePtr(TextureType type, TextureCreateFlag flags) const {
-    return std::make_unique<Texture>(*this, type, flags);
+TextureOwnedPtr Device::createTexturePtr(core::Extentu extent,
+                                         render::PixelFormat format,
+                                         core::UInt32 layers,
+                                         core::UInt32 mip_levels,
+                                         TextureType type,
+                                         TextureCreateFlag flags,
+                                         SampleCountFlag samples,
+                                         TextureUsage usage) const {
+    return std::make_unique<Texture>(*this,
+                                     std::move(extent),
+                                     format,
+                                     layers,
+                                     mip_levels,
+                                     type,
+                                     flags,
+                                     samples,
+                                     usage);
 }
 
 /////////////////////////////////////

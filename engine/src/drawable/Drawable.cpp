@@ -7,6 +7,7 @@
 #include <storm/engine/drawable/Drawable.hpp>
 
 #include <storm/engine/material/Material.hpp>
+#include <storm/engine/material/MaterialInstance.hpp>
 
 using namespace storm;
 using namespace storm::engine;

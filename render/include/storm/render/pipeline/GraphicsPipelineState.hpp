@@ -69,7 +69,9 @@ namespace storm::render {
         std::array<float, 4> blend_constants = { 0.f, 0.f, 0.f, 0.f };
     };
 
-    struct GraphicsPipelineDynamicState {};
+    struct GraphicsPipelineDynamicState {
+        std::vector<DynamicState> dynamics;
+    };
 
     struct GraphicsPipelineShaderState {
         std::vector<ShaderConstObserverPtr> shaders;

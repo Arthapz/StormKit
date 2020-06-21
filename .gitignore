@@ -53,6 +53,7 @@ _deps
 subprojects/*
 builddir/
 build/
+builddir-ru/
 
 ### CMake Patch ###
 # External projects
@@ -165,11 +166,12 @@ CMakeLists.txt.user*
 # Reference: http://doc.qt.io/qtcreator/creator-project-generic.html
 
 # User project settings
-*.creator.user*
 *.cflags
 *.cxxflags
 *.config
 *.includes
+*.files
+*.creator*
 
 # Qt Creator backups
 

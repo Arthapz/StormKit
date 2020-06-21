@@ -1,5 +1,6 @@
 dependencies = [core_dep]
 
+#ide:editable-filelist
 headers = files([
     'include/storm/log/Fwd.hpp',
     'include/storm/log/LogHandler.hpp',
@@ -11,11 +12,13 @@ headers = files([
     'include/storm/log/LogColorizer.hpp',
 ])
 
+#ide:editable-filelist
 inls = files([
     'include/storm/log/LogHandler.inl',
     'include/storm/log/Logger.inl',
 ])
 
+#ide:editable-filelist
 sources = files([
     'src/LogHandler.cpp',
     'src/Logger.cpp',
@@ -30,8 +33,7 @@ if lib_type == 'shared'
     log_lib_name = 'StormKit-log' + suffix
     log_lib = shared_library(
         log_lib_name,
-        sources,
-        headers,
+        sources + headers,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,
@@ -43,8 +45,7 @@ else
     log_lib_name = 'StormKit-log-static' + suffix
     log_lib = static_library(
         log_lib_name,
-        sources,
-        headers,
+        sources + headers,
         extra_files: inls,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,

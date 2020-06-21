@@ -22,8 +22,15 @@ namespace storm::render {
         static constexpr auto DEBUG_TYPE = DebugObjectType::Image;
 
         Texture(const Device &device,
-                TextureType type        = TextureType::T2D,
-                TextureCreateFlag flags = TextureCreateFlag::None);
+                core::Extentu extent,
+                render::PixelFormat format = render::PixelFormat::RGBA8_UNorm,
+                core::UInt32 layers        = 1u,
+                core::UInt32 mip_levels    = 1u,
+                TextureType type           = TextureType::T2D,
+                TextureCreateFlag flags    = TextureCreateFlag::None,
+                SampleCountFlag samples    = SampleCountFlag::C1_BIT,
+                TextureUsage usage =
+                    TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src);
         Texture(const Device &device,
                 core::Extentu extent,
                 render::PixelFormat format,
@@ -33,57 +40,43 @@ namespace storm::render {
         Texture(Texture &&);
         Texture &operator=(Texture &&);
 
-        void loadFromImage(image::Image &image,
-                           PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
-                           SampleCountFlag samples    = SampleCountFlag::C1_BIT,
-                           core::UInt32 mip_levels    = 1,
-                           TextureUsage usage         = TextureUsage::Sampled |
-                                                TextureUsage::Transfert_Dst);
-
-        void loadLayersFromImages(std::vector<image::ImageConstObserverPtr> data,
-                                  core::Extentu layer_extent,
-                                  render::PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
-                                  SampleCountFlag samples            = SampleCountFlag::C1_BIT,
-                                  core::UInt32 mip_levels            = 1,
-                                  TextureUsage usage                 = TextureUsage::Sampled |
-                                                       TextureUsage::Transfert_Dst);
+        void loadFromImage(const image::Image &image,
+                           bool generate_mips = false);
+        void loadFromImage(const image::Image &image,
+                           render::CommandBuffer &command_buffer,
+                           render::HardwareBuffer &buffer,
+                           core::UOffset offset = 0u,
+                           bool generate_mips = false);
 
         void loadFromMemory(core::ByteConstSpan data,
-                            core::Extentu extent,
-                            PixelFormat load_format,
-                            PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
-                            SampleCountFlag samples    = SampleCountFlag::C1_BIT,
-                            core::UInt32 mip_levels    = 1,
-                            TextureUsage usage         = TextureUsage::Sampled |
-                                                 TextureUsage::Transfert_Dst);
-
-        void loadLayersFromMemory(std::vector<core::ByteConstSpan> data,
-                                  core::Extentu layer_extent,
-                                  render::PixelFormat storage_format = PixelFormat::RGBA8_UNorm,
-                                  SampleCountFlag samples            = SampleCountFlag::C1_BIT,
-                                  core::UInt32 mip_levels            = 1,
-                                  TextureUsage usage                 = TextureUsage::Sampled |
-                                                       TextureUsage::Transfert_Dst);
-
-        void createTextureData(core::Extentu extent,
-                               PixelFormat format,
-                               SampleCountFlag samples = SampleCountFlag::C1_BIT,
-                               core::UInt32 mip_levels = 1,
-                               core::UInt32 layers     = 1,
-                               TextureUsage usage      = TextureUsage::Sampled |
-                                                    TextureUsage::Transfert_Dst);
+                            core::UInt32 layers,
+                            core::UInt32 faces,
+                            core::UInt32 mip_levels,
+                            bool generate_mips = false);
+        void loadFromMemory(core::ByteConstSpan data,
+                            core::UInt32 layers,
+                            core::UInt32 faces,
+                            core::UInt32 mip_levels,
+                            render::CommandBuffer &command_buffer,
+                            render::HardwareBuffer &buffer,
+                            core::UOffset offset = 0u,
+                            bool generate_mips = false);
 
         TextureView createView(TextureViewType type                      = TextureViewType::T2D,
                                TextureSubresourceRange subresource_range = {}) const noexcept;
         TextureViewOwnedPtr createViewPtr(TextureViewType type = TextureViewType::T2D,
                                           TextureSubresourceRange subresource_range = {}) const;
 
+        void generateMipmap(render::CommandBuffer &cmb,
+                            core::UInt32 mip_level);
+
         inline core::Extentu extent() const noexcept;
         inline PixelFormat format() const noexcept;
         inline TextureType type() const noexcept;
         inline SampleCountFlag samples() const noexcept;
-        inline core::UInt32 mipLevels() const noexcept;
         inline core::UInt32 layers() const noexcept;
+        inline core::UInt32 faces() const noexcept;
+        inline core::UInt32 mipLevels() const noexcept;
 
         inline const Device &device() const noexcept;
 
@@ -95,14 +88,15 @@ namespace storm::render {
       private:
         DeviceConstObserverPtr m_device;
 
-        core::Extentu m_extent = { { 0 }, { 0 } };
-        PixelFormat m_format   = PixelFormat::Undefined;
+        core::Extentu m_extent;
+        PixelFormat m_format;
+        core::UInt32 m_layers;
+        core::UInt32 m_faces = 1u;
+        core::UInt32 m_mip_levels;
         TextureType m_type;
         TextureCreateFlag m_flags;
-
-        SampleCountFlag m_samples = SampleCountFlag::C1_BIT;
-        core::UInt32 m_mip_levels = 1;
-        core::UInt32 m_layers     = 1;
+        SampleCountFlag m_samples ;
+        TextureUsage m_usage;
 
         RAIIVmaAllocation m_vma_texture_memory;
         RAIIVkImage m_vk_texture;

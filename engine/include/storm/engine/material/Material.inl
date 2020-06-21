@@ -15,10 +15,10 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void Material::addSampler(Binding binding, std::string name) {
+    void Material::addSampler(Binding binding, std::string name, render::TextureViewType type) {
         STORM_EXPECTS(!m_finalized);
 
-        m_data.samplers.emplace_back(binding, std::move(name));
+        m_data.samplers.emplace_back(binding, MaterialData::Sampler { std::move(name), type });
     }
 
     ////////////////////////////////////////

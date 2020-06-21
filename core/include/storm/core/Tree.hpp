@@ -19,7 +19,7 @@
 #include <storm/core/TreeNode.hpp>
 
 namespace storm::core {
-    template<typename TreeNodeClass>
+    template<typename TreeNodeClass = core::TreeNode>
     class Tree final {
       public:
         constexpr static const core::ArraySize DEFAULT_PREALLOCATED_TREE_SIZE = 1000;
