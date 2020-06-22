@@ -9,8 +9,8 @@ using namespace storm::engine;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-FPSCamera::FPSCamera(const Engine &engine, core::Extentf viewport)
-    : Camera { engine, Camera::Type::Perspective, std::move(viewport) } {
+FPSCamera::FPSCamera(const Engine &engine, core::Extentf viewport, float znear, float zfar)
+    : Camera { engine, Camera::Type::Perspective, std::move(viewport), znear, zfar} {
 }
 
 ////////////////////////////////////////

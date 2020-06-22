@@ -22,7 +22,7 @@ namespace storm::engine {
             float y_mouse      = 0.f;
         };
 
-        FPSCamera(const Engine &engine, core::Extentf viewport);
+        FPSCamera(const Engine &engine, core::Extentf viewport, float znear = 0.1f, float zfar = 100.f);
         ~FPSCamera() override;
 
         FPSCamera(FPSCamera &&);
