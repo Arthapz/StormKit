@@ -22,7 +22,7 @@
 namespace storm::core {
     template<typename Enum, typename Enum2>
     constexpr inline bool checkFlag(Enum value, Enum2 flag) {
-        return (value & flag) == value;
+        return (value & flag) == flag;
     }
 
     template<typename E>
