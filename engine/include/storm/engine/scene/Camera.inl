@@ -39,6 +39,26 @@ namespace storm::engine {
     /////////////////////////////////////
      const core::Vector3f &Camera::rotation() const noexcept { return m_orientation; }
 
+     /////////////////////////////////////
+     /////////////////////////////////////
+     void Camera::setMoveSpeed(core::Vector3f move_speed) noexcept {
+         m_move_speed = std::move(move_speed);
+     }
+
+     /////////////////////////////////////
+     /////////////////////////////////////
+     const core::Vector3f &Camera::moveSpeed() const noexcept { return m_move_speed; }
+
+     /////////////////////////////////////
+     /////////////////////////////////////
+     void Camera::setRotationSpeed(core::Vector3f rotation_speed) noexcept {
+         m_rotation_speed = std::move(rotation_speed);
+     }
+
+     /////////////////////////////////////
+     /////////////////////////////////////
+     const core::Vector3f &Camera::rotationSpeed() const noexcept { return m_rotation_speed; }
+
     /////////////////////////////////////
     /////////////////////////////////////
      const core::Matrixf &Camera::projectionMatrix() const noexcept {
