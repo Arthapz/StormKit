@@ -28,7 +28,7 @@ namespace storm::engine {
       public:
         enum class Type { Perspective, Orthographic };
 
-        Camera(const Engine &engine, Type type, core::Extentf viewport);
+        Camera(const Engine &engine, Type type, core::Extentf viewport, float znear = 0.1f, float zfat = 100.f);
         virtual ~Camera();
 
         Camera(Camera &&);

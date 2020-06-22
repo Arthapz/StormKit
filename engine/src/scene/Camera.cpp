@@ -21,7 +21,7 @@ struct alignas(16) CameraData {
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-Camera::Camera(const Engine &engine, Type type, core::Extentf viewport)
+Camera::Camera(const Engine &engine, Type type, core::Extentf viewport, float znear, float zfar)
     : m_engine { &engine }, m_type { type }, m_viewport { std::move(viewport) } {
     const auto buffering_count = m_engine->surface().bufferingCount();
     const auto &device         = m_engine->device();
@@ -50,9 +50,9 @@ Camera::Camera(const Engine &engine, Type type, core::Extentf viewport)
 
     if (m_type == Type::Perspective)
         m_projection_matrix =
-            core::perspective(m_fov, viewport.width / viewport.height, 0.1f, 100.f);
+            core::perspective(m_fov, viewport.width / viewport.height, znear, zfar);
     else if (m_type == Type::Orthographic)
-        m_projection_matrix = core::ortho(0.f, viewport.width, 0.f, viewport.height);
+        m_projection_matrix = core::ortho(0.f, viewport.width, 0.f, viewport.height, znear, zfar);
 
     flush();
 }
