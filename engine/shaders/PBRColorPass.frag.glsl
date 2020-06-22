@@ -40,7 +40,6 @@ layout(set = 4, binding = 6, std140) uniform Material {
     vec4 emissive_factor;
 } material;
 
-
 vec4 sRGBtoLinear(vec4 srgb_in);
 vec3 getNormal();
 vec3 diffuseColor(vec3 diffuse);
