@@ -81,6 +81,7 @@ pipeline_headers = files([
 
 #ide:editable-filelist
 pipeline_inls = files([
+    'include/storm/render/pipeline/PipelineCache.inl',
     'include/storm/render/pipeline/GraphicsPipeline.inl',
     'include/storm/render/pipeline/RenderPass.inl',
     'include/storm/render/pipeline/Framebuffer.inl',
