@@ -49,7 +49,7 @@ void CubeMap::render(render::CommandBuffer &cmb,
 
     bindables.emplace_back(core::makeConstObserver(m_material_instance));
 
-    state.shader_state                         = m_material_instance->parent().m_data.shader_state;
+    state.shader_state                         = m_material_instance->parent().data().shader_state;
     state.rasterization_state                  = m_material_instance->m_rasterization_state;
     state.depth_stencil_state.depth_compare_op = render::CompareOperation::Less_Or_Equal;
 

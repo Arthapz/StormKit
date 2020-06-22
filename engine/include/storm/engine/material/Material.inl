@@ -31,6 +31,11 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    const Material::MaterialData &Material::data() const noexcept {
+        return m_data;
+    }
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     core::Hash64 Material::hash() const noexcept {
         STORM_EXPECTS(m_finalized);
 

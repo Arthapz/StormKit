@@ -88,7 +88,7 @@ void Mesh::render(render::CommandBuffer &cmb,
 
     bindables.emplace_back(core::makeConstObserver(m_transform));
 
-    state.shader_state = m_material->m_data.shader_state;
+    state.shader_state = m_material->data().shader_state;
 
     cmb.bindVertexBuffers({ *m_vertex_buffer }, { 0u });
     if (m_index_buffer) { cmb.bindIndexBuffer(*m_index_buffer, 0, m_large_indices); }
