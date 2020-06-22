@@ -51,6 +51,18 @@ namespace storm::engine {
             Mat4f
         };
 
+        struct MaterialData {
+            render::GraphicsPipelineShaderState shader_state;
+
+            struct Sampler {
+                std::string name;
+                render::TextureViewType type;
+            };
+
+            std::vector<std::pair<Binding, Sampler>> samplers;
+            std::vector<std::pair<std::string, UniformType>> uniforms;
+        };
+
         enum class AlphaMode { Opaque, Mask, Blend };
 
         explicit Material(Scene &scene);
@@ -70,6 +82,8 @@ namespace storm::engine {
 
         void finalize() noexcept;
 
+        [[nodiscard]] inline const MaterialData &data() const noexcept;
+
         [[nodiscard]] virtual MaterialInstanceOwnedPtr createInstancePtr() const noexcept;
 
         [[nodiscard]] inline core::Hash64 hash() const noexcept;
@@ -77,17 +91,7 @@ namespace storm::engine {
       protected:
         SceneObserverPtr m_scene;
 
-        struct MaterialData {
-            render::GraphicsPipelineShaderState shader_state;
-
-            struct Sampler {
-                std::string name;
-                render::TextureViewType type;
-            };
-
-            std::vector<std::pair<Binding, Sampler>> samplers;
-            std::vector<std::pair<std::string, UniformType>> uniforms;
-        } m_data;
+        MaterialData m_data;
 
         render::DescriptorSetLayoutOwnedPtr m_descriptor_set_layout;
         core::Hash64 m_hash;
