@@ -45,6 +45,12 @@ namespace storm::engine {
         inline void setRotation(core::Vector3f orientation) noexcept;
         [[nodiscard]] inline const core::Vector3f &rotation() const noexcept;
 
+        inline void setMoveSpeed(core::Vector3f move_speed) noexcept;
+        [[nodiscard]] inline const core::Vector3f &moveSpeed() const noexcept;
+
+        inline void setRotationSpeed(core::Vector3f rotation_speed) noexcept;
+        [[nodiscard]] inline const core::Vector3f &rotationSpeed() const noexcept;
+
         virtual void update(float delta) noexcept;
 
         [[nodiscard]] inline const core::Matrixf &projectionMatrix() const noexcept;
