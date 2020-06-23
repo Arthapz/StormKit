@@ -148,3 +148,11 @@ render::FramebufferOwnedPtr
                                      TextureViewConstObserverPtrArray attachments) const {
     return std::make_unique<Framebuffer>(*this, std::move(extent), std::move(attachments));
 }
+
+/////////////////////////////////////
+/////////////////////////////////////
+bool RenderPass::isCompatible(const RenderPass &render_pass) const noexcept {
+    //TODO implement proper compatibility check https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap7.html#renderpass-compatibility
+
+    return &render_pass == this;
+}

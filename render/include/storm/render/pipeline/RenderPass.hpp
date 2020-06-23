@@ -68,6 +68,8 @@ namespace storm::render {
             createFramebufferPtr(core::Extentu extent,
                                  TextureViewConstObserverPtrArray attachments) const;
 
+        bool isCompatible(const RenderPass &render_pass) const noexcept;
+
         inline const Device &device() const noexcept;
 
         inline core::span<const AttachmentDescription> attachmentDescriptions() const noexcept;

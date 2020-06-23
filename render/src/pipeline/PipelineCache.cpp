@@ -40,7 +40,7 @@ PipelineCache &PipelineCache::operator=(PipelineCache &&) = default;
 
 GraphicsPipeline &PipelineCache::getPipeline(const GraphicsPipelineState &state,
                                              const RenderPass &pass) {
-    if (!has(state)) {
+    if (!has(state) || !pass.isCompatible(m_pipelines[state]->renderPass())) {
         m_pipelines.emplace(state,
                             m_device->createGraphicsPipelinePtr(core::makeConstObserver(this)));
         auto &pipeline = m_pipelines[state];
