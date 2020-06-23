@@ -232,22 +232,22 @@ void App::doInitMeshRenderObjects() {
                                           buffering_count);
 
     // We need to create a render pass, the render pass describe how the framebuffer will look
-    m_render_pass = m_device->createRenderPassPtr();
-
-    const auto id_color =
-        m_render_pass->addAttachmentDescription({ .format = m_surface->pixelFormat() });
-    const auto id_depth = m_render_pass->addAttachmentDescription(
-        { .format             = render::PixelFormat::Depth32F_Stencil8,
-          .destination_layout = render::TextureLayout::Depth_Stencil_Attachment_Optimal });
-
-    m_render_pass->addSubpass(
-        { .bind_point      = render::PipelineBindPoint::Graphics,
-          .attachment_refs = {
-              render::RenderPass::Subpass::Ref { .attachment_id = id_color },
-              { .attachment_id = id_depth,
-                .layout        = render::TextureLayout::Depth_Stencil_Attachment_Optimal } } });
-
-    m_render_pass->build();
+    auto description = render::RenderPassDescription{
+        .attachments = {
+            { .format = m_surface->pixelFormat() },
+    { .format             = render::PixelFormat::Depth32F_Stencil8,
+      .destination_layout = render::TextureLayout::Depth_Stencil_Attachment_Optimal }
+        },
+        .subpasses = { {
+            .bind_point      = render::PipelineBindPoint::Graphics,
+            .attachment_refs = {
+                 { .attachment_id = 0u },
+                 { .attachment_id = 1u,
+                   .layout        = render::TextureLayout::Depth_Stencil_Attachment_Optimal }
+            }
+        } }
+    };
+    m_render_pass = m_device->createRenderPassPtr(std::move(description));
     log::LogHandler::ilog(LOG_MODULE, "Renderpass successfully created");
 
     // We create a pipeline, the pipeline describe all the fixed function parameters and the shaders

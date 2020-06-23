@@ -4,16 +4,20 @@
 
 #pragma once
 
+/////////// - GSL - ///////////
 #include <gsl/string_span>
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
 
+/////////// - StormKit::render - ///////////
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
 #include <storm/render/pipeline/DescriptorPool.hpp>
+#include <storm/render/pipeline/RenderPassDescription.hpp>
 #include <storm/render/pipeline/Fwd.hpp>
 
 #include <storm/render/resource/Fwd.hpp>
@@ -61,8 +65,8 @@ namespace storm::render {
         GraphicsPipelineOwnedPtr
             createGraphicsPipelinePtr(PipelineCacheConstObserverPtr cache = nullptr) const;
 
-        RenderPass createRenderPass() const;
-        RenderPassOwnedPtr createRenderPassPtr() const;
+        RenderPass createRenderPass(RenderPassDescription description) const;
+        RenderPassOwnedPtr createRenderPassPtr(RenderPassDescription description) const;
 
         Fence createFence() const;
         FenceOwnedPtr createFencePtr() const;

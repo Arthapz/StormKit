@@ -69,6 +69,7 @@ pipeline_headers = files([
     'include/storm/render/pipeline/Fwd.hpp',
     'include/storm/render/pipeline/GraphicsPipeline.hpp',
     'include/storm/render/pipeline/GraphicsPipelineState.hpp',
+    'include/storm/render/pipeline/RenderPassDescription.hpp',
     'include/storm/render/pipeline/RenderPass.hpp',
     'include/storm/render/pipeline/Framebuffer.hpp',
     'include/storm/render/pipeline/VertexBindingDescription.hpp',
@@ -123,6 +124,7 @@ sources = files([
 
     'src/pipeline/GraphicsPipeline.cpp',
     'src/pipeline/GraphicsPipelineState.cpp',
+    'src/pipeline/RenderPassDescription.cpp',
     'src/pipeline/RenderPass.cpp',
     'src/pipeline/Framebuffer.cpp',
     'src/pipeline/DescriptorSetLayout.cpp',

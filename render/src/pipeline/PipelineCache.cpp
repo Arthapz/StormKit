@@ -40,23 +40,32 @@ PipelineCache &PipelineCache::operator=(PipelineCache &&) = default;
 
 GraphicsPipeline &PipelineCache::getPipeline(const GraphicsPipelineState &state,
                                              const RenderPass &pass) {
-    if (!has(state) || !pass.isCompatible(m_pipelines[state]->renderPass())) {
-        m_pipelines.emplace(state,
-                            m_device->createGraphicsPipelinePtr(core::makeConstObserver(this)));
-        auto &pipeline = m_pipelines[state];
+    const auto pass_description = pass.description();
+    if (!has(state, pass_description)) {
+        auto pipeline= m_device->createGraphicsPipelinePtr(core::makeConstObserver(this));
 
         pipeline->setState(state);
         pipeline->setRenderPass(pass);
         pipeline->build();
+
+        m_pipelines[state].emplace(pass_description, std::move(pipeline));
     }
 
-    return *m_pipelines[state];
+    return *std::find_if(std::begin(m_pipelines[state]), std::end(m_pipelines[state]),
+                        [&pass_description](const auto &d){ return d.first.isCompatible(pass_description); })->second;
 }
 
-bool PipelineCache::has(const GraphicsPipelineState &state) const noexcept {
+bool PipelineCache::has(const GraphicsPipelineState &state, const RenderPassDescription &description) const noexcept {
     auto it = m_pipelines.find(state);
+    //auto it = core::ranges::find(m_pipelines, state);
+    if(it == std::cend(m_pipelines)) return false;
 
-    return it != std::cend(m_pipelines);
+    const auto &lookup = it->second;
+
+    auto it2 = std::find_if(std::cbegin(lookup), std::cend(lookup),
+                            [&description](const auto &d){ return d.first.isCompatible(description); });
+
+    return it2 != std::cend(lookup);
 }
 
 void PipelineCache::createNewPipelineCache() {

@@ -370,8 +370,6 @@ void FrameGraph::prepareGPUObjects() {
     const auto &device = m_engine->device();
 
     for (auto &step : m_timeline) {
-        step.render_pass = device.createRenderPassPtr();
-
         auto attachments = std::vector<std::pair<FramePassTextureID, core::UInt32>> {};
 
         auto pre_executes =
@@ -382,6 +380,7 @@ void FrameGraph::prepareGPUObjects() {
             std::vector<_std::observer_ptr<const FramePassBase::PreExecuteCallback>> {};
         post_executes.reserve(std::size(step.pass_id));
 
+        auto description = render::RenderPassDescription{};
         for (auto sub_step : step.pass_id) {
             auto &pass = m_frame_passes[sub_step];
 
@@ -390,7 +389,7 @@ void FrameGraph::prepareGPUObjects() {
 
             step.pass_name = pass->name();
 
-            auto sub_pass = render::RenderPass::Subpass {
+            auto sub_pass = render::Subpass {
                 .bind_point = render::PipelineBindPoint::Graphics,
             };
 
@@ -461,7 +460,7 @@ void FrameGraph::prepareGPUObjects() {
                 });
 
                 if (it != core::ranges::end(attachments)) {
-                    sub_pass.attachment_refs.emplace_back(render::RenderPass::Subpass::Ref {
+                    sub_pass.attachment_refs.emplace_back(render::Subpass::Ref {
                         it->second,
                         subpass_layout,
                     });
@@ -484,10 +483,11 @@ void FrameGraph::prepareGPUObjects() {
                     }
                 }
 
-                auto id = step.render_pass->addAttachmentDescription(std::move(attachment));
+                description.attachments.emplace_back(std::move(attachment));
+                const auto id = static_cast<core::UInt32>(std::size(description.attachments) - 1u);
 
                 sub_pass.attachment_refs.emplace_back(
-                    render::RenderPass::Subpass::Ref { id, subpass_layout });
+                    render::Subpass::Ref { id, subpass_layout });
 
                 attachments.emplace_back(handle, id);
             }
@@ -508,23 +508,24 @@ void FrameGraph::prepareGPUObjects() {
 
                 if (it != core::ranges::end(attachments)) {
                     sub_pass.attachment_refs.emplace_back(
-                        render::RenderPass::Subpass::Ref { it->second, subpass_layout });
+                        render::Subpass::Ref { it->second, subpass_layout });
 
                     continue;
                 }
 
                 auto attachment = createReadWriteDescription(resource, sub_step);
-                auto id         = step.render_pass->addAttachmentDescription(std::move(attachment));
+                description.attachments.emplace_back(std::move(attachment));
+                const auto id = static_cast<core::UInt32>(std::size(description.attachments) - 1u);
 
                 sub_pass.attachment_refs.emplace_back(
-                    render::RenderPass::Subpass::Ref { id, subpass_layout });
+                    render::Subpass::Ref { id, subpass_layout });
 
                 attachments.emplace_back(handle, id);
             }
 
             for (const auto &[id, _] : attachments) step.framebuffer_attachments.emplace_back(id);
 
-            step.render_pass->addSubpass(std::move(sub_pass));
+            description.subpasses.emplace_back(std::move(sub_pass));
         }
 
         step.pre_execute = [pre_executes { std::move(pre_executes) }](render::CommandBuffer &cmb) {
@@ -535,7 +536,7 @@ void FrameGraph::prepareGPUObjects() {
                 for (auto &execute : post_executes) (*execute)(cmb);
             };
 
-        step.render_pass->build();
+        step.render_pass = device.createRenderPassPtr(std::move(description));
         device.setObjectName(*step.render_pass, fmt::format("StormKit:{}", step.pass_name));
         step.cmb = device.graphicsQueue().createCommandBufferPtr();
         device.setObjectName(*step.cmb, fmt::format("StormKit:{}:CommandBuffer", step.pass_name));
@@ -544,7 +545,7 @@ void FrameGraph::prepareGPUObjects() {
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-render::RenderPass::AttachmentDescription
+render::AttachmentDescription
     FrameGraph::createDescription(const FramePassTexture &resource,
                                   render::AttachmentLoadOperation load_op,
                                   render::AttachmentStoreOperation store_op,
@@ -553,7 +554,7 @@ render::RenderPass::AttachmentDescription
                                   bool resolve) {
     const auto &descriptor = resource.descriptor();
 
-    return render::RenderPass::AttachmentDescription { .format             = descriptor.format,
+    return render::AttachmentDescription { .format             = descriptor.format,
                                                        .samples            = descriptor.samples,
                                                        .load_op            = load_op,
                                                        .store_op           = store_op,
@@ -564,7 +565,7 @@ render::RenderPass::AttachmentDescription
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-render::RenderPass::AttachmentDescription
+render::AttachmentDescription
     FrameGraph::createReadOnlyDescription(const FramePassTexture &resource) {
     // const auto &descriptor = resource.descriptor();
 
@@ -574,7 +575,7 @@ render::RenderPass::AttachmentDescription
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-render::RenderPass::AttachmentDescription
+render::AttachmentDescription
     FrameGraph::createReadWriteDescription(const FramePassTexture &resource, core::UInt32 pass_id) {
     const auto &descriptor = resource.descriptor();
     const auto is_depth_attachment =
@@ -602,7 +603,7 @@ render::RenderPass::AttachmentDescription
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-render::RenderPass::AttachmentDescription
+render::AttachmentDescription
     FrameGraph::createWriteOnlyDescription(const FramePassTexture &resource,
                                            core::UInt32 pass_id,
                                            bool resolve) {

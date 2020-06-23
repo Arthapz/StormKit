@@ -2,10 +2,13 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+/////////// - STL - ///////////
 #include <unordered_set>
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Strings.hpp>
 
+/////////// - StormKit::render - ///////////
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/Instance.hpp>
 #include <storm/render/core/PhysicalDevice.hpp>
@@ -297,14 +300,14 @@ GraphicsPipelineOwnedPtr
 
 /////////////////////////////////////
 /////////////////////////////////////
-RenderPass Device::createRenderPass() const {
-    return RenderPass { *this };
+RenderPass Device::createRenderPass(RenderPassDescription description) const {
+    return RenderPass { *this, std::move(description) };
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-RenderPassOwnedPtr Device::createRenderPassPtr() const {
-    return std::make_unique<RenderPass>(*this);
+RenderPassOwnedPtr Device::createRenderPassPtr(RenderPassDescription description) const {
+    return std::make_unique<RenderPass>(*this, std::move(description));
 }
 
 /////////////////////////////////////
