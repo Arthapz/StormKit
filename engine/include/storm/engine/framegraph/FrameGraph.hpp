@@ -98,18 +98,18 @@ namespace storm::engine {
         void computeTimeline(core::span<const core::UInt32> passes);
         void prepareGPUObjects();
 
-        render::RenderPass::AttachmentDescription
+        render::AttachmentDescription
             createDescription(const FramePassTexture &resource,
                               render::AttachmentLoadOperation load_op,
                               render::AttachmentStoreOperation store_op,
                               render::TextureLayout source_layout,
                               render::TextureLayout destination_layout,
                               bool resolve);
-        render::RenderPass::AttachmentDescription
+        render::AttachmentDescription
             createReadOnlyDescription(const FramePassTexture &resource);
-        render::RenderPass::AttachmentDescription
+        render::AttachmentDescription
             createReadWriteDescription(const FramePassTexture &resource, core::UInt32 pass_id);
-        render::RenderPass::AttachmentDescription
+        render::AttachmentDescription
             createWriteOnlyDescription(const FramePassTexture &resource,
                                        core::UInt32 pass_id,
                                        bool resolve);

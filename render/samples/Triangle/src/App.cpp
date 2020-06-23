@@ -132,15 +132,16 @@ void App::doInitMeshRenderObjects() {
     log::LogHandler::ilog(LOG_MODULE, "Fragment shader loaded");
 
     // We need to create a render pass, the render pass describe how the framebuffer will look
-    m_render_pass = m_device->createRenderPassPtr();
-
-    const auto id = m_render_pass->addAttachmentDescription({ .format = m_surface->pixelFormat() });
-
-    m_render_pass->addSubpass(
-        { .bind_point      = render::PipelineBindPoint::Graphics,
-          .attachment_refs = { render::RenderPass::Subpass::Ref { .attachment_id = id } } });
-
-    m_render_pass->build();
+    auto description = render::RenderPassDescription{
+        .attachments = {
+            { .format = m_surface->pixelFormat() }
+        },
+        .subpasses = { {
+            .bind_point      = render::PipelineBindPoint::Graphics,
+            .attachment_refs = { { .attachment_id = 0u } }
+        } }
+    };
+    m_render_pass = m_device->createRenderPassPtr(std::move(description));
     log::LogHandler::ilog(LOG_MODULE, "Renderpass successfully created");
 
     // We create a pipeline, the pipeline describe all the fixed function parameters and the shaders

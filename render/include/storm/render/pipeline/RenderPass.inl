@@ -7,25 +7,12 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-     void RenderPass::addSubpass(Subpass subpass) {
-        m_subpasses.emplace_back(std::move(subpass));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
      const Device &RenderPass::device() const noexcept { return *m_device; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::span<const RenderPass::AttachmentDescription>
-        RenderPass::attachmentDescriptions() const noexcept {
-        return m_attachment_descriptions;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-     core::span<const RenderPass::Subpass> RenderPass::subpasses() const noexcept {
-        return m_subpasses;
+    const RenderPassDescription &RenderPass::description() const noexcept {
+        return m_description;
     }
 
     /////////////////////////////////////

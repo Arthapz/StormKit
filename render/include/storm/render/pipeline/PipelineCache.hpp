@@ -37,7 +37,7 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
-        bool has(const GraphicsPipelineState &state) const noexcept;
+        bool has(const GraphicsPipelineState &state, const RenderPassDescription &description) const noexcept;
 
         void createNewPipelineCache();
         void readPipelineCache();
@@ -63,13 +63,14 @@ namespace storm::render {
             } uuid;
         } m_serialized;
 
+
         DeviceConstObserverPtr m_device;
 
         vk::UniquePipelineCache m_vk_pipeline_cache;
 
         std::filesystem::path m_path;
 
-        storm::core::HashMap<GraphicsPipelineState, GraphicsPipelineOwnedPtr> m_pipelines;
+        core::HashMap<GraphicsPipelineState, core::HashMap<RenderPassDescription, GraphicsPipelineOwnedPtr>> m_pipelines;
     };
 } // namespace storm::render
 
