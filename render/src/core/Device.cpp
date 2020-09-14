@@ -728,8 +728,7 @@ RAIIVkDescriptorPool
 /////////////////////////////////////
 std::vector<RAIIVkCommandBuffer> Device::allocateVkCommandBuffers(
     const vk::CommandBufferAllocateInfo &allocate_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->allocateCommandBuffersUnique<
-                             std::allocator<RAIIVkCommandBuffer>>(allocate_info, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(m_vk_device->allocateCommandBuffersUnique(allocate_info, m_vk_dispatcher),
                          buffers);
 
     return buffers;
@@ -739,8 +738,7 @@ std::vector<RAIIVkCommandBuffer> Device::allocateVkCommandBuffers(
 /////////////////////////////////////
 std::vector<RAIIVkDescriptorSet> Device::allocateVkDescriptorSets(
     const vk::DescriptorSetAllocateInfo &allocate_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->allocateDescriptorSetsUnique<
-                             std::allocator<RAIIVkDescriptorSet>>(allocate_info, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(m_vk_device->allocateDescriptorSetsUnique(allocate_info, m_vk_dispatcher),
                          sets);
 
     return sets;

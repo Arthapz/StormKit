@@ -41,8 +41,14 @@ PhysicalDevice::PhysicalDevice(vk::PhysicalDevice vk_physical_device, const Inst
 
     const auto vendor_id = properties.vendorID;
 
-    m_device_info.device_id         = properties.deviceID;
-    m_device_info.device_name       = properties.deviceName;
+    m_device_info.device_id = properties.deviceID;
+
+    m_device_info.device_name.reserve(std::size(properties.deviceName));
+    std::copy(std::begin(properties.deviceName),
+              std::cend(properties.deviceName),
+              std::back_inserter(m_device_info.device_name));
+    m_device_info.device_name.shrink_to_fit();
+
     m_device_info.vendor_id         = vendor_id;
     m_device_info.vendor_name       = vendorNameByID(vendor_id);
     m_device_info.api_major_version = vkVersionMajor(properties.apiVersion);
@@ -360,7 +366,7 @@ bool PhysicalDevice::checkExtensionSupport(
     storm::core::span<const gsl::czstring<>> extensions) const noexcept {
     auto required_extensions =
         storm::core::HashSet<std::string_view> { core::ranges::begin(extensions),
-                                               core::ranges::end(extensions) };
+                                                 core::ranges::end(extensions) };
 
     for (const auto &extension : m_extensions) required_extensions.erase(extension);
     auto support = required_extensions.empty();
@@ -382,8 +388,8 @@ render::DeviceOwnedPtr PhysicalDevice::createLogicalDevicePtr() const {
 
 /////////////////////////////////////
 /////////////////////////////////////
-vk::SurfaceCapabilitiesKHR PhysicalDevice::queryVkSurfaceCapabilities(const Surface &surface) const
-    noexcept {
+vk::SurfaceCapabilitiesKHR
+    PhysicalDevice::queryVkSurfaceCapabilities(const Surface &surface) const noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceCapabilitiesKHR(surface), capabilities);
 
     return capabilities;
@@ -400,8 +406,8 @@ std::vector<vk::SurfaceFormatKHR>
 
 /////////////////////////////////////
 /////////////////////////////////////
-std::vector<vk::PresentModeKHR> PhysicalDevice::queryVkPresentModes(const Surface &surface) const
-    noexcept {
+std::vector<vk::PresentModeKHR>
+    PhysicalDevice::queryVkPresentModes(const Surface &surface) const noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfacePresentModesKHR(surface), present_modes);
 
     return present_modes;
