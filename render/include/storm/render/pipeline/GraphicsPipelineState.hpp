@@ -89,12 +89,6 @@ namespace storm::render {
         float max_depth_bounds = 1.f;
     };
 
-    struct PushConstantRange {
-        ShaderStage stages;
-        core::UOffset offset;
-        core::ByteCount size;
-    };
-
     struct GraphicsPipelineLayout {
         std::vector<DescriptorSetLayoutConstObserverPtr> descriptor_set_layouts;
         std::vector<PushConstantRange> push_constant_ranges;

@@ -7,6 +7,7 @@
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/PhysicalDevice.hpp>
 
+#include <storm/render/pipeline/ComputePipeline.hpp>
 #include <storm/render/pipeline/GraphicsPipeline.hpp>
 #include <storm/render/pipeline/PipelineCache.hpp>
 
@@ -38,36 +39,68 @@ PipelineCache::PipelineCache(PipelineCache &&) = default;
 /////////////////////////////////////
 PipelineCache &PipelineCache::operator=(PipelineCache &&) = default;
 
+/////////////////////////////////////
+/////////////////////////////////////
 GraphicsPipeline &PipelineCache::getPipeline(const GraphicsPipelineState &state,
                                              const RenderPass &pass) {
     const auto pass_description = pass.description();
     if (!has(state, pass_description)) {
-        auto pipeline= m_device->createGraphicsPipelinePtr(core::makeConstObserver(this));
+        auto pipeline = m_device->createGraphicsPipelinePtr(core::makeConstObserver(this));
 
         pipeline->setState(state);
         pipeline->setRenderPass(pass);
         pipeline->build();
 
-        m_pipelines[state].emplace(pass_description, std::move(pipeline));
+        m_graphics_pipelines[state].emplace(pass_description, std::move(pipeline));
     }
 
-    return *std::find_if(std::begin(m_pipelines[state]), std::end(m_pipelines[state]),
-                        [&pass_description](const auto &d){ return d.first.isCompatible(pass_description); })->second;
+    return *std::find_if(std::begin(m_graphics_pipelines[state]),
+                         std::end(m_graphics_pipelines[state]),
+                         [&pass_description](const auto &d) {
+                             return d.first.isCompatible(pass_description);
+                         })
+                ->second;
 }
 
-bool PipelineCache::has(const GraphicsPipelineState &state, const RenderPassDescription &description) const noexcept {
-    auto it = m_pipelines.find(state);
-    //auto it = core::ranges::find(m_pipelines, state);
-    if(it == std::cend(m_pipelines)) return false;
+/////////////////////////////////////
+/////////////////////////////////////
+ComputePipeline &PipelineCache::getPipeline(const ComputePipelineState &state) {
+    if (!has(state)) {
+        auto pipeline = m_device->createComputePipelinePtr(core::makeConstObserver(this));
+
+        pipeline->setState(state);
+        pipeline->build();
+
+        m_compute_pipelines[state] = std::move(pipeline);
+    }
+    return *m_compute_pipelines.find(state)->second;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+bool PipelineCache::has(const GraphicsPipelineState &state,
+                        const RenderPassDescription &description) const noexcept {
+    auto it = m_graphics_pipelines.find(state);
+    // auto it = core::ranges::find(m_pipelines, state);
+    if (it == std::cend(m_graphics_pipelines)) return false;
 
     const auto &lookup = it->second;
 
-    auto it2 = std::find_if(std::cbegin(lookup), std::cend(lookup),
-                            [&description](const auto &d){ return d.first.isCompatible(description); });
+    auto it2 = std::find_if(std::cbegin(lookup), std::cend(lookup), [&description](const auto &d) {
+        return d.first.isCompatible(description);
+    });
 
     return it2 != std::cend(lookup);
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
+bool PipelineCache::has(const ComputePipelineState &state) const noexcept {
+    return m_compute_pipelines.find(state) != std::cend(m_compute_pipelines);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
 void PipelineCache::createNewPipelineCache() {
     using log::operator"" _module;
 
@@ -93,6 +126,8 @@ void PipelineCache::createNewPipelineCache() {
     m_vk_pipeline_cache    = m_device->createVkPipelineCache(std::move(create_info));
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 void PipelineCache::readPipelineCache() {
     using log::operator"" _module;
 
@@ -172,6 +207,8 @@ void PipelineCache::readPipelineCache() {
     m_vk_pipeline_cache = m_device->createVkPipelineCache(std::move(create_info));
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 void PipelineCache::saveCache() {
     using log::operator"" _module;
 

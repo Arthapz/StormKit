@@ -7,6 +7,7 @@
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Queue.hpp>
 
+#include <storm/render/pipeline/ComputePipeline.hpp>
 #include <storm/render/pipeline/DescriptorSet.hpp>
 #include <storm/render/pipeline/Framebuffer.hpp>
 #include <storm/render/pipeline/GraphicsPipeline.hpp>
@@ -164,10 +165,12 @@ void CommandBuffer::build() {
                             ? vk::CommandBufferUsageFlagBits::eOneTimeSubmit
                             : vk::CommandBufferUsageFlagBits::eSimultaneousUse);
 
-                    m_vk_command_buffer->begin(begin_info, dispatcher);
+                    const auto result = m_vk_command_buffer->begin(begin_info, dispatcher);
+                    STORM_ENSURES(result == vk::Result::eSuccess);
                 },
                 [this, &dispatcher]([[maybe_unused]] const EndCommand &command) {
-                    m_vk_command_buffer->end(dispatcher);
+                    const auto result = m_vk_command_buffer->end(dispatcher);
+                    STORM_ENSURES(result == vk::Result::eSuccess);
                 },
                 [this, &dispatcher](const BeginRenderPassCommand &command) {
                     const auto &render_pass = static_cast<const RenderPass &>(command.render_pass);
@@ -234,6 +237,19 @@ void CommandBuffer::build() {
                     m_vk_command_buffer->bindPipeline(vk::PipelineBindPoint::eGraphics,
                                                       pipeline,
                                                       dispatcher);
+                },
+                [this, &dispatcher](const BindComputePipelineCommand &command) {
+                    const auto &pipeline = command.pipeline;
+
+                    m_vk_command_buffer->bindPipeline(vk::PipelineBindPoint::eCompute,
+                                                      pipeline,
+                                                      dispatcher);
+                },
+                [this, &dispatcher](const DispatchCommand &command) {
+                    m_vk_command_buffer->dispatch(command.group_count_x,
+                                                  command.group_count_y,
+                                                  command.group_count_z,
+                                                  dispatcher);
                 },
                 [this, &dispatcher](const DrawCommand &command) {
                     STORM_EXPECTS(command.vertex_count > 0u);

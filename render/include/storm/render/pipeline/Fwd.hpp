@@ -6,12 +6,23 @@
 
 #include <storm/core/Memory.hpp>
 
+#include <storm/render/core/Enums.hpp>
+
 namespace storm::render {
     class AbstractPipeline;
     DECLARE_PTR_AND_REF(AbstractPipeline);
 
+    struct PushConstantRange {
+        ShaderStage stages;
+        core::UOffset offset;
+        core::ByteCount size;
+    };
+
     class GraphicsPipeline;
     DECLARE_PTR_AND_REF(GraphicsPipeline);
+
+    class ComputePipeline;
+    DECLARE_PTR_AND_REF(ComputePipeline);
 
     class RenderPass;
     DECLARE_PTR_AND_REF(RenderPass);

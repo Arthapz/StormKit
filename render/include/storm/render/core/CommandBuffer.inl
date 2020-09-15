@@ -97,6 +97,20 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    void CommandBuffer::bindComputePipeline(const ComputePipeline &pipeline) {
+        add<BindComputePipelineCommand>(pipeline);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void CommandBuffer::dispatch(core::UInt32 group_count_x,
+                                 core::UInt32 group_count_y,
+                                 core::UInt32 group_count_z) {
+        add<DispatchCommand>(group_count_x, group_count_y, group_count_z);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     void CommandBuffer::draw(core::UInt32 vertex_count,
                              core::UInt32 instance_count,
                              core::UInt32 first_vertex,
@@ -136,6 +150,16 @@ namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
     void CommandBuffer::bindDescriptorSets(const GraphicsPipeline &pipeline,
+                                           std::vector<DescriptorSetCRef> descriptor_sets,
+                                           std::vector<core::UOffset> dynamic_offsets) {
+        add<BindDescriptorSetsCommand>(&pipeline,
+                                       std::move(descriptor_sets),
+                                       std::move(dynamic_offsets));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void CommandBuffer::bindDescriptorSets(const ComputePipeline &pipeline,
                                            std::vector<DescriptorSetCRef> descriptor_sets,
                                            std::vector<core::UOffset> dynamic_offsets) {
         add<BindDescriptorSetsCommand>(&pipeline,
@@ -268,6 +292,14 @@ namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
     void CommandBuffer::pushConstants(const GraphicsPipeline &pipeline,
+                                      ShaderStage stage,
+                                      std::vector<std::byte> data) {
+        add<PushConstantsCommand>(&pipeline, stage, std::move(data));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    void CommandBuffer::pushConstants(const ComputePipeline &pipeline,
                                       ShaderStage stage,
                                       std::vector<std::byte> data) {
         add<PushConstantsCommand>(&pipeline, stage, std::move(data));

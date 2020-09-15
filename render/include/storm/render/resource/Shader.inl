@@ -19,6 +19,12 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
+     inline const DescriptorSetLayout &Shader::descriptorSetLayout() const noexcept {
+         return m_descriptor_set_layout;
+     }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
      vk::ShaderModule Shader::vkShaderModule() const noexcept {
         STORM_EXPECTS(m_vk_shader_module);
         return *m_vk_shader_module;

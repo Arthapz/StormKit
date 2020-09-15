@@ -14,6 +14,7 @@
 #include <storm/render/core/Fwd.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
+#include <storm/render/pipeline/ComputePipelineState.hpp>
 #include <storm/render/pipeline/GraphicsPipelineState.hpp>
 
 namespace storm::render {
@@ -28,8 +29,9 @@ namespace storm::render {
         PipelineCache(PipelineCache &&);
         PipelineCache &operator=(PipelineCache &&);
 
-        render::GraphicsPipeline &getPipeline(const GraphicsPipelineState &state,
+        GraphicsPipeline &getPipeline(const GraphicsPipelineState &state,
                                               const RenderPass &render_pass);
+        ComputePipeline &getPipeline(const ComputePipelineState &state);
 
         inline vk::PipelineCache vkPipelineCache() const noexcept;
         inline operator vk::PipelineCache() const noexcept;
@@ -38,6 +40,7 @@ namespace storm::render {
 
       private:
         bool has(const GraphicsPipelineState &state, const RenderPassDescription &description) const noexcept;
+        bool has(const ComputePipelineState &state) const noexcept;
 
         void createNewPipelineCache();
         void readPipelineCache();
@@ -70,7 +73,8 @@ namespace storm::render {
 
         std::filesystem::path m_path;
 
-        core::HashMap<GraphicsPipelineState, core::HashMap<RenderPassDescription, GraphicsPipelineOwnedPtr>> m_pipelines;
+        core::HashMap<GraphicsPipelineState, core::HashMap<RenderPassDescription, GraphicsPipelineOwnedPtr>> m_graphics_pipelines;
+        core::HashMap<ComputePipelineState, ComputePipelineOwnedPtr> m_compute_pipelines;
     };
 } // namespace storm::render
 

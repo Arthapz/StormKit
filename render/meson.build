@@ -1,9 +1,31 @@
 vulkan_dep  = dependency('vulkan')
 
+cmake = import('cmake')
+
+spirv_cross_opt = cmake.subproject_options()
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_SHARED': false})
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_STATIC': true})
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_CLI': false})
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_ENABLE_TESTS': false})
+
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_ENABLE_GLSL': false})
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_ENABLE_HLSL': false})
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_ENABLE_MSL': false})
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_ENABLE_CPP': false})
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_ENABLE_REFLECT': false})
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_ENABLE_UTIL': false})
+
+spirv_cross_opt.add_cmake_defines({'SPIRV_CROSS_FORCE_PIC': true})
+
+spirv_cross = cmake.subproject('SPIRV-Cross', options: spirv_cross_opt)
+
+spirv_cross_core_dep = spirv_cross.dependency('spirv-cross-core')
+spirv_cross_c_dep = spirv_cross.dependency('spirv-cross-c')
+
 vulkan_headers_dep = declare_dependency(dependencies: [vulkan_dep])
 
 public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, vulkan_headers_dep]
-private_dependencies = []
+private_dependencies = [spirv_cross_core_dep, spirv_cross_c_dep]
 
 #ide:editable-filelist
 general_headers = files([
@@ -67,8 +89,11 @@ resource_inls = files([
 #ide:editable-filelist
 pipeline_headers = files([
     'include/storm/render/pipeline/Fwd.hpp',
+    'include/storm/render/pipeline/AbstractPipeline.hpp',
     'include/storm/render/pipeline/GraphicsPipeline.hpp',
     'include/storm/render/pipeline/GraphicsPipelineState.hpp',
+    'include/storm/render/pipeline/ComputePipeline.hpp',
+    'include/storm/render/pipeline/ComputePipelineState.hpp',
     'include/storm/render/pipeline/RenderPassDescription.hpp',
     'include/storm/render/pipeline/RenderPass.hpp',
     'include/storm/render/pipeline/Framebuffer.hpp',
@@ -83,7 +108,9 @@ pipeline_headers = files([
 #ide:editable-filelist
 pipeline_inls = files([
     'include/storm/render/pipeline/PipelineCache.inl',
+    'include/storm/render/pipeline/AbstractPipeline.inl',
     'include/storm/render/pipeline/GraphicsPipeline.inl',
+    'include/storm/render/pipeline/ComputePipeline.inl',
     'include/storm/render/pipeline/RenderPass.inl',
     'include/storm/render/pipeline/Framebuffer.inl',
     'include/storm/render/pipeline/DescriptorSetLayout.inl',
@@ -122,8 +149,11 @@ sources = files([
     'src/resource/Sampler.cpp',
     'src/resource/HardwareBuffer.cpp',
 
+    'src/pipeline/AbstractPipeline.cpp',
     'src/pipeline/GraphicsPipeline.cpp',
     'src/pipeline/GraphicsPipelineState.cpp',
+    'src/pipeline/ComputePipeline.cpp',
+    'src/pipeline/ComputePipelineState.cpp',
     'src/pipeline/RenderPassDescription.cpp',
     'src/pipeline/RenderPass.cpp',
     'src/pipeline/Framebuffer.cpp',

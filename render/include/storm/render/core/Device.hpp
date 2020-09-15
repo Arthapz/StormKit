@@ -64,6 +64,10 @@ namespace storm::render {
             createGraphicsPipeline(PipelineCacheConstObserverPtr cache = nullptr) const;
         GraphicsPipelineOwnedPtr
             createGraphicsPipelinePtr(PipelineCacheConstObserverPtr cache = nullptr) const;
+        ComputePipeline
+            createComputePipeline(PipelineCacheConstObserverPtr cache = nullptr) const;
+        ComputePipelineOwnedPtr
+            createComputePipelinePtr(PipelineCacheConstObserverPtr cache = nullptr) const;
 
         RenderPass createRenderPass(RenderPassDescription description) const;
         RenderPassOwnedPtr createRenderPassPtr(RenderPassDescription description) const;

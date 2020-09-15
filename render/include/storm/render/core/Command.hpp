@@ -62,6 +62,16 @@ namespace storm::render {
         const GraphicsPipeline &pipeline;
     };
 
+    struct BindComputePipelineCommand {
+        const ComputePipeline &pipeline;
+    };
+
+    struct DispatchCommand {
+        core::UInt32 group_count_x;
+        core::UInt32 group_count_y;
+        core::UInt32 group_count_z;
+    };
+
     struct DrawCommand {
         core::UInt32 vertex_count;
         core::UInt32 instance_count = 1u;
@@ -89,7 +99,7 @@ namespace storm::render {
     };
 
     struct BindDescriptorSetsCommand {
-        const GraphicsPipeline *pipeline = nullptr;
+        const AbstractPipeline *pipeline = nullptr;
         std::vector<DescriptorSetCRef> descriptor_sets;
         std::vector<core::UOffset> dynamic_offsets;
     };
@@ -198,7 +208,7 @@ namespace storm::render {
     };
 
     struct PushConstantsCommand {
-        const GraphicsPipeline *pipeline = nullptr;
+        const AbstractPipeline *pipeline = nullptr;
         ShaderStage stage;
         std::vector<std::byte> data;
     };
@@ -212,6 +222,8 @@ namespace storm::render {
                                  NextSubPassCommand,
                                  EndRenderPassCommand,
                                  BindGraphicsPipelineCommand,
+                                 BindComputePipelineCommand,
+                                 DispatchCommand,
                                  DrawCommand,
                                  DrawIndexedCommand,
                                  BindVertexBuffersCommand,

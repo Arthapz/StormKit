@@ -48,7 +48,8 @@ Queue &Queue::operator=(Queue &&) = default;
 void Queue::waitIdle() const noexcept {
     STORM_EXPECTS(m_vk_queue);
 
-    m_vk_queue.waitIdle(m_device->vkDispatcher());
+    const auto result = m_vk_queue.waitIdle(m_device->vkDispatcher());
+    STORM_ENSURES(result == vk::Result::eSuccess);
 }
 
 /////////////////////////////////////
@@ -96,7 +97,8 @@ void Queue::submit(core::span<const CommandBufferConstObserverPtr> command_buffe
     }
 
     const auto submit_infos = std::array { submit_info };
-    m_vk_queue.submit(submit_infos, vk_fence, m_device->vkDispatcher());
+    const auto result       = m_vk_queue.submit(submit_infos, vk_fence, m_device->vkDispatcher());
+    STORM_ENSURES(result == vk::Result::eSuccess);
 }
 
 /////////////////////////////////////

@@ -4,17 +4,24 @@
 
 #pragma once
 
+/////////// - STL - ///////////
+#include <filesystem>
+
+/////////// - StormKit::core - ///////////
 #include <storm/core/Platform.hpp>
 #include <storm/core/Span.hpp>
-
-#include <filesystem>
 #include <storm/core/NonCopyable.hpp>
 
+/////////// - StormKit::render - ///////////
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
 
+#include <storm/render/pipeline/DescriptorSetLayout.hpp>
+
+/////////// - StormKit::window - ///////////
 #include <storm/window/Window.hpp>
 
+struct spvc_context_s;
 namespace storm::render {
     class STORM_PUBLIC Shader: public core::NonCopyable {
       public:
@@ -31,6 +38,7 @@ namespace storm::render {
         inline ShaderStage type() const noexcept;
         inline storm::core::span<const core::Byte> source() const noexcept;
         inline const Device &device() const noexcept;
+        inline const DescriptorSetLayout &descriptorSetLayout() const noexcept;
 
         inline vk::ShaderModule vkShaderModule() const noexcept;
         inline operator vk::ShaderModule() const noexcept;
@@ -39,6 +47,7 @@ namespace storm::render {
 
       private:
         void compile() noexcept;
+        void reflect() noexcept;
 
         DeviceConstObserverPtr m_device;
 
@@ -46,6 +55,10 @@ namespace storm::render {
         std::vector<core::Byte> m_source;
 
         RAIIVkShaderModule m_vk_shader_module;
+        DescriptorSetLayout m_descriptor_set_layout;
+
+        static inline spvc_context_s *s_context = nullptr;
+        static inline std::uint32_t s_spvc_counter = 0u;
     };
 } // namespace storm::render
 

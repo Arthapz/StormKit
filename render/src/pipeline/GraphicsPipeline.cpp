@@ -18,8 +18,9 @@ using namespace storm::render;
 /////////////////////////////////////
 /////////////////////////////////////
 GraphicsPipeline::GraphicsPipeline(const render::Device &device,
-                                   PipelineCacheConstObserverPtr cache)
-    : m_device { &device }, m_pipeline_cache { cache } {};
+                                   PipelineCacheConstObserverPtr cache) noexcept
+    : AbstractPipeline { device, cache } {
+}
 
 /////////////////////////////////////
 /////////////////////////////////////

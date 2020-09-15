@@ -17,9 +17,12 @@
 #include <storm/render/core/Queue.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
+#include <storm/render/resource/Fwd.hpp>
 #include <storm/render/resource/Texture.hpp>
 
+#include <storm/render/pipeline/Fwd.hpp>
 #include <storm/render/pipeline/GraphicsPipeline.hpp>
+#include <storm/render/pipeline/ComputePipeline.hpp>
 
 namespace storm::render {
     class STORM_PUBLIC CommandBuffer: public core::NonCopyable {
@@ -71,6 +74,11 @@ namespace storm::render {
         inline void endRenderPass();
 
         inline void bindGraphicsPipeline(const GraphicsPipeline &pipeline);
+        inline void bindComputePipeline(const ComputePipeline &pipeline);
+
+        inline void dispatch(core::UInt32 group_count_x,
+                             core::UInt32 group_count_y,
+                             core::UInt32 group_count_z);
 
         inline void draw(core::UInt32 vertex_count,
                          core::UInt32 instance_count = 1u,
@@ -88,6 +96,9 @@ namespace storm::render {
                                     core::Offset offset = 0,
                                     bool large_indices  = false);
         inline void bindDescriptorSets(const GraphicsPipeline &pipeline,
+                                       std::vector<DescriptorSetCRef> descriptor_sets,
+                                       std::vector<core::UOffset> dynamic_offsets = {});
+        inline void bindDescriptorSets(const ComputePipeline &pipeline,
                                        std::vector<DescriptorSetCRef> descriptor_sets,
                                        std::vector<core::UOffset> dynamic_offsets = {});
 
@@ -140,6 +151,9 @@ namespace storm::render {
                                     ImageMemoryBarriers image_memory_barriers);
 
         inline void pushConstants(const GraphicsPipeline &pipeline,
+                                  ShaderStage stage,
+                                  std::vector<std::byte> data);
+        inline void pushConstants(const ComputePipeline &pipeline,
                                   ShaderStage stage,
                                   std::vector<std::byte> data);
 

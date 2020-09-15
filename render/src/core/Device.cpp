@@ -15,6 +15,7 @@
 #include <storm/render/core/Queue.hpp>
 #include <storm/render/core/Surface.hpp>
 
+#include <storm/render/pipeline/ComputePipeline.hpp>
 #include <storm/render/pipeline/DescriptorPool.hpp>
 #include <storm/render/pipeline/DescriptorSetLayout.hpp>
 #include <storm/render/pipeline/GraphicsPipeline.hpp>
@@ -233,7 +234,8 @@ Device &Device::operator=(Device &&) = default;
 /////////////////////////////////////
 /////////////////////////////////////
 void Device::waitIdle() const noexcept {
-    m_vk_device->waitIdle(m_vk_dispatcher);
+    const auto result = m_vk_device->waitIdle(m_vk_dispatcher);
+    STORM_ENSURES(result == vk::Result::eSuccess);
 }
 
 /////////////////////////////////////
@@ -247,7 +249,8 @@ void Device::waitForFences(storm::core::span<const FenceCRef> fences,
     for (const auto &fence : fences)
         vk_fences.emplace_back(static_cast<const Fence &>(fence.get()));
 
-    m_vk_device->waitForFences(vk_fences, wait_all, timeout, m_vk_dispatcher);
+    const auto result = m_vk_device->waitForFences(vk_fences, wait_all, timeout, m_vk_dispatcher);
+    STORM_ENSURES(result == vk::Result::eSuccess);
 }
 
 /////////////////////////////////////
@@ -298,6 +301,19 @@ GraphicsPipeline Device::createGraphicsPipeline(PipelineCacheConstObserverPtr ca
 GraphicsPipelineOwnedPtr
     Device::createGraphicsPipelinePtr(PipelineCacheConstObserverPtr cache) const {
     return std::make_unique<GraphicsPipeline>(*this, cache);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+ComputePipeline Device::createComputePipeline(PipelineCacheConstObserverPtr cache) const {
+    return ComputePipeline { *this, cache };
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+ComputePipelineOwnedPtr
+    Device::createComputePipelinePtr(PipelineCacheConstObserverPtr cache) const {
+    return std::make_unique<ComputePipeline>(*this, cache);
 }
 
 /////////////////////////////////////
@@ -814,5 +830,6 @@ void Device::setObjectName(core::UInt64 object, DebugObjectType type, std::strin
                           .setObjectHandle(object)
                           .setPObjectName(std::data(name));
 
-    m_vk_device->setDebugUtilsObjectNameEXT(info, m_vk_dispatcher);
+    const auto result = m_vk_device->setDebugUtilsObjectNameEXT(info, m_vk_dispatcher);
+    STORM_ENSURES(result == vk::Result::eSuccess);
 }
