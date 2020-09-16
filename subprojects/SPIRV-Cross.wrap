@@ -1,0 +1,4 @@
+[wrap-git]
+url = https://github.com/KhronosGroup/SPIRV-Cross.git
+revision = head
+clone-recursive = true
