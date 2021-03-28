@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -21,7 +21,7 @@
 #include <storm/render/resource/Fwd.hpp>
 
 namespace storm::render {
-    class STORM_PUBLIC RenderPass: public core::NonCopyable {
+    class STORMKIT_PUBLIC RenderPass: public core::NonCopyable {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Render_Pass;
 
@@ -32,10 +32,10 @@ namespace storm::render {
         RenderPass &operator=(RenderPass &&);
 
         Framebuffer createFramebuffer(core::Extentu extent,
-                                      TextureViewConstObserverPtrArray attachments) const;
+                                      TextureViewConstPtrArray attachments) const;
         FramebufferOwnedPtr
             createFramebufferPtr(core::Extentu extent,
-                                 TextureViewConstObserverPtrArray attachments) const;
+                                 TextureViewConstPtrArray attachments) const;
 
         bool isCompatible(const RenderPass &render_pass) const noexcept;
 
@@ -51,7 +51,7 @@ namespace storm::render {
       private:
         void build();
 
-        DeviceConstObserverPtr m_device;
+        DeviceConstPtr m_device;
 
         RenderPassDescription m_description;
 

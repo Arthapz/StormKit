@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -65,8 +65,8 @@ void WindowImpl::create(const std::string &title,
                       screen->root,
                       0,
                       0,
-                      settings.size.w,
-                      settings.size.h,
+                      settings.size.width,
+                      settings.size.height,
                       0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
                       screen->root_visual,
@@ -169,8 +169,8 @@ void WindowImpl::create(const std::string &title,
         if ((style & WindowStyle::Resizable) != WindowStyle::Resizable) {
             auto size_hints      = xcb_size_hints_t {};
             size_hints.flags     = XCB_ICCCM_SIZE_HINT_P_MIN_SIZE | XCB_ICCCM_SIZE_HINT_P_MAX_SIZE;
-            size_hints.min_width = size_hints.max_width = settings.size.w;
-            size_hints.min_height = size_hints.max_height = settings.size.h;
+            size_hints.min_width = size_hints.max_width = settings.size.width;
+            size_hints.min_height = size_hints.max_height = settings.size.height;
             xcb_icccm_set_wm_normal_hints(m_connection.get(), m_window, &size_hints);
         }
     }
@@ -310,9 +310,7 @@ void WindowImpl::processEvents(xcb_generic_event_t xevent, void *native_event) {
         }
         case XCB_MOTION_NOTIFY: {
             auto mouse_event = reinterpret_cast<xcb_motion_notify_event_t *>(&xevent);
-            if (m_mouse_x == mouse_event->event_x && m_mouse_y == mouse_event->event_y) {
-                break;
-            }
+            if (m_mouse_x == mouse_event->event_x && m_mouse_y == mouse_event->event_y) { break; }
 
             m_mouse_x = mouse_event->event_x;
             m_mouse_y = mouse_event->event_y;
@@ -340,8 +338,8 @@ void WindowImpl::processEvents(xcb_generic_event_t xevent, void *native_event) {
         case XCB_CONFIGURE_NOTIFY: {
             auto configure_event = reinterpret_cast<xcb_configure_notify_event_t *>(&xevent);
 
-            if ((configure_event->width != m_video_settings.size.w) ||
-                (configure_event->height != m_video_settings.size.h))
+            if ((configure_event->width != m_video_settings.size.width) ||
+                (configure_event->height != m_video_settings.size.height))
                 AbstractWindow::resizeEvent(configure_event->width, configure_event->height);
 
             break;

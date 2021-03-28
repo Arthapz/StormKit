@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -46,7 +46,7 @@ namespace storm::render {
      vk::Image Texture::vkImage() const noexcept {
         if (m_non_owning_texture) { return m_non_owning_texture; }
 
-        STORM_EXPECTS(m_vk_texture);
+        STORMKIT_EXPECTS(m_vk_texture);
         return *m_vk_texture;
     }
 

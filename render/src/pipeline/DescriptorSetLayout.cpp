@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -75,21 +75,42 @@ void DescriptorSetLayout::bake() {
 }
 
 namespace std {
+    core::Hash64 hash<storm::render::DescriptorSetLayout>::operator()(
+        const storm::render::DescriptorSetLayout &layout) const noexcept {
+        return layout.hash();
+    }
+
     core::Hash64 hash<storm::render::DescriptorSetLayoutBinding>::operator()(
         const storm::render::DescriptorSetLayoutBinding &binding) const noexcept {
         auto hash = core::Hash64 { 0 };
-        core::hash_combine(hash, binding.binding);
-        core::hash_combine(hash, binding.type);
-        core::hash_combine(hash, binding.stages);
-        core::hash_combine(hash, binding.descriptor_count);
+        core::hashCombine(hash, binding.binding);
+        core::hashCombine(hash, binding.type);
+        core::hashCombine(hash, binding.stages);
+        core::hashCombine(hash, binding.descriptor_count);
 
         return hash;
     }
 
-    core::Hash64 hash<std::vector<storm::render::DescriptorSetLayoutBinding>>::operator()(
-        const std::vector<storm::render::DescriptorSetLayoutBinding> &bindings) const noexcept {
+    core::Hash64 hash<storm::render::DescriptorSetLayoutBindingArray>::operator()(
+        const storm::render::DescriptorSetLayoutBindingArray &bindings) const noexcept {
         auto hash = core::Hash64 { 0 };
-        for (const auto &binding : bindings) core::hash_combine(hash, binding);
+        for (const auto &binding : bindings) core::hashCombine(hash, binding);
+
+        return hash;
+    }
+
+    core::Hash64 hash<storm::render::DescriptorSetLayoutBindingSpan>::operator()(
+        const storm::render::DescriptorSetLayoutBindingSpan &bindings) const noexcept {
+        auto hash = core::Hash64 { 0 };
+        for (const auto &binding : bindings) core::hashCombine(hash, binding);
+
+        return hash;
+    }
+
+    core::Hash64 hash<storm::render::DescriptorSetLayoutBindingConstSpan>::operator()(
+        const storm::render::DescriptorSetLayoutBindingConstSpan &bindings) const noexcept {
+        auto hash = core::Hash64 { 0 };
+        for (const auto &binding : bindings) core::hashCombine(hash, binding);
 
         return hash;
     }

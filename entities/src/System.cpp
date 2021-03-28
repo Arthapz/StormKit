@@ -41,7 +41,7 @@ void System::postUpdate() {
 /////////////////////////////////////
 /////////////////////////////////////
 void System::addEntity(Entity e) {
-    STORM_EXPECTS(e != INVALID_ENTITY);
+    STORMKIT_EXPECTS(e != INVALID_ENTITY);
 
     m_entities.insert(e);
 }
@@ -49,7 +49,7 @@ void System::addEntity(Entity e) {
 /////////////////////////////////////
 /////////////////////////////////////
 void System::removeEntity(Entity e) {
-    STORM_EXPECTS(e != INVALID_ENTITY);
+    STORMKIT_EXPECTS(e != INVALID_ENTITY);
 
     m_entities.erase(e);
 }

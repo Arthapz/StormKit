@@ -52,7 +52,8 @@ const storm::window::VideoSettings *getDesktopModes(storm::core::ArraySize &size
                                                       nullptr);
             if (crtc == nullptr) continue;
 
-            auto video_setting = storm::window::VideoSettings { crtc->width, crtc->height, 32u };
+            auto video_setting =
+                storm::window::VideoSettings { { crtc->width, crtc->height }, 32u };
             video_settings.emplace_back(std::move(video_setting));
 
             // free
@@ -78,14 +79,13 @@ const storm::window::VideoSettings *getDesktopFullscreenSize() {
         auto *modes = getDesktopModes(size);
 
         for (auto i = 0u; i < size; ++i) {
-            video_setting.size.w = std::max(video_setting.size.w, modes[i].size.w);
-            video_setting.size.h = std::max(video_setting.size.h, modes[i].size.h);
-            video_setting.size.h = std::max(video_setting.size.d, modes[i].size.d);
+            video_setting.size.width  = std::max(video_setting.size.width, modes[i].size.width);
+            video_setting.size.height = std::max(video_setting.size.height, modes[i].size.height);
+            video_setting.size.height = std::max(video_setting.size.depth, modes[i].size.depth);
         }
 
         init = true;
     }
 
-    std::cout << video_setting.size.width << ':' << video_setting.size.height << std::endl;
     return &video_setting;
 }

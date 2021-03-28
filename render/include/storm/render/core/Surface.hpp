@@ -1,29 +1,24 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
 #pragma once
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Math.hpp>
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/core/Span.hpp>
 
+/////////// - StormKit::render - ///////////
+#include <storm/render/Fwd.hpp>
 #include <storm/render/core/Enums.hpp>
-#include <storm/render/core/Fwd.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
-#include <storm/render/resource/Fwd.hpp>
 #include <storm/render/resource/Texture.hpp>
 
-#include <storm/render/sync/Fence.hpp>
-#include <storm/render/sync/Fwd.hpp>
-#include <storm/render/sync/Semaphore.hpp>
-
-#include <storm/window/Window.hpp>
-
 namespace storm::render {
-    class STORM_PUBLIC Surface: public core::NonCopyable {
+    class STORMKIT_PUBLIC Surface: public core::NonCopyable {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Surface;
 
@@ -33,62 +28,41 @@ namespace storm::render {
             core::UInt32 current_frame;
             core::UInt32 texture_index;
 
-            SemaphoreConstObserverPtr texture_available;
-            SemaphoreConstObserverPtr render_finished;
-            FenceObserverPtr in_flight;
+            SemaphoreConstPtr texture_available;
+            SemaphoreConstPtr render_finished;
+            FencePtr in_flight;
         };
 
-        Surface(const window::Window &window,
-                const Instance &instance,
-                Buffering buffering = Buffering::Triple);
-        ~Surface();
+        Surface(const Instance &instance, Buffering buffering = Buffering::Triple);
+        virtual ~Surface() = 0;
 
         Surface(Surface &&);
         Surface &operator=(Surface &&);
 
-        void initialize(const Device &device);
-        void recreate();
-        void destroy();
+        virtual void initialize(const Device &device) = 0;
+        virtual void recreate()                       = 0;
+        virtual void destroy()                        = 0;
 
-        Frame acquireNextFrame();
-        void present(const Frame &frame);
+        virtual Frame acquireNextFrame()         = 0;
+        virtual void present(const Frame &frame) = 0;
 
-        inline storm::core::span<Texture> textures() noexcept;
-        inline storm::core::span<const Texture> textures() const noexcept;
+        [[nodiscard]] storm::core::span<Texture> textures() noexcept;
+        [[nodiscard]] storm::core::span<const Texture> textures() const noexcept;
 
-        inline PixelFormat pixelFormat() const noexcept;
-        inline core::UInt32 bufferingCount() const noexcept;
-        inline core::UInt32 textureCount() const noexcept;
+        [[nodiscard]] PixelFormat pixelFormat() const noexcept;
+        [[nodiscard]] core::UInt32 bufferingCount() const noexcept;
+        [[nodiscard]] core::UInt32 textureCount() const noexcept;
 
-        inline bool needRecreate() const noexcept;
+        [[nodiscard]] bool needRecreate() const noexcept;
 
-        inline const core::Extentu &extent() const noexcept;
+        [[nodiscard]] const core::Extentu &extent() const noexcept;
 
-        inline vk::SurfaceKHR vkSurface() const noexcept;
-        inline operator vk::SurfaceKHR() const noexcept;
-        inline vk::SurfaceKHR vkHandle() const noexcept;
-        inline core::UInt64 vkDebugHandle() const noexcept;
+        std::function<void(const Fence &fence)> onSwapchainFenceSignaled;
 
-      public:
-        void createSwapchain();
-        void destroySwapchain();
-
-        vk::SurfaceFormatKHR
-            chooseSwapSurfaceFormat(storm::core::span<const vk::SurfaceFormatKHR> formats) noexcept;
-        vk::PresentModeKHR chooseSwapPresentMode(
-            storm::core::span<const vk::PresentModeKHR> present_modes) noexcept;
-        vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities) noexcept;
-        core::UInt32 chooseImageCount(const vk::SurfaceCapabilitiesKHR &capabilities) noexcept;
-
-        InstanceConstObserverPtr m_instance;
-        DeviceConstObserverPtr m_device      = nullptr;
-        QueueConstObserverPtr m_graphics_queue = nullptr;
-
-        window::WindowConstObserverPtr m_window;
-
-        vk::UniqueSurfaceKHR m_vk_surface;
-        RAIIVkSwapchain m_vk_swapchain;
-        RAIIVkSwapchain m_vk_old_swapchain;
+      protected:
+        InstanceConstPtr m_instance;
+        DeviceConstPtr m_device        = nullptr;
+        QueueConstPtr m_graphics_queue = nullptr;
 
         std::vector<vk::Image> m_vk_images;
 

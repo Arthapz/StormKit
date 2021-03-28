@@ -1,5 +1,5 @@
 
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -46,18 +46,18 @@ Queue &Queue::operator=(Queue &&) = default;
 /////////////////////////////////////
 /////////////////////////////////////
 void Queue::waitIdle() const noexcept {
-    STORM_EXPECTS(m_vk_queue);
+    STORMKIT_EXPECTS(m_vk_queue);
 
     const auto result = m_vk_queue.waitIdle(m_device->vkDispatcher());
-    STORM_ENSURES(result == vk::Result::eSuccess);
+    STORMKIT_ENSURES(result == vk::Result::eSuccess);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Queue::submit(core::span<const CommandBufferConstObserverPtr> command_buffers,
-                   core::span<const SemaphoreConstObserverPtr> wait_semaphores,
-                   core::span<const SemaphoreConstObserverPtr> signal_semaphores,
-                   FenceObserverPtr fence) const noexcept {
+void Queue::submit(core::span<const CommandBufferConstPtr> command_buffers,
+                   core::span<const SemaphoreConstPtr> wait_semaphores,
+                   core::span<const SemaphoreConstPtr> signal_semaphores,
+                   FencePtr fence) const noexcept {
     auto vk_command_buffers = std::vector<vk::CommandBuffer> {};
     vk_command_buffers.reserve(gsl::narrow_cast<core::ArraySize>(
         std::size(command_buffers))); // remove narrow_cast when C++20 is avalaible on all platform
@@ -69,11 +69,15 @@ void Queue::submit(core::span<const CommandBufferConstObserverPtr> command_buffe
     for (const auto &command_buffer : command_buffers)
         vk_command_buffers.emplace_back(static_cast<const CommandBuffer &>(*command_buffer));
 
-    for (const auto &semaphore : wait_semaphores)
+    for (const auto &semaphore : wait_semaphores) {
+        if (!semaphore) continue;
         vk_wait_semaphores.emplace_back(static_cast<const Semaphore &>(*semaphore));
+    }
 
-    for (const auto &semaphore : signal_semaphores)
+    for (const auto &semaphore : signal_semaphores) {
+        if (!semaphore) continue;
         vk_signal_semaphores.emplace_back(static_cast<const Semaphore &>(*semaphore));
+    }
 
     auto wait_stages = std::vector<vk::PipelineStageFlags> {};
     wait_stages.resize(gsl::narrow_cast<core::ArraySize>(std::size(wait_semaphores)),
@@ -98,7 +102,7 @@ void Queue::submit(core::span<const CommandBufferConstObserverPtr> command_buffe
 
     const auto submit_infos = std::array { submit_info };
     const auto result       = m_vk_queue.submit(submit_infos, vk_fence, m_device->vkDispatcher());
-    STORM_ENSURES(result == vk::Result::eSuccess);
+    STORMKIT_ENSURES(result == vk::Result::eSuccess);
 }
 
 /////////////////////////////////////

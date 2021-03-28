@@ -18,7 +18,7 @@ struct JpegErrorData {
 };
 
 static void jpeg_error_callback(jpeg_common_struct *st) noexcept {
-    STORM_EXPECTS(st != nullptr);
+    STORMKIT_EXPECTS(st != nullptr);
 
     auto error_data = reinterpret_cast<JpegErrorData *>(st->client_data);
 
@@ -99,48 +99,41 @@ std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath
     auto error_mgr = jpeg_error_mgr {};
 
     auto error_data = JpegErrorData {};
+
+    info.err             = jpeg_std_error(&error_mgr);
+    info.client_data     = &error_data;
+    error_mgr.error_exit = jpeg_error_callback;
+
     for (auto i = 0u; i < this_rgb.mipLevels(); ++i) {
         if (i >= 1u) _filename += fmt::format("_mip{}", i);
 
-        auto file = std::fopen(_filename.string().c_str(), "w");
+        auto file = std::fopen(_filename.string().c_str(), "wb");
         if (file == nullptr) {
             auto error = std::string { 95 };
-            strerror_s(std::data(error), std::size(error), errno);
+            error      = std::strerror(errno);
             error.shrink_to_fit();
 
             return error;
         }
 
-        auto data          = this_rgb.data(0, 0, i);
-        const auto &extent = this_rgb.extent(i);
-
-        info.err             = jpeg_std_error(&error_mgr);
-        info.client_data     = &error_data;
-        error_mgr.error_exit = jpeg_error_callback;
+        auto data          = this_rgb.data(0, 0, 0);
+        const auto &extent = this_rgb.extent(0);
 
         jpeg_create_compress(&info);
         jpeg_stdio_dest(&info, file);
 
         info.image_width      = extent.width;
         info.image_height     = extent.height;
-        info.input_components = getChannelCountFor(m_format);
+        info.input_components = getChannelCountFor(Format::RGB8_UNorm);
         info.in_color_space   = JCS_RGB;
-
-        using JpegBuffer = unsigned char *;
-        using JpegSize   = unsigned long;
-
-        auto buffer      = JpegBuffer { nullptr };
-        auto buffer_size = JpegSize {};
-        jpeg_mem_dest(&info, &buffer, &buffer_size);
-
         jpeg_set_defaults(&info);
-        jpeg_set_quality(&info, 70, static_cast<boolean>(true));
+        jpeg_set_quality(&info, 75, TRUE);
 
-        jpeg_start_compress(&info, static_cast<boolean>(true));
+        jpeg_start_compress(&info, TRUE);
 
         auto row_ptr = std::array<core::Byte *, 1> { nullptr };
         while (info.next_scanline < info.image_height) {
-            const auto index = info.next_scanline * 4u * info.image_width;
+            const auto index = info.next_scanline * 3u * info.image_width;
             row_ptr[0]       = std::data(data) + index;
 
             jpeg_write_scanlines(&info, reinterpret_cast<JSAMPARRAY>(std::data(row_ptr)), 1);
@@ -149,6 +142,7 @@ std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath
         jpeg_finish_compress(&info);
         jpeg_destroy_compress(&info);
 
+        std::fflush(file);
         std::fclose(file);
     }
 

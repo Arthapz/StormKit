@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -15,7 +15,7 @@
 
 namespace storm::window {
 
-    class STORM_PUBLIC InputHandler: public core::NonCopyable {
+    class STORMKIT_PUBLIC InputHandler: public core::NonCopyable {
       public:
         explicit InputHandler(const Window &window);
         ~InputHandler();
@@ -37,7 +37,7 @@ namespace storm::window {
         // TODO implement a input handler like gainput
         // TODO implement touch events
       private:
-        AbstractInputHandlerObserverPtr m_impl;
+        AbstractInputHandlerPtr m_impl;
     };
 } // namespace storm::window
 

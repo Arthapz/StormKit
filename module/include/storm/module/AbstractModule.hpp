@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -13,7 +13,7 @@
 #include <storm/module/Fwd.hpp>
 
 namespace storm::module {
-    class STORM_PUBLIC AbstractModule: public core::NonCopyable {
+    class STORMKIT_PUBLIC AbstractModule: public core::NonCopyable {
       public:
         explicit AbstractModule(std::filesystem::path filepath);
         virtual ~AbstractModule();

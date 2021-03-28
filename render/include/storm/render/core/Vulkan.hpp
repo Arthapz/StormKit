@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -10,14 +10,18 @@
 
 #include <gsl/string_span>
 
-#if defined(STORM_OS_LINUX)
+#include <storm/core/Platform.hpp>
+
+#if defined(STORMKIT_OS_LINUX)
+    #include <wayland-client.h>
+    #include <xcb/xcb.h>
     #define VK_USE_PLATFORM_XCB_KHR
     #define VK_USE_PLATFORM_WAYLAND_KHR
-#elif defined(STORM_OS_WINDOWS)
+#elif defined(STORMKIT_OS_WINDOWS)
     #define VK_USE_PLATFORM_WIN32_KHR
-#elif defined(STORM_OS_MACOS)
+#elif defined(STORMKIT_OS_MACOS)
     #define VK_USE_PLATFORM_MACOS_MVK
-#elif defined(STORM_OS_IOS)
+#elif defined(STORMKIT_OS_IOS)
     #define VK_USE_PLATFORM_IOS_MVK
 #endif
 
@@ -28,9 +32,16 @@
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
 
-#include <storm/render/core/vk_mem_alloc.h>
-
+#include <vulkan/vulkan.h>
+#if defined(STORMKIT_OS_LINUX)
+    #include <vulkan/vulkan_wayland.h>
+    #include <vulkan/vulkan_xcb.h>
+#elif defined(STORMKIT_OS_WINDOWS)
+    #include <vulkan/vulkan_win32.h>
+    #endif
 #include <vulkan/vulkan.hpp>
+
+#include <storm/render/core/vk_mem_alloc.h>
 
 #include <storm/core/Configure.hpp>
 #include <storm/core/Math.hpp>
@@ -94,12 +105,12 @@ namespace storm::render {
 
       private:
         T m_handle = VK_NULL_HANDLE;
-        DeviceConstObserverPtr m_device;
+        DeviceConstPtr m_device;
         Deleter m_deleter;
     };
 
-#define DECLARE_VK_RAII(X)                                                           \
-    using X##Deleter = std::function<void(X, const DeviceConstObserverPtr &device)>; \
+#define DECLARE_VK_RAII(X)                                                   \
+    using X##Deleter = std::function<void(X, const DeviceConstPtr &device)>; \
     using RAII##X    = VkRAII<X, X##Deleter>;
 
     DECLARE_VK_RAII(VmaAllocator)
@@ -160,16 +171,19 @@ namespace storm::render {
         return static_cast<std::remove_reference_t<T>>(static_cast<core::UInt32>(version & 0xfffu));
     }
 
-    static constexpr const auto DEVICE_EXTENSIONS =
+    static constexpr auto DEVICE_EXTENSIONS =
         std::array { gsl::czstring<> { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
                      VK_KHR_MAINTENANCE1_EXTENSION_NAME };
 
-    static constexpr const auto VALIDATION_LAYERS = std::array {
+    static constexpr auto VALIDATION_LAYERS = std::array {
+#ifdef STORMKIT_BUILD_DEBUG
         gsl::czstring<> { "VK_LAYER_KHRONOS_validation" },
-#ifdef STORM_OS_LINUX
+    // "VK_LAYER_LUNARG_api_dump",
+    #ifdef STORMKIT_OS_LINUX
         "VK_LAYER_MESA_overlay",
+    #endif
 #endif
-#ifndef STORM_OS_MAXOS
+#ifndef STORMKIT_OS_MACOS
         "VK_LAYER_LUNARG_monitor",
 #endif
     };
@@ -178,26 +192,26 @@ namespace storm::render {
         std::array { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
                      VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT };
 
-    static constexpr const auto INSTANCE_EXTENSIONS = std::array {
+    static constexpr auto INSTANCE_EXTENSIONS = std::array {
         gsl::czstring<> { VK_KHR_SURFACE_EXTENSION_NAME },
-#if defined(STORM_OS_LINUX)
+#if defined(STORMKIT_OS_LINUX)
             VK_KHR_XCB_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME,
-#elif defined(STORM_OS_WINDOWS)
+#elif defined(STORMKIT_OS_WINDOWS)
             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-#elif defined(STORM_OS_MACOS)
+#elif defined(STORMKIT_OS_MACOS)
             VK_MVK_MACOS_SURFACE_EXTENSION_NAME,
-#elif defined(STORM_OS_IOS)
+#elif defined(STORMKIT_OS_IOS)
             VK_MVK_IOS_SURFACE_EXTENSION_NAME,
 #endif
     };
 
-    static constexpr const auto STORMKIT_VERSION =
-        vkMakeVersion(STORM_MAJOR_VERSION, STORM_MINOR_VERSION, STORM_PATCH_VERSION);
+    static constexpr auto STORMKIT_VERSION =
+        vkMakeVersion(STORMKIT_MAJOR_VERSION, STORMKIT_MINOR_VERSION, STORMKIT_PATCH_VERSION);
 
-#if defined(STORM_BUILD_DEBUG) || defined(STORM_ENABLE_VALIDATION_LAYERS)
-    static constexpr const auto ENABLE_VALIDATION = true;
+#if defined(STORMKIT_BUILD_DEBUG) || defined(STORMKIT_ENABLE_VALIDATION_LAYERS)
+    static constexpr auto ENABLE_VALIDATION = true;
 #else
-    static constexpr const auto ENABLE_VALIDATION = false;
+    static constexpr auto ENABLE_VALIDATION = true;
 #endif
 
     inline void checkVkError(vk::Result result,
@@ -221,14 +235,16 @@ namespace storm::render {
     }
 
     inline core::UInt32 computeMipLevel(const core::Extentu extent) noexcept {
-        return static_cast<core::UInt32>(std::floor(std::log2(std::max(extent.w, extent.h)))) + 1;
+        return static_cast<core::UInt32>(
+                   std::floor(std::log2(std::max(extent.width, extent.height)))) +
+               1;
     }
 
-#define CHECK_VK_ERROR_VALUE(line, v)                                         \
-    auto _result = line;                                                      \
-    checkVkError(_result.result, __FILE__, STORM_CURRENT_FUNCTION, __LINE__); \
+#define CHECK_VK_ERROR_VALUE(line, v)                                            \
+    auto _result = line;                                                         \
+    checkVkError(_result.result, __FILE__, STORMKIT_CURRENT_FUNCTION, __LINE__); \
     auto v = std::move(_result.value);
 #define CHECK_VK_ERROR(line)   \
     const auto _result = line; \
-    checkVkError(_result, __FILE__, STORM_CURRENT_FUNCTION, __LINE__);
+    checkVkError(_result, __FILE__, STORMKIT_CURRENT_FUNCTION, __LINE__);
 } // namespace storm::render

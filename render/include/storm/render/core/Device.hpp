@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -16,31 +16,36 @@
 #include <storm/render/core/Fwd.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
+#include <storm/render/pipeline/ComputePipeline.hpp>
 #include <storm/render/pipeline/DescriptorPool.hpp>
-#include <storm/render/pipeline/RenderPassDescription.hpp>
 #include <storm/render/pipeline/Fwd.hpp>
+#include <storm/render/pipeline/GraphicsPipeline.hpp>
+#include <storm/render/pipeline/RenderPassDescription.hpp>
 
 #include <storm/render/resource/Fwd.hpp>
 #include <storm/render/resource/HardwareBuffer.hpp>
 #include <storm/render/resource/Sampler.hpp>
 #include <storm/render/resource/Shader.hpp>
 
+#include <storm/render/sync/Fence.hpp>
 #include <storm/render/sync/Fwd.hpp>
+#include <storm/render/sync/Semaphore.hpp>
 
 namespace storm::render {
-    class STORM_PUBLIC Device: public core::NonCopyable {
+    class STORMKIT_PUBLIC Device: public core::NonCopyable {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Device;
 
         Device(const PhysicalDevice &physical_device, const Instance &instance);
+        Device(VkDevice device, const PhysicalDevice &physical_device, const Instance &instance);
         ~Device();
 
-        Device(Device &&);
-        Device &operator=(Device &&);
+        Device(Device &&) noexcept;
+        Device &operator=(Device &&) noexcept;
 
         void waitIdle() const noexcept;
         void waitForFences(
-            storm::core::span<const FenceCRef> fences,
+            storm::core::span<const FenceConstRef> fences,
             bool wait_all        = true,
             core::UInt64 timeout = std::numeric_limits<core::UInt64>::max()) const noexcept;
         inline void waitForFence(
@@ -60,14 +65,12 @@ namespace storm::render {
                  std::enable_if_t<!std::is_same_v<Container, std::filesystem::path>>>
         inline ShaderOwnedPtr createShaderPtr(const Container &container, ShaderStage type) const;
 
-        GraphicsPipeline
-            createGraphicsPipeline(PipelineCacheConstObserverPtr cache = nullptr) const;
+        GraphicsPipeline createGraphicsPipeline(PipelineCacheConstPtr cache = nullptr) const;
         GraphicsPipelineOwnedPtr
-            createGraphicsPipelinePtr(PipelineCacheConstObserverPtr cache = nullptr) const;
-        ComputePipeline
-            createComputePipeline(PipelineCacheConstObserverPtr cache = nullptr) const;
+            createGraphicsPipelinePtr(PipelineCacheConstPtr cache = nullptr) const;
+        ComputePipeline createComputePipeline(PipelineCacheConstPtr cache = nullptr) const;
         ComputePipelineOwnedPtr
-            createComputePipelinePtr(PipelineCacheConstObserverPtr cache = nullptr) const;
+            createComputePipelinePtr(PipelineCacheConstPtr cache = nullptr) const;
 
         RenderPass createRenderPass(RenderPassDescription description) const;
         RenderPassOwnedPtr createRenderPassPtr(RenderPassDescription description) const;
@@ -108,17 +111,20 @@ namespace storm::render {
                               TextureType type           = TextureType::T2D,
                               TextureCreateFlag flags    = TextureCreateFlag::None,
                               SampleCountFlag samples    = SampleCountFlag::C1_BIT,
-                              TextureUsage usage =
-                                  TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src) const;
-        TextureOwnedPtr createTexturePtr(core::Extentu extent,
-                                         render::PixelFormat format = render::PixelFormat::RGBA8_UNorm,
-                                         core::UInt32 layers        = 1u,
-                                         core::UInt32 mip_levels    = 1u,
-                                         TextureType type           = TextureType::T2D,
-                                         TextureCreateFlag flags    = TextureCreateFlag::None,
-                                         SampleCountFlag samples    = SampleCountFlag::C1_BIT,
-                                         TextureUsage usage =
-                                             TextureUsage::Sampled | TextureUsage::Transfert_Dst | TextureUsage::Transfert_Src) const;
+                              TextureUsage usage         = TextureUsage::Sampled |
+                                                   TextureUsage::Transfert_Dst |
+                                                   TextureUsage::Transfert_Src) const;
+        TextureOwnedPtr
+            createTexturePtr(core::Extentu extent,
+                             render::PixelFormat format = render::PixelFormat::RGBA8_UNorm,
+                             core::UInt32 layers        = 1u,
+                             core::UInt32 mip_levels    = 1u,
+                             TextureType type           = TextureType::T2D,
+                             TextureCreateFlag flags    = TextureCreateFlag::None,
+                             SampleCountFlag samples    = SampleCountFlag::C1_BIT,
+                             TextureUsage usage         = TextureUsage::Sampled |
+                                                  TextureUsage::Transfert_Dst |
+                                                  TextureUsage::Transfert_Src) const;
 
         Sampler createSampler(Sampler::Settings settings = Sampler::Settings {}) const;
         SamplerOwnedPtr createSamplerPtr(Sampler::Settings settings = Sampler::Settings {}) const;
@@ -315,10 +321,10 @@ namespace storm::render {
 
         void setObjectName(core::UInt64 object, DebugObjectType type, std::string_view name) const;
 
-      protected:
-        InstanceConstObserverPtr m_instance;
+      private:
+        InstanceConstPtr m_instance;
 
-        PhysicalDeviceConstObserverPtr m_physical_device;
+        PhysicalDeviceConstPtr m_physical_device;
 
         PFN_vkGetDeviceProcAddr m_vkGetDeviceProcAddr;
 
@@ -326,7 +332,7 @@ namespace storm::render {
         QueueOwnedPtr m_async_transfert_queue;
         QueueOwnedPtr m_async_compute_queue;
 
-        vk::UniqueDevice m_vk_device;
+        std::variant<vk::UniqueDevice, vk::Device> m_vk_device;
         vk::DispatchLoaderDynamic m_vk_dispatcher;
 
         RAIIVmaAllocator m_vma_allocator;

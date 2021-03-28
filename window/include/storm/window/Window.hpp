@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -16,7 +16,7 @@
 #include <storm/module/Fwd.hpp>
 
 namespace storm::window {
-    class STORM_PUBLIC Window: public core::NonCopyable {
+    class STORMKIT_PUBLIC Window: public core::NonCopyable {
       public:
         enum class WM { Win32, X11, Wayland, macOS, iOS, Android, Switch };
 
@@ -27,25 +27,26 @@ namespace storm::window {
         Window(Window &&);
         Window &operator=(Window &&);
 
-        inline void create(const std::string &title,
-                           const VideoSettings &settings,
-                           WindowStyle style) noexcept;
-        inline void close() noexcept;
+        void create(const std::string &title,
+                    const VideoSettings &settings,
+                    WindowStyle style) noexcept;
+        void close() noexcept;
 
-        inline bool pollEvent(Event &event, void *native_event = nullptr) noexcept;
-        inline bool waitEvent(Event &event, void *native_event = nullptr) noexcept;
+        bool pollEvent(Event &event, void *native_event = nullptr) noexcept;
+        bool waitEvent(Event &event, void *native_event = nullptr) noexcept;
 
-        inline void setTitle(const std::string &title) noexcept;
-        inline void setVideoSettings(const VideoSettings &settings) noexcept;
+        void setTitle(const std::string &title) noexcept;
+        void setVideoSettings(const VideoSettings &settings) noexcept;
 
-        inline core::Extentu size() const noexcept;
-        inline const std::string &title() const noexcept;
-        inline VideoSettings videoSettings() const noexcept;
+        core::Extentu size() const noexcept;
+        const std::string &title() const noexcept;
+        VideoSettings videoSettings() const noexcept;
 
-        inline bool isOpen() const noexcept;
-        inline bool isVisible() const noexcept;
+        bool isOpen() const noexcept;
+        bool isVisible() const noexcept;
 
-        inline NativeHandle nativeHandle() const noexcept;
+        NativeHandle nativeHandle() const noexcept;
+        void restoreWndProc() noexcept;
 
         static core::span<const VideoSettings> getDesktopModes();
         static const VideoSettings &getDesktopFullscreenSize();
@@ -55,7 +56,7 @@ namespace storm::window {
 
         static WM detectWM() noexcept;
 
-        AbstractWindowObserverPtr m_impl;
+        AbstractWindowPtr m_impl;
     };
 } // namespace storm::window
 
@@ -64,14 +65,14 @@ namespace storm::window {
     static auto input_handlers = std::vector<std::unique_ptr<INPUT_HANDLER_CLASS_NAME>> {};        \
                                                                                                    \
     extern "C" {                                                                                   \
-    STORM_EXPORT storm::window::AbstractWindow *createWindow();                                    \
-    STORM_EXPORT void destroyWindow(storm::window::AbstractWindow *);                              \
-    STORM_EXPORT storm::window::AbstractInputHandler *                                             \
+    STORMKIT_EXPORT storm::window::AbstractWindow *createWindow();                                 \
+    STORMKIT_EXPORT void destroyWindow(storm::window::AbstractWindow *);                           \
+    STORMKIT_EXPORT storm::window::AbstractInputHandler *                                          \
         createInputHandler(const storm::window::Window &window);                                   \
-    STORM_EXPORT void destroyInputHandler(storm::window::AbstractInputHandler *);                  \
-    STORM_EXPORT const storm::window::VideoSettings *                                              \
+    STORMKIT_EXPORT void destroyInputHandler(storm::window::AbstractInputHandler *);               \
+    STORMKIT_EXPORT const storm::window::VideoSettings *                                           \
         getDesktopModes(storm::core::ArraySize &size);                                             \
-    STORM_EXPORT const storm::window::VideoSettings *getDesktopFullscreenSize();                   \
+    STORMKIT_EXPORT const storm::window::VideoSettings *getDesktopFullscreenSize();                \
     }                                                                                              \
                                                                                                    \
     storm::window::AbstractWindow *createWindow() {                                                \

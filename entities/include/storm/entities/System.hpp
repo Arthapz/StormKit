@@ -1,13 +1,15 @@
-// Copryright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copryright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
 #pragma once
 
+#include <chrono>
 #include <cstdint>
 
 #include <storm/core/HashMap.hpp>
 #include <storm/core/NonCopyable.hpp>
+#include <storm/core/Numerics.hpp>
 #include <storm/core/Platform.hpp>
 
 #include <storm/entities/Component.hpp>
@@ -16,12 +18,12 @@
 
 namespace storm::entities {
     class EntityManager;
-    class STORM_PUBLIC System: public storm::core::NonCopyable {
+    class STORMKIT_PUBLIC System: public core::NonCopyable {
       public:
-        using ComponentTypes = storm::core::HashSet<Component::Type>;
+        using ComponentTypes = core::HashSet<Component::Type>;
 
-        explicit System(EntityManager &manager, core::UInt32 priority, ComponentTypes &&types);
-        explicit System(EntityManager &manager, core::UInt32 priority, const ComponentTypes &types);
+        System(EntityManager &manager, core::UInt32 priority, ComponentTypes &&types);
+        System(EntityManager &manager, core::UInt32 priority, const ComponentTypes &types);
 
         System(System &&);
         System &operator=(System &&);
@@ -29,7 +31,7 @@ namespace storm::entities {
         virtual ~System();
 
         virtual void preUpdate();
-        virtual void update(core::UInt64 delta) = 0;
+        virtual void update(core::Secondf delta) = 0;
         virtual void postUpdate();
 
         inline core::UInt32 priority() const noexcept { return m_priority; }
@@ -48,7 +50,7 @@ namespace storm::entities {
       protected:
         virtual void onMessageReceived(const Message &message) = 0;
 
-        EntityManagerObserverPtr m_manager;
+        EntityManagerPtr m_manager;
         storm::core::HashSet<Entity> m_entities;
 
         friend class EntityManager;

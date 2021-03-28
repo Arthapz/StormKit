@@ -1,6 +1,5 @@
 #pragma once
 
-#include <SFML/Window/Window.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/window/AbstractWindow.hpp>
 

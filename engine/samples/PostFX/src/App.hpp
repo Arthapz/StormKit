@@ -32,7 +32,7 @@ class App: public storm::core::App {
     storm::engine::EngineOwnedPtr m_engine;
 
     storm::engine::SceneOwnedPtr m_scene;
-    storm::engine::StaticMeshRenderSystemObserverPtr m_mesh_render_system;
+    storm::engine::StaticMeshRenderSystemPtr m_mesh_render_system;
 
     storm::render::ShaderOwnedPtr m_vertex_shader;
     storm::render::ShaderOwnedPtr m_fragment_shader;

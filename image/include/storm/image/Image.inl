@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -9,55 +9,67 @@
 namespace storm::image {
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan Image::pixel(core::ArraySize index, core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
-        STORM_EXPECTS(m_mip_levels > level);
-        STORM_EXPECTS(m_faces > face);
-        STORM_EXPECTS(m_layers > layer);
+    core::ByteSpan Image::pixel(core::ArraySize index,
+                                core::UInt32 layer,
+                                core::UInt32 face,
+                                core::UInt32 level) noexcept {
+        STORMKIT_EXPECTS(m_mip_levels > level);
+        STORMKIT_EXPECTS(m_faces > face);
+        STORMKIT_EXPECTS(m_layers > layer);
 
         auto _data = data(layer, face, level);
 
-        STORM_EXPECTS(index < m_extent.width * m_extent.height * m_extent.depth);
+        STORMKIT_EXPECTS(index < m_extent.width * m_extent.height * m_extent.depth);
 
         const auto block_size = m_channel_count * m_bytes_per_channel;
 
-        return { std::data(_data) + index * block_size,
-                 block_size };
+        return { std::data(_data) + index * block_size, block_size };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan Image::pixel(core::ArraySize index, core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
-        STORM_EXPECTS(m_mip_levels > level);
-        STORM_EXPECTS(m_faces > face);
-        STORM_EXPECTS(m_layers > layer);
+    core::ByteConstSpan Image::pixel(core::ArraySize index,
+                                     core::UInt32 layer,
+                                     core::UInt32 face,
+                                     core::UInt32 level) const noexcept {
+        STORMKIT_EXPECTS(m_mip_levels > level);
+        STORMKIT_EXPECTS(m_faces > face);
+        STORMKIT_EXPECTS(m_layers > layer);
 
         auto _data = data(layer, face, level);
 
         const auto mip_extent = extent(level);
-        STORM_EXPECTS(index < mip_extent.width * mip_extent.height * mip_extent.depth);
+        STORMKIT_EXPECTS(index < mip_extent.width * mip_extent.height * mip_extent.depth);
 
         const auto block_size = m_channel_count * m_bytes_per_channel;
 
-        return { std::data(_data) + index * block_size,
-                 block_size };
+        return { std::data(_data) + index * block_size, block_size };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan Image::pixel(core::Offset3u position, core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
+    core::ByteSpan Image::pixel(core::Position3u position,
+                                core::UInt32 layer,
+                                core::UInt32 face,
+                                core::UInt32 level) noexcept {
         const auto mip_extent = extent(level);
 
-        const auto id = position.x + (position.y * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z);
+        const auto id = position->x + (position->y * mip_extent.width) +
+                        (mip_extent.width * mip_extent.height * position->z);
 
         return pixel(id, layer, face, level);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan Image::pixel(core::Offset3u position, core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+    core::ByteConstSpan Image::pixel(core::Position3u position,
+                                     core::UInt32 layer,
+                                     core::UInt32 face,
+                                     core::UInt32 level) const noexcept {
         const auto mip_extent = extent(level);
 
-        const auto id = position.x + (position.y * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z);
+        const auto id = position->x + (position->y * mip_extent.width) +
+                        (mip_extent.width * mip_extent.height * position->z);
 
         return pixel(id, layer, face, level);
     }
@@ -65,9 +77,11 @@ namespace storm::image {
     /////////////////////////////////////
     /////////////////////////////////////
     core::Extentu Image::extent(core::UInt32 level) const noexcept {
-        STORM_EXPECTS(m_mip_levels > level);
+        STORMKIT_EXPECTS(m_mip_levels > level);
 
-        return { .width = std::max(1u, m_extent.width >> level), .height = std::max(1u, m_extent.height >> level), .depth = std::max(1u, m_extent.depth >> level) };
+        return { std::max(1u, m_extent.width >> level),
+                 std::max(1u, m_extent.height >> level),
+                 std::max(1u, m_extent.depth >> level) };
     }
 
     /////////////////////////////////////
@@ -96,28 +110,27 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ArraySize Image::size() const noexcept {
-        return std::size(m_data);
-    }
+    core::ArraySize Image::size() const noexcept { return std::size(m_data); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ArraySize Image::size(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
-        STORM_EXPECTS(m_mip_levels > level);
-        STORM_EXPECTS(m_faces > face);
-        STORM_EXPECTS(m_layers > layer);
+    core::ArraySize
+        Image::size(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+        STORMKIT_EXPECTS(m_mip_levels > level);
+        STORMKIT_EXPECTS(m_faces > face);
+        STORMKIT_EXPECTS(m_layers > layer);
 
         const auto mip_extent = extent(level);
 
-        return mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count * m_bytes_per_channel;
+        return mip_extent.width * mip_extent.height * mip_extent.depth * m_channel_count *
+               m_bytes_per_channel;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     core::ArraySize Image::size(core::UInt32 layer, core::UInt32 face) const noexcept {
-        auto _size = core::ArraySize{0u};
-        for(auto i = 0u;i < m_mip_levels; ++i)
-            _size += size(layer, face, i);
+        auto _size = core::ArraySize { 0u };
+        for (auto i = 0u; i < m_mip_levels; ++i) _size += size(layer, face, i);
 
         return _size;
     }
@@ -125,18 +138,15 @@ namespace storm::image {
     /////////////////////////////////////
     /////////////////////////////////////
     core::ArraySize Image::size(core::UInt32 layer) const noexcept {
-        auto _size = core::ArraySize{0u};
-        for(auto i = 0u;i < m_faces; ++i)
-            _size += size(layer, i);
+        auto _size = core::ArraySize { 0u };
+        for (auto i = 0u; i < m_faces; ++i) _size += size(layer, i);
 
         return _size;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan Image::data() noexcept {
-        return m_data;
-    }
+    core::ByteSpan Image::data() noexcept { return m_data; }
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -145,116 +155,103 @@ namespace storm::image {
 
         auto offset = 0u;
 
-        for(auto i = 0u; i < layer; ++i)
-            offset += size(i);
+        for (auto i = 0u; i < layer; ++i) offset += size(i);
 
-        for(auto j = 0u; j < face; ++j)
-            offset += size(layer, j);
+        for (auto j = 0u; j < face; ++j) offset += size(layer, j);
 
-        for(auto k = 0u; k < level; ++k)
-            offset += size(layer, face, k);
+        for (auto k = 0u; k < level; ++k) offset += size(layer, face, k);
 
-        return {std::data(m_data) + offset, mip_size};
+        return { std::data(m_data) + offset, mip_size };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan Image::data() const noexcept {
-        return m_data;
-    }
+    core::ByteConstSpan Image::data() const noexcept { return m_data; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan Image::data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+    core::ByteConstSpan
+        Image::data(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
         const auto mip_size = size(layer, face, level);
 
         auto offset = 0u;
 
-        for(auto i = 0u; i < layer; ++i)
-            offset += size(i);
+        for (auto i = 0u; i < layer; ++i) offset += size(i);
 
-        for(auto j = 0u; j < face; ++j)
-            offset += size(layer, j);
+        for (auto j = 0u; j < face; ++j) offset += size(layer, j);
 
-        for(auto k = 0u; k < level; ++k)
-            offset += size(layer, face, k);
+        for (auto k = 0u; k < level; ++k) offset += size(layer, face, k);
 
-        return {std::data(m_data) + offset, mip_size};
+        return { std::data(m_data) + offset, mip_size };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::iterator Image::begin() noexcept {
-        return std::begin(m_data);
-    }
+    core::ByteArray::iterator Image::begin() noexcept { return std::begin(m_data); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan::iterator Image::begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
-        STORM_EXPECTS(m_mip_levels > level);
-        STORM_EXPECTS(m_faces > face);
-        STORM_EXPECTS(m_layers > layer);
+    core::ByteSpan::iterator
+        Image::begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
+        STORMKIT_EXPECTS(m_mip_levels > level);
+        STORMKIT_EXPECTS(m_faces > face);
+        STORMKIT_EXPECTS(m_layers > layer);
 
         return std::begin(data(layer, face, level));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::begin() const noexcept {
-        return std::begin(m_data);
-    }
+    core::ByteArray::const_iterator Image::begin() const noexcept { return std::begin(m_data); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan::iterator Image::begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+    core::ByteConstSpan::iterator
+        Image::begin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
         return std::begin(data(layer, face, level));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::cbegin() const noexcept {
-        return std::cbegin(m_data);
-    }
+    core::ByteArray::const_iterator Image::cbegin() const noexcept { return std::cbegin(m_data); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan::iterator Image::cbegin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+    core::ByteConstSpan::iterator
+        Image::cbegin(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
         return std::cbegin(data(layer, face, level));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::iterator Image::end() noexcept {
-        return std::end(m_data);
-    }
+    core::ByteArray::iterator Image::end() noexcept { return std::end(m_data); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteSpan::iterator Image::end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
+    core::ByteSpan::iterator
+        Image::end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) noexcept {
         return std::end(data(layer, face, level));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::end() const noexcept {
-        return std::end(m_data);
-    }
+    core::ByteArray::const_iterator Image::end() const noexcept { return std::end(m_data); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan::iterator Image::end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+    core::ByteConstSpan::iterator
+        Image::end(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
         return std::end(data(layer, face, level));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteArray::const_iterator Image::cend() const noexcept {
-        return std::cend(m_data);
-    }
+    core::ByteArray::const_iterator Image::cend() const noexcept { return std::cend(m_data); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    core::ByteConstSpan::iterator Image::cend(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
+    core::ByteConstSpan::iterator
+        Image::cend(core::UInt32 layer, core::UInt32 face, core::UInt32 level) const noexcept {
         return std::cend(data(layer, face, level));
     }
 
@@ -328,7 +325,7 @@ namespace storm::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr core::UInt8 getByteCountByChannelFor(Image::Format format) noexcept {
+    constexpr core::UInt8 getArraySizeByChannelFor(Image::Format format) noexcept {
         switch (format) {
             case Image::Format::R8_SNorm:
             case Image::Format::R8_UNorm:

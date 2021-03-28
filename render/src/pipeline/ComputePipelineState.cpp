@@ -7,7 +7,7 @@ namespace std {
     core::Hash64 hash<ComputePipelineShaderState>::operator()([
         [maybe_unused]] const ComputePipelineShaderState &state) const noexcept {
         auto hash = core::Hash64 { 0 };
-        core::hash_combine(hash, state.shader);
+        core::hashCombine(hash, state.shader);
 
         return 0;
     }
@@ -18,7 +18,7 @@ namespace std {
 
         auto hash = core::Hash64 { 0 };
         for (const auto &layout : state.descriptor_set_layouts)
-            core::hash_combine(hash, layout->hash());
+            core::hashCombine(hash, layout->hash());
 
         return hash;
     }
@@ -26,8 +26,8 @@ namespace std {
     core::Hash64 hash<ComputePipelineState>::operator()(const ComputePipelineState &state) const
         noexcept {
         auto hash = core::Hash64 { 0 };
-        core::hash_combine(hash, state.shader_state);
-        core::hash_combine(hash, state.layout);
+        core::hashCombine(hash, state.shader_state);
+        core::hashCombine(hash, state.layout);
 
         return hash;
     }

@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -21,7 +21,7 @@
 #include <storm/window/WindowStyle.hpp>
 
 namespace storm::window {
-    class STORM_PUBLIC AbstractWindow: public core::NonCopyable {
+    class STORMKIT_PUBLIC AbstractWindow: public core::NonCopyable {
       public:
         AbstractWindow();
         virtual ~AbstractWindow() = 0;
@@ -49,6 +49,7 @@ namespace storm::window {
         virtual bool isVisible() const noexcept = 0;
 
         virtual NativeHandle nativeHandle() const noexcept = 0;
+        virtual void restoreWndProc() noexcept;
 
         void mouseDownEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
         void mouseUpEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;

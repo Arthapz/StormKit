@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -16,8 +16,7 @@ using namespace storm::render;
 
 /////////////////////////////////////
 /////////////////////////////////////
-ComputePipeline::ComputePipeline(const render::Device &device,
-                                 PipelineCacheConstObserverPtr cache) noexcept
+ComputePipeline::ComputePipeline(const render::Device &device, PipelineCacheConstPtr cache) noexcept
     : AbstractPipeline { device, cache } {
 }
 
@@ -36,7 +35,7 @@ ComputePipeline &ComputePipeline::operator=(ComputePipeline &&) = default;
 /////////////////////////////////////
 /////////////////////////////////////
 void ComputePipeline::build() {
-    STORM_EXPECTS(m_is_builded == false);
+    STORMKIT_EXPECTS(m_is_builded == false);
 
     const auto &device = static_cast<const Device &>(*m_device);
 
@@ -63,10 +62,10 @@ void ComputePipeline::build() {
 
     const auto pipeline_layout_create_info =
         vk::PipelineLayoutCreateInfo {}
-            .setSetLayoutCount(gsl::narrow_cast<core::UInt32>(std::size(set_layout)))
+            .setSetLayoutCount(gsl::narrow_cast<core::Int32>(std::size(set_layout)))
             .setPSetLayouts(std::data(set_layout))
             .setPushConstantRangeCount(
-                gsl::narrow_cast<core::UInt32>(std::size(push_constant_ranges)))
+                gsl::narrow_cast<core::Int32>(std::size(push_constant_ranges)))
             .setPPushConstantRanges(std::data(push_constant_ranges));
 
     m_vk_pipeline_layout = m_device->createVkPipelineLayout(pipeline_layout_create_info);

@@ -7,6 +7,7 @@
 #include <storm/render/core/Instance.hpp>
 #include <storm/render/core/PhysicalDevice.hpp>
 #include <storm/render/core/PhysicalDeviceInfo.hpp>
+#include <storm/render/core/WindowSurface.hpp>
 
 using namespace storm;
 using log::operator""_module;
@@ -16,9 +17,9 @@ struct MeshVertex {
     core::Vector3f color;
 };
 
-static constexpr auto WINDOW_TITLE        = "StormKit UniformBuffer Example";
-static constexpr auto LOG_MODULE          = "UniformBuffer"_module;
-static constexpr const auto MESH_VERTICES = std::array {
+static constexpr auto WINDOW_TITLE  = "StormKit UniformBuffer Example";
+static constexpr auto LOG_MODULE    = "UniformBuffer"_module;
+static constexpr auto MESH_VERTICES = std::array {
     MeshVertex { .position = { -1.f, -1.f, -1.f }, .color = { 1.f, 0.f, 0.f } },
     MeshVertex { .position = { -1.f, -1.f, 1.f }, .color = { 1.f, 0.f, 0.f } },
     MeshVertex { .position = { -1.f, 1.f, 1.f }, .color = { 1.f, 0.f, 0.f } },
@@ -133,8 +134,8 @@ void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
         frame_data.staging_buffer.upload<Transform>({ &m_model, 1 });
         frame_data.staging_buffer.flush(0, MODEL_BUFFER_SIZE);
 
-        frame_data.commandbuffer.submit(core::makeConstObserversArray(frame.texture_available),
-                                        core::makeConstObserversArray(frame.render_finished),
+        frame_data.commandbuffer.submit(core::makeConstObserverArray(frame.texture_available),
+                                        core::makeConstObserverArray(frame.render_finished),
                                         frame.in_flight);
 
         m_surface->present(frame);
@@ -156,13 +157,13 @@ void App::doInitBaseRenderObjects() {
     log::LogHandler::ilog(LOG_MODULE, "Render backend successfully initialized");
     log::LogHandler::ilog(LOG_MODULE,
                           "Using StormKit {}.{}.{} {} {}",
-                          STORM_MAJOR_VERSION,
-                          STORM_MINOR_VERSION,
-                          STORM_PATCH_VERSION,
-                          STORM_GIT_BRANCH,
-                          STORM_GIT_COMMIT_HASH);
+                          STORMKIT_MAJOR_VERSION,
+                          STORMKIT_MINOR_VERSION,
+                          STORMKIT_PATCH_VERSION,
+                          STORMKIT_GIT_BRANCH,
+                          STORMKIT_GIT_COMMIT_HASH);
 
-    m_surface = m_instance->createSurfacePtr(*m_window);
+    m_surface = m_instance->createWindowSurfacePtr(*m_window);
 
     const auto &physical_device      = m_instance->pickPhysicalDevice(*m_surface);
     const auto &physical_device_info = physical_device.info();
@@ -186,14 +187,13 @@ void App::doInitBaseRenderObjects() {
 }
 
 void App::doInitMeshRenderObjects() {
-    const auto &surface_extent = m_surface->extent();
-    const auto surface_extentf = surface_extent.convertTo<core::Extentf>();
+    const auto surface_extent  = core::Extentf { m_surface->extent() };
     const auto buffering_count = m_surface->bufferingCount();
 
     // We initialize the camera et set the model matrix to default
     m_camera = {
         .projection = core::perspective(core::radians(45.f),
-                                        surface_extentf.w / surface_extentf.h,
+                                        surface_extent.width / surface_extent.height,
                                         0.1f,
                                         10.f),
         .view = core::lookAt(core::Vector3f { 4.f, 3.f, 3.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f })
@@ -232,20 +232,16 @@ void App::doInitMeshRenderObjects() {
                                           buffering_count);
 
     // We need to create a render pass, the render pass describe how the framebuffer will look
-    auto description = render::RenderPassDescription{
-        .attachments = {
-            { .format = m_surface->pixelFormat() },
-    { .format             = render::PixelFormat::Depth32F_Stencil8,
-      .destination_layout = render::TextureLayout::Depth_Stencil_Attachment_Optimal }
-        },
-        .subpasses = { {
-            .bind_point      = render::PipelineBindPoint::Graphics,
-            .attachment_refs = {
-                 { .attachment_id = 0u },
-                 { .attachment_id = 1u,
-                   .layout        = render::TextureLayout::Depth_Stencil_Attachment_Optimal }
-            }
-        } }
+    auto description = render::RenderPassDescription {
+        .attachments = { { .format = m_surface->pixelFormat() },
+                         { .format = render::PixelFormat::Depth32F_Stencil8,
+                           .destination_layout =
+                               render::TextureLayout::Depth_Stencil_Attachment_Optimal } },
+        .subpasses   = { { .bind_point      = render::PipelineBindPoint::Graphics,
+                         .attachment_refs = { { .attachment_id = 0u },
+                                              { .attachment_id = 1u,
+                                                .layout        = render::TextureLayout::
+                                                    Depth_Stencil_Attachment_Optimal } } } }
     };
     m_render_pass = m_device->createRenderPassPtr(std::move(description));
     log::LogHandler::ilog(LOG_MODULE, "Renderpass successfully created");
@@ -254,13 +250,14 @@ void App::doInitMeshRenderObjects() {
     // wich will be bound
     m_pipeline       = m_device->createGraphicsPipelinePtr();
     const auto state = render::GraphicsPipelineState {
-        .viewport_state    = { .viewports = { render::Viewport { .position = { 0.f, 0.f },
-                                                              .extent   = surface_extentf,
+        .viewport_state      = { .viewports = { render::Viewport { .position = { 0.f, 0.f },
+                                                              .extent   = surface_extent,
                                                               .depth    = { 0.f, 1.f } } },
                             .scissors  = { render::Scissor { .offset = { 0, 0 },
                                                             .extent = surface_extent } } },
-        .color_blend_state = { .attachments = { {} } },
-        .shader_state = { .shaders = core::makeConstObservers(m_vertex_shader, m_fragment_shader) },
+        .color_blend_state   = { .attachments = { {} } },
+        .shader_state        = { .shaders =
+                              core::makeConstObserverArray(m_vertex_shader, m_fragment_shader) },
         .vertex_input_state  = { .binding_descriptions = MESH_VERTEX_BINDING_DESCRIPTIONS,
                                 .input_attribute_descriptions =
                                     MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS },
@@ -268,8 +265,8 @@ void App::doInitMeshRenderObjects() {
                                  .depth_write_enable = true,
                                  .depth_compare_op   = render::CompareOperation::Less },
         .layout              = { .descriptor_set_layouts =
-                        core::makeConstObservers(m_per_frame_descriptor_set_layout,
-                                                 m_per_mesh_descriptor_set_layout) }
+                        core::makeConstObserverArray(m_per_frame_descriptor_set_layout,
+                                                     m_per_mesh_descriptor_set_layout) }
     };
 
     m_pipeline->setState(std::move(state));
@@ -344,7 +341,7 @@ void App::doInitMeshRenderObjects() {
                                                { *m_camera_set, frame.descriptor_set });
         frame.commandbuffer.bindVertexBuffers({ *m_vertex_buffer }, { 0 });
 
-        frame.commandbuffer.draw(gsl::narrow_cast<core::UInt32>(std::size(MESH_VERTICES)));
+        frame.commandbuffer.draw(gsl::narrow_cast<core::Int32>(std::size(MESH_VERTICES)));
 
         frame.commandbuffer.endRenderPass();
         frame.commandbuffer.end();

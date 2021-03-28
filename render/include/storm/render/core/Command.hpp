@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -36,9 +36,15 @@ namespace storm::render {
 
     struct EndDebugRegionCommand {};
 
+    struct InheritanceInfo {
+        RenderPassConstPtr render_pass;
+        core::uint32 subpass = 0;
+        FramebufferConstPtr framebuffer;
+    };
+
     struct BeginCommand {
-        bool one_time_submit                    = false;
-        std::optional<CommandBufferCRef> parent = std::nullopt;
+        bool one_time_submit                            = false;
+        std::optional<InheritanceInfo> inheritence_info = std::nullopt;
     };
 
     struct EndCommand {};
@@ -83,25 +89,39 @@ namespace storm::render {
         core::UInt32 index_count;
         core::UInt32 instance_count = 2u;
         core::UInt32 first_index    = 0u;
-        core::Offset vertex_offset  = 0;
+        core::Int32 vertex_offset   = 0;
         core::UInt32 first_instance = 0u;
     };
 
+    struct DrawIndirectCommand {
+        const HardwareBuffer &buffer;
+        core::Int32 offset;
+        core::UInt32 draw_count;
+        core::ArraySize stride;
+    };
+
+    struct DrawIndexedIndirectCommand {
+        const HardwareBuffer &buffer;
+        core::Int32 offset;
+        core::UInt32 draw_count;
+        core::ArraySize stride;
+    };
+
     struct BindVertexBuffersCommand {
-        std::vector<HardwareBufferCRef> buffers;
-        std::vector<core::Offset> offsets;
+        std::vector<HardwareBufferConstRef> buffers;
+        std::vector<core::Int32> offsets;
     };
 
     struct BindIndexBufferCommand {
         const HardwareBuffer &buffer;
-        core::Offset offset = 0u;
-        bool large_indices  = false;
+        core::Int32 offset = 0u;
+        bool large_indices = false;
     };
 
     struct BindDescriptorSetsCommand {
         const AbstractPipeline *pipeline = nullptr;
-        std::vector<DescriptorSetCRef> descriptor_sets;
-        std::vector<core::UOffset> dynamic_offsets;
+        std::vector<DescriptorSetConstRef> descriptor_sets;
+        std::vector<core::UInt32> dynamic_offsets;
     };
 
     struct CopyBufferCommand {
@@ -110,12 +130,12 @@ namespace storm::render {
 
         core::ArraySize size;
 
-        core::UOffset src_offset = 0u;
-        core::UOffset dst_offset = 0u;
+        core::Int32 src_offset = 0u;
+        core::Int32 dst_offset = 0u;
     };
 
     struct BufferTextureCopy {
-        core::UOffset buffer_offset;
+        core::UInt32 buffer_offset;
         core::UInt32 buffer_row_length;
         core::UInt32 buffer_image_height;
 
@@ -128,6 +148,13 @@ namespace storm::render {
     struct CopyBufferToTextureCommand {
         const HardwareBuffer &source;
         const Texture &destination;
+
+        std::vector<BufferTextureCopy> buffer_image_copies;
+    };
+
+    struct CopyTextureToBufferCommand {
+        const Texture &source;
+        const HardwareBuffer &destination;
 
         std::vector<BufferTextureCopy> buffer_image_copies;
     };
@@ -158,8 +185,8 @@ namespace storm::render {
         TextureSubresourceLayers source;
         TextureSubresourceLayers destination;
 
-        std::array<core::Offset3u, 2> source_offset;
-        std::array<core::Offset3u, 2> destination_offset;
+        std::array<core::ExtentuOffset, 2> source_offset;
+        std::array<core::ExtentuOffset, 2> destination_offset;
     };
 
     struct BlitTextureCommand {
@@ -183,7 +210,7 @@ namespace storm::render {
     };
 
     struct ExecuteSubCommandBuffersCommand {
-        std::vector<CommandBufferCRef> command_buffers;
+        std::vector<CommandBufferConstRef> command_buffers;
     };
 
     struct PipelineBarrierCommand {
@@ -210,6 +237,7 @@ namespace storm::render {
     struct PushConstantsCommand {
         const AbstractPipeline *pipeline = nullptr;
         ShaderStage stage;
+        core::UInt32 offset;
         std::vector<std::byte> data;
     };
 
@@ -226,11 +254,14 @@ namespace storm::render {
                                  DispatchCommand,
                                  DrawCommand,
                                  DrawIndexedCommand,
+                                 DrawIndirectCommand,
+                                 DrawIndexedIndirectCommand,
                                  BindVertexBuffersCommand,
                                  BindIndexBufferCommand,
                                  BindDescriptorSetsCommand,
                                  CopyBufferCommand,
                                  CopyBufferToTextureCommand,
+                                 CopyTextureToBufferCommand,
                                  CopyTextureCommand,
                                  ResolveTextureCommand,
                                  BlitTextureCommand,

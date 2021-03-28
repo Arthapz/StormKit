@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -20,9 +20,10 @@ using namespace storm::render;
 HardwareBuffer::HardwareBuffer(const render::Device &device,
                                HardwareBufferUsage usage,
                                core::ArraySize size,
-                               MemoryProperty property)
+                               MemoryProperty property,
+                               bool persistently_mapped)
     : m_device { &device }, m_usage { usage }, m_byte_count { size },
-      m_vma_buffer_memory { DELETER, *m_device } {
+      m_is_persistently_mapped { persistently_mapped }, m_vma_buffer_memory { DELETER, *m_device } {
     const auto create_info = vk::BufferCreateInfo {}
                                  .setSize(m_byte_count)
                                  .setUsage(toVK(usage))
@@ -38,6 +39,8 @@ HardwareBuffer::HardwareBuffer(const render::Device &device,
     m_vma_buffer_memory.reset(m_device->allocateVmaAllocation(allocate_info, requirements));
 
     m_device->bindVmaBufferMemory(m_vma_buffer_memory, *m_vk_buffer);
+
+    if (m_is_persistently_mapped) STORMKIT_UNUSED(map(0u));
 }
 
 /////////////////////////////////////
@@ -55,18 +58,21 @@ HardwareBuffer &HardwareBuffer::operator=(HardwareBuffer &&) = default;
 /////////////////////////////////////
 /////////////////////////////////////
 core::Byte *HardwareBuffer::map(core::UInt32 offset) {
-    STORM_EXPECTS(offset < m_byte_count);
+    STORMKIT_EXPECTS(offset < m_byte_count);
 
-    const auto &device = static_cast<const Device &>(*m_device);
+    if (!m_mapped_pointer) {
+        const auto &device = static_cast<const Device &>(*m_device);
+        m_mapped_pointer   = device.mapVmaMemory(m_vma_buffer_memory);
+    }
 
-    return device.mapVmaMemory(m_vma_buffer_memory) + offset;
+    return m_mapped_pointer + offset;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void HardwareBuffer::flush(core::Offset offset, core::ByteCount count) {
-    STORM_EXPECTS(offset < gsl::narrow_cast<core::Offset>(m_byte_count));
-    STORM_EXPECTS(count <= m_byte_count);
+void HardwareBuffer::flush(core::Int32 offset, core::ArraySize count) {
+    STORMKIT_EXPECTS(offset < gsl::narrow_cast<core::Int32>(m_byte_count));
+    STORMKIT_EXPECTS(count <= m_byte_count);
 
     vmaFlushAllocation(m_device->vmaAllocator(),
                        m_vma_buffer_memory,
@@ -77,7 +83,10 @@ void HardwareBuffer::flush(core::Offset offset, core::ByteCount count) {
 /////////////////////////////////////
 /////////////////////////////////////
 void HardwareBuffer::unmap() {
-    m_device->unmapVmaMemory(m_vma_buffer_memory);
+    if (!m_is_persistently_mapped) {
+        m_device->unmapVmaMemory(m_vma_buffer_memory);
+        m_mapped_pointer = nullptr;
+    }
 }
 
 /////////////////////////////////////

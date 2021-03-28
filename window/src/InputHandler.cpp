@@ -12,13 +12,13 @@ namespace details {
 /////////////////////////////////////
 /////////////////////////////////////
 InputHandler::InputHandler(const Window &window) {
-    m_impl = core::makeObserver(details::input_handle_create_func(window));
+    m_impl = details::input_handle_create_func(window);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 InputHandler::~InputHandler() {
-    if (m_impl) details::input_handle_destroy_func(m_impl.get());
+    if (m_impl) details::input_handle_destroy_func(m_impl);
 }
 
 /////////////////////////////////////

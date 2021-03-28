@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -37,12 +37,12 @@ DescriptorSet &DescriptorSet::operator=(DescriptorSet &&) = default;
 /////////////////////////////////////
 /////////////////////////////////////
 void DescriptorSet::update(core::span<const render::Descriptor> descriptors) {
-    STORM_EXPECTS(!std::empty(descriptors));
+    STORMKIT_EXPECTS(!std::empty(descriptors));
 
     auto vk_buffer_infos =
-        std::vector<std::tuple<core::UInt32, vk::DescriptorBufferInfo, vk::DescriptorType>> {};
+        std::vector<std::tuple<core::Int32, vk::DescriptorBufferInfo, vk::DescriptorType>> {};
     auto vk_image_infos =
-        std::vector<std::tuple<core::UInt32, vk::DescriptorImageInfo, vk::DescriptorType>> {};
+        std::vector<std::tuple<core::Int32, vk::DescriptorImageInfo, vk::DescriptorType>> {};
 
     for (const auto &descriptor_proxy : descriptors) {
         if (std::holds_alternative<BufferDescriptor>(descriptor_proxy)) {
@@ -100,3 +100,69 @@ void DescriptorSet::update(core::span<const render::Descriptor> descriptors) {
 
     m_device->updateVkDescriptorSets(vk_write_infos, {});
 }
+
+namespace std {
+    core::Hash64
+        hash<BufferDescriptor>::operator()(const BufferDescriptor &descriptor) const noexcept {
+        auto hash = core::Hash64 { 0 };
+
+        core::hashCombine(hash, descriptor.type);
+        core::hashCombine(hash, descriptor.binding);
+        core::hashCombine(hash, descriptor.buffer);
+        core::hashCombine(hash, descriptor.range);
+        core::hashCombine(hash, descriptor.offset);
+
+        return hash;
+    }
+
+    core::Hash64
+        hash<TextureDescriptor>::operator()(const TextureDescriptor &descriptor) const noexcept {
+        auto hash = core::Hash64 { 0 };
+
+        core::hashCombine(hash, descriptor.type);
+        core::hashCombine(hash, descriptor.binding);
+        core::hashCombine(hash, descriptor.layout);
+        core::hashCombine(hash, descriptor.texture_view);
+        core::hashCombine(hash, descriptor.sampler);
+
+        return hash;
+    }
+
+    core::Hash64 hash<Descriptor>::operator()(const Descriptor &descriptor_proxy) const noexcept {
+        auto hash = core::Hash64 { 0 };
+
+        std::visit(core::overload { [&hash](auto &descriptor) {
+                       core::hashCombine(hash, descriptor);
+                   } },
+                   descriptor_proxy);
+
+        return hash;
+    }
+
+    core::Hash64
+        hash<DescriptorArray>::operator()(const DescriptorArray &descriptors) const noexcept {
+        auto hash = core::Hash64 { 0 };
+
+        for (const auto &descriptor : descriptors) core::hashCombine(hash, descriptor);
+
+        return hash;
+    }
+
+    core::Hash64
+        hash<DescriptorSpan>::operator()(const DescriptorSpan &descriptors) const noexcept {
+        auto hash = core::Hash64 { 0 };
+
+        for (const auto &descriptor : descriptors) core::hashCombine(hash, descriptor);
+
+        return hash;
+    }
+
+    core::Hash64 hash<DescriptorConstSpan>::operator()(
+        const DescriptorConstSpan &descriptors) const noexcept {
+        auto hash = core::Hash64 { 0 };
+
+        for (const auto &descriptor : descriptors) core::hashCombine(hash, descriptor);
+
+        return hash;
+    }
+} // namespace std

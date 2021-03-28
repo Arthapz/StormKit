@@ -1,18 +1,16 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
 #pragma once
 
 /////////// - STL - ///////////
-#include <unordered_set>
-#include <utility>
-#include <vector>
+#include <chrono>
 
 /////////// - StormKit::core - ///////////
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
-#include <storm/core/ResourcesPool.hpp>
+#include <storm/core/StateManager.hpp>
 
 /////////// - StormKit::window - ///////////
 #include <storm/window/Fwd.hpp>
@@ -20,109 +18,127 @@
 /////////// - StormKit::render - ///////////
 #include <storm/render/Fwd.hpp>
 
-#include <storm/render/pipeline/Fwd.hpp>
-#include <storm/render/pipeline/GraphicsPipelineState.hpp>
+#include <storm/render/core/CommandBuffer.hpp>
+#include <storm/render/core/Device.hpp>
+#include <storm/render/core/Instance.hpp>
+#include <storm/render/core/PhysicalDevice.hpp>
+#include <storm/render/core/Surface.hpp>
 
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
+#include <storm/engine/Profiler.hpp>
 
-#include <storm/engine/core/DebugGUI.hpp>
+#include <storm/engine/render/utils/DeletionQueue.hpp>
+#include <storm/engine/render/utils/ResourceCache.hpp>
 
-#include <storm/engine/framegraph/FramePassResource.hpp>
-#include <storm/engine/framegraph/FramePassResourceHandle.hpp>
+#include <storm/engine/render/framegraph/FrameGraph.hpp>
 
 namespace storm::engine {
-    class STORM_PUBLIC Engine {
+    class STORMKIT_PUBLIC Engine {
       public:
-        static constexpr auto PHONG_PASS_NAME    = "StormKit:PhongPass";
-        static constexpr auto RENDER2D_PASS_NAME = "StormKit:Render2D";
-        static constexpr auto POSTFX_PASS_NAME   = "StormKit:PostFX";
+        // using Callback = std::function<void(FramePassTextureID &, FrameGraph &)>;
+        using ImmediateSubmitCallback = std::function<void(render::CommandBuffer &)>;
 
-        struct PhongPassData {
-            storm::engine::FramePassTextureID output;
-            storm::engine::FramePassTextureID depth_buffer;
-        };
-
-        struct Render2DPassData {
-            storm::engine::FramePassTextureID output;
-        };
-
-        struct PostFXPassData {
-            storm::engine::FramePassTextureID input;
-            storm::engine::FramePassTextureID output;
-        };
-
-        using Callback = std::function<void(FramePassTextureID &, FrameGraph &)>;
-
-        explicit Engine(const window::Window &window, std::string app_name);
+        Engine(const window::Window &window, std::string app_name);
+        Engine(core::Extentu extent, render::Surface::Buffering buffering, std::string app_name);
+        Engine(VkInstance instance,
+               VkPhysicalDevice physical_device,
+               VkDevice device,
+               const window::Window &window);
+        Engine(VkInstance instance,
+               VkPhysicalDevice physical_device,
+               VkDevice device,
+               core::Extentu extent,
+               render::Surface::Buffering buffering);
         ~Engine();
 
-        Engine(Engine &&);
-        Engine &operator=(Engine &&);
+        Engine(Engine &&) noexcept;
+        Engine &operator=(Engine &&) noexcept;
 
-        inline void setScene(Scene &scene) noexcept;
+        template<class T, typename... Args>
+        void pushState(Args &&...args);
+        template<class T, typename... Args>
+        void setState(Args &&...args);
+        void popState();
 
         void update();
-        void render();
 
-        // TODO implement gobal staging buffer
+        render::Surface::Frame &beginFrame();
+        void endFrame();
 
-        [[nodiscard]] inline render::Instance &instance() noexcept;
-        [[nodiscard]] inline const render::Instance &instance() const noexcept;
+        [[nodiscard]] render::Instance &instance() noexcept;
+        [[nodiscard]] const render::Instance &instance() const noexcept;
 
-        [[nodiscard]] inline render::Device &device() noexcept;
-        [[nodiscard]] inline const render::Device &device() const noexcept;
+        [[nodiscard]] render::Device &device() noexcept;
+        [[nodiscard]] const render::Device &device() const noexcept;
 
-        [[nodiscard]] inline render::Surface &surface() noexcept;
-        [[nodiscard]] inline const render::Surface &surface() const noexcept;
+        [[nodiscard]] render::Surface &surface() noexcept;
+        [[nodiscard]] const render::Surface &surface() const noexcept;
 
-        [[nodiscard]] inline render::DescriptorPool &descriptorPool() noexcept;
-        [[nodiscard]] inline const render::DescriptorPool &descriptorPool() const noexcept;
+        [[nodiscard]] float getCPUTime() const noexcept;
+        [[nodiscard]] float getGPUTime() const noexcept;
 
-        [[nodiscard]] inline render::PipelineCache &pipelineCache() noexcept;
-        [[nodiscard]] inline const render::PipelineCache &pipelineCache() const noexcept;
+        [[nodiscard]] Profiler &profiler() noexcept;
+        [[nodiscard]] const Profiler &profiler() const noexcept;
 
-        [[nodiscard]] inline DebugGUI &debugGUI() noexcept;
-        [[nodiscard]] inline const DebugGUI &debugGUI() const noexcept;
+        [[nodiscard]] float maxAnisotropy() const noexcept;
+        [[nodiscard]] render::SampleCountFlag maxSampleCount() const noexcept;
 
-        [[nodiscard]] inline float getCPUTime() const noexcept;
+        [[nodiscard]] render::Surface::Frame &currentFrame() noexcept;
+        [[nodiscard]] const render::Surface::Frame &currentFrame() const noexcept;
 
-        [[nodiscard]] inline Profiler &profiler() noexcept;
-        [[nodiscard]] inline const Profiler &profiler() const noexcept;
+        [[nodiscard]] ResourceCache &resourceCache() noexcept;
+        [[nodiscard]] const ResourceCache &resourceCache() const noexcept;
 
-        [[nodiscard]] inline float maxAnisotropy() const noexcept;
-        [[nodiscard]] inline render::SampleCountFlag maxSampleCount() const noexcept;
+        [[nodiscard]] FrameGraph &frameGraph() noexcept;
+        [[nodiscard]] const FrameGraph &frameGraph() const noexcept;
 
-        FramePassTextureID doInitDebugGUIPasses(FramePassTextureID output, FrameGraph &frame_graph);
+        [[nodiscard]] DeletionQueue &deletionQueue() noexcept;
+        [[nodiscard]] const DeletionQueue &deletionQueue() const noexcept;
+        // FramePassTextureID doInitDebugGUIPasses(FramePassTextureID output, FrameGraph
+        // &frame_graph);
+
+        struct ImmediateSubmitData {
+            render::CommandBuffer cmb;
+            render::Fence fence;
+        };
+
+        ImmediateSubmitData immediateSubmit(const ImmediateSubmitCallback &callback,
+                                            bool on_transfert_queue = false) const;
 
       private:
+        void initialize();
+
         using Clock = std::chrono::high_resolution_clock;
 
         render::InstanceOwnedPtr m_instance;
+        render::PhysicalDeviceOwnedPtr m_physical_device;
         render::DeviceOwnedPtr m_device;
         render::SurfaceOwnedPtr m_surface;
-        render::QueueConstObserverPtr m_queue;
-        render::PipelineCacheOwnedPtr m_pipeline_cache;
 
-        std::vector<FrameGraphOwnedPtr> m_framegraphs;
-        FrameGraphTexture::Descriptor m_backbuffer_descriptor;
+        core::DeferredAlloc<render::Surface::Frame> m_frame;
 
-        render::CommandBufferArray m_command_buffers;
+        bool m_is_frame_began = false;
 
         bool m_is_msaa_enabled = true;
 
-        engine::SceneObserverPtr m_scene;
-
-        render::DescriptorPoolOwnedPtr m_descriptor_pool;
-
         Clock::time_point m_last_tp;
-        float m_cpu_time = 0.f;
-
-        ProfilerOwnedPtr m_profiler;
-        DebugGUIOwnedPtr m_debug_gui;
+        core::Secondf m_delta = core::Secondf { 0 };
+        float m_cpu_time      = 0.f;
+        float m_gpu_time      = 0.f;
 
         float m_max_anisotropy                     = 1.f;
         render::SampleCountFlag m_max_sample_count = render::SampleCountFlag::C1_BIT;
+
+        core::StateManager m_state_manager;
+
+        core::DeferredAlloc<FrameGraph> m_frame_graph;
+
+        core::DeferredAlloc<ResourceCache> m_resource_cache;
+
+        core::DeferredAlloc<Profiler> m_profiler;
+
+        core::DeferredAlloc<DeletionQueue> m_deletion_queue;
     };
 } // namespace storm::engine
 

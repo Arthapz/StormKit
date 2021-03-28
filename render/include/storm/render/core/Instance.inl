@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -18,15 +18,22 @@ namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
      vk::Instance Instance::vkInstance() const noexcept {
-        STORM_EXPECTS(m_vk_instance);
-        return *m_vk_instance;
+         auto instance = vk::Instance{nullptr};
+
+         if(std::holds_alternative<vk::UniqueInstance>(m_vk_instance))
+             instance = *std::get<vk::UniqueInstance>(m_vk_instance);
+         else
+             instance = std::get<vk::Instance>(m_vk_instance);
+
+        STORMKIT_EXPECTS(instance);
+
+        return instance;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     Instance::operator vk::Instance() const noexcept {
-        STORM_EXPECTS(m_vk_instance);
-        return *m_vk_instance;
+    Instance::operator vk::Instance() const noexcept {
+         return vkInstance();
     }
 
     /////////////////////////////////////

@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -18,7 +18,7 @@ using namespace storm::render;
 /////////////////////////////////////
 /////////////////////////////////////
 GraphicsPipeline::GraphicsPipeline(const render::Device &device,
-                                   PipelineCacheConstObserverPtr cache) noexcept
+                                   PipelineCacheConstPtr cache) noexcept
     : AbstractPipeline { device, cache } {
 }
 
@@ -37,8 +37,8 @@ GraphicsPipeline &GraphicsPipeline::operator=(GraphicsPipeline &&) = default;
 /////////////////////////////////////
 /////////////////////////////////////
 void GraphicsPipeline::build() {
-    STORM_EXPECTS(m_is_builded == false);
-    STORM_EXPECTS(m_render_pass != nullptr);
+    STORMKIT_EXPECTS(m_is_builded == false);
+    STORMKIT_EXPECTS(m_render_pass != nullptr);
 
     const auto &device      = static_cast<const Device &>(*m_device);
     const auto &render_pass = static_cast<const RenderPass &>(*m_render_pass);
@@ -48,7 +48,7 @@ void GraphicsPipeline::build() {
     for (const auto &binding : m_state.vertex_input_state.binding_descriptions) {
         const auto binding_desc = vk::VertexInputBindingDescription {}
                                       .setBinding(binding.binding)
-                                      .setStride(gsl::narrow_cast<core::UInt32>(binding.stride))
+                                      .setStride(gsl::narrow_cast<core::Int32>(binding.stride))
                                       .setInputRate(toVK(binding.input_rate));
         binding_descriptions.emplace_back(std::move(binding_desc));
     }
@@ -57,12 +57,11 @@ void GraphicsPipeline::build() {
     attribute_descriptions.reserve(
         std::size(m_state.vertex_input_state.input_attribute_descriptions));
     for (const auto &attribute : m_state.vertex_input_state.input_attribute_descriptions) {
-        const auto attribute_desc =
-            vk::VertexInputAttributeDescription {}
-                .setLocation(attribute.location)
-                .setBinding(attribute.binding)
-                .setFormat(toVK(attribute.format))
-                .setOffset(gsl::narrow_cast<core::UInt32>(attribute.offset));
+        const auto attribute_desc = vk::VertexInputAttributeDescription {}
+                                        .setLocation(attribute.location)
+                                        .setBinding(attribute.binding)
+                                        .setFormat(toVK(attribute.format))
+                                        .setOffset(gsl::narrow_cast<core::Int32>(attribute.offset));
 
         attribute_descriptions.emplace_back(std::move(attribute_desc));
     }
@@ -70,10 +69,10 @@ void GraphicsPipeline::build() {
     const auto vertex_input_info =
         vk::PipelineVertexInputStateCreateInfo {}
             .setVertexBindingDescriptionCount(
-                gsl::narrow_cast<core::UInt32>(std::size(binding_descriptions)))
+                gsl::narrow_cast<core::Int32>(std::size(binding_descriptions)))
             .setPVertexBindingDescriptions(std::data(binding_descriptions))
             .setVertexAttributeDescriptionCount(
-                gsl::narrow_cast<core::UInt32>(std::size(attribute_descriptions)))
+                gsl::narrow_cast<core::Int32>(std::size(attribute_descriptions)))
             .setPVertexAttributeDescriptions(std::data(attribute_descriptions));
 
     const auto input_assembly =
@@ -88,8 +87,8 @@ void GraphicsPipeline::build() {
         const auto vk_viewport = vk::Viewport {}
                                      .setX(viewport.position.x)
                                      .setY(viewport.position.y)
-                                     .setWidth(viewport.extent.w)
-                                     .setHeight(viewport.extent.h)
+                                     .setWidth(viewport.extent.width)
+                                     .setHeight(viewport.extent.height)
                                      .setMinDepth(viewport.depth.x)
                                      .setMaxDepth(viewport.depth.y);
 
@@ -100,18 +99,19 @@ void GraphicsPipeline::build() {
     viewports.reserve(std::size(m_state.viewport_state.scissors));
 
     for (const auto &scissor : m_state.viewport_state.scissors) {
-        const auto vk_scissor = vk::Rect2D {}
-                                    .setOffset(vk::Offset2D { scissor.offset.x, scissor.offset.y })
-                                    .setExtent(vk::Extent2D { scissor.extent.w, scissor.extent.h });
+        const auto vk_scissor =
+            vk::Rect2D {}
+                .setOffset(vk::Offset2D { scissor.offset.x, scissor.offset.y })
+                .setExtent(vk::Extent2D { scissor.extent.width, scissor.extent.height });
 
         scissors.emplace_back(std::move(vk_scissor));
     }
 
     const auto viewport_state =
         vk::PipelineViewportStateCreateInfo {}
-            .setViewportCount(gsl::narrow_cast<core::UInt32>(std::size(viewports)))
+            .setViewportCount(gsl::narrow_cast<core::Int32>(std::size(viewports)))
             .setPViewports(std::data(viewports))
-            .setScissorCount(gsl::narrow_cast<core::UInt32>(std::size(scissors)))
+            .setScissorCount(gsl::narrow_cast<core::Int32>(std::size(scissors)))
             .setPScissors(std::data(scissors));
 
     const auto rasterizer =
@@ -151,7 +151,7 @@ void GraphicsPipeline::build() {
         vk::PipelineColorBlendStateCreateInfo {}
             .setLogicOpEnable(m_state.color_blend_state.logic_operation_enable)
             .setLogicOp(toVK(m_state.color_blend_state.logic_operation))
-            .setAttachmentCount(gsl::narrow_cast<core::UInt32>(std::size(blend_attachments)))
+            .setAttachmentCount(gsl::narrow_cast<core::Int32>(std::size(blend_attachments)))
             .setPAttachments(std::data(blend_attachments))
             .setBlendConstants(m_state.color_blend_state.blend_constants);
 
@@ -206,16 +206,16 @@ void GraphicsPipeline::build() {
 
     const auto pipeline_layout_create_info =
         vk::PipelineLayoutCreateInfo {}
-            .setSetLayoutCount(gsl::narrow_cast<core::UInt32>(std::size(set_layout)))
+            .setSetLayoutCount(gsl::narrow_cast<core::Int32>(std::size(set_layout)))
             .setPSetLayouts(std::data(set_layout))
             .setPushConstantRangeCount(
-                gsl::narrow_cast<core::UInt32>(std::size(push_constant_ranges)))
+                gsl::narrow_cast<core::Int32>(std::size(push_constant_ranges)))
             .setPPushConstantRanges(std::data(push_constant_ranges));
 
     m_vk_pipeline_layout = m_device->createVkPipelineLayout(pipeline_layout_create_info);
 
     const auto create_info = vk::GraphicsPipelineCreateInfo {}
-                                 .setStageCount(gsl::narrow_cast<core::UInt32>(std::size(shaders)))
+                                 .setStageCount(gsl::narrow_cast<core::Int32>(std::size(shaders)))
                                  .setPStages(std::data(shaders))
                                  .setPVertexInputState(&vertex_input_info)
                                  .setPInputAssemblyState(&input_assembly)

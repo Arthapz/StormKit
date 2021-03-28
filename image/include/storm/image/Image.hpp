@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -18,7 +18,7 @@
 #include <storm/image/Fwd.hpp>
 
 namespace storm::image {
-    class STORM_PUBLIC Image {
+    class STORMKIT_PUBLIC Image {
       public:
         enum class Format : core::UInt8 {
             R8_SNorm     = 0,
@@ -129,11 +129,11 @@ namespace storm::image {
                                                        core::UInt32 layer = 0u,
                                                        core::UInt32 face = 0u,
                                                        core::UInt32 level = 0u) const noexcept;
-        [[nodiscard]] inline core::ByteSpan pixel(core::Offset3u position,
+        [[nodiscard]] inline core::ByteSpan pixel(core::Position3u position,
                                                   core::UInt32 layer = 0u,
                                                   core::UInt32 face = 0u,
                                                   core::UInt32 level = 0u) noexcept;
-        [[nodiscard]] inline core::ByteConstSpan pixel(core::Offset3u position,
+        [[nodiscard]] inline core::ByteConstSpan pixel(core::Position3u position,
                                                        core::UInt32 layer = 0u,
                                                        core::UInt32 face = 0u,
                                                        core::UInt32 level = 0u) const noexcept;
@@ -209,8 +209,8 @@ namespace storm::image {
         core::ByteArray m_data;
     };
 
-    STORM_PUBLIC constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept;
-    STORM_PUBLIC constexpr core::UInt8 getByteCountByChannelFor(Image::Format format) noexcept;
+    STORMKIT_PUBLIC constexpr core::UInt8 getChannelCountFor(Image::Format format) noexcept;
+    STORMKIT_PUBLIC constexpr core::UInt8 getArraySizeByChannelFor(Image::Format format) noexcept;
 } // namespace storm::image
 
 #include "Image.inl"

@@ -15,7 +15,8 @@ FileLogger::FileLogger(LogClock::time_point start, std::filesystem::path path, S
     : Logger { std::move(start), log_level }, m_base_path { std::move(path) } {
     if (!std::filesystem::exists(m_base_path)) std::filesystem::create_directory(m_base_path);
 
-    ASSERT(std::filesystem::is_directory(m_base_path), "path need to be a directory");
+    STORMKIT_EXPECTS_MESSAGE(std::filesystem::is_directory(m_base_path),
+                             "path need to be a directory");
 
     auto filepath                = m_base_path / "log.txt";
     m_streams[filepath.string()] = std::ofstream { filepath.string() };
@@ -53,8 +54,8 @@ void FileLogger::write(Severity severity, Module module, const char *string) {
             m_streams[filepath.string()] = std::ofstream { filepath.string() };
     }
 
-    static constexpr const auto LOG_LINE        = "[{0}, {1}s] {2}\n";
-    static constexpr const auto LOG_LINE_MODULE = "[{0}, {1}s, {2}] {3}\n";
+    static constexpr auto LOG_LINE        = "[{0}, {1}s] {2}\n";
+    static constexpr auto LOG_LINE_MODULE = "[{0}, {1}s, {2}] {3}\n";
 
     auto final_string = std::string {};
     if (std::strcmp(module.get(), "") == 0)

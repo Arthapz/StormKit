@@ -1,13 +1,13 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
 #include <storm/module/Module.hpp>
 
-#if defined(STORM_OS_WINDOWS)
+#if defined(STORMKIT_OS_WINDOWS)
     #include "win32/ModuleImpl.hpp"
 using Impl = storm::module::ModuleImpl;
-#elif defined(STORM_POSIX)
+#elif defined(STORMKIT_POSIX)
     #include "posix/ModuleImpl.hpp"
 using Impl = storm::module::ModuleImpl;
 #endif
@@ -18,7 +18,7 @@ using namespace storm::module;
 /////////////////////////////////////
 /////////////////////////////////////
 Module::Module(std::filesystem::path filename) : m_impl { nullptr } {
-    STORM_EXPECTS(!filename.empty());
+    STORMKIT_EXPECTS(!filename.empty());
 
     m_impl = std::make_unique<Impl>(filename);
 }

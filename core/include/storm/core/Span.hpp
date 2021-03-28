@@ -1,23 +1,19 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
-
-/// \file FileSystem.hpp
-/// \author Arthapz
-/// \brief this file map std::filesystem or std::filesystem
 
 #pragma once
 
 #include <storm/core/Configure.hpp>
 #include <storm/core/Platform.hpp>
 
-#if __has_include(<span>) && !defined(STORM_OS_MACOS)
+#if __has_include(<span>) && !defined(STORMKIT_OS_MACOS) && !defined(STORMKIT_GEN_DOC)
     #include <span>
 namespace storm::core {
     template<class T, auto Extent = std::dynamic_extent>
     using span = std::span<T, Extent>;
 } // namespace storm::core
-#elif __has_include(<experimental/span>)
+#elif __has_include(<experimental/span>)  && !defined(STORMKIT_GEN_DOC)
     #include <experimental/span>
 namespace storm::core {
     template<class T, auto Extent = std::dynamic_extent>

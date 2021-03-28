@@ -30,6 +30,7 @@ namespace storm::window {
         bool isVisible() const noexcept override;
 
         storm::window::NativeHandle nativeHandle() const noexcept override;
+        void restoreWndProc() noexcept override;
 
       private:
         static inline constexpr const auto CLASS_NAME = L"Stormkit_Window";

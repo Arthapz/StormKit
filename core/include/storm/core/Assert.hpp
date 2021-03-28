@@ -1,35 +1,34 @@
-// Copryright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copryright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-/// \file Assert.hpp
-/// \author Arthapz
-
 #pragma once
 
+/////////// - STL - ///////////
 #include <exception>
 #include <iostream>
 
+/////////// - GSL - ///////////
 #include <gsl/gsl_assert>
 
+/////////// - StormKit::core - ///////////
+#include <storm/core/Fwd.hpp>
 #include <storm/core/Platform.hpp>
 
 #ifdef ASSERT
     #undef ASSERT
 #endif
 
-#if defined(__clang__) || defined(__GNUC__)
-    /// \brief FUNCTION is a macro which get the C++ symbol of current function as
-    /// string
-    #define FUNCTION __PRETTY_FUNCTION__
-#else
-    #define FUNCTION __FUNCSIG__
-#endif
-
-#ifdef STORM_BUILD_DEBUG
-    /// \brief ASSERT is a macro which define an assertion
-    /// \param condition the condition of the assertion
-    /// \param message the message which will displayed on failed assertion
+#if defined(STORMKIT_BUILD_DEBUG) || defined(STORMKIT_GEN_DOC)
+    /// \brief `ASSERT` define an assertion, a confition that should be satisfied where it appears
+    /// in a function body.
+    ///
+    /// If the invariant is not satisfied, the program will stop, printing the
+    /// message in the standard error output.
+    ///
+    /// \param condition The condition of the assertion.
+    /// \param message The failure message.
+    /// \notes Disabled on release build.
     #define ASSERT(condition, message)                                                       \
         do {                                                                                 \
             if (GSL_LIKELY(!(condition))) {                                                  \
@@ -42,8 +41,16 @@
     #define ASSERT(condition, message)
 #endif
 
-#ifdef STORM_BUILD_DEBUG
-    #define STORM_ENSURES(condition)                                                               \
+#if defined(STORMKIT_BUILD_DEBUG) || defined(STORMKIT_GEN_DOC)
+    /// \brief `STORMKIT_ENSURES` define a postcondition, a condition that a function should ensure
+    /// before returning value the state of other object upon entry the function.
+    ///
+    /// If the invariant is not satisfied, the program will stop, printing the
+    /// message in the standard error output.
+    ///
+    /// \param condition The precondition.
+    /// \notes Disabled on release build.
+    #define STORMKIT_ENSURES(condition)                                                            \
         do {                                                                                       \
             if (GSL_LIKELY(!(condition))) {                                                        \
                 std::cerr << "A postcondition `" #condition "` failed in " << __FILE__ << " line " \
@@ -51,7 +58,12 @@
             }                                                                                      \
             Ensures(condition);                                                                    \
         } while (false)
-    #define STORM_ENSURES_MESSAGE(condition, message)                                              \
+
+    /// \brief Same as `STORMKIT_ENSURES` but with a custom failure message.
+    /// \see
+    /// \param condition The precondition.
+    /// \param message The failure message.
+    #define STORMKIT_ENSURES_MESSAGE(condition, message)                                           \
         do {                                                                                       \
             if (GSL_LIKELY(!(condition))) {                                                        \
                 std::cerr << "A postcondition `" #condition "` failed in " << __FILE__ << " line " \
@@ -61,7 +73,15 @@
             Ensures(condition);                                                                    \
         } while (false)
 
-    #define STORM_EXPECTS(condition)                                                              \
+    /// \brief `STORMKIT_EXPECTS` define a precondition, the function expectation of its arguments
+    /// and/or the state of other object upon entry the function.
+    ///
+    /// If the invariant is not satisfied, the program will stop, printing the
+    /// message in the standard error output.
+    ///
+    /// \param condition The precondition.
+    /// \notes Disabled on release build.
+    #define STORMKIT_EXPECTS(condition)                                                           \
         do {                                                                                      \
             if (GSL_LIKELY(!(condition))) {                                                       \
                 std::cerr << "A precondition `" #condition "` failed in " << __FILE__ << " line " \
@@ -69,7 +89,11 @@
             }                                                                                     \
             Expects(condition);                                                                   \
         } while (false)
-    #define STORM_EXPECTS_MESSAGE(condition)                                                      \
+
+    /// \brief Same as `STORMKIT_EXPECTS` but with a custom failure message.
+    /// \param condition The precondition.
+    /// \param message The failure message.
+    #define STORMKIT_EXPECTS_MESSAGE(condition, message)                                          \
         do {                                                                                      \
             if (GSL_LIKELY(!(condition))) {                                                       \
                 std::cerr << "A precondition `" #condition "` failed in " << __FILE__ << " line " \
@@ -79,15 +103,8 @@
             Expects(condition);                                                                   \
         } while (false)
 #else
-    #define STORM_ENSURES(condition) Ensures(condition)
-    #define STORM_ENSURES_MESSAGE(condition, message)                                              \
-        do {                                                                                       \
-            if (GSL_LIKELY(!(condition))) {                                                        \
-                std::cerr << "A postcondition `" #condition "` failed in " << __FILE__ << " line " \
-                          << __LINE__ << "\n " << FUNCTION << std::endl;                           \
-                std::cerr << message << std::endl;                                                 \
-            }                                                                                      \
-            Ensures(condition);                                                                    \
-        } while (false)
-    #define STORM_EXPECTS(condition) Expects(condition)
+    #define STORMKIT_ENSURES(condition) Ensures(condition)
+    #define STORMKIT_ENSURES_MESSAGE(condition, message)
+    #define STORMKIT_EXPECTS(condition) Expects(condition)
+    #define STORMKIT_EXPECTS_MESSAGE(condition, message)
 #endif

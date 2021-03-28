@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -29,7 +29,7 @@ using namespace storm::render;
 constexpr auto toPixelFormat(gli::format format) {
     switch (format) {
         case gli::FORMAT_RGBA16_SFLOAT_PACK16: return render::PixelFormat::RGBA16F;
-        default: STORM_ENSURES(false);
+        default: STORMKIT_ENSURES(false);
     }
 }
 
@@ -112,20 +112,20 @@ Texture::Texture(const Device &device,
       m_samples { samples }, m_usage { usage }, m_vma_texture_memory { DELETER, *m_device } {
     if (core::checkFlag(m_flags, render::TextureCreateFlag::Cube_Compatible)) m_faces = 6u;
 
-    const auto create_info =
-        vk::ImageCreateInfo {}
-            .setImageType(toVK(m_type))
-            .setFormat(toVK(m_format))
-            .setExtent(
-                VkExtent3D { .width = m_extent.w, .height = m_extent.h, .depth = m_extent.depth })
-            .setMipLevels(m_mip_levels)
-            .setArrayLayers(m_layers * m_faces)
-            .setSamples(toVKBits(m_samples))
-            .setTiling(vk::ImageTiling::eOptimal)
-            .setUsage(toVK(usage))
-            .setSharingMode(vk::SharingMode::eExclusive)
-            .setInitialLayout(vk::ImageLayout::eUndefined)
-            .setFlags(toVK(m_flags));
+    const auto create_info = vk::ImageCreateInfo {}
+                                 .setImageType(toVK(m_type))
+                                 .setFormat(toVK(m_format))
+                                 .setExtent(VkExtent3D { .width  = m_extent.width,
+                                                         .height = m_extent.height,
+                                                         .depth  = m_extent.depth })
+                                 .setMipLevels(m_mip_levels)
+                                 .setArrayLayers(m_layers * m_faces)
+                                 .setSamples(toVKBits(m_samples))
+                                 .setTiling(vk::ImageTiling::eOptimal)
+                                 .setUsage(toVK(usage))
+                                 .setSharingMode(vk::SharingMode::eExclusive)
+                                 .setInitialLayout(vk::ImageLayout::eUndefined)
+                                 .setFlags(toVK(m_flags));
 
     m_vk_texture = m_device->createVkImage(create_info);
 
@@ -185,9 +185,9 @@ void Texture::loadFromImage(const image::Image &image, bool generate_mips) {
 void Texture::loadFromImage(const image::Image &image,
                             render::CommandBuffer &command_buffer,
                             render::HardwareBuffer &staging_buffer,
-                            core::UOffset offset,
+                            core::UInt32 offset,
                             bool generate_mips) {
-    STORM_EXPECTS(!m_non_owning_texture);
+    STORMKIT_EXPECTS(!m_non_owning_texture);
 
     loadFromMemory(image.data(),
                    image.layers(),
@@ -238,7 +238,7 @@ void Texture::loadFromMemory(core::ByteConstSpan data,
                              core::UInt32 mip_levels,
                              render::CommandBuffer &command_buffer,
                              render::HardwareBuffer &buffer,
-                             core::UOffset offset,
+                             core::UInt32 offset,
                              bool generate_mips) {
     buffer.upload<core::Byte>(data);
 
@@ -250,16 +250,15 @@ void Texture::loadFromMemory(core::ByteConstSpan data,
                                              .layer_count = m_layers * m_faces });
 
     const auto channel_count         = getChannelCountFor(m_format);
-    const auto byte_count_by_channel = getByteCountByChannelFor(m_format);
+    const auto byte_count_by_channel = getArraySizeByChannelFor(m_format);
 
     auto _offset = 0u;
     for (auto layer = 0u; layer < layers; ++layer) {
         for (auto face = 0u; face < faces; ++face) {
             for (auto mip_level = 0u; mip_level < mip_levels; ++mip_level) {
-                const auto extent =
-                    core::Extentu { .width  = std::max(1u, m_extent.width >> mip_level),
-                                    .height = std::max(1u, m_extent.height >> mip_level),
-                                    .depth  = std::max(1u, m_extent.depth >> mip_level) };
+                const auto extent = core::Extentu { std::max(1u, m_extent.width >> mip_level),
+                                                    std::max(1u, m_extent.height >> mip_level),
+                                                    std::max(1u, m_extent.depth >> mip_level) };
 
                 const auto size = extent.width * extent.height * extent.depth * channel_count *
                                   byte_count_by_channel;
@@ -325,17 +324,17 @@ void Texture::generateMipmap(render::CommandBuffer &command_buffer, core::UInt32
                                                          .layer_count = m_layers * m_faces },
             .destination        = render::TextureSubresourceLayers { .mip_level   = i,
                                                               .layer_count = m_layers * m_faces },
-            .source_offset      = { core::Offset3u {},
-                               core::Offset3u {
-                                   .x = std::max(1u, m_extent.width >> (i - 1u)),
-                                   .y = std::max(1u, m_extent.height >> (i - 1u)),
-                                   .z = std::max(1u, m_extent.depth >> (i - 1u)),
+            .source_offset      = { core::ExtentuOffset {},
+                               core::ExtentuOffset {
+                                   std::max(1u, m_extent.width >> (i - 1u)),
+                                   std::max(1u, m_extent.height >> (i - 1u)),
+                                   std::max(1u, m_extent.depth >> (i - 1u)),
                                } },
-            .destination_offset = { core::Offset3u {},
-                                    core::Offset3u {
-                                        .x = std::max(1u, m_extent.width >> (i)),
-                                        .y = std::max(1u, m_extent.height >> (i)),
-                                        .z = std::max(1u, m_extent.depth >> (i)),
+            .destination_offset = { core::ExtentuOffset {},
+                                    core::ExtentuOffset {
+                                        std::max(1u, m_extent.width >> (i)),
+                                        std::max(1u, m_extent.height >> (i)),
+                                        std::max(1u, m_extent.depth >> (i)),
                                     } }
         };
 

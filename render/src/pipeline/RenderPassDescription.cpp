@@ -42,15 +42,15 @@ core::Hash64 hash<AttachmentDescription>::operator()(
     const AttachmentDescription &description) const noexcept {
     auto hash = core::Hash64 { 0 };
 
-    core::hash_combine(hash, description.format);
-    core::hash_combine(hash, description.samples);
-    core::hash_combine(hash, description.load_op);
-    core::hash_combine(hash, description.store_op);
-    core::hash_combine(hash, description.stencil_load_op);
-    core::hash_combine(hash, description.stencil_store_op);
-    core::hash_combine(hash, description.source_layout);
-    core::hash_combine(hash, description.destination_layout);
-    core::hash_combine(hash, description.resolve);
+    core::hashCombine(hash, description.format);
+    core::hashCombine(hash, description.samples);
+    core::hashCombine(hash, description.load_op);
+    core::hashCombine(hash, description.store_op);
+    core::hashCombine(hash, description.stencil_load_op);
+    core::hashCombine(hash, description.stencil_store_op);
+    core::hashCombine(hash, description.source_layout);
+    core::hashCombine(hash, description.destination_layout);
+    core::hashCombine(hash, description.resolve);
 
     return hash;
 }
@@ -59,10 +59,10 @@ core::Hash64 hash<Subpass>::operator()(
     const Subpass &description) const noexcept {
     auto hash = core::Hash64 { 0 };
 
-    core::hash_combine(hash, description.bind_point);
+    core::hashCombine(hash, description.bind_point);
 
     for(const auto &ref : description.attachment_refs)
-        core::hash_combine(hash, ref);
+        core::hashCombine(hash, ref);
 
     return hash;
 }
@@ -71,8 +71,8 @@ core::Hash64 hash<Subpass::Ref>::operator()(
     const Subpass::Ref &description) const noexcept {
     auto hash = core::Hash64 { 0 };
 
-    core::hash_combine(hash, description.attachment_id);
-    core::hash_combine(hash, description.layout);
+    core::hashCombine(hash, description.attachment_id);
+    core::hashCombine(hash, description.layout);
 
     return hash;
 }
@@ -82,10 +82,10 @@ core::Hash64 hash<Subpass::Ref>::operator()(
         auto hash = core::Hash64 { 0 };
 
         for(const auto &attachment : description.attachments)
-            core::hash_combine(hash, attachment);
+            core::hashCombine(hash, attachment);
 
         for(const auto &subpass : description.subpasses)
-            core::hash_combine(hash, subpass);
+            core::hashCombine(hash, subpass);
 
         return hash;
     }

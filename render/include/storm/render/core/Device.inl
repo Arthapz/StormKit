@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -237,14 +237,14 @@ namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
      const Queue &Device::asyncTransfertQueue() const noexcept {
-        STORM_EXPECTS(m_async_transfert_queue != nullptr);
+        STORMKIT_EXPECTS(m_async_transfert_queue != nullptr);
 
         return *m_async_transfert_queue;
     }
     /////////////////////////////////////
     /////////////////////////////////////
      const Queue &Device::asyncComputeQueue() const noexcept {
-        STORM_EXPECTS(m_async_compute_queue != nullptr);
+        STORMKIT_EXPECTS(m_async_compute_queue != nullptr);
 
         return *m_async_compute_queue;
     }
@@ -269,18 +269,26 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::Device Device::vkDevice() const noexcept {
-        STORM_EXPECTS(m_vk_device);
-        return *m_vk_device;
+    vk::Device Device::vkDevice() const noexcept {
+         auto device = vk::Device{nullptr};
+
+         if(std::holds_alternative<vk::UniqueDevice>(m_vk_device))
+             device = *std::get<vk::UniqueDevice>(m_vk_device);
+         else
+             device = std::get<vk::Device>(m_vk_device);
+
+        STORMKIT_EXPECTS(device);
+
+        return device;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     Device::operator vk::Device() const noexcept { return vkDevice(); }
+    Device::operator vk::Device() const noexcept { return vkDevice(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::Device Device::vkHandle() const noexcept { return vkDevice(); }
+    vk::Device Device::vkHandle() const noexcept { return vkDevice(); }
 
     /////////////////////////////////////
     /////////////////////////////////////

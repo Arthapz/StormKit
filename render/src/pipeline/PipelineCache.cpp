@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -122,8 +122,8 @@ void PipelineCache::createNewPipelineCache() {
               core::ranges::end(physical_device_infos.pipeline_cache_uuid),
               core::ranges::begin(m_serialized.uuid.value));
 
-    const auto create_info = vk::PipelineCacheCreateInfo {};
-    m_vk_pipeline_cache    = m_device->createVkPipelineCache(std::move(create_info));
+    auto create_info    = vk::PipelineCacheCreateInfo {};
+    m_vk_pipeline_cache = m_device->createVkPipelineCache(std::move(create_info));
 }
 
 /////////////////////////////////////
@@ -200,9 +200,9 @@ void PipelineCache::readPipelineCache() {
 
     stream.read(reinterpret_cast<char *>(std::data(data)), std::size(data));
 
-    const auto create_info = vk::PipelineCacheCreateInfo {}
-                                 .setInitialDataSize(std::size(data))
-                                 .setPInitialData(std::data(data));
+    auto create_info = vk::PipelineCacheCreateInfo {}
+                           .setInitialDataSize(std::size(data))
+                           .setPInitialData(std::data(data));
 
     m_vk_pipeline_cache = m_device->createVkPipelineCache(std::move(create_info));
 }
@@ -223,7 +223,7 @@ void PipelineCache::saveCache() {
     m_serialized.guard.data_size = std::size(data);
     m_serialized.guard.data_hash = 0u;
 
-    for (auto v : data) core::hash_combine(m_serialized.guard.data_hash, v);
+    for (auto v : data) core::hashCombine(m_serialized.guard.data_hash, v);
 
     auto stream = std::ofstream { m_path.string(), std::ios::binary | std::ios::trunc };
     stream.write(reinterpret_cast<char *>(&m_serialized.guard), sizeof(m_serialized.guard));

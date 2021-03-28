@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -122,7 +122,7 @@ void RenderPass::build() {
 /////////////////////////////////////
 render::Framebuffer
     RenderPass::createFramebuffer(core::Extentu extent,
-                                  TextureViewConstObserverPtrArray attachments) const {
+                                  TextureViewConstPtrArray attachments) const {
     return Framebuffer { *this, std::move(extent), std::move(attachments) };
 }
 
@@ -130,7 +130,7 @@ render::Framebuffer
 /////////////////////////////////////
 render::FramebufferOwnedPtr
     RenderPass::createFramebufferPtr(core::Extentu extent,
-                                     TextureViewConstObserverPtrArray attachments) const {
+                                     TextureViewConstPtrArray attachments) const {
     return std::make_unique<Framebuffer>(*this, std::move(extent), std::move(attachments));
 }
 
