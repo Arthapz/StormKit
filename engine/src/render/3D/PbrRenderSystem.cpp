@@ -115,6 +115,8 @@ PbrRenderSystem::PbrRenderSystem(Engine &engine, entities::EntityManager &manage
 
     m_forward_plus_pass_name = fmt::format("{}:Forward+", m_system_name);
     m_update_scene_global_buffer_pass_name = fmt::format("{}:UpdateSceneGlobalBufferPass", m_system_name);
+
+    setCamera(m_default_camera);
 }
 
 /////////////////////////////////////
@@ -280,12 +282,13 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
                                                               .depth    = { 0.f, 1.f } } },
                             .scissors  = { render::Scissor { .offset = { 0, 0 },
                                                             .extent = extent } } },
-        .rasterization_state = { .cull_mode = render::CullMode::None },
+        .rasterization_state = { .cull_mode = render::CullMode::Front },
         .color_blend_state   = { .attachments = { {} } },
         .shader_state       = { .shaders = core::makeConstObserverArray(m_pbr_forward_vertex_shader,
                                                                   m_pbr_forward_fragment_shader) },
         .vertex_input_state = { .binding_descriptions         = VERTEX_BINDING_DESCRIPTIONS,
                                 .input_attribute_descriptions = VERTEX_ATTRIBUTE_DESCRIPTIONS },
+        .depth_stencil_state = { .depth_test_enable = true, .depth_write_enable = true },
         .layout             = { .descriptor_set_layouts = { core::makeConstObserver(
                                                     per_scene_descriptor_set_layout),
                                                 core::makeConstObserver(
@@ -309,11 +312,7 @@ auto PbrRenderSystem::updateSceneGlobalBuffer(FrameGraph &frame_graph) -> void {
         FrameGraphResourceID scene_global_buffer_id;
     };
 
-    const auto reupload = [this]() {
-        if(m_camera_entity != entities::INVALID_ENTITY) {
-            //return m_manager->getComponent<CameraComponent>(m_camera_entity).camera->dirty();
-        } else return m_first_iteration;
-    }();
+    const auto reupload = m_camera->dirty() || m_camera_switched;
 
     const auto scene_global_buffer_name =
                          fmt::format("{}:SceneGlobalBuffer:{}", m_system_name, m_frame_counter);
@@ -376,11 +375,13 @@ auto PbrRenderSystem::updateSceneGlobalBuffer(FrameGraph &frame_graph) -> void {
             auto &scene_global_buffer =
                 frame_graph.getPhysicalBuffer(pass_data.scene_global_buffer_id);
 
-            staging_buffer.upload(core::toConstByteSpan(&m_scene_global_buffer_id));
+            staging_buffer.upload(core::toConstByteSpan(&m_camera->data()));
             staging_buffer.flush(0u, staging_buffer_size);
 
             cmb.copyBuffer(staging_buffer, scene_global_buffer, staging_buffer_size, 0u, 0u);
         },
         QueueFlag::Async_Transfert);
     update_scene_global_pass.setCullImmune(true);
+
+    m_camera_switched = false;
 }

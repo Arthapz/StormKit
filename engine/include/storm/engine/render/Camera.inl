@@ -61,6 +61,11 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    inline auto Camera::dirty() const noexcept -> bool {
+        return m_dirty;
+    }
+    /////////////////////////////////////
+    /////////////////////////////////////
     inline auto Camera::data() const noexcept -> const Data & {
         m_dirty = false;
 

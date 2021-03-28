@@ -34,6 +34,9 @@ namespace storm::engine {
 
         void render(render::Surface::Frame &frame);
 
+        void setCamera(const Camera &camera);
+        virtual void resetCamera() = 0;
+
         ENGINE_GETTERS
       protected:
         void onMessageReceived(const entities::Message &message) override;
@@ -45,6 +48,9 @@ namespace storm::engine {
         Entities m_to_be_added;
         Entities m_to_be_removed;
         Entities m_entities;
+
+        CameraConstPtr m_camera = nullptr;
+        bool m_camera_switched = true;
 
       private:
         void addEntity(entities::Entity e);

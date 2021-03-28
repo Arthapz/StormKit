@@ -53,14 +53,16 @@ namespace storm::engine {
 
         virtual void update(core::Secondf delta) noexcept;
 
+        [[nodiscard]] bool dirty() const noexcept;
         [[nodiscard]] const Data &data() const noexcept;
 
+        ALLOCATE_HELPERS(Camera)
       protected:
         Type m_type;
 
         float m_near_plane = 0.1f;
         float m_far_plane  = 1000.f;
-        float m_fov        = core::radians(90.f);
+        float m_fov        = core::radians(45.f);
 
         core::Extentf m_viewport = { 0.f, 0.f };
 

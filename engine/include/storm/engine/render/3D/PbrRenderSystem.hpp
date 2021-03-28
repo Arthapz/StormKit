@@ -40,6 +40,7 @@ namespace storm::engine {
         void preUpdate() override;
         void update(core::Secondf delta) override;
 
+        void resetCamera() override;
       protected:
         void setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourceID backbuffer) override;
 
@@ -57,7 +58,6 @@ namespace storm::engine {
         RenderQueue m_render_queue;
 
         Camera m_default_camera;
-        entities::Entity m_camera_entity = entities::INVALID_ENTITY;
 
         core::RingBuffer<render::HardwareBuffer> m_scene_global_buffer_pool;
 

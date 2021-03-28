@@ -37,4 +37,5 @@ class MainState final: public storm::engine::State {
   private:
     storm::window::InputHandler m_input_handler;
     storm::engine::RenderSystemPtr m_render_system;
+    storm::engine::FPSCameraOwnedPtr m_camera;
 };

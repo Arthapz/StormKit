@@ -18,7 +18,7 @@ namespace storm::engine {
         struct alignas(16) Vertex {
             core::Vector3f position;
             core::Vector3f normal;
-            core::Vector3f uv;
+            core::Vector2f uv;
         };
 
         PbrMesh() noexcept;

@@ -38,7 +38,7 @@ class RotationSystem: public entities::System {
         for (auto e : m_entities) {
             auto &transform_component = m_manager->getComponent<engine::TransformComponent>(e);
 
-            transform_component.transform.rotateRoll(ROTATE_ANGLE * delta.count());
+            //transform_component.transform.rotateRoll(ROTATE_ANGLE * delta.count());
         }
     }
 
@@ -57,20 +57,31 @@ MainState::MainState(core::StateManager &owner,
 
     const auto extent = State::engine().surface().extent();
 
-    /*m_camera = std::make_unique<engine::FPSCamera>(extentf);
-    m_camera->setPosition({ 0.f, 0.f, -0.5f });
-    m_camera->setRotation({ 0.f, 0.f, 0.f });*/
-
     m_render_system = &m_world.addSystem<engine::PbrRenderSystem>(State::engine());
     m_world.addSystem<RotationSystem>();
 
-    auto vertices = engine::VertexArray {};
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 0.f } });
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 0.f } });
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 0.f } });
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 0.f } });
+    m_camera = engine::FPSCamera::allocateOwned(extent);
+    m_camera->setPosition({ 0.f, 0.f, -3.f });
 
-    auto indices = engine::LargeIndexArray { 0, 1, 2, 0, 3, 2 };
+    m_render_system->setCamera(*m_camera);
+
+    auto vertices = engine::VertexArray {};
+    vertices.push_back(engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 0.f }, .uv = {0.f, 0.f} });
+    vertices.push_back(engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 0.f }, .uv = {1.f, 0.f} });
+    vertices.push_back(engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 0.f }, .uv = {1.f, 1.f} });
+    vertices.push_back(engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 0.f }, .uv = {0.f, 1.f} });
+
+    vertices.push_back(engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 1.f }, .uv = {0.f, 0.f} });
+    vertices.push_back(engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 1.f }, .uv = {1.f, 0.f} });
+    vertices.push_back(engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 1.f }, .uv = {1.f, 1.f} });
+    vertices.push_back(engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 1.f }, .uv = {0.f, 1.f} });
+
+    auto indices = engine::LargeIndexArray { 0, 1, 3, 3, 1, 2,
+                                             1, 5, 2, 2, 5, 6,
+                                             5, 4, 6, 6, 4, 7,
+                                             4, 0, 7, 7, 0, 3,
+                                             3, 2, 7, 7, 2, 6,
+                                             4, 5, 0, 0, 5, 1 };
 
     auto mesh = engine::PbrMesh::allocateOwned();
     mesh->setVertices(std::move(vertices));
@@ -83,7 +94,8 @@ MainState::MainState(core::StateManager &owner,
     auto &drawable_component = m_world.addComponent<engine::DrawableComponent>(e);
     drawable_component.drawable = std::move(mesh);
 
-    m_world.addComponent<engine::TransformComponent>(e);
+    auto &transform_component = m_world.addComponent<engine::TransformComponent>(e);
+
 }
 
 ////////////////////////////////////////
@@ -101,6 +113,38 @@ MainState &MainState::operator=(MainState &&) noexcept = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 void MainState::update(core::Secondf delta) {
+    auto inputs = engine::FPSCamera::Inputs{
+        .up    = m_input_handler.isKeyPressed(window::Key::Z),
+        .down  = m_input_handler.isKeyPressed(window::Key::S),
+        .right = m_input_handler.isKeyPressed(window::Key::D),
+        .left  = m_input_handler.isKeyPressed(window::Key::Q),
+    };
+
+    const auto extent = State::engine().surface().extent();
+    const auto position = [&inputs, &extent, this]() {
+        auto position = m_input_handler.getMousePositionOnWindow();
+
+        if (position->x <= 5 || position->x > (extent.width - 5)) {
+            position->x         = extent.width / 2;
+            inputs.mouse_ignore = true;
+        }
+        if (position->y <= 5 || position->y > (extent.height - 5)) {
+            position->y         = extent.height / 2;
+            inputs.mouse_ignore = true;
+        }
+
+        m_input_handler.setMousePositionOnWindow(position);
+
+        return position;
+    }();
+
+    inputs.mouse_updated = true;
+    inputs.x_mouse       = static_cast<float>(position->x);
+    inputs.y_mouse       = static_cast<float>(position->y);
+
+    m_camera->feedInputs(inputs);
+    m_camera->update(delta);
+
     auto &frame = engine().beginFrame();
 
     m_world.step(delta);

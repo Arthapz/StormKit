@@ -17,6 +17,7 @@ layout(location = 1) out vec3 out_normal;
 layout(location = 2) out vec2 out_uv;
 
 layout(set = 0, binding = 0, std140) uniform SceneData {
+    vec4 position;
     mat4 projection;
     mat4 view;
 } scene_data;
@@ -41,14 +42,14 @@ out gl_PerVertex  {
 };
 
 void main() {
-    mat4 model = transforms.data[transform_id].model;
-    mat4 inv_model = transforms.data[transform_id].inv_model;
+    const mat4 model = transforms.data[transform_id].model;
+    const mat4 inv_model = transforms.data[transform_id].inv_model;
 
-    vec4 model_space_position = model * vec4(position, 1.0);
+    const vec4 model_space_position = model * vec4(position, 1.f);
 
     out_position = model_space_position.xyz / model_space_position.w;
     out_normal = normalize(transpose(mat3(inv_model)) * normal);
     out_uv = uv;
 
-    gl_Position = scene_data.projection * scene_data.view * vec4(out_position, 1.f);
+    gl_Position = scene_data.projection * scene_data.view * model_space_position;
 }

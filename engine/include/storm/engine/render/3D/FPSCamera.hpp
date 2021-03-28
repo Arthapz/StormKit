@@ -37,6 +37,7 @@ namespace storm::engine {
         void feedInputs(Inputs inputs);
         void update(core::Secondf delta) noexcept override;
 
+        ALLOCATE_HELPERS(FPSCamera)
       private:
         Inputs m_inputs;
 

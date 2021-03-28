@@ -4,4 +4,10 @@
 #pragma once
 
 namespace storm::engine {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto RenderSystem::setCamera(const Camera &camera) -> void {
+        m_camera = core::makeConstObserver(camera);
+        m_camera_switched = true;
+    }
 }

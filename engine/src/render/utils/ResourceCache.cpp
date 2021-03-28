@@ -134,16 +134,16 @@ render::DescriptorSet &
 
 #ifdef STORMKIT_COMPILER_CLANG
     auto &resource = requestResource<render::DescriptorSet, +maker>(m_descriptor_set_cache,
-                                                          hash,
-                                                          m_descriptor_pool,
-                                                          layout,
-                                                          descriptors);
+                                                                    hash,
+                                                                    m_descriptor_pool,
+                                                                    layout,
+                                                                    descriptors);
 #else
     auto &resource = requestResource<render::DescriptorSet, maker>(m_descriptor_set_cache,
-                                                         hash,
-                                                         m_descriptor_pool,
-                                                         layout,
-                                                         descriptors);
+                                                                   hash,
+                                                                   m_descriptor_pool,
+                                                                   layout,
+                                                                   descriptors);
 #endif
     resource.update(descriptors);
 
