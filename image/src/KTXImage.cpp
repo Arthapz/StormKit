@@ -82,7 +82,7 @@ namespace storm::image {
 } // namespace storm::image
 
 std::optional<std::string> Image::loadKTX(core::ByteConstSpan data) noexcept {
-    auto image = gli::load(reinterpret_cast<const char *>(std::data(data)), std::size(data));
+    auto image = gli::load_ktx(reinterpret_cast<const char *>(std::data(data)), std::size(data));
 
     const auto faces      = static_cast<core::UInt32>(image.faces());
     const auto layers     = static_cast<core::UInt32>(image.layers());
@@ -94,16 +94,11 @@ std::optional<std::string> Image::loadKTX(core::ByteConstSpan data) noexcept {
     auto _data = core::ByteArray {};
     _data.resize(image.size());
 
-    core::ranges::copy(core::toConstSpan<core::Byte>(static_cast<const char *>(image.data()),
-                                                     image.size()),
-                       std::begin(_data));
+    core::ranges::copy(core::toConstByteSpan(image.data(), image.size()), std::begin(_data));
 
-    m_extent = core::Extenti { .width  = image.extent().x,
-                               .height = image.extent().y,
-                               .depth  = image.extent().z }
-                   .convertTo<core::Extentu>();
+    m_extent            = core::Extenti { image.extent().x, image.extent().y, image.extent().z };
     m_channel_count     = getChannelCountFor(format);
-    m_bytes_per_channel = getByteCountByChannelFor(format);
+    m_bytes_per_channel = getArraySizeByChannelFor(format);
     m_mip_levels        = mip_levels;
     m_faces             = faces;
     m_layers            = layers;

@@ -1,4 +1,5 @@
 #pragma once
 
-// hack for include configure at stormkit build time
-#include <Configure.hpp>
+#ifndef STORMKIT_GEN_DOC
+    #include <Configure.hpp>
+#endif

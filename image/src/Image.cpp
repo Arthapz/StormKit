@@ -36,10 +36,10 @@ namespace storm::image {
     static constexpr auto JPEG_HEADER = core::makeStaticByteArray(0xFF, 0xD8);
 
     Image::Codec filenameToCodec(const std::filesystem::path &filename) noexcept {
-        STORM_EXPECTS(std::filesystem::exists(filename));
-        STORM_EXPECTS(filename.has_extension());
-        STORM_EXPECTS(!std::filesystem::is_directory(filename));
-        STORM_EXPECTS(std::filesystem::is_regular_file(filename));
+        STORMKIT_EXPECTS(std::filesystem::exists(filename));
+        STORMKIT_EXPECTS(filename.has_extension());
+        STORMKIT_EXPECTS(!std::filesystem::is_directory(filename));
+        STORMKIT_EXPECTS(std::filesystem::is_regular_file(filename));
 
         const std::string ext = filename.extension().string();
 
@@ -60,7 +60,7 @@ namespace storm::image {
     }
 
     Image::Codec headerToCodec(core::ByteConstSpan data) noexcept {
-        STORM_EXPECTS(std::size(data) >= 12);
+        STORMKIT_EXPECTS(std::size(data) >= 12);
 
         if (std::memcmp(std::data(data), std::data(KTX_HEADER), std::size(KTX_HEADER)) == 0)
             return Image::Codec::KTX;
@@ -75,8 +75,8 @@ namespace storm::image {
     core::ByteArray map(core::ByteConstSpan bytes,
                         core::UInt8 source_count,
                         core::UInt8 destination_count) noexcept {
-        STORM_EXPECTS(source_count <= 4u && source_count > 0u && destination_count <= 4u &&
-                      destination_count > 0u);
+        STORMKIT_EXPECTS(source_count <= 4u && source_count > 0u && destination_count <= 4u &&
+                         destination_count > 0u);
 
         static constexpr auto byte_1_min = std::numeric_limits<core::UInt8>::min();
         static constexpr auto byte_1_max = std::numeric_limits<core::UInt8>::max();
@@ -219,8 +219,8 @@ Image &Image::operator=(Image &&) noexcept = default;
 bool Image::loadFromFile(std::filesystem::path filepath, Image::Codec codec) noexcept {
     filepath = std::filesystem::canonical(filepath);
 
-    STORM_EXPECTS(codec != Image::Codec::Unknown);
-    STORM_EXPECTS(!std::empty(filepath));
+    STORMKIT_EXPECTS(codec != Image::Codec::Unknown);
+    STORMKIT_EXPECTS(!std::empty(filepath));
 
     if (!std::filesystem::exists(filepath)) {
         elog("Failed to open file\n    file: {}\n    reason: Incorrect path", filepath.string());
@@ -228,7 +228,7 @@ bool Image::loadFromFile(std::filesystem::path filepath, Image::Codec codec) noe
         return false;
     }
 
-    STORM_EXPECTS(std::filesystem::exists(filepath));
+    STORMKIT_EXPECTS(std::filesystem::exists(filepath));
 
     const auto data = [&filepath]() {
         auto file = std::ifstream { filepath, std::ios::binary };
@@ -315,8 +315,8 @@ bool Image::loadFromFile(std::filesystem::path filepath, Image::Codec codec) noe
 /////////////////////////////////////
 /////////////////////////////////////
 bool Image::loadFromMemory(core::ByteConstSpan data, Image::Codec codec) noexcept {
-    STORM_EXPECTS(codec != Image::Codec::Unknown);
-    STORM_EXPECTS(!std::empty(data));
+    STORMKIT_EXPECTS(codec != Image::Codec::Unknown);
+    STORMKIT_EXPECTS(!std::empty(data));
 
     if (codec == Image::Codec::Autodetect) codec = headerToCodec(data);
     switch (codec) {
@@ -379,11 +379,11 @@ bool Image::loadFromMemory(core::ByteConstSpan data, Image::Codec codec) noexcep
 bool Image::saveToFile(std::filesystem::path filepath, Codec codec, CodecArgs args) const noexcept {
     filepath = std::filesystem::canonical(filepath.parent_path()) / filepath.filename();
 
-    STORM_EXPECTS(codec != Image::Codec::Unknown);
-    STORM_EXPECTS(codec != Image::Codec::Autodetect);
-    STORM_EXPECTS(!std::empty(filepath));
-    STORM_EXPECTS(!std::empty(m_data));
-    STORM_EXPECTS(std::filesystem::exists(filepath.root_directory()));
+    STORMKIT_EXPECTS(codec != Image::Codec::Unknown);
+    STORMKIT_EXPECTS(codec != Image::Codec::Autodetect);
+    STORMKIT_EXPECTS(!std::empty(filepath));
+    STORMKIT_EXPECTS(!std::empty(m_data));
+    STORMKIT_EXPECTS(std::filesystem::exists(filepath.root_directory()));
 
     switch (codec) {
         case Image::Codec::JPEG: {
@@ -455,13 +455,13 @@ bool Image::saveToFile(std::filesystem::path filepath, Codec codec, CodecArgs ar
 /////////////////////////////////////
 /////////////////////////////////////
 void Image::create(core::Extentu extent, Format format) noexcept {
-    STORM_EXPECTS(extent.width > 0u && extent.height > 0u && extent.depth > 0u &&
-                  format != Format::Undefined);
+    STORMKIT_EXPECTS(extent.width > 0u && extent.height > 0u && extent.depth > 0u &&
+                     format != Format::Undefined);
     m_data.clear();
 
     m_extent            = extent;
     m_channel_count     = getChannelCountFor(format);
-    m_bytes_per_channel = getByteCountByChannelFor(format);
+    m_bytes_per_channel = getArraySizeByChannelFor(format);
     m_layers            = 1u;
     m_faces             = 1u;
     m_mip_levels        = 1u;
@@ -474,27 +474,28 @@ void Image::create(core::Extentu extent, Format format) noexcept {
 /////////////////////////////////////
 /////////////////////////////////////
 Image Image::toFormat(Format format) const noexcept {
-    STORM_EXPECTS(!std::empty(m_data));
-    STORM_EXPECTS(format != Format::Undefined);
+    STORMKIT_EXPECTS(!std::empty(m_data));
+    STORMKIT_EXPECTS(format != Format::Undefined);
 
     if (m_format == format) return *this;
 
     auto image                = Image {};
     image.m_extent            = m_extent;
     image.m_channel_count     = getChannelCountFor(format);
-    image.m_bytes_per_channel = getByteCountByChannelFor(format);
+    image.m_bytes_per_channel = getArraySizeByChannelFor(format);
     image.m_mip_levels        = m_mip_levels;
     image.m_faces             = m_faces;
     image.m_layers            = m_layers;
     image.m_format            = format;
 
-    const auto channel_delta =
-        static_cast<core::UInt8>(std::min(0,
+    /*const auto channel_delta =
+        static_cast<core::UInt8>(std::max(0,
                                           static_cast<core::Int8>(image.m_channel_count) -
-                                              static_cast<core::Int8>(m_channel_count)));
+                                              static_cast<core::Int8>(m_channel_count)));*/
     const auto pixel_count = m_extent.width * m_extent.height * m_extent.depth;
 
-    image.m_data.resize(pixel_count * image.m_channel_count * image.m_bytes_per_channel);
+    image.m_data.resize(pixel_count * image.m_channel_count * image.m_bytes_per_channel,
+                        core::Byte { 1u });
     for (auto layer = 0u; layer < image.m_layers; ++layer) {
         for (auto face = 0u; face < image.m_faces; ++face) {
             for (auto level = 0u; level < image.m_layers; ++level) {
@@ -507,10 +508,6 @@ Image Image::toFormat(Format format) const noexcept {
                     core::ranges::copy_n(core::ranges::begin(from_image),
                                          image.m_channel_count,
                                          core::ranges::begin(to_image));
-
-                    core::ranges::fill_n(core::ranges::begin(to_image) + m_channel_count,
-                                         channel_delta,
-                                         core::Byte { 0u });
                 }
             }
         }
@@ -546,9 +543,12 @@ Image Image::flipX() const noexcept {
                     for (auto y = 0u; y < m_extent.height; ++y)
                         for (auto z = 0u; z < m_extent.depth; ++z) {
                             auto output =
-                                image.pixel(core::Offset3u { inv_x, y, z }, layer, face, mip);
+                                image.pixel(core::Position3u { inv_x, y, z }, layer, face, mip);
 
-                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, layer, face, mip),
+                            core::ranges::copy(pixel(core::Position3u { x, y, z },
+                                                     layer,
+                                                     face,
+                                                     mip),
                                                core::ranges::begin(output));
                         }
                 }
@@ -577,8 +577,8 @@ Image Image::flipY() const noexcept {
                         const auto inv_y = m_extent.height - 1u - y;
                         for (auto z = 0u; z < m_extent.depth; ++z) {
                             auto output =
-                                image.pixel(core::Offset3u { x, inv_y, z }, layer, face, mip);
-                            const auto data = pixel(core::Offset3u { x, y, z }, layer, face, mip);
+                                image.pixel(core::Position3u { x, inv_y, z }, layer, face, mip);
+                            const auto data = pixel(core::Position3u { x, y, z }, layer, face, mip);
 
                             core::ranges::copy(data, core::ranges::begin(output));
                         }
@@ -609,9 +609,12 @@ Image Image::flipZ() const noexcept {
                             const auto inv_z = m_extent.depth - 1u - z;
 
                             auto output =
-                                image.pixel(core::Offset3u { x, z, inv_z }, layer, face, mip);
+                                image.pixel(core::Position3u { x, z, inv_z }, layer, face, mip);
 
-                            core::ranges::copy(pixel(core::Offset3u { x, y, z }, layer, face, mip),
+                            core::ranges::copy(pixel(core::Position3u { x, y, z },
+                                                     layer,
+                                                     face,
+                                                     mip),
                                                core::ranges::begin(output));
                         }
 

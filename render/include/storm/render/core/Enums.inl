@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -462,6 +462,7 @@ namespace storm::render {
             { vk::BufferUsageFlagBits::eStorageBuffer, HardwareBufferUsage::Storage },
             { vk::BufferUsageFlagBits::eUniformTexelBuffer, HardwareBufferUsage::Uniform_Texel },
             { vk::BufferUsageFlagBits::eStorageTexelBuffer, HardwareBufferUsage::Storage_Texel },
+            { vk::BufferUsageFlagBits::eIndirectBuffer, HardwareBufferUsage::Indirect },
         };
 
     AS_AND_FROM_FLAGS(buffer_usage_map, HardwareBufferUsage, vk::BufferUsageFlags)
@@ -697,6 +698,7 @@ namespace storm::render {
               PipelineStageFlag::Late_Fragment_Tests },
             { vk::PipelineStageFlagBits::eColorAttachmentOutput,
               PipelineStageFlag::Color_Attachment_Output },
+            { vk::PipelineStageFlagBits::eComputeShader, PipelineStageFlag::Compute_Shader },
             { vk::PipelineStageFlagBits::eTransfer, PipelineStageFlag::Transfer },
             { vk::PipelineStageFlagBits::eBottomOfPipe, PipelineStageFlag::Bottom_Of_Pipe },
             { vk::PipelineStageFlagBits::eHost, PipelineStageFlag::Host },

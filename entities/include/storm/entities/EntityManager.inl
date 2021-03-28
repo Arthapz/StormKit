@@ -1,4 +1,4 @@
-// Copryright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copryright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -7,14 +7,14 @@
 namespace storm::entities {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-    T &EntityManager::addComponent(Entity entity) {
+    template<typename T, typename... Args>
+    T &EntityManager::addComponent(Entity entity, Args &&...args) {
         static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
 
-        STORM_EXPECTS(hasEntity(entity));
+        STORMKIT_EXPECTS(hasEntity(entity));
 
-        auto component = std::make_unique<T>();
+        auto component = std::make_unique<T>(std::forward<Args>(args)...);
 
         auto type                  = T::TYPE;
         m_components[entity][type] = std::move(component);
@@ -31,8 +31,8 @@ namespace storm::entities {
         static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
 
-        STORM_EXPECTS(hasEntity(entity));
-        STORM_EXPECTS(hasComponent<T>(entity));
+        STORMKIT_EXPECTS(hasEntity(entity));
+        STORMKIT_EXPECTS(hasComponent<T>(entity));
 
         auto it = std::find_if(std::begin(m_components[entity]),
                                std::end(m_components[entity]),
@@ -50,21 +50,21 @@ namespace storm::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    bool EntityManager::hasComponent(Entity entity) {
+    bool EntityManager::hasComponent(Entity entity) const {
         static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
 
-        STORM_EXPECTS(hasEntity(entity));
+        STORMKIT_EXPECTS(hasEntity(entity));
 
-        auto it = std::find_if(std::begin(m_components[entity]),
-                               std::end(m_components[entity]),
+        auto it = std::find_if(std::begin(m_components.at(entity)),
+                               std::end(m_components.at(entity)),
                                [](auto &i) {
                                    if (i.first == T::TYPE) return true;
 
                                    return false;
                                });
 
-        return (it != std::end(m_components[entity]));
+        return (it != std::end(m_components.at(entity)));
     }
 
     /////////////////////////////////////
@@ -101,11 +101,25 @@ namespace storm::entities {
         static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
 
-        STORM_EXPECTS(hasComponent<T>(entity));
-        STORM_EXPECTS(hasEntity(entity));
+        STORMKIT_EXPECTS(hasComponent<T>(entity));
+        STORMKIT_EXPECTS(hasEntity(entity));
 
         auto type = T::TYPE;
-        return *dynamic_cast<T *>(m_components[entity][type].get());
+        return *static_cast<T *>(m_components.at(entity).at(type).get());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    const T &EntityManager::getComponent(Entity entity) const {
+        static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
+        static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
+
+        STORMKIT_EXPECTS(hasComponent<T>(entity));
+        STORMKIT_EXPECTS(hasEntity(entity));
+
+        auto type = T::TYPE;
+        return *static_cast<T *>(m_components.at(entity).at(type).get());
     }
 
     /////////////////////////////////////
@@ -124,8 +138,8 @@ namespace storm::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, typename... Args>
-    T &EntityManager::addSystem(Args &&... args) {
-        auto system = std::make_unique<T>(*this, std::forward<Args &&>(args)...);
+    T &EntityManager::addSystem(Args &&...args) {
+        auto system = std::make_unique<T>(std::forward<Args &&>(args)..., *this);
         auto &ref   = static_cast<T &>(*system);
 
         getNeededEntities(ref);
@@ -152,9 +166,9 @@ namespace storm::entities {
     /////////////////////////////////////
     template<typename T>
     T &EntityManager::getSystem() {
-        STORM_EXPECTS(hasSystem<T>());
+        STORMKIT_EXPECTS(hasSystem<T>());
 
-        auto system_observer = _std::observer_ptr<T> {};
+        auto system_observer = core::makeObserver<T>(nullptr);
         for (auto &system : m_systems) {
             if (auto system_ptr = dynamic_cast<T *>(system.get()); system_ptr != nullptr) {
                 system_observer = core::makeObserver(system_ptr);
@@ -169,9 +183,9 @@ namespace storm::entities {
     /////////////////////////////////////
     template<typename T>
     const T &EntityManager::getSystem() const {
-        STORM_EXPECTS(hasSystem<const T>());
+        STORMKIT_EXPECTS(hasSystem<const T>());
 
-        auto system_observer = _std::observer_ptr<const T> {};
+        auto system_observer = core::makeConstObserver<T>(nullptr);
         for (auto &system : m_systems) {
             if (auto system_ptr = dynamic_cast<const T *>(system.get()); system_ptr != nullptr) {
                 system_observer = core::makeConstObserver(system_ptr);

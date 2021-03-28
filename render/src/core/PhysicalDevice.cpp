@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -11,7 +11,7 @@
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/PhysicalDevice.hpp>
-#include <storm/render/core/Surface.hpp>
+#include <storm/render/core/WindowSurface.hpp>
 
 #include <storm/log/LogHandler.hpp>
 
@@ -310,7 +310,10 @@ PhysicalDevice::PhysicalDevice(vk::PhysicalDevice vk_physical_device, const Inst
     std::transform(std::cbegin(extensions),
                    std::cend(extensions),
                    std::back_inserter(m_extensions),
-                   [](const auto &extension) { return std::string { extension.extensionName }; });
+                   [](const auto &extension) {
+                       return std::string { std::data(extension.extensionName),
+                                            std::size(extension.extensionName) };
+                   });
 
     m_vk_memory_properties = m_vk_physical_device.getMemoryProperties();
     for (auto i = 0u; i < m_vk_memory_properties.memoryTypeCount; ++i)
@@ -343,7 +346,7 @@ PhysicalDevice &PhysicalDevice::operator=(PhysicalDevice &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-void PhysicalDevice::checkIfPresentSupportIsEnabled(const Surface &surface) noexcept {
+void PhysicalDevice::checkIfPresentSupportIsEnabled(const WindowSurface &surface) noexcept {
     auto index = 0u;
     for (auto &queue_family : m_queue_families) {
         CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceSupportKHR(index++, surface),
@@ -389,7 +392,7 @@ render::DeviceOwnedPtr PhysicalDevice::createLogicalDevicePtr() const {
 /////////////////////////////////////
 /////////////////////////////////////
 vk::SurfaceCapabilitiesKHR
-    PhysicalDevice::queryVkSurfaceCapabilities(const Surface &surface) const noexcept {
+    PhysicalDevice::queryVkSurfaceCapabilities(const WindowSurface &surface) const noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceCapabilitiesKHR(surface), capabilities);
 
     return capabilities;
@@ -398,7 +401,7 @@ vk::SurfaceCapabilitiesKHR
 /////////////////////////////////////
 /////////////////////////////////////
 std::vector<vk::SurfaceFormatKHR>
-    PhysicalDevice::queryVkSurfaceFormats(const Surface &surface) const noexcept {
+    PhysicalDevice::queryVkSurfaceFormats(const WindowSurface &surface) const noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceFormatsKHR(surface), format);
 
     return format;
@@ -407,7 +410,7 @@ std::vector<vk::SurfaceFormatKHR>
 /////////////////////////////////////
 /////////////////////////////////////
 std::vector<vk::PresentModeKHR>
-    PhysicalDevice::queryVkPresentModes(const Surface &surface) const noexcept {
+    PhysicalDevice::queryVkPresentModes(const WindowSurface &surface) const noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfacePresentModesKHR(surface), present_modes);
 
     return present_modes;

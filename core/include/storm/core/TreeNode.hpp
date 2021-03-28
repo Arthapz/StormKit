@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -12,12 +12,12 @@
 #include <storm/core/Types.hpp>
 
 namespace storm::core {
-    class STORM_PUBLIC TreeNode {
+    class STORMKIT_PUBLIC TreeNode {
       public:
-        using IndexType    = core::UInt32;
+        using IndexType    = core::Handle32<TreeNode>;
         using DirtyBitType = core::UInt32;
 
-        constexpr static inline const IndexType INVALID_INDEX = ~0U;
+        constexpr static inline const IndexType INVALID_INDEX = { ~0U };
 
         inline std::string_view name() const noexcept;
         inline void setName(std::string name) noexcept;

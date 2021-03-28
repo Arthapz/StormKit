@@ -24,29 +24,29 @@ StateManager &StateManager::operator=(StateManager &&) = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 void StateManager::requestPush(StateOwnedPtr &&state) {
-    m_actionQueue.emplace(StateManagerAction { StateManagerAction::Type::push, std::move(state) });
+    m_action_queue.emplace(StateManagerAction { StateManagerAction::Type::push, std::move(state) });
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 void StateManager::requestSet(StateOwnedPtr &&state) {
-    m_actionQueue.emplace(StateManagerAction { StateManagerAction::Type::set, std::move(state) });
+    m_action_queue.emplace(StateManagerAction { StateManagerAction::Type::set, std::move(state) });
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 void StateManager::requestPop() {
     if (!m_stack.empty())
-        m_actionQueue.emplace(StateManagerAction { StateManagerAction::Type::pop, nullptr });
+        m_action_queue.emplace(StateManagerAction { StateManagerAction::Type::pop, nullptr });
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 void StateManager::executeRequests() {
-    if (m_actionQueue.empty()) return;
+    if (m_action_queue.empty()) return;
 
-    while (!m_actionQueue.empty()) {
-        auto &caction = m_actionQueue.front();
+    while (!m_action_queue.empty()) {
+        auto &caction = m_action_queue.front();
 
         switch (caction.type) {
             case StateManagerAction::Type::push:
@@ -69,31 +69,27 @@ void StateManager::executeRequests() {
                 break;
         }
 
-        m_actionQueue.pop();
+        m_action_queue.pop();
     }
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void StateManager::update(UInt64 delta) {
+void StateManager::update(Secondf delta) {
     if (!m_stack.empty()) m_stack.top()->update(delta);
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void StateManager::render() {
-    if (!m_stack.empty()) m_stack.top()->render();
-}
-
 void StateManager::requestClear() {
     if (!m_stack.empty())
-        m_actionQueue.emplace(StateManagerAction { StateManagerAction::Type::clear, nullptr });
+        m_action_queue.emplace(StateManagerAction { StateManagerAction::Type::clear, nullptr });
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
 State &StateManager::top() noexcept {
-    STORM_EXPECTS(!m_stack.empty());
+    STORMKIT_EXPECTS(!m_stack.empty());
 
     return *(m_stack.top());
 }

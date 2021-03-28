@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -27,7 +27,7 @@ namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
      vk::DescriptorSetLayout DescriptorSetLayout::vkDescriptorSetLayout() const noexcept {
-        STORM_EXPECTS(m_vk_descriptor_set_layout);
+        STORMKIT_EXPECTS(m_vk_descriptor_set_layout);
         return *m_vk_descriptor_set_layout;
     }
 

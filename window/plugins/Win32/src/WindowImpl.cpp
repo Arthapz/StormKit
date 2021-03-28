@@ -66,8 +66,8 @@ void WindowImpl::create(const std::string &title,
                                       _style,
                                       CW_USEDEFAULT,
                                       CW_USEDEFAULT,
-                                      settings.size.w,
-                                      settings.size.h,
+                                      settings.size.width,
+                                      settings.size.height,
                                       nullptr,
                                       nullptr,
                                       h_instance,
@@ -95,7 +95,7 @@ void WindowImpl::create(const std::string &title,
                      SWP_FRAMECHANGED);
     }
 
-    ShowWindow(m_window_handle, SW_SHOW);
+    ShowWindow(m_window_handle, SW_SHOWNORMAL);
 
     m_is_open       = true;
     m_is_visible    = true;
@@ -148,7 +148,7 @@ void WindowImpl::setTitle(const std::string &title) noexcept {
 /////////////////////////////////////
 void WindowImpl::setVideoSettings(const storm::window::VideoSettings &settings) noexcept {
     auto rectangle =
-        RECT { 0, 0, static_cast<long>(settings.size.w), static_cast<long>(settings.size.h) };
+        RECT { 0, 0, static_cast<long>(settings.size.width), static_cast<long>(settings.size.height) };
 
     AdjustWindowRect(&rectangle, GetWindowLongW(m_window_handle, GWL_STYLE), false);
     auto width  = rectangle.right - rectangle.left;
@@ -160,7 +160,7 @@ void WindowImpl::setVideoSettings(const storm::window::VideoSettings &settings) 
 /////////////////////////////////////
 /////////////////////////////////////
 core::Extentu WindowImpl::size() const noexcept {
-    RECT rect;
+    auto rect = RECT{};
     GetClientRect(m_window_handle, &rect);
 
     return { gsl::narrow_cast<core::UInt32>(rect.right - rect.left),
@@ -183,6 +183,12 @@ bool WindowImpl::isVisible() const noexcept {
 /////////////////////////////////////
 storm::window::NativeHandle WindowImpl::nativeHandle() const noexcept {
     return static_cast<storm::window::NativeHandle>(m_window_handle);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+void WindowImpl::restoreWndProc() noexcept {
+    SetWindowLongPtrW(m_window_handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&WindowImpl::globalOnEvent));
 }
 
 /////////////////////////////////////
@@ -230,7 +236,7 @@ void WindowImpl::processEvents(UINT message, WPARAM w_param, LPARAM l_param) {
             if ((w_param != SIZE_MINIMIZED) && !m_resizing && (m_last_size != size())) {
                 m_last_size = size();
 
-                resizeEvent(m_last_size.w, m_last_size.h);
+                resizeEvent(m_last_size.width, m_last_size.height);
             }
             break;
         case WM_ENTERSIZEMOVE: m_resizing = true; break;
@@ -240,7 +246,7 @@ void WindowImpl::processEvents(UINT message, WPARAM w_param, LPARAM l_param) {
             if (m_last_size != size()) {
                 m_last_size = size();
 
-                resizeEvent(m_last_size.w, m_last_size.h);
+                resizeEvent(m_last_size.width, m_last_size.height);
             }
             break;
         case WM_LBUTTONDOWN: {

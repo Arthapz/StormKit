@@ -29,8 +29,8 @@ const storm::window::VideoSettings *getDesktopModes(storm::core::ArraySize &size
         auto video_settings = std::vector<storm::window::VideoSettings> {};
         for (auto i = 0; EnumDisplaySettings(nullptr, i, &dm) != 0; ++i) {
             auto video_setting = storm::window::VideoSettings {
-                .size = { .width  = gsl::narrow_cast<storm::core::UInt16>(dm.dmPelsWidth),
-                          .height = gsl::narrow_cast<storm::core::UInt16>(dm.dmPelsHeight) }
+                .size = { gsl::narrow_cast<storm::core::UInt16>(dm.dmPelsWidth),
+                          gsl::narrow_cast<storm::core::UInt16>(dm.dmPelsHeight) }
             };
 
             video_settings.emplace_back(std::move(video_setting));

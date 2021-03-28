@@ -21,9 +21,9 @@ if get_option('image_enable_log')
     public_dependencies += [log_dep]
 else
     if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
-        cpp_args += ['/DSTORM_IMAGE_NO_LOGGING']
+        cpp_args += ['/DSTORMKIT_IMAGE_NO_LOGGING']
     else
-        cpp_args += ['-DSTORM_IMAGE_NO_LOGGING']
+        cpp_args += ['-DSTORMKIT_IMAGE_NO_LOGGING']
     endif
 endif
 
@@ -66,6 +66,7 @@ if lib_type == 'shared'
         cpp_args: cpp_args,
         install: true
     )
+    destination_path = join_paths(meson.project_build_root(), 'output/bin/')
 else
     image_lib_name = 'StormKit-image-static' + suffix
     image_lib = static_library(
@@ -80,7 +81,16 @@ else
         cpp_args: cpp_args,
         install: true
     )
+    destination_path = join_paths(meson.project_build_root(), 'output/lib/')
 endif
+image_copy_target = custom_target(
+    'image_copy_target',
+    input: image_lib,
+    output: 'image-fake',
+    command: [copy_file, '@INPUT@', destination_path],
+    install: false,
+    build_by_default: true
+)
 
 image_dep = declare_dependency(
     link_with: image_lib,

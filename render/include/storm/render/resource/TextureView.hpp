@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -15,7 +15,7 @@
 #include <storm/render/resource/TextureSubresourceRange.hpp>
 
 namespace storm::render {
-    class STORM_PUBLIC TextureView: public core::NonCopyable {
+    class STORMKIT_PUBLIC TextureView: public core::NonCopyable {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Image_View;
 
@@ -38,8 +38,8 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
-        DeviceConstObserverPtr m_device;
-        TextureConstObserverPtr m_texture;
+        DeviceConstPtr m_device;
+        TextureConstPtr m_texture;
 
         TextureViewType m_type;
         TextureSubresourceRange m_subresource_range;

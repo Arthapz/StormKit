@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -18,13 +18,13 @@
 #include <storm/render/resource/Fwd.hpp>
 
 namespace storm::render {
-    class STORM_PUBLIC Framebuffer: public core::NonCopyable {
+    class STORMKIT_PUBLIC Framebuffer: public core::NonCopyable {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Framebuffer;
 
         Framebuffer(const RenderPass &render_pass,
                     core::Extentu size,
-                    TextureViewConstObserverPtrArray attachments);
+                    TextureViewConstPtrArray attachments);
         ~Framebuffer();
 
         Framebuffer(Framebuffer &&);
@@ -32,7 +32,7 @@ namespace storm::render {
 
         inline const core::Extentu &extent() const noexcept;
         inline const Device &device() const noexcept;
-        inline storm::core::span<const TextureViewConstObserverPtr> attachments() const noexcept;
+        inline storm::core::span<const TextureViewConstPtr> attachments() const noexcept;
 
         inline vk::Framebuffer vkFramebuffer() const noexcept;
         inline operator vk::Framebuffer() const noexcept;
@@ -40,10 +40,10 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
-        RenderPassConstObserverPtr m_render_pass;
+        RenderPassConstPtr m_render_pass;
 
         core::Extentu m_extent;
-        TextureViewConstObserverPtrArray m_attachments;
+        TextureViewConstPtrArray m_attachments;
 
         RAIIVkFramebuffer m_vk_framebuffer;
     };

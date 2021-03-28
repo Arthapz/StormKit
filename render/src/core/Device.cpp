@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -115,8 +115,8 @@ Device::Device(const PhysicalDevice &physical_device, const Instance &instance)
         m_physical_device->capabilities().features.sampler_rate_shading);
     enabled_features.setSamplerAnisotropy(
         m_physical_device->capabilities().features.sampler_anisotropy);
-    enabled_features.setShaderClipDistance(
-        m_physical_device->capabilities().features.shader_clip_distance);
+    enabled_features.setMultiDrawIndirect(
+        m_physical_device->capabilities().features.multi_draw_indirect);
 
     const auto create_info =
         vk::DeviceCreateInfo {}
@@ -133,48 +133,48 @@ Device::Device(const PhysicalDevice &physical_device, const Instance &instance)
         vkGetInstanceProcAddr(m_instance->vkInstance(), "vkGetDeviceProcAddr"));
     m_vk_dispatcher.init(m_instance->vkInstance(),
                          vkGetInstanceProcAddr,
-                         *m_vk_device,
+                         vkDevice(),
                          m_vkGetDeviceProcAddr);
 
-    auto graphics_vk_queue = m_vk_device->getQueue(graphics_queue.id.value(), 0, m_vk_dispatcher);
+    auto graphics_vk_queue = vkDevice().getQueue(graphics_queue.id.value(), 0, m_vk_dispatcher);
     m_graphics_queue       = std::make_unique<Queue>(*this,
                                                graphics_queue.flags,
                                                graphics_queue.id.value(),
                                                graphics_vk_queue);
 
-    setObjectName<Queue>(*m_graphics_queue, "Graphics Queue");
+    setObjectName(*m_graphics_queue, "StormKit:GraphicsQueue");
     setObjectName(reinterpret_cast<core::UInt64>(
                       m_graphics_queue->vkCommandPool().operator VkCommandPool_T *()),
                   render::DebugObjectType::Command_Pool,
-                  "Graphics queue command pool");
+                  "StormKit:GraphicsQueueCommandPool");
 
     if (transfert_queue.id.has_value()) {
         auto transfert_vk_queue =
-            m_vk_device->getQueue(transfert_queue.id.value(), 0, m_vk_dispatcher);
+            vkDevice().getQueue(transfert_queue.id.value(), 0, m_vk_dispatcher);
         m_async_transfert_queue = std::make_unique<Queue>(*this,
                                                           transfert_queue.flags,
                                                           transfert_queue.id.value(),
                                                           transfert_vk_queue);
 
-        setObjectName<Queue>(*m_async_transfert_queue, "Transfert Queue");
+        setObjectName<Queue>(*m_async_transfert_queue, "StormKit:TransfertQueue");
         setObjectName(reinterpret_cast<core::UInt64>(
                           m_async_transfert_queue->vkCommandPool().operator VkCommandPool_T *()),
                       render::DebugObjectType::Command_Pool,
-                      "Transfert queue (async) command pool");
+                      "StormKit:TransfertQueueCommandPool");
     }
 
     if (compute_queue.id.has_value()) {
-        auto compute_vk_queue = m_vk_device->getQueue(compute_queue.id.value(), 0, m_vk_dispatcher);
+        auto compute_vk_queue = vkDevice().getQueue(compute_queue.id.value(), 0, m_vk_dispatcher);
         m_async_compute_queue = std::make_unique<Queue>(*this,
                                                         compute_queue.flags,
                                                         compute_queue.id.value(),
                                                         compute_vk_queue);
 
-        setObjectName<Queue>(*m_async_compute_queue, "Compute Queue");
+        setObjectName<Queue>(*m_async_compute_queue, "StormKit:Comput Queue");
         setObjectName(reinterpret_cast<core::UInt64>(
                           m_async_compute_queue->vkCommandPool().operator VkCommandPool_T *()),
                       render::DebugObjectType::Command_Pool,
-                      "Compute queue (async) command pool");
+                      "StormKit:ComputeQueueCommandPool");
     }
 
     m_vma_device_table = VmaVulkanFunctions {
@@ -205,42 +205,193 @@ Device::Device(const PhysicalDevice &physical_device, const Instance &instance)
 
     const auto alloc_create_info =
         VmaAllocatorCreateInfo { .physicalDevice   = physical_device.vkPhysicalDevice(),
-                                 .device           = *m_vk_device,
+                                 .device           = vkDevice(),
                                  .pVulkanFunctions = &m_vma_device_table,
                                  .instance         = m_instance->vkInstance() };
 
     auto result = vmaCreateAllocator(&alloc_create_info, &m_vma_allocator.handle());
-    STORM_ENSURES(result == VK_SUCCESS);
+    STORMKIT_ENSURES(result == VK_SUCCESS);
 
-    setObjectName<Device>(*this, fmt::format("Device ({})", m_physical_device->info().device_name));
+    setObjectName(*this,
+                  fmt::format("StormKit:Device ({})", m_physical_device->info().device_name));
+}
+
+Device::Device(VkDevice device, const PhysicalDevice &physical_device, const Instance &instance)
+    : m_instance { &instance }, m_physical_device { &physical_device }, m_vk_device { device },
+      m_vma_allocator { DELETER, *this } {
+    const auto &queue_families = m_physical_device->queueFamilies();
+
+    struct Queue_ {
+        std::optional<core::UInt32> id = std::nullopt;
+        core::UInt32 count             = 0u;
+        core::Byte padding[3];
+        QueueFlag flags = QueueFlag {};
+    };
+
+    auto graphics_queue  = Queue_ {};
+    auto compute_queue   = Queue_ {};
+    auto transfert_queue = Queue_ {};
+
+    auto i = 0;
+    for (const auto &family : queue_families) {
+        if ((family.flags & QueueFlag::Graphics) == QueueFlag::Graphics) {
+            graphics_queue.id    = i;
+            graphics_queue.count = family.count;
+            graphics_queue.flags = family.flags;
+
+            break;
+        }
+    }
+
+    i = 0;
+    for (const auto &family : queue_families) {
+        if ((family.flags & QueueFlag::Transfert) == QueueFlag::Transfert &&
+            i != graphics_queue.id) {
+            transfert_queue.id    = i;
+            transfert_queue.count = family.count;
+            transfert_queue.flags = family.flags;
+
+            break;
+        }
+    }
+
+    i = 0;
+    for (const auto &family : queue_families) {
+        if ((family.flags & QueueFlag::Compute) == QueueFlag::Compute && i != graphics_queue.id &&
+            i != transfert_queue.id) {
+            compute_queue.id    = i;
+            compute_queue.count = family.count;
+            compute_queue.flags = family.flags;
+
+            break;
+        }
+    }
+
+    auto priorities         = std::vector<std::vector<float>> {};
+    auto queue_create_infos = std::vector<vk::DeviceQueueCreateInfo> {};
+    for (auto &queue : { graphics_queue, transfert_queue, compute_queue }) {
+        if (queue.id.has_value()) {
+            auto &priority    = priorities.emplace_back();
+            auto &create_info = queue_create_infos.emplace_back();
+
+            priority.resize(queue.count, 1.f);
+
+            create_info.setQueueFamilyIndex(queue.id.value())
+                .setQueueCount(queue.count)
+                .setPQueuePriorities(std::data(priority));
+        }
+    }
+
+    auto vkGetInstanceProcAddr = m_instance->loader().vkGetInstanceProcAddr();
+    m_vkGetDeviceProcAddr      = reinterpret_cast<PFN_vkGetDeviceProcAddr>(
+        vkGetInstanceProcAddr(m_instance->vkInstance(), "vkGetDeviceProcAddr"));
+    m_vk_dispatcher.init(m_instance->vkInstance(),
+                         vkGetInstanceProcAddr,
+                         vkDevice(),
+                         m_vkGetDeviceProcAddr);
+
+    auto graphics_vk_queue = vkDevice().getQueue(graphics_queue.id.value(), 0, m_vk_dispatcher);
+    m_graphics_queue       = std::make_unique<Queue>(*this,
+                                               graphics_queue.flags,
+                                               graphics_queue.id.value(),
+                                               graphics_vk_queue);
+
+    setObjectName(*m_graphics_queue, "StormKit:GraphicsQueue");
+    setObjectName(reinterpret_cast<core::UInt64>(
+                      m_graphics_queue->vkCommandPool().operator VkCommandPool_T *()),
+                  render::DebugObjectType::Command_Pool,
+                  "StormKit:GraphicsQueueCommandPool");
+
+    if (transfert_queue.id.has_value()) {
+        auto transfert_vk_queue =
+            vkDevice().getQueue(transfert_queue.id.value(), 0, m_vk_dispatcher);
+        m_async_transfert_queue = std::make_unique<Queue>(*this,
+                                                          transfert_queue.flags,
+                                                          transfert_queue.id.value(),
+                                                          transfert_vk_queue);
+
+        setObjectName<Queue>(*m_async_transfert_queue, "StormKit:TransfertQueue");
+        setObjectName(reinterpret_cast<core::UInt64>(
+                          m_async_transfert_queue->vkCommandPool().operator VkCommandPool_T *()),
+                      render::DebugObjectType::Command_Pool,
+                      "StormKit:TransfertQueueCommandPool");
+    }
+
+    if (compute_queue.id.has_value()) {
+        auto compute_vk_queue = vkDevice().getQueue(compute_queue.id.value(), 0, m_vk_dispatcher);
+        m_async_compute_queue = std::make_unique<Queue>(*this,
+                                                        compute_queue.flags,
+                                                        compute_queue.id.value(),
+                                                        compute_vk_queue);
+
+        setObjectName<Queue>(*m_async_compute_queue, "StormKit:Comput Queue");
+        setObjectName(reinterpret_cast<core::UInt64>(
+                          m_async_compute_queue->vkCommandPool().operator VkCommandPool_T *()),
+                      render::DebugObjectType::Command_Pool,
+                      "StormKit:ComputeQueueCommandPool");
+    }
+
+    m_vma_device_table = VmaVulkanFunctions {
+        .vkGetPhysicalDeviceProperties =
+            VULKAN_HPP_DEFAULT_DISPATCHER.vkGetPhysicalDeviceProperties,
+        .vkGetPhysicalDeviceMemoryProperties =
+            VULKAN_HPP_DEFAULT_DISPATCHER.vkGetPhysicalDeviceMemoryProperties,
+        .vkAllocateMemory                  = m_vk_dispatcher.vkAllocateMemory,
+        .vkFreeMemory                      = m_vk_dispatcher.vkFreeMemory,
+        .vkMapMemory                       = m_vk_dispatcher.vkMapMemory,
+        .vkUnmapMemory                     = m_vk_dispatcher.vkUnmapMemory,
+        .vkFlushMappedMemoryRanges         = m_vk_dispatcher.vkFlushMappedMemoryRanges,
+        .vkInvalidateMappedMemoryRanges    = m_vk_dispatcher.vkInvalidateMappedMemoryRanges,
+        .vkBindBufferMemory                = m_vk_dispatcher.vkBindBufferMemory,
+        .vkBindImageMemory                 = m_vk_dispatcher.vkBindImageMemory,
+        .vkGetBufferMemoryRequirements     = m_vk_dispatcher.vkGetBufferMemoryRequirements,
+        .vkGetImageMemoryRequirements      = m_vk_dispatcher.vkGetImageMemoryRequirements,
+        .vkCreateBuffer                    = m_vk_dispatcher.vkCreateBuffer,
+        .vkDestroyBuffer                   = m_vk_dispatcher.vkDestroyBuffer,
+        .vkCreateImage                     = m_vk_dispatcher.vkCreateImage,
+        .vkDestroyImage                    = m_vk_dispatcher.vkDestroyImage,
+        .vkCmdCopyBuffer                   = m_vk_dispatcher.vkCmdCopyBuffer,
+        .vkGetBufferMemoryRequirements2KHR = m_vk_dispatcher.vkGetBufferMemoryRequirements2KHR,
+        .vkGetImageMemoryRequirements2KHR  = m_vk_dispatcher.vkGetImageMemoryRequirements2KHR,
+        .vkBindBufferMemory2KHR            = m_vk_dispatcher.vkBindBufferMemory2KHR,
+        .vkBindImageMemory2KHR             = m_vk_dispatcher.vkBindImageMemory2KHR
+    };
+
+    const auto alloc_create_info =
+        VmaAllocatorCreateInfo { .physicalDevice   = physical_device.vkPhysicalDevice(),
+                                 .device           = vkDevice(),
+                                 .pVulkanFunctions = &m_vma_device_table,
+                                 .instance         = m_instance->vkInstance() };
+
+    auto result = vmaCreateAllocator(&alloc_create_info, &m_vma_allocator.handle());
+    STORMKIT_ENSURES(result == VK_SUCCESS);
+
+    setObjectName(*this,
+                  fmt::format("StormKit:Device ({})", m_physical_device->info().device_name));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-Device::~Device() {
-    m_graphics_queue.reset();
-    m_async_transfert_queue.reset();
-    m_async_compute_queue.reset();
-}
+Device::~Device() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-Device::Device(Device &&) = default;
+Device::Device(Device &&other) noexcept = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-Device &Device::operator=(Device &&) = default;
+Device &Device::operator=(Device &&other) noexcept = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
 void Device::waitIdle() const noexcept {
-    const auto result = m_vk_device->waitIdle(m_vk_dispatcher);
-    STORM_ENSURES(result == vk::Result::eSuccess);
+    const auto result = vkDevice().waitIdle(m_vk_dispatcher);
+    STORMKIT_ENSURES(result == vk::Result::eSuccess);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void Device::waitForFences(storm::core::span<const FenceCRef> fences,
+void Device::waitForFences(storm::core::span<const FenceConstRef> fences,
                            bool wait_all,
                            core::UInt64 timeout) const noexcept {
     auto vk_fences = std::vector<vk::Fence> {};
@@ -249,8 +400,8 @@ void Device::waitForFences(storm::core::span<const FenceCRef> fences,
     for (const auto &fence : fences)
         vk_fences.emplace_back(static_cast<const Fence &>(fence.get()));
 
-    const auto result = m_vk_device->waitForFences(vk_fences, wait_all, timeout, m_vk_dispatcher);
-    STORM_ENSURES(result == vk::Result::eSuccess);
+    const auto result = vkDevice().waitForFences(vk_fences, wait_all, timeout, m_vk_dispatcher);
+    STORMKIT_ENSURES(result == vk::Result::eSuccess);
 }
 
 /////////////////////////////////////
@@ -292,27 +443,25 @@ ShaderOwnedPtr Device::createShaderPtr(core::span<const core::UInt32> data,
 
 /////////////////////////////////////
 /////////////////////////////////////
-GraphicsPipeline Device::createGraphicsPipeline(PipelineCacheConstObserverPtr cache) const {
+GraphicsPipeline Device::createGraphicsPipeline(PipelineCacheConstPtr cache) const {
     return GraphicsPipeline { *this, cache };
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-GraphicsPipelineOwnedPtr
-    Device::createGraphicsPipelinePtr(PipelineCacheConstObserverPtr cache) const {
+GraphicsPipelineOwnedPtr Device::createGraphicsPipelinePtr(PipelineCacheConstPtr cache) const {
     return std::make_unique<GraphicsPipeline>(*this, cache);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-ComputePipeline Device::createComputePipeline(PipelineCacheConstObserverPtr cache) const {
+ComputePipeline Device::createComputePipeline(PipelineCacheConstPtr cache) const {
     return ComputePipeline { *this, cache };
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-ComputePipelineOwnedPtr
-    Device::createComputePipelinePtr(PipelineCacheConstObserverPtr cache) const {
+ComputePipelineOwnedPtr Device::createComputePipelinePtr(PipelineCacheConstPtr cache) const {
     return std::make_unique<ComputePipeline>(*this, cache);
 }
 
@@ -484,36 +633,36 @@ PipelineCacheOwnedPtr Device::createPipelineCachePtr(std::filesystem::path path)
 vk::Result Device::waitForVkFences(gsl::span<const vk::Fence> fences,
                                    core::UInt64 wait_for,
                                    bool wait_all) const noexcept {
-    return m_vk_device->waitForFences(gsl::narrow_cast<core::UInt32>(std::size(fences)),
-                                      std::data(fences),
-                                      wait_all,
-                                      wait_for,
-                                      m_vk_dispatcher);
+    return vkDevice().waitForFences(gsl::narrow_cast<core::UInt32>(std::size(fences)),
+                                    std::data(fences),
+                                    wait_all,
+                                    wait_for,
+                                    m_vk_dispatcher);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 void Device::resetVkFence(vk::Fence fence) const noexcept {
     const auto fences = std::array { fence };
-    m_vk_device->resetFences(fences, m_vk_dispatcher);
+    vkDevice().resetFences(fences, m_vk_dispatcher);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 vk::Result Device::getVkFenceStatus(vk::Fence fence) const noexcept {
-    return m_vk_device->getFenceStatus(fence, m_vk_dispatcher);
+    return vkDevice().getFenceStatus(fence, m_vk_dispatcher);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 vk::MemoryRequirements Device::getVkBufferMemoryRequirements(vk::Buffer buffer) const noexcept {
-    return m_vk_device->getBufferMemoryRequirements(buffer, m_vk_dispatcher);
+    return vkDevice().getBufferMemoryRequirements(buffer, m_vk_dispatcher);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 vk::MemoryRequirements Device::getVkImageMemoryRequirements(vk::Image image) const noexcept {
-    return m_vk_device->getImageMemoryRequirements(image, m_vk_dispatcher);
+    return vkDevice().getImageMemoryRequirements(image, m_vk_dispatcher);
 }
 
 /////////////////////////////////////
@@ -522,16 +671,16 @@ std::pair<vk::Result, core::UInt32> Device::vkAcquireNextImage(vk::SwapchainKHR 
                                                                core::UInt64 timeout,
                                                                vk::Semaphore semaphore,
                                                                vk::Fence fence) const {
-    // const auto result = m_vk_device->acquireNextImageKHR(swapchain, timeout,
+    // const auto result = vkDevice().acquireNextImageKHR(swapchain, timeout,
     // semaphore, fence, m_vk_dispatcher);
 
     auto texture_index = 0u;
-    auto result        = m_vk_device->acquireNextImageKHR(swapchain,
-                                                   timeout,
-                                                   semaphore,
-                                                   fence,
-                                                   &texture_index,
-                                                   m_vk_dispatcher);
+    auto result        = vkDevice().acquireNextImageKHR(swapchain,
+                                                 timeout,
+                                                 semaphore,
+                                                 fence,
+                                                 &texture_index,
+                                                 m_vk_dispatcher);
 
     return std::make_pair(result, texture_index);
 }
@@ -539,7 +688,7 @@ std::pair<vk::Result, core::UInt32> Device::vkAcquireNextImage(vk::SwapchainKHR 
 /////////////////////////////////////
 /////////////////////////////////////
 std::vector<vk::Image> Device::getVkSwapchainImages(vk::SwapchainKHR swapchain) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->getSwapchainImagesKHR(swapchain, m_vk_dispatcher), images);
+    CHECK_VK_ERROR_VALUE(vkDevice().getSwapchainImagesKHR(swapchain, m_vk_dispatcher), images);
     return images;
 }
 
@@ -547,20 +696,18 @@ std::vector<vk::Image> Device::getVkSwapchainImages(vk::SwapchainKHR swapchain) 
 /////////////////////////////////////
 void Device::updateVkDescriptorSets(gsl::span<const vk::WriteDescriptorSet> writes,
                                     gsl::span<const vk::CopyDescriptorSet> copies) const noexcept {
-    m_vk_device->updateDescriptorSets(gsl::narrow_cast<core::UInt32>(std::size(writes)),
-                                      std::data(writes),
-                                      gsl::narrow_cast<core::UInt32>(std::size(copies)),
-                                      std::data(copies),
-                                      m_vk_dispatcher);
+    vkDevice().updateDescriptorSets(gsl::narrow_cast<core::UInt32>(std::size(writes)),
+                                    std::data(writes),
+                                    gsl::narrow_cast<core::UInt32>(std::size(copies)),
+                                    std::data(copies),
+                                    m_vk_dispatcher);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 RAIIVkSwapchain
     Device::createVkSwapchain(const vk::SwapchainCreateInfoKHR &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createSwapchainKHRUnique(create_info,
-                                                               nullptr,
-                                                               m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createSwapchainKHRUnique(create_info, nullptr, m_vk_dispatcher),
                          swapchain);
 
     return swapchain;
@@ -570,9 +717,7 @@ RAIIVkSwapchain
 /////////////////////////////////////
 RAIIVkShaderModule
     Device::createVkShaderModule(const vk::ShaderModuleCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createShaderModuleUnique(create_info,
-                                                               nullptr,
-                                                               m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createShaderModuleUnique(create_info, nullptr, m_vk_dispatcher),
                          shader_module);
 
     return shader_module;
@@ -582,10 +727,10 @@ RAIIVkShaderModule
 /////////////////////////////////////
 RAIIVkPipeline Device::createVkGraphicsPipeline(const vk::GraphicsPipelineCreateInfo &create_info,
                                                 const vk::PipelineCache &cache) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createGraphicsPipelineUnique(cache,
-                                                                   create_info,
-                                                                   nullptr,
-                                                                   m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createGraphicsPipelineUnique(cache,
+                                                                 create_info,
+                                                                 nullptr,
+                                                                 m_vk_dispatcher),
                          pipeline);
 
     return pipeline;
@@ -595,10 +740,10 @@ RAIIVkPipeline Device::createVkGraphicsPipeline(const vk::GraphicsPipelineCreate
 /////////////////////////////////////
 RAIIVkPipeline Device::createVkComputePipeline(const vk::ComputePipelineCreateInfo &create_info,
                                                const vk::PipelineCache &cache) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createComputePipelineUnique(cache,
-                                                                  create_info,
-                                                                  nullptr,
-                                                                  m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createComputePipelineUnique(cache,
+                                                                create_info,
+                                                                nullptr,
+                                                                m_vk_dispatcher),
                          pipeline);
 
     return pipeline;
@@ -606,9 +751,9 @@ RAIIVkPipeline Device::createVkComputePipeline(const vk::ComputePipelineCreateIn
 
 vk::UniquePipelineCache
     Device::createVkPipelineCache(const vk::PipelineCacheCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createPipelineCacheUnique(create_info,
-                                                                nullptr,
-                                                                m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createPipelineCacheUnique(create_info,
+                                                              nullptr,
+                                                              m_vk_dispatcher),
                          pipeline_cache);
 
     return pipeline_cache;
@@ -618,9 +763,9 @@ vk::UniquePipelineCache
 /////////////////////////////////////
 RAIIVkPipelineLayout
     Device::createVkPipelineLayout(const vk::PipelineLayoutCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createPipelineLayoutUnique(create_info,
-                                                                 nullptr,
-                                                                 m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createPipelineLayoutUnique(create_info,
+                                                               nullptr,
+                                                               m_vk_dispatcher),
                          pipeline_layout);
 
     return pipeline_layout;
@@ -630,7 +775,7 @@ RAIIVkPipelineLayout
 /////////////////////////////////////
 RAIIVkRenderPass
     Device::createVkRenderPass(const vk::RenderPassCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createRenderPassUnique(create_info, nullptr, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createRenderPassUnique(create_info, nullptr, m_vk_dispatcher),
                          render_pass);
 
     return render_pass;
@@ -639,7 +784,7 @@ RAIIVkRenderPass
 /////////////////////////////////////
 /////////////////////////////////////
 RAIIVkImage Device::createVkImage(const vk::ImageCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createImageUnique(create_info, nullptr, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createImageUnique(create_info, nullptr, m_vk_dispatcher),
                          image);
 
     return image;
@@ -649,7 +794,7 @@ RAIIVkImage Device::createVkImage(const vk::ImageCreateInfo &create_info) const 
 /////////////////////////////////////
 RAIIVkImageView
     Device::createVkImageView(const vk::ImageViewCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createImageViewUnique(create_info, nullptr, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createImageViewUnique(create_info, nullptr, m_vk_dispatcher),
                          image_view);
 
     return image_view;
@@ -658,7 +803,7 @@ RAIIVkImageView
 /////////////////////////////////////
 /////////////////////////////////////
 RAIIVkSampler Device::createVkSampler(const vk::SamplerCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createSamplerUnique(create_info, nullptr, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createSamplerUnique(create_info, nullptr, m_vk_dispatcher),
                          sampler);
 
     return sampler;
@@ -668,9 +813,7 @@ RAIIVkSampler Device::createVkSampler(const vk::SamplerCreateInfo &create_info) 
 /////////////////////////////////////
 RAIIVkFramebuffer
     Device::createVkFramebuffer(const vk::FramebufferCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createFramebufferUnique(create_info,
-                                                              nullptr,
-                                                              m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createFramebufferUnique(create_info, nullptr, m_vk_dispatcher),
                          framebuffer);
 
     return framebuffer;
@@ -680,9 +823,7 @@ RAIIVkFramebuffer
 /////////////////////////////////////
 RAIIVkCommandPool
     Device::createVkCommandPool(const vk::CommandPoolCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createCommandPoolUnique(create_info,
-                                                              nullptr,
-                                                              m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createCommandPoolUnique(create_info, nullptr, m_vk_dispatcher),
                          command_pool);
 
     return command_pool;
@@ -691,7 +832,7 @@ RAIIVkCommandPool
 /////////////////////////////////////
 /////////////////////////////////////
 RAIIVkFence Device::createVkFence(const vk::FenceCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createFenceUnique(create_info, nullptr, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createFenceUnique(create_info, nullptr, m_vk_dispatcher),
                          fence);
 
     return fence;
@@ -701,7 +842,7 @@ RAIIVkFence Device::createVkFence(const vk::FenceCreateInfo &create_info) const 
 /////////////////////////////////////
 RAIIVkSemaphore
     Device::createVkSemaphore(const vk::SemaphoreCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createSemaphoreUnique(create_info, nullptr, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createSemaphoreUnique(create_info, nullptr, m_vk_dispatcher),
                          semaphore);
 
     return semaphore;
@@ -710,7 +851,7 @@ RAIIVkSemaphore
 /////////////////////////////////////
 /////////////////////////////////////
 RAIIVkBuffer Device::createVkBuffer(const vk::BufferCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createBufferUnique(create_info, nullptr, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createBufferUnique(create_info, nullptr, m_vk_dispatcher),
                          buffer);
 
     return buffer;
@@ -720,9 +861,9 @@ RAIIVkBuffer Device::createVkBuffer(const vk::BufferCreateInfo &create_info) con
 /////////////////////////////////////
 RAIIVkDescriptorSetLayout Device::createVkDescriptorSetLayout(
     const vk::DescriptorSetLayoutCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createDescriptorSetLayoutUnique(create_info,
-                                                                      nullptr,
-                                                                      m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createDescriptorSetLayoutUnique(create_info,
+                                                                    nullptr,
+                                                                    m_vk_dispatcher),
                          descriptor_layout);
 
     return descriptor_layout;
@@ -732,9 +873,9 @@ RAIIVkDescriptorSetLayout Device::createVkDescriptorSetLayout(
 /////////////////////////////////////
 RAIIVkDescriptorPool
     Device::createVkDescriptorPool(const vk::DescriptorPoolCreateInfo &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->createDescriptorPoolUnique(create_info,
-                                                                 nullptr,
-                                                                 m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().createDescriptorPoolUnique(create_info,
+                                                               nullptr,
+                                                               m_vk_dispatcher),
                          descriptor_pool);
 
     return descriptor_pool;
@@ -744,7 +885,7 @@ RAIIVkDescriptorPool
 /////////////////////////////////////
 std::vector<RAIIVkCommandBuffer> Device::allocateVkCommandBuffers(
     const vk::CommandBufferAllocateInfo &allocate_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->allocateCommandBuffersUnique(allocate_info, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().allocateCommandBuffersUnique(allocate_info, m_vk_dispatcher),
                          buffers);
 
     return buffers;
@@ -754,7 +895,7 @@ std::vector<RAIIVkCommandBuffer> Device::allocateVkCommandBuffers(
 /////////////////////////////////////
 std::vector<RAIIVkDescriptorSet> Device::allocateVkDescriptorSets(
     const vk::DescriptorSetAllocateInfo &allocate_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_device->allocateDescriptorSetsUnique(allocate_info, m_vk_dispatcher),
+    CHECK_VK_ERROR_VALUE(vkDevice().allocateDescriptorSetsUnique(allocate_info, m_vk_dispatcher),
                          sets);
 
     return sets;
@@ -772,7 +913,7 @@ VmaAllocation
                                     &allocate_info,
                                     &vma_allocation,
                                     nullptr);
-    STORM_ENSURES_MESSAGE(result == VK_SUCCESS, result);
+    STORMKIT_ENSURES_MESSAGE(result == VK_SUCCESS, result);
 
     return vma_allocation;
 }
@@ -780,7 +921,7 @@ VmaAllocation
 /////////////////////////////////////
 /////////////////////////////////////
 void Device::deallocateVmaAllocation(VmaAllocation allocation) const noexcept {
-    STORM_EXPECTS(allocation != VK_NULL_HANDLE);
+    STORMKIT_EXPECTS(allocation != VK_NULL_HANDLE);
 
     vmaFreeMemory(m_vma_allocator, allocation);
 }
@@ -788,8 +929,8 @@ void Device::deallocateVmaAllocation(VmaAllocation allocation) const noexcept {
 /////////////////////////////////////
 /////////////////////////////////////
 void Device::bindVmaBufferMemory(VmaAllocation allocation, vk::Buffer buffer) const noexcept {
-    STORM_EXPECTS(allocation != VK_NULL_HANDLE);
-    STORM_EXPECTS(buffer);
+    STORMKIT_EXPECTS(allocation != VK_NULL_HANDLE);
+    STORMKIT_EXPECTS(buffer);
 
     vmaBindBufferMemory(m_vma_allocator, allocation, buffer);
 }
@@ -797,8 +938,8 @@ void Device::bindVmaBufferMemory(VmaAllocation allocation, vk::Buffer buffer) co
 /////////////////////////////////////
 /////////////////////////////////////
 void Device::bindVmaImageMemory(VmaAllocation allocation, vk::Image image) const noexcept {
-    STORM_EXPECTS(allocation != VK_NULL_HANDLE);
-    STORM_EXPECTS(image);
+    STORMKIT_EXPECTS(allocation != VK_NULL_HANDLE);
+    STORMKIT_EXPECTS(image);
 
     vmaBindImageMemory(m_vma_allocator, allocation, image);
 }
@@ -809,7 +950,7 @@ core::Byte *Device::mapVmaMemory(VmaAllocation allocation) const noexcept {
     core::Byte *data = nullptr;
 
     auto result = vmaMapMemory(m_vma_allocator, allocation, reinterpret_cast<void **>(&data));
-    STORM_ENSURES(result == VK_SUCCESS);
+    STORMKIT_ENSURES(result == VK_SUCCESS);
 
     return data;
 }
@@ -830,6 +971,6 @@ void Device::setObjectName(core::UInt64 object, DebugObjectType type, std::strin
                           .setObjectHandle(object)
                           .setPObjectName(std::data(name));
 
-    const auto result = m_vk_device->setDebugUtilsObjectNameEXT(info, m_vk_dispatcher);
-    STORM_ENSURES(result == vk::Result::eSuccess);
+    const auto result = vkDevice().setDebugUtilsObjectNameEXT(info, m_vk_dispatcher);
+    STORMKIT_ENSURES(result == vk::Result::eSuccess);
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -74,7 +74,7 @@ namespace storm::render {
     };
 
     struct GraphicsPipelineShaderState {
-        std::vector<ShaderConstObserverPtr> shaders;
+        std::vector<ShaderConstPtr> shaders;
     };
 
     struct GraphicsPipelineDepthStencilState {
@@ -90,7 +90,7 @@ namespace storm::render {
     };
 
     struct GraphicsPipelineLayout {
-        std::vector<DescriptorSetLayoutConstObserverPtr> descriptor_set_layouts;
+        std::vector<DescriptorSetLayoutConstPtr> descriptor_set_layouts;
         std::vector<PushConstantRange> push_constant_ranges;
     };
 

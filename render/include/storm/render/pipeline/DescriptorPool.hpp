@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -18,7 +18,7 @@
 #include <storm/render/resource/Fwd.hpp>
 
 namespace storm::render {
-    class STORM_PUBLIC DescriptorPool: public core::NonCopyable {
+    class STORMKIT_PUBLIC DescriptorPool: public core::NonCopyable {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Descriptor_Pool;
 
@@ -51,7 +51,7 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
-        DeviceConstObserverPtr m_device;
+        DeviceConstPtr m_device;
 
         RAIIVkDescriptorPool m_vk_descriptor_pool;
     };

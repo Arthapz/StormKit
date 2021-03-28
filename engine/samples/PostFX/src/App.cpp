@@ -59,11 +59,11 @@ static const auto SEPIA_FRAGMENT_SHADER_DATA = std::vector<storm::core::UInt32> 
 App::App() {
     log::LogHandler::ilog(LOG_MODULE,
                           "Using StormKit {}.{}.{} {} {}",
-                          STORM_MAJOR_VERSION,
-                          STORM_MINOR_VERSION,
-                          STORM_PATCH_VERSION,
-                          STORM_GIT_BRANCH,
-                          STORM_GIT_COMMIT_HASH);
+                          STORMKIT_MAJOR_VERSION,
+                          STORMKIT_MINOR_VERSION,
+                          STORMKIT_PATCH_VERSION,
+                          STORMKIT_GIT_BRANCH,
+                          STORMKIT_GIT_COMMIT_HASH);
     doInitWindow();
     doInitBaseRenderObjects();
     doInitMeshObjects();
@@ -135,7 +135,7 @@ void App::doInitMeshObjects() {
         .viewport_state     = { .viewports = { { .position = { 0.f, 0.f },
                                              .extent   = surface_extentf,
                                              .depth    = { 0.f, 1.f } } },
-                            .scissors  = { { .offset = { 0, 0 }, .extent = surface_extent } } },
+                            .scissors  = { { .Int32 = { 0, 0 }, .extent = surface_extent } } },
         .vertex_input_state = { .binding_descriptions = m_vertices->bindingDescriptions(),
                                 .input_attribute_descriptions =
                                     m_vertices->inputAttributeDescriptions() }
@@ -154,7 +154,7 @@ void App::doInitMeshObjects() {
         .viewport_state    = { .viewports = { { .position = { 0.f, 0.f },
                                              .extent   = surface_extentf,
                                              .depth    = { 0.f, 1.f } } },
-                            .scissors  = { { .offset = { 0, 0 }, .extent = surface_extent } } },
+                            .scissors  = { { .Int32 = { 0, 0 }, .extent = surface_extent } } },
     };
 }
 
@@ -183,12 +183,12 @@ void App::doInitFramePasses(storm::engine::FramePassTextureID &backbuffer,
                                          "ColorPass",
                                          resources.renderpass(),
                                          { m_scene->cameraDescriptorSet() },
-                                         { m_scene->cameraOffset() });
+                                         { m_scene->cameraInt32() });
         });
 
     struct PostFXPassData {
-        engine::FramePassTextureResourceObserverPtr input;
-        engine::FramePassTextureResourceObserverPtr output;
+        engine::FramePassTextureResourcePtr input;
+        engine::FramePassTextureResourcePtr output;
     };
 
     auto &post_fx_pass = frame_graph.addPass<PostFXPassData>(

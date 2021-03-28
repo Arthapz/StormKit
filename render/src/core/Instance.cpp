@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -10,9 +10,10 @@
 #include <storm/log/LogHandler.hpp>
 
 #include <storm/render/core/Instance.hpp>
+#include <storm/render/core/OffscreenSurface.hpp>
 #include <storm/render/core/PhysicalDevice.hpp>
 #include <storm/render/core/PhysicalDeviceInfo.hpp>
-#include <storm/render/core/Surface.hpp>
+#include <storm/render/core/WindowSurface.hpp>
 
 using namespace storm;
 using namespace storm::log;
@@ -79,6 +80,19 @@ VKAPI_ATTR VkBool32 vkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messa
 }
 }
 
+Instance::Instance(VkInstance instance) :
+    m_vk_instance{vk::Instance{instance}} {
+    if (!m_loader.success()) {
+        log::LogHandler::flog(log_module, "Failed to initialize vulkan");
+        std::exit(EXIT_FAILURE);
+    }
+
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(m_loader.vkGetInstanceProcAddr());
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(vkInstance());
+
+    retrievePhysicalDevices();
+}
+
 /////////////////////////////////////
 /////////////////////////////////////
 Instance::Instance(std::string app_name) : m_app_name { app_name } {
@@ -90,6 +104,7 @@ Instance::Instance(std::string app_name) : m_app_name { app_name } {
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_loader.vkGetInstanceProcAddr());
 
     createInstance();
+
     retrievePhysicalDevices();
 }
 
@@ -166,7 +181,7 @@ void Instance::createInstance() noexcept {
     CHECK_VK_ERROR_VALUE(vk::createInstanceUnique(create_info), instance);
     m_vk_instance = std::move(instance);
 
-    VULKAN_HPP_DEFAULT_DISPATCHER.init(*m_vk_instance);
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(vkInstance());
     // volkLoadInstance(*m_vk_instance);
 
     if (enable_validation) createDebugReportCallback();
@@ -185,13 +200,17 @@ void Instance::createDebugReportCallback() {
                             vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
             .setPfnUserCallback(vkDebugCallback);
 
-    CHECK_VK_ERROR_VALUE(m_vk_instance->createDebugUtilsMessengerEXTUnique(create_info),
+    auto instance = vkInstance();
+
+    CHECK_VK_ERROR_VALUE(instance.createDebugUtilsMessengerEXTUnique(create_info),
                          vk_messenger);
     m_vk_messenger = std::move(vk_messenger);
 }
 
 void Instance::retrievePhysicalDevices() noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_instance->enumeratePhysicalDevices(), physical_devices);
+    auto instance = vkInstance();
+
+    CHECK_VK_ERROR_VALUE(instance.enumeratePhysicalDevices(), physical_devices);
 
     for (auto physical_device : physical_devices)
         m_physical_devices.emplace_back(std::make_unique<PhysicalDevice>(physical_device, *this));
@@ -199,20 +218,36 @@ void Instance::retrievePhysicalDevices() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-render::Surface Instance::createSurface(const window::Window &window) const {
-    return Surface { window, *this };
+render::WindowSurface Instance::createWindowSurface(const window::Window &window,
+                                                    Surface::Buffering buffering) const {
+    return WindowSurface { window, *this, buffering };
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-render::SurfaceOwnedPtr Instance::createSurfacePtr(const window::Window &window) const {
-    return std::make_unique<Surface>(window, *this);
+render::WindowSurfaceOwnedPtr Instance::createWindowSurfacePtr(const window::Window &window,
+                                                               Surface::Buffering buffering) const {
+    return std::make_unique<WindowSurface>(window, *this, buffering);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+render::OffscreenSurface Instance::createOffscreenSurface(core::Extentu extent,
+                                                          Surface::Buffering buffering) const {
+    return OffscreenSurface { extent, *this, buffering };
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+render::OffscreenSurfaceOwnedPtr
+    Instance::createOffscreenSurfacePtr(core::Extentu extent, Surface::Buffering buffering) const {
+    return std::make_unique<OffscreenSurface>(extent, *this, buffering);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 const render::PhysicalDevice &Instance::pickPhysicalDevice() const noexcept {
-    auto ranked_devices = std::multimap<core::UInt64, render::PhysicalDeviceCRef> {};
+    auto ranked_devices = std::multimap<core::UInt64, render::PhysicalDeviceConstRef> {};
 
     for (const auto &physical_device : m_physical_devices) {
         const auto score = scorePhysicalDevice(*physical_device);
@@ -228,8 +263,8 @@ const render::PhysicalDevice &Instance::pickPhysicalDevice() const noexcept {
 /////////////////////////////////////
 /////////////////////////////////////
 const render::PhysicalDevice &
-    Instance::pickPhysicalDevice(const render::Surface &surface) noexcept {
-    auto ranked_devices = std::multimap<core::UInt64, render::PhysicalDeviceCRef> {};
+    Instance::pickPhysicalDevice(const render::WindowSurface &surface) noexcept {
+    auto ranked_devices = std::multimap<core::UInt64, render::PhysicalDeviceConstRef> {};
 
     for (auto &physical_device : m_physical_devices) {
         physical_device->checkIfPresentSupportIsEnabled(surface);
@@ -244,39 +279,47 @@ const render::PhysicalDevice &
     return ranked_devices.rbegin()->second.get();
 }
 
-#if defined(STORM_OS_WINDOWS)
+#if defined(STORMKIT_OS_WINDOWS)
 /////////////////////////////////////
 /////////////////////////////////////
 vk::UniqueSurfaceKHR
     Instance::createVkSurface(const vk::Win32SurfaceCreateInfoKHR &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_instance->createWin32SurfaceKHRUnique(create_info), surface);
+    auto instance = vkInstance();
+
+    CHECK_VK_ERROR_VALUE(instance.createWin32SurfaceKHRUnique(create_info), surface);
 
     return surface;
 }
-#elif defined(STORM_OS_MACOS)
+#elif defined(STORMKIT_OS_MACOS)
 /////////////////////////////////////
 /////////////////////////////////////
 vk::UniqueSurfaceKHR
     Instance::createVkSurface(const vk::MacOSSurfaceCreateInfoMVK &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_instance->createMacOSSurfaceMVKUnique(create_info), surface);
+    auto instance = vkInstance();
+
+    CHECK_VK_ERROR_VALUE(instance.createMacOSSurfaceMVKUnique(create_info), surface);
 
     return surface;
 }
-#elif defined(STORM_OS_LINUX)
+#elif defined(STORMKIT_OS_LINUX)
 /////////////////////////////////////
 /////////////////////////////////////
 vk::UniqueSurfaceKHR
     Instance::createVkSurface(const vk::XcbSurfaceCreateInfoKHR &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_instance->createXcbSurfaceKHRUnique(create_info), surface);
+    auto instance = vkInstance();
+
+    CHECK_VK_ERROR_VALUE(instance.createXcbSurfaceKHRUnique(create_info), surface);
 
     return surface;
 }
-#elif defined(STORM_OS_IOS)
+#elif defined(STORMKIT_OS_IOS)
 /////////////////////////////////////
 /////////////////////////////////////
 vk::UniqueSurfaceKHR
     Instance::createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const noexcept {
-    CHECK_VK_ERROR_VALUE(m_vk_instance->createIOSSurfaceMVKUnique(create_info), surface);
+    auto instance = vkInstance();
+
+    CHECK_VK_ERROR_VALUE(instance.createIOSSurfaceMVKUnique(create_info), surface);
 
     return surface;
 }
@@ -316,7 +359,7 @@ bool Instance::checkExtensionSupport(const gsl::czstring<> extension) const noex
 bool Instance::checkExtensionSupport(core::span<const gsl::czstring<>> extensions) const noexcept {
     auto required_extensions =
         storm::core::HashSet<std::string_view> { core::ranges::begin(extensions),
-                                               core::ranges::end(extensions) };
+                                                 core::ranges::end(extensions) };
 
     for (const auto &extension : m_extensions) required_extensions.erase(extension);
     auto support = required_extensions.empty();

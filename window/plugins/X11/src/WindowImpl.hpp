@@ -15,7 +15,7 @@
 #include <xcb/xcb_keysyms.h>
 
 namespace storm::window {
-    class STORM_PRIVATE WindowImpl: public AbstractWindow {
+    class STORMKIT_PRIVATE WindowImpl: public AbstractWindow {
         struct XCBConnectionDeleter {
             void operator()(xcb_connection_t *connection) { xcb_disconnect(connection); }
         };

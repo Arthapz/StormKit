@@ -38,8 +38,8 @@ class App: public storm::core::App {
 
     storm::render::InstanceOwnedPtr m_instance;
     storm::render::DeviceOwnedPtr m_device;
-    storm::render::SurfaceOwnedPtr m_surface;
-    storm::render::QueueConstObserverPtr m_queue;
+    storm::render::WindowSurfaceOwnedPtr m_surface;
+    storm::render::QueueConstPtr m_queue;
     storm::render::TextureViewArray m_surface_views;
 
     Camera m_camera;

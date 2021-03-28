@@ -36,6 +36,11 @@ bool AbstractWindow::pollEvent(Event &event, [[maybe_unused]] void *native_event
 
 /////////////////////////////////////
 /////////////////////////////////////
+void AbstractWindow::restoreWndProc() noexcept {
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
 bool AbstractWindow::waitEvent(Event &event, [[maybe_unused]] void *native_event) noexcept {
     auto has_event = !m_events.empty();
 

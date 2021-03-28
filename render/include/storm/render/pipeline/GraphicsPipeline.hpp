@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -16,20 +16,18 @@
 
 #define STATE(TYPE, NAME, MEMBER)             \
     inline TYPE &NAME() noexcept {            \
-        STORM_EXPECTS(m_is_builded == false); \
+        STORMKIT_EXPECTS(m_is_builded == false); \
         return m_state.MEMBER;                \
     }                                         \
     inline const TYPE &NAME() const noexcept { return m_state.MEMBER; }
 
 namespace storm::render {
-    class STORM_PUBLIC GraphicsPipeline final : public AbstractPipeline {
+    class STORMKIT_PUBLIC GraphicsPipeline final : public AbstractPipeline {
       public:
-        static constexpr auto DEBUG_TYPE = DebugObjectType::Pipeline;
-
         explicit GraphicsPipeline(const Device &device,
-                                  PipelineCacheConstObserverPtr cache = nullptr) noexcept;
+                                  PipelineCacheConstPtr cache = nullptr) noexcept;
 
-        ~GraphicsPipeline();
+        ~GraphicsPipeline() override;
 
         GraphicsPipeline(GraphicsPipeline &&);
         GraphicsPipeline &operator=(GraphicsPipeline &&);
@@ -57,7 +55,7 @@ namespace storm::render {
       private:
         GraphicsPipelineState m_state;
 
-        RenderPassConstObserverPtr m_render_pass;
+        RenderPassConstPtr m_render_pass;
     };
 } // namespace storm::render
 

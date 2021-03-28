@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -13,7 +13,7 @@
 #include <storm/log/Severity.hpp>
 
 namespace storm::log {
-    class STORM_PUBLIC Logger {
+    class STORMKIT_PUBLIC Logger {
       public:
         explicit Logger(LogClock::time_point start, Severity log_level = DEFAULT_SEVERITY);
         virtual ~Logger();
@@ -33,7 +33,7 @@ namespace storm::log {
         inline const Severity &logLevel() const noexcept;
 
       protected:
-#ifdef STORM_BUILD_DEBUG
+#ifdef STORMKIT_BUILD_DEBUG
         static constexpr const auto DEFAULT_SEVERITY = Severity::Info | Severity::Debug |
                                                        Severity::Error | Severity::Fatal |
                                                        Severity::Warning;

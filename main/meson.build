@@ -6,11 +6,6 @@ headers = files([
 ])
 
 #ide:editable-filelist
-inls = files([
-    'include/storm/main/Main.hpp',
-])
-
-#ide:editable-filelist
 sources = files([])
 args = {}
 
@@ -49,9 +44,19 @@ args += {
 
 main_lib = static_library(
     'StormKit-main' + suffix, 
-    sources + headers,
+    sources,
+    extra_files: headers,
     kwargs: args,
     install: true
+)
+destination_path = join_paths(meson.project_build_root(), 'output/lib/')
+main_copy_target = custom_target(
+    'main_copy_target',
+    input: main_lib,
+    output: 'main-fake',
+    command: [copy_file, '@INPUT@', destination_path],
+    install: false,
+    build_by_default: true
 )
 
 main_dep = declare_dependency(
@@ -60,4 +65,4 @@ main_dep = declare_dependency(
     dependencies: dependencies
 )
 
-install_headers(headers + inls, subdir : 'storm/main')
+install_headers(headers, subdir : 'storm/main')

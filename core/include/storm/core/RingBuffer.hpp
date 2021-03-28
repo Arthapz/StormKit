@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -21,10 +21,7 @@ namespace storm::core {
 
         RingBuffer(size_type capacity) : m_capacity { capacity } {
             m_buffer.resize(m_capacity * sizeof(value_type));
-            m_view = core::span<const value_type> {
-                getPtr(0),
-                gsl::narrow_cast<typename core::span<const value_type>::index_type>(m_capacity)
-            };
+            m_view = core::span<const value_type> { getPtr(0), m_capacity };
         }
 
         RingBuffer(const RingBuffer &copy) {
@@ -34,10 +31,7 @@ namespace storm::core {
             m_read     = copy.m_read;
 
             m_buffer.resize(m_capacity * sizeof(value_type));
-            m_view = core::span<const value_type> {
-                getPtr(0),
-                gsl::narrow_cast<typename core::span<const value_type>::index_type>(m_capacity)
-            };
+            m_view = core::span<const value_type> { getPtr(0), m_capacity };
             if (!empty())
                 for (auto i = m_read; i < m_write;) {
                     new (&m_buffer[i * sizeof(value_type)]) T { *copy.getPtr(i) };
@@ -56,10 +50,7 @@ namespace storm::core {
             m_read     = copy.m_read;
 
             m_buffer.resize(m_capacity * sizeof(value_type));
-            m_view = core::span<const value_type> {
-                getPtr(0),
-                gsl::narrow_cast<typename core::span<const value_type>::index_type>(m_capacity)
-            };
+            m_view = core::span<const value_type> { getPtr(0), m_capacity };
             if (!empty())
                 for (auto i = m_read; i < m_write;) {
                     new (&m_buffer[i * sizeof(value_type)]) T { *copy.getPtr(i) };
@@ -115,7 +106,7 @@ namespace storm::core {
         inline void push(value_type value) { emplace(std::move(value)); }
 
         template<typename... Args>
-        void emplace(Args &&... values) noexcept(
+        void emplace(Args &&...values) noexcept(
             std::is_nothrow_constructible<value_type, Args &&...>::value) {
             if (m_count == m_capacity) pop();
 
@@ -134,7 +125,7 @@ namespace storm::core {
         }
 
         void pop() noexcept {
-            STORM_EXPECTS(!empty());
+            STORMKIT_EXPECTS(!empty());
 
             getPtr(m_write)->~value_type();
 
@@ -142,13 +133,13 @@ namespace storm::core {
         }
 
         [[nodiscard]] inline value_type &get() noexcept {
-            STORM_EXPECTS(!empty());
+            STORMKIT_EXPECTS(!empty());
 
             return *getPtr(m_read);
         }
 
         [[nodiscard]] inline const value_type &get() const noexcept {
-            STORM_EXPECTS(!empty());
+            STORMKIT_EXPECTS(!empty());
 
             return *getPtr(m_read);
         }

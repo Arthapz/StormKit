@@ -1,4 +1,4 @@
-public_dependencies = [core_dep, module_dep]
+public_dependencies = [core_dep, module_dep, log_dep]
 private_dependencies = []
 
 #ide:editable-filelist
@@ -14,14 +14,15 @@ headers = files([
     'include/storm/window/MouseButton.hpp',
     'include/storm/window/VideoSettings.hpp',
     'include/storm/window/Fwd.hpp',
-])
 
-#ide:editable-filelist
-inls = files([
     'include/storm/window/InputHandler.inl',
     'include/storm/window/EventHandler.inl',
     'include/storm/window/Window.inl',
     'include/storm/window/AbstractWindow.inl',
+])
+
+private_headers = files([
+    'src/Log.hpp'
 ])
 
 #ide:editable-filelist
@@ -39,21 +40,33 @@ if lib_type == 'shared'
     window_lib_name = 'StormKit-window' + suffix
     window_lib = shared_library(
         window_lib_name,
-        sources + headers,
+        sources,
+        extra_files: headers + private_headers,
         dependencies: public_dependencies + private_dependencies,
         include_directories: window_inc,
         install: true
     )
+    destination_path = join_paths(meson.project_build_root(), 'output/bin/')
 else
     window_lib_name = 'StormKit-window-static' + suffix
     window_lib = static_library(
         window_lib_name,
-        sources + headers,
+        sources,
+        extra_files: headers + private_headers,
         dependencies: public_dependencies + private_dependencies,
         include_directories: window_inc,
         install: true
     )
+    destination_path = join_paths(meson.project_build_root(), 'output/lib/')
 endif
+window_copy_target = custom_target(
+    'window_copy_target',
+    input: window_lib,
+    output: 'window-fake',
+    command: [copy_file, '@INPUT@', destination_path],
+    install: false,
+    build_by_default: true
+)
 
 window_dep = declare_dependency(
     link_with: window_lib,
@@ -66,4 +79,4 @@ if get_option('enable_examples')
     subdir('samples')
 endif
 
-install_headers(headers + inls, subdir : 'storm/window')
+install_headers(headers, subdir : 'storm/window')
