@@ -285,4 +285,10 @@ namespace storm::core {
 /// \exclude
 #define STORMKIT_UNUSED(x) (void)(x);
 
+#define STORMKIT_RAII_CAPSULE(name, x, deleter)                  \
+    struct name##Deleter {                                       \
+        void operator()(x *ptr) const noexcept { deleter(ptr); } \
+    };                                                           \
+    using name##Scoped = std::unique_ptr<x, name##Deleter>;
+
 #include "Memory.inl"
