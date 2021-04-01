@@ -56,52 +56,24 @@ namespace storm::window::details {
 
         ALLOCATE_HELPERS(X11Window)
       private:
-        struct XCBConnectionDeleter {
-            void operator()(xcb_connection_t *connection) const noexcept {
-                xcb_disconnect(connection);
-            }
-        };
-
-        using XCBScopedConnection = std::unique_ptr<xcb_connection_t, XCBConnectionDeleter>;
-
-        struct XCBKeySymbolsDeleter {
-            void operator()(xcb_key_symbols_t *key_symbols) const noexcept {
-                xcb_key_symbols_free(key_symbols);
-            }
-        };
-
-        using XCBScopedKeySymbols = std::unique_ptr<xcb_key_symbols_t, XCBKeySymbolsDeleter>;
-
-        struct XKBContextDeleter {
-            void operator()(xkb_context *context) const noexcept { xkb_context_unref(context); }
-        };
-
-        using XKBScopedContext = std::unique_ptr<xkb_context, XKBContextDeleter>;
-
-        struct XKBKeymapDeleter {
-            void operator()(xkb_keymap *keymap) const noexcept { xkb_keymap_unref(keymap); }
-        };
-
-        using XKBScopedKeymap = std::unique_ptr<xkb_keymap, XKBKeymapDeleter>;
-
-        struct XKBStateDeleter {
-            void operator()(xkb_state *state) const noexcept { xkb_state_unref(state); }
-        };
-
-        using XKBScopedState = std::unique_ptr<xkb_state, XKBStateDeleter>;
+        STORMKIT_RAII_CAPSULE(XCBConnection, xcb_connection_t, xcb_disconnect)
+        STORMKIT_RAII_CAPSULE(XCBKeySymbols, xcb_key_symbols_t, xcb_key_symbols_free)
+        STORMKIT_RAII_CAPSULE(XKBContext, xkb_context, xkb_context_unref)
+        STORMKIT_RAII_CAPSULE(XKBKeymap, xkb_keymap, xkb_keymap_unref)
+        STORMKIT_RAII_CAPSULE(XKBState, xkb_state, xkb_state_unref)
 
         void processEvents(xcb_generic_event_t xevent);
         void updateKeymap();
         void updateXKBMods();
 
-        XCBScopedConnection m_connection;
+        XCBConnectionScoped m_connection;
         xcb_window_t m_window;
-        XCBScopedKeySymbols m_key_symbols;
+        XCBKeySymbolsScoped m_key_symbols;
 
         bool m_has_xkb = false;
-        XKBScopedContext m_xkb_context;
-        XKBScopedKeymap m_xkb_keymap;
-        XKBScopedState m_xkb_state;
+        XKBContextScoped m_xkb_context;
+        XKBKeymapScoped m_xkb_keymap;
+        XKBStateScoped m_xkb_state;
 
         struct XKBMods {
             xkb_mod_index_t shift;
