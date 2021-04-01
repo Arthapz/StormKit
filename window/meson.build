@@ -34,6 +34,13 @@ x11_headers = files([
     'src/Linux/X11/X11Window.hpp',
 ])
 
+wayland_headers = files([
+    'src/Linux/Wayland/Log.hpp',
+    'src/Linux/Wayland/WaylandMouse.hpp',
+    'src/Linux/Wayland/WaylandKeyboard.hpp',
+    'src/Linux/Wayland/WaylandWindow.hpp',
+])
+
 #ide:editable-filelist
 sources = files([
     'src/AbstractWindow.cpp',
@@ -48,11 +55,17 @@ x11_sources = files([
     'src/Linux/X11/X11Window.cpp',
 ])
 
-headers = public_headers + private_headers + x11_headers
+wayland_sources = files([
+    'src/Linux/Wayland/WaylandMouse.cpp',
+    'src/Linux/Wayland/WaylandKeyboard.cpp',
+    'src/Linux/Wayland/WaylandWindow.cpp',
+])
+
+headers = public_headers + private_headers + x11_headers + wayland_headers
 extra_files = headers
 
 if is_linux
-    sources += x11_sources
+    sources += x11_sources + wayland_sources
 
     xcb_dep           = dependency('xcb')
     xcb_key_dep       = dependency('xcb-keysyms')
@@ -64,7 +77,7 @@ if is_linux
 
     private_dependencies += [xcb_dep, xcb_key_dep, xcb_icccm_dep, xcb_randr_dep, xcb_xkb_dep, xkbcommon_dep, xkbcommon_x11_dep]
 else
-    extra_files += x11_sources
+    extra_files += x11_sources + wayland_sources
 endif
 
 dependencies = public_dependencies + private_dependencies

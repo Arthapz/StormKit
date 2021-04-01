@@ -153,37 +153,19 @@ auto Window::nativeHandle() const noexcept -> NativeHandle {
 KeyboardOwnedPtr Window::createKeyboardPtr() const {
     const auto wm = detectWM();
     switch (wm) {
-        case WM::Win32:
-            dlog("Using Win32 window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::X11: dlog("Using XCB window backend");
+        case WM::Win32: ASSERT(true, "Not yet implemented"); break;
+        case WM::X11:
 #ifdef STORMKIT_OS_LINUX
             return details::X11Keyboard::allocateOwned(*m_impl);
 #else
             ASSERT(true, "XCB backend not supported on this system");
 #endif
             break;
-        case WM::Wayland:
-            dlog("Using Wayland window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::macOS:
-            dlog("Using macOS cocoa window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::iOS:
-            dlog("Using iOS cocoa window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::Android:
-            dlog("Using Android window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::Switch:
-            dlog("Using Nintendo Switch window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
+        case WM::Wayland: ASSERT(true, "Not yet implemented"); break;
+        case WM::macOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::iOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::Android: ASSERT(true, "Not yet implemented"); break;
+        case WM::Switch: ASSERT(true, "Not yet implemented"); break;
         default: ASSERT(true, "Unhandled platform");
     }
     return {};
@@ -194,37 +176,19 @@ KeyboardOwnedPtr Window::createKeyboardPtr() const {
 MouseOwnedPtr Window::createMousePtr() const {
     const auto wm = detectWM();
     switch (wm) {
-        case WM::Win32:
-            dlog("Using Win32 window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::X11: dlog("Using XCB window backend");
+        case WM::Win32: ASSERT(true, "Not yet implemented"); break;
+        case WM::X11:
 #ifdef STORMKIT_OS_LINUX
             return details::X11Mouse::allocateOwned(*m_impl);
 #else
             ASSERT(true, "XCB backend not supported on this system");
 #endif
             break;
-        case WM::Wayland:
-            dlog("Using Wayland window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::macOS:
-            dlog("Using macOS cocoa window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::iOS:
-            dlog("Using iOS cocoa window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::Android:
-            dlog("Using Android window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::Switch:
-            dlog("Using Nintendo Switch window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
+        case WM::Wayland: ASSERT(true, "Not yet implemented"); break;
+        case WM::macOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::iOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::Android: ASSERT(true, "Not yet implemented"); break;
+        case WM::Switch: ASSERT(true, "Not yet implemented"); break;
         default: ASSERT(true, "Unhandled platform");
     }
     return {};
@@ -244,7 +208,7 @@ Window::WM Window::detectWM() noexcept {
 #elif defined(STORMKIT_OS_SWITCH)
     return WM::Switch;
 #elif defined(STORMKIT_OS_LINUX)
-    auto is_wayland = std::getenv("WAYLAND_SESSION") != nullptr;
+    auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
 
     if (is_wayland) return WM::Wayland;
     else
