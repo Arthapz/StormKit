@@ -66,7 +66,15 @@ WaylandWindow::WaylandWindow(std::string title, const VideoSettings &settings, W
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WaylandWindow::create(std::string title, const VideoSettings &settings, WindowStyle style) {
+WaylandWindow::WaylandWindow(WaylandWindow &&) noexcept = default;
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::operator=(WaylandWindow &&) noexcept -> WaylandWindow & = default;
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::create(std::string title, const VideoSettings &settings, WindowStyle style) -> void {
     m_display.reset(wl_display_connect(nullptr));
     if (m_display) dlog("Wayland context initialized");
     else {
@@ -100,7 +108,7 @@ void WaylandWindow::create(std::string title, const VideoSettings &settings, Win
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WaylandWindow::close() noexcept {
+auto WaylandWindow::close() noexcept -> void {
     wl_display_flush(m_display.get());
 
     m_shell_surface.reset(nullptr);
@@ -113,53 +121,55 @@ void WaylandWindow::close() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool WaylandWindow::pollEvent(Event &event) noexcept {
+auto WaylandWindow::pollEvent(Event &event) noexcept -> bool {
     return AbstractWindow::pollEvent(event);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool WaylandWindow::waitEvent(Event &event) noexcept {
+auto WaylandWindow::waitEvent(Event &event) noexcept -> bool {
     return AbstractWindow::waitEvent(event);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WaylandWindow::setTitle(std::string title) noexcept {
+auto WaylandWindow::setTitle(std::string title) noexcept -> void {
     m_title = std::move(title);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WaylandWindow::setVideoSettings(const storm::window::VideoSettings &settings) noexcept {
+auto WaylandWindow::setVideoSettings(const storm::window::VideoSettings &settings) noexcept -> void {
     dlog("setVideoSettings not yet implemented");
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-const storm::core::Extentu &WaylandWindow::size() const noexcept {
+auto WaylandWindow::size() const noexcept -> const storm::core::Extentu &{
     return {};
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool WaylandWindow::isOpen() const noexcept {
+auto WaylandWindow::isOpen() const noexcept -> bool{
     return false;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool WaylandWindow::isVisible() const noexcept {
+auto WaylandWindow::isVisible() const noexcept -> bool{
     return false;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-storm::window::NativeHandle WaylandWindow::nativeHandle() const noexcept {
+auto WaylandWindow::nativeHandle() const noexcept -> storm::window::NativeHandle{
     return reinterpret_cast<storm::window::NativeHandle>(const_cast<Handles *>(&m_handles));
 }
 
-std::vector<VideoSettings> WaylandWindow::getDesktopModes() {
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::getDesktopModes() -> std::vector<VideoSettings>{
     static auto video_settings = std::vector<VideoSettings> {};
     static auto init           = false;
 
@@ -168,7 +178,9 @@ std::vector<VideoSettings> WaylandWindow::getDesktopModes() {
     return video_settings;
 }
 
-VideoSettings WaylandWindow::getDesktopFullscreenSize() {
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::getDesktopFullscreenSize() -> VideoSettings{
     static auto video_setting = storm::window::VideoSettings {};
     static auto init          = false;
 

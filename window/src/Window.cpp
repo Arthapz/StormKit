@@ -9,7 +9,7 @@
 
 #include "Log.hpp"
 
-#ifdef STORMKIT_OS_LINUX
+#if defined(STORMKIT_OS_LINUX)
     #include "Linux/X11/X11Keyboard.hpp"
     #include "Linux/X11/X11Mouse.hpp"
     #include "Linux/X11/X11Window.hpp"
@@ -17,7 +17,12 @@
     #include "Linux/Wayland/WaylandKeyboard.hpp"
     #include "Linux/Wayland/WaylandMouse.hpp"
     #include "Linux/Wayland/WaylandWindow.hpp"
+#elif defined(STORMKIT_OS_WINDOWS)
+    #include "Win32/Win32Keyboard.hpp"
+    #include "Win32/Win32Mouse.hpp"
+    #include "Win32/Win32Window.hpp"
 #endif
+
 
 using namespace storm;
 using namespace storm::window;
@@ -54,7 +59,11 @@ auto Window::create(std::string title, const VideoSettings &settings, WindowStyl
     switch (wm) {
         case WM::Win32:
             dlog("Using Win32 window backend");
-            ASSERT(true, "Not yet implemented");
+#ifdef STORMKIT_OS_WINDOWS
+            m_impl =  details::Win32Window::allocateOwned(std::move(title), settings, style);
+#else
+            ASSERT(true, "Win32 backend not supported on this system");
+#endif
             break;
         case WM::X11: dlog("Using XCB window backend");
 #ifdef STORMKIT_OS_LINUX
@@ -160,7 +169,12 @@ auto Window::nativeHandle() const noexcept -> NativeHandle {
 KeyboardOwnedPtr Window::createKeyboardPtr() const {
     const auto wm = detectWM();
     switch (wm) {
-        case WM::Win32: ASSERT(true, "Not yet implemented"); break;
+        case WM::Win32:
+#ifdef STORMKIT_OS_WINDOWS
+            return details::Win32Keyboard::allocateOwned(*m_impl);
+#else
+            ASSERT(true, "Win32 backend not supported on this system");
+#endif
         case WM::X11:
 #ifdef STORMKIT_OS_LINUX
             return details::X11Keyboard::allocateOwned(*m_impl);
@@ -189,7 +203,12 @@ KeyboardOwnedPtr Window::createKeyboardPtr() const {
 MouseOwnedPtr Window::createMousePtr() const {
     const auto wm = detectWM();
     switch (wm) {
-        case WM::Win32: ASSERT(true, "Not yet implemented"); break;
+        case WM::Win32:
+#ifdef STORMKIT_OS_WINDOWS
+            return details::Win32Mouse::allocateOwned(*m_impl);
+#else
+            ASSERT(true, "Win32 backend not supported on this system");
+#endif
         case WM::X11:
 #ifdef STORMKIT_OS_LINUX
             return details::X11Mouse::allocateOwned(*m_impl);
@@ -240,7 +259,12 @@ Window::WM Window::detectWM() noexcept {
 std::vector<VideoSettings> Window::getDesktopModes() {
     const auto wm = detectWM();
     switch (wm) {
-        case WM::Win32: ASSERT(true, "Not yet implemented"); break;
+        case WM::Win32:
+#ifdef STORMKIT_OS_WINDOWS
+            return details::Win32Window::getDesktopModes();
+#else
+            ASSERT(true, "Win32 backend not supported on this system");
+#endif
         case WM::X11:
 #ifdef STORMKIT_OS_LINUX
             return details::X11Window::getDesktopModes();
@@ -269,7 +293,12 @@ std::vector<VideoSettings> Window::getDesktopModes() {
 VideoSettings Window::getDesktopFullscreenSize() {
     const auto wm = detectWM();
     switch (wm) {
-        case WM::Win32: ASSERT(true, "Not yet implemented"); break;
+        case WM::Win32:
+#ifdef STORMKIT_OS_WINDOWS
+            return details::Win32Window::getDesktopFullscreenSize();
+#else
+            ASSERT(true, "Win32 backend not supported on this system");
+#endif
         case WM::X11:
 #ifdef STORMKIT_OS_LINUX
             return details::X11Window::getDesktopFullscreenSize();

@@ -23,8 +23,8 @@
 namespace storm::window::details {
     class STORMKIT_PUBLIC AbstractWindow: public core::NonCopyable {
       public:
-        AbstractWindow();
-        virtual ~AbstractWindow();
+        AbstractWindow() noexcept;
+        virtual ~AbstractWindow() noexcept;
 
         AbstractWindow(AbstractWindow &&) noexcept;
         AbstractWindow &operator=(AbstractWindow &&) noexcept;

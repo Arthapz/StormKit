@@ -34,6 +34,14 @@ x11_headers = files([
     'src/Linux/X11/X11Window.hpp',
 ])
 
+win32_headers = files([
+    'src/Win32/Log.hpp',
+    'src/Win32/Utils.hpp',
+    'src/Win32/Win32Mouse.hpp',
+    'src/Win32/Win32Keyboard.hpp',
+    'src/Win32/Win32Window.hpp',
+])
+
 wayland_headers = files([
     'src/Linux/Wayland/Log.hpp',
     'src/Linux/Wayland/WaylandMouse.hpp',
@@ -55,13 +63,20 @@ x11_sources = files([
     'src/Linux/X11/X11Window.cpp',
 ])
 
+win32_sources = files([
+    'src/Win32/Utils.cpp',
+    'src/Win32/Win32Mouse.cpp',
+    'src/Win32/Win32Keyboard.cpp',
+    'src/Win32/Win32Window.cpp',
+])
+
 wayland_sources = files([
     'src/Linux/Wayland/WaylandMouse.cpp',
     'src/Linux/Wayland/WaylandKeyboard.cpp',
     'src/Linux/Wayland/WaylandWindow.cpp',
 ])
 
-headers = public_headers + private_headers + x11_headers + wayland_headers
+headers = public_headers + private_headers + x11_headers + wayland_headers + win32_headers
 extra_files = headers
 
 if is_linux
@@ -99,6 +114,12 @@ if is_linux
     sources += xdg_shell_source
 else
     extra_files += x11_sources + wayland_sources
+endif
+
+if is_windows
+    sources += win32_sources
+else
+    extra_files += win32_sources
 endif
 
 dependencies = public_dependencies + private_dependencies

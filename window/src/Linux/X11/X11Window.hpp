@@ -25,7 +25,7 @@ namespace storm::window::details {
     STORMKIT_RAII_CAPSULE(XKBKeymap, xkb_keymap, xkb_keymap_unref)
     STORMKIT_RAII_CAPSULE(XKBState, xkb_state, xkb_state_unref)
 
-    class STORMKIT_PRIVATE X11Window final: public details::AbstractWindow {
+    class STORMKIT_PRIVATE X11Window final: public AbstractWindow {
       public:
         struct Handles {
             xcb_connection_t *connection;
@@ -39,6 +39,9 @@ namespace storm::window::details {
                   const VideoSettings &settings,
                   storm::window::WindowStyle style);
         ~X11Window() override;
+
+        X11Window(X11Window &&) noexcept;
+        X11Window &operator=(X11Window &&) noexcept;
 
         void create(std::string title, const VideoSettings &settings, WindowStyle style) override;
         void close() noexcept override;

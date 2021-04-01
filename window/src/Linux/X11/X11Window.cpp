@@ -55,7 +55,15 @@ X11Window::X11Window(std::string title, const VideoSettings &settings, WindowSty
 
 /////////////////////////////////////
 /////////////////////////////////////
-void X11Window::create(std::string title, const VideoSettings &settings, WindowStyle style) {
+X11Window::X11Window(X11Window &&) noexcept = default;
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto X11Window::operator=(X11Window &&) noexcept -> X11Window & = default;
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto X11Window::create(std::string title, const VideoSettings &settings, WindowStyle style) -> void {
     static constexpr const auto EVENTS =
         XCB_EVENT_MASK_FOCUS_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
         XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_KEY_PRESS |
@@ -259,7 +267,7 @@ void X11Window::create(std::string title, const VideoSettings &settings, WindowS
 
 /////////////////////////////////////
 /////////////////////////////////////
-void X11Window::close() noexcept {
+auto X11Window::close() noexcept -> void {
     m_is_open    = false;
     m_is_visible = false;
 
@@ -274,7 +282,7 @@ void X11Window::close() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool X11Window::pollEvent(Event &event) noexcept {
+auto X11Window::pollEvent(Event &event) noexcept -> bool {
     xcb_generic_event_t *xevent;
     if (xevent = xcb_poll_for_event(m_connection.get()); !xevent) return false;
 
@@ -285,7 +293,7 @@ bool X11Window::pollEvent(Event &event) noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool X11Window::waitEvent(Event &event) noexcept {
+auto X11Window::waitEvent(Event &event) noexcept -> bool {
     xcb_generic_event_t *xevent;
     if (xevent = xcb_poll_for_event(m_connection.get()); !xevent) return false;
 
@@ -296,7 +304,7 @@ bool X11Window::waitEvent(Event &event) noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void X11Window::setTitle(std::string title) noexcept {
+auto X11Window::setTitle(std::string title) noexcept -> void {
     xcb_change_property(m_connection.get(),
                         XCB_PROP_MODE_REPLACE,
                         m_window,
@@ -313,37 +321,37 @@ void X11Window::setTitle(std::string title) noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void X11Window::setVideoSettings(const storm::window::VideoSettings &settings) noexcept {
+auto X11Window::setVideoSettings(const storm::window::VideoSettings &settings) noexcept -> void {
     dlog("setVideoSettings not yet implemented");
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-const storm::core::Extentu &X11Window::size() const noexcept {
+auto X11Window::size() const noexcept -> const storm::core::Extentu & {
     return m_extent;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool X11Window::isOpen() const noexcept {
+auto X11Window::isOpen() const noexcept -> bool {
     return m_is_open;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool X11Window::isVisible() const noexcept {
+auto X11Window::isVisible() const noexcept -> bool {
     return m_is_visible;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-storm::window::NativeHandle X11Window::nativeHandle() const noexcept {
+auto X11Window::nativeHandle() const noexcept ->  storm::window::NativeHandle {
     return reinterpret_cast<storm::window::NativeHandle>(const_cast<Handles *>(&m_handles));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void X11Window::processEvents(xcb_generic_event_t event) {
+auto X11Window::processEvents(xcb_generic_event_t event) -> void {
     auto *xevent             = &event;
     const auto response_type = xevent->response_type & ~0x80;
 
@@ -455,7 +463,7 @@ void X11Window::processEvents(xcb_generic_event_t event) {
     }
 }
 
-void X11Window::updateKeymap() {
+auto X11Window::updateKeymap() -> void {
     if (!m_xkb_context) m_xkb_context.reset(xkb_context_new(XKB_CONTEXT_NO_FLAGS));
 
     if (!m_xkb_context) {
@@ -491,7 +499,7 @@ void X11Window::updateKeymap() {
     updateXKBMods();
 }
 
-void X11Window::updateXKBMods() {
+auto X11Window::updateXKBMods() -> void {
     m_xkb_mods =
         XKBMods { .shift   = xkb_keymap_mod_get_index(m_xkb_keymap.get(), XKB_MOD_NAME_SHIFT),
                   .lock    = xkb_keymap_mod_get_index(m_xkb_keymap.get(), XKB_MOD_NAME_CAPS),
@@ -503,7 +511,7 @@ void X11Window::updateXKBMods() {
                   .mod5    = xkb_keymap_mod_get_index(m_xkb_keymap.get(), "Mod5") };
 }
 
-std::vector<VideoSettings> X11Window::getDesktopModes() {
+auto X11Window::getDesktopModes() -> std::vector<VideoSettings> {
     static auto video_settings = std::vector<VideoSettings> {};
     static auto init           = false;
 
@@ -552,7 +560,7 @@ std::vector<VideoSettings> X11Window::getDesktopModes() {
     return video_settings;
 }
 
-VideoSettings X11Window::getDesktopFullscreenSize() {
+auto X11Window::getDesktopFullscreenSize() ->  VideoSettings {
     static auto video_setting = storm::window::VideoSettings {};
     static auto init          = false;
 

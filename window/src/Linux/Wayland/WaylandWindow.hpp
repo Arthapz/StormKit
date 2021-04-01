@@ -24,7 +24,7 @@ namespace storm::window::details {
     STORMKIT_RAII_CAPSULE(WLSurface, wl_surface, wl_surface_destroy)
     STORMKIT_RAII_CAPSULE(WLShellSurface, wl_shell_surface, wl_shell_surface_destroy)
 
-    class STORMKIT_PRIVATE WaylandWindow final: public details::AbstractWindow {
+    class STORMKIT_PRIVATE WaylandWindow final: public AbstractWindow {
       public:
         struct Handles {};
 
@@ -33,6 +33,9 @@ namespace storm::window::details {
                       const VideoSettings &settings,
                       storm::window::WindowStyle style);
         ~WaylandWindow() override;
+
+        WaylandWindow(WaylandWindow &&) noexcept;
+        WaylandWindow &operator=(WaylandWindow &&) noexcept;
 
         void create(std::string title, const VideoSettings &settings, WindowStyle style) override;
         void close() noexcept override;

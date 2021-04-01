@@ -10,7 +10,6 @@
 #include <xcb/xcb_keysyms.h>
 
 namespace storm::window::details {
-
     /////////////////////////////////////
     /////////////////////////////////////
     auto x11keyToStormKey(xcb_keysym_t key) noexcept -> Key {
