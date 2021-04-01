@@ -7,5 +7,5 @@
 #include <storm/log/LogHandler.hpp>
 
 namespace storm::window {
-    LOGGER("Window")
+    LOGGER("StormKit.Window")
 }

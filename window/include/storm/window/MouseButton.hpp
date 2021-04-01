@@ -12,7 +12,7 @@ namespace storm::window {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline std::string mouseButtonToString(storm::window::MouseButton value) {
+    inline auto mouseButtonToString(storm::window::MouseButton value) -> std::string {
         using namespace storm::window;
 
         switch (value) {

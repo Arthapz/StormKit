@@ -1,4 +1,7 @@
 /////////// - StormKit::window - ///////////
+#include <storm/core/Assert.hpp>
+
+/////////// - StormKit::window - ///////////
 #include <storm/window/Window.hpp>
 
 /////////// - StormKit::module - ///////////
@@ -6,57 +9,29 @@
 
 #include "Log.hpp"
 
+#ifdef STORMKIT_OS_LINUX
+    #include "Linux/X11/X11Keyboard.hpp"
+    #include "Linux/X11/X11Mouse.hpp"
+    #include "Linux/X11/X11Window.hpp"
+#endif
+
 using namespace storm;
 using namespace storm::window;
 using namespace std::literals;
 
-#define SUFFIX
-#ifdef STORMKIT_BUILD_DEBUG
-    #undef SUFFIX
-    #define SUFFIX "-debug"
-#endif
-
-static constexpr auto WIN32_MODULE_FILEPATH   = "StormKit-window-win32" SUFFIX ".dll"sv;
-static constexpr auto MACOS_MODULE_FILEPATH   = "libStormKit-window-macOS" SUFFIX ".dylib"sv;
-static constexpr auto X11_MODULE_FILEPATH     = "libStormKit-window-x11" SUFFIX ".so"sv;
-static constexpr auto WAYLAND_MODULE_FILEPATH = "libStormKit-window-wayland" SUFFIX ".so"sv;
-static constexpr auto IOS_MODULE_FILEPATH     = "libStormKit-window-iOS" SUFFIX ".dylib"sv;
-static constexpr auto ANDROID_MODULE_FILEPATH = "libStormKit-window-android" SUFFIX ".so"sv;
-
-#undef SUFFIX
-
-namespace details {
-    module::ModuleOwnedPtr window_plugin;
-
-    std::function<AbstractWindow *()> window_create_func;
-    std::function<void(AbstractWindow *)> window_destroy_func;
-
-    std::function<AbstractInputHandler *(const Window &window)> input_handle_create_func;
-    std::function<void(AbstractInputHandler *)> input_handle_destroy_func;
-
-    std::function<const VideoSettings *(core::ArraySize &size)> get_desktop_modes_func;
-    std::function<const VideoSettings *()> get_desktop_fullscreen_size_func;
-} // namespace details
+/////////////////////////////////////
+/////////////////////////////////////
+Window::Window() noexcept = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-Window::Window() noexcept {
-    initPlugin();
-
-    m_impl = details::window_create_func();
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-Window::Window(const std::string &title, const VideoSettings &settings, WindowStyle style) noexcept
-    : Window {} {
-    create(title, settings, style);
+Window::Window(std::string title, const VideoSettings &settings, WindowStyle style) noexcept {
+    create(std::move(title), settings, style);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 Window::~Window() {
-    if (m_impl) details::window_destroy_func(m_impl);
 }
 
 /////////////////////////////////////
@@ -69,71 +44,190 @@ Window &Window::operator=(Window &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-core::span<const VideoSettings> Window::getDesktopModes() {
-    initPlugin();
-
-    auto size     = core::ArraySize { 0u };
-    auto settings = details::get_desktop_modes_func(size);
-
-    return { settings, size };
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-const VideoSettings &Window::getDesktopFullscreenSize() {
-    initPlugin();
-
-    return *details::get_desktop_fullscreen_size_func();
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-void Window::initPlugin() {
-    static auto init = false;
-    if (!init) {
-        const auto wm = detectWM();
-
-        const auto &module_name = [wm]() constexpr {
-            switch (wm) {
-                case WM::Win32: return WIN32_MODULE_FILEPATH;
-                case WM::macOS: return MACOS_MODULE_FILEPATH;
-                case WM::X11: return X11_MODULE_FILEPATH;
-                case WM::Wayland: return WAYLAND_MODULE_FILEPATH;
-                case WM::iOS: return IOS_MODULE_FILEPATH;
-                case WM::Android: return ANDROID_MODULE_FILEPATH;
-                default: break;
-            }
-
-            STORMKIT_ENSURES(true);
-
-            return ""sv;
-        }
-        ();
-
-        try {
-            details::window_plugin = std::make_unique<module::Module>(module_name);
-
-        } catch (std::runtime_error &e) { flog("Failed to load window plugin {}", module_name); }
-
-        details::window_create_func =
-            details::window_plugin->getFunc<AbstractWindow *()>("createWindow");
-        details::window_destroy_func =
-            details::window_plugin->getFunc<void(AbstractWindow *)>("destroyWindow");
-
-        details::input_handle_create_func =
-            details::window_plugin->getFunc<AbstractInputHandler *(const Window &)>(
-                "createInputHandler");
-        details::input_handle_destroy_func =
-            details::window_plugin->getFunc<void(AbstractInputHandler *)>("destroyInputHandler");
-
-        details::get_desktop_modes_func =
-            details::window_plugin->getFunc<const VideoSettings *(storm::core::ArraySize &)>(
-                "getDesktopModes");
-        details::get_desktop_fullscreen_size_func =
-            details::window_plugin->getFunc<const VideoSettings *()>("getDesktopFullscreenSize");
-
-        init = true;
+auto Window::create(std::string title, const VideoSettings &settings, WindowStyle style) noexcept
+    -> void {
+    const auto wm = detectWM();
+    switch (wm) {
+        case WM::Win32:
+            dlog("Using Win32 window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::X11: dlog("Using XCB window backend");
+#ifdef STORMKIT_OS_LINUX
+            m_impl = details::X11Window::allocateOwned(std::move(title), settings, style);
+#else
+            ASSERT(true, "XCB backend not supported on this system");
+#endif
+            break;
+        case WM::Wayland:
+            dlog("Using Wayland window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::macOS:
+            dlog("Using macOS cocoa window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::iOS:
+            dlog("Using iOS cocoa window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::Android:
+            dlog("Using Android window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::Switch:
+            dlog("Using Nintendo Switch window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        default: ASSERT(true, "Unhandled platform");
     }
+}
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::close() noexcept -> void {
+    m_impl->close();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::pollEvent(Event &event) noexcept -> bool {
+    return m_impl->pollEvent(event);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::waitEvent(Event &event) noexcept -> bool {
+    return m_impl->waitEvent(event);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::setTitle(std::string title) noexcept -> void {
+    m_impl->setTitle(std::move(title));
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::setVideoSettings(const VideoSettings &settings) noexcept -> void {
+    m_impl->setVideoSettings(settings);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::size() const noexcept -> const core::Extentu & {
+    return m_impl->size();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::title() const noexcept -> std::string_view {
+    return m_impl->title();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::videoSettings() const noexcept -> const VideoSettings & {
+    return m_impl->videoSettings();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::isOpen() const noexcept -> bool {
+    return m_impl->isOpen();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::isVisible() const noexcept -> bool {
+    return m_impl->isVisible();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::nativeHandle() const noexcept -> NativeHandle {
+    return m_impl->nativeHandle();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+KeyboardOwnedPtr Window::createKeyboardPtr() const {
+    const auto wm = detectWM();
+    switch (wm) {
+        case WM::Win32:
+            dlog("Using Win32 window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::X11: dlog("Using XCB window backend");
+#ifdef STORMKIT_OS_LINUX
+            return details::X11Keyboard::allocateOwned(*m_impl);
+#else
+            ASSERT(true, "XCB backend not supported on this system");
+#endif
+            break;
+        case WM::Wayland:
+            dlog("Using Wayland window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::macOS:
+            dlog("Using macOS cocoa window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::iOS:
+            dlog("Using iOS cocoa window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::Android:
+            dlog("Using Android window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::Switch:
+            dlog("Using Nintendo Switch window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        default: ASSERT(true, "Unhandled platform");
+    }
+    return {};
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+MouseOwnedPtr Window::createMousePtr() const {
+    const auto wm = detectWM();
+    switch (wm) {
+        case WM::Win32:
+            dlog("Using Win32 window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::X11: dlog("Using XCB window backend");
+#ifdef STORMKIT_OS_LINUX
+            return details::X11Mouse::allocateOwned(*m_impl);
+#else
+            ASSERT(true, "XCB backend not supported on this system");
+#endif
+            break;
+        case WM::Wayland:
+            dlog("Using Wayland window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::macOS:
+            dlog("Using macOS cocoa window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::iOS:
+            dlog("Using iOS cocoa window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::Android:
+            dlog("Using Android window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::Switch:
+            dlog("Using Nintendo Switch window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        default: ASSERT(true, "Unhandled platform");
+    }
+    return {};
 }
 
 /////////////////////////////////////
@@ -156,4 +250,86 @@ Window::WM Window::detectWM() noexcept {
     else
         return WM::X11;
 #endif
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+std::vector<VideoSettings> Window::getDesktopModes() {
+    const auto wm = detectWM();
+    switch (wm) {
+        case WM::Win32:
+            dlog("Using Win32 window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::X11: dlog("Using XCB window backend");
+#ifdef STORMKIT_OS_LINUX
+            return details::X11Window::getDesktopModes();
+#else
+            ASSERT(true, "XCB backend not supported on this system");
+#endif
+            break;
+        case WM::Wayland:
+            dlog("Using Wayland window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::macOS:
+            dlog("Using macOS cocoa window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::iOS:
+            dlog("Using iOS cocoa window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::Android:
+            dlog("Using Android window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::Switch:
+            dlog("Using Nintendo Switch window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        default: ASSERT(true, "Unhandled platform");
+    }
+    return {};
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+VideoSettings Window::getDesktopFullscreenSize() {
+    const auto wm = detectWM();
+    switch (wm) {
+        case WM::Win32:
+            dlog("Using Win32 window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::X11: dlog("Using XCB window backend");
+#ifdef STORMKIT_OS_LINUX
+            return details::X11Window::getDesktopFullscreenSize();
+#else
+            ASSERT(true, "XCB backend not supported on this system");
+#endif
+            break;
+        case WM::Wayland:
+            dlog("Using Wayland window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::macOS:
+            dlog("Using macOS cocoa window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::iOS:
+            dlog("Using iOS cocoa window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::Android:
+            dlog("Using Android window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        case WM::Switch:
+            dlog("Using Nintendo Switch window backend");
+            ASSERT(true, "Not yet implemented");
+            break;
+        default: ASSERT(true, "Unhandled platform");
+    }
+    return {};
 }

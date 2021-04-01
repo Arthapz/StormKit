@@ -38,6 +38,7 @@ namespace storm::window {
         };
         struct KeyEvent {
             Key key;
+            char character;
         };
         struct MouseEvent {
             MouseButton button;

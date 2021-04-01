@@ -25,13 +25,13 @@ namespace storm::window {
         EventHandler(const EventHandler &);
         EventHandler &operator=(const EventHandler &);
 
-        EventHandler(EventHandler &&);
-        EventHandler &operator=(EventHandler &&);
+        EventHandler(EventHandler &&) noexcept;
+        EventHandler &operator=(EventHandler &&) noexcept;
 
         void update();
 
-        inline void addCallback(EventType event_type, Callback callback);
-        inline void clearCallbacks(EventType event_type);
+        void addCallback(EventType event_type, Callback callback);
+        void clearCallbacks(EventType event_type);
 
       private:
         WindowPtr m_window;

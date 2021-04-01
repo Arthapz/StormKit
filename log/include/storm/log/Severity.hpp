@@ -11,7 +11,7 @@
 namespace storm::log {
     enum class Severity { Info, Warning, Error, Fatal, Debug };
 
-    inline std::string severityToString(Severity severity) {
+    inline std::string_view severityToString(Severity severity) {
         switch (severity) {
             case Severity::Info: return "Information";
             case Severity::Warning: return "Warning";

@@ -38,7 +38,7 @@
     #include <vulkan/vulkan_xcb.h>
 #elif defined(STORMKIT_OS_WINDOWS)
     #include <vulkan/vulkan_win32.h>
-    #endif
+#endif
 #include <vulkan/vulkan.hpp>
 
 #include <storm/render/core/vk_mem_alloc.h>

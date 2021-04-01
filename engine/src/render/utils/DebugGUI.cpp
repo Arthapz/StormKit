@@ -7,7 +7,8 @@
 #include "../imgui/imgui_widget_flamegraph.hpp"
 
 /////////// - StormKit::window - ///////////
-#include <storm/window/InputHandler.hpp>
+#include <storm/window/Keyboard.hpp>
+#include <storm/window/Mouse.hpp>
 #include <storm/window/Window.hpp>
 
 /////////// - StormKit::render - ///////////
@@ -66,7 +67,8 @@ auto profilerGetValue(float *start,
 
 /////////////////////////////////////
 /////////////////////////////////////
-DebugGUI::DebugGUI(Engine &engine) : m_engine { engine } {
+DebugGUI::DebugGUI(Engine &engine, window::Keyboard &keyboard, window::Mouse &mouse)
+    : m_engine { engine }, m_keyboard { keyboard }, m_mouse { mouse } {
     const auto extent = core::Extentf { engine.surface().extent() };
 
     ImGui::CreateContext();
@@ -155,7 +157,7 @@ auto DebugGUI::init(const render::RenderPass &render_pass) -> void {
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto DebugGUI::update(const storm::window::Window &window) -> void {
+auto DebugGUI::update() -> void {
     ImGui_ImplVulkan_NewFrame();
 
     m_current_cpu_time = engine().getCPUTime();
@@ -165,13 +167,13 @@ auto DebugGUI::update(const storm::window::Window &window) -> void {
     auto &io     = ImGui::GetIO();
     io.DeltaTime = m_current_cpu_time;
 
-    auto input_handler = window::InputHandler { window };
+    auto &mouse = m_mouse.get();
 
-    io.MouseDown[0] = input_handler.isMouseButtonPressed(window::MouseButton::Left);
-    io.MouseDown[1] = input_handler.isMouseButtonPressed(window::MouseButton::Right);
-    io.MouseDown[2] = input_handler.isMouseButtonPressed(window::MouseButton::Middle);
+    io.MouseDown[0] = mouse.isButtonPressed(window::MouseButton::Left);
+    io.MouseDown[1] = mouse.isButtonPressed(window::MouseButton::Right);
+    io.MouseDown[2] = mouse.isButtonPressed(window::MouseButton::Middle);
 
-    const auto position = input_handler.getMousePositionOnWindow();
+    const auto position = mouse.getPositionOnWindow();
 
     io.MousePos = { static_cast<float>(position->x), static_cast<float>(position->y) };
 
@@ -181,7 +183,8 @@ auto DebugGUI::update(const storm::window::Window &window) -> void {
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto DebugGUI::render(storm::render::CommandBuffer &cmb, const render::RenderPass &render_pass) -> void {
+auto DebugGUI::render(storm::render::CommandBuffer &cmb, const render::RenderPass &render_pass)
+    -> void {
     namespace Chrono = std::chrono;
 
     const auto &profiler = engine().profiler();

@@ -10,16 +10,21 @@
 #include <storm/render/core/Surface.hpp>
 
 /////////// - StormKit::engine - ///////////
+#include <storm/window/Keyboard.hpp>
+#include <storm/window/Mouse.hpp>
+#include <storm/window/Window.hpp>
+
+/////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
 #include <storm/engine/NameComponent.hpp>
 
-#include <storm/engine/render/TransformComponent.hpp>
-#include <storm/engine/render/MaterialComponent.hpp>
 #include <storm/engine/render/DrawableComponent.hpp>
+#include <storm/engine/render/MaterialComponent.hpp>
+#include <storm/engine/render/TransformComponent.hpp>
 
 #include <storm/engine/render/3D/FPSCamera.hpp>
-#include <storm/engine/render/3D/PbrRenderSystem.hpp>
 #include <storm/engine/render/3D/PbrMesh.hpp>
+#include <storm/engine/render/3D/PbrRenderSystem.hpp>
 
 using namespace storm;
 
@@ -38,7 +43,7 @@ class RotationSystem: public entities::System {
         for (auto e : m_entities) {
             auto &transform_component = m_manager->getComponent<engine::TransformComponent>(e);
 
-            //transform_component.transform.rotateRoll(ROTATE_ANGLE * delta.count());
+            // transform_component.transform.rotateRoll(ROTATE_ANGLE * delta.count());
         }
     }
 
@@ -51,8 +56,10 @@ class RotationSystem: public entities::System {
 MainState::MainState(core::StateManager &owner,
                      engine::Engine &engine,
                      const window::Window &window)
-    : State { owner, engine }, m_input_handler { window } {
-    m_input_handler.setMousePositionOnWindow(
+    : State { owner, engine }, m_keyboard { window.createKeyboardPtr() }, m_mouse {
+          window.createMousePtr()
+      } {
+    m_mouse->setPositionOnWindow(
         core::Position2i { window.size().width / 2, window.size().height / 2 });
 
     const auto extent = State::engine().surface().extent();
@@ -66,22 +73,26 @@ MainState::MainState(core::StateManager &owner,
     m_render_system->setCamera(*m_camera);
 
     auto vertices = engine::VertexArray {};
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 0.f }, .uv = {0.f, 0.f} });
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 0.f }, .uv = {1.f, 0.f} });
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 0.f }, .uv = {1.f, 1.f} });
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 0.f }, .uv = {0.f, 1.f} });
+    vertices.push_back(
+        engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 0.f }, .uv = { 0.f, 0.f } });
+    vertices.push_back(
+        engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 0.f }, .uv = { 1.f, 0.f } });
+    vertices.push_back(
+        engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 0.f }, .uv = { 1.f, 1.f } });
+    vertices.push_back(
+        engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 0.f }, .uv = { 0.f, 1.f } });
 
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 1.f }, .uv = {0.f, 0.f} });
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 1.f }, .uv = {1.f, 0.f} });
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 1.f }, .uv = {1.f, 1.f} });
-    vertices.push_back(engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 1.f }, .uv = {0.f, 1.f} });
+    vertices.push_back(
+        engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 1.f }, .uv = { 0.f, 0.f } });
+    vertices.push_back(
+        engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 1.f }, .uv = { 1.f, 0.f } });
+    vertices.push_back(
+        engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 1.f }, .uv = { 1.f, 1.f } });
+    vertices.push_back(
+        engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 1.f }, .uv = { 0.f, 1.f } });
 
-    auto indices = engine::LargeIndexArray { 0, 1, 3, 3, 1, 2,
-                                             1, 5, 2, 2, 5, 6,
-                                             5, 4, 6, 6, 4, 7,
-                                             4, 0, 7, 7, 0, 3,
-                                             3, 2, 7, 7, 2, 6,
-                                             4, 5, 0, 0, 5, 1 };
+    auto indices = engine::LargeIndexArray { 0, 1, 3, 3, 1, 2, 1, 5, 2, 2, 5, 6, 5, 4, 6, 6, 4, 7,
+                                             4, 0, 7, 7, 0, 3, 3, 2, 7, 7, 2, 6, 4, 5, 0, 0, 5, 1 };
 
     auto mesh = engine::PbrMesh::allocateOwned();
     mesh->setVertices(std::move(vertices));
@@ -91,11 +102,12 @@ MainState::MainState(core::StateManager &owner,
     auto &name_component = m_world.addComponent<engine::NameComponent>(e);
     name_component.name  = "MyMesh";
 
-    auto &drawable_component = m_world.addComponent<engine::DrawableComponent>(e);
+    auto &drawable_component    = m_world.addComponent<engine::DrawableComponent>(e);
     drawable_component.drawable = std::move(mesh);
 
     auto &transform_component = m_world.addComponent<engine::TransformComponent>(e);
 
+    m_mouse->setPositionOnDesktop({ 500u, 600u });
 }
 
 ////////////////////////////////////////
@@ -113,16 +125,22 @@ MainState &MainState::operator=(MainState &&) noexcept = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 void MainState::update(core::Secondf delta) {
-    auto inputs = engine::FPSCamera::Inputs{
-        .up    = m_input_handler.isKeyPressed(window::Key::Z),
-        .down  = m_input_handler.isKeyPressed(window::Key::S),
-        .right = m_input_handler.isKeyPressed(window::Key::D),
-        .left  = m_input_handler.isKeyPressed(window::Key::Q),
+    if (m_keyboard->isKeyPressed(window::Key::Z)) ilog("Z");
+    if (m_keyboard->isKeyPressed(window::Key::W)) ilog("W");
+    if (m_keyboard->isKeyPressed(window::Key::A)) ilog("A");
+    if (m_keyboard->isKeyPressed(window::Key::Q)) ilog("Q");
+    if (m_keyboard->isKeyPressed(window::Key::M)) ilog("M");
+
+    auto inputs = engine::FPSCamera::Inputs {
+        .up    = m_keyboard->isKeyPressed(window::Key::Z),
+        .down  = m_keyboard->isKeyPressed(window::Key::S),
+        .right = m_keyboard->isKeyPressed(window::Key::D),
+        .left  = m_keyboard->isKeyPressed(window::Key::Q),
     };
 
-    const auto extent = State::engine().surface().extent();
+    const auto extent   = core::Extenti { State::engine().surface().extent() };
     const auto position = [&inputs, &extent, this]() {
-        auto position = m_input_handler.getMousePositionOnWindow();
+        auto position = m_mouse->getPositionOnWindow();
 
         if (position->x <= 5 || position->x > (extent.width - 5)) {
             position->x         = extent.width / 2;
@@ -133,7 +151,7 @@ void MainState::update(core::Secondf delta) {
             inputs.mouse_ignore = true;
         }
 
-        m_input_handler.setMousePositionOnWindow(position);
+        m_mouse->setPositionOnWindow(position);
 
         return position;
     }();

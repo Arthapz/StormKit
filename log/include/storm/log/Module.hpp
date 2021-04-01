@@ -11,9 +11,9 @@
 #include <storm/core/NamedType.hpp>
 
 namespace storm::log {
-    using Module = core::NamedType<gsl::czstring<>, struct LogModuleParameter>;
+    using Module = core::NamedType<gsl::basic_zstring<const char>, struct LogModuleParameter>;
 
-    constexpr storm::log::Module makeModule(gsl::czstring<> str) {
+    constexpr storm::log::Module makeModule(gsl::basic_zstring<const char> str) {
         return core::makeNamed<Module>(str);
     }
 

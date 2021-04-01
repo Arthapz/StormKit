@@ -499,19 +499,19 @@ IMGUI_API void *ImFileLoadToMemory(const char *filename,
                    // standard one wrapper is named differently (it's used by e.g. stb_truetype)
         #define ImCeil(X) ceilf(X)
 static inline float ImPow(float x, float y) {
-    return std::powf(x, y);
+    return std::pow(x, y);
 } // DragBehaviorT/SliderBehaviorT uses ImPow with either float/double and need the precision
 static inline double ImPow(double x, double y) {
     return std::pow(x, y);
 }
 static inline float ImLog(float x) {
-    return std::logf(x);
+    return std::log(x);
 } // DragBehaviorT/SliderBehaviorT uses ImLog with either float/double and need the precision
 static inline double ImLog(double x) {
     return std::log(x);
 }
 static inline float ImAbs(float x) {
-    return std::fabsf(x);
+    return std::fabs(x);
 }
 static inline double ImAbs(double x) {
     return std::fabs(x);
@@ -3849,5 +3849,3 @@ extern void ImGuiTestEngineHook_Log(ImGuiContext *ctx, const char *fmt, ...);
     #endif
 
 #endif // #ifndef IMGUI_DISABLE
-
-

@@ -1,6 +1,5 @@
 #include <storm/log/LogHandler.hpp>
 
-#include <storm/window/InputHandler.hpp>
 #include <storm/window/Window.hpp>
 
 #include <storm/main/Main.hpp>
@@ -11,6 +10,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
     using namespace storm;
     using namespace storm::window;
     using namespace storm::log;
+
+    std::setlocale(LC_ALL, "en_US.utf8");
 
     LogHandler::setupDefaultLogger();
 

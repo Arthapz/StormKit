@@ -34,15 +34,6 @@ namespace storm::core {
     /// \unique_name convertColorComponent(float)
     constexpr UInt8 convertColorComponent(float component) noexcept;
 
-#ifdef STORMKIT_GEN_DOC
-#elif defined(__cpp_concepts)
-
-#else
-    #define COLOR_COMPONENT_CONCEPT(x) \
-        typename x, typename =         \
-                        std::enable_if_t < std::is_same_v<x, float> || std::is_same_v<x, UInt8> >
-#endif
-
     /// \brief Get the max value of a component with from a given Type.
     /// \returns The maximum value of `T` color component
     /// \unique_name maxColorComponentValue<T>()
@@ -184,42 +175,6 @@ namespace storm::core {
     /// | Transparent | 0   | 0   | 0   | 0   |
     ///```
     namespace RGBColorDef {
-#ifdef STORMKIT_GEN_DOC
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Black;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Gray;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Silver;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> White;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Maroon;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Red;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Olive;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Yellow;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Green;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Lime;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Teal;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Aqua;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Navy;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Blue;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Purple;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Fuschia;
-        template<COLOR_COMPONENT_CONCEPT(T)>
-        static constexpr RGBColor<T> Transparent;
-#else
         template<COLOR_COMPONENT_CONCEPT(T)>
         static constexpr auto Black =
             RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, maxColorComponentValue<T>() };
@@ -317,7 +272,6 @@ namespace storm::core {
 
         template<COLOR_COMPONENT_CONCEPT(T)>
         static constexpr auto Transparent = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, T { 0 } };
-#endif
     } // namespace RGBColorDef
 } // namespace storm::core
 

@@ -1,9 +1,19 @@
-/////////// - StormKit::window - ///////////
-#include <storm/window/AbstractWindow.hpp>
-#include <storm/window/Event.hpp>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+#include "AbstractWindow.hpp"
+#include "Log.hpp"
+
+#include <cstddef>
+#include <cstdlib>
+#include <stdexcept>
+
+#include <storm/window/VideoSettings.hpp>
 
 using namespace storm;
 using namespace storm::window;
+using namespace storm::window::details;
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -15,15 +25,15 @@ AbstractWindow::~AbstractWindow() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-AbstractWindow::AbstractWindow(AbstractWindow &&) = default;
+AbstractWindow::AbstractWindow(AbstractWindow &&) noexcept = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-AbstractWindow &AbstractWindow::operator=(AbstractWindow &&) = default;
+auto AbstractWindow::operator=(AbstractWindow &&) noexcept -> AbstractWindow & = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool AbstractWindow::pollEvent(Event &event, [[maybe_unused]] void *native_event) noexcept {
+auto AbstractWindow::pollEvent(Event &event) noexcept -> bool {
     auto has_event = !m_events.empty();
 
     if (has_event) {
@@ -36,12 +46,7 @@ bool AbstractWindow::pollEvent(Event &event, [[maybe_unused]] void *native_event
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::restoreWndProc() noexcept {
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-bool AbstractWindow::waitEvent(Event &event, [[maybe_unused]] void *native_event) noexcept {
+auto AbstractWindow::waitEvent(Event &event) noexcept -> bool {
     auto has_event = !m_events.empty();
 
     if (has_event) {
@@ -54,7 +59,8 @@ bool AbstractWindow::waitEvent(Event &event, [[maybe_unused]] void *native_event
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::mouseDownEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept {
+auto AbstractWindow::mouseDownEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept
+    -> void {
     Event event;
     event.type               = EventType::MouseButtonPushed;
     event.mouse_event.button = button;
@@ -66,7 +72,8 @@ void AbstractWindow::mouseDownEvent(MouseButton button, core::Int16 x, core::Int
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::mouseUpEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept {
+auto AbstractWindow::mouseUpEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept
+    -> void {
     Event event;
     event.type               = EventType::MouseButtonReleased;
     event.mouse_event.button = button;
@@ -78,7 +85,7 @@ void AbstractWindow::mouseUpEvent(MouseButton button, core::Int16 x, core::Int16
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::mouseMoveEvent(core::Int16 x, core::Int16 y) noexcept {
+auto AbstractWindow::mouseMoveEvent(core::Int16 x, core::Int16 y) noexcept -> void {
     Event event;
     event.type          = EventType::MouseMoved;
     event.mouse_event.x = x;
@@ -89,7 +96,7 @@ void AbstractWindow::mouseMoveEvent(core::Int16 x, core::Int16 y) noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::mouseEnteredEvent() noexcept {
+auto AbstractWindow::mouseEnteredEvent() noexcept -> void {
     Event event;
     event.type = EventType::MouseEntered;
 
@@ -98,7 +105,7 @@ void AbstractWindow::mouseEnteredEvent() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::mouseExitedEvent() noexcept {
+auto AbstractWindow::mouseExitedEvent() noexcept -> void {
     Event event;
     event.type = EventType::MouseExited;
 
@@ -107,33 +114,35 @@ void AbstractWindow::mouseExitedEvent() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::pushEvent(Event event) noexcept {
+auto AbstractWindow::pushEvent(Event event) noexcept -> void {
     m_events.emplace(event);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::keyDownEvent(Key key) noexcept {
+auto AbstractWindow::keyDownEvent(Key key, char character) noexcept -> void {
     Event event;
-    event.type          = EventType::KeyPressed;
-    event.key_event.key = key;
+    event.type                = EventType::KeyPressed;
+    event.key_event.key       = key;
+    event.key_event.character = character;
 
     pushEvent(event);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::keyUpEvent(Key key) noexcept {
+auto AbstractWindow::keyUpEvent(Key key, char character) noexcept -> void {
     Event event;
-    event.type          = EventType::KeyReleased;
-    event.key_event.key = key;
+    event.type                = EventType::KeyReleased;
+    event.key_event.key       = key;
+    event.key_event.character = character;
 
     pushEvent(event);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::closeEvent() noexcept {
+auto AbstractWindow::closeEvent() noexcept -> void {
     Event event;
     event.type = EventType::Closed;
 
@@ -142,7 +151,7 @@ void AbstractWindow::closeEvent() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::resizeEvent(core::UInt16 width, core::UInt16 height) noexcept {
+auto AbstractWindow::resizeEvent(core::UInt16 width, core::UInt16 height) noexcept -> void {
     m_video_settings.size.width  = width;
     m_video_settings.size.height = height;
 
@@ -156,7 +165,7 @@ void AbstractWindow::resizeEvent(core::UInt16 width, core::UInt16 height) noexce
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::minimizeEvent() noexcept {
+auto AbstractWindow::minimizeEvent() noexcept -> void {
     Event event;
     event.type = EventType::Minimized;
 
@@ -165,7 +174,7 @@ void AbstractWindow::minimizeEvent() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void AbstractWindow::maximizeEvent() noexcept {
+auto AbstractWindow::maximizeEvent() noexcept -> void {
     Event event;
     event.type = EventType::Maximized;
 

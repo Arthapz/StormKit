@@ -10,7 +10,7 @@
 
 namespace storm::log {
     template<class T, typename... Args>
-    void LogHandler::setupLogger(Args &&... param_args) {
+    void LogHandler::setupLogger(Args &&...param_args) {
         static_assert(std::is_base_of<Logger, T>::value, "T must inherit Logger");
 
         auto time_point = LogClock::now();
@@ -26,41 +26,42 @@ namespace storm::log {
     void LogHandler::log(Severity severity,
                          Module module,
                          std::string format_string,
-                         Args &&... param_args) {
-        auto memory_buffer = fmt::memory_buffer {};
+                         Args &&...param_args) {
+        if (!m_logger) setupDefaultLogger();
+
+        auto memory_buffer = fmt::basic_memory_buffer<char> {};
         fmt::format_to(memory_buffer, format_string, std::forward<Args>(param_args)...);
 
         logger().write(severity, module, std::data(fmt::to_string(memory_buffer)));
     }
 
     template<typename... Args>
-     void
-        LogHandler::log(Severity severity, std::string format_string, Args &&... param_args) {
+    void LogHandler::log(Severity severity, std::string format_string, Args &&...param_args) {
         log(severity, ""_module, std::move(format_string), std::forward<Args>(param_args)...);
     }
 
     template<typename... Args>
-     void LogHandler::dlog(Args &&... param_args) {
+    void LogHandler::dlog(Args &&...param_args) {
         log(Severity::Debug, std::forward<Args>(param_args)...);
     }
 
     template<typename... Args>
-     void LogHandler::ilog(Args &&... param_args) {
+    void LogHandler::ilog(Args &&...param_args) {
         log(Severity::Info, std::forward<Args>(param_args)...);
     }
 
     template<typename... Args>
-     void LogHandler::wlog(Args &&... param_args) {
+    void LogHandler::wlog(Args &&...param_args) {
         log(Severity::Warning, std::forward<Args>(param_args)...);
     }
 
     template<typename... Args>
-     void LogHandler::elog(Args &&... param_args) {
+    void LogHandler::elog(Args &&...param_args) {
         log(Severity::Error, std::forward<Args>(param_args)...);
     }
 
     template<typename... Args>
-     void LogHandler::flog(Args &&... param_args) {
+    void LogHandler::flog(Args &&...param_args) {
         log(Severity::Fatal, std::forward<Args>(param_args)...);
     }
 

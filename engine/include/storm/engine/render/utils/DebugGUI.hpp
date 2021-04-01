@@ -9,6 +9,9 @@
 #include <storm/core/Types.hpp>
 
 /////////// - StormKit::render - ///////////
+#include <storm/window/Fwd.hpp>
+
+/////////// - StormKit::render - ///////////
 #include <storm/render/core/Fwd.hpp>
 
 /////////// - StormKit::engine - ///////////
@@ -17,7 +20,7 @@
 namespace storm::engine {
     class STORMKIT_PUBLIC DebugGUI: public core::NonCopyable {
       public:
-        explicit DebugGUI(Engine &engine);
+        DebugGUI(Engine &engine, window::Keyboard &keyboard, window::Mouse &mouse);
         ~DebugGUI();
 
         DebugGUI(DebugGUI &&) noexcept;
@@ -25,7 +28,7 @@ namespace storm::engine {
 
         void init(const render::RenderPass &render_pass);
 
-        void update(const window::Window &window);
+        void update();
         void render(render::CommandBuffer &cmb, const render::RenderPass &render_pass);
 
         void setSkipFrameCount(core::UInt32 count) noexcept;
@@ -33,6 +36,8 @@ namespace storm::engine {
         ENGINE_GETTERS
       private:
         engine::EngineRef m_engine;
+        window::KeyboardRef m_keyboard;
+        window::MouseRef m_mouse;
 
         render::CommandBufferOwnedPtrArray m_sub_command_buffers;
 

@@ -20,36 +20,35 @@
 #include <storm/window/VideoSettings.hpp>
 #include <storm/window/WindowStyle.hpp>
 
-namespace storm::window {
+namespace storm::window::details {
     class STORMKIT_PUBLIC AbstractWindow: public core::NonCopyable {
       public:
         AbstractWindow();
-        virtual ~AbstractWindow() = 0;
+        virtual ~AbstractWindow();
 
-        AbstractWindow(AbstractWindow &&);
-        AbstractWindow &operator=(AbstractWindow &&);
+        AbstractWindow(AbstractWindow &&) noexcept;
+        AbstractWindow &operator=(AbstractWindow &&) noexcept;
 
         virtual void
-            create(const std::string &title, const VideoSettings &settings, WindowStyle style) = 0;
-        virtual void close() noexcept                                                          = 0;
+            create(std::string title, const VideoSettings &settings, WindowStyle style) = 0;
+        virtual void close() noexcept                                                   = 0;
 
-        // BLC
-        virtual bool pollEvent(Event &event, void *native_event = nullptr) noexcept;
-        virtual bool waitEvent(Event &event, void *native_event = nullptr) noexcept = 0;
+        virtual bool pollEvent(Event &event) noexcept;
+        virtual bool waitEvent(Event &event) noexcept;
 
-        virtual void setTitle(const std::string &title) noexcept              = 0;
+        virtual void setTitle(std::string title) noexcept                     = 0;
         virtual void setVideoSettings(const VideoSettings &settings) noexcept = 0;
 
-        virtual core::Extentu size() const noexcept = 0;
+        [[nodiscard]] virtual const core::Extentu &size() const noexcept = 0;
 
-        inline const std::string &title() const noexcept;
-        inline const VideoSettings &videoSettings() const noexcept;
+        [[nodiscard]] std::string_view title() const noexcept;
+        [[nodiscard]] const VideoSettings &videoSettings() const noexcept;
 
-        virtual bool isOpen() const noexcept    = 0;
-        virtual bool isVisible() const noexcept = 0;
+        [[nodiscard]] virtual bool isOpen() const noexcept    = 0;
+        [[nodiscard]] virtual bool isVisible() const noexcept = 0;
 
-        virtual NativeHandle nativeHandle() const noexcept = 0;
-        virtual void restoreWndProc() noexcept;
+        [[nodiscard]] virtual NativeHandle nativeHandle() const noexcept = 0;
+        void restoreWndProc() noexcept;
 
         void mouseDownEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
         void mouseUpEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
@@ -59,8 +58,8 @@ namespace storm::window {
         void mouseEnteredEvent() noexcept;
         void mouseExitedEvent() noexcept;
 
-        void keyDownEvent(Key key) noexcept;
-        void keyUpEvent(Key key) noexcept;
+        void keyDownEvent(Key key, char character) noexcept;
+        void keyUpEvent(Key key, char character) noexcept;
 
         void closeEvent() noexcept;
 
@@ -77,6 +76,6 @@ namespace storm::window {
 
         std::queue<Event> m_events;
     };
-} // namespace storm::window
+} // namespace storm::window::details
 
 #include "AbstractWindow.inl"

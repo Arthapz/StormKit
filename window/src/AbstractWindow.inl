@@ -4,14 +4,14 @@
 
 #pragma once
 
-namespace storm::window {
+namespace storm::window::details {
     /////////////////////////////////////
     /////////////////////////////////////
-     const std::string &AbstractWindow::title() const noexcept { return m_title; }
+    inline auto AbstractWindow::title() const noexcept -> std::string_view { return m_title; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     const VideoSettings &AbstractWindow::videoSettings() const noexcept {
+    inline auto AbstractWindow::videoSettings() const noexcept -> const VideoSettings & {
         return m_video_settings;
     }
-} // namespace storm::window
+} // namespace storm::window::details

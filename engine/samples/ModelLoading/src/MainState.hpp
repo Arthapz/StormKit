@@ -8,7 +8,7 @@
 #include <storm/core/State.hpp>
 
 /////////// - StormKit::window - ///////////
-#include <storm/window/InputHandler.hpp>
+#include <storm/window/Fwd.hpp>
 
 /////////// - StormKit::window - ///////////
 #include <storm/window/Fwd.hpp>
@@ -35,7 +35,8 @@ class MainState final: public storm::engine::State {
     void update(storm::core::Secondf delta) override;
 
   private:
-    storm::window::InputHandler m_input_handler;
+    storm::window::KeyboardOwnedPtr m_keyboard;
+    storm::window::MouseOwnedPtr m_mouse;
     storm::engine::RenderSystemPtr m_render_system;
     storm::engine::FPSCameraOwnedPtr m_camera;
 };

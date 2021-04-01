@@ -25,12 +25,12 @@ namespace storm::window {
             core::UInt16 dpi;
         };
 
-        inline bool operator==(const VideoSettings &other) const noexcept {
+        inline auto operator==(const VideoSettings &other) const noexcept -> bool {
             return size.width == other.size.width && size.height == other.size.height &&
                    bpp == other.bpp;
         }
 
-        inline bool operator>(const VideoSettings &other) const noexcept {
+        inline auto operator>(const VideoSettings &other) const noexcept -> bool {
             return size.width > other.size.width;
         }
     };

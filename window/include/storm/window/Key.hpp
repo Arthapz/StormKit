@@ -117,9 +117,11 @@ namespace storm::window {
         Keycount,
     };
 
+    static constexpr auto KEY_COUNT = static_cast<core::ArraySize>(Key::Keycount);
+
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline std::string keyToString(storm::window::Key value) {
+    inline auto keyToString(storm::window::Key value) -> std::string {
         using namespace storm::window;
 
         switch (value) {

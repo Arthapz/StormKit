@@ -23,6 +23,8 @@
 #include <storm/core/TypeTraits.hpp>
 #include <storm/core/Types.hpp>
 
+#include <cuchar>
+
 #define STRINGIFY(x) #x
 #define CASE(x) \
     case x:     \
@@ -42,6 +44,14 @@
             }                                                         \
         };                                                            \
     }
+
+#if !defined(__cpp_lib_char8_t)
+using char8_t     = unsigned char;
+using std::string = std::basic_string<char8_t>;
+#endif
+
+using u8ofstream = std::basic_ofstream<char8_t>;
+using u8ifstream = std::basic_ifstream<char8_t>;
 
 namespace storm::core {
     inline std::vector<std::string> split(std::string_view string, char delim) {
@@ -105,5 +115,39 @@ namespace storm::core {
         f.toupper(&result[0], &result[0] + result.size());
 
         return result;
+    }
+
+    inline auto toU8String(std::string_view str) -> std::u8string {
+#ifdef UTF8_CPP20
+        auto state   = std::mbstate_t {};
+        auto out_str = std::string { MB_LEN_MAX };
+
+        std::mbrtoc8(std::data(out_str), std::data(str), std::size(str), &state);
+
+        out_str.shrink_to_fit();
+
+        return out_str;
+#else
+        auto out_str = std::u8string { reinterpret_cast<const char8_t *>(std::data(str)) };
+
+        return out_str;
+#endif
+    }
+
+    inline auto toAsciiString(std::string_view str) -> std::string {
+#ifdef UTF8_CPP20
+        auto state          = std::mbstate_t {};
+        std::string out_str = std::string { MB_LEN_MAX };
+
+        for (const auto &c : str) std::c8rtomb(std::data(out_str), c, &state);
+
+        out_str.shrink_to_fit();
+
+        return out_str;
+#else
+        auto out_str = std::string { reinterpret_cast<const char *>(std::data(str)) };
+
+        return out_str;
+#endif
     }
 } // namespace storm::core

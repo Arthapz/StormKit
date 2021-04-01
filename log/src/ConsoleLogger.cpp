@@ -8,6 +8,10 @@
 
 #include <iostream>
 
+#include <climits>
+#include <clocale>
+#include <cuchar>
+
 using namespace storm;
 using namespace storm::log;
 
@@ -54,12 +58,23 @@ void ConsoleLogger::write(Severity severity, Module module, const char *string) 
 
     auto str = std::string {};
 
-    if (std::strcmp(module.get(), "") == 0) str = fmt::format(LOG_LINE, severity, time);
+    if (std::char_traits<char>::length(module.get()) == 0)
+        str = fmt::format(LOG_LINE, severity, time);
     else
         str = fmt::format(LOG_LINE_MODULE, severity, time, module.get());
 
     const auto to_stderr = severity == Severity::Error || severity == Severity::Fatal;
     auto &output         = (to_stderr) ? std::cerr : std::cout;
+
+    // not yet
+    /*
+    auto state          = std::mbstate_t {};
+    std::string out_str = std::string { MB_LEN_MAX };
+    for (const auto &c : str) std::c8rtomb(std::data(out_str), c, &state);
+
+    state                  = std::mbstate_t {};
+    std::string out_string = std::string { MB_LEN_MAX };
+    for (const auto &c : string) { std::c8rtomb(std::data(out_string), c, &state); }*/
 
     colorifyBegin(severity, to_stderr);
     output << str;
