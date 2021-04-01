@@ -13,6 +13,10 @@
     #include "Linux/X11/X11Keyboard.hpp"
     #include "Linux/X11/X11Mouse.hpp"
     #include "Linux/X11/X11Window.hpp"
+
+    #include "Linux/Wayland/WaylandKeyboard.hpp"
+    #include "Linux/Wayland/WaylandMouse.hpp"
+    #include "Linux/Wayland/WaylandWindow.hpp"
 #endif
 
 using namespace storm;
@@ -59,9 +63,12 @@ auto Window::create(std::string title, const VideoSettings &settings, WindowStyl
             ASSERT(true, "XCB backend not supported on this system");
 #endif
             break;
-        case WM::Wayland:
-            dlog("Using Wayland window backend");
-            ASSERT(true, "Not yet implemented");
+        case WM::Wayland: dlog("Using Wayland window backend");
+#ifdef STORMKIT_OS_LINUX
+            m_impl = details::WaylandWindow::allocateOwned(std::move(title), settings, style);
+#else
+            ASSERT(true, "Wayland backend not supported on this system");
+#endif
             break;
         case WM::macOS:
             dlog("Using macOS cocoa window backend");
@@ -161,7 +168,13 @@ KeyboardOwnedPtr Window::createKeyboardPtr() const {
             ASSERT(true, "XCB backend not supported on this system");
 #endif
             break;
-        case WM::Wayland: ASSERT(true, "Not yet implemented"); break;
+        case WM::Wayland:
+#ifdef STORMKIT_OS_LINUX
+            return details::WaylandKeyboard::allocateOwned(*m_impl);
+#else
+            ASSERT(true, "Wayland backend not supported on this system");
+#endif
+            break;
         case WM::macOS: ASSERT(true, "Not yet implemented"); break;
         case WM::iOS: ASSERT(true, "Not yet implemented"); break;
         case WM::Android: ASSERT(true, "Not yet implemented"); break;
@@ -184,7 +197,13 @@ MouseOwnedPtr Window::createMousePtr() const {
             ASSERT(true, "XCB backend not supported on this system");
 #endif
             break;
-        case WM::Wayland: ASSERT(true, "Not yet implemented"); break;
+        case WM::Wayland:
+#ifdef STORMKIT_OS_LINUX
+            return details::WaylandMouse::allocateOwned(*m_impl);
+#else
+            ASSERT(true, "Wayland backend not supported on this system");
+#endif
+            break;
         case WM::macOS: ASSERT(true, "Not yet implemented"); break;
         case WM::iOS: ASSERT(true, "Not yet implemented"); break;
         case WM::Android: ASSERT(true, "Not yet implemented"); break;
@@ -221,11 +240,8 @@ Window::WM Window::detectWM() noexcept {
 std::vector<VideoSettings> Window::getDesktopModes() {
     const auto wm = detectWM();
     switch (wm) {
-        case WM::Win32:
-            dlog("Using Win32 window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::X11: dlog("Using XCB window backend");
+        case WM::Win32: ASSERT(true, "Not yet implemented"); break;
+        case WM::X11:
 #ifdef STORMKIT_OS_LINUX
             return details::X11Window::getDesktopModes();
 #else
@@ -233,25 +249,16 @@ std::vector<VideoSettings> Window::getDesktopModes() {
 #endif
             break;
         case WM::Wayland:
-            dlog("Using Wayland window backend");
-            ASSERT(true, "Not yet implemented");
+#ifdef STORMKIT_OS_LINUX
+            return details::WaylandWindow::getDesktopModes();
+#else
+            ASSERT(true, "Wayland backend not supported on this system");
+#endif
             break;
-        case WM::macOS:
-            dlog("Using macOS cocoa window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::iOS:
-            dlog("Using iOS cocoa window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::Android:
-            dlog("Using Android window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::Switch:
-            dlog("Using Nintendo Switch window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
+        case WM::macOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::iOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::Android: ASSERT(true, "Not yet implemented"); break;
+        case WM::Switch: ASSERT(true, "Not yet implemented"); break;
         default: ASSERT(true, "Unhandled platform");
     }
     return {};
@@ -262,11 +269,8 @@ std::vector<VideoSettings> Window::getDesktopModes() {
 VideoSettings Window::getDesktopFullscreenSize() {
     const auto wm = detectWM();
     switch (wm) {
-        case WM::Win32:
-            dlog("Using Win32 window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::X11: dlog("Using XCB window backend");
+        case WM::Win32: ASSERT(true, "Not yet implemented"); break;
+        case WM::X11:
 #ifdef STORMKIT_OS_LINUX
             return details::X11Window::getDesktopFullscreenSize();
 #else
@@ -274,25 +278,16 @@ VideoSettings Window::getDesktopFullscreenSize() {
 #endif
             break;
         case WM::Wayland:
-            dlog("Using Wayland window backend");
-            ASSERT(true, "Not yet implemented");
+#ifdef STORMKIT_OS_LINUX
+            return details::WaylandWindow::getDesktopFullscreenSize();
+#else
+            ASSERT(true, "Wayland backend not supported on this system");
+#endif
             break;
-        case WM::macOS:
-            dlog("Using macOS cocoa window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::iOS:
-            dlog("Using iOS cocoa window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::Android:
-            dlog("Using Android window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
-        case WM::Switch:
-            dlog("Using Nintendo Switch window backend");
-            ASSERT(true, "Not yet implemented");
-            break;
+        case WM::macOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::iOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::Android: ASSERT(true, "Not yet implemented"); break;
+        case WM::Switch: ASSERT(true, "Not yet implemented"); break;
         default: ASSERT(true, "Unhandled platform");
     }
     return {};

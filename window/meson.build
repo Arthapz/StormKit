@@ -75,7 +75,28 @@ if is_linux
     xkbcommon_dep     = dependency('xkbcommon')
     xkbcommon_x11_dep = dependency('xkbcommon-x11')
 
-    private_dependencies += [xcb_dep, xcb_key_dep, xcb_icccm_dep, xcb_randr_dep, xcb_xkb_dep, xkbcommon_dep, xkbcommon_x11_dep]
+    wayland_dep = dependency('wayland-client')
+
+    private_dependencies += [xcb_dep, xcb_key_dep, xcb_icccm_dep, xcb_randr_dep, xcb_xkb_dep, xkbcommon_dep, xkbcommon_x11_dep, wayland_dep]
+
+    prog_wayland_scanner = find_program('wayland-scanner')
+
+    wayland_scanner_header_generator = generator(
+        prog_wayland_scanner,
+        output: '@BASENAME@.h',
+        arguments: ['client-header', '@INPUT@', '@OUTPUT@']
+    )
+    wayland_scanner_source_generator = generator(
+        prog_wayland_scanner,
+        output: '@BASENAME@.h',
+        arguments: ['code', '@INPUT@', '@OUTPUT@']
+    )
+
+    xdg_shell_header = wayland_scanner_header_generator.process('src/Linux/Wayland/xdg-shell.xml')
+    xdg_shell_source = wayland_scanner_header_generator.process('src/Linux/Wayland/xdg-shell.xml')
+
+    headers += xdg_shell_header
+    sources += xdg_shell_source
 else
     extra_files += x11_sources + wayland_sources
 endif
@@ -88,7 +109,7 @@ if lib_type == 'shared'
     window_lib_name = 'StormKit-window' + suffix
     window_lib = shared_library(
         window_lib_name,
-        sources,
+        [sources, headers],
         extra_files: extra_files,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,

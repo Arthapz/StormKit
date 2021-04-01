@@ -13,12 +13,17 @@
 /////////// - StormKit::core - ///////////
 #include <storm/core/Platform.hpp>
 
-/////////// - XCB - ///////////
-#include <xcb/xcb.h>
-#include <xcb/xcb_keysyms.h>
-#include <xkbcommon/xkbcommon.h>
+/////////// - Wayland - ///////////
+#include <wayland-client.h>
 
 namespace storm::window::details {
+    STORMKIT_RAII_CAPSULE(WLDisplay, wl_display, wl_display_disconnect)
+    STORMKIT_RAII_CAPSULE(WLRegistry, wl_registry, wl_registry_destroy)
+    STORMKIT_RAII_CAPSULE(WLCompositor, wl_compositor, wl_compositor_destroy)
+    STORMKIT_RAII_CAPSULE(WLShell, wl_shell, wl_shell_destroy)
+    STORMKIT_RAII_CAPSULE(WLSurface, wl_surface, wl_surface_destroy)
+    STORMKIT_RAII_CAPSULE(WLShellSurface, wl_shell_surface, wl_shell_surface_destroy)
+
     class STORMKIT_PRIVATE WaylandWindow final: public details::AbstractWindow {
       public:
         struct Handles {};
@@ -51,6 +56,13 @@ namespace storm::window::details {
 
         ALLOCATE_HELPERS(WaylandWindow)
       private:
+        WLDisplayScoped m_display;
+        WLRegistryScoped m_registry;
+        WLCompositorScoped m_compositor;
+        WLShellScoped m_shell;
+        WLSurfaceScoped m_surface;
+        WLShellSurfaceScoped m_shell_surface;
+
         Handles m_handles;
         friend class WaylandInputHandler;
     };
