@@ -77,6 +77,8 @@ enable_image      = get_option('enable_image')
 enable_render     = get_option('enable_render')
 enable_engine     = get_option('enable_engine')
 
+copy_to_bindir = get_option('copy_to_bindir')
+
 major_version   = 0
 minor_version   = 2
 patch_version   = 0

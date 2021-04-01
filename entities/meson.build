@@ -47,14 +47,17 @@ else
     )
     destination_path = join_paths(meson.project_build_root(), 'output/lib/')
 endif
-entities_copy_target = custom_target(
-    'entities_copy_target',
-    input: entities_lib,
-    output: 'entities-fake',
-    command: [copy_file, '@INPUT@', destination_path],
-    install: false,
-    build_by_default: true
-)
+
+if copy_to_bindir
+    entities_copy_target = custom_target(
+        'entities_copy_target',
+        input: entities_lib,
+        output: 'entities-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
+    )
+endif
 
 entities_dep = declare_dependency(
     link_with: entities_lib, 

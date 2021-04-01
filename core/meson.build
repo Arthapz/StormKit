@@ -112,14 +112,17 @@ else
     )
     destination_path = join_paths(meson.project_build_root(), 'output/lib/')
 endif
-core_copy_target = custom_target(
-    'core_copy_target',
-    input: core_lib,
-    output: 'core-fake',
-    command: [copy_file, '@INPUT@', destination_path],
-    install: false,
-    build_by_default: true
+
+if copy_to_bindir
+    core_copy_target = custom_target(
+        'core_copy_target',
+        input: core_lib,
+        output: 'core-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
 )
+endif
 
 core_dep = declare_dependency(
     link_with: core_lib, 

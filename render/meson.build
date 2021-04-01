@@ -204,14 +204,17 @@ else
     )
     destination_path = join_paths(meson.project_build_root(), 'output/lib/')
 endif
-render_copy_target = custom_target(
-    'render_copy_target',
-    input: render_lib,
-    output: 'render-fake',
-    command: [copy_file, '@INPUT@', destination_path],
-    install: false,
-    build_by_default: true
-)
+
+if copy_to_bindir
+    render_copy_target = custom_target(
+        'render_copy_target',
+        input: render_lib,
+        output: 'render-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
+    )
+endif
 
 render_dep = declare_dependency(
     link_with: render_lib,

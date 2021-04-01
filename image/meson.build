@@ -83,14 +83,17 @@ else
     )
     destination_path = join_paths(meson.project_build_root(), 'output/lib/')
 endif
-image_copy_target = custom_target(
-    'image_copy_target',
-    input: image_lib,
-    output: 'image-fake',
-    command: [copy_file, '@INPUT@', destination_path],
-    install: false,
-    build_by_default: true
-)
+
+if copy_to_bindir
+    image_copy_target = custom_target(
+        'image_copy_target',
+        input: image_lib,
+        output: 'image-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
+    )
+endif
 
 image_dep = declare_dependency(
     link_with: image_lib,

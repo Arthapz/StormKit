@@ -50,14 +50,18 @@ main_lib = static_library(
     install: true
 )
 destination_path = join_paths(meson.project_build_root(), 'output/lib/')
-main_copy_target = custom_target(
-    'main_copy_target',
-    input: main_lib,
-    output: 'main-fake',
-    command: [copy_file, '@INPUT@', destination_path],
-    install: false,
-    build_by_default: true
-)
+
+
+if copy_to_bindir
+    main_copy_target = custom_target(
+        'main_copy_target',
+        input: main_lib,
+        output: 'main-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
+    )
+endif
 
 main_dep = declare_dependency(
     link_with: main_lib,

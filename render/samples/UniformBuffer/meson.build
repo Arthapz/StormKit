@@ -18,11 +18,14 @@ uniform_buffer = executable(
     install: true
 )
 destination_path = join_paths(meson.project_build_root(), 'output/bin/')
-uniform_buffer_copy_target = custom_target(
-    'uniform_buffer_copy_target',
-    input: uniform_buffer,
-    output: 'uniform-buffer-fake',
-    command: [copy_file, '@INPUT@', destination_path],
-    install: false,
-    build_by_default: true
-)
+
+if copy_to_bindir
+    uniform_buffer_copy_target = custom_target(
+        'uniform_buffer_copy_target',
+        input: uniform_buffer,
+        output: 'uniform-buffer-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
+    )
+endif

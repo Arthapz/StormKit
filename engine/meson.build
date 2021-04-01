@@ -195,15 +195,17 @@ else
     )
     destination_path = join_paths(meson.project_build_root(), 'output/lib/')
 endif
-engine_copy_target = custom_target(
-    'engine_copy_target',
-    input: engine_lib,
-    output: 'engine-fake',
-    command: [copy_file, '@INPUT@', destination_path],
-    install: false,
-    build_by_default: true
-)
 
+if copy_to_bindir
+    engine_copy_target = custom_target(
+        'engine_copy_target',
+        input: engine_lib,
+        output: 'engine-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
+    )
+endif
 engine_dep = declare_dependency(
     link_with: engine_lib,
     dependencies: public_dependencies,

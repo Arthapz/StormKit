@@ -29,22 +29,25 @@ texture = executable(
     install: true
 )
 destination_path = join_paths(meson.project_build_root(), 'output/bin/')
-texture_copy_target = custom_target(
-    'texture_copy_target',
-    input: texture,
-    output: 'texture-fake',
-    command: [copy_file, '@INPUT@', destination_path],
-    install: false,
-    build_by_default: true
-)
-texture_data_copy_target = custom_target(
-    'texture_data_copy_target',
-    input: files('textures/texture.png'),
-    output: 'texture-fake2',
-    command: [copy_file, '@INPUT@', join_paths(destination_path, 'textures')],
-    install: false,
-    build_by_default: true
-)
+
+if copy_to_bindir
+    texture_copy_target = custom_target(
+        'texture_copy_target',
+        input: texture,
+        output: 'texture-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
+    )
+    texture_data_copy_target = custom_target(
+        'texture_data_copy_target',
+        input: files('textures/texture.png'),
+        output: 'texture-fake2',
+        command: [copy_file, '@INPUT@', join_paths(destination_path, 'textures')],
+        install: false,
+        build_by_default: true
+    )
+endif
 
 
 

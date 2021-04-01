@@ -53,14 +53,17 @@ else
     )
     destination_path = join_paths(meson.project_build_root(), 'output/lib/')
 endif
-log_copy_target = custom_target(
-    'log_copy_target',
-    input: log_lib,
-    output: 'log-fake',
-    command: [copy_file, '@INPUT@', destination_path],
-    install: false,
-    build_by_default: true
-)
+
+if copy_to_bindir
+    log_copy_target = custom_target(
+        'log_copy_target',
+        input: log_lib,
+        output: 'log-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
+    )
+endif
 
 log_dep = declare_dependency(
     link_with: log_lib,

@@ -34,15 +34,19 @@ model_loading = executable(
     build_rpath: './',
     install: true
 )
+
 destination_path = join_paths(meson.project_build_root(), 'output/bin/')
-model_loading_copy_target = custom_target(
-    'model_loading_copy_target',
-    input: model_loading,
-    output: 'modelloading-fake',
-    command: [copy_file, '@INPUT@', destination_path],
-    install: false,
-    build_by_default: true
-)
+
+if copy_to_bindir
+    model_loading_copy_target = custom_target(
+        'model_loading_copy_target',
+        input: model_loading,
+        output: 'modelloading-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
+    )
+endif
 
 install_subdir('models/', install_dir: get_option('datadir') / directory)
 install_subdir('textures/', install_dir: get_option('datadir') / directory)
