@@ -4,6 +4,7 @@
 
 #include "X11Keyboard.hpp"
 #include "Log.hpp"
+#include "Utils.hpp"
 #include "X11Window.hpp"
 
 #define explicit _explicit

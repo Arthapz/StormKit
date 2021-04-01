@@ -570,15 +570,3 @@ VideoSettings X11Window::getDesktopFullscreenSize() {
 
     return video_setting;
 }
-
-void X11Window::registerInputHandler(X11InputHandler &input_handler) {
-    m_input_handlers.emplace_back(&input_handler);
-}
-
-void X11Window::unregisterInputHandler(X11InputHandler &input_handler) {
-    m_input_handlers.erase(
-        std::remove(std::begin(m_input_handlers), std::end(m_input_handlers), &input_handler));
-}
-
-void handleXInputEvent(const xcb_ge_generic_event_t event) {
-}

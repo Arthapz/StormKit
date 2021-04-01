@@ -23,6 +23,4 @@ namespace storm::window::details {
     STORMKIT_PRIVATE xcb_window_t defaultRootWindow(xcb_connection_t *connection,
                                                     storm::core::Int32 screen_id) noexcept;
 
-    class X11Window;
-    using X11WindowConstPtr = const X11Window *;
 } // namespace storm::window::details

@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "Utils.hpp"
-
 /////////// - StormKit::code - ///////////
 #include <storm/core/Platform.hpp>
 
@@ -14,6 +12,9 @@
 #include <storm/window/Keyboard.hpp>
 
 namespace storm::window::details {
+    class X11Window;
+    using X11WindowConstPtr = const X11Window *;
+
     class STORMKIT_PRIVATE X11Keyboard final: public Keyboard {
       public:
         explicit X11Keyboard(const details::AbstractWindow &window) noexcept;

@@ -19,42 +19,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 namespace storm::window::details {
-    class X11InputHandler;
     class STORMKIT_PRIVATE X11Window final: public details::AbstractWindow {
-        struct XCBConnectionDeleter {
-            void operator()(xcb_connection_t *connection) const noexcept {
-                xcb_disconnect(connection);
-            }
-        };
-
-        using XCBScopedConnection = std::unique_ptr<xcb_connection_t, XCBConnectionDeleter>;
-
-        struct XCBKeySymbolsDeleter {
-            void operator()(xcb_key_symbols_t *key_symbols) const noexcept {
-                xcb_key_symbols_free(key_symbols);
-            }
-        };
-
-        using XCBScopedKeySymbols = std::unique_ptr<xcb_key_symbols_t, XCBKeySymbolsDeleter>;
-
-        struct XKBContextDeleter {
-            void operator()(xkb_context *context) const noexcept { xkb_context_unref(context); }
-        };
-
-        using XKBScopedContext = std::unique_ptr<xkb_context, XKBContextDeleter>;
-
-        struct XKBKeymapDeleter {
-            void operator()(xkb_keymap *keymap) const noexcept { xkb_keymap_unref(keymap); }
-        };
-
-        using XKBScopedKeymap = std::unique_ptr<xkb_keymap, XKBKeymapDeleter>;
-
-        struct XKBStateDeleter {
-            void operator()(xkb_state *state) const noexcept { xkb_state_unref(state); }
-        };
-
-        using XKBScopedState = std::unique_ptr<xkb_state, XKBStateDeleter>;
-
       public:
         struct Handles {
             xcb_connection_t *connection;
@@ -91,12 +56,43 @@ namespace storm::window::details {
 
         ALLOCATE_HELPERS(X11Window)
       private:
+        struct XCBConnectionDeleter {
+            void operator()(xcb_connection_t *connection) const noexcept {
+                xcb_disconnect(connection);
+            }
+        };
+
+        using XCBScopedConnection = std::unique_ptr<xcb_connection_t, XCBConnectionDeleter>;
+
+        struct XCBKeySymbolsDeleter {
+            void operator()(xcb_key_symbols_t *key_symbols) const noexcept {
+                xcb_key_symbols_free(key_symbols);
+            }
+        };
+
+        using XCBScopedKeySymbols = std::unique_ptr<xcb_key_symbols_t, XCBKeySymbolsDeleter>;
+
+        struct XKBContextDeleter {
+            void operator()(xkb_context *context) const noexcept { xkb_context_unref(context); }
+        };
+
+        using XKBScopedContext = std::unique_ptr<xkb_context, XKBContextDeleter>;
+
+        struct XKBKeymapDeleter {
+            void operator()(xkb_keymap *keymap) const noexcept { xkb_keymap_unref(keymap); }
+        };
+
+        using XKBScopedKeymap = std::unique_ptr<xkb_keymap, XKBKeymapDeleter>;
+
+        struct XKBStateDeleter {
+            void operator()(xkb_state *state) const noexcept { xkb_state_unref(state); }
+        };
+
+        using XKBScopedState = std::unique_ptr<xkb_state, XKBStateDeleter>;
+
         void processEvents(xcb_generic_event_t xevent);
         void updateKeymap();
         void updateXKBMods();
-
-        void registerInputHandler(X11InputHandler &input_handler);
-        void unregisterInputHandler(X11InputHandler &input_handler);
 
         XCBScopedConnection m_connection;
         xcb_window_t m_window;
@@ -123,8 +119,6 @@ namespace storm::window::details {
         xcb_intern_atom_cookie_t m_close_cookie;
         xcb_intern_atom_reply_t *m_close_reply;
 
-        std::vector<X11InputHandler *> m_input_handlers;
-
         core::Extentu m_extent;
 
         bool m_is_open;
@@ -134,8 +128,6 @@ namespace storm::window::details {
 
         mutable core::Int16 m_mouse_x;
         mutable core::Int16 m_mouse_y;
-
-        friend class X11InputHandler;
     };
 
     DECLARE_PTR_AND_REF(X11Window)

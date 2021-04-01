@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "Utils.hpp"
-
 /////////// - StormKit::window - ///////////
 #include <storm/core/Math.hpp>
 #include <storm/core/NonCopyable.hpp>
@@ -17,6 +15,9 @@
 #include <storm/window/Mouse.hpp>
 
 namespace storm::window::details {
+    class X11Window;
+    using X11WindowConstPtr = const X11Window *;
+
     class STORMKIT_PRIVATE X11Mouse final: public Mouse {
       public:
         explicit X11Mouse(const details::AbstractWindow &window) noexcept;

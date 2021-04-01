@@ -7,4 +7,4 @@
 /////////// - StormKit::log - ///////////
 #include <storm/log/LogHandler.hpp>
 
-LOGGER("StormKit.Window.X11WindowBackend")
+LOGGER("StormKit.Window.X11Backend")

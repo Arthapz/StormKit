@@ -3,6 +3,7 @@
 // found in the top-level of this distribution
 
 #include "X11Mouse.hpp"
+#include "Utils.hpp"
 #include "X11Window.hpp"
 
 using namespace storm;
