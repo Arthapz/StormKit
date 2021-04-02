@@ -43,10 +43,12 @@ PhysicalDevice::PhysicalDevice(vk::PhysicalDevice vk_physical_device, const Inst
 
     m_device_info.device_id = properties.deviceID;
 
-    m_device_info.device_name.reserve(std::size(properties.deviceName));
-    std::copy(std::begin(properties.deviceName),
-              std::cend(properties.deviceName),
-              std::back_inserter(m_device_info.device_name));
+    const auto device_name_size = std::char_traits<char>::length(properties.deviceName);
+
+    m_device_info.device_name.resize(device_name_size);
+    std::char_traits<char>::copy(std::data(m_device_info.device_name),
+                                 std::data(properties.deviceName),
+                                 device_name_size);
     m_device_info.device_name.shrink_to_fit();
 
     m_device_info.vendor_id         = vendor_id;
