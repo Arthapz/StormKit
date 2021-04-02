@@ -124,7 +124,9 @@ else
     endif
 endif
 
-copy_file = find_program('utils/copy_to_bindir.py')
+if copy_to_bindir
+    copy_file = find_program('utils/copy_to_bindir.py')
+endif
 
 summary({
     'Enable doc': enable_doc,
