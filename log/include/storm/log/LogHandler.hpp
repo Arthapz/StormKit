@@ -52,23 +52,23 @@ namespace storm::log {
 #define LOGGER(module)                                                               \
     static constexpr inline auto LOG_MODULE = storm::log::makeModule(module);        \
     template<typename... Args>                                                       \
-    inline void dlog(Args &&...param_args) {                                         \
+    static inline void dlog(Args &&...param_args) {                                  \
         storm::log::LogHandler::dlog(LOG_MODULE, std::forward<Args>(param_args)...); \
     }                                                                                \
     template<typename... Args>                                                       \
-    inline void ilog(Args &&...param_args) {                                         \
+    static inline void ilog(Args &&...param_args) {                                  \
         storm::log::LogHandler::ilog(LOG_MODULE, std::forward<Args>(param_args)...); \
     }                                                                                \
     template<typename... Args>                                                       \
-    inline void wlog(Args &&...param_args) {                                         \
+    static inline void wlog(Args &&...param_args) {                                  \
         storm::log::LogHandler::wlog(LOG_MODULE, std::forward<Args>(param_args)...); \
     }                                                                                \
     template<typename... Args>                                                       \
-    inline void elog(Args &&...param_args) {                                         \
+    static inline void elog(Args &&...param_args) {                                  \
         storm::log::LogHandler::elog(LOG_MODULE, std::forward<Args>(param_args)...); \
     }                                                                                \
     template<typename... Args>                                                       \
-    inline void flog(Args &&...param_args) {                                         \
+    static inline void flog(Args &&...param_args) {                                  \
         storm::log::LogHandler::flog(LOG_MODULE, std::forward<Args>(param_args)...); \
     }
 

@@ -14,15 +14,20 @@
 #include <storm/core/Platform.hpp>
 
 /////////// - Wayland - ///////////
+#include "xdg-shell.h"
 #include <wayland-client.h>
 
 namespace storm::window::details {
     STORMKIT_RAII_CAPSULE(WLDisplay, wl_display, wl_display_disconnect)
     STORMKIT_RAII_CAPSULE(WLRegistry, wl_registry, wl_registry_destroy)
     STORMKIT_RAII_CAPSULE(WLCompositor, wl_compositor, wl_compositor_destroy)
-    STORMKIT_RAII_CAPSULE(WLShell, wl_shell, wl_shell_destroy)
+    STORMKIT_RAII_CAPSULE(XDGShell, xdg_wm_base, xdg_wm_base_destroy)
     STORMKIT_RAII_CAPSULE(WLSurface, wl_surface, wl_surface_destroy)
-    STORMKIT_RAII_CAPSULE(WLShellSurface, wl_shell_surface, wl_shell_surface_destroy)
+    STORMKIT_RAII_CAPSULE(XDGSurface, xdg_surface, xdg_surface_destroy)
+    STORMKIT_RAII_CAPSULE(XDGTopLevel, xdg_toplevel, xdg_toplevel_destroy)
+    STORMKIT_RAII_CAPSULE(WLShm, wl_shm, wl_shm_destroy)
+    STORMKIT_RAII_CAPSULE(WLShmPool, wl_shm_pool, wl_shm_pool_destroy)
+    STORMKIT_RAII_CAPSULE(WLBuffer, wl_buffer, wl_buffer_destroy)
 
     class STORMKIT_PRIVATE WaylandWindow final: public AbstractWindow {
       public:
@@ -62,11 +67,20 @@ namespace storm::window::details {
         WLDisplayScoped m_display;
         WLRegistryScoped m_registry;
         WLCompositorScoped m_compositor;
-        WLShellScoped m_shell;
+        XDGShellScoped m_xdg_shell;
         WLSurfaceScoped m_surface;
-        WLShellSurfaceScoped m_shell_surface;
+        XDGSurfaceScoped m_xdg_surface;
+        XDGTopLevelScoped m_xdg_toplevel;
+        WLShmScoped m_shm;
+        WLShmPoolScoped m_shm_pool;
+        WLBufferScoped m_buffer;
 
         Handles m_handles;
+
+        core::Extentu m_extent = {};
+        bool m_is_open         = false;
+        bool m_is_visible      = false;
+
         friend class WaylandInputHandler;
     };
     DECLARE_PTR_AND_REF(WaylandWindow)

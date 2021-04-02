@@ -103,14 +103,15 @@ if is_linux
     )
     wayland_scanner_source_generator = generator(
         prog_wayland_scanner,
-        output: '@BASENAME@.h',
+        output: '@BASENAME@.c',
         arguments: ['code', '@INPUT@', '@OUTPUT@']
     )
 
     xdg_shell_header = wayland_scanner_header_generator.process('src/Linux/Wayland/xdg-shell.xml')
-    xdg_shell_source = wayland_scanner_header_generator.process('src/Linux/Wayland/xdg-shell.xml')
+    xdg_shell_source = wayland_scanner_source_generator.process('src/Linux/Wayland/xdg-shell.xml')
 
     headers += xdg_shell_header
+    sources += xdg_shell_header
     sources += xdg_shell_source
 else
     extra_files += x11_sources + wayland_sources

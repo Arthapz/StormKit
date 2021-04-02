@@ -8,12 +8,16 @@
 #include "X11Keyboard.hpp"
 #include "X11Mouse.hpp"
 
+/////////// - SL - ///////////
 #include <cstddef>
 #include <cstdlib>
+
+/////////// - STL - ///////////
 #include <stdexcept>
 
 #include <storm/window/VideoSettings.hpp>
 
+/////////// - XCB - ///////////
 extern "C" {
 #include <xcb/randr.h>
 #include <xcb/xcb_atom.h>
@@ -21,6 +25,7 @@ extern "C" {
 #include <xcb/xcb_keysyms.h>
 #include <xcb/xinput.h>
 
+/////////// - XKB - ///////////
 #define explicit _explicit
 #include <xcb/xkb.h>
 #undef explicit
@@ -63,7 +68,8 @@ auto X11Window::operator=(X11Window &&) noexcept -> X11Window & = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto X11Window::create(std::string title, const VideoSettings &settings, WindowStyle style) -> void {
+auto X11Window::create(std::string title, const VideoSettings &settings, WindowStyle style)
+    -> void {
     static constexpr const auto EVENTS =
         XCB_EVENT_MASK_FOCUS_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
         XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_KEY_PRESS |
@@ -345,7 +351,7 @@ auto X11Window::isVisible() const noexcept -> bool {
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto X11Window::nativeHandle() const noexcept ->  storm::window::NativeHandle {
+auto X11Window::nativeHandle() const noexcept -> storm::window::NativeHandle {
     return reinterpret_cast<storm::window::NativeHandle>(const_cast<Handles *>(&m_handles));
 }
 
@@ -560,7 +566,7 @@ auto X11Window::getDesktopModes() -> std::vector<VideoSettings> {
     return video_settings;
 }
 
-auto X11Window::getDesktopFullscreenSize() ->  VideoSettings {
+auto X11Window::getDesktopFullscreenSize() -> VideoSettings {
     static auto video_setting = storm::window::VideoSettings {};
     static auto init          = false;
 

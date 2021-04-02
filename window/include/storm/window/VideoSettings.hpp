@@ -16,22 +16,18 @@
 namespace storm::window {
     struct VideoSettings {
         core::Extentu size;
-        union {
-            core::UInt8 bitsPerPixel;
-            core::UInt8 bpp;
-        };
-        union {
-            core::UInt16 dotsPerInch;
-            core::UInt16 dpi;
-        };
+        core::UInt8 bpp  = 32u;
+        core::UInt16 dpi = 1u;
 
-        inline auto operator==(const VideoSettings &other) const noexcept -> bool {
+        [[nodiscard]] constexpr inline auto operator==(const VideoSettings &other) const noexcept
+            -> bool {
             return size.width == other.size.width && size.height == other.size.height &&
-                   bpp == other.bpp;
+                   bpp == other.bpp && dpi == other.dpi;
         }
 
-        inline auto operator>(const VideoSettings &other) const noexcept -> bool {
-            return size.width > other.size.width;
+        [[nodiscard]] constexpr inline auto operator!=(const VideoSettings &other) const noexcept
+            -> bool {
+            return !operator==(other);
         }
     };
 

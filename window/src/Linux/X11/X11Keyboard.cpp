@@ -7,6 +7,7 @@
 #include "Utils.hpp"
 #include "X11Window.hpp"
 
+/////////// - XKB - ///////////
 #define explicit _explicit
 #include <xcb/xkb.h>
 #undef explicit

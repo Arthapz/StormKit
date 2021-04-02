@@ -4,7 +4,10 @@
 
 #include "Utils.hpp"
 
+/////////// - XLib - ///////////
 #include <X11/keysym.h>
+
+/////////// - XCB - ///////////
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_keysyms.h>
