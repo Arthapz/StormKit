@@ -141,7 +141,8 @@ auto WaylandWindow::operator=(WaylandWindow &&) noexcept -> WaylandWindow & = de
 /////////////////////////////////////
 auto WaylandWindow::create(std::string title, const VideoSettings &settings, WindowStyle style)
     -> void {
-    m_title = title;
+    m_title  = title;
+    m_extent = settings.size;
 
     m_surface.reset(wl_compositor_create_surface(m_compositor.get()));
     m_xdg_surface.reset(xdg_wm_base_get_xdg_surface(m_xdg_shell.get(), m_surface.get()));

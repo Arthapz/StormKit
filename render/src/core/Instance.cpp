@@ -212,8 +212,11 @@ void Instance::retrievePhysicalDevices() noexcept {
 
     CHECK_VK_ERROR_VALUE(instance.enumeratePhysicalDevices(), physical_devices);
 
-    for (auto physical_device : physical_devices)
-        m_physical_devices.emplace_back(std::make_unique<PhysicalDevice>(physical_device, *this));
+    for (auto physical_device : physical_devices) {
+        auto &p = m_physical_devices.emplace_back(
+            std::make_unique<PhysicalDevice>(physical_device, *this));
+        dlog("{}", p->info());
+    }
 }
 
 /////////////////////////////////////
@@ -254,7 +257,6 @@ const render::PhysicalDevice &Instance::pickPhysicalDevice() const noexcept {
 
         ranked_devices.emplace(score, *physical_device);
     }
-
     // ASSERT(ranked_devices.rbegin()->first >= 0u);
 
     return ranked_devices.rbegin()->second.get();

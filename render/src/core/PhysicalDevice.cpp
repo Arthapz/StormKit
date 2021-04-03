@@ -313,8 +313,16 @@ PhysicalDevice::PhysicalDevice(vk::PhysicalDevice vk_physical_device, const Inst
                    std::cend(extensions),
                    std::back_inserter(m_extensions),
                    [](const auto &extension) {
-                       return std::string { std::data(extension.extensionName),
-                                            std::size(extension.extensionName) };
+                       const auto string_size =
+                           std::char_traits<char>::length(extension.extensionName);
+
+                       auto string = std::string {};
+                       string.resize(string_size);
+                       std::char_traits<char>::copy(std::data(string),
+                                                    std::data(extension.extensionName),
+                                                    string_size);
+                       string.shrink_to_fit();
+                       return string;
                    });
 
     m_vk_memory_properties = m_vk_physical_device.getMemoryProperties();
