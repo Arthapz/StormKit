@@ -13,8 +13,8 @@
 #include <storm/render/core/DynamicLoader.hpp>
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
-#include <storm/render/core/Vulkan.hpp>
 #include <storm/render/core/Surface.hpp>
+#include <storm/render/core/Vulkan.hpp>
 
 namespace storm::render {
     class STORMKIT_PUBLIC Instance {
@@ -28,10 +28,18 @@ namespace storm::render {
         Instance(Instance &&);
         Instance &operator=(Instance &&);
 
-        WindowSurface createWindowSurface(const window::Window &window, Surface::Buffering buffering = Surface::Buffering::Triple) const;
-        WindowSurfaceOwnedPtr createWindowSurfacePtr(const window::Window &window, Surface::Buffering buffering = Surface::Buffering::Triple) const;
-       OffscreenSurface createOffscreenSurface(core::Extentu extent, Surface::Buffering buffering = Surface::Buffering::Triple) const;
-       OffscreenSurfaceOwnedPtr createOffscreenSurfacePtr(core::Extentu, Surface::Buffering buffering = Surface::Buffering::Triple) const;
+        WindowSurface
+            createWindowSurface(const window::Window &window,
+                                Surface::Buffering buffering = Surface::Buffering::Triple) const;
+        WindowSurfaceOwnedPtr
+            createWindowSurfacePtr(const window::Window &window,
+                                   Surface::Buffering buffering = Surface::Buffering::Triple) const;
+        OffscreenSurface
+            createOffscreenSurface(core::Extentu extent,
+                                   Surface::Buffering buffering = Surface::Buffering::Triple) const;
+        OffscreenSurfaceOwnedPtr createOffscreenSurfacePtr(
+            core::Extentu,
+            Surface::Buffering buffering = Surface::Buffering::Triple) const;
 
         const render::PhysicalDevice &pickPhysicalDevice() const noexcept;
         const render::PhysicalDevice &pickPhysicalDevice(const WindowSurface &surface) noexcept;
@@ -51,8 +59,14 @@ namespace storm::render {
         vk::UniqueSurfaceKHR
             createVkSurface(const vk::MacOSSurfaceCreateInfoMVK &create_info) const noexcept;
 #elif defined(STORMKIT_OS_LINUX)
+    #if STORMKIT_ENABLE_XCB
         vk::UniqueSurfaceKHR
             createVkSurface(const vk::XcbSurfaceCreateInfoKHR &create_info) const noexcept;
+    #endif
+    #if STORMKIT_ENABLE_WAYLAND
+        vk::UniqueSurfaceKHR
+            createVkSurface(const vk::WaylandSurfaceCreateInfoKHR &create_info) const noexcept;
+    #endif
 #elif defined(STORMKIT_OS_IOS)
         vk::UniqueSurfaceKHR
             createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const noexcept;

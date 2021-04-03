@@ -34,6 +34,6 @@ namespace storm::core {
         ///
         /// \param argc the program argument count.
         /// \param argv the program argument values.
-        virtual void run(int argc, char **argv) = 0;
+        virtual void run(const int argc, const char **argv) = 0;
     };
 } // namespace storm::core

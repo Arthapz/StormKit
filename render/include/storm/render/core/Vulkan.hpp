@@ -10,19 +10,23 @@
 
 #include <gsl/string_span>
 
+#include <storm/core/Configure.hpp>
 #include <storm/core/Platform.hpp>
 
 #if defined(STORMKIT_OS_LINUX)
-    #include <wayland-client.h>
-    #include <xcb/xcb.h>
-    #define VK_USE_PLATFORM_XCB_KHR
-    #define VK_USE_PLATFORM_WAYLAND_KHR
+    #if STORMKIT_ENABLE_XCB
+        #include <vulkan/vulkan_xcb.h>
+        #define VK_USE_PLATFORM_XCB_KHR 1
+    #endif
+    #if STORMKIT_ENABLE_WAYLAND
+        #define VK_USE_PLATFORM_WAYLAND_KHR 1
+    #endif
 #elif defined(STORMKIT_OS_WINDOWS)
-    #define VK_USE_PLATFORM_WIN32_KHR
+    #define
 #elif defined(STORMKIT_OS_MACOS)
-    #define VK_USE_PLATFORM_MACOS_MVK
+    #define VK_USE_PLATFORM_MACOS_MVK 1
 #elif defined(STORMKIT_OS_IOS)
-    #define VK_USE_PLATFORM_IOS_MVK
+    #define VK_USE_PLATFORM_IOS_MVK 1
 #endif
 
 #define VK_NO_PROTOTYPES
@@ -33,12 +37,14 @@
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
 
 #include <vulkan/vulkan.h>
-#if defined(STORMKIT_OS_LINUX)
+
+#if STORMKIT_ENABLE_WAYLAND
     #include <vulkan/vulkan_wayland.h>
-    #include <vulkan/vulkan_xcb.h>
-#elif defined(STORMKIT_OS_WINDOWS)
-    #include <vulkan/vulkan_win32.h>
 #endif
+#if STORMKIT_ENABLE_XCB
+    #include <vulkan/vulkan_xcb.h>
+#endif
+
 #include <vulkan/vulkan.hpp>
 
 #include <storm/render/core/vk_mem_alloc.h>
@@ -195,7 +201,12 @@ namespace storm::render {
     static constexpr auto INSTANCE_EXTENSIONS = std::array {
         gsl::czstring<> { VK_KHR_SURFACE_EXTENSION_NAME },
 #if defined(STORMKIT_OS_LINUX)
-            VK_KHR_XCB_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME,
+    #if STORMKIT_ENABLE_WAYLAND
+            VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME,
+    #endif
+    #if STORMKIT_ENABLE_XCB
+            VK_KHR_XCB_SURFACE_EXTENSION_NAME,
+    #endif
 #elif defined(STORMKIT_OS_WINDOWS)
             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 #elif defined(STORMKIT_OS_MACOS)

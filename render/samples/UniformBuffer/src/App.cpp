@@ -105,7 +105,7 @@ App::~App() {
     m_frame_datas.clear();
 }
 
-void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
+void App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
     namespace Chrono = std::chrono;
     using Clock      = std::chrono::high_resolution_clock;
 

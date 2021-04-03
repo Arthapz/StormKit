@@ -79,8 +79,8 @@ wayland_sources = files([
 headers = public_headers + private_headers + x11_headers + wayland_headers + win32_headers
 extra_files = headers
 
-if is_linux
-    sources += x11_sources + wayland_sources
+if is_linux and enable_window_xcb
+    sources += x11_sources
 
     xcb_dep           = dependency('xcb')
     xcb_key_dep       = dependency('xcb-keysyms')
@@ -90,9 +90,15 @@ if is_linux
     xkbcommon_dep     = dependency('xkbcommon')
     xkbcommon_x11_dep = dependency('xkbcommon-x11')
 
-    wayland_dep = dependency('wayland-client')
+    private_dependencies += [xcb_dep, xcb_key_dep, xcb_icccm_dep, xcb_randr_dep, xcb_xkb_dep, xkbcommon_dep, xkbcommon_x11_dep]
+else
+    extra_files += x11_sources
+endif
 
-    private_dependencies += [xcb_dep, xcb_key_dep, xcb_icccm_dep, xcb_randr_dep, xcb_xkb_dep, xkbcommon_dep, xkbcommon_x11_dep, wayland_dep]
+if is_linux and enable_window_wayland
+    sources += wayland_sources
+
+    wayland_dep = dependency('wayland-client')
 
     prog_wayland_scanner = find_program('wayland-scanner')
 
@@ -110,11 +116,13 @@ if is_linux
     xdg_shell_header = wayland_scanner_header_generator.process('src/Linux/Wayland/xdg-shell.xml')
     xdg_shell_source = wayland_scanner_source_generator.process('src/Linux/Wayland/xdg-shell.xml')
 
+    private_dependencies += [wayland_dep]
+
     headers += xdg_shell_header
     sources += xdg_shell_header
     sources += xdg_shell_source
 else
-    extra_files += x11_sources + wayland_sources
+    extra_files += wayland_sources
 endif
 
 if is_windows

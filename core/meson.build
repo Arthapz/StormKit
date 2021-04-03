@@ -78,6 +78,8 @@ conf_data.set('milestone', milestone)
 conf_data.set('build_type', build_type)
 conf_data.set('git_commit_hash', git_commit_hash)
 conf_data.set('git_branch', git_branch)
+conf_data.set10('STORMKIT_ENABLE_XCB', enable_window_xcb)
+conf_data.set10('STORMKIT_ENABLE_WAYLAND', enable_window_wayland)
 
 configure_file(input : 'include/storm/core/Configure.hpp.in',
              output : 'Configure.hpp',

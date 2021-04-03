@@ -671,9 +671,6 @@ std::pair<vk::Result, core::UInt32> Device::vkAcquireNextImage(vk::SwapchainKHR 
                                                                core::UInt64 timeout,
                                                                vk::Semaphore semaphore,
                                                                vk::Fence fence) const {
-    // const auto result = vkDevice().acquireNextImageKHR(swapchain, timeout,
-    // semaphore, fence, m_vk_dispatcher);
-
     auto texture_index = 0u;
     auto result        = vkDevice().acquireNextImageKHR(swapchain,
                                                  timeout,

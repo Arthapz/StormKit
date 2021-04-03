@@ -12,9 +12,9 @@ directory = 'stormkit/SceneViewer/'
 
 arguments = []
 if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
-    arguments += ['/DEXAMPLES_DATA_DIR="' + examples_data_dir / directory + '"', '/DSTORMKIT_ENABLE_VALIDATION_LAYERS', '/DVK_USE_PLATFORM_WIN32_KHR']
+    arguments += ['/DEXAMPLES_DATA_DIR="' + examples_data_dir / directory + '"', '/DSTORMKIT_ENABLE_VALIDATION_LAYERS']
 else
-    arguments += ['-DEXAMPLES_DATA_DIR="' + examples_data_dir / directory + '"', '-DSTORMKIT_ENABLE_VALIDATION_LAYERS', '-DVK_USE_PLATFORM_XCB_KHR', '-DVK_USE_PLATFORM_WAYLAND_KHR']
+    arguments += ['-DEXAMPLES_DATA_DIR="' + examples_data_dir / directory + '"', '-DSTORMKIT_ENABLE_VALIDATION_LAYERS']
 endif
 arguments += examples_arguments
 

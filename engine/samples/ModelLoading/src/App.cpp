@@ -32,7 +32,7 @@ App::App() noexcept {
 
 App::~App() = default;
 
-auto App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> void {
+auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) -> void {
     auto model_filepath = std::filesystem::path { EXAMPLES_DATA_DIR "models/Sword.glb" };
 
     for (auto i = 1; i < argc; ++i) {

@@ -31,7 +31,10 @@ namespace storm::window::details {
 
     class STORMKIT_PRIVATE WaylandWindow final: public AbstractWindow {
       public:
-        struct Handles {};
+        struct Handles {
+            wl_display *display;
+            wl_surface *surface;
+        };
 
         WaylandWindow();
         WaylandWindow(std::string title,
@@ -57,7 +60,18 @@ namespace storm::window::details {
         [[nodiscard]] bool isVisible() const noexcept override;
 
         [[nodiscard]] NativeHandle nativeHandle() const noexcept override;
-        [[nodiscard]] const Handles &xcbHandles() const noexcept { return m_handles; }
+        [[nodiscard]] const Handles &waylandHandles() const noexcept { return m_handles; }
+
+        void registryGlobal(wl_registry *registry,
+                            std::uint32_t id,
+                            const char *interface,
+                            std::uint32_t version) noexcept;
+        void surfaceConfigure(xdg_surface *surface, std::uint32_t serial) noexcept;
+        void toplevelConfigure(xdg_toplevel *xdg_tl,
+                               std::int32_t width,
+                               std::int32_t height,
+                               wl_array *state) noexcept;
+        void toplevelClose(xdg_toplevel *xdg_tl) noexcept;
 
         [[nodiscard]] static std::vector<VideoSettings> getDesktopModes();
         [[nodiscard]] static VideoSettings getDesktopFullscreenSize();
@@ -77,9 +91,11 @@ namespace storm::window::details {
 
         Handles m_handles;
 
+        bool m_opened          = false;
+        bool m_visible         = false;
         core::Extentu m_extent = {};
-        bool m_is_open         = false;
-        bool m_is_visible      = false;
+
+        bool m_configured = false;
 
         friend class WaylandInputHandler;
     };

@@ -6,7 +6,7 @@
 
 #include <storm/core/RingBuffer.hpp>
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
+int main([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
     using namespace storm;
     using namespace storm::window;
     using namespace storm::log;

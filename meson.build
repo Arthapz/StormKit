@@ -68,14 +68,16 @@ endif
 
 add_project_arguments(project_arguments, language: ['c', 'cpp', 'objc', 'objcpp'])
 
-enable_doc        = get_option('enable_doc')
-enable_entities   = get_option('enable_entities')
-enable_log        = get_option('enable_log')
-enable_module     = get_option('enable_module')
-enable_window     = get_option('enable_window')
-enable_image      = get_option('enable_image')
-enable_render     = get_option('enable_render')
-enable_engine     = get_option('enable_engine')
+enable_doc            = get_option('enable_doc')
+enable_entities       = get_option('enable_entities')
+enable_log            = get_option('enable_log')
+enable_module         = get_option('enable_module')
+enable_window         = get_option('enable_window')
+enable_window_xcb     = get_option('enable_window_xcb')
+enable_window_wayland = get_option('enable_window_wayland')
+enable_image          = get_option('enable_image')
+enable_render         = get_option('enable_render')
+enable_engine         = get_option('enable_engine')
 
 copy_to_bindir = get_option('copy_to_bindir')
 
@@ -141,6 +143,8 @@ summary({
      'enable_entities': enable_entities,
      'enable_module': enable_module,
      'enable_window': enable_window,
+     'enable_window_xcb': enable_window_xcb,
+     'enable_window_wayland': enable_window_wayland,
      'enable_image': enable_image,
      'enable_render': enable_render,
      'enable_engine': enable_engine,

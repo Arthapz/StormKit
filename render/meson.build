@@ -134,6 +134,11 @@ sync_headers = files([
     'include/storm/render/sync/Fence.inl',
 ])
 
+
+private_headers = files([
+    'src/Log.hpp'
+])
+
 #ide:editable-filelist
 sources = files([
     'src/core/Instance.cpp',
@@ -175,7 +180,7 @@ sources = files([
 
 headers = general_headers + core_headers + resource_headers + pipeline_headers + sync_headers
 
-args = {'extra_files': headers, 'gnu_symbol_visibility': 'hidden'}
+args = {'extra_files': headers + private_headers, 'gnu_symbol_visibility': 'hidden'}
 
 public_render_inc = ['include/']
 private_render_inc = []
@@ -219,7 +224,7 @@ endif
 render_dep = declare_dependency(
     link_with: render_lib,
     dependencies: public_dependencies,
-    include_directories: public_render_inc,
+    include_directories: public_render_inc
 )
 
 if get_option('enable_examples')

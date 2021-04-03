@@ -27,7 +27,7 @@ class App: public storm::core::App {
     App();
     ~App() override;
 
-    void run(int argc, char **argv) override;
+    void run(const int argc, const char **argv) override;
 
   private:
     void doInitWindow();

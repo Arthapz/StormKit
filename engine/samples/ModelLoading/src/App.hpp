@@ -15,10 +15,10 @@
 class MainState;
 class App final: public storm::core::App {
   public:
-    App() noexcept ;
+    App() noexcept;
     ~App() override;
 
-    void run(int argc, char **argv) override;
+    void run(const int argc, const char **argv) override;
 
   private:
     void doInitWindow();

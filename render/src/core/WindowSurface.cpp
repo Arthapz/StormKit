@@ -2,6 +2,8 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+#include "../Log.hpp"
+
 #include <storm/window/Window.hpp>
 
 #include <storm/render/core/CommandBuffer.hpp>
@@ -30,22 +32,56 @@ WindowSurface::WindowSurface(const window::Window &window,
     const auto create_info = vk::Win32SurfaceCreateInfoKHR {}
                                  .setHinstance(GetModuleHandleW(nullptr))
                                  .setHwnd(reinterpret_cast<HWND>(m_window->nativeHandle()));
+    m_vk_surface = m_instance->createVkSurface(create_info);
 #elif defined(STORMKIT_OS_MACOS)
     const auto create_info = vk::MacOSSurfaceCreateInfoMVK {}.setPView(m_window->nativeHandle());
+    m_vk_surface           = m_instance->createVkSurface(create_info);
 #elif defined(STORMKIT_OS_LINUX)
-    struct Handles {
-        xcb_connection_t *connection;
-        xcb_window_t window;
-    } *handles = reinterpret_cast<Handles *>(m_window->nativeHandle());
+    #if STORMKIT_ENABLE_WAYLAND
+    const auto make_wayland_surface = [this]() {
+        struct Handles {
+            wl_display *display;
+            wl_surface *surface;
+        } *handles = reinterpret_cast<Handles *>(m_window->nativeHandle());
 
-    const auto create_info = vk::XcbSurfaceCreateInfoKHR {}
-                                 .setConnection(handles->connection)
-                                 .setWindow(handles->window);
+        const auto create_info = vk::WaylandSurfaceCreateInfoKHR {}
+                                     .setDisplay(handles->display)
+                                     .setSurface(handles->surface);
+        m_vk_surface = m_instance->createVkSurface(create_info);
+    };
+    #endif
+    #if STORMKIT_ENABLE_XCB
+    const auto make_xcb_surface = [this]() {
+        struct Handles {
+            xcb_connection_t *connection;
+            xcb_window_t window;
+        } *handles = reinterpret_cast<Handles *>(m_window->nativeHandle());
+
+        const auto create_info = vk::XcbSurfaceCreateInfoKHR {}
+                                     .setConnection(handles->connection)
+                                     .setWindow(handles->window);
+        m_vk_surface = m_instance->createVkSurface(create_info);
+    };
+    #endif
+
+    #if STORMKIT_ENABLE_WAYLAND && STORMKIT_ENABLE_XCB
+    auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
+
+    if (is_wayland) {
+        make_wayland_surface();
+    } else {
+        make_xcb_surface();
+    }
+    #elif STORMKIT_ENABLE_WAYLAND
+    make_wayland_surface();
+    #elif STORMKIT_ENABLE_XCB
+    make_xcb_surface();
+    #endif
+
 #elif defined(STORMKIT_OS_IOS)
     const auto create_info = vk::IOSSurfaceCreateInfoMVK {}.setPView(m_window->nativeHandle());
+    m_vk_surface           = m_instance->createVkSurface(create_info);
 #endif
-
-    m_vk_surface = m_instance->createVkSurface(create_info);
 };
 
 /////////////////////////////////////
@@ -123,15 +159,15 @@ render::WindowSurface::Frame WindowSurface::acquireNextFrame() {
     const auto &render_finished   = m_render_finisheds[m_current_frame];
     auto &in_flight               = m_in_flight_fences[m_current_frame];
 
-    in_flight.wait();
-    onSwapchainFenceSignaled(in_flight);
-    in_flight.reset();
-
     const auto [result, texture_index] =
         m_device->vkAcquireNextImage(*m_vk_swapchain,
                                      std::numeric_limits<core::UInt64>::max(),
                                      texture_available,
                                      VK_NULL_HANDLE);
+
+    in_flight.wait();
+    onSwapchainFenceSignaled(in_flight);
+    in_flight.reset();
 
     return Frame { .current_frame     = m_current_frame,
                    .texture_index     = texture_index,
@@ -155,8 +191,13 @@ void WindowSurface::present(const render::WindowSurface::Frame &frame) {
 
     auto result = m_device->graphicsQueue().vkPresent(present_info);
 
-    if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
+    if (result == vk::Result::eErrorOutOfDateKHR) {
+        elog("Out of date Swapchain, need to recreate");
         m_need_recreate = true;
+    } else if (result == vk::Result::eSuboptimalKHR) {
+        dlog("Suboptimal Swapchain, need to recreate");
+        m_need_recreate = true;
+    }
 
     m_current_frame = (m_current_frame + 1);
     if (m_current_frame >= m_buffering_count) m_current_frame -= m_buffering_count;

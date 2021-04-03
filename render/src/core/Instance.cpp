@@ -2,6 +2,8 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+#include "../Log.hpp"
+
 #include <map>
 #include <unordered_set>
 
@@ -19,9 +21,9 @@ using namespace storm;
 using namespace storm::log;
 using namespace storm::render;
 
-static const auto log_module = "Vulkan"_module;
-
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
+
+static constexpr inline auto VULKAN_LOG_MODULE = storm::log::makeModule("StormKit.Render.Vulkan");
 
 core::UInt64 scorePhysicalDevice(const render::PhysicalDevice &physical_device) {
     if (!physical_device.checkExtensionSupport(DEVICE_EXTENSIONS)) return 0u;
@@ -65,13 +67,13 @@ VKAPI_ATTR VkBool32 vkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messa
 
     switch (message_severity) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-            LogHandler::dlog(log_module, format_string, callback_data->pMessage);
+            LogHandler::dlog(VULKAN_LOG_MODULE, format_string, callback_data->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-            LogHandler::elog(log_module, format_string, callback_data->pMessage);
+            LogHandler::elog(VULKAN_LOG_MODULE, format_string, callback_data->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-            LogHandler::wlog(log_module, format_string, callback_data->pMessage);
+            LogHandler::wlog(VULKAN_LOG_MODULE, format_string, callback_data->pMessage);
             break;
         default: break;
     }
@@ -80,10 +82,9 @@ VKAPI_ATTR VkBool32 vkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messa
 }
 }
 
-Instance::Instance(VkInstance instance) :
-    m_vk_instance{vk::Instance{instance}} {
+Instance::Instance(VkInstance instance) : m_vk_instance { vk::Instance { instance } } {
     if (!m_loader.success()) {
-        log::LogHandler::flog(log_module, "Failed to initialize vulkan");
+        flog("Failed to initialize vulkan");
         std::exit(EXIT_FAILURE);
     }
 
@@ -97,7 +98,7 @@ Instance::Instance(VkInstance instance) :
 /////////////////////////////////////
 Instance::Instance(std::string app_name) : m_app_name { app_name } {
     if (!m_loader.success()) {
-        log::LogHandler::flog(log_module, "Failed to initialize vulkan");
+        flog("Failed to initialize vulkan");
         std::exit(EXIT_FAILURE);
     }
 
@@ -162,13 +163,13 @@ void Instance::createInstance() noexcept {
     }
 
     // auto has_base_exts = checkExtensionSupport(instance_extensions);
-    LogHandler::dlog(log_module, "Instance extensions -----------");
-    for (const auto &str : m_extensions) LogHandler::dlog(log_module, "	{}", str);
-    LogHandler::dlog(log_module, "-------------------------------");
+    dlog("Instance extensions -----------");
+    for (const auto &str : m_extensions) dlog("	{}", str);
+    dlog("-------------------------------");
 
     const auto enable_validation = checkValidationLayerSupport(ENABLE_VALIDATION);
     if (enable_validation) {
-        log::LogHandler::dlog(log_module, "Validation layers enabled");
+        dlog("Validation layers enabled");
         create_info.setEnabledLayerCount(std::size(VALIDATION_LAYERS));
         create_info.setPpEnabledLayerNames(std::data(VALIDATION_LAYERS));
 
@@ -202,8 +203,7 @@ void Instance::createDebugReportCallback() {
 
     auto instance = vkInstance();
 
-    CHECK_VK_ERROR_VALUE(instance.createDebugUtilsMessengerEXTUnique(create_info),
-                         vk_messenger);
+    CHECK_VK_ERROR_VALUE(instance.createDebugUtilsMessengerEXTUnique(create_info), vk_messenger);
     m_vk_messenger = std::move(vk_messenger);
 }
 
@@ -302,6 +302,7 @@ vk::UniqueSurfaceKHR
     return surface;
 }
 #elif defined(STORMKIT_OS_LINUX)
+    #if STORMKIT_ENABLE_XCB
 /////////////////////////////////////
 /////////////////////////////////////
 vk::UniqueSurfaceKHR
@@ -312,6 +313,19 @@ vk::UniqueSurfaceKHR
 
     return surface;
 }
+    #endif
+    #if STORMKIT_ENABLE_WAYLAND
+/////////////////////////////////////
+/////////////////////////////////////
+vk::UniqueSurfaceKHR
+    Instance::createVkSurface(const vk::WaylandSurfaceCreateInfoKHR &create_info) const noexcept {
+    auto instance = vkInstance();
+
+    CHECK_VK_ERROR_VALUE(instance.createWaylandSurfaceKHRUnique(create_info), surface);
+
+    return surface;
+}
+    #endif
 #elif defined(STORMKIT_OS_IOS)
 /////////////////////////////////////
 /////////////////////////////////////
@@ -343,7 +357,7 @@ bool Instance::checkValidationLayerSupport(bool enable_validation) noexcept {
         }
 
         if (!layer_found) {
-            log::LogHandler::dlog(log_module, "Failed to find validation layers, disabling...");
+            dlog("Failed to find validation layers, disabling...");
             return false;
         }
     }

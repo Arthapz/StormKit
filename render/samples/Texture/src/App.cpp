@@ -72,7 +72,7 @@ App::~App() {
     m_frame_datas.clear();
 }
 
-void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
+void App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
     while (m_window->isOpen()) {
         auto event = window::Event {};
         while (m_window->pollEvent(event)) {
