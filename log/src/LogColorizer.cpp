@@ -77,27 +77,28 @@ namespace storm::log {
 using std::literals::string_view_literals::operator""sv;
 
 namespace storm::log {
-    [[maybe_unused]] static constexpr auto KNRM = "\x1B[0m"sv;
-    [[maybe_unused]] static constexpr auto KRED = "\x1B[31m"sv;
-    [[maybe_unused]] static constexpr auto KGRN = "\x1B[32m"sv;
-    [[maybe_unused]] static constexpr auto KYEL = "\x1B[33m"sv;
-    [[maybe_unused]] static constexpr auto KBLU = "\x1B[34m"sv;
-    [[maybe_unused]] static constexpr auto KMAG = "\x1B[35m"sv;
-    [[maybe_unused]] static constexpr auto KCYN = "\x1B[36m"sv;
-    [[maybe_unused]] static constexpr auto KWHT = "\x1B[37m"sv;
-    [[maybe_unused]] static constexpr auto KGRS = "\033[1m"sv;
-    [[maybe_unused]] static constexpr auto KINV = "\e[7m"sv;
+    [[maybe_unused]] static constexpr auto KNRM  = "\x1B[0m"sv;
+    [[maybe_unused]] static constexpr auto KRED  = "\x1B[31m"sv;
+    [[maybe_unused]] static constexpr auto KGRN  = "\x1B[32m"sv;
+    [[maybe_unused]] static constexpr auto KYEL  = "\x1B[33m"sv;
+    [[maybe_unused]] static constexpr auto KBLU  = "\x1B[34m"sv;
+    [[maybe_unused]] static constexpr auto KMAG  = "\x1B[35m"sv;
+    [[maybe_unused]] static constexpr auto KCYN  = "\x1B[36m"sv;
+    [[maybe_unused]] static constexpr auto KWHT  = "\x1B[37m"sv;
+    [[maybe_unused]] static constexpr auto KGRS  = "\033[1m"sv;
+    [[maybe_unused]] static constexpr auto KINV  = "\e[7m"sv;
+    [[maybe_unused]] static constexpr auto KBLCK = "\e[30m"sv;
 
     /////////////////////////////////////
     /////////////////////////////////////
     void colorifyBegin(Severity severity, bool to_stderr) noexcept {
         auto &output = (to_stderr) ? std::cerr : std::cout;
         switch (severity) {
-            case Severity::Info: output << KGRS << KINV << KGRN; break;
-            case Severity::Warning: output << KGRS << KINV << KMAG; break;
-            case Severity::Error: output << KGRS << KINV << KYEL; break;
-            case Severity::Fatal: output << KGRS << KINV << KRED; break;
-            case Severity::Debug: output << KGRS << KINV << KCYN; break;
+            case Severity::Info: output << KBLCK << KINV << KGRN; break;
+            case Severity::Warning: output << KBLCK << KINV << KMAG; break;
+            case Severity::Error: output << KBLCK << KINV << KYEL; break;
+            case Severity::Fatal: output << KBLCK << KINV << KRED; break;
+            case Severity::Debug: output << KBLCK << KINV << KCYN; break;
         }
     }
 
