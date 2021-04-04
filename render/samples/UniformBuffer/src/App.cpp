@@ -304,8 +304,14 @@ void App::doInitMeshRenderObjects() {
     for (auto i = 0u; i < buffering_count; ++i) {
         const auto &texture_view = m_surface_views[i];
 
-        auto depth =
-            m_device->createTexturePtr(surface_extent, render::PixelFormat::Depth32F_Stencil8);
+        auto depth = m_device->createTexturePtr(surface_extent,
+                                                render::PixelFormat::Depth32F_Stencil8,
+                                                1u,
+                                                1u,
+                                                render::TextureType::T2D,
+                                                render::TextureCreateFlag::None,
+                                                render::SampleCountFlag::C1_BIT,
+                                                render::TextureUsage::Depth_Stencil_Attachment);
 
         auto depth_view = depth->createViewPtr(render::TextureViewType::T2D,
                                                { .aspect_mask = render::TextureAspectMask::Depth });
