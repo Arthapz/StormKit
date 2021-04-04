@@ -31,6 +31,8 @@ std::string vendorNameByID(core::UInt64 ID) {
     return "Unknown";
 }
 
+// TODO implement
+// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_driver_properties.html
 /////////////////////////////////////
 /////////////////////////////////////
 PhysicalDevice::PhysicalDevice(vk::PhysicalDevice vk_physical_device, const Instance &instance)

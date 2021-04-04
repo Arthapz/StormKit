@@ -28,6 +28,8 @@ namespace storm::window::details {
     STORMKIT_RAII_CAPSULE(WLShm, wl_shm, wl_shm_destroy)
     STORMKIT_RAII_CAPSULE(WLShmPool, wl_shm_pool, wl_shm_pool_destroy)
     STORMKIT_RAII_CAPSULE(WLBuffer, wl_buffer, wl_buffer_destroy)
+    STORMKIT_RAII_CAPSULE(WLShell, wl_shell, wl_shell_destroy)
+    STORMKIT_RAII_CAPSULE(WLShellSurface, wl_shell_surface, wl_shell_surface_destroy)
 
     class STORMKIT_PRIVATE WaylandWindow final: public AbstractWindow {
       public:
@@ -72,18 +74,28 @@ namespace storm::window::details {
                                std::int32_t height,
                                wl_array *state) noexcept;
         void toplevelClose(xdg_toplevel *xdg_tl) noexcept;
+        void shellSurfaceConfigure(wl_shell_surface *xdg_tl,
+                                   std::uint32_t edges,
+                                   std::int32_t width,
+                                   std::int32_t height) noexcept;
 
         [[nodiscard]] static std::vector<VideoSettings> getDesktopModes();
         [[nodiscard]] static VideoSettings getDesktopFullscreenSize();
 
         ALLOCATE_HELPERS(WaylandWindow)
       private:
+        void createXDGShell() noexcept;
+        void createWaylandShell() noexcept;
+        void createPixelbuffer() noexcept;
+
         WLDisplayScoped m_display;
         WLRegistryScoped m_registry;
         WLCompositorScoped m_compositor;
+        WLShellScoped m_wayland_shell;
         XDGShellScoped m_xdg_shell;
         WLSurfaceScoped m_surface;
         XDGSurfaceScoped m_xdg_surface;
+        WLShellSurfaceScoped m_wlshell_surface;
         XDGTopLevelScoped m_xdg_toplevel;
         WLShmScoped m_shm;
         WLShmPoolScoped m_shm_pool;

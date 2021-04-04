@@ -21,7 +21,7 @@ namespace storm::render {
 
         WindowSurface(const window::Window &window,
                       const Instance &instance,
-                      Buffering buffering = Buffering::Triple);
+                      Buffering buffering = Buffering::Swapchain);
         ~WindowSurface() override;
 
         WindowSurface(WindowSurface &&);

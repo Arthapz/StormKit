@@ -12,7 +12,7 @@ using namespace storm::window::details;
 /////////////////////////////////////
 /////////////////////////////////////
 WaylandMouse::WaylandMouse(const AbstractWindow &window) noexcept : Mouse { window } {
-    m_xcb_window = static_cast<WaylandWindowConstPtr>(m_window);
+    m_wayland_window = static_cast<WaylandWindowConstPtr>(m_window);
 }
 
 /////////////////////////////////////

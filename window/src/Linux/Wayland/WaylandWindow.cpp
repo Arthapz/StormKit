@@ -71,6 +71,25 @@ auto xdg_shell_ping_handler([[maybe_unused]] void *data,
     xdg_wm_base_pong(xdg_shell, serial);
 }
 
+auto wl_shell_surface_configure_handler(void *data,
+                                        wl_shell_surface *shell_surface,
+                                        std::uint32_t edges,
+                                        std::int32_t width,
+                                        std::int32_t height) {
+    auto *window = static_cast<WaylandWindow *>(data);
+    window->shellSurfaceConfigure(shell_surface, edges, width, height);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto wl_shell_ping_handler([[maybe_unused]] void *data,
+                           wl_shell_surface *shell_surface,
+                           std::uint32_t serial) noexcept -> void {
+    ilog("Ping received from shell");
+
+    wl_shell_surface_pong(shell_surface, serial);
+}
+
 static const auto stormkit_registry_listener =
     wl_registry_listener { .global        = global_registry_handler,
                            .global_remove = global_registry_remover };
@@ -84,6 +103,10 @@ static const auto stormkit_xdg_surface_listener =
 
 static const auto stormkit_xdg_shell_listener =
     xdg_wm_base_listener { .ping = xdg_shell_ping_handler };
+
+static const auto stormkit_wl_shell_surface_listener =
+    wl_shell_surface_listener { .ping      = wl_shell_ping_handler,
+                                .configure = wl_shell_surface_configure_handler };
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -105,11 +128,6 @@ WaylandWindow::WaylandWindow() {
     if (m_compositor) dlog("Wayland compositor found !");
     else {
         flog("Failed to find a Wayland compositor");
-        std::exit(EXIT_FAILURE);
-    }
-    if (m_xdg_shell) dlog("XDG shell found !");
-    else {
-        dlog("Failed to find a XDG shell");
         std::exit(EXIT_FAILURE);
     }
 
@@ -141,47 +159,27 @@ auto WaylandWindow::operator=(WaylandWindow &&) noexcept -> WaylandWindow & = de
 /////////////////////////////////////
 auto WaylandWindow::create(std::string title, const VideoSettings &settings, WindowStyle style)
     -> void {
-    m_title  = title;
-    m_extent = settings.size;
+    m_title          = title;
+    m_extent         = settings.size;
+    m_video_settings = settings;
+    m_style          = style;
 
     m_surface.reset(wl_compositor_create_surface(m_compositor.get()));
-    m_xdg_surface.reset(xdg_wm_base_get_xdg_surface(m_xdg_shell.get(), m_surface.get()));
+
+    if (m_xdg_shell) {
+        dlog("XDG shell found !");
+        createXDGShell();
+    } else {
+        dlog("XDGShell not found, falling back to WLShell");
+
+        if (m_wayland_shell) createWaylandShell();
+        else {
+            flog("WLShell not found, abording...");
+            std::exit(EXIT_FAILURE);
+        }
+    }
+
     m_handles.surface = m_surface.get();
-
-    xdg_surface_add_listener(m_xdg_surface.get(), &stormkit_xdg_surface_listener, this);
-
-    m_xdg_toplevel.reset(xdg_surface_get_toplevel(m_xdg_surface.get()));
-
-    xdg_toplevel_add_listener(m_xdg_toplevel.get(), &stormkit_xdg_toplevel_listener, this);
-
-    xdg_toplevel_set_title(m_xdg_toplevel.get(), m_title.c_str());
-    xdg_toplevel_set_app_id(m_xdg_toplevel.get(), m_title.c_str());
-    xdg_toplevel_set_min_size(m_xdg_toplevel.get(), settings.size.width, settings.size.height);
-
-    const auto byte_per_pixel = settings.bpp / sizeof(core::Byte);
-    const auto buffer_size    = settings.size.width * settings.size.height * byte_per_pixel;
-    const auto buffer_stride  = settings.size.width * byte_per_pixel;
-
-    auto fd = syscall(SYS_memfd_create, "buffer", 0);
-    ftruncate(fd, buffer_size);
-
-    [[maybe_unused]] auto *data =
-        mmap(nullptr, buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-    m_shm_pool.reset(wl_shm_create_pool(m_shm.get(), fd, buffer_size));
-
-    m_buffer.reset(wl_shm_pool_create_buffer(m_shm_pool.get(),
-                                             0,
-                                             settings.size.width,
-                                             settings.size.height,
-                                             buffer_stride,
-                                             WL_SHM_FORMAT_XRGB8888));
-
-    wl_surface_attach(m_surface.get(), m_buffer.get(), 0, 0);
-    wl_surface_commit(m_surface.get());
-
-    // wl_surface_commit(m_surface.get());
-    // wl_display_roundtrip(m_display.get());
 }
 
 /////////////////////////////////////
@@ -194,6 +192,7 @@ auto WaylandWindow::close() noexcept -> void {
     m_shm.reset(nullptr);
     m_xdg_toplevel.reset(nullptr);
     m_xdg_surface.reset(nullptr);
+    m_wlshell_surface.reset(nullptr);
     m_surface.reset(nullptr);
     m_xdg_shell.reset(nullptr);
 
@@ -227,19 +226,26 @@ auto WaylandWindow::waitEvent(Event &event) noexcept -> bool {
 auto WaylandWindow::setTitle(std::string title) noexcept -> void {
     m_title = std::move(title);
 
-    xdg_toplevel_set_title(m_xdg_toplevel.get(), m_title.c_str());
-    xdg_toplevel_set_app_id(m_xdg_toplevel.get(), m_title.c_str());
+    if (m_xdg_toplevel) {
+        xdg_toplevel_set_title(m_xdg_toplevel.get(), m_title.c_str());
+        xdg_toplevel_set_app_id(m_xdg_toplevel.get(), m_title.c_str());
+    } else {
+        wl_shell_surface_set_title(m_wlshell_surface.get(), m_title.c_str());
+    }
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::setVideoSettings(const storm::window::VideoSettings &settings) noexcept
     -> void {
-    xdg_surface_set_window_geometry(m_xdg_surface.get(),
-                                    0,
-                                    0,
-                                    settings.size.width,
-                                    settings.size.height);
+    if (m_xdg_toplevel) {
+        xdg_surface_set_window_geometry(m_xdg_surface.get(),
+                                        0,
+                                        0,
+                                        settings.size.width,
+                                        settings.size.height);
+    } else {
+    }
 }
 
 /////////////////////////////////////
@@ -300,6 +306,9 @@ auto WaylandWindow::registryGlobal(wl_registry *registry,
     } else if (std::char_traits<char>::compare(interface, wl_shm_interface.name, size) == 0) {
         m_shm.reset(
             reinterpret_cast<wl_shm *>(wl_registry_bind(registry, id, &wl_shm_interface, 1)));
+    } else if (std::char_traits<char>::compare(interface, wl_shell_interface.name, size) == 0) {
+        m_wayland_shell.reset(
+            reinterpret_cast<wl_shell *>(wl_registry_bind(registry, id, &wl_shell_interface, 1)));
     }
 }
 
@@ -334,6 +343,80 @@ auto WaylandWindow::toplevelClose([[maybe_unused]] xdg_toplevel *xdg_tl) noexcep
     m_visible       = false;
     m_extent.width  = 0;
     m_extent.height = 0;
+}
+
+auto WaylandWindow::shellSurfaceConfigure([[maybe_unused]] wl_shell_surface *xdg_tl,
+                                          [[maybe_unused]] std::uint32_t edges,
+                                          std::int32_t width,
+                                          std::int32_t height) noexcept -> void {
+    dlog("WL Shell configure: {}:{}", width, height);
+
+    m_opened  = true;
+    m_visible = width > 0 && height > 0;
+
+    if (width <= 0 || height <= 0) return;
+
+    m_extent.width  = width;
+    m_extent.height = height;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::createXDGShell() noexcept -> void {
+    m_xdg_surface.reset(xdg_wm_base_get_xdg_surface(m_xdg_shell.get(), m_surface.get()));
+
+    xdg_surface_add_listener(m_xdg_surface.get(), &stormkit_xdg_surface_listener, this);
+
+    m_xdg_toplevel.reset(xdg_surface_get_toplevel(m_xdg_surface.get()));
+
+    xdg_toplevel_add_listener(m_xdg_toplevel.get(), &stormkit_xdg_toplevel_listener, this);
+
+    xdg_toplevel_set_title(m_xdg_toplevel.get(), m_title.c_str());
+    xdg_toplevel_set_app_id(m_xdg_toplevel.get(), m_title.c_str());
+    xdg_toplevel_set_min_size(m_xdg_toplevel.get(),
+                              m_video_settings.size.width,
+                              m_video_settings.size.height);
+
+    wl_surface_damage(m_surface.get(), 0, 0, m_extent.width, m_extent.height);
+    createPixelbuffer();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::createWaylandShell() noexcept -> void {
+    m_wlshell_surface.reset(wl_shell_get_shell_surface(m_wayland_shell.get(), m_surface.get()));
+    wl_shell_surface_add_listener(m_wlshell_surface.get(),
+                                  &stormkit_wl_shell_surface_listener,
+                                  this);
+    wl_shell_surface_set_toplevel(m_wlshell_surface.get());
+
+    wl_surface_damage(m_surface.get(), 0, 0, m_extent.width, m_extent.height);
+    createPixelbuffer();
+}
+
+auto WaylandWindow::createPixelbuffer() noexcept -> void {
+    const auto byte_per_pixel = m_video_settings.bpp / sizeof(core::Byte);
+    const auto buffer_size =
+        m_video_settings.size.width * m_video_settings.size.height * byte_per_pixel;
+    const auto buffer_stride = m_video_settings.size.width * byte_per_pixel;
+
+    auto fd = syscall(SYS_memfd_create, "buffer", 0);
+    ftruncate(fd, buffer_size);
+
+    [[maybe_unused]] auto *data =
+        mmap(nullptr, buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+    m_shm_pool.reset(wl_shm_create_pool(m_shm.get(), fd, buffer_size));
+
+    m_buffer.reset(wl_shm_pool_create_buffer(m_shm_pool.get(),
+                                             0,
+                                             m_video_settings.size.width,
+                                             m_video_settings.size.height,
+                                             buffer_stride,
+                                             WL_SHM_FORMAT_XRGB8888));
+
+    // wl_surface_attach(m_surface.get(), m_buffer.get(), 0, 0);
+    wl_surface_commit(m_surface.get());
 }
 
 /////////////////////////////////////

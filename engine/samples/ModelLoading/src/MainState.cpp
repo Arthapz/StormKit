@@ -43,7 +43,7 @@ class RotationSystem: public entities::System {
         for (auto e : m_entities) {
             auto &transform_component = m_manager->getComponent<engine::TransformComponent>(e);
 
-            // transform_component.transform.rotateRoll(ROTATE_ANGLE * delta.count());
+            transform_component.transform.rotateRoll(ROTATE_ANGLE * delta.count());
         }
     }
 
@@ -105,7 +105,7 @@ MainState::MainState(core::StateManager &owner,
     auto &drawable_component    = m_world.addComponent<engine::DrawableComponent>(e);
     drawable_component.drawable = std::move(mesh);
 
-    auto &transform_component = m_world.addComponent<engine::TransformComponent>(e);
+    m_world.addComponent<engine::TransformComponent>(e);
 
     m_mouse->setPositionOnDesktop({ 500u, 600u });
 }
@@ -125,12 +125,6 @@ MainState &MainState::operator=(MainState &&) noexcept = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 void MainState::update(core::Secondf delta) {
-    if (m_keyboard->isKeyPressed(window::Key::Z)) ilog("Z");
-    if (m_keyboard->isKeyPressed(window::Key::W)) ilog("W");
-    if (m_keyboard->isKeyPressed(window::Key::A)) ilog("A");
-    if (m_keyboard->isKeyPressed(window::Key::Q)) ilog("Q");
-    if (m_keyboard->isKeyPressed(window::Key::M)) ilog("M");
-
     auto inputs = engine::FPSCamera::Inputs {
         .up    = m_keyboard->isKeyPressed(window::Key::Z),
         .down  = m_keyboard->isKeyPressed(window::Key::S),

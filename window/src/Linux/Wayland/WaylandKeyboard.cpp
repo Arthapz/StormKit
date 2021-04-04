@@ -13,7 +13,7 @@ using namespace storm::window::details;
 /////////////////////////////////////
 /////////////////////////////////////
 WaylandKeyboard::WaylandKeyboard(const AbstractWindow &window) noexcept : Keyboard { window } {
-    m_xcb_window = static_cast<WaylandWindowConstPtr>(m_window);
+    m_wayland_window = static_cast<WaylandWindowConstPtr>(m_window);
 }
 
 /////////////////////////////////////

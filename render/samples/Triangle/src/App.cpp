@@ -66,7 +66,7 @@ void App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char **arg
         }
 
         auto frame       = m_surface->acquireNextFrame();
-        auto &frame_data = m_frame_datas[frame.texture_index];
+        auto &frame_data = m_frame_datas[frame.texture_index % m_surface->bufferingCount()];
 
         frame_data.commandbuffer.submit(core::makeConstObserverArray(frame.texture_available),
                                         core::makeConstObserverArray(frame.render_finished),

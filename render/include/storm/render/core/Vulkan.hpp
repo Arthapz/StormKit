@@ -15,7 +15,6 @@
 
 #if defined(STORMKIT_OS_LINUX)
     #if STORMKIT_ENABLE_XCB
-        #include <vulkan/vulkan_xcb.h>
         #define VK_USE_PLATFORM_XCB_KHR 1
     #endif
     #if STORMKIT_ENABLE_WAYLAND
@@ -42,6 +41,8 @@
     #include <vulkan/vulkan_wayland.h>
 #endif
 #if STORMKIT_ENABLE_XCB
+    #include <xcb/xcb.h>
+
     #include <vulkan/vulkan_xcb.h>
 #endif
 
@@ -186,11 +187,11 @@ namespace storm::render {
         gsl::czstring<> { "VK_LAYER_KHRONOS_validation" },
     // "VK_LAYER_LUNARG_api_dump",
     #ifdef STORMKIT_OS_LINUX
-        "VK_LAYER_MESA_overlay",
+            "VK_LAYER_MESA_overlay",
     #endif
 #endif
-#ifndef STORMKIT_OS_MACOS
-        "VK_LAYER_LUNARG_monitor",
+#if !defined(STORMKIT_OS_MACOS) && !STORMKIT_ENABLE_WAYLAND
+            "VK_LAYER_LUNARG_monitor",
 #endif
     };
 

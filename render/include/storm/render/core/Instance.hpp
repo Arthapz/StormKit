@@ -30,10 +30,10 @@ namespace storm::render {
 
         WindowSurface
             createWindowSurface(const window::Window &window,
-                                Surface::Buffering buffering = Surface::Buffering::Triple) const;
-        WindowSurfaceOwnedPtr
-            createWindowSurfacePtr(const window::Window &window,
-                                   Surface::Buffering buffering = Surface::Buffering::Triple) const;
+                                Surface::Buffering buffering = Surface::Buffering::Swapchain) const;
+        WindowSurfaceOwnedPtr createWindowSurfacePtr(
+            const window::Window &window,
+            Surface::Buffering buffering = Surface::Buffering::Swapchain) const;
         OffscreenSurface
             createOffscreenSurface(core::Extentu extent,
                                    Surface::Buffering buffering = Surface::Buffering::Triple) const;

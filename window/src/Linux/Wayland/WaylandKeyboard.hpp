@@ -29,6 +29,6 @@ namespace storm::window::details {
 
         ALLOCATE_HELPERS(WaylandKeyboard)
       private:
-        WaylandWindowConstPtr m_xcb_window;
+        WaylandWindowConstPtr m_wayland_window;
     };
 } // namespace storm::window::details

@@ -45,6 +45,9 @@ core::UInt64 scorePhysicalDevice(const render::PhysicalDevice &physical_device) 
     score += capabilities.limits.max_image_dimension_3D;
     score += capabilities.limits.max_image_dimension_cube;
     score += capabilities.limits.max_uniform_buffer_range;
+    score += info.api_major_version * 10000000u;
+    score += info.api_minor_version * 1000000u;
+    score += info.api_patch_version * 100u;
 
     return score;
 }
@@ -170,6 +173,9 @@ void Instance::createInstance() noexcept {
     const auto enable_validation = checkValidationLayerSupport(ENABLE_VALIDATION);
     if (enable_validation) {
         dlog("Validation layers enabled");
+        dlog("enabling layers: -----------");
+        for (const auto &str : VALIDATION_LAYERS) dlog("	{}", str);
+        dlog("-------------------------------");
         create_info.setEnabledLayerCount(std::size(VALIDATION_LAYERS));
         create_info.setPpEnabledLayerNames(std::data(VALIDATION_LAYERS));
 
@@ -323,7 +329,10 @@ vk::UniqueSurfaceKHR
     Instance::createVkSurface(const vk::WaylandSurfaceCreateInfoKHR &create_info) const noexcept {
     auto instance = vkInstance();
 
-    CHECK_VK_ERROR_VALUE(instance.createWaylandSurfaceKHRUnique(create_info), surface);
+    CHECK_VK_ERROR_VALUE(instance.createWaylandSurfaceKHRUnique(create_info,
+                                                                nullptr,
+                                                                VULKAN_HPP_DEFAULT_DISPATCHER),
+                         surface);
 
     return surface;
 }
