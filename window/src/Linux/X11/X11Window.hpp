@@ -50,7 +50,7 @@ namespace storm::window::details {
         [[nodiscard]] bool waitEvent(Event &event) noexcept override;
 
         void setTitle(std::string title) noexcept override;
-        void setVideoSettings(const VideoSettings &settings) noexcept override;
+        void setFullscreenEnabled(bool enabled) noexcept override;
 
         void lockMouse() noexcept override;
         void unlockMouse() noexcept override;
@@ -99,6 +99,14 @@ namespace storm::window::details {
         xcb_intern_atom_reply_t *m_protocol_reply;
         xcb_intern_atom_cookie_t m_close_cookie;
         xcb_intern_atom_reply_t *m_close_reply;
+
+        struct WindowHints {
+            uint32_t flags       = 0;
+            uint32_t functions   = 0;
+            uint32_t decorations = 0;
+            int32_t input_mode   = 0;
+            uint32_t state       = 0;
+        } m_window_hints;
 
         core::Extentu m_extent;
 

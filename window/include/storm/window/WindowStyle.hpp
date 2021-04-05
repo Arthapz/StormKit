@@ -14,8 +14,7 @@ namespace storm::window {
         Close       = TitleBar | 0b10,
         Minimizable = TitleBar | 0b100,
         Resizable   = TitleBar | 0b1000,
-        All         = Resizable | Minimizable | Close,
-        Fullscreen  = 0b10000
+        All         = Resizable | Minimizable | Close
     };
 }
 

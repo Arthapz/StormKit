@@ -32,7 +32,8 @@ namespace storm::window::details {
     STORMKIT_RAII_CAPSULE(WLCompositor, wl_compositor, wl_compositor_destroy)
     STORMKIT_RAII_CAPSULE(WLShm, wl_shm, wl_shm_destroy)
     STORMKIT_RAII_CAPSULE(WLShmPool, wl_shm_pool, wl_shm_pool_destroy)
-    STORMKIT_RAII_CAPSULE(WLSeat, wl_seat, wl_seat_destroy)
+    STORMKIT_RAII_CAPSULE(WLSeat, wl_seat, wl_seat_release)
+    STORMKIT_RAII_CAPSULE(WLOutput, wl_output, wl_output_release)
 
     // Base Surface
     STORMKIT_RAII_CAPSULE(WLSurface, wl_surface, wl_surface_destroy)
@@ -53,9 +54,9 @@ namespace storm::window::details {
                           zxdg_decoration_manager_v1_destroy)
 
     // Events
-    STORMKIT_RAII_CAPSULE(WLPointer, wl_pointer, wl_pointer_destroy)
-    STORMKIT_RAII_CAPSULE(WLKeyboard, wl_keyboard, wl_keyboard_destroy)
-    STORMKIT_RAII_CAPSULE(WLTouch, wl_touch, wl_touch_destroy)
+    STORMKIT_RAII_CAPSULE(WLPointer, wl_pointer, wl_pointer_release)
+    STORMKIT_RAII_CAPSULE(WLKeyboard, wl_keyboard, wl_keyboard_release)
+    STORMKIT_RAII_CAPSULE(WLTouch, wl_touch, wl_touch_release)
 
     // WP
     STORMKIT_RAII_CAPSULE(WPRelativePointerManager,
@@ -71,6 +72,26 @@ namespace storm::window::details {
 
     // Fake Buffer
     STORMKIT_RAII_CAPSULE(WLBuffer, wl_buffer, wl_buffer_destroy)
+
+    struct Globals {
+        WLDisplayScoped display;
+        WLRegistryScoped registry;
+        WLCompositorScoped compositor;
+        std::vector<WLOutputScoped> outputs;
+
+        XDGShellScoped xdg_shell;
+        XDGDecorationManagerScoped xdg_decoration_manager;
+
+        WLShellScoped wayland_shell;
+
+        WLShmScoped shm;
+        WLSeatScoped seat;
+        std::vector<WLPointerScoped> pointers;
+        std::vector<WLKeyboardScoped> keyboards;
+        std::vector<WLTouchScoped> touchscreens;
+        WPPointerConstraintsScoped pointer_constraints;
+        WPRelativePointerManagerScoped relative_pointer_manager;
+    };
 
     class STORMKIT_PRIVATE WaylandWindow final: public AbstractWindow {
       public:
@@ -111,7 +132,7 @@ namespace storm::window::details {
         [[nodiscard]] bool waitEvent(Event &event) noexcept override;
 
         void setTitle(std::string title) noexcept override;
-        void setVideoSettings(const VideoSettings &settings) noexcept override;
+        void setFullscreenEnabled(bool enabled) noexcept override;
 
         void lockMouse() noexcept override;
         void unlockMouse() noexcept override;
@@ -127,10 +148,7 @@ namespace storm::window::details {
         [[nodiscard]] NativeHandle nativeHandle() const noexcept override;
         [[nodiscard]] const Handles &waylandHandles() const noexcept { return m_handles; }
 
-        void registryGlobal(wl_registry *registry,
-                            std::uint32_t id,
-                            const char *interface,
-                            std::uint32_t version) noexcept;
+        void surfaceOutputEnter(wl_surface *surface, wl_output *output) noexcept;
 
         void surfaceConfigure(xdg_surface *surface, std::uint32_t serial) noexcept;
 
@@ -215,16 +233,10 @@ namespace storm::window::details {
         void updateKeymap(std::string_view keymap_string) noexcept;
         void updateXKBMods() noexcept;
 
-        // Base
-        WLDisplayScoped m_display;
-        WLRegistryScoped m_registry;
-        WLCompositorScoped m_compositor;
-        WLShmScoped m_shm;
-        WLShmPoolScoped m_shm_pool;
-        WLSeatScoped m_seat;
-
         // Base Surface
+        wl_output *m_current_output;
         WLSurfaceScoped m_surface;
+        WLShmPoolScoped m_shm_pool;
 
         // Cursor
         WLCursorThemeScoped m_cursor_theme;
@@ -232,24 +244,19 @@ namespace storm::window::details {
         WLBufferScoped m_cursor_buffer;
 
         // WL_Shell
-        WLShellScoped m_wayland_shell;
         WLShellSurfaceScoped m_wlshell_surface;
 
         // XDG
-        XDGShellScoped m_xdg_shell;
         XDGSurfaceScoped m_xdg_surface;
         XDGTopLevelScoped m_xdg_toplevel;
-        XDGDecorationManagerScoped m_xdg_decoration_manager;
 
         // Events
-        WLPointerScoped m_pointer;
-        std::uint32_t m_pointer_serial;
-        WLKeyboardScoped m_keyboard;
-        WLTouchScoped m_touchscreen;
+        wl_pointer *m_pointer          = nullptr;
+        std::uint32_t m_pointer_serial = 0u;
+        wl_keyboard *m_keyboard        = nullptr;
+        wl_touch *m_touchscreen        = nullptr;
 
         // WP
-        WPPointerConstraintsScoped m_pointer_constraints;
-        WPRelativePointerManagerScoped m_relative_pointer_manager;
         WPLockedPointerScoped m_locked_pointer;
         WPRelativePointerScoped m_relative_pointer;
 
@@ -274,9 +281,10 @@ namespace storm::window::details {
 
         Handles m_handles;
 
-        bool m_opened          = false;
-        bool m_visible         = false;
-        core::Extentu m_extent = {};
+        bool m_opened                    = false;
+        bool m_visible                   = false;
+        core::Extentu m_fullscren_extent = {};
+        core::Extentu m_extent           = {};
 
         std::array<KeyState, 102> m_keyboard_state;
 

@@ -38,6 +38,8 @@ using namespace storm;
 using namespace storm::window;
 using namespace storm::window::details;
 
+static constexpr auto window_manager_hints_str = std::string_view("_MOTIF_WM_HINTS");
+
 /////////////////////////////////////
 /////////////////////////////////////
 X11Window::X11Window() = default;
@@ -159,101 +161,46 @@ auto X11Window::create(std::string title, const VideoSettings &settings, WindowS
     setTitle(std::move(title));
 
     // set the window's style
-    if ((style & WindowStyle::Fullscreen) == WindowStyle::Fullscreen) {
-        auto wm_state       = xcb_intern_atom(m_connection.get(), 0, 13, "_NET_WM_STATE");
-        auto wm_state_reply = xcb_intern_atom_reply(m_connection.get(), wm_state, nullptr);
-        auto wm_state_fs = xcb_intern_atom(m_connection.get(), 0, 24, "_NET_WM_STATE_FULLSCREEN");
-        auto wm_state_fs_reply = xcb_intern_atom_reply(m_connection.get(), wm_state_fs, nullptr);
+    // checking if the window manager support window decoration
+    static constexpr const auto MWM_HINTS_FUNCTIONS   = 1 << 0;
+    static constexpr const auto MWM_HINTS_DECORATIONS = 1 << 1;
 
-        xcb_change_property(m_connection.get(),
-                            XCB_PROP_MODE_REPLACE,
-                            m_window,
-                            wm_state_reply->atom,
-                            XCB_ATOM_ATOM,
-                            32,
-                            1,
-                            &wm_state_fs_reply->atom);
+    static constexpr const auto MWM_DECOR_BORDER   = 1 << 1;
+    static constexpr const auto MWM_DECOR_RESIZE   = 1 << 2;
+    static constexpr const auto MWM_DECOR_TITLE    = 1 << 3;
+    static constexpr const auto MWM_DECOR_MENU     = 1 << 4;
+    static constexpr const auto MWM_DECOR_MINIMIZE = 1 << 5;
+    static constexpr const auto MWM_DECOR_MAXIMIZE = 1 << 6;
 
-        free(wm_state_reply);
-        free(wm_state_fs_reply);
-    } else {
-        // checking if the window manager support window decoration
-        static const auto window_manager_hints_str = std::string_view("_MOTIF_WM_HINTS");
+    static constexpr const auto MWM_FUNC_RESIZE   = 1 << 1;
+    static constexpr const auto MWM_FUNC_MOVE     = 1 << 2;
+    static constexpr const auto MWM_FUNC_MINIMIZE = 1 << 3;
+    static constexpr const auto MWM_FUNC_MAXIMIZE = 1 << 4;
+    static constexpr const auto MWM_FUNC_CLOSE    = 1 << 5;
 
-        const auto atom_request = xcb_intern_atom(m_connection.get(),
-                                                  0,
-                                                  window_manager_hints_str.length(),
-                                                  window_manager_hints_str.data());
-        const auto atom_reply   = xcb_intern_atom_reply(m_connection.get(), atom_request, nullptr);
+    m_window_hints.flags = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
 
-        if (atom_reply && (style & WindowStyle::Fullscreen) != WindowStyle::Fullscreen) {
-            static constexpr const auto MWM_HINTS_FUNCTIONS   = 1 << 0;
-            static constexpr const auto MWM_HINTS_DECORATIONS = 1 << 1;
-
-            static constexpr const auto MWM_DECOR_BORDER   = 1 << 1;
-            static constexpr const auto MWM_DECOR_RESIZE   = 1 << 2;
-            static constexpr const auto MWM_DECOR_TITLE    = 1 << 3;
-            static constexpr const auto MWM_DECOR_MENU     = 1 << 4;
-            static constexpr const auto MWM_DECOR_MINIMIZE = 1 << 5;
-            static constexpr const auto MWM_DECOR_MAXIMIZE = 1 << 6;
-
-            static constexpr const auto MWM_FUNC_RESIZE   = 1 << 1;
-            static constexpr const auto MWM_FUNC_MOVE     = 1 << 2;
-            static constexpr const auto MWM_FUNC_MINIMIZE = 1 << 3;
-            static constexpr const auto MWM_FUNC_MAXIMIZE = 1 << 4;
-            static constexpr const auto MWM_FUNC_CLOSE    = 1 << 5;
-
-            struct {
-                uint32_t flags       = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
-                uint32_t functions   = 0;
-                uint32_t decorations = 0;
-                int32_t input_mode   = 0;
-                uint32_t state       = 0;
-            } hints;
-
-            if ((style & WindowStyle::TitleBar) == WindowStyle::TitleBar) {
-                hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MENU;
-                hints.functions |= MWM_FUNC_MOVE;
-            }
-
-            if ((style & WindowStyle::Close) == WindowStyle::Minimizable) {
-                hints.decorations |= 0;
-                hints.functions |= MWM_FUNC_CLOSE;
-            }
-
-            if ((style & WindowStyle::Minimizable) == WindowStyle::Minimizable) {
-                hints.decorations |= MWM_DECOR_MINIMIZE;
-                hints.functions |= MWM_FUNC_MINIMIZE;
-            }
-
-            if ((style & WindowStyle::Resizable) == WindowStyle::Resizable) {
-                hints.decorations |= MWM_DECOR_RESIZE | MWM_DECOR_MAXIMIZE;
-                hints.functions |= MWM_FUNC_RESIZE | MWM_FUNC_MAXIMIZE;
-            }
-
-            // applying hints
-            xcb_change_property(m_connection.get(),
-                                XCB_PROP_MODE_REPLACE,
-                                m_window,
-                                atom_reply->atom,
-                                XCB_ATOM_WM_HINTS,
-                                32,
-                                5,
-                                reinterpret_cast<std::byte *>(&hints));
-
-            free(atom_reply);
-        }
-
-        // hack to force some windows managers to disable resizing
-        if ((style & WindowStyle::Resizable) != WindowStyle::Resizable) {
-            auto size_hints      = xcb_size_hints_t {};
-            size_hints.flags     = XCB_ICCCM_SIZE_HINT_P_MIN_SIZE | XCB_ICCCM_SIZE_HINT_P_MAX_SIZE;
-            size_hints.min_width = size_hints.max_width = settings.size.width;
-            size_hints.min_height = size_hints.max_height = settings.size.height;
-            xcb_icccm_set_wm_normal_hints(m_connection.get(), m_window, &size_hints);
-        }
+    if ((style & WindowStyle::TitleBar) == WindowStyle::TitleBar) {
+        m_window_hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MENU;
+        m_window_hints.functions |= MWM_FUNC_MOVE;
     }
 
+    if ((style & WindowStyle::Close) == WindowStyle::Minimizable) {
+        m_window_hints.decorations |= 0;
+        m_window_hints.functions |= MWM_FUNC_CLOSE;
+    }
+
+    if ((style & WindowStyle::Minimizable) == WindowStyle::Minimizable) {
+        m_window_hints.decorations |= MWM_DECOR_MINIMIZE;
+        m_window_hints.functions |= MWM_FUNC_MINIMIZE;
+    }
+
+    if ((style & WindowStyle::Resizable) == WindowStyle::Resizable) {
+        m_window_hints.decorations |= MWM_DECOR_RESIZE | MWM_DECOR_MAXIMIZE;
+        m_window_hints.functions |= MWM_FUNC_RESIZE | MWM_FUNC_MAXIMIZE;
+    }
+
+    setFullscreenEnabled(false);
     xcb_flush(m_connection.get());
 
     m_is_open    = true;
@@ -340,8 +287,55 @@ auto X11Window::setTitle(std::string title) noexcept -> void {
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto X11Window::setVideoSettings(const storm::window::VideoSettings &settings) noexcept -> void {
-    dlog("setVideoSettings not yet implemented");
+auto X11Window::setFullscreenEnabled(bool enabled) noexcept -> void {
+    if (enabled) {
+        auto wm_state       = xcb_intern_atom(m_connection.get(), 0, 13, "_NET_WM_STATE");
+        auto wm_state_reply = xcb_intern_atom_reply(m_connection.get(), wm_state, nullptr);
+        auto wm_state_fs = xcb_intern_atom(m_connection.get(), 0, 24, "_NET_WM_STATE_FULLSCREEN");
+        auto wm_state_fs_reply = xcb_intern_atom_reply(m_connection.get(), wm_state_fs, nullptr);
+
+        xcb_change_property(m_connection.get(),
+                            XCB_PROP_MODE_REPLACE,
+                            m_window,
+                            wm_state_reply->atom,
+                            XCB_ATOM_ATOM,
+                            32,
+                            1,
+                            &wm_state_fs_reply->atom);
+        xcb_flush(m_connection.get());
+
+        free(wm_state_reply);
+        free(wm_state_fs_reply);
+    } else {
+        const auto atom_request = xcb_intern_atom(m_connection.get(),
+                                                  0,
+                                                  std::size(window_manager_hints_str),
+                                                  std::data(window_manager_hints_str));
+        const auto atom_reply   = xcb_intern_atom_reply(m_connection.get(), atom_request, nullptr);
+
+        xcb_change_property(m_connection.get(),
+                            XCB_PROP_MODE_REPLACE,
+                            m_window,
+                            atom_reply->atom,
+                            XCB_ATOM_WM_HINTS,
+                            32,
+                            5,
+                            reinterpret_cast<std::byte *>(&m_window_hints));
+
+        if ((m_style & WindowStyle::Resizable) != WindowStyle::Resizable) {
+            auto size_hints      = xcb_size_hints_t {};
+            size_hints.flags     = XCB_ICCCM_SIZE_HINT_P_MIN_SIZE | XCB_ICCCM_SIZE_HINT_P_MAX_SIZE;
+            size_hints.min_width = size_hints.max_width = m_video_settings.size.width;
+            size_hints.min_height = size_hints.max_height = m_video_settings.size.height;
+            xcb_icccm_set_wm_normal_hints(m_connection.get(), m_window, &size_hints);
+        }
+
+        xcb_flush(m_connection.get());
+
+        free(atom_reply);
+    }
+
+    m_fullscreen = enabled;
 }
 
 /////////////////////////////////////

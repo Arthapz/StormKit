@@ -63,18 +63,17 @@ auto App::doInitWindow() -> void {
                                                         WINDOW_HEIGHT<core::UInt32> } };
     auto window_style = window::WindowStyle::Close;
 
-    if (m_fullscreen) {
-        video_settings = window::Window::getDesktopFullscreenSize();
-        window_style   = window::WindowStyle::Fullscreen;
-    }
+    m_window = std::make_unique<window::Window>(WINDOW_TITLE, video_settings, window_style);
+    if (m_fullscreen) m_window->setFullscreenEnabled(true);
 
-    m_window        = std::make_unique<window::Window>(WINDOW_TITLE, video_settings, window_style);
     m_event_handler = std::make_unique<window::EventHandler>(*m_window);
 
     m_event_handler->addCallback(window::EventType::Closed,
                                  [this]([[maybe_unused]] const auto &event) { m_window->close(); });
     m_event_handler->addCallback(window::EventType::KeyPressed, [this](const auto &event) {
         if (event.key_event.key == window::Key::Escape) m_window->close();
+        else if (event.key_event.key == window::Key::F11)
+            m_window->setFullscreenEnabled(!m_window->isInFullscreen());
         /*else if (event.key_event.key == window::Key::Numpad5)
             m_scene->setDebugView(engine::PBRMaterialInstance::DebugView::D);
         else if (event.key_event.key == window::Key::Numpad4)

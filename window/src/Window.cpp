@@ -126,8 +126,8 @@ auto Window::setTitle(std::string title) noexcept -> void {
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto Window::setVideoSettings(const VideoSettings &settings) noexcept -> void {
-    m_impl->setVideoSettings(settings);
+auto Window::setFullscreenEnabled(bool fullscreen) noexcept -> void {
+    m_impl->setFullscreenEnabled(fullscreen);
 }
 
 /////////////////////////////////////
@@ -188,6 +188,12 @@ auto Window::nativeHandle() const noexcept -> NativeHandle {
 /////////////////////////////////////
 auto Window::isMouseLocked() const noexcept -> bool {
     return m_impl->isMouseLocked();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::isInFullscreen() const noexcept -> bool {
+    return m_impl->isInFullscreen();
 }
 
 /////////////////////////////////////

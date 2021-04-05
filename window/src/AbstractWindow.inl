@@ -18,4 +18,8 @@ namespace storm::window::details {
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto AbstractWindow::isMouseLocked() const noexcept -> bool { return m_mouse_locked; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto AbstractWindow::isInFullscreen() const noexcept -> bool { return m_fullscreen; }
 } // namespace storm::window::details

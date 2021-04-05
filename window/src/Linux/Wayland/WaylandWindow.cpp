@@ -4,6 +4,7 @@
 
 #include "../Utils.hpp"
 
+#include "Callback.hpp"
 #include "Log.hpp"
 #include "WaylandKeyboard.hpp"
 #include "WaylandMouse.hpp"
@@ -20,321 +21,63 @@ using namespace storm;
 using namespace storm::window;
 using namespace storm::window::details;
 
-/////////////////////////////////////
-/////////////////////////////////////
-auto global_registry_handler(void *data,
-                             wl_registry *registry,
-                             std::uint32_t id,
-                             const char *i,
-                             std::uint32_t version) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->registryGlobal(registry, id, i, version);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto global_registry_remover([[maybe_unused]] void *data,
-                             [[maybe_unused]] wl_registry *registry,
-                             std::uint32_t id) noexcept -> void {
-    dlog("Wayland registry lost {}", id);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto xdg_toplevel_configure_handler(void *data,
-                                    xdg_toplevel *xdg_tl,
-                                    int32_t width,
-                                    int32_t height,
-                                    wl_array *states) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->toplevelConfigure(xdg_tl, width, height, states);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto xdg_toplevel_close_handler(void *data, xdg_toplevel *xdg_tl) noexcept -> auto {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->toplevelClose(xdg_tl);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto xdg_surface_configure_handler(void *data, xdg_surface *surface, std::uint32_t serial) noexcept
-    -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->surfaceConfigure(surface, serial);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto xdg_shell_ping_handler([[maybe_unused]] void *data,
-                            xdg_wm_base *xdg_shell,
-                            std::uint32_t serial) noexcept -> void {
-    ilog("Ping received from shell");
-
-    xdg_wm_base_pong(xdg_shell, serial);
-}
-
-auto wl_shell_surface_configure_handler(void *data,
-                                        wl_shell_surface *shell_surface,
-                                        std::uint32_t edges,
-                                        std::int32_t width,
-                                        std::int32_t height) {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->shellSurfaceConfigure(shell_surface, edges, width, height);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_shell_ping_handler([[maybe_unused]] void *data,
-                           wl_shell_surface *shell_surface,
-                           std::uint32_t serial) noexcept -> void {
-    ilog("Ping received from shell");
-
-    wl_shell_surface_pong(shell_surface, serial);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_seat_capabilities_handler(void *data, wl_seat *seat, std::uint32_t capabilities) noexcept
-    -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->seatCapabilities(seat, capabilities);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_seat_name_handler([[maybe_unused]] void *data, wl_seat *seat, const char *name) noexcept
-    -> void {
-    dlog("WL Seat found! {}", name);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_pointer_enter_handler(void *data,
-                              wl_pointer *pointer,
-                              std::uint32_t serial,
-                              wl_surface *surface,
-                              wl_fixed_t surface_x,
-                              wl_fixed_t surface_y) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->pointerEnter(pointer, serial, surface, surface_x, surface_y);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_pointer_leave_handler(void *data,
-                              wl_pointer *pointer,
-                              std::uint32_t serial,
-                              wl_surface *surface) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->pointerLeave(pointer, serial, surface);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_pointer_motion_handler(void *data,
-                               wl_pointer *pointer,
-                               std::uint32_t time,
-                               wl_fixed_t surface_x,
-                               wl_fixed_t surface_y) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->pointerMotion(pointer, time, surface_x, surface_y);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_pointer_button_handler(void *data,
-                               wl_pointer *pointer,
-                               std::uint32_t serial,
-                               std::uint32_t time,
-                               std::uint32_t button,
-                               std::uint32_t state) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->pointerButton(pointer, serial, time, button, state);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_pointer_axis_handler([[maybe_unused]] void *data,
-                             [[maybe_unused]] wl_pointer *pointer,
-                             [[maybe_unused]] std::uint32_t time,
-                             [[maybe_unused]] std::uint32_t axis,
-                             [[maybe_unused]] wl_fixed_t value) noexcept -> void {
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_pointer_frame_handler([[maybe_unused]] void *data,
-                              [[maybe_unused]] wl_pointer *pointer) noexcept -> void {
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_pointer_axis_source_handler([[maybe_unused]] void *data,
-                                    [[maybe_unused]] wl_pointer *pointer,
-                                    [[maybe_unused]] std::uint32_t axis_source) noexcept -> void {
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_pointer_axis_stop_handler([[maybe_unused]] void *data,
-                                  [[maybe_unused]] wl_pointer *pointer,
-                                  [[maybe_unused]] std::uint32_t time,
-                                  [[maybe_unused]] std::uint32_t axis) noexcept -> void {
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_pointer_axis_discrete_handler([[maybe_unused]] void *data,
-                                      [[maybe_unused]] wl_pointer *pointer,
-                                      [[maybe_unused]] std::uint32_t axis,
-                                      [[maybe_unused]] std::int32_t discrete) noexcept -> void {
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_keyboard_keymap_handler(void *data,
-                                wl_keyboard *keyboard,
-                                std::uint32_t format,
-                                std::int32_t fd,
-                                std::uint32_t size) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->keyboardKeymap(keyboard, format, fd, size);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_keyboard_enter_handler(void *data,
-                               wl_keyboard *keyboard,
-                               std::uint32_t serial,
-                               wl_surface *surface,
-                               wl_array *keys) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->keyboardEnter(keyboard, serial, surface, keys);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_keyboard_leave_handler(void *data,
-                               wl_keyboard *keyboard,
-                               std::uint32_t serial,
-                               wl_surface *surface) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->keyboardLeave(keyboard, serial, surface);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_keyboard_key_handler(void *data,
-                             wl_keyboard *keyboard,
-                             std::uint32_t serial,
-                             std::uint32_t time,
-                             std::uint32_t key,
-                             std::uint32_t state) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->keyboardKey(keyboard, serial, time, key, state);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_keyboard_modifiers_handler(void *data,
-                                   wl_keyboard *keyboard,
-                                   std::uint32_t serial,
-                                   std::uint32_t mods_depressed,
-                                   std::uint32_t mods_latcher,
-                                   std::uint32_t mods_locked,
-                                   std::uint32_t group) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->keyboardModifiers(keyboard, serial, mods_depressed, mods_latcher, mods_locked, group);
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-auto wl_keyboard_repeat_info_handler(void *data,
-                                     wl_keyboard *keyboard,
-                                     std::int32_t rate,
-                                     std::int32_t delay) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window->keyboardRepeatInfo(keyboard, rate, delay);
-}
-
-auto wp_relative_pointer_relative_motion_handler(void *data,
-                                                 zwp_relative_pointer_v1 *pointer,
-                                                 std::uint32_t time_hi,
-                                                 std::uint32_t time_lw,
-                                                 wl_fixed_t dx,
-                                                 wl_fixed_t dy,
-                                                 wl_fixed_t dx_unaccel,
-                                                 wl_fixed_t dy_unaccel) noexcept -> void {
-    auto *window = static_cast<WaylandWindow *>(data);
-    window
-        ->relativePointerRelativeMotion(pointer, time_hi, time_lw, dx, dy, dx_unaccel, dy_unaccel);
-}
-
-auto wp_locked_pointer_locked_handler(
-    [[maybe_unused]] void *data,
-    [[maybe_unused]] zwp_locked_pointer_v1 *locked_pointer) noexcept -> void {
-}
-
-auto wp_locked_pointer_unlocked_handler(
-    [[maybe_unused]] void *data,
-    [[maybe_unused]] zwp_locked_pointer_v1 *locked_pointer) noexcept -> void {
-}
+static auto globals = Globals {};
 
 static const auto stormkit_registry_listener =
-    wl_registry_listener { .global        = global_registry_handler,
-                           .global_remove = global_registry_remover };
+    wl_registry_listener { .global = registry_handler, .global_remove = registry_remover_handler };
 
-static const auto stormkit_xdg_toplevel_listener =
-    xdg_toplevel_listener { .configure = xdg_toplevel_configure_handler,
-                            .close     = xdg_toplevel_close_handler };
+static const auto stormkit_surface_listener =
+    wl_surface_listener { .enter = surface_enter_handler, .leave = surface_leave_handler };
 
 static const auto stormkit_xdg_surface_listener =
-    xdg_surface_listener { .configure = xdg_surface_configure_handler };
+    xdg_surface_listener { .configure = surface_configure_handler };
 
-static const auto stormkit_xdg_shell_listener =
-    xdg_wm_base_listener { .ping = xdg_shell_ping_handler };
+static const auto stormkit_xdg_toplevel_listener =
+    xdg_toplevel_listener { .configure = toplevel_configure_handler,
+                            .close     = toplevel_close_handler };
 
-static const auto stormkit_wl_shell_surface_listener =
-    wl_shell_surface_listener { .ping      = wl_shell_ping_handler,
-                                .configure = wl_shell_surface_configure_handler };
+static const auto stormkit_shell_listener = xdg_wm_base_listener { .ping = shell_ping_handler };
 
-static const auto stormkit_wl_seat_listener =
-    wl_seat_listener { .capabilities = wl_seat_capabilities_handler, .name = wl_seat_name_handler };
-
-static const auto stormkit_wl_pointer_listener =
-    wl_pointer_listener { .enter         = wl_pointer_enter_handler,
-                          .leave         = wl_pointer_leave_handler,
-                          .motion        = wl_pointer_motion_handler,
-                          .button        = wl_pointer_button_handler,
-                          .axis          = wl_pointer_axis_handler,
-                          .frame         = wl_pointer_frame_handler,
-                          .axis_source   = wl_pointer_axis_source_handler,
-                          .axis_stop     = wl_pointer_axis_stop_handler,
-                          .axis_discrete = wl_pointer_axis_discrete_handler };
-
-static const auto stormkit_wl_keyboard_listener =
-    wl_keyboard_listener { .keymap      = wl_keyboard_keymap_handler,
-                           .enter       = wl_keyboard_enter_handler,
-                           .leave       = wl_keyboard_leave_handler,
-                           .key         = wl_keyboard_key_handler,
-                           .modifiers   = wl_keyboard_modifiers_handler,
-                           .repeat_info = wl_keyboard_repeat_info_handler };
-
-static const auto stormkit_wl_touchscreen_listener = wl_touch_listener {};
+static const auto stormkit_shell_surface_listener =
+    wl_shell_surface_listener { .ping      = shell_ping_handler,
+                                .configure = shell_surface_configure_handler };
 
 static const auto stormkit_relative_pointer_listener =
     zwp_relative_pointer_v1_listener { .relative_motion =
-                                           wp_relative_pointer_relative_motion_handler };
+                                           relative_pointer_relative_motion_handler };
 
 static const auto stormkit_locked_pointer_listener =
-    zwp_locked_pointer_v1_listener { .locked   = wp_locked_pointer_locked_handler,
-                                     .unlocked = wp_locked_pointer_unlocked_handler };
+    zwp_locked_pointer_v1_listener { .locked   = locked_pointer_locked_handler,
+                                     .unlocked = locked_pointer_unlocked_handler };
+
+void init() {
+    globals.display.reset(wl_display_connect(nullptr));
+
+    if (globals.display) dlog("Wayland context initialized");
+    else {
+        flog("Failed to initialize wayland");
+        std::exit(EXIT_FAILURE);
+    }
+
+    globals.registry.reset(wl_display_get_registry(globals.display.get()));
+
+    wl_registry_add_listener(globals.registry.get(), &stormkit_registry_listener, &globals);
+
+    wl_display_dispatch(globals.display.get());
+    wl_display_roundtrip(globals.display.get());
+
+    if (globals.compositor) dlog("Wayland compositor found !");
+    else {
+        flog("Failed to find a Wayland compositor");
+        std::exit(EXIT_FAILURE);
+    }
+}
 
 /////////////////////////////////////
 /////////////////////////////////////
 WaylandWindow::WaylandWindow() {
+    if (!globals.display) init();
+
     m_keyboard_state = std::array {
         KeyState { XKB_KEY_a, false },           KeyState { XKB_KEY_b, false },
         KeyState { XKB_KEY_c, false },           KeyState { XKB_KEY_d, false },
@@ -391,28 +134,7 @@ WaylandWindow::WaylandWindow() {
 
     m_xkb_context.reset(xkb_context_new(XKB_CONTEXT_NO_FLAGS));
 
-    m_display.reset(wl_display_connect(nullptr));
-
-    if (m_display) dlog("Wayland context initialized");
-    else {
-        flog("Failed to initialize wayland");
-        std::exit(EXIT_FAILURE);
-    }
-
-    m_registry.reset(wl_display_get_registry(m_display.get()));
-
-    wl_registry_add_listener(m_registry.get(), &stormkit_registry_listener, this);
-
-    wl_display_dispatch(m_display.get());
-    wl_display_roundtrip(m_display.get());
-
-    if (m_compositor) dlog("Wayland compositor found !");
-    else {
-        flog("Failed to find a Wayland compositor");
-        std::exit(EXIT_FAILURE);
-    }
-
-    m_cursor_theme.reset(wl_cursor_theme_load(nullptr, 24, m_shm.get()));
+    m_cursor_theme.reset(wl_cursor_theme_load(nullptr, 24, globals.shm.get()));
     auto cursor = wl_cursor_theme_get_cursor(m_cursor_theme.get(), "default");
 
     if (!cursor) cursor = wl_cursor_theme_get_cursor(m_cursor_theme.get(), "left_ptr");
@@ -421,17 +143,17 @@ WaylandWindow::WaylandWindow() {
 
     m_cursor_buffer.reset(wl_cursor_image_get_buffer(cursor_image));
 
-    m_cursor_surface.reset(wl_compositor_create_surface(m_compositor.get()));
+    m_cursor_surface.reset(wl_compositor_create_surface(globals.compositor.get()));
     wl_surface_attach(m_cursor_surface.get(), m_cursor_buffer.get(), 0, 0);
     wl_surface_commit(m_cursor_surface.get());
 
-    m_handles.display = m_display.get();
+    m_handles.display = globals.display.get();
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 WaylandWindow::~WaylandWindow() {
-    wl_display_flush(m_display.get());
+    wl_display_flush(globals.display.get());
 }
 
 /////////////////////////////////////
@@ -461,15 +183,33 @@ auto WaylandWindow::create(std::string title, const VideoSettings &settings, Win
     m_locked_mouse_position.x = m_extent.width / 2;
     m_locked_mouse_position.y = m_extent.height / 2;
 
-    m_surface.reset(wl_compositor_create_surface(m_compositor.get()));
+    m_surface.reset(wl_compositor_create_surface(globals.compositor.get()));
 
-    if (m_xdg_shell) {
+    if (!std::empty(globals.pointers)) {
+        m_pointer = globals.pointers.front().get();
+        wl_pointer_set_user_data(m_pointer, this);
+    } else
+        wlog("No pointer found");
+    if (!std::empty(globals.keyboards)) {
+        m_keyboard = globals.keyboards.front().get();
+        wl_keyboard_set_user_data(m_keyboard, this);
+    } else
+        wlog("No keyboard found");
+    if (!std::empty(globals.touchscreens)) {
+        m_touchscreen = globals.touchscreens.front().get();
+        wl_touch_set_user_data(m_touchscreen, this);
+    } else
+        wlog("No touchscreen found");
+
+    wl_surface_add_listener(m_surface.get(), &stormkit_surface_listener, this);
+
+    if (globals.xdg_shell) {
         dlog("XDG shell found !");
         createXDGShell();
     } else {
         dlog("XDGShell not found, falling back to WLShell");
 
-        if (m_wayland_shell) createWaylandShell();
+        if (globals.wayland_shell) createWaylandShell();
         else {
             flog("WLShell not found, abording...");
             std::exit(EXIT_FAILURE);
@@ -482,13 +222,29 @@ auto WaylandWindow::create(std::string title, const VideoSettings &settings, Win
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::close() noexcept -> void {
-    wl_display_flush(m_display.get());
+    wl_display_flush(globals.display.get());
 
     // Fake Buffer
     m_buffer.release();
 
+    // WP
+    m_locked_pointer.reset();
+    m_relative_pointer.reset();
+
+    // Events
+    if (m_pointer) wl_pointer_set_user_data(m_pointer, nullptr);
+
+    if (m_keyboard) wl_keyboard_set_user_data(m_keyboard, nullptr);
+
+    if (m_touchscreen) wl_touch_set_user_data(m_touchscreen, nullptr);
+
+    m_pointer        = nullptr;
+    m_pointer_serial = 0u;
+    m_keyboard       = nullptr;
+    m_touchscreen    = nullptr;
+
     // XDG
-    m_xdg_decoration_manager.reset();
+    globals.xdg_decoration_manager.reset();
     m_xdg_toplevel.reset();
     m_xdg_surface.reset();
 
@@ -504,11 +260,11 @@ auto WaylandWindow::close() noexcept -> void {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::pollEvent(Event &event) noexcept -> bool {
-    while (wl_display_prepare_read(m_display.get()) != 0)
-        wl_display_dispatch_pending(m_display.get());
-    wl_display_flush(m_display.get());
-    wl_display_read_events(m_display.get());
-    wl_display_dispatch_pending(m_display.get());
+    while (wl_display_prepare_read(globals.display.get()) != 0)
+        wl_display_dispatch_pending(globals.display.get());
+    wl_display_flush(globals.display.get());
+    wl_display_read_events(globals.display.get());
+    wl_display_dispatch_pending(globals.display.get());
 
     return AbstractWindow::pollEvent(event);
 }
@@ -516,9 +272,10 @@ auto WaylandWindow::pollEvent(Event &event) noexcept -> bool {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::waitEvent(Event &event) noexcept -> bool {
-    while (!m_configured) wl_display_dispatch(m_display.get());
-    while (wl_display_prepare_read(m_display.get()) != 0) wl_display_dispatch(m_display.get());
-    wl_display_flush(m_display.get());
+    while (!m_configured) wl_display_dispatch(globals.display.get());
+    while (wl_display_prepare_read(globals.display.get()) != 0)
+        wl_display_dispatch(globals.display.get());
+    wl_display_flush(globals.display.get());
 
     return AbstractWindow::waitEvent(event);
 }
@@ -539,12 +296,12 @@ auto WaylandWindow::setTitle(std::string title) noexcept -> void {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::lockMouse() noexcept -> void {
-    if (!m_relative_pointer_manager) {
+    if (!globals.relative_pointer_manager) {
         elog("Can't lock mouse, {} protocol is not present",
              zwp_relative_pointer_manager_v1_interface.name);
         return;
     }
-    if (!m_pointer_constraints) {
+    if (!globals.pointer_constraints) {
         elog("Can't lock mouse, {} protocol is not present",
              zwp_pointer_constraints_v1_interface.name);
         return;
@@ -553,16 +310,16 @@ auto WaylandWindow::lockMouse() noexcept -> void {
     m_mouse_state.position_in_window = m_locked_mouse_position;
 
     m_relative_pointer.reset(
-        zwp_relative_pointer_manager_v1_get_relative_pointer(m_relative_pointer_manager.get(),
-                                                             m_pointer.get()));
+        zwp_relative_pointer_manager_v1_get_relative_pointer(globals.relative_pointer_manager.get(),
+                                                             m_pointer));
     zwp_relative_pointer_v1_add_listener(m_relative_pointer.get(),
                                          &stormkit_relative_pointer_listener,
                                          this);
 
     m_locked_pointer.reset(
-        zwp_pointer_constraints_v1_lock_pointer(m_pointer_constraints.get(),
+        zwp_pointer_constraints_v1_lock_pointer(globals.pointer_constraints.get(),
                                                 m_surface.get(),
-                                                m_pointer.get(),
+                                                m_pointer,
                                                 nullptr,
                                                 ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT));
 
@@ -591,37 +348,33 @@ auto WaylandWindow::unlockMouse() noexcept -> void {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::hideMouse() noexcept -> void {
-    wl_pointer_set_cursor(m_pointer.get(), m_pointer_serial, nullptr, 0, 0);
+    wl_pointer_set_cursor(m_pointer, m_pointer_serial, nullptr, 0, 0);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::unhideMouse() noexcept -> void {
-    wl_pointer_set_cursor(m_pointer.get(), m_pointer_serial, m_cursor_surface.get(), 0, 0);
+    wl_pointer_set_cursor(m_pointer, m_pointer_serial, m_cursor_surface.get(), 0, 0);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto WaylandWindow::setVideoSettings(const storm::window::VideoSettings &settings) noexcept
-    -> void {
+auto WaylandWindow::setFullscreenEnabled(bool enabled) noexcept -> void {
     if (m_xdg_toplevel) {
-        xdg_surface_set_window_geometry(m_xdg_surface.get(),
-                                        0,
-                                        0,
-                                        settings.size.width,
-                                        settings.size.height);
-        if (core::checkFlag(m_style, WindowStyle::Fullscreen))
-            xdg_toplevel_set_fullscreen(m_xdg_toplevel.get(), nullptr);
+        if (enabled) xdg_toplevel_set_fullscreen(m_xdg_toplevel.get(), m_current_output);
         else
             xdg_toplevel_unset_fullscreen(m_xdg_toplevel.get());
     } else {
+        // TODO implement for wl_shell_surface
     }
+
+    m_fullscreen = enabled;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::size() const noexcept -> const storm::core::Extentu & {
-    while (!m_configured) wl_display_dispatch(m_display.get());
+    while (!m_configured) wl_display_dispatch(globals.display.get());
 
     return m_extent;
 }
@@ -629,7 +382,7 @@ auto WaylandWindow::size() const noexcept -> const storm::core::Extentu & {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::isOpen() const noexcept -> bool {
-    while (!m_configured) wl_display_dispatch(m_display.get());
+    while (!m_configured) wl_display_dispatch(globals.display.get());
 
     return m_opened;
 }
@@ -637,7 +390,7 @@ auto WaylandWindow::isOpen() const noexcept -> bool {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::isVisible() const noexcept -> bool {
-    while (!m_configured) wl_display_dispatch(m_display.get());
+    while (!m_configured) wl_display_dispatch(globals.display.get());
 
     return m_visible;
 }
@@ -661,48 +414,10 @@ auto WaylandWindow::getDesktopModes() -> std::vector<VideoSettings> {
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto WaylandWindow::registryGlobal(wl_registry *registry,
-                                   std::uint32_t id,
-                                   const char *interface,
-                                   std::uint32_t version) noexcept -> void {
-    dlog("Wayland registry acquired {} (id: {}, version: {})", interface, id, version);
-
-    const auto size = std::char_traits<char>::length(interface);
-    if (std::char_traits<char>::compare(interface, wl_compositor_interface.name, size) == 0) {
-        m_compositor.reset(reinterpret_cast<wl_compositor *>(
-            wl_registry_bind(registry, id, &wl_compositor_interface, 3)));
-    } else if (std::char_traits<char>::compare(interface, xdg_wm_base_interface.name, size) == 0) {
-        m_xdg_shell.reset(reinterpret_cast<xdg_wm_base *>(
-            wl_registry_bind(registry, id, &xdg_wm_base_interface, 1)));
-        xdg_wm_base_add_listener(m_xdg_shell.get(), &stormkit_xdg_shell_listener, nullptr);
-    } else if (std::char_traits<char>::compare(interface, wl_shm_interface.name, size) == 0) {
-        m_shm.reset(
-            reinterpret_cast<wl_shm *>(wl_registry_bind(registry, id, &wl_shm_interface, 1)));
-    } else if (std::char_traits<char>::compare(interface, wl_shell_interface.name, size) == 0) {
-        m_wayland_shell.reset(
-            reinterpret_cast<wl_shell *>(wl_registry_bind(registry, id, &wl_shell_interface, 1)));
-    } else if (std::char_traits<char>::compare(interface, wl_seat_interface.name, size) == 0) {
-        m_seat.reset(
-            reinterpret_cast<wl_seat *>(wl_registry_bind(registry, id, &wl_seat_interface, 5)));
-        wl_seat_add_listener(m_seat.get(), &stormkit_wl_seat_listener, this);
-    } else if (std::char_traits<char>::compare(interface,
-                                               zxdg_decoration_manager_v1_interface.name,
-                                               size) == 0) {
-        m_xdg_decoration_manager.reset(reinterpret_cast<zxdg_decoration_manager_v1 *>(
-            wl_registry_bind(registry, id, &zxdg_decoration_manager_v1_interface, 1)));
-    } else if (std::char_traits<char>::compare(interface,
-                                               zwp_pointer_constraints_v1_interface.name,
-                                               size) == 0) {
-        m_pointer_constraints.reset(reinterpret_cast<zwp_pointer_constraints_v1 *>(
-            wl_registry_bind(registry, id, &zwp_pointer_constraints_v1_interface, 1)));
-    } else if (std::char_traits<char>::compare(interface,
-                                               zwp_relative_pointer_manager_v1_interface.name,
-                                               size) == 0) {
-        m_relative_pointer_manager.reset(reinterpret_cast<zwp_relative_pointer_manager_v1 *>(
-            wl_registry_bind(registry, id, &zwp_relative_pointer_manager_v1_interface, 1)));
-    }
+auto WaylandWindow::surfaceOutputEnter([[maybe_unused]] wl_surface *surface,
+                                       wl_output *output) noexcept -> void {
+    m_current_output = output;
 }
-
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::surfaceConfigure(xdg_surface *surface, std::uint32_t serial) noexcept -> void {
@@ -771,20 +486,6 @@ auto WaylandWindow::shellSurfaceConfigure([[maybe_unused]] wl_shell_surface *xdg
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::seatCapabilities(wl_seat *seat, std::uint32_t capabilities) noexcept -> void {
-    if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) > 0 && !m_keyboard) {
-        m_keyboard.reset(wl_seat_get_keyboard(m_seat.get()));
-        wl_keyboard_add_listener(m_keyboard.get(), &stormkit_wl_keyboard_listener, this);
-    }
-
-    if ((capabilities & WL_SEAT_CAPABILITY_POINTER) > 0 && !m_pointer) {
-        m_pointer.reset(wl_seat_get_pointer(m_seat.get()));
-        wl_pointer_add_listener(m_pointer.get(), &stormkit_wl_pointer_listener, this);
-    }
-
-    if ((capabilities & WL_SEAT_CAPABILITY_TOUCH) > 0 && !m_touchscreen) {
-        m_touchscreen.reset(wl_seat_get_touch(m_seat.get()));
-        // wl_touch_add_listener(m_touchscreen.get(), &stormkit_wl_touchscreen_listener, this);
-    }
 }
 
 /////////////////////////////////////
@@ -999,7 +700,9 @@ auto WaylandWindow::setMousePosition(core::Vector2i position) const noexcept -> 
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::createXDGShell() noexcept -> void {
-    m_xdg_surface.reset(xdg_wm_base_get_xdg_surface(m_xdg_shell.get(), m_surface.get()));
+    xdg_wm_base_add_listener(globals.xdg_shell.get(), &stormkit_shell_listener, nullptr);
+
+    m_xdg_surface.reset(xdg_wm_base_get_xdg_surface(globals.xdg_shell.get(), m_surface.get()));
 
     xdg_surface_add_listener(m_xdg_surface.get(), &stormkit_xdg_surface_listener, this);
 
@@ -1010,8 +713,8 @@ auto WaylandWindow::createXDGShell() noexcept -> void {
     xdg_toplevel_set_title(m_xdg_toplevel.get(), m_title.c_str());
     xdg_toplevel_set_app_id(m_xdg_toplevel.get(), m_title.c_str());
 
-    if (m_xdg_decoration_manager) {
-        zxdg_decoration_manager_v1_get_toplevel_decoration(m_xdg_decoration_manager.get(),
+    if (globals.xdg_decoration_manager) {
+        zxdg_decoration_manager_v1_get_toplevel_decoration(globals.xdg_decoration_manager.get(),
                                                            m_xdg_toplevel.get());
     }
 
@@ -1022,10 +725,9 @@ auto WaylandWindow::createXDGShell() noexcept -> void {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::createWaylandShell() noexcept -> void {
-    m_wlshell_surface.reset(wl_shell_get_shell_surface(m_wayland_shell.get(), m_surface.get()));
-    wl_shell_surface_add_listener(m_wlshell_surface.get(),
-                                  &stormkit_wl_shell_surface_listener,
-                                  this);
+    m_wlshell_surface.reset(
+        wl_shell_get_shell_surface(globals.wayland_shell.get(), m_surface.get()));
+    wl_shell_surface_add_listener(m_wlshell_surface.get(), &stormkit_shell_surface_listener, this);
     wl_shell_surface_set_toplevel(m_wlshell_surface.get());
 
     wl_surface_damage(m_surface.get(), 0, 0, m_extent.width, m_extent.height);
@@ -1044,7 +746,7 @@ auto WaylandWindow::createPixelbuffer() noexcept -> void {
     [[maybe_unused]] auto *data =
         mmap(nullptr, buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
-    m_shm_pool.reset(wl_shm_create_pool(m_shm.get(), fd, buffer_size));
+    m_shm_pool.reset(wl_shm_create_pool(globals.shm.get(), fd, buffer_size));
 
     m_buffer.reset(wl_shm_pool_create_buffer(m_shm_pool.get(),
                                              0,
@@ -1055,9 +757,6 @@ auto WaylandWindow::createPixelbuffer() noexcept -> void {
 
     wl_surface_attach(m_surface.get(), m_buffer.get(), 0, 0);
     wl_surface_commit(m_surface.get());
-
-    if (core::checkFlag(m_style, WindowStyle::Fullscreen))
-        xdg_toplevel_set_fullscreen(m_xdg_toplevel.get(), nullptr);
 }
 
 /////////////////////////////////////

@@ -47,6 +47,7 @@ win32_headers = files([
 ])
 
 wayland_headers = files([
+    'src/Linux/Wayland/Callback.hpp',
     'src/Linux/Wayland/Log.hpp',
     'src/Linux/Wayland/WaylandMouse.hpp',
     'src/Linux/Wayland/WaylandKeyboard.hpp',
@@ -79,6 +80,7 @@ win32_sources = files([
 ])
 
 wayland_sources = files([
+    'src/Linux/Wayland/Callback.cpp',
     'src/Linux/Wayland/WaylandMouse.cpp',
     'src/Linux/Wayland/WaylandKeyboard.cpp',
     'src/Linux/Wayland/WaylandWindow.cpp',

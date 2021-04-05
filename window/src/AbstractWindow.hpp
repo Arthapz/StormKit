@@ -36,8 +36,8 @@ namespace storm::window::details {
         virtual bool pollEvent(Event &event) noexcept;
         virtual bool waitEvent(Event &event) noexcept;
 
-        virtual void setTitle(std::string title) noexcept                     = 0;
-        virtual void setVideoSettings(const VideoSettings &settings) noexcept = 0;
+        virtual void setTitle(std::string title) noexcept        = 0;
+        virtual void setFullscreenEnabled(bool enabled) noexcept = 0;
 
         virtual void lockMouse() noexcept   = 0;
         virtual void unlockMouse() noexcept = 0;
@@ -55,6 +55,7 @@ namespace storm::window::details {
         [[nodiscard]] virtual NativeHandle nativeHandle() const noexcept = 0;
 
         [[nodiscard]] bool isMouseLocked() const noexcept;
+        [[nodiscard]] bool isInFullscreen() const noexcept;
 
         void mouseDownEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
         void mouseUpEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
@@ -87,6 +88,7 @@ namespace storm::window::details {
 
         core::Vector2i m_locked_mouse_position;
         bool m_mouse_locked = false;
+        bool m_fullscreen   = false;
     };
 } // namespace storm::window::details
 
