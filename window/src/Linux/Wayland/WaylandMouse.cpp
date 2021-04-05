@@ -19,7 +19,10 @@ STORMKIT_PRIVATE auto toWButton(MouseButton button) noexcept -> std::uint32_t {
         case MouseButton::Middle: return BTN_MIDDLE;
         case MouseButton::Button1: return BTN_FORWARD;
         case MouseButton::Button2: return BTN_BACK;
+        default:;
     }
+
+    return BTN_EXTRA;
 }
 
 /////////////////////////////////////
