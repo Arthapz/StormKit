@@ -404,12 +404,9 @@ auto WaylandWindow::nativeHandle() const noexcept -> storm::window::NativeHandle
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::getDesktopModes() -> std::vector<VideoSettings> {
-    static auto video_settings = std::vector<VideoSettings> {};
-    static auto init           = false;
+    if (!globals.display) init();
 
-    if (!init) { init = true; }
-
-    return video_settings;
+    return globals.video_settings;
 }
 
 /////////////////////////////////////
@@ -808,7 +805,7 @@ auto WaylandWindow::getDesktopFullscreenSize() -> VideoSettings {
         for (const auto &mode : modes) {
             video_setting.size.width  = std::max(video_setting.size.width, mode.size.width);
             video_setting.size.height = std::max(video_setting.size.height, mode.size.height);
-            video_setting.size.height = std::max(video_setting.size.depth, mode.size.depth);
+            video_setting.size.depth  = std::max(video_setting.size.depth, mode.size.depth);
         }
 
         init = true;

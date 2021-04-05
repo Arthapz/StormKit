@@ -21,6 +21,8 @@ int main([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
     for (const auto &setting : Window::getDesktopModes())
         LogHandler::ilog("Screen: {}", setting.size);
 
+    LogHandler::ilog("Fullscreen resolution: {}", Window::getDesktopFullscreenSize().size);
+
     while (window.isOpen()) {
         auto event = Event {};
         while (window.pollEvent(event)) {

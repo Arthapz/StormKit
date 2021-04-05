@@ -91,6 +91,8 @@ namespace storm::window::details {
         std::vector<WLTouchScoped> touchscreens;
         WPPointerConstraintsScoped pointer_constraints;
         WPRelativePointerManagerScoped relative_pointer_manager;
+
+        std::vector<VideoSettings> video_settings;
     };
 
     class STORMKIT_PRIVATE WaylandWindow final: public AbstractWindow {

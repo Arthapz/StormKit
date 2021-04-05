@@ -2,6 +2,166 @@
 #include "Log.hpp"
 
 namespace storm::window::details {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void output_geometry_handler(void *data,
+                                                  wl_output *output,
+                                                  std::int32_t x,
+                                                  std::int32_t y,
+                                                  std::int32_t pwidth,
+                                                  std::int32_t pheight,
+                                                  std::int32_t subpixels,
+                                                  const char *make,
+                                                  const char *model,
+                                                  std::int32_t transform) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void output_mode_handler(void *data,
+                                              wl_output *wl_output,
+                                              std::uint32_t flags,
+                                              std::int32_t width,
+                                              std::int32_t height,
+                                              std::int32_t refresh) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void output_done_handler(void *data, wl_output *wl_output) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void
+        output_scale_handler(void *data, wl_output *wl_output, std::int32_t factor) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void
+        seat_capabilities_handler(void *data, wl_seat *seat, std::uint32_t capabilities) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void seat_name_handler(void *data, wl_seat *seat, const char *name) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void pointer_enter_handler(void *data,
+                                                wl_pointer *pointer,
+                                                std::uint32_t serial,
+                                                wl_surface *surface,
+                                                wl_fixed_t surface_x,
+                                                wl_fixed_t surface_y) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void pointer_leave_handler(void *data,
+                                                wl_pointer *pointer,
+                                                std::uint32_t serial,
+                                                wl_surface *surface) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void pointer_motion_handler(void *data,
+                                                 wl_pointer *pointer,
+                                                 std::uint32_t time,
+                                                 wl_fixed_t surface_x,
+                                                 wl_fixed_t surface_y) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void pointer_button_handler(void *data,
+                                                 wl_pointer *pointer,
+                                                 std::uint32_t serial,
+                                                 std::uint32_t time,
+                                                 std::uint32_t button,
+                                                 std::uint32_t state) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void pointer_axis_handler(void *data,
+                                               wl_pointer *pointer,
+                                               std::uint32_t time,
+                                               std::uint32_t axis,
+                                               wl_fixed_t value) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void pointer_frame_handler(void *data, wl_pointer *pointer) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void pointer_axis_source_handler(void *data,
+                                                      wl_pointer *pointer,
+                                                      std::uint32_t axis_source) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void pointer_axis_stop_handler(void *data,
+                                                    wl_pointer *pointer,
+                                                    std::uint32_t time,
+                                                    std::uint32_t axis) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void pointer_axis_discrete_handler(void *data,
+                                                        wl_pointer *pointer,
+                                                        std::uint32_t axis,
+                                                        std::int32_t discrete) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void keyboard_keymap_handler(void *data,
+                                                  wl_keyboard *keyboard,
+                                                  std::uint32_t format,
+                                                  std::int32_t fd,
+                                                  std::uint32_t size) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void keyboard_enter_handler(void *data,
+                                                 wl_keyboard *keyboard,
+                                                 std::uint32_t serial,
+                                                 wl_surface *surface,
+                                                 wl_array *keys) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void keyboard_leave_handler(void *data,
+                                                 wl_keyboard *keyboard,
+                                                 std::uint32_t serial,
+                                                 wl_surface *surface) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void keyboard_key_handler(void *data,
+                                               wl_keyboard *keyboard,
+                                               std::uint32_t serial,
+                                               std::uint32_t time,
+                                               std::uint32_t key,
+                                               std::uint32_t state) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void keyboard_modifiers_handler(void *data,
+                                                     wl_keyboard *keyboard,
+                                                     std::uint32_t serial,
+                                                     std::uint32_t mods_depressed,
+                                                     std::uint32_t mods_latcher,
+                                                     std::uint32_t mods_locked,
+                                                     std::uint32_t group) noexcept;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_PRIVATE void keyboard_repeat_info_handler(void *data,
+                                                       wl_keyboard *keyboard,
+                                                       std::int32_t rate,
+                                                       std::int32_t delay) noexcept;
+
+    static const auto stormkit_output_listener =
+        wl_output_listener { .geometry = output_geometry_handler,
+                             .mode     = output_mode_handler,
+                             .done     = output_done_handler,
+                             .scale    = output_scale_handler };
+
     static const auto stormkit_seat_listener =
         wl_seat_listener { .capabilities = seat_capabilities_handler, .name = seat_name_handler };
 
@@ -45,10 +205,11 @@ namespace storm::window::details {
 
         if (interface_name == wl_compositor_interface.name)
             BIND(globals.compositor, wl_compositor, 3)
-        else if (interface_name == wl_output_interface.name)
-            globals.outputs.emplace_back(
+        else if (interface_name == wl_output_interface.name) {
+            auto &output = globals.outputs.emplace_back(
                 static_cast<wl_output *>(wl_registry_bind(registry, id, &wl_output_interface, 2)));
-        else if (interface_name == xdg_wm_base_interface.name)
+            wl_output_add_listener(output.get(), &stormkit_output_listener, &globals);
+        } else if (interface_name == xdg_wm_base_interface.name)
             BIND(globals.xdg_shell, xdg_wm_base, 1)
         else if (interface_name == zxdg_decoration_manager_v1_interface.name)
             BIND(globals.xdg_decoration_manager, zxdg_decoration_manager_v1, 1)
@@ -56,15 +217,13 @@ namespace storm::window::details {
             BIND(globals.wayland_shell, wl_shell, 1)
         else if (interface_name == wl_shm_interface.name)
             BIND(globals.shm, wl_shm, 1)
-        else if (interface_name == wl_seat_interface.name)
+        else if (interface_name == wl_seat_interface.name) {
             BIND(globals.seat, wl_seat, 5)
-        else if (interface_name == zwp_pointer_constraints_v1_interface.name)
+            wl_seat_add_listener(globals.seat.get(), &stormkit_seat_listener, &globals);
+        } else if (interface_name == zwp_pointer_constraints_v1_interface.name)
             BIND(globals.pointer_constraints, zwp_pointer_constraints_v1, 1)
         else if (interface_name == zwp_relative_pointer_manager_v1_interface.name)
             BIND(globals.relative_pointer_manager, zwp_relative_pointer_manager_v1, 1)
-
-        if (interface_name == wl_seat_interface.name)
-            wl_seat_add_listener(globals.seat.get(), &stormkit_seat_listener, &globals);
 #undef BIND
     }
 
@@ -74,6 +233,54 @@ namespace storm::window::details {
                                   [[maybe_unused]] wl_registry *registry,
                                   std::uint32_t id) noexcept -> void {
         dlog("Wayland registry lost {}", id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto output_geometry_handler([[maybe_unused]] void *data,
+                                 [[maybe_unused]] wl_output *output,
+                                 std::int32_t x,
+                                 std::int32_t y,
+                                 std::int32_t pwidth,
+                                 std::int32_t pheight,
+                                 [[maybe_unused]] std::int32_t subpixels,
+                                 const char *make,
+                                 const char *model,
+                                 [[maybe_unused]] std::int32_t transform) noexcept -> void {
+        dlog("Screen found! {} {} with size of {}x{}mm at {} {}",
+             make,
+             model,
+             pwidth,
+             pheight,
+             x,
+             y);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto output_mode_handler(void *data,
+                             [[maybe_unused]] wl_output *wl_output,
+                             std::uint32_t flags,
+                             std::int32_t width,
+                             std::int32_t height,
+                             std::int32_t refresh) noexcept -> void {
+        auto &globals = *static_cast<Globals *>(data);
+        globals.video_settings.emplace_back(
+            VideoSettings { .size = { gsl::narrow_cast<core::UInt32>(width),
+                                      gsl::narrow_cast<core::UInt32>(height) } });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto output_done_handler([[maybe_unused]] void *data,
+                             [[maybe_unused]] wl_output *wl_output) noexcept -> void {}
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto output_scale_handler(void *data,
+                              [[maybe_unused]] wl_output *wl_output,
+                              [[maybe_unused]] std::int32_t factor) noexcept -> void {
+        if (data == nullptr) return;
     }
 
     /////////////////////////////////////
@@ -341,6 +548,8 @@ namespace storm::window::details {
         window->keyboardRepeatInfo(keyboard, rate, delay);
     }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto relative_pointer_relative_motion_handler(void *data,
                                                   zwp_relative_pointer_v1 *pointer,
                                                   std::uint32_t time_hi,
@@ -359,10 +568,14 @@ namespace storm::window::details {
                                               dy_unaccel);
     }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto locked_pointer_locked_handler(
         [[maybe_unused]] void *data,
         [[maybe_unused]] zwp_locked_pointer_v1 *locked_pointer) noexcept -> void {}
 
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto locked_pointer_unlocked_handler(
         [[maybe_unused]] void *data,
         [[maybe_unused]] zwp_locked_pointer_v1 *locked_pointer) noexcept -> void {}
