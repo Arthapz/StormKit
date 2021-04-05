@@ -259,6 +259,29 @@ auto wl_keyboard_repeat_info_handler(void *data,
     window->keyboardRepeatInfo(keyboard, rate, delay);
 }
 
+auto wp_relative_pointer_relative_motion_handler(void *data,
+                                                 zwp_relative_pointer_v1 *pointer,
+                                                 std::uint32_t time_hi,
+                                                 std::uint32_t time_lw,
+                                                 wl_fixed_t dx,
+                                                 wl_fixed_t dy,
+                                                 wl_fixed_t dx_unaccel,
+                                                 wl_fixed_t dy_unaccel) noexcept -> void {
+    auto *window = static_cast<WaylandWindow *>(data);
+    window
+        ->relativePointerRelativeMotion(pointer, time_hi, time_lw, dx, dy, dx_unaccel, dy_unaccel);
+}
+
+auto wp_locked_pointer_locked_handler(
+    [[maybe_unused]] void *data,
+    [[maybe_unused]] zwp_locked_pointer_v1 *locked_pointer) noexcept -> void {
+}
+
+auto wp_locked_pointer_unlocked_handler(
+    [[maybe_unused]] void *data,
+    [[maybe_unused]] zwp_locked_pointer_v1 *locked_pointer) noexcept -> void {
+}
+
 static const auto stormkit_registry_listener =
     wl_registry_listener { .global        = global_registry_handler,
                            .global_remove = global_registry_remover };
@@ -300,6 +323,14 @@ static const auto stormkit_wl_keyboard_listener =
                            .repeat_info = wl_keyboard_repeat_info_handler };
 
 static const auto stormkit_wl_touchscreen_listener = wl_touch_listener {};
+
+static const auto stormkit_relative_pointer_listener =
+    zwp_relative_pointer_v1_listener { .relative_motion =
+                                           wp_relative_pointer_relative_motion_handler };
+
+static const auto stormkit_locked_pointer_listener =
+    zwp_locked_pointer_v1_listener { .locked   = wp_locked_pointer_locked_handler,
+                                     .unlocked = wp_locked_pointer_unlocked_handler };
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -381,6 +412,19 @@ WaylandWindow::WaylandWindow() {
         std::exit(EXIT_FAILURE);
     }
 
+    m_cursor_theme.reset(wl_cursor_theme_load(nullptr, 24, m_shm.get()));
+    auto cursor = wl_cursor_theme_get_cursor(m_cursor_theme.get(), "default");
+
+    if (!cursor) cursor = wl_cursor_theme_get_cursor(m_cursor_theme.get(), "left_ptr");
+
+    auto cursor_image = cursor->images[0];
+
+    m_cursor_buffer.reset(wl_cursor_image_get_buffer(cursor_image));
+
+    m_cursor_surface.reset(wl_compositor_create_surface(m_compositor.get()));
+    wl_surface_attach(m_cursor_surface.get(), m_cursor_buffer.get(), 0, 0);
+    wl_surface_commit(m_cursor_surface.get());
+
     m_handles.display = m_display.get();
 }
 
@@ -414,6 +458,9 @@ auto WaylandWindow::create(std::string title, const VideoSettings &settings, Win
     m_video_settings = settings;
     m_style          = style;
 
+    m_locked_mouse_position.x = m_extent.width / 2;
+    m_locked_mouse_position.y = m_extent.height / 2;
+
     m_surface.reset(wl_compositor_create_surface(m_compositor.get()));
 
     if (m_xdg_shell) {
@@ -437,15 +484,19 @@ auto WaylandWindow::create(std::string title, const VideoSettings &settings, Win
 auto WaylandWindow::close() noexcept -> void {
     wl_display_flush(m_display.get());
 
-    m_seat.reset(nullptr);
-    m_buffer.reset(nullptr);
-    m_shm_pool.reset(nullptr);
-    m_shm.reset(nullptr);
-    m_xdg_toplevel.reset(nullptr);
-    m_xdg_surface.reset(nullptr);
-    m_wlshell_surface.reset(nullptr);
-    m_surface.reset(nullptr);
-    m_xdg_shell.reset(nullptr);
+    // Fake Buffer
+    m_buffer.release();
+
+    // XDG
+    m_xdg_decoration_manager.reset();
+    m_xdg_toplevel.reset();
+    m_xdg_surface.reset();
+
+    // WL_Shell
+    m_wlshell_surface.reset();
+
+    // Base_Surface
+    m_surface.reset();
 
     m_configured = false;
 }
@@ -483,6 +534,70 @@ auto WaylandWindow::setTitle(std::string title) noexcept -> void {
     } else {
         wl_shell_surface_set_title(m_wlshell_surface.get(), m_title.c_str());
     }
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::lockMouse() noexcept -> void {
+    if (!m_relative_pointer_manager) {
+        elog("Can't lock mouse, {} protocol is not present",
+             zwp_relative_pointer_manager_v1_interface.name);
+        return;
+    }
+    if (!m_pointer_constraints) {
+        elog("Can't lock mouse, {} protocol is not present",
+             zwp_pointer_constraints_v1_interface.name);
+        return;
+    }
+
+    m_mouse_state.position_in_window = m_locked_mouse_position;
+
+    m_relative_pointer.reset(
+        zwp_relative_pointer_manager_v1_get_relative_pointer(m_relative_pointer_manager.get(),
+                                                             m_pointer.get()));
+    zwp_relative_pointer_v1_add_listener(m_relative_pointer.get(),
+                                         &stormkit_relative_pointer_listener,
+                                         this);
+
+    m_locked_pointer.reset(
+        zwp_pointer_constraints_v1_lock_pointer(m_pointer_constraints.get(),
+                                                m_surface.get(),
+                                                m_pointer.get(),
+                                                nullptr,
+                                                ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT));
+
+    zwp_locked_pointer_v1_add_listener(m_locked_pointer.get(),
+                                       &stormkit_locked_pointer_listener,
+                                       this);
+
+    m_mouse_locked = true;
+
+    hideMouse();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::unlockMouse() noexcept -> void {
+    m_locked_mouse_position = m_mouse_state.position_in_window;
+
+    m_locked_pointer.reset();
+    m_relative_pointer.reset();
+
+    m_mouse_locked = false;
+
+    unhideMouse();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::hideMouse() noexcept -> void {
+    wl_pointer_set_cursor(m_pointer.get(), m_pointer_serial, nullptr, 0, 0);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::unhideMouse() noexcept -> void {
+    wl_pointer_set_cursor(m_pointer.get(), m_pointer_serial, m_cursor_surface.get(), 0, 0);
 }
 
 /////////////////////////////////////
@@ -575,6 +690,16 @@ auto WaylandWindow::registryGlobal(wl_registry *registry,
                                                size) == 0) {
         m_xdg_decoration_manager.reset(reinterpret_cast<zxdg_decoration_manager_v1 *>(
             wl_registry_bind(registry, id, &zxdg_decoration_manager_v1_interface, 1)));
+    } else if (std::char_traits<char>::compare(interface,
+                                               zwp_pointer_constraints_v1_interface.name,
+                                               size) == 0) {
+        m_pointer_constraints.reset(reinterpret_cast<zwp_pointer_constraints_v1 *>(
+            wl_registry_bind(registry, id, &zwp_pointer_constraints_v1_interface, 1)));
+    } else if (std::char_traits<char>::compare(interface,
+                                               zwp_relative_pointer_manager_v1_interface.name,
+                                               size) == 0) {
+        m_relative_pointer_manager.reset(reinterpret_cast<zwp_relative_pointer_manager_v1 *>(
+            wl_registry_bind(registry, id, &zwp_relative_pointer_manager_v1_interface, 1)));
     }
 }
 
@@ -665,10 +790,16 @@ auto WaylandWindow::seatCapabilities(wl_seat *seat, std::uint32_t capabilities) 
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::pointerEnter([[maybe_unused]] wl_pointer *pointer,
-                                 [[maybe_unused]] std::uint32_t serial,
+                                 std::uint32_t serial,
                                  [[maybe_unused]] wl_surface *surface,
                                  [[maybe_unused]] wl_fixed_t surface_x,
                                  [[maybe_unused]] wl_fixed_t surface_y) noexcept -> void {
+    m_pointer_serial = serial;
+
+    if (!m_mouse_locked) unhideMouse();
+    else
+        hideMouse();
+
     AbstractWindow::mouseEnteredEvent();
 }
 /////////////////////////////////////
@@ -676,6 +807,8 @@ auto WaylandWindow::pointerEnter([[maybe_unused]] wl_pointer *pointer,
 auto WaylandWindow::pointerLeave([[maybe_unused]] wl_pointer *pointer,
                                  [[maybe_unused]] std::uint32_t serial,
                                  [[maybe_unused]] wl_surface *surface) noexcept -> void {
+    m_pointer_serial = serial;
+
     AbstractWindow::mouseExitedEvent();
 }
 /////////////////////////////////////
@@ -684,6 +817,8 @@ auto WaylandWindow::pointerMotion([[maybe_unused]] wl_pointer *pointer,
                                   [[maybe_unused]] std::uint32_t time,
                                   wl_fixed_t surface_x,
                                   wl_fixed_t surface_y) noexcept -> void {
+    if (m_mouse_locked) return;
+
     m_mouse_state.position_in_window.x = wl_fixed_to_int(surface_x);
     m_mouse_state.position_in_window.y = wl_fixed_to_int(surface_y);
 
@@ -713,6 +848,8 @@ auto WaylandWindow::pointerButton([[maybe_unused]] wl_pointer *pointer,
         break;                                                                         \
     }
 
+    m_pointer_serial = serial;
+
     const auto down = !!state;
 
     switch (button) {
@@ -731,6 +868,8 @@ auto WaylandWindow::pointerButton([[maybe_unused]] wl_pointer *pointer,
                                              m_mouse_state.position_in_window.x,
                                              m_mouse_state.position_in_window.y);
     }
+
+#undef BUTTON_HANDLER
 }
 
 /////////////////////////////////////
@@ -833,6 +972,32 @@ auto WaylandWindow::keyboardRepeatInfo([[maybe_unused]] wl_keyboard *keyboard,
 
 /////////////////////////////////////
 /////////////////////////////////////
+auto WaylandWindow::relativePointerRelativeMotion(zwp_relative_pointer_v1 *pointer,
+                                                  std::uint32_t time_hi,
+                                                  std::uint32_t time_lw,
+                                                  wl_fixed_t dx,
+                                                  wl_fixed_t dy,
+                                                  wl_fixed_t dx_unaccel,
+                                                  wl_fixed_t dy_unaccel) noexcept -> void {
+    m_mouse_state.position_in_window.x += wl_fixed_to_int(dx_unaccel);
+    m_mouse_state.position_in_window.y += wl_fixed_to_int(dy_unaccel);
+
+    AbstractWindow::mouseMoveEvent(m_mouse_state.position_in_window.x,
+                                   m_mouse_state.position_in_window.y);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto WaylandWindow::setMousePosition(core::Vector2i position) const noexcept -> void {
+    if (m_mouse_locked) {
+        zwp_locked_pointer_v1_set_cursor_position_hint(m_locked_pointer.get(),
+                                                       wl_fixed_from_int(position.x),
+                                                       wl_fixed_from_int(position.y));
+        wl_surface_commit(m_surface.get());
+    }
+}
+/////////////////////////////////////
+/////////////////////////////////////
 auto WaylandWindow::createXDGShell() noexcept -> void {
     m_xdg_surface.reset(xdg_wm_base_get_xdg_surface(m_xdg_shell.get(), m_surface.get()));
 
@@ -844,9 +1009,6 @@ auto WaylandWindow::createXDGShell() noexcept -> void {
 
     xdg_toplevel_set_title(m_xdg_toplevel.get(), m_title.c_str());
     xdg_toplevel_set_app_id(m_xdg_toplevel.get(), m_title.c_str());
-    xdg_toplevel_set_min_size(m_xdg_toplevel.get(),
-                              m_video_settings.size.width,
-                              m_video_settings.size.height);
 
     if (m_xdg_decoration_manager) {
         zxdg_decoration_manager_v1_get_toplevel_decoration(m_xdg_decoration_manager.get(),

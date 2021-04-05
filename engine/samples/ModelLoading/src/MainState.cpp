@@ -53,9 +53,7 @@ class RotationSystem: public entities::System {
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-MainState::MainState(core::StateManager &owner,
-                     engine::Engine &engine,
-                     const window::Window &window)
+MainState::MainState(core::StateManager &owner, engine::Engine &engine, window::Window &window)
     : State { owner, engine }, m_keyboard { window.createKeyboardPtr() }, m_mouse {
           window.createMousePtr()
       } {
@@ -107,7 +105,7 @@ MainState::MainState(core::StateManager &owner,
 
     m_world.addComponent<engine::TransformComponent>(e);
 
-    m_mouse->setPositionOnDesktop({ 500u, 600u });
+    window.lockMouse();
 }
 
 ////////////////////////////////////////

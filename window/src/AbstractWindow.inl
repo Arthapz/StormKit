@@ -14,4 +14,8 @@ namespace storm::window::details {
     inline auto AbstractWindow::videoSettings() const noexcept -> const VideoSettings & {
         return m_video_settings;
     }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto AbstractWindow::isMouseLocked() const noexcept -> bool { return m_mouse_locked; }
 } // namespace storm::window::details

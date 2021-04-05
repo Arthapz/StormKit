@@ -76,5 +76,8 @@ auto WaylandMouse::getPositionOnWindow() const noexcept -> core::Position2i {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandMouse::setPositionOnWindow(core::Position2i position) noexcept -> void {
-    elog("Setting on window mouse position is not support on Wayland");
+    if (!m_wayland_window->isMouseLocked())
+        elog("Setting on window mouse position is not support on Wayland when mouse not locked");
+    else
+        m_wayland_window->setMousePosition(position);
 }

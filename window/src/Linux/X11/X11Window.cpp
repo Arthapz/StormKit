@@ -23,6 +23,7 @@ extern "C" {
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_keysyms.h>
+#include <xcb/xfixes.h>
 #include <xcb/xinput.h>
 
 /////////// - XKB - ///////////
@@ -99,6 +100,9 @@ auto X11Window::create(std::string title, const VideoSettings &settings, WindowS
 
     m_extent = settings.size;
 
+    m_locked_mouse_position.x = m_extent.width / 2;
+    m_locked_mouse_position.y = m_extent.height / 2;
+
     // init key_symbol map, this is needed to extract the keysymbol from event
     m_key_symbols.reset(xcb_key_symbols_alloc(m_connection.get()));
 
@@ -115,6 +119,15 @@ auto X11Window::create(std::string title, const VideoSettings &settings, WindowS
             dlog("XKB initialized !");
             m_has_xkb = true;
         }
+
+        if (reply) free(reply);
+    }
+
+    auto xfixes_ext_reply = xcb_get_extension_data(m_connection.get(), &xcb_xfixes_id);
+
+    if (xfixes_ext_reply) {
+        auto cookie = xcb_xfixes_query_version(m_connection.get(), 4, 0);
+        auto reply  = xcb_xfixes_query_version_reply(m_connection.get(), cookie, nullptr);
 
         if (reply) free(reply);
     }
@@ -333,6 +346,64 @@ auto X11Window::setVideoSettings(const storm::window::VideoSettings &settings) n
 
 /////////////////////////////////////
 /////////////////////////////////////
+auto X11Window::lockMouse() noexcept -> void {
+    xcb_warp_pointer(m_connection.get(),
+                     XCB_NONE,
+                     m_window,
+                     0,
+                     0,
+                     0,
+                     0,
+                     m_extent.width / 2,
+                     m_extent.height / 2);
+
+    xcb_flush(m_connection.get());
+
+    auto cookie = xcb_grab_pointer(m_connection.get(),
+                                   1,
+                                   m_window,
+                                   XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
+                                       XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_POINTER_MOTION,
+                                   XCB_GRAB_MODE_ASYNC,
+                                   XCB_GRAB_MODE_ASYNC,
+                                   m_window,
+                                   XCB_NONE,
+                                   XCB_CURRENT_TIME);
+    xcb_grab_pointer_reply(m_connection.get(), cookie, nullptr);
+    xcb_flush(m_connection.get());
+
+    m_mouse_locked = true;
+
+    hideMouse();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto X11Window::unlockMouse() noexcept -> void {
+    m_mouse_locked = false;
+
+    xcb_ungrab_pointer(m_connection.get(), XCB_CURRENT_TIME);
+    xcb_flush(m_connection.get());
+
+    unhideMouse();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto X11Window::hideMouse() noexcept -> void {
+    xcb_xfixes_hide_cursor(m_connection.get(), m_window);
+    xcb_flush(m_connection.get());
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto X11Window::unhideMouse() noexcept -> void {
+    xcb_xfixes_show_cursor(m_connection.get(), m_window);
+    xcb_flush(m_connection.get());
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
 auto X11Window::size() const noexcept -> const storm::core::Extentu & {
     return m_extent;
 }
@@ -406,11 +477,29 @@ auto X11Window::processEvents(xcb_generic_event_t event) -> void {
         }
         case XCB_MOTION_NOTIFY: {
             auto mouse_event = reinterpret_cast<xcb_motion_notify_event_t *>(xevent);
-            if (m_mouse_x == mouse_event->event_x && m_mouse_y == mouse_event->event_y) { break; }
 
-            m_mouse_x = mouse_event->event_x;
-            m_mouse_y = mouse_event->event_y;
-            AbstractWindow::mouseMoveEvent(mouse_event->event_x, mouse_event->event_y);
+            const auto x = mouse_event->event_x;
+            const auto y = mouse_event->event_y;
+
+            if (m_mouse_locked) {
+                if (x != m_extent.width / 2 || y != m_extent.height / 2) {
+                    auto dx = x - m_mouse_x;
+                    auto dy = y - m_mouse_y;
+
+                    m_locked_mouse_position.x += dx;
+                    m_locked_mouse_position.x += dy;
+
+                    AbstractWindow::mouseMoveEvent(m_locked_mouse_position.x,
+                                                   m_locked_mouse_position.y);
+                }
+                m_mouse_x = x;
+                m_mouse_y = y;
+            } else {
+                m_mouse_x = x;
+                m_mouse_y = y;
+                AbstractWindow::mouseMoveEvent(m_mouse_x, m_mouse_y);
+            }
+
             break;
         }
         case XCB_BUTTON_PRESS: {
@@ -550,13 +639,15 @@ auto X11Window::getDesktopModes() -> std::vector<VideoSettings> {
                                                                               output->crtc,
                                                                               timestamp),
                                                       nullptr);
+
+            free(output);
             if (crtc == nullptr) continue;
 
             auto video_setting =
                 storm::window::VideoSettings { { crtc->width, crtc->height }, 32u };
             video_settings.emplace_back(std::move(video_setting));
 
-            // free
+            free(crtc);
         }
 
         xcb_disconnect(display);

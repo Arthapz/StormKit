@@ -44,6 +44,10 @@ namespace storm::window {
         void setTitle(std::string title) noexcept;
         void setVideoSettings(const VideoSettings &settings) noexcept;
 
+        void lockMouse() noexcept;
+        void unlockMouse() noexcept;
+        void hideMouse() noexcept;
+
         [[nodiscard]] const core::Extentu &size() const noexcept;
         [[nodiscard]] std::string_view title() const noexcept;
         [[nodiscard]] const VideoSettings &videoSettings() const noexcept;
@@ -52,6 +56,8 @@ namespace storm::window {
         [[nodiscard]] bool isVisible() const noexcept;
 
         [[nodiscard]] NativeHandle nativeHandle() const noexcept;
+
+        [[nodiscard]] bool isMouseLocked() const noexcept;
 
         [[nodiscard]] static std::vector<VideoSettings> getDesktopModes();
         [[nodiscard]] static VideoSettings getDesktopFullscreenSize();

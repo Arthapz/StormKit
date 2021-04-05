@@ -24,7 +24,7 @@ class MainState final: public storm::engine::State {
   public:
     explicit MainState(storm::core::StateManager &owner,
                        storm::engine::Engine &engine,
-                       const storm::window::Window &window);
+                       storm::window::Window &window);
     ~MainState() override;
 
     MainState(MainState &&) noexcept;

@@ -132,6 +132,24 @@ auto Window::setVideoSettings(const VideoSettings &settings) noexcept -> void {
 
 /////////////////////////////////////
 /////////////////////////////////////
+auto Window::lockMouse() noexcept -> void {
+    m_impl->lockMouse();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::unlockMouse() noexcept -> void {
+    m_impl->unlockMouse();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::hideMouse() noexcept -> void {
+    m_impl->hideMouse();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
 auto Window::size() const noexcept -> const core::Extentu & {
     return m_impl->size();
 }
@@ -164,6 +182,12 @@ auto Window::isVisible() const noexcept -> bool {
 /////////////////////////////////////
 auto Window::nativeHandle() const noexcept -> NativeHandle {
     return m_impl->nativeHandle();
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto Window::isMouseLocked() const noexcept -> bool {
+    return m_impl->isMouseLocked();
 }
 
 /////////////////////////////////////

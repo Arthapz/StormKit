@@ -39,7 +39,7 @@ auto X11Keyboard::operator=(X11Keyboard &&) noexcept -> X11Keyboard & = default;
 auto X11Keyboard::isKeyPressed(Key key) const noexcept -> bool {
     auto handles = m_xcb_window->xcbHandles();
 
-    const auto keysym   = stormkeyToX11Key(key);
+    const auto keysym   = stormkitKeyToXKBKey(key);
     const auto keycodes = xcb_key_symbols_get_keycode(handles.key_symbols, keysym);
 
     auto keycode    = xcb_keycode_t {};

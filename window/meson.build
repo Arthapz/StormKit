@@ -104,10 +104,11 @@ if is_linux and enable_window_xcb
     xcb_key_dep       = dependency('xcb-keysyms')
     xcb_icccm_dep     = dependency('xcb-icccm')
     xcb_randr_dep     = dependency('xcb-randr')
+    xcb_xfixes_dep       = dependency('xcb-xfixes')
     xcb_xkb_dep       = dependency('xcb-xkb')
     xkbcommon_x11_dep = dependency('xkbcommon-x11')
 
-    private_dependencies += [xcb_dep, xcb_key_dep, xcb_icccm_dep, xcb_randr_dep, xcb_xkb_dep,  xkbcommon_x11_dep]
+    private_dependencies += [xcb_dep, xcb_key_dep, xcb_icccm_dep, xcb_randr_dep, xcb_xfixes_dep, xcb_xkb_dep, xkbcommon_x11_dep]
 else
     extra_files += x11_sources
 endif
@@ -116,6 +117,7 @@ if is_linux and enable_window_wayland
     sources += wayland_sources
 
     wayland_dep = dependency('wayland-client')
+    wayland_cursor_dep = dependency('wayland-cursor')
 
     prog_wayland_scanner = find_program('wayland-scanner')
 
@@ -136,15 +138,26 @@ if is_linux and enable_window_wayland
     xdg_decoration_header = wayland_scanner_header_generator.process('src/Linux/Wayland/xdg-decoration-unstable-v1.xml')
     xdg_decoration_source = wayland_scanner_source_generator.process('src/Linux/Wayland/xdg-decoration-unstable-v1.xml')
 
-    private_dependencies += [wayland_dep]
+    wp_pointer_constraints_header = wayland_scanner_header_generator.process('src/Linux/Wayland/pointer-constraints-unstable-v1.xml')
+    wp_pointer_constraints_source = wayland_scanner_source_generator.process('src/Linux/Wayland/pointer-constraints-unstable-v1.xml')
 
-    headers += xdg_shell_header
-    sources += xdg_shell_header
-    sources += xdg_shell_source
+    wp_relative_pointer_header = wayland_scanner_header_generator.process('src/Linux/Wayland/relative-pointer-unstable-v1.xml')
+    wp_relative_pointer_source = wayland_scanner_source_generator.process('src/Linux/Wayland/relative-pointer-unstable-v1.xml')
 
-    headers += xdg_decoration_header
-    sources += xdg_decoration_header
-    sources += xdg_decoration_source
+    private_dependencies += [wayland_dep, wayland_cursor_dep]
+
+    headers += [xdg_shell_header,
+                xdg_decoration_header,
+                wp_pointer_constraints_header,
+                wp_relative_pointer_header]
+    sources += [xdg_shell_header,
+                xdg_shell_source,
+                xdg_decoration_header,
+                xdg_decoration_source,
+                wp_pointer_constraints_header,
+                wp_pointer_constraints_source,
+                wp_relative_pointer_header,
+                wp_relative_pointer_source]
 else
     extra_files += wayland_sources
 endif

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../../AbstractWindow.hpp"
+#include "../Utils.hpp"
 
 /////////// - STL - ///////////
 #include <functional>
@@ -23,9 +24,6 @@
 namespace storm::window::details {
     STORMKIT_RAII_CAPSULE(XCBConnection, xcb_connection_t, xcb_disconnect)
     STORMKIT_RAII_CAPSULE(XCBKeySymbols, xcb_key_symbols_t, xcb_key_symbols_free)
-    STORMKIT_RAII_CAPSULE(XKBContext, xkb_context, xkb_context_unref)
-    STORMKIT_RAII_CAPSULE(XKBKeymap, xkb_keymap, xkb_keymap_unref)
-    STORMKIT_RAII_CAPSULE(XKBState, xkb_state, xkb_state_unref)
 
     class STORMKIT_PRIVATE X11Window final: public AbstractWindow {
       public:
@@ -53,6 +51,12 @@ namespace storm::window::details {
 
         void setTitle(std::string title) noexcept override;
         void setVideoSettings(const VideoSettings &settings) noexcept override;
+
+        void lockMouse() noexcept override;
+        void unlockMouse() noexcept override;
+
+        void hideMouse() noexcept override;
+        void unhideMouse() noexcept override;
 
         [[nodiscard]] const core::Extentu &size() const noexcept override;
 

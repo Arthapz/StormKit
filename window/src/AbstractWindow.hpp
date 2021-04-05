@@ -39,8 +39,13 @@ namespace storm::window::details {
         virtual void setTitle(std::string title) noexcept                     = 0;
         virtual void setVideoSettings(const VideoSettings &settings) noexcept = 0;
 
-        [[nodiscard]] virtual const core::Extentu &size() const noexcept = 0;
+        virtual void lockMouse() noexcept   = 0;
+        virtual void unlockMouse() noexcept = 0;
 
+        virtual void hideMouse() noexcept   = 0;
+        virtual void unhideMouse() noexcept = 0;
+
+        [[nodiscard]] virtual const core::Extentu &size() const noexcept = 0;
         [[nodiscard]] std::string_view title() const noexcept;
         [[nodiscard]] const VideoSettings &videoSettings() const noexcept;
 
@@ -48,6 +53,8 @@ namespace storm::window::details {
         [[nodiscard]] virtual bool isVisible() const noexcept = 0;
 
         [[nodiscard]] virtual NativeHandle nativeHandle() const noexcept = 0;
+
+        [[nodiscard]] bool isMouseLocked() const noexcept;
 
         void mouseDownEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
         void mouseUpEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
@@ -77,6 +84,9 @@ namespace storm::window::details {
         WindowStyle m_style;
 
         std::queue<Event> m_events;
+
+        core::Vector2i m_locked_mouse_position;
+        bool m_mouse_locked = false;
     };
 } // namespace storm::window::details
 
