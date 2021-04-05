@@ -180,3 +180,21 @@ auto AbstractWindow::maximizeEvent() noexcept -> void {
 
     pushEvent(event);
 }
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto AbstractWindow::lostFocusEvent() noexcept -> void {
+    Event event;
+    event.type = EventType::LostFocus;
+
+    pushEvent(event);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+auto AbstractWindow::gainedFocusEvent() noexcept -> void {
+    Event event;
+    event.type = EventType::GainedFocus;
+
+    pushEvent(event);
+}

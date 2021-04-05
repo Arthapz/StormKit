@@ -60,6 +60,14 @@ int main([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
                     LogHandler::ilog("Mouse Exited event");
                     break;
                 }
+                case EventType::LostFocus: {
+                    LogHandler::ilog("Lost focus event");
+                    break;
+                }
+                case EventType::GainedFocus: {
+                    LogHandler::ilog("Gained focus event");
+                    break;
+                }
                 case EventType::KeyPressed: {
                     const auto key = event.key_event.key;
 

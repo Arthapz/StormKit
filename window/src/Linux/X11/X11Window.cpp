@@ -364,7 +364,7 @@ auto X11Window::processEvents(xcb_generic_event_t event) -> void {
     switch (response_type) {
         case XCB_KEY_PRESS: {
             auto keyboard_event = reinterpret_cast<xcb_key_press_event_t *>(xevent);
-            auto symbol         = xcb_keysym_t {};
+            auto symbol         = xkb_keysym_t {};
 
             auto character = char {};
             if (m_has_xkb) {
@@ -378,14 +378,14 @@ auto X11Window::processEvents(xcb_generic_event_t event) -> void {
                 character = x11KeyToChar(symbol);
             }
 
-            auto key = x11keyToStormKey(symbol);
+            auto key = xkbKeyToStormkitKey(symbol);
 
             AbstractWindow::keyDownEvent(key, character);
             break;
         }
         case XCB_KEY_RELEASE: {
             auto keyboard_event = reinterpret_cast<xcb_key_release_event_t *>(xevent);
-            auto symbol         = xcb_keysym_t {};
+            auto symbol         = xkb_keysym_t {};
 
             auto character = char {};
             if (m_has_xkb) {
@@ -399,7 +399,7 @@ auto X11Window::processEvents(xcb_generic_event_t event) -> void {
                 character = x11KeyToChar(symbol);
             }
 
-            auto key = x11keyToStormKey(symbol);
+            auto key = xkbKeyToStormkitKey(symbol);
 
             AbstractWindow::keyUpEvent(key, character);
             break;

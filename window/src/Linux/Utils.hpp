@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "../Utils.hpp"
-
 /////////// - StormKit::core - ///////////
 #include <storm/core/Platform.hpp>
 
@@ -14,13 +12,10 @@
 #include <storm/window/MouseButton.hpp>
 
 /////////// - XCB - ///////////
-#include <xcb/xcb.h>
+#include <xkbcommon/xkbcommon-keysyms.h>
+#include <xkbcommon/xkbcommon.h>
 
 namespace storm::window::details {
-    STORMKIT_PRIVATE char x11KeyToChar(xcb_keysym_t key) noexcept;
-    STORMKIT_PRIVATE storm::window::MouseButton
-        x11MouseButtonToStormMouseButton(xcb_button_t button) noexcept;
-    STORMKIT_PRIVATE xcb_window_t defaultRootWindow(xcb_connection_t *connection,
-                                                    storm::core::Int32 screen_id) noexcept;
-
+    STORMKIT_PRIVATE xkb_keysym_t stormkitKeyToXKBKey(storm::window::Key key) noexcept;
+    STORMKIT_PRIVATE storm::window::Key xkbKeyToStormkitKey(xkb_keysym_t key) noexcept;
 } // namespace storm::window::details

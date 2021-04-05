@@ -36,16 +36,20 @@ namespace storm::window {
             core::UInt16 width;
             core::UInt16 height;
         };
+
         struct KeyEvent {
             Key key;
             char character;
         };
+
         struct MouseEvent {
             MouseButton button;
             core::Int16 x;
             core::Int16 y;
         };
+
         EventType type = EventType::None;
+
         union {
             ResizedEvent resized_event;
             KeyEvent key_event;

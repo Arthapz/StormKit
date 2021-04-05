@@ -16,6 +16,8 @@
 /////////// - XCB - ///////////
 #include <xcb/xcb.h>
 #include <xcb/xcb_keysyms.h>
+
+/////////// - XKB - ///////////
 #include <xkbcommon/xkbcommon.h>
 
 namespace storm::window::details {

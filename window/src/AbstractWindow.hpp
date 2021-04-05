@@ -48,7 +48,6 @@ namespace storm::window::details {
         [[nodiscard]] virtual bool isVisible() const noexcept = 0;
 
         [[nodiscard]] virtual NativeHandle nativeHandle() const noexcept = 0;
-        void restoreWndProc() noexcept;
 
         void mouseDownEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
         void mouseUpEvent(MouseButton button, core::Int16 x, core::Int16 y) noexcept;
@@ -66,6 +65,9 @@ namespace storm::window::details {
         void resizeEvent(core::UInt16 width, core::UInt16 height) noexcept;
         void minimizeEvent() noexcept;
         void maximizeEvent() noexcept;
+
+        void lostFocusEvent() noexcept;
+        void gainedFocusEvent() noexcept;
 
       protected:
         void pushEvent(Event event) noexcept;

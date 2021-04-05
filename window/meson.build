@@ -26,6 +26,10 @@ private_headers = files([
     'src/AbstractWindow.inl',
 ])
 
+linux_headers = files([
+   'src/Linux/Utils.hpp'
+])
+
 x11_headers = files([
     'src/Linux/X11/Log.hpp',
     'src/Linux/X11/Utils.hpp',
@@ -56,6 +60,10 @@ sources = files([
     'src/Window.cpp',
 ])
 
+linux_sources = files([
+    'src/Linux/Utils.cpp'
+])
+
 x11_sources = files([
     'src/Linux/X11/Utils.cpp',
     'src/Linux/X11/X11Mouse.cpp',
@@ -76,8 +84,18 @@ wayland_sources = files([
     'src/Linux/Wayland/WaylandWindow.cpp',
 ])
 
-headers = public_headers + private_headers + x11_headers + wayland_headers + win32_headers
+headers = public_headers + private_headers + x11_headers + wayland_headers + win32_headers + linux_headers
 extra_files = headers
+
+if is_linux
+    sources += linux_sources
+
+    xkbcommon_dep     = dependency('xkbcommon')
+
+    private_dependencies += [xkbcommon_dep]
+else
+    extra_files += linux_sources
+endif
 
 if is_linux and enable_window_xcb
     sources += x11_sources
@@ -87,10 +105,9 @@ if is_linux and enable_window_xcb
     xcb_icccm_dep     = dependency('xcb-icccm')
     xcb_randr_dep     = dependency('xcb-randr')
     xcb_xkb_dep       = dependency('xcb-xkb')
-    xkbcommon_dep     = dependency('xkbcommon')
     xkbcommon_x11_dep = dependency('xkbcommon-x11')
 
-    private_dependencies += [xcb_dep, xcb_key_dep, xcb_icccm_dep, xcb_randr_dep, xcb_xkb_dep, xkbcommon_dep, xkbcommon_x11_dep]
+    private_dependencies += [xcb_dep, xcb_key_dep, xcb_icccm_dep, xcb_randr_dep, xcb_xkb_dep,  xkbcommon_x11_dep]
 else
     extra_files += x11_sources
 endif
