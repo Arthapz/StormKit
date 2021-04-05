@@ -133,11 +133,18 @@ if is_linux and enable_window_wayland
     xdg_shell_header = wayland_scanner_header_generator.process('src/Linux/Wayland/xdg-shell.xml')
     xdg_shell_source = wayland_scanner_source_generator.process('src/Linux/Wayland/xdg-shell.xml')
 
+    xdg_decoration_header = wayland_scanner_header_generator.process('src/Linux/Wayland/xdg-decoration-unstable-v1.xml')
+    xdg_decoration_source = wayland_scanner_source_generator.process('src/Linux/Wayland/xdg-decoration-unstable-v1.xml')
+
     private_dependencies += [wayland_dep]
 
     headers += xdg_shell_header
     sources += xdg_shell_header
     sources += xdg_shell_source
+
+    headers += xdg_decoration_header
+    sources += xdg_decoration_header
+    sources += xdg_decoration_source
 else
     extra_files += wayland_sources
 endif

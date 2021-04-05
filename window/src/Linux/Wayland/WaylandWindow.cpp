@@ -516,6 +516,11 @@ auto WaylandWindow::registryGlobal(wl_registry *registry,
         m_seat.reset(
             reinterpret_cast<wl_seat *>(wl_registry_bind(registry, id, &wl_seat_interface, 5)));
         wl_seat_add_listener(m_seat.get(), &stormkit_wl_seat_listener, this);
+    } else if (std::char_traits<char>::compare(interface,
+                                               zxdg_decoration_manager_v1_interface.name,
+                                               size) == 0) {
+        m_xdg_decoration_manager.reset(reinterpret_cast<zxdg_decoration_manager_v1 *>(
+            wl_registry_bind(registry, id, &zxdg_decoration_manager_v1_interface, 1)));
     }
 }
 
@@ -770,6 +775,11 @@ auto WaylandWindow::createXDGShell() noexcept -> void {
     xdg_toplevel_set_min_size(m_xdg_toplevel.get(),
                               m_video_settings.size.width,
                               m_video_settings.size.height);
+
+    if (m_xdg_decoration_manager) {
+        zxdg_decoration_manager_v1_get_toplevel_decoration(m_xdg_decoration_manager.get(),
+                                                           m_xdg_toplevel.get());
+    }
 
     wl_surface_damage(m_surface.get(), 0, 0, m_extent.width, m_extent.height);
     createPixelbuffer();

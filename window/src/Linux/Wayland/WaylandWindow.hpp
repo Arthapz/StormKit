@@ -14,6 +14,7 @@
 #include <storm/core/Platform.hpp>
 
 /////////// - Wayland - ///////////
+#include "xdg-decoration-unstable-v1.h"
 #include "xdg-shell.h"
 #include <wayland-client.h>
 
@@ -28,6 +29,9 @@ namespace storm::window::details {
     STORMKIT_RAII_CAPSULE(WLSurface, wl_surface, wl_surface_destroy)
     STORMKIT_RAII_CAPSULE(XDGSurface, xdg_surface, xdg_surface_destroy)
     STORMKIT_RAII_CAPSULE(XDGTopLevel, xdg_toplevel, xdg_toplevel_destroy)
+    STORMKIT_RAII_CAPSULE(XDGDecorationManager,
+                          zxdg_decoration_manager_v1,
+                          zxdg_decoration_manager_v1_destroy)
     STORMKIT_RAII_CAPSULE(WLShm, wl_shm, wl_shm_destroy)
     STORMKIT_RAII_CAPSULE(WLShmPool, wl_shm_pool, wl_shm_pool_destroy)
     STORMKIT_RAII_CAPSULE(WLBuffer, wl_buffer, wl_buffer_destroy)
@@ -154,8 +158,9 @@ namespace storm::window::details {
         XDGShellScoped m_xdg_shell;
         WLSurfaceScoped m_surface;
         XDGSurfaceScoped m_xdg_surface;
-        WLShellSurfaceScoped m_wlshell_surface;
         XDGTopLevelScoped m_xdg_toplevel;
+        XDGDecorationManagerScoped m_xdg_decoration_manager;
+        WLShellSurfaceScoped m_wlshell_surface;
         WLShmScoped m_shm;
         WLShmPoolScoped m_shm_pool;
         WLBufferScoped m_buffer;
