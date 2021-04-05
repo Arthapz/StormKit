@@ -304,6 +304,60 @@ static const auto stormkit_wl_touchscreen_listener = wl_touch_listener {};
 /////////////////////////////////////
 /////////////////////////////////////
 WaylandWindow::WaylandWindow() {
+    m_keyboard_state = std::array {
+        KeyState { XKB_KEY_a, false },           KeyState { XKB_KEY_b, false },
+        KeyState { XKB_KEY_c, false },           KeyState { XKB_KEY_d, false },
+        KeyState { XKB_KEY_e, false },           KeyState { XKB_KEY_f, false },
+        KeyState { XKB_KEY_g, false },           KeyState { XKB_KEY_h, false },
+        KeyState { XKB_KEY_i, false },           KeyState { XKB_KEY_j, false },
+        KeyState { XKB_KEY_k, false },           KeyState { XKB_KEY_l, false },
+        KeyState { XKB_KEY_m, false },           KeyState { XKB_KEY_n, false },
+        KeyState { XKB_KEY_o, false },           KeyState { XKB_KEY_p, false },
+        KeyState { XKB_KEY_q, false },           KeyState { XKB_KEY_r, false },
+        KeyState { XKB_KEY_s, false },           KeyState { XKB_KEY_t, false },
+        KeyState { XKB_KEY_u, false },           KeyState { XKB_KEY_v, false },
+        KeyState { XKB_KEY_w, false },           KeyState { XKB_KEY_x, false },
+        KeyState { XKB_KEY_y, false },           KeyState { XKB_KEY_z, false },
+        KeyState { XKB_KEY_0, false },           KeyState { XKB_KEY_1, false },
+        KeyState { XKB_KEY_2, false },           KeyState { XKB_KEY_3, false },
+        KeyState { XKB_KEY_4, false },           KeyState { XKB_KEY_5, false },
+        KeyState { XKB_KEY_6, false },           KeyState { XKB_KEY_7, false },
+        KeyState { XKB_KEY_8, false },           KeyState { XKB_KEY_9, false },
+        KeyState { XKB_KEY_Escape, false },      KeyState { XKB_KEY_Control_L, false },
+        KeyState { XKB_KEY_Shift_L, false },     KeyState { XKB_KEY_Alt_L, false },
+        KeyState { XKB_KEY_Super_L, false },     KeyState { XKB_KEY_Control_R, false },
+        KeyState { XKB_KEY_Shift_R, false },     KeyState { XKB_KEY_Alt_R, false },
+        KeyState { XKB_KEY_Super_R, false },     KeyState { XKB_KEY_Menu, false },
+        KeyState { XKB_KEY_bracketleft, false }, KeyState { XKB_KEY_bracketright, false },
+        KeyState { XKB_KEY_semicolon, false },   KeyState { XKB_KEY_comma, false },
+        KeyState { XKB_KEY_period, false },      KeyState { XKB_KEY_quoteleft, false },
+        KeyState { XKB_KEY_slash, false },       KeyState { XKB_KEY_backslash, false },
+        KeyState { XKB_KEY_dead_grave, false },  KeyState { XKB_KEY_equal, false },
+        KeyState { XKB_KEY_hyphen, false },      KeyState { XKB_KEY_space, false },
+        KeyState { XKB_KEY_Return, false },      KeyState { XKB_KEY_BackSpace, false },
+        KeyState { XKB_KEY_Tab, false },         KeyState { XKB_KEY_Page_Up, false },
+        KeyState { XKB_KEY_Page_Down, false },   KeyState { XKB_KEY_Begin, false },
+        KeyState { XKB_KEY_End, false },         KeyState { XKB_KEY_Home, false },
+        KeyState { XKB_KEY_Insert, false },      KeyState { XKB_KEY_Delete, false },
+        KeyState { XKB_KEY_KP_Add, false },      KeyState { XKB_KEY_KP_Subtract, false },
+        KeyState { XKB_KEY_KP_Multiply, false }, KeyState { XKB_KEY_KP_Divide, false },
+        KeyState { XKB_KEY_Left, false },        KeyState { XKB_KEY_Right, false },
+        KeyState { XKB_KEY_Up, false },          KeyState { XKB_KEY_Down, false },
+        KeyState { XKB_KEY_KP_0, false },        KeyState { XKB_KEY_KP_1, false },
+        KeyState { XKB_KEY_KP_2, false },        KeyState { XKB_KEY_KP_3, false },
+        KeyState { XKB_KEY_KP_4, false },        KeyState { XKB_KEY_KP_5, false },
+        KeyState { XKB_KEY_KP_6, false },        KeyState { XKB_KEY_KP_7, false },
+        KeyState { XKB_KEY_KP_8, false },        KeyState { XKB_KEY_KP_9, false },
+        KeyState { XKB_KEY_F1, false },          KeyState { XKB_KEY_F2, false },
+        KeyState { XKB_KEY_F3, false },          KeyState { XKB_KEY_F4, false },
+        KeyState { XKB_KEY_F5, false },          KeyState { XKB_KEY_F6, false },
+        KeyState { XKB_KEY_F7, false },          KeyState { XKB_KEY_F8, false },
+        KeyState { XKB_KEY_F9, false },          KeyState { XKB_KEY_F10, false },
+        KeyState { XKB_KEY_F11, false },         KeyState { XKB_KEY_F12, false },
+        KeyState { XKB_KEY_F13, false },         KeyState { XKB_KEY_F14, false },
+        KeyState { XKB_KEY_F15, false },         KeyState { XKB_KEY_Pause, false },
+    };
+
     m_xkb_context.reset(xkb_context_new(XKB_CONTEXT_NO_FLAGS));
 
     m_display.reset(wl_display_connect(nullptr));
@@ -630,10 +684,11 @@ auto WaylandWindow::pointerMotion([[maybe_unused]] wl_pointer *pointer,
                                   [[maybe_unused]] std::uint32_t time,
                                   wl_fixed_t surface_x,
                                   wl_fixed_t surface_y) noexcept -> void {
-    m_pointer_position.x = wl_fixed_to_int(surface_x);
-    m_pointer_position.y = wl_fixed_to_int(surface_y);
+    m_mouse_state.position_in_window.x = wl_fixed_to_int(surface_x);
+    m_mouse_state.position_in_window.y = wl_fixed_to_int(surface_y);
 
-    AbstractWindow::mouseMoveEvent(m_pointer_position.x, m_pointer_position.y);
+    AbstractWindow::mouseMoveEvent(m_mouse_state.position_in_window.x,
+                                   m_mouse_state.position_in_window.y);
 }
 /////////////////////////////////////
 /////////////////////////////////////
@@ -642,26 +697,39 @@ auto WaylandWindow::pointerButton([[maybe_unused]] wl_pointer *pointer,
                                   [[maybe_unused]] std::uint32_t time,
                                   std::uint32_t button,
                                   std::uint32_t state) noexcept -> void {
-#define BUTTON_HANDLER(b)                                     \
-    if (down)                                                 \
-        AbstractWindow::mouseDownEvent(MouseButton::Left,     \
-                                       m_pointer_position.x,  \
-                                       m_pointer_position.y); \
-    else                                                      \
-        AbstractWindow::mouseUpEvent(MouseButton::Right,      \
-                                     m_pointer_position.x,    \
-                                     m_pointer_position.y);   \
-    break;
+#define BUTTON_HANDLER(a, b)                                                           \
+    case a: {                                                                          \
+        auto it  = core::ranges::find_if(m_mouse_state.button_state,                   \
+                                        [](const auto &s) { return s.button == a; }); \
+        it->down = down;                                                               \
+        if (down)                                                                      \
+            AbstractWindow::mouseDownEvent(b,                                          \
+                                           m_mouse_state.position_in_window.x,         \
+                                           m_mouse_state.position_in_window.y);        \
+        else                                                                           \
+            AbstractWindow::mouseUpEvent(b,                                            \
+                                         m_mouse_state.position_in_window.x,           \
+                                         m_mouse_state.position_in_window.y);          \
+        break;                                                                         \
+    }
 
     const auto down = !!state;
 
     switch (button) {
-        case BTN_LEFT: BUTTON_HANDLER(MouseButton::Left)
-        case BTN_RIGHT: BUTTON_HANDLER(MouseButton::Right)
-        case BTN_MIDDLE: BUTTON_HANDLER(MouseButton::Middle)
-        case BTN_FORWARD: BUTTON_HANDLER(MouseButton::Button1)
-        case BTN_BACK: BUTTON_HANDLER(MouseButton::Button2)
-        default: BUTTON_HANDLER(MouseButton::Unknow)
+        BUTTON_HANDLER(BTN_LEFT, MouseButton::Left)
+        BUTTON_HANDLER(BTN_RIGHT, MouseButton::Right)
+        BUTTON_HANDLER(BTN_MIDDLE, MouseButton::Middle)
+        BUTTON_HANDLER(BTN_FORWARD, MouseButton::Button1)
+        BUTTON_HANDLER(BTN_BACK, MouseButton::Button2)
+        default:
+            if (down)
+                AbstractWindow::mouseDownEvent(MouseButton::Unknow,
+                                               m_mouse_state.position_in_window.x,
+                                               m_mouse_state.position_in_window.y);
+            else
+                AbstractWindow::mouseUpEvent(MouseButton::Unknow,
+                                             m_mouse_state.position_in_window.x,
+                                             m_mouse_state.position_in_window.y);
     }
 }
 
@@ -730,6 +798,10 @@ auto WaylandWindow::keyboardKey([[maybe_unused]] wl_keyboard *keyboard,
 
     const auto down = state == WL_KEYBOARD_KEY_STATE_PRESSED;
 
+    auto it = core::ranges::find_if(m_keyboard_state,
+                                    [symbol](const auto &s) { return s.key == symbol; });
+
+    it->down = down;
     if (down) AbstractWindow::keyDownEvent(skey, character);
     else
         AbstractWindow::keyUpEvent(skey, character);

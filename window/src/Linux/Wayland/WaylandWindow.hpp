@@ -52,6 +52,22 @@ namespace storm::window::details {
             wl_surface *surface;
         };
 
+        struct KeyState {
+            xkb_keysym_t key;
+            bool down;
+        };
+
+        struct MouseState {
+            struct MouseButtonState {
+                std::uint32_t button;
+                bool down;
+            };
+
+            std::array<MouseButtonState, 5> button_state;
+
+            core::Vector2i position_in_window;
+        };
+
         WaylandWindow();
         WaylandWindow(std::string title,
                       const VideoSettings &settings,
@@ -140,6 +156,11 @@ namespace storm::window::details {
                                 std::int32_t rate,
                                 std::int32_t delay) noexcept;
 
+        [[nodiscard]] core::span<const KeyState> keyStates() const noexcept {
+            return m_keyboard_state;
+        }
+        [[nodiscard]] const MouseState &mouseState() const noexcept { return m_mouse_state; }
+
         [[nodiscard]] static std::vector<VideoSettings> getDesktopModes();
         [[nodiscard]] static VideoSettings getDesktopFullscreenSize();
 
@@ -190,9 +211,11 @@ namespace storm::window::details {
         bool m_visible         = false;
         core::Extentu m_extent = {};
 
-        bool m_configured = false;
+        std::array<KeyState, 102> m_keyboard_state;
 
-        core::Vector2i m_pointer_position;
+        MouseState m_mouse_state;
+
+        bool m_configured = false;
 
         friend class WaylandInputHandler;
     };

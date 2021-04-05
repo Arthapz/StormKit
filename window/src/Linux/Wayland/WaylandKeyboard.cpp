@@ -3,6 +3,7 @@
 // found in the top-level of this distribution
 
 #include "WaylandKeyboard.hpp"
+#include "../Utils.hpp"
 #include "Log.hpp"
 #include "WaylandWindow.hpp"
 
@@ -31,7 +32,12 @@ auto WaylandKeyboard::operator=(WaylandKeyboard &&) noexcept -> WaylandKeyboard 
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandKeyboard::isKeyPressed(Key key) const noexcept -> bool {
-    return false;
+    auto symbol = stormkitKeyToXKBKey(key);
+
+    auto it = core::ranges::find_if(m_wayland_window->keyStates(),
+                                    [symbol](const auto &s) { return s.key == symbol; });
+
+    return it->down;
 }
 
 /////////////////////////////////////
