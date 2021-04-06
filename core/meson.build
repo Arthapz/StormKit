@@ -48,6 +48,7 @@ headers = files([
     'include/storm/core/Numerics.inl',
     'include/storm/core/Pimpl.inl',
     'include/storm/core/Timer.inl',
+    'include/storm/core/StateManager.inl',
     'include/storm/core/Subject.inl',
     'include/storm/core/Tree.inl',
     'include/storm/core/TreeNode.inl',

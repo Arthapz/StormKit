@@ -4,57 +4,42 @@
 
 #pragma once
 
-#include <storm/core/Platform.hpp>
-
-#ifdef STORMKIT_COMPILER_MSVC
-    #pragma warning(push)
-    #pragma warning(disable : 4251)
-#endif
-
+/////////// - STL - ///////////
 #include <functional>
 #include <memory>
 #include <queue>
 #include <stack>
+
+/////////// - StormKit::core - ///////////
+#include <storm/core/Concepts.hpp>
 #include <storm/core/Fwd.hpp>
 #include <storm/core/NonCopyable.hpp>
-#include <storm/core/Numerics.hpp>
+#include <storm/core/Platform.hpp>
 
 namespace storm::core {
     class STORMKIT_PUBLIC STORMKIT_EBCO StateManager final: public core::NonCopyable {
       public:
-        explicit StateManager();
+        StateManager() noexcept;
 
-        StateManager(StateManager &&manager);
+        StateManager(StateManager &&manager) noexcept;
 
-        StateManager &operator=(StateManager &&manager);
+        StateManager &operator=(StateManager &&manager) noexcept;
 
         ~StateManager();
 
-        template<class T, typename... Args>
-        void requestPush(Args &&...args) {
-            static_assert(std::is_base_of<State, T>::value,
-                          "T must inherit from storm::tools::State");
-
-            requestPush(std::make_unique<T>(*this, std::forward<Args>(args)...));
-        }
+        template<CHILD_OF_STATE_CONCEPT(T), typename... Args>
+        void requestPush(Args &&...args);
 
         void requestPush(StateOwnedPtr &&state);
 
-        template<class T, typename... Args>
-        void requestSet(Args &&...args) {
-            static_assert(std::is_base_of<State, T>::value,
-                          "T must inherit from storm::tools::State");
-
-            requestSet(std::make_unique<T>(*this, std::forward<Args>(args)...));
-        }
+        template<CHILD_OF_STATE_CONCEPT(T), typename... Args>
+        void requestSet(Args &&...args);
 
         void requestSet(StateOwnedPtr &&state);
 
         void requestPop();
 
-        [[nodiscard]] bool hasPendingRequests() const noexcept {
-            return !std::empty(m_action_queue);
-        }
+        [[nodiscard]] bool hasPendingRequests() const noexcept;
 
         void executeRequests();
 
@@ -62,22 +47,21 @@ namespace storm::core {
 
         void requestClear();
 
-        State &top() noexcept;
+        [[nodiscard]] State &top() noexcept;
+        [[nodiscard]] const State &top() const noexcept;
 
-        template<class T>
-        T &top() {
-            static_assert(std::is_base_of<State, T>::value,
-                          "T must inherit from storm::tools::State");
+        template<CHILD_OF_STATE_CONCEPT(T)>
+        [[nodiscard]] T &top();
 
-            return *static_cast<T *>(m_stack.top().get());
-        }
+        template<CHILD_OF_STATE_CONCEPT(T)>
+        [[nodiscard]] const T &top() const;
 
         inline core::ArraySize size() const noexcept { return m_stack.size(); }
 
       private:
         struct StateManagerAction {
             enum class Type { push, pop, set, clear } type;
-            std::unique_ptr<State> state; // Null when pop
+            StateOwnedPtr state; // Null when pop
         };
 
         std::queue<StateManagerAction> m_action_queue;
@@ -85,6 +69,4 @@ namespace storm::core {
     };
 } // namespace storm::core
 
-#ifdef STORMKIT_COMPILER_MSVC
-    #pragma warning(pop)
-#endif
+#include "StateManager.inl"

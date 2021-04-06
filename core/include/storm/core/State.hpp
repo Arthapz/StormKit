@@ -4,15 +4,11 @@
 
 #pragma once
 
-#include <storm/core/Platform.hpp>
-
-#ifdef STORMKIT_COMPILER_MSVC
-    #pragma warning(push)
-    #pragma warning(disable : 4251)
-#endif
-
+/////////// - STL - ///////////
 #include <memory>
 #include <stack>
+
+/////////// - StormKit::core - ///////////
 #include <storm/core/Fwd.hpp>
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/NonDefaultInstanciable.hpp>
@@ -20,7 +16,7 @@
 #include <storm/core/Platform.hpp>
 
 namespace storm::core {
-    class STORMKIT_PUBLIC STORMKIT_EBCO State: public core::NonCopyable {
+    class STORMKIT_PUBLIC State: public core::NonCopyable {
       public:
         explicit State(StateManager &owner) noexcept;
 
@@ -40,7 +36,3 @@ namespace storm::core {
         StateManagerRef m_owner;
     };
 } // namespace storm::core
-
-#ifdef STORMKIT_COMPILER_MSVC
-    #pragma warning(pop)
-#endif

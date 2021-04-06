@@ -128,4 +128,11 @@ namespace storm::core {
     concept Range = ranges::range<T>;
 
 #define RANGE_CONCEPT(x) storm::core::Range x
+
+    class State;
+    template<typename T>
+    concept ChildOfState = std::derived_from<T, State>;
+
+#define CHILD_OF_STATE_CONCEPT(x) storm::core::ChildOfState x
+
 } // namespace storm::core

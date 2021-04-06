@@ -1,4 +1,4 @@
-#include <cassert>
+/////////// - StormKit::core - ///////////
 #include <storm/core/State.hpp>
 #include <storm/core/StateManager.hpp>
 #include <storm/core/Strings.hpp>
@@ -7,7 +7,7 @@ using namespace storm::core;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-StateManager::StateManager() = default;
+StateManager::StateManager() noexcept = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
@@ -15,34 +15,34 @@ StateManager::~StateManager() = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-StateManager::StateManager(StateManager &&) = default;
+StateManager::StateManager(StateManager &&) noexcept = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-StateManager &StateManager::operator=(StateManager &&) = default;
+auto StateManager::operator=(StateManager &&) noexcept -> StateManager & = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void StateManager::requestPush(StateOwnedPtr &&state) {
+auto StateManager::requestPush(StateOwnedPtr &&state) -> void {
     m_action_queue.emplace(StateManagerAction { StateManagerAction::Type::push, std::move(state) });
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void StateManager::requestSet(StateOwnedPtr &&state) {
+auto StateManager::requestSet(StateOwnedPtr &&state) -> void {
     m_action_queue.emplace(StateManagerAction { StateManagerAction::Type::set, std::move(state) });
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void StateManager::requestPop() {
+auto StateManager::requestPop() -> void {
     if (!m_stack.empty())
         m_action_queue.emplace(StateManagerAction { StateManagerAction::Type::pop, nullptr });
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void StateManager::executeRequests() {
+auto StateManager::executeRequests() -> void {
     if (m_action_queue.empty()) return;
 
     while (!m_action_queue.empty()) {
@@ -75,20 +75,28 @@ void StateManager::executeRequests() {
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void StateManager::update(Secondf delta) {
+auto StateManager::update(Secondf delta) -> void {
     if (!m_stack.empty()) m_stack.top()->update(delta);
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void StateManager::requestClear() {
+auto StateManager::requestClear() -> void {
     if (!m_stack.empty())
         m_action_queue.emplace(StateManagerAction { StateManagerAction::Type::clear, nullptr });
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-State &StateManager::top() noexcept {
+auto StateManager::top() noexcept -> State & {
+    STORMKIT_EXPECTS(!m_stack.empty());
+
+    return *(m_stack.top());
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+auto StateManager::top() const noexcept -> const State & {
     STORMKIT_EXPECTS(!m_stack.empty());
 
     return *(m_stack.top());
