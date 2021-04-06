@@ -254,6 +254,7 @@ auto WaylandWindow::close() noexcept -> void {
     // Base_Surface
     m_surface.reset();
 
+    m_opened     = false;
     m_configured = false;
 }
 
@@ -283,6 +284,7 @@ auto WaylandWindow::waitEvent(Event &event) noexcept -> bool {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::setTitle(std::string title) noexcept -> void {
+    if (!m_opened) return;
     m_title = std::move(title);
 
     if (m_xdg_toplevel) {
@@ -296,6 +298,7 @@ auto WaylandWindow::setTitle(std::string title) noexcept -> void {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::lockMouse() noexcept -> void {
+    if (!m_opened) return;
     if (!globals.relative_pointer_manager) {
         elog("Can't lock mouse, {} protocol is not present",
              zwp_relative_pointer_manager_v1_interface.name);
@@ -335,6 +338,8 @@ auto WaylandWindow::lockMouse() noexcept -> void {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::unlockMouse() noexcept -> void {
+    if (!m_opened) return;
+
     m_locked_mouse_position = m_mouse_state.position_in_window;
 
     m_locked_pointer.reset();
@@ -348,18 +353,21 @@ auto WaylandWindow::unlockMouse() noexcept -> void {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::hideMouse() noexcept -> void {
+    if (!m_opened) return;
     wl_pointer_set_cursor(m_pointer, m_pointer_serial, nullptr, 0, 0);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::unhideMouse() noexcept -> void {
+    if (!m_opened) return;
     wl_pointer_set_cursor(m_pointer, m_pointer_serial, m_cursor_surface.get(), 0, 0);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::setFullscreenEnabled(bool enabled) noexcept -> void {
+    if (!m_opened) return;
     if (m_xdg_toplevel) {
         if (enabled) xdg_toplevel_set_fullscreen(m_xdg_toplevel.get(), m_current_output);
         else
@@ -687,6 +695,7 @@ auto WaylandWindow::relativePointerRelativeMotion(zwp_relative_pointer_v1 *point
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandWindow::setMousePosition(core::Vector2i position) const noexcept -> void {
+    if (!m_opened) return;
     if (m_mouse_locked) {
         zwp_locked_pointer_v1_set_cursor_position_hint(m_locked_pointer.get(),
                                                        wl_fixed_from_int(position.x),
