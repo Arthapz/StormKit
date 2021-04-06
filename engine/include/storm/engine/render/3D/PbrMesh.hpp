@@ -13,7 +13,7 @@
 #include <storm/engine/render/Drawable.hpp>
 
 namespace storm::engine {
-    class STORMKIT_PUBLIC PbrMesh : public Drawable {
+    class STORMKIT_PUBLIC PbrMesh: public Drawable {
       public:
         struct alignas(16) Vertex {
             core::Vector3f position;
@@ -27,15 +27,11 @@ namespace storm::engine {
         PbrMesh(PbrMesh &&) noexcept;
         PbrMesh &operator=(PbrMesh &&) noexcept;
 
-        void setVertices(VertexArray vertices);
-        void setIndices(LargeIndexArray indices);
-
         [[nodiscard]] constexpr core::ArraySize vertexSize() const noexcept override;
 
         ALLOCATE_HELPERS(PbrMesh)
       private:
     };
 } // namespace storm::engine
-
 
 #include "PbrMesh.inl"

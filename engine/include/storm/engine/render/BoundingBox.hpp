@@ -4,10 +4,13 @@
 
 #pragma once
 
+/////////// - StormKit::render - ///////////
+#include <storm/render/core/Types.hpp>
+
 namespace storm::engine {
-    /////////////////////////////////////
-    /////////////////////////////////////
-    constexpr auto PbrMesh::vertexSize() const noexcept -> core::ArraySize {
-        return sizeof(Vertex);
-    }
+    struct BoundingBox {
+        core::Vector3f min;
+        core::Vector3f max;
+        core::Extentf extent;
+    };
 } // namespace storm::engine

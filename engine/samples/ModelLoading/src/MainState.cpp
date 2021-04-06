@@ -70,31 +70,26 @@ MainState::MainState(core::StateManager &owner, engine::Engine &engine, window::
 
     m_render_system->setCamera(*m_camera);
 
-    auto vertices = engine::VertexArray {};
-    vertices.push_back(
-        engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 0.f }, .uv = { 0.f, 0.f } });
-    vertices.push_back(
-        engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 0.f }, .uv = { 1.f, 0.f } });
-    vertices.push_back(
-        engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 0.f }, .uv = { 1.f, 1.f } });
-    vertices.push_back(
-        engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 0.f }, .uv = { 0.f, 1.f } });
-
-    vertices.push_back(
-        engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 1.f }, .uv = { 0.f, 0.f } });
-    vertices.push_back(
-        engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 1.f }, .uv = { 1.f, 0.f } });
-    vertices.push_back(
-        engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 1.f }, .uv = { 1.f, 1.f } });
-    vertices.push_back(
-        engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 1.f }, .uv = { 0.f, 1.f } });
-
+    auto vertices = engine::VertexArray {
+        engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 0.f }, .uv = { 0.f, 0.f } },
+        engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 0.f }, .uv = { 1.f, 0.f } },
+        engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 0.f }, .uv = { 1.f, 1.f } },
+        engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 0.f }, .uv = { 0.f, 1.f } },
+        engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 1.f }, .uv = { 0.f, 0.f } },
+        engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 1.f }, .uv = { 1.f, 0.f } },
+        engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 1.f }, .uv = { 1.f, 1.f } },
+        engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 1.f }, .uv = { 0.f, 1.f } }
+    };
     auto indices = engine::LargeIndexArray { 0, 1, 3, 3, 1, 2, 1, 5, 2, 2, 5, 6, 5, 4, 6, 6, 4, 7,
                                              4, 0, 7, 7, 0, 3, 3, 2, 7, 7, 2, 6, 4, 5, 0, 0, 5, 1 };
 
+    auto sub_draw = engine::SubDrawable { .primitives = { engine::DrawablePrimitive {
+                                              .name     = "cube",
+                                              .vertices = std::move(vertices),
+                                              .indices  = std::move(indices) } } };
+
     auto mesh = engine::PbrMesh::allocateOwned();
-    mesh->setVertices(std::move(vertices));
-    mesh->setIndices(std::move(indices));
+    mesh->addSubdrawable(std::move(sub_draw));
 
     auto e               = m_world.makeEntity();
     auto &name_component = m_world.addComponent<engine::NameComponent>(e);

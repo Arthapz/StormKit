@@ -7,12 +7,12 @@
 #include <storm/engine/NameComponent.hpp>
 #include <storm/engine/Profiler.hpp>
 
-#include <storm/engine/render/TransformComponent.hpp>
-#include <storm/engine/render/MaterialComponent.hpp>
 #include <storm/engine/render/DrawableComponent.hpp>
+#include <storm/engine/render/MaterialComponent.hpp>
+#include <storm/engine/render/TransformComponent.hpp>
 
-#include <storm/engine/render/3D/PbrRenderSystem.hpp>
 #include <storm/engine/render/3D/PbrMesh.hpp>
+#include <storm/engine/render/3D/PbrRenderSystem.hpp>
 
 #include <storm/engine/render/framegraph/FrameGraph.hpp>
 #include <storm/engine/render/framegraph/FrameGraphNode.hpp>
@@ -42,26 +42,25 @@ static constexpr auto VERTEX_ATTRIBUTE_DESCRIPTIONS = std::array {
     render::VertexInputAttributeDescription { .location = 0,
                                               .binding  = 0,
                                               .format   = render::Format::Float3,
-                                              .offset =
-                                                  offsetof(PbrMesh::Vertex, position) },
+                                              .offset   = offsetof(PbrMesh::Vertex, position) },
     render::VertexInputAttributeDescription { .location = 1,
                                               .binding  = 0,
                                               .format   = render::Format::Float3,
-                                              .offset = offsetof(PbrMesh::Vertex, normal) },
+                                              .offset   = offsetof(PbrMesh::Vertex, normal) },
     render::VertexInputAttributeDescription { .location = 2,
                                               .binding  = 0,
                                               .format   = render::Format::Float2,
                                               .offset   = offsetof(PbrMesh::Vertex, uv) },
-    render::VertexInputAttributeDescription {
-        .location = 3,
-        .binding  = 1,
-        .format   = render::Format::Int,
-        .offset   = offsetof(RenderQueue::DrawData, transform_id) },
-    render::VertexInputAttributeDescription {
-        .location = 4,
-        .binding  = 1,
-        .format   = render::Format::Int,
-        .offset   = offsetof(RenderQueue::DrawData, material_id) },
+    render::VertexInputAttributeDescription { .location = 3,
+                                              .binding  = 1,
+                                              .format   = render::Format::Int,
+                                              .offset =
+                                                  offsetof(RenderQueue::DrawData, transform_id) },
+    render::VertexInputAttributeDescription { .location = 4,
+                                              .binding  = 1,
+                                              .format   = render::Format::Int,
+                                              .offset =
+                                                  offsetof(RenderQueue::DrawData, material_id) },
     render::VertexInputAttributeDescription { .location = 5,
                                               .binding  = 1,
                                               .format   = render::Format::Int,
@@ -98,11 +97,14 @@ PbrRenderSystem::PbrRenderSystem(Engine &engine, entities::EntityManager &manage
     : RenderSystem { engine,
                      manager,
                      {
-                          DrawableComponent::TYPE,
+                         DrawableComponent::TYPE,
                      } },
-      m_buffering_count { engine.surface().bufferingCount() }, m_system_name{"StormKit:PbrRenderSystem"},
-      m_render_queue{engine, manager, m_buffering_count, m_system_name },
-      m_default_camera{Camera::Type::Perspective, engine.surface().extent() },
+      m_buffering_count { engine.surface().bufferingCount() },
+      m_system_name { "StormKit:PbrRenderSystem" }, m_render_queue { engine,
+                                                                     manager,
+                                                                     m_buffering_count,
+                                                                     m_system_name },
+      m_default_camera { Camera::Type::Perspective, engine.surface().extent() },
       m_scene_global_buffer_pool { m_buffering_count } {
     m_last_update = std::chrono::high_resolution_clock::now();
 
@@ -114,7 +116,8 @@ PbrRenderSystem::PbrRenderSystem(Engine &engine, entities::EntityManager &manage
                                                         PBR_FORWARD_FRAGMENT_SHADER_DATA));
 
     m_forward_plus_pass_name = fmt::format("{}:Forward+", m_system_name);
-    m_update_scene_global_buffer_pass_name = fmt::format("{}:UpdateSceneGlobalBufferPass", m_system_name);
+    m_update_scene_global_buffer_pass_name =
+        fmt::format("{}:UpdateSceneGlobalBufferPass", m_system_name);
 
     setCamera(m_default_camera);
 }
@@ -146,9 +149,11 @@ void PbrRenderSystem::update(core::Secondf delta) {
         std::chrono::duration_cast<core::Secondf>(now - m_last_update).count() < UPDATE_FREQUENCY)
         return;
 
-
     for (auto e : m_to_be_added) {
-        const auto &drawable_component = m_manager->getComponent<DrawableComponent>(e);
+        auto &drawable_component = m_manager->getComponent<DrawableComponent>(e);
+        if (drawable_component.drawable->dirty())
+            drawable_component.drawable->recomputeBoundingBox();
+
         m_render_queue.addDrawInstance(e, *drawable_component.drawable);
 
         m_entities.emplace_back(e);
@@ -175,7 +180,7 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
     const auto vertex_buffer_id        = m_render_queue.vertexBufferID();
     const auto index_buffer_id         = m_render_queue.indexBufferID();
     const auto draw_instance_buffer_id = m_render_queue.drawInstanceBufferID();
-    const auto draw_data_buffer_id   = m_render_queue.drawDataBufferID();
+    const auto draw_data_buffer_id     = m_render_queue.drawDataBufferID();
     const auto transform_buffer_id     = m_render_queue.transformBufferID();
 
     struct ForwardPassData {
@@ -218,7 +223,9 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
             pass_data.draw_data_buffer_id     = builder.read(draw_data_buffer_id);
             pass_data.transform_buffer_id     = builder.read(transform_buffer_id);
         },
-        [&frame_graph, &cache, this](const FrameGraphStepData &step_data, const ForwardPassData &pass_data, render::CommandBuffer &cmb) {
+        [&frame_graph, &cache, this](const FrameGraphStepData &step_data,
+                                     const ForwardPassData &pass_data,
+                                     render::CommandBuffer &cmb) {
             const auto &scene_global_buffer =
                 frame_graph.getPhysicalBuffer(pass_data.scene_global_buffer_id);
             const auto &vertex_buffer = frame_graph.getPhysicalBuffer(pass_data.vertex_buffer_id);
@@ -251,9 +258,13 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
                 cache.requestDescriptorSetLayout(PBR_FORWARD_PER_MESH_DESCRIPTOR_SET_LAYOUT);
 
             auto &per_scene_descriptor_set =
-                cache.requestDescriptorSet(per_scene_descriptor_set_layout, per_scene_descriptors, true);
+                cache.requestDescriptorSet(per_scene_descriptor_set_layout,
+                                           per_scene_descriptors,
+                                           true);
             auto &per_mesh_descriptor_set =
-                cache.requestDescriptorSet(per_mesh_descriptor_set_layout, per_mesh_descriptors, true);
+                cache.requestDescriptorSet(per_mesh_descriptor_set_layout,
+                                           per_mesh_descriptors,
+                                           true);
 
             cmb.bindVertexBuffers(std::vector { std::cref(vertex_buffer),
                                                 std::cref(draw_instance_buffer) },
@@ -289,7 +300,7 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
         .vertex_input_state = { .binding_descriptions         = VERTEX_BINDING_DESCRIPTIONS,
                                 .input_attribute_descriptions = VERTEX_ATTRIBUTE_DESCRIPTIONS },
         .depth_stencil_state = { .depth_test_enable = true, .depth_write_enable = true },
-        .layout             = { .descriptor_set_layouts = { core::makeConstObserver(
+        .layout              = { .descriptor_set_layouts = { core::makeConstObserver(
                                                     per_scene_descriptor_set_layout),
                                                 core::makeConstObserver(
                                                     per_mesh_descriptor_set_layout) } }
@@ -315,7 +326,7 @@ auto PbrRenderSystem::updateSceneGlobalBuffer(FrameGraph &frame_graph) -> void {
     const auto reupload = m_camera->dirty() || m_camera_switched;
 
     const auto scene_global_buffer_name =
-                         fmt::format("{}:SceneGlobalBuffer:{}", m_system_name, m_frame_counter);
+        fmt::format("{}:SceneGlobalBuffer:{}", m_system_name, m_frame_counter);
 
     if (!reupload) {
         auto &scene_global_buffer = m_scene_global_buffer_pool.get();
@@ -326,8 +337,8 @@ auto PbrRenderSystem::updateSceneGlobalBuffer(FrameGraph &frame_graph) -> void {
                                .memory_properties = render::MemoryProperty::Device_Local };
 
         m_scene_global_buffer_id = frame_graph.setRetainedResource(scene_global_buffer_name,
-                                                             scene_global_buffer_descriptor,
-                                                             scene_global_buffer);
+                                                                   scene_global_buffer_descriptor,
+                                                                   scene_global_buffer);
         return;
     }
 
@@ -338,10 +349,10 @@ auto PbrRenderSystem::updateSceneGlobalBuffer(FrameGraph &frame_graph) -> void {
 
     if (!m_scene_global_buffer_pool.empty()) m_scene_global_buffer_pool.next();
     m_scene_global_buffer_pool.emplace(device,
-                                 render::HardwareBufferUsage::Uniform |
-                                     render::HardwareBufferUsage::Transfert_Dst,
-                                 staging_buffer_size,
-                                 render::MemoryProperty::Device_Local);
+                                       render::HardwareBufferUsage::Uniform |
+                                           render::HardwareBufferUsage::Transfert_Dst,
+                                       staging_buffer_size,
+                                       render::MemoryProperty::Device_Local);
 
     auto &scene_global_buffer = m_scene_global_buffer_pool.get();
     device.setObjectName(scene_global_buffer, scene_global_buffer_name);

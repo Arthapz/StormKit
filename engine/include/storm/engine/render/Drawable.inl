@@ -7,17 +7,21 @@
 namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Drawable::indexCount() const noexcept -> core::ArraySize {
-        return std::size(m_indices);
+    inline auto Drawable::name() const noexcept -> std::string_view { return m_name; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Drawable::subDrawables() const noexcept -> core::span<const SubDrawable> {
+        return m_sub_drawables;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Drawable::vertices() const noexcept -> core::ByteConstSpan { return m_vertices.data(); }
+    inline auto Drawable::boundingBox() const noexcept -> const BoundingBox & {
+        return m_bounding_box;
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Drawable::indices() const noexcept -> core::ByteConstSpan {
-        return core::toConstByteSpan(m_indices);
-    }
+    inline auto Drawable::dirty() const noexcept -> bool { return m_dirty; }
 } // namespace storm::engine

@@ -57,14 +57,14 @@ auto WaylandMouse::isButtonPressed(MouseButton button) const noexcept -> bool {
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandMouse::getPositionOnDesktop() const noexcept -> core::Position2u {
-    elog("Getting on desktop mouse position is not support on Wayland");
+    elog("Getting on desktop mouse position is not supported on Wayland");
     return { 0, 0 };
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 auto WaylandMouse::setPositionOnDesktop(core::Position2u position) noexcept -> void {
-    elog("Setting on desktop mouse position is not support on Wayland");
+    elog("Setting on desktop mouse position is not supported on Wayland");
 }
 
 /////////////////////////////////////
@@ -77,7 +77,8 @@ auto WaylandMouse::getPositionOnWindow() const noexcept -> core::Position2i {
 /////////////////////////////////////
 auto WaylandMouse::setPositionOnWindow(core::Position2i position) noexcept -> void {
     if (!m_wayland_window->isMouseLocked())
-        elog("Setting on window mouse position is not support on Wayland when mouse not locked");
+        elog("Setting on window mouse position is not supported on Wayland when mouse is not "
+             "locked");
     else
         m_wayland_window->setMousePosition(position);
 }

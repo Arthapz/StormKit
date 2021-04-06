@@ -28,6 +28,8 @@ namespace storm::engine {
         using VertexData = std::vector<core::Byte>;
 
         VertexArray() noexcept;
+        template<typename VertexType>
+        VertexArray(std::initializer_list<VertexType> data);
         ~VertexArray();
 
         VertexArray(const VertexArray &);

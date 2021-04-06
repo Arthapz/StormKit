@@ -4,7 +4,19 @@
 
 #pragma once
 
+#include "Vertex.hpp"
+
 namespace storm::engine {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename VertexType>
+    VertexArray::VertexArray(std::initializer_list<VertexType> datas)
+        : m_data { sizeof(VertexType) * std::size(datas) } {
+        const auto span = core::toConstByteSpan(datas);
+        std::copy(std::begin(span), std::end(span), std::begin(m_data));
+        // core::ranges::copy(span, m_data);
+    }
+
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename VertexType>
@@ -99,14 +111,15 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto VertexArray::operator[](core::ArraySize index) noexcept -> core::Byte &{
+    inline auto VertexArray::operator[](core::ArraySize index) noexcept -> core::Byte & {
         STORMKIT_EXPECTS(index < size());
         return m_data[index];
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto VertexArray::operator[](core::ArraySize index) const noexcept -> const core::Byte &{
+    inline auto VertexArray::operator[](core::ArraySize index) const noexcept
+        -> const core::Byte & {
         STORMKIT_EXPECTS(index < size());
         return m_data[index];
     }
@@ -114,7 +127,7 @@ namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename VertexType>
-    auto VertexArray::at(core::ArraySize index) -> VertexType &{
+    auto VertexArray::at(core::ArraySize index) -> VertexType & {
         const auto size = count<VertexType>();
         STORMKIT_EXPECTS(index < size);
 
@@ -124,7 +137,7 @@ namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename VertexType>
-    auto VertexArray::at(core::ArraySize index) const -> const VertexType &{
+    auto VertexArray::at(core::ArraySize index) const -> const VertexType & {
         const auto size = count<VertexType>();
         STORMKIT_EXPECTS(index < size);
 
@@ -141,7 +154,7 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto VertexArray::size() const noexcept -> core::ArraySize  { return std::size(m_data); }
+    inline auto VertexArray::size() const noexcept -> core::ArraySize { return std::size(m_data); }
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -153,5 +166,7 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto VertexArray::data() const noexcept -> core::span<const core::Byte>  { return m_data; }
+    inline auto VertexArray::data() const noexcept -> core::span<const core::Byte> {
+        return m_data;
+    }
 } // namespace storm::engine

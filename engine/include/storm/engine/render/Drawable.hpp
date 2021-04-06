@@ -4,6 +4,10 @@
 
 #pragma once
 
+/////////// - STL - ///////////
+#include <string>
+#include <string_view>
+
 /////////// - StormKit::core - ///////////
 #include <storm/core/NonCopyable.hpp>
 #include <storm/core/Platform.hpp>
@@ -11,28 +15,62 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
 
+#include <storm/engine/render/BoundingBox.hpp>
 #include <storm/engine/render/Vertex.hpp>
 
 namespace storm::engine {
-    class STORMKIT_PUBLIC Drawable : public core::NonCopyable {
+    struct DrawablePrimitive {
+        std::string name = "";
+
+        VertexArray vertices;
+        LargeIndexArray indices;
+
+        core::UInt32 first_vertex = 0u;
+        core::UInt32 first_indice = 0u;
+
+        core::UInt32 material_index = 0u;
+
+        BoundingBox bounding_box;
+    };
+
+    struct SubDrawable {
+        std::string name = "";
+
+        std::vector<DrawablePrimitive> primitives;
+
+        BoundingBox bounding_box;
+    };
+
+    class STORMKIT_PUBLIC Drawable: public core::NonCopyable {
       public:
-        Drawable() noexcept;
+        explicit Drawable(std::string name = "");
         virtual ~Drawable();
 
         Drawable(Drawable &&) noexcept;
         Drawable &operator=(Drawable &&) noexcept;
 
-        [[nodiscard]] core::ArraySize indexCount() const noexcept;
+        [[nodiscard]] std::string_view name() const noexcept;
 
-        [[nodiscard]] core::ByteConstSpan vertices() const noexcept;
-        [[nodiscard]] core::ByteConstSpan indices() const noexcept;
+        void addSubdrawable(SubDrawable subdrawable);
+        [[nodiscard]] core::span<const SubDrawable> subDrawables() const noexcept;
+
+        void recomputeBoundingBox() noexcept;
+        [[nodiscard]] const BoundingBox &boundingBox() const noexcept;
 
         [[nodiscard]] virtual constexpr core::ArraySize vertexSize() const noexcept = 0;
+
+        [[nodiscard]] bool dirty() const noexcept;
+
       protected:
-        VertexArray m_vertices;
-        LargeIndexArray m_indices;
+        std::string m_name;
+
+        std::vector<SubDrawable> m_sub_drawables;
+
+        BoundingBox m_bounding_box;
+
+        bool m_dirty = true;
     };
-}
+} // namespace storm::engine
 
 HASH_FUNC(storm::engine::Drawable)
 

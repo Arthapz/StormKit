@@ -6,5 +6,5 @@
 #include <storm/log/LogHandler.hpp>
 
 namespace storm::engine {
-    LOGGER("Engine")
+    LOGGER("StormKit.Engine")
 }

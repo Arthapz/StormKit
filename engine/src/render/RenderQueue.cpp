@@ -5,31 +5,32 @@
 #include <storm/engine/Engine.hpp>
 
 #include <storm/engine/render/Drawable.hpp>
-#include <storm/engine/render/RenderQueue.hpp>
 #include <storm/engine/render/DrawableComponent.hpp>
+#include <storm/engine/render/RenderQueue.hpp>
 #include <storm/engine/render/TransformComponent.hpp>
 
 using namespace storm;
 using namespace storm::engine;
 
-
 /////////////////////////////////////
 /////////////////////////////////////
-RenderQueue::RenderQueue(Engine &engine, entities::EntityManager &manager, core::UInt32 buffering_count, std::string_view system_name)
-    : m_engine{engine}, m_manager{manager},
-      m_buffering_count{buffering_count},
-      m_system_name{std::move(system_name)},
-      m_vertex_buffer_pool{m_buffering_count},
-      m_index_buffer_pool{m_buffering_count},
-      m_draw_data_buffer_pool{m_buffering_count},
-      m_transform_buffer_pool{m_buffering_count} {
-    m_vertex_buffer_name = fmt::format("{}:VertexBuffer", m_system_name);
-    m_index_buffer_name                     = fmt::format("{}:IndexBuffer", m_system_name);
-    m_draw_data_buffer_name                 = fmt::format("{}:DrawDataBuffer", m_system_name);
-    m_transform_buffer_name                 = fmt::format("{}:TransformBuffer", m_system_name);
-    m_update_vertices_and_indices_pass_name = fmt::format("{}:UpdateVerticesAndIndicesBufferPass", m_system_name);
-    m_update_draw_data_buffer_pass_name     = fmt::format("{}:UpdateDrawDataBufferPass", m_system_name);
-    m_update_transform_buffer_pass_name     = fmt::format("{}:UpdateTransformBufferPass", m_system_name);
+RenderQueue::RenderQueue(Engine &engine,
+                         entities::EntityManager &manager,
+                         core::UInt32 buffering_count,
+                         std::string_view system_name)
+    : m_engine { engine }, m_manager { manager }, m_buffering_count { buffering_count },
+      m_system_name { std::move(system_name) }, m_vertex_buffer_pool { m_buffering_count },
+      m_index_buffer_pool { m_buffering_count }, m_draw_data_buffer_pool { m_buffering_count },
+      m_transform_buffer_pool { m_buffering_count } {
+    m_vertex_buffer_name    = fmt::format("{}:VertexBuffer", m_system_name);
+    m_index_buffer_name     = fmt::format("{}:IndexBuffer", m_system_name);
+    m_draw_data_buffer_name = fmt::format("{}:DrawDataBuffer", m_system_name);
+    m_transform_buffer_name = fmt::format("{}:TransformBuffer", m_system_name);
+    m_update_vertices_and_indices_pass_name =
+        fmt::format("{}:UpdateVerticesAndIndicesBufferPass", m_system_name);
+    m_update_draw_data_buffer_pass_name = fmt::format("{}:UpdateDrawDataBufferPass", m_system_name);
+    m_update_transform_buffer_pass_name =
+        fmt::format("{}:UpdateTransformBufferPass", m_system_name);
 
     m_transforms.emplace_back(
         Transform::Data { core::Matrixf { 1.f }, core::inverse(core::Matrixf { 1.f }) });
@@ -50,36 +51,33 @@ auto RenderQueue::operator=(RenderQueue &&) noexcept -> RenderQueue & = default;
 /////////////////////////////////////
 /////////////////////////////////////
 auto RenderQueue::addDrawInstance(entities::Entity e, const Drawable &drawable) -> void {
-    using DrawEntryPtr = DrawEntry*;
+    using DrawEntryPtr = DrawEntry *;
 
     const auto &manager = m_manager.get();
 
     auto hash = std::hash<Drawable> {}(drawable);
 
-    const auto predicate = [&hash](const auto &entry) {
-        return entry.hash == hash;
-    };
+    const auto predicate = [&hash](const auto &entry) { return entry.hash == hash; };
 
-    auto it = core::ranges::find_if(m_draws, predicate);
-    auto entry = DrawEntryPtr{nullptr};
+    auto it    = core::ranges::find_if(m_draws, predicate);
+    auto entry = DrawEntryPtr { nullptr };
 
-    if (it == std::end(m_draws))
-        entry = &m_draws.emplace_back(DrawEntry { .hash = hash });
-    else entry = &*it;
+    if (it == std::end(m_draws)) entry = &m_draws.emplace_back(DrawEntry { .hash = hash });
+    else
+        entry = &*it;
 
     auto transform_id = 0u;
     if (manager.hasComponent<TransformComponent>(e)) {
         transform_id = std::size(m_transforms);
         m_transforms.emplace_back(
-            Transform::Data { core::Matrixf { 1.f },
-                              core::inverse(core::Matrixf { 1.f }) });
+            Transform::Data { core::Matrixf { 1.f }, core::inverse(core::Matrixf { 1.f }) });
     }
 
     const auto id = gsl::narrow_cast<core::UInt32>(std::size(m_draw_data));
-    m_draw_data.emplace_back(DrawData{ .transform_id = transform_id });
+    m_draw_data.emplace_back(DrawData { .transform_id = transform_id });
 
     entry->draw_instances.emplace_back(std::size(m_draw_instances));
-    m_draw_instances.emplace_back(DrawInstance{ id, e });
+    m_draw_instances.emplace_back(DrawInstance { id, e });
 }
 
 /////////////////////////////////////
@@ -115,7 +113,7 @@ auto RenderQueue::updateVertexAndIndexBuffer(FrameGraph &frame_graph) -> void {
     }();
 
     const auto vertex_buffer_name = fmt::format("{}:{}", m_vertex_buffer_name, m_frame_counter);
-    const auto index_buffer_name = fmt::format("{}:{}", m_index_buffer_name, m_frame_counter);
+    const auto index_buffer_name  = fmt::format("{}:{}", m_index_buffer_name, m_frame_counter);
 
     if (!need_to_merge_vert_indices) {
         auto &vertex_buffer = m_vertex_buffer_pool.get();
@@ -141,7 +139,7 @@ auto RenderQueue::updateVertexAndIndexBuffer(FrameGraph &frame_graph) -> void {
         return;
     }
 
-    const auto &device = engine().device();
+    const auto &device  = engine().device();
     const auto &manager = m_manager.get();
 
     auto offsets            = std::vector<UploadOffsets> {};
@@ -149,30 +147,36 @@ auto RenderQueue::updateVertexAndIndexBuffer(FrameGraph &frame_graph) -> void {
     auto index_buffer_size  = 0u;
 
     for (auto &draw_entry : m_draws) {
-        const auto &drawable_component =
-            manager.getComponent<DrawableComponent>(m_draw_instances[draw_entry.draw_instances.front()].entity);
+        const auto &drawable_component = manager.getComponent<DrawableComponent>(
+            m_draw_instances[draw_entry.draw_instances.front()].entity);
         const auto &drawable = *drawable_component.drawable;
 
-        offsets.emplace_back(UploadOffsets { drawable.vertices(),
-                                             drawable.indices(),
-                                             vertex_buffer_size,
-                                             index_buffer_size });
+        for (const auto &sub_drawable : drawable.subDrawables()) {
+            for (const auto &primitive : sub_drawable.primitives) {
+                const auto indices_byte_span = core::toConstByteSpan(primitive.indices);
+                offsets.emplace_back(UploadOffsets { primitive.vertices.data(),
+                                                     indices_byte_span,
+                                                     vertex_buffer_size,
+                                                     index_buffer_size });
 
-        for (const auto &draw_instance_id : draw_entry.draw_instances) {
-            const auto &draw_instance = m_draw_instances[draw_instance_id];
+                for (const auto &draw_instance_id : draw_entry.draw_instances) {
+                    const auto &draw_instance = m_draw_instances[draw_instance_id];
 
-            auto &draw_data = m_draw_data[draw_instance.draw_data];
+                    auto &draw_data = m_draw_data[draw_instance.draw_data];
 
-            draw_data.command =
-                vk::DrawIndexedIndirectCommand { gsl::narrow_cast<core::UInt32>(drawable.indexCount()),
-                                                 1u,
-                                                 0u,
-                                                 gsl::narrow_cast<core::Int32>(vertex_buffer_size),
-                                                 0u };
+                    draw_data.command = vk::DrawIndexedIndirectCommand {
+                        gsl::narrow_cast<core::UInt32>(std::size(primitive.indices)),
+                        1u,
+                        primitive.first_indice,
+                        gsl::narrow_cast<core::Int32>(vertex_buffer_size),
+                        0u
+                    };
+                }
+
+                vertex_buffer_size += std::size(primitive.vertices.data());
+                index_buffer_size += std::size(indices_byte_span);
+            }
         }
-
-        vertex_buffer_size += std::size(drawable.vertices());
-        index_buffer_size += std::size(drawable.indices());
 
         draw_entry.merged = true;
     }
@@ -181,18 +185,17 @@ auto RenderQueue::updateVertexAndIndexBuffer(FrameGraph &frame_graph) -> void {
 
     if (!m_vertex_buffer_pool.empty()) m_vertex_buffer_pool.next();
     m_vertex_buffer_pool.emplace(device,
-                          render::HardwareBufferUsage::Vertex |
-                              render::HardwareBufferUsage::Transfert_Dst,
-                          vertex_buffer_size,
-                          render::MemoryProperty::Device_Local);
+                                 render::HardwareBufferUsage::Vertex |
+                                     render::HardwareBufferUsage::Transfert_Dst,
+                                 vertex_buffer_size,
+                                 render::MemoryProperty::Device_Local);
 
     if (!m_index_buffer_pool.empty()) m_index_buffer_pool.next();
     m_index_buffer_pool.emplace(device,
-                         render::HardwareBufferUsage::Index |
-                             render::HardwareBufferUsage::Transfert_Dst,
-                         index_buffer_size,
-                         render::MemoryProperty::Device_Local);
-
+                                render::HardwareBufferUsage::Index |
+                                    render::HardwareBufferUsage::Transfert_Dst,
+                                index_buffer_size,
+                                render::MemoryProperty::Device_Local);
 
     auto &vertex_buffer = m_vertex_buffer_pool.get();
     device.setObjectName(vertex_buffer, vertex_buffer_name);
@@ -227,9 +230,10 @@ auto RenderQueue::updateVertexAndIndexBuffer(FrameGraph &frame_graph) -> void {
         m_update_vertices_and_indices_pass_name,
         [this, &staging_buffer_descriptor](auto &pass_data, FrameGraphBuilder &builder) {
             pass_data.staging_buffer_id =
-                builder
-                    .create(fmt::format("{}:{}", m_update_vertices_and_indices_pass_name, "StagingBuffer"),
-                            staging_buffer_descriptor);
+                builder.create(fmt::format("{}:{}",
+                                           m_update_vertices_and_indices_pass_name,
+                                           "StagingBuffer"),
+                               staging_buffer_descriptor);
             pass_data.vertex_buffer_id = builder.write(m_vertex_buffer_id);
             pass_data.index_buffer_id  = builder.write(m_index_buffer_id);
         },
@@ -266,7 +270,7 @@ auto RenderQueue::updateDrawDataBuffer(FrameGraph &frame_graph) -> void {
     };
 
     const auto draw_data_buffer_name =
-                 fmt::format("{}:{}", m_draw_data_buffer_name, m_frame_counter);
+        fmt::format("{}:{}", m_draw_data_buffer_name, m_frame_counter);
 
     if (!m_need_update_draw_data) {
         auto &draw_data_buffer = m_draw_data_buffer_pool.get();
@@ -282,17 +286,16 @@ auto RenderQueue::updateDrawDataBuffer(FrameGraph &frame_graph) -> void {
         return;
     }
 
-    const auto &device = engine().device();
+    const auto &device             = engine().device();
     const auto staging_buffer_size = std::size(m_draw_data) * sizeof(DrawData);
 
     if (!m_draw_data_buffer_pool.empty()) m_draw_data_buffer_pool.next();
     m_draw_data_buffer_pool.emplace(device,
-                              render::HardwareBufferUsage::Vertex |
-                                  render::HardwareBufferUsage::Indirect |
-                                  render::HardwareBufferUsage::Transfert_Dst,
-                              staging_buffer_size,
-                              render::MemoryProperty::Device_Local);
-
+                                    render::HardwareBufferUsage::Vertex |
+                                        render::HardwareBufferUsage::Indirect |
+                                        render::HardwareBufferUsage::Transfert_Dst,
+                                    staging_buffer_size,
+                                    render::MemoryProperty::Device_Local);
 
     auto &draw_data_buffer = m_draw_data_buffer_pool.get();
     device.setObjectName(draw_data_buffer, draw_data_buffer_name);
@@ -303,8 +306,8 @@ auto RenderQueue::updateDrawDataBuffer(FrameGraph &frame_graph) -> void {
                            .memory_properties = render::MemoryProperty::Device_Local };
 
     m_draw_data_buffer_id = frame_graph.setRetainedResource(draw_data_buffer_name,
-                                                      draw_data_buffer_descriptor,
-                                                      draw_data_buffer);
+                                                            draw_data_buffer_descriptor,
+                                                            draw_data_buffer);
 
     auto &update_draw_data_pass = frame_graph.addPassNode<UpdateDrawDataPass>(
         m_update_draw_data_buffer_pass_name,
@@ -316,15 +319,16 @@ auto RenderQueue::updateDrawDataBuffer(FrameGraph &frame_graph) -> void {
                                                         render::MemoryProperty::Host_Coherent };
 
             pass_data.staging_buffer_id =
-                builder
-                    .create(fmt::format("{}:{}", m_update_draw_data_buffer_pass_name, "StagingBuffer"),
+                builder.create(fmt::format("{}:{}",
+                                           m_update_draw_data_buffer_pass_name,
+                                           "StagingBuffer"),
                                staging_buffer_descriptor);
             pass_data.draw_data_buffer_id = builder.write(m_draw_data_buffer_id);
         },
         [this, staging_buffer_size, &frame_graph]([[maybe_unused]] const auto &step_data,
                                                   const auto &pass_data,
                                                   auto &cmb) {
-            auto &staging_buffer    = frame_graph.getPhysicalBuffer(pass_data.staging_buffer_id);
+            auto &staging_buffer   = frame_graph.getPhysicalBuffer(pass_data.staging_buffer_id);
             auto &draw_data_buffer = frame_graph.getPhysicalBuffer(pass_data.draw_data_buffer_id);
 
             staging_buffer.upload(core::toConstByteSpan(m_draw_data));
@@ -363,12 +367,13 @@ auto RenderQueue::updateTransformBuffer(FrameGraph &frame_graph) -> void {
 
             if (transform_component.transform.dirty()) {
                 m_transforms[draw_data.transform_id] = transform_component.transform.data();
-                reupload = true;
+                reupload                             = true;
             }
         }
     }
 
-    const auto transform_buffer_name = fmt::format("{}:{}", m_transform_buffer_name, m_frame_counter);
+    const auto transform_buffer_name =
+        fmt::format("{}:{}", m_transform_buffer_name, m_frame_counter);
 
     if (!reupload) {
         auto &transform_buffer = m_transform_buffer_pool.get();
@@ -379,8 +384,8 @@ auto RenderQueue::updateTransformBuffer(FrameGraph &frame_graph) -> void {
                                .memory_properties = render::MemoryProperty::Device_Local };
 
         m_transform_buffer_id = frame_graph.setRetainedResource(transform_buffer_name,
-                                                          transform_buffer_descriptor,
-                                                          transform_buffer);
+                                                                transform_buffer_descriptor,
+                                                                transform_buffer);
 
         return;
     }
@@ -393,10 +398,10 @@ auto RenderQueue::updateTransformBuffer(FrameGraph &frame_graph) -> void {
     if (!m_transform_buffer_pool.empty()) m_transform_buffer_pool.next();
 
     m_transform_buffer_pool.emplace(device,
-                              render::HardwareBufferUsage::Storage |
-                                  render::HardwareBufferUsage::Transfert_Dst,
-                              staging_buffer_size,
-                              render::MemoryProperty::Device_Local);
+                                    render::HardwareBufferUsage::Storage |
+                                        render::HardwareBufferUsage::Transfert_Dst,
+                                    staging_buffer_size,
+                                    render::MemoryProperty::Device_Local);
 
     auto &transform_buffer = m_transform_buffer_pool.get();
     device.setObjectName(transform_buffer, transform_buffer_name);
@@ -420,15 +425,16 @@ auto RenderQueue::updateTransformBuffer(FrameGraph &frame_graph) -> void {
                                                         render::MemoryProperty::Host_Coherent };
 
             pass_data.staging_buffer_id =
-                builder
-                    .create(fmt::format("{}:{}", m_update_transform_buffer_pass_name, "StagingBuffer"),
+                builder.create(fmt::format("{}:{}",
+                                           m_update_transform_buffer_pass_name,
+                                           "StagingBuffer"),
                                staging_buffer_descriptor);
             pass_data.transform_buffer_id = builder.write(m_transform_buffer_id);
         },
         [this, staging_buffer_size, &frame_graph]([[maybe_unused]] const auto &step_data,
                                                   const auto &pass_data,
                                                   auto &cmb) {
-            auto &staging_buffer    = frame_graph.getPhysicalBuffer(pass_data.staging_buffer_id);
+            auto &staging_buffer   = frame_graph.getPhysicalBuffer(pass_data.staging_buffer_id);
             auto &transform_buffer = frame_graph.getPhysicalBuffer(pass_data.transform_buffer_id);
 
             staging_buffer.upload(core::toConstByteSpan(m_transforms));

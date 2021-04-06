@@ -58,6 +58,7 @@ data_headers = files([
 
 render_headers = files([
     'include/storm/engine/render/Camera.hpp',
+    'include/storm/engine/render/BoundingBox.hpp',
     'include/storm/engine/render/Drawable.hpp',
     'include/storm/engine/render/DrawableComponent.hpp',
     'include/storm/engine/render/Fwd.hpp',
@@ -71,6 +72,7 @@ render_headers = files([
 
     'include/storm/engine/render/3D/FPSCamera.hpp',
     'include/storm/engine/render/3D/Fwd.hpp',
+    'include/storm/engine/render/3D/Model.hpp',
     'include/storm/engine/render/3D/PbrMaterial.hpp',
     'include/storm/engine/render/3D/PbrMesh.hpp',
     'include/storm/engine/render/3D/PbrRenderSystem.hpp',
@@ -96,6 +98,7 @@ render_headers = files([
     'include/storm/engine/render/Vertex.inl',
 
     'include/storm/engine/render/3D/FPSCamera.inl',
+    'include/storm/engine/render/3D/Model.inl',
     'include/storm/engine/render/3D/PbrMaterial.inl',
     'include/storm/engine/render/3D/PbrMesh.inl',
     'include/storm/engine/render/3D/PbrRenderSystem.inl',
@@ -142,6 +145,7 @@ sources = files([
     'src/render/Vertex.cpp',
 
     'src/render/3D/FPSCamera.cpp',
+    'src/render/3D/Model.cpp',
     'src/render/3D/PbrMaterial.cpp',
     'src/render/3D/PbrMesh.cpp',
     'src/render/3D/PbrRenderSystem.cpp',
