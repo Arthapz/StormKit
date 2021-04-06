@@ -10,7 +10,9 @@ if build_type == 'release'
     buildtype = 'Release'
 endif
 
-public_dependencies = [core_dep, render_dep, entities_dep, log_dep]
+rapid_json_dep = dependency('RapidJSON')
+
+public_dependencies = [core_dep, render_dep, entities_dep, log_dep, rapid_json_dep]
 private_dependencies = []
 
 prog_glslang = find_program('glslangValidator')
@@ -132,7 +134,6 @@ sources = files([
     'src/Profiler.cpp',
     'src/State.cpp',
 
-    'src/data/json.hpp',
     'src/data/tiny_gltf.hpp',
     'src/data/tiny_gltf.cpp',
 
