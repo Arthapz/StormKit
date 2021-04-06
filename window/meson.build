@@ -178,7 +178,7 @@ if lib_type == 'shared'
     window_lib_name = 'StormKit-window' + suffix
     window_lib = shared_library(
         window_lib_name,
-        [sources, headers],
+        sources,
         extra_files: extra_files,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,

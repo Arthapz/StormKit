@@ -223,9 +223,9 @@ namespace storm::render {
         vkMakeVersion(STORMKIT_MAJOR_VERSION, STORMKIT_MINOR_VERSION, STORMKIT_PATCH_VERSION);
 
 #if defined(STORMKIT_BUILD_DEBUG) || defined(STORMKIT_ENABLE_VALIDATION_LAYERS)
-    static constexpr auto ENABLE_VALIDATION = false;
-#else
     static constexpr auto ENABLE_VALIDATION = true;
+#else
+    static constexpr auto ENABLE_VALIDATION = false;
 #endif
 
     inline void checkVkError(vk::Result result,

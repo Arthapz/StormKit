@@ -218,6 +218,8 @@ void WindowSurface::createSwapchain() {
     const auto image_count        = chooseImageCount(capabilities);
     const auto image_sharing_mode = vk::SharingMode::eExclusive;
 
+    m_device->waitIdle();
+
     if (!m_vk_swapchain) {
         std::swap(m_vk_old_swapchain, m_vk_swapchain);
         m_textures.clear();

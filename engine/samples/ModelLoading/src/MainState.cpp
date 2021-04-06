@@ -100,37 +100,39 @@ MainState &MainState::operator=(MainState &&) noexcept = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 void MainState::update(core::Secondf delta) {
-    auto inputs = engine::FPSCamera::Inputs {
-        .up    = m_keyboard->isKeyPressed(window::Key::Z),
-        .down  = m_keyboard->isKeyPressed(window::Key::S),
-        .right = m_keyboard->isKeyPressed(window::Key::D),
-        .left  = m_keyboard->isKeyPressed(window::Key::Q),
-    };
+    if (m_camera_enabled) {
+        auto inputs = engine::FPSCamera::Inputs {
+            .up    = m_keyboard->isKeyPressed(window::Key::Z),
+            .down  = m_keyboard->isKeyPressed(window::Key::S),
+            .right = m_keyboard->isKeyPressed(window::Key::D),
+            .left  = m_keyboard->isKeyPressed(window::Key::Q),
+        };
 
-    const auto extent   = core::Extenti { State::engine().surface().extent() };
-    const auto position = [&inputs, &extent, this]() {
-        auto position = m_mouse->getPositionOnWindow();
+        const auto extent   = core::Extenti { State::engine().surface().extent() };
+        const auto position = [&inputs, &extent, this]() {
+            auto position = m_mouse->getPositionOnWindow();
 
-        if (position->x <= 5 || position->x > (extent.width - 5)) {
-            position->x         = extent.width / 2;
-            inputs.mouse_ignore = true;
-        }
-        if (position->y <= 5 || position->y > (extent.height - 5)) {
-            position->y         = extent.height / 2;
-            inputs.mouse_ignore = true;
-        }
+            if (position->x <= 5 || position->x > (extent.width - 5)) {
+                position->x         = extent.width / 2;
+                inputs.mouse_ignore = true;
+            }
+            if (position->y <= 5 || position->y > (extent.height - 5)) {
+                position->y         = extent.height / 2;
+                inputs.mouse_ignore = true;
+            }
 
-        m_mouse->setPositionOnWindow(position);
+            m_mouse->setPositionOnWindow(position);
 
-        return position;
-    }();
+            return position;
+        }();
 
-    inputs.mouse_updated = true;
-    inputs.x_mouse       = static_cast<float>(position->x);
-    inputs.y_mouse       = static_cast<float>(position->y);
+        inputs.mouse_updated = true;
+        inputs.x_mouse       = static_cast<float>(position->x);
+        inputs.y_mouse       = static_cast<float>(position->y);
 
-    m_camera->feedInputs(inputs);
-    m_camera->update(delta);
+        m_camera->feedInputs(inputs);
+        m_camera->update(delta);
+    }
 
     auto &frame = engine().beginFrame();
 

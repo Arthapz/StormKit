@@ -23,7 +23,8 @@ class App final: public storm::core::App {
   private:
     void doInitWindow();
 
-    bool m_fullscreen = false;
+    bool m_fullscreen     = false;
+    bool m_camera_enabled = true;
 
     storm::window::WindowOwnedPtr m_window;
     storm::window::EventHandlerOwnedPtr m_event_handler;

@@ -61,7 +61,17 @@ namespace storm::engine {
         void setState(Args &&...args);
         void popState();
 
+        core::State &currentState() noexcept;
+        const core::State &currentState() const noexcept;
+
+        template<CHILD_OF_STATE_CONCEPT(State)>
+        State &currentState();
+        template<CHILD_OF_STATE_CONCEPT(State)>
+        const State &currentState() const;
+
         void update();
+
+        void recreateSwapchain();
 
         render::Surface::Frame &beginFrame();
         void endFrame();

@@ -6,6 +6,9 @@
 #include "../imgui/imgui_impl_vulkan.hpp"
 #include "../imgui/imgui_widget_flamegraph.hpp"
 
+/////////// - StormKit::core - ///////////
+#include <storm/core/Numerics.hpp>
+
 /////////// - StormKit::window - ///////////
 #include <storm/window/Keyboard.hpp>
 #include <storm/window/Mouse.hpp>
@@ -25,7 +28,6 @@
 
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Engine.hpp>
-
 #include <storm/engine/Profiler.hpp>
 
 #include <storm/engine/render/utils/DebugGUI.hpp>

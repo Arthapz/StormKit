@@ -61,7 +61,7 @@ auto App::doInitWindow() -> void {
     auto video_settings =
         window::VideoSettings { .size = core::Extentu { WINDOW_WIDTH<core::UInt32>,
                                                         WINDOW_HEIGHT<core::UInt32> } };
-    auto window_style = window::WindowStyle::Close;
+    auto window_style = window::WindowStyle::Close | window::WindowStyle::Resizable;
 
     m_window = std::make_unique<window::Window>(WINDOW_TITLE, video_settings, window_style);
     if (m_fullscreen) m_window->setFullscreenEnabled(true);
@@ -69,13 +69,24 @@ auto App::doInitWindow() -> void {
     m_event_handler = std::make_unique<window::EventHandler>(*m_window);
 
     m_event_handler->addCallback(window::EventType::Closed,
-                                 [this]([[maybe_unused]] const auto &event) { m_window->close(); });
+                                 [this]([[maybe_unused]] const auto &event) {
+                                     m_window->close();
+                                 });
+    m_event_handler->addCallback(window::EventType::Resized,
+                                 [this]([[maybe_unused]] const auto &event) {
+                                     m_engine->recreateSwapchain();
+                                 });
     m_event_handler->addCallback(window::EventType::KeyPressed, [this](const auto &event) {
         if (event.key_event.key == window::Key::Escape) m_window->close();
         else if (event.key_event.key == window::Key::F11)
             m_window->setFullscreenEnabled(!m_window->isInFullscreen());
-        else if (event.key_event.key == window::Key::Enter)
-            m_engine->
+        else if (event.key_event.key == window::Key::Space) {
+            if (m_camera_enabled) m_engine->currentState<MainState>().disableCamera();
+            else
+                m_engine->currentState<MainState>().enableCamera();
+
+            m_camera_enabled = !m_camera_enabled;
+        }
         /*else if (event.key_event.key == window::Key::Numpad5)
             m_scene->setDebugView(engine::PBRMaterialInstance::DebugView::D);
         else if (event.key_event.key == window::Key::Numpad4)

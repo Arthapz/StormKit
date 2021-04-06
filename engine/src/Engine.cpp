@@ -156,12 +156,20 @@ auto Engine::update() -> void {
 
 ////////////////////////////////////////
 ////////////////////////////////////////
+void Engine::recreateSwapchain() {
+    m_surface->recreate();
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
 auto Engine::beginFrame() -> render::Surface::Frame & {
     namespace Chrono = std::chrono;
 
     STORMKIT_EXPECTS_MESSAGE(
         !m_is_frame_began,
         "Double call to beginFrame(), please call endFrame() before recalling beginFrame()");
+
+    if (m_surface->needRecreate()) m_surface->recreate();
 
     m_profiler->beginStage("Frame acquire");
     m_frame.emplace(m_surface->acquireNextFrame());

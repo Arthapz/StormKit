@@ -449,7 +449,10 @@ auto WaylandWindow::toplevelConfigure([[maybe_unused]] xdg_toplevel *xdg_tl,
 
         switch (state) {
             case XDG_TOPLEVEL_STATE_MAXIMIZED: AbstractWindow::maximizeEvent(); break;
-            case XDG_TOPLEVEL_STATE_RESIZING: AbstractWindow::resizeEvent(width, height); break;
+            case XDG_TOPLEVEL_STATE_RESIZING: {
+                AbstractWindow::resizeEvent(width, height);
+                break;
+            }
             default: break;
         }
     }
@@ -719,13 +722,25 @@ auto WaylandWindow::createXDGShell() noexcept -> void {
     xdg_toplevel_set_title(m_xdg_toplevel.get(), m_title.c_str());
     xdg_toplevel_set_app_id(m_xdg_toplevel.get(), m_title.c_str());
 
+    if (!core::checkFlag(m_style, WindowStyle::Resizable)) {
+        xdg_toplevel_set_min_size(m_xdg_toplevel.get(), m_extent.width, m_extent.height);
+        xdg_toplevel_set_max_size(m_xdg_toplevel.get(), m_extent.width, m_extent.height);
+    } else {
+        auto fullscreen_size = getDesktopFullscreenSize();
+
+        xdg_toplevel_set_min_size(m_xdg_toplevel.get(), 1, 1);
+        xdg_toplevel_set_max_size(m_xdg_toplevel.get(),
+                                  fullscreen_size.size.width,
+                                  fullscreen_size.size.height);
+    }
+
     if (globals.xdg_decoration_manager) {
         zxdg_decoration_manager_v1_get_toplevel_decoration(globals.xdg_decoration_manager.get(),
                                                            m_xdg_toplevel.get());
     }
 
     wl_surface_damage(m_surface.get(), 0, 0, m_extent.width, m_extent.height);
-    createPixelbuffer();
+    createPixelBuffer();
 }
 
 /////////////////////////////////////
@@ -737,10 +752,10 @@ auto WaylandWindow::createWaylandShell() noexcept -> void {
     wl_shell_surface_set_toplevel(m_wlshell_surface.get());
 
     wl_surface_damage(m_surface.get(), 0, 0, m_extent.width, m_extent.height);
-    createPixelbuffer();
+    createPixelBuffer();
 }
 
-auto WaylandWindow::createPixelbuffer() noexcept -> void {
+auto WaylandWindow::createPixelBuffer() noexcept -> void {
     const auto byte_per_pixel = m_video_settings.bpp / sizeof(core::Byte);
     const auto buffer_size =
         m_video_settings.size.width * m_video_settings.size.height * byte_per_pixel;

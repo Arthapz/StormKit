@@ -231,7 +231,7 @@ namespace storm::window::details {
       private:
         void createXDGShell() noexcept;
         void createWaylandShell() noexcept;
-        void createPixelbuffer() noexcept;
+        void createPixelBuffer() noexcept;
         void updateKeymap(std::string_view keymap_string) noexcept;
         void updateXKBMods() noexcept;
 
