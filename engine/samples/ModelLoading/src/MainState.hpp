@@ -34,9 +34,17 @@ class MainState final: public storm::engine::State {
     void resume() noexcept override {}
     void update(storm::core::Secondf delta) override;
 
+    void enableCamera() noexcept;
+    void disableCamera() noexcept;
+
   private:
+    storm::window::WindowRef m_window;
     storm::window::KeyboardOwnedPtr m_keyboard;
     storm::window::MouseOwnedPtr m_mouse;
     storm::engine::RenderSystemPtr m_render_system;
     storm::engine::FPSCameraOwnedPtr m_camera;
+
+    storm::engine::ModelOwnedPtr m_model;
+
+    bool m_camera_enabled = true;
 };

@@ -21,8 +21,8 @@ namespace storm::engine {
 
         struct alignas(16) Data {
             core::Vector4f position  = core::Vector4f { 0.f, 0.f, 0.f, 0.f };
-            core::Matrixf projection = core::Matrixf { 1.f };
-            core::Matrixf view       = core::Matrixf { 1.f };
+            core::Matrix projection = core::Matrix { 1.f };
+            core::Matrix view       = core::Matrix { 1.f };
         };
 
         Camera(Type type, core::Extentf viewport, float znear = 0.1f, float zfar = 100.f) noexcept;

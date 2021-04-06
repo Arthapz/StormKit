@@ -135,7 +135,7 @@ namespace storm::core {
     ///
     /// \unique_name Matrix<T>
     template<typename T>
-    using Matrix = glm::mat<4, 4, T, glm::defaultp>;
+    using MatrixBase = glm::mat<4, 4, T, glm::defaultp>;
 
     /// \group matrices-types
     /// \unique_name Matrixu
@@ -148,6 +148,7 @@ namespace storm::core {
     /// \group matrices-types
     /// \unique_name Matrixf
     using Matrixf = glm::mat4;
+    using Matrix  = glm::mat4;
 
     /// \brief Quaternion.
     ///
@@ -556,7 +557,7 @@ CUSTOM_FORMAT(storm::core::Vector4i,
               data.z,
               data.w)
 
-CUSTOM_FORMAT(storm::core::Matrixf,
+CUSTOM_FORMAT(storm::core::Matrix,
               "Matrix {{\n    {},\n    {},\n    {},\n    {}\n}}",
               data[0],
               data[1],

@@ -127,7 +127,7 @@ void App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char **arg
         const auto time =
             Chrono::duration<float, Chrono::seconds::period> { now_timepoint - start_time }.count();
 
-        m_model.model = core::rotate(core::Matrixf { 1.f },
+        m_model.model = core::rotate(core::Matrix { 1.f },
                                      time * core::radians(90.f),
                                      core::Vector3f { 0.f, 0.f, 1.f });
 
@@ -198,7 +198,7 @@ void App::doInitMeshRenderObjects() {
                                         10.f),
         .view = core::lookAt(core::Vector3f { 4.f, 3.f, 3.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f })
     };
-    m_model.model = core::Matrixf { 1.f };
+    m_model.model = core::Matrix { 1.f };
 
     // We load our triangle shaders
     m_vertex_shader = m_device->createShaderPtr(VERTEX_SHADER_DATA, render::ShaderStage::Vertex);

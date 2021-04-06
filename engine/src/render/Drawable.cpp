@@ -17,7 +17,7 @@ namespace std {
                 core::hashCombine(hash, primitive.vertices.data());
                 core::hashCombine(hash, primitive.indices);
                 core::hashCombine(hash, primitive.first_vertex);
-                core::hashCombine(hash, primitive.first_indice);
+                core::hashCombine(hash, primitive.first_index);
                 core::hashCombine(hash, primitive.material_index);
             }
         }
@@ -25,6 +25,10 @@ namespace std {
         return hash;
     }
 } // namespace std
+
+////////////////////////////////////////
+////////////////////////////////////////
+Drawable::Drawable() noexcept = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
@@ -37,6 +41,14 @@ Drawable::~Drawable() = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
+Drawable::Drawable(const Drawable &) = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+auto Drawable::operator=(const Drawable &) -> Drawable & = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
 Drawable::Drawable(Drawable &&) noexcept = default;
 
 ////////////////////////////////////////
@@ -45,10 +57,14 @@ auto Drawable::operator=(Drawable &&) noexcept -> Drawable & = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void Drawable::addSubdrawable(SubDrawable subdrawable) {
+core::ArraySize Drawable::addSubdrawable(SubDrawable subdrawable) {
+    auto id = std::size(m_sub_drawables);
+
     m_sub_drawables.emplace_back(std::move(subdrawable));
 
     m_dirty = true;
+
+    return id;
 }
 
 ////////////////////////////////////////

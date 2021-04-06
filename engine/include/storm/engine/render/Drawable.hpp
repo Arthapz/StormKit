@@ -26,7 +26,7 @@ namespace storm::engine {
         LargeIndexArray indices;
 
         core::UInt32 first_vertex = 0u;
-        core::UInt32 first_indice = 0u;
+        core::UInt32 first_index  = 0u;
 
         core::UInt32 material_index = 0u;
 
@@ -41,17 +41,21 @@ namespace storm::engine {
         BoundingBox bounding_box;
     };
 
-    class STORMKIT_PUBLIC Drawable: public core::NonCopyable {
+    class STORMKIT_PUBLIC Drawable {
       public:
-        explicit Drawable(std::string name = "");
+        Drawable() noexcept;
+        explicit Drawable(std::string name);
         virtual ~Drawable();
+
+        Drawable(const Drawable &);
+        Drawable &operator=(const Drawable &);
 
         Drawable(Drawable &&) noexcept;
         Drawable &operator=(Drawable &&) noexcept;
 
         [[nodiscard]] std::string_view name() const noexcept;
 
-        void addSubdrawable(SubDrawable subdrawable);
+        core::ArraySize addSubdrawable(SubDrawable subdrawable);
         [[nodiscard]] core::span<const SubDrawable> subDrawables() const noexcept;
 
         void recomputeBoundingBox() noexcept;

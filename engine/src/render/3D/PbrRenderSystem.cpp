@@ -50,18 +50,30 @@ static constexpr auto VERTEX_ATTRIBUTE_DESCRIPTIONS = std::array {
     render::VertexInputAttributeDescription { .location = 2,
                                               .binding  = 0,
                                               .format   = render::Format::Float2,
-                                              .offset   = offsetof(PbrMesh::Vertex, uv) },
+                                              .offset   = offsetof(PbrMesh::Vertex, texcoord) },
     render::VertexInputAttributeDescription { .location = 3,
+                                              .binding  = 0,
+                                              .format   = render::Format::Float4,
+                                              .offset   = offsetof(PbrMesh::Vertex, tangent) },
+    render::VertexInputAttributeDescription { .location = 4,
+                                              .binding  = 0,
+                                              .format   = render::Format::UInt4,
+                                              .offset   = offsetof(PbrMesh::Vertex, joint_id) },
+    render::VertexInputAttributeDescription { .location = 5,
+                                              .binding  = 0,
+                                              .format   = render::Format::Float4,
+                                              .offset   = offsetof(PbrMesh::Vertex, weight) },
+    render::VertexInputAttributeDescription { .location = 6,
                                               .binding  = 1,
                                               .format   = render::Format::Int,
                                               .offset =
                                                   offsetof(RenderQueue::DrawData, transform_id) },
-    render::VertexInputAttributeDescription { .location = 4,
+    render::VertexInputAttributeDescription { .location = 7,
                                               .binding  = 1,
                                               .format   = render::Format::Int,
                                               .offset =
                                                   offsetof(RenderQueue::DrawData, material_id) },
-    render::VertexInputAttributeDescription { .location = 5,
+    render::VertexInputAttributeDescription { .location = 8,
                                               .binding  = 1,
                                               .format   = render::Format::Int,
                                               .offset =
@@ -177,11 +189,11 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
     updateSceneGlobalBuffer(frame_graph);
     m_render_queue.update(frame_graph);
 
-    const auto vertex_buffer_id        = m_render_queue.vertexBufferID();
-    const auto index_buffer_id         = m_render_queue.indexBufferID();
-    const auto draw_instance_buffer_id = m_render_queue.drawInstanceBufferID();
-    const auto draw_data_buffer_id     = m_render_queue.drawDataBufferID();
-    const auto transform_buffer_id     = m_render_queue.transformBufferID();
+    const auto vertex_buffer_id       = m_render_queue.vertexBufferID();
+    const auto index_buffer_id        = m_render_queue.indexBufferID();
+    const auto draw_data_buffer_id    = m_render_queue.drawDataBufferID();
+    const auto draw_command_buffer_id = m_render_queue.drawCommandBufferID();
+    const auto transform_buffer_id    = m_render_queue.transformBufferID();
 
     struct ForwardPassData {
         FrameGraphResourceID output;
@@ -190,8 +202,8 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
         FrameGraphResourceID scene_global_buffer_id;
         FrameGraphResourceID vertex_buffer_id;
         FrameGraphResourceID index_buffer_id;
-        FrameGraphResourceID draw_instance_buffer_id;
         FrameGraphResourceID draw_data_buffer_id;
+        FrameGraphResourceID draw_command_buffer_id;
         FrameGraphResourceID transform_buffer_id;
     };
 
@@ -202,8 +214,8 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
          this,
          &vertex_buffer_id,
          &index_buffer_id,
-         &draw_instance_buffer_id,
          &draw_data_buffer_id,
+         &draw_command_buffer_id,
          &transform_buffer_id](ForwardPassData &pass_data, FrameGraphBuilder &builder) {
             const auto depth_descriptor =
                 TextureDescriptor { .type    = render::TextureType::T2D,
@@ -216,12 +228,12 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
             pass_data.depth =
                 builder.create("StormKit:PbrRenderSystem:Forward+:depth", depth_descriptor);
 
-            pass_data.scene_global_buffer_id  = builder.read(m_scene_global_buffer_id);
-            pass_data.vertex_buffer_id        = builder.read(vertex_buffer_id);
-            pass_data.index_buffer_id         = builder.read(index_buffer_id);
-            pass_data.draw_instance_buffer_id = builder.read(draw_instance_buffer_id);
-            pass_data.draw_data_buffer_id     = builder.read(draw_data_buffer_id);
-            pass_data.transform_buffer_id     = builder.read(transform_buffer_id);
+            pass_data.scene_global_buffer_id = builder.read(m_scene_global_buffer_id);
+            pass_data.vertex_buffer_id       = builder.read(vertex_buffer_id);
+            pass_data.index_buffer_id        = builder.read(index_buffer_id);
+            pass_data.draw_data_buffer_id    = builder.read(draw_data_buffer_id);
+            pass_data.draw_command_buffer_id = builder.read(draw_command_buffer_id);
+            pass_data.transform_buffer_id    = builder.read(transform_buffer_id);
         },
         [&frame_graph, &cache, this](const FrameGraphStepData &step_data,
                                      const ForwardPassData &pass_data,
@@ -230,10 +242,10 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
                 frame_graph.getPhysicalBuffer(pass_data.scene_global_buffer_id);
             const auto &vertex_buffer = frame_graph.getPhysicalBuffer(pass_data.vertex_buffer_id);
             const auto &index_buffer  = frame_graph.getPhysicalBuffer(pass_data.index_buffer_id);
-            const auto &draw_instance_buffer =
-                frame_graph.getPhysicalBuffer(pass_data.draw_instance_buffer_id);
             const auto &draw_data_buffer =
                 frame_graph.getPhysicalBuffer(pass_data.draw_data_buffer_id);
+            const auto &draw_command_buffer =
+                frame_graph.getPhysicalBuffer(pass_data.draw_command_buffer_id);
             const auto &transform_buffer =
                 frame_graph.getPhysicalBuffer(pass_data.transform_buffer_id);
 
@@ -267,7 +279,7 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
                                            true);
 
             cmb.bindVertexBuffers(std::vector { std::cref(vertex_buffer),
-                                                std::cref(draw_instance_buffer) },
+                                                std::cref(draw_data_buffer) },
                                   std::vector { 0, 0 });
             cmb.bindIndexBuffer(index_buffer, 0, true);
             cmb.bindDescriptorSets(*step_data.pipeline,
@@ -276,10 +288,10 @@ void PbrRenderSystem::setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourc
                                    {});
 
             // for (const auto &instance : m_instance_descriptors)
-            cmb.drawIndexedIndirect(draw_data_buffer,
-                                    offsetof(RenderQueue::DrawData, command),
-                                    m_render_queue.drawInstanceCount(),
-                                    sizeof(RenderQueue::DrawData));
+            cmb.drawIndexedIndirect(draw_command_buffer,
+                                    0,
+                                    m_render_queue.drawCommandCount(),
+                                    sizeof(vk::DrawIndexedIndirectCommand));
         });
 
     auto &per_scene_descriptor_set_layout =

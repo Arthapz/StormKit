@@ -50,7 +50,7 @@ static constexpr auto MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS =
                                                            .format   = render::Format::Float2,
                                                            .offset   = offsetof(MeshVertex, uv) } };
 static constexpr auto CAMERA_BUFFER_SIZE = sizeof(Camera);
-static constexpr auto MODEL_BUFFER_SIZE  = sizeof(core::Matrixf);
+static constexpr auto MODEL_BUFFER_SIZE  = sizeof(core::Matrix);
 static const auto VERTEX_SHADER_DATA     = std::vector<core::UInt32> {
 #include "vertex.vert.spv.hpp"
 };
@@ -147,8 +147,8 @@ void App::doInitMeshRenderObjects() {
                                                 0.f };
 
     m_camera = { .projection = core::ortho(0.f, surface_extent.width, surface_extent.height, 0.f),
-                 .view       = core::Matrixf { 1.f } };
-    m_model  = core::translate(core::Matrixf { 1.f }, quad_position);
+                 .view       = core::Matrix { 1.f } };
+    m_model  = core::translate(core::Matrix { 1.f }, quad_position);
 
     // We load our triangle shaders
     m_vertex_shader = m_device->createShaderPtr(VERTEX_SHADER_DATA, render::ShaderStage::Vertex);
@@ -256,7 +256,7 @@ void App::doInitMeshRenderObjects() {
     m_mesh_data_set =
         m_per_mesh_descriptor_pool->allocateDescriptorSetPtr(*m_per_mesh_descriptor_set_layout);
     m_model_buffer = m_device->createUniformBufferPtr(MODEL_BUFFER_SIZE);
-    m_model_buffer->upload<core::Matrixf>({ &m_model, 1 });
+    m_model_buffer->upload<core::Matrix>({ &m_model, 1 });
     m_model_buffer->flush(0, MODEL_BUFFER_SIZE);
     log::LogHandler::ilog(LOG_MODULE, "{} bytes uploaded to model buffer", MODEL_BUFFER_SIZE);
 

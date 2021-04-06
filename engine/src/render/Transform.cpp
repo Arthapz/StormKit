@@ -48,9 +48,9 @@ auto Transform::recomputeOrientation() const noexcept -> void {
 auto Transform::recomputeMatrices() const noexcept -> void {
     const auto &quat = orientation();
 
-    const auto translation_matrix = core::translate(core::Matrixf { 1.f }, m_position);
-    const auto rotation_matrix    = core::Matrixf { quat };
-    const auto scale_matrix       = core::scale(core::Matrixf { 1.f }, m_scale);
+    const auto translation_matrix = core::translate(core::Matrix { 1.f }, m_position);
+    const auto rotation_matrix    = core::Matrix { quat };
+    const auto scale_matrix       = core::scale(core::Matrix { 1.f }, m_scale);
 
     m_data.transform = scale_matrix * rotation_matrix * translation_matrix;
     m_data.inv_transform = core::inverse(m_data.inv_transform);
@@ -58,7 +58,7 @@ auto Transform::recomputeMatrices() const noexcept -> void {
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-auto Transform::extract(const core::Matrixf &matrix) noexcept -> void {
+auto Transform::extract(const core::Matrix &matrix) noexcept -> void {
     m_position = core::Vector3f { core::row(matrix, 0)[3],
                                   core::row(matrix, 1)[3],
                                   core::row(matrix, 2)[3] };

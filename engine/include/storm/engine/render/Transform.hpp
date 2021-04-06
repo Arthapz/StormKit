@@ -18,8 +18,8 @@ namespace storm::engine {
     class STORMKIT_PUBLIC Transform {
       public:
         struct alignas(16) Data {
-            core::Matrixf transform     = core::Matrixf { 1.f };
-            core::Matrixf inv_transform = core::inverse(core::Matrixf { 1.f });
+            core::Matrix transform     = core::Matrix { 1.f };
+            core::Matrix inv_transform = core::inverse(core::Matrix { 1.f });
         };
 
         Transform() noexcept;
@@ -80,7 +80,7 @@ namespace storm::engine {
         void rotatePitch(float value) noexcept;
         void rotateRoll(float value) noexcept;
 
-        void setMatrix(const core::Matrixf &matrix) noexcept;
+        void setMatrix(const core::Matrix &matrix) noexcept;
         [[nodiscard]] const Data &data() const noexcept;
 
         [[nodiscard]] bool dirty() const noexcept;
@@ -88,7 +88,7 @@ namespace storm::engine {
       private:
         void recomputeOrientation() const noexcept;
         void recomputeMatrices() const noexcept;
-        void extract(const core::Matrixf &matrix) noexcept;
+        void extract(const core::Matrix &matrix) noexcept;
 
         core::Vector3f m_position          = core::Vector3f { 0.f, 0.f, 0.f };
         core::Vector3f m_orientation_euler = core::Vector3f { 0.f, 0.f, 0.f };

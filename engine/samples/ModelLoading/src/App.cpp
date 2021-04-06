@@ -74,6 +74,8 @@ auto App::doInitWindow() -> void {
         if (event.key_event.key == window::Key::Escape) m_window->close();
         else if (event.key_event.key == window::Key::F11)
             m_window->setFullscreenEnabled(!m_window->isInFullscreen());
+        else if (event.key_event.key == window::Key::Enter)
+            m_engine->
         /*else if (event.key_event.key == window::Key::Numpad5)
             m_scene->setDebugView(engine::PBRMaterialInstance::DebugView::D);
         else if (event.key_event.key == window::Key::Numpad4)

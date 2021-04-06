@@ -317,7 +317,7 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Transform::setMatrix(const core::Matrixf &matrix) noexcept -> void {
+    inline auto Transform::setMatrix(const core::Matrix &matrix) noexcept -> void {
         extract(matrix);
 
         m_dirty             = true;

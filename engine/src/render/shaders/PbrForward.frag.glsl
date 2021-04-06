@@ -25,7 +25,8 @@ struct DirectionalLight {
 
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
-layout(location = 2) in vec2 in_uv;
+layout(location = 2) in vec2 in_texcoord;
+layout(location = 3) in vec4 in_tangent;
 
 layout(location = 0) out vec4 out_color;
 
@@ -53,5 +54,5 @@ void main() {
     out_color = vec4((light_ambiant_color + light_diffuse_color) * color, 1.f);*/
 
 void main() {
-    out_color = vec4(in_uv.x, in_uv.y, in_uv.x + in_uv.y, 1.f);//materials[material_index];
+    out_color = vec4(in_normal.x, in_normal.y, in_normal.x, 1.f);//materials[material_index];
 }

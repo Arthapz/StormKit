@@ -6,8 +6,8 @@
 #include <storm/engine/Engine.hpp>
 #include <storm/engine/Profiler.hpp>
 
-#include <storm/engine/render/RenderSystem.hpp>
 #include <storm/engine/render/DrawableComponent.hpp>
+#include <storm/engine/render/RenderSystem.hpp>
 
 #include <storm/engine/render/framegraph/FrameGraph.hpp>
 
@@ -15,15 +15,13 @@ using namespace storm;
 using namespace storm::engine;
 
 struct CameraData {
-    core::Matrixf projection;
-    core::Matrixf view;
+    core::Matrix projection;
+    core::Matrix view;
 };
 
 /////////////////////////////////////
 /////////////////////////////////////
-RenderSystem::RenderSystem(Engine &engine,
-                           entities::EntityManager &manager,
-                           ComponentTypes types)
+RenderSystem::RenderSystem(Engine &engine, entities::EntityManager &manager, ComponentTypes types)
     : entities::System { manager, 0, std::move(types) }, m_engine { engine } {
 }
 

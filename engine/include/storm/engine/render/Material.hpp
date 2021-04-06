@@ -12,14 +12,17 @@
 #include <storm/engine/Fwd.hpp>
 
 namespace storm::engine {
-    class STORMKIT_PUBLIC Material : public core::NonCopyable {
+    class STORMKIT_PUBLIC Material: public core::NonCopyable {
       public:
         Material() noexcept;
         ~Material();
 
         Material(Material &&) noexcept;
         Material &operator=(Material &&) noexcept;
+
+      private:
+        std::vector<std::byte> m_data;
     };
-}
+} // namespace storm::engine
 
 #include "Material.inl"

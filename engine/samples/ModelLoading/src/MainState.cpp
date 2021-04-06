@@ -9,7 +9,7 @@
 #include <storm/render/core/PhysicalDevice.hpp>
 #include <storm/render/core/Surface.hpp>
 
-/////////// - StormKit::engine - ///////////
+/////////// - StormKit::window - ///////////
 #include <storm/window/Keyboard.hpp>
 #include <storm/window/Mouse.hpp>
 #include <storm/window/Window.hpp>
@@ -23,6 +23,7 @@
 #include <storm/engine/render/TransformComponent.hpp>
 
 #include <storm/engine/render/3D/FPSCamera.hpp>
+#include <storm/engine/render/3D/Model.hpp>
 #include <storm/engine/render/3D/PbrMesh.hpp>
 #include <storm/engine/render/3D/PbrRenderSystem.hpp>
 
@@ -54,9 +55,8 @@ class RotationSystem: public entities::System {
 ////////////////////////////////////////
 ////////////////////////////////////////
 MainState::MainState(core::StateManager &owner, engine::Engine &engine, window::Window &window)
-    : State { owner, engine }, m_keyboard { window.createKeyboardPtr() }, m_mouse {
-          window.createMousePtr()
-      } {
+    : State { owner, engine }, m_window { window },
+      m_keyboard { window.createKeyboardPtr() }, m_mouse { window.createMousePtr() } {
     m_mouse->setPositionOnWindow(
         core::Position2i { window.size().width / 2, window.size().height / 2 });
 
@@ -70,26 +70,8 @@ MainState::MainState(core::StateManager &owner, engine::Engine &engine, window::
 
     m_render_system->setCamera(*m_camera);
 
-    auto vertices = engine::VertexArray {
-        engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 0.f }, .uv = { 0.f, 0.f } },
-        engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 0.f }, .uv = { 1.f, 0.f } },
-        engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 0.f }, .uv = { 1.f, 1.f } },
-        engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 0.f }, .uv = { 0.f, 1.f } },
-        engine::PbrMesh::Vertex { .position = { 0.f, 0.f, 1.f }, .uv = { 0.f, 0.f } },
-        engine::PbrMesh::Vertex { .position = { 1.f, 0.f, 1.f }, .uv = { 1.f, 0.f } },
-        engine::PbrMesh::Vertex { .position = { 1.f, 1.f, 1.f }, .uv = { 1.f, 1.f } },
-        engine::PbrMesh::Vertex { .position = { 0.f, 1.f, 1.f }, .uv = { 0.f, 1.f } }
-    };
-    auto indices = engine::LargeIndexArray { 0, 1, 3, 3, 1, 2, 1, 5, 2, 2, 5, 6, 5, 4, 6, 6, 4, 7,
-                                             4, 0, 7, 7, 0, 3, 3, 2, 7, 7, 2, 6, 4, 5, 0, 0, 5, 1 };
-
-    auto sub_draw = engine::SubDrawable { .primitives = { engine::DrawablePrimitive {
-                                              .name     = "cube",
-                                              .vertices = std::move(vertices),
-                                              .indices  = std::move(indices) } } };
-
-    auto mesh = engine::PbrMesh::allocateOwned();
-    mesh->addSubdrawable(std::move(sub_draw));
+    m_model   = engine::Model::allocateOwned(engine, EXAMPLES_DATA_DIR "models/Sword.glb");
+    auto mesh = m_model->createMesh();
 
     auto e               = m_world.makeEntity();
     auto &name_component = m_world.addComponent<engine::NameComponent>(e);
@@ -100,7 +82,7 @@ MainState::MainState(core::StateManager &owner, engine::Engine &engine, window::
 
     m_world.addComponent<engine::TransformComponent>(e);
 
-    window.lockMouse();
+    enableCamera();
 }
 
 ////////////////////////////////////////
@@ -156,4 +138,14 @@ void MainState::update(core::Secondf delta) {
     m_render_system->render(frame);
 
     engine().endFrame();
+}
+
+void MainState::enableCamera() noexcept {
+    m_window.get().lockMouse();
+    m_camera_enabled = true;
+}
+
+void MainState::disableCamera() noexcept {
+    m_window.get().unlockMouse();
+    m_camera_enabled = false;
 }

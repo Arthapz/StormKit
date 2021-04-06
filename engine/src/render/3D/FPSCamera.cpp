@@ -62,7 +62,7 @@ auto FPSCamera::update(core::Secondf delta) noexcept -> void {
     if (m_inputs.right) m_position += core::normalize(core::cross(m_front, m_up)) * move_speed;
 
     const auto rotation_matrix = [this]() {
-        auto mat = core::Matrixf { 1.f };
+        auto mat = core::Matrix { 1.f };
 
         mat = core::rotate(mat, core::radians(m_orientation.x), core::vec3(-1.f, 0.f, 0.f));
         mat = core::rotate(mat, core::radians(m_orientation.y), core::vec3(0.f, 1.f, 0.f));
@@ -73,7 +73,7 @@ auto FPSCamera::update(core::Secondf delta) noexcept -> void {
     auto position = m_position;
     position.y = -position.y;
 
-    const auto translation_matrix = core::translate(core::Matrixf { 1.f }, position);
+    const auto translation_matrix = core::translate(core::Matrix { 1.f }, position);
 
     m_data.position = core::Vector4f{position, 1.f};
     m_data.view = rotation_matrix * translation_matrix;

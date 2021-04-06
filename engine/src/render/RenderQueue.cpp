@@ -21,19 +21,26 @@ RenderQueue::RenderQueue(Engine &engine,
     : m_engine { engine }, m_manager { manager }, m_buffering_count { buffering_count },
       m_system_name { std::move(system_name) }, m_vertex_buffer_pool { m_buffering_count },
       m_index_buffer_pool { m_buffering_count }, m_draw_data_buffer_pool { m_buffering_count },
-      m_transform_buffer_pool { m_buffering_count } {
-    m_vertex_buffer_name    = fmt::format("{}:VertexBuffer", m_system_name);
-    m_index_buffer_name     = fmt::format("{}:IndexBuffer", m_system_name);
-    m_draw_data_buffer_name = fmt::format("{}:DrawDataBuffer", m_system_name);
+      m_draw_command_buffer_pool { m_buffering_count },
+      m_transform_buffer_pool { m_buffering_count }, m_material_buffer_pool { m_buffering_count } {
+    m_vertex_buffer_name       = fmt::format("{}:VertexBuffer", m_system_name);
+    m_index_buffer_name        = fmt::format("{}:IndexBuffer", m_system_name);
+    m_draw_data_buffer_name    = fmt::format("{}:DrawDataBuffer", m_system_name);
+    m_draw_command_buffer_name = fmt::format("{}:DrawCommandBuffer", m_system_name);
+
     m_transform_buffer_name = fmt::format("{}:TransformBuffer", m_system_name);
+    m_material_buffer_name  = fmt::format("{}:MaterialBuffer", m_system_name);
+
     m_update_vertices_and_indices_pass_name =
         fmt::format("{}:UpdateVerticesAndIndicesBufferPass", m_system_name);
     m_update_draw_data_buffer_pass_name = fmt::format("{}:UpdateDrawDataBufferPass", m_system_name);
+    m_update_draw_command_buffer_pass_name =
+        fmt::format("{}:UpdateDrawCommandBufferPass", m_system_name);
     m_update_transform_buffer_pass_name =
         fmt::format("{}:UpdateTransformBufferPass", m_system_name);
 
     m_transforms.emplace_back(
-        Transform::Data { core::Matrixf { 1.f }, core::inverse(core::Matrixf { 1.f }) });
+        Transform::Data { core::Matrix { 1.f }, core::inverse(core::Matrix { 1.f }) });
 }
 
 /////////////////////////////////////
@@ -70,7 +77,7 @@ auto RenderQueue::addDrawInstance(entities::Entity e, const Drawable &drawable) 
     if (manager.hasComponent<TransformComponent>(e)) {
         transform_id = std::size(m_transforms);
         m_transforms.emplace_back(
-            Transform::Data { core::Matrixf { 1.f }, core::inverse(core::Matrixf { 1.f }) });
+            Transform::Data { core::Matrix { 1.f }, core::inverse(core::Matrix { 1.f }) });
     }
 
     const auto id = gsl::narrow_cast<core::UInt32>(std::size(m_draw_data));
@@ -85,6 +92,7 @@ auto RenderQueue::addDrawInstance(entities::Entity e, const Drawable &drawable) 
 auto RenderQueue::update(FrameGraph &frame_graph) -> void {
     updateVertexAndIndexBuffer(frame_graph);
     updateDrawDataBuffer(frame_graph);
+    updateDrawCommandsBuffer(frame_graph);
     updateTransformBuffer(frame_graph);
 
     m_frame_counter += 1;
@@ -149,33 +157,32 @@ auto RenderQueue::updateVertexAndIndexBuffer(FrameGraph &frame_graph) -> void {
     for (auto &draw_entry : m_draws) {
         const auto &drawable_component = manager.getComponent<DrawableComponent>(
             m_draw_instances[draw_entry.draw_instances.front()].entity);
-        const auto &drawable = *drawable_component.drawable;
+        const auto &drawable   = *drawable_component.drawable;
+        const auto vertex_size = drawable.vertexSize();
 
         for (const auto &sub_drawable : drawable.subDrawables()) {
+            auto vertex_buffer_size_sub = 0;
+            auto index_buffer_size_sub  = 0;
             for (const auto &primitive : sub_drawable.primitives) {
                 const auto indices_byte_span = core::toConstByteSpan(primitive.indices);
                 offsets.emplace_back(UploadOffsets { primitive.vertices.data(),
                                                      indices_byte_span,
-                                                     vertex_buffer_size,
-                                                     index_buffer_size });
+                                                     vertex_buffer_size + vertex_buffer_size_sub,
+                                                     index_buffer_size + index_buffer_size_sub });
 
-                for (const auto &draw_instance_id : draw_entry.draw_instances) {
-                    const auto &draw_instance = m_draw_instances[draw_instance_id];
+                m_draw_commands.emplace_back(gsl::narrow_cast<core::UInt32>(
+                                                 std::size(primitive.indices)),
+                                             std::size(draw_entry.draw_instances),
+                                             primitive.first_index,
+                                             gsl::narrow_cast<core::Int32>(vertex_buffer_size) /
+                                                 vertex_size,
+                                             0u);
 
-                    auto &draw_data = m_draw_data[draw_instance.draw_data];
-
-                    draw_data.command = vk::DrawIndexedIndirectCommand {
-                        gsl::narrow_cast<core::UInt32>(std::size(primitive.indices)),
-                        1u,
-                        primitive.first_indice,
-                        gsl::narrow_cast<core::Int32>(vertex_buffer_size),
-                        0u
-                    };
-                }
-
-                vertex_buffer_size += std::size(primitive.vertices.data());
-                index_buffer_size += std::size(indices_byte_span);
+                vertex_buffer_size_sub += std::size(primitive.vertices.data());
+                index_buffer_size_sub += std::size(indices_byte_span);
             }
+            vertex_buffer_size += vertex_buffer_size_sub;
+            index_buffer_size += index_buffer_size_sub;
         }
 
         draw_entry.merged = true;
@@ -292,7 +299,6 @@ auto RenderQueue::updateDrawDataBuffer(FrameGraph &frame_graph) -> void {
     if (!m_draw_data_buffer_pool.empty()) m_draw_data_buffer_pool.next();
     m_draw_data_buffer_pool.emplace(device,
                                     render::HardwareBufferUsage::Vertex |
-                                        render::HardwareBufferUsage::Indirect |
                                         render::HardwareBufferUsage::Transfert_Dst,
                                     staging_buffer_size,
                                     render::MemoryProperty::Device_Local);
@@ -340,6 +346,88 @@ auto RenderQueue::updateDrawDataBuffer(FrameGraph &frame_graph) -> void {
     update_draw_data_pass.setCullImmune(true);
 
     m_need_update_draw_data = false;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+void RenderQueue::updateDrawCommandsBuffer(FrameGraph &frame_graph) {
+    struct UpdateDrawCommandPass {
+        FrameGraphResourceID staging_buffer_id;
+        FrameGraphResourceID draw_command_buffer_id;
+    };
+
+    const auto draw_command_buffer_name =
+        fmt::format("{}:{}", m_draw_command_buffer_name, m_frame_counter);
+
+    if (!m_need_update_draw_commands) {
+        auto &draw_command_buffer = m_draw_command_buffer_pool.get();
+
+        const auto draw_command_buffer_descriptor =
+            BufferDescriptor { .size              = draw_command_buffer.size(),
+                               .usage             = draw_command_buffer.usage(),
+                               .memory_properties = render::MemoryProperty::Device_Local };
+
+        m_draw_command_buffer_id = frame_graph.setRetainedResource(draw_command_buffer_name,
+                                                                   draw_command_buffer_descriptor,
+                                                                   draw_command_buffer);
+        return;
+    }
+
+    const auto &device = engine().device();
+    const auto staging_buffer_size =
+        std::size(m_draw_commands) * sizeof(vk::DrawIndexedIndirectCommand);
+
+    if (!m_draw_command_buffer_pool.empty()) m_draw_command_buffer_pool.next();
+    m_draw_command_buffer_pool.emplace(device,
+                                       render::HardwareBufferUsage::Indirect |
+                                           render::HardwareBufferUsage::Transfert_Dst,
+                                       staging_buffer_size,
+                                       render::MemoryProperty::Device_Local);
+
+    auto &draw_command_buffer = m_draw_command_buffer_pool.get();
+    device.setObjectName(draw_command_buffer, draw_command_buffer_name);
+
+    const auto draw_command_buffer_descriptor =
+        BufferDescriptor { .size              = draw_command_buffer.size(),
+                           .usage             = draw_command_buffer.usage(),
+                           .memory_properties = render::MemoryProperty::Device_Local };
+
+    m_draw_command_buffer_id = frame_graph.setRetainedResource(draw_command_buffer_name,
+                                                               draw_command_buffer_descriptor,
+                                                               draw_command_buffer);
+
+    auto &update_draw_command_pass = frame_graph.addPassNode<UpdateDrawCommandPass>(
+        m_update_draw_command_buffer_pass_name,
+        [this, &staging_buffer_size](auto &pass_data, FrameGraphBuilder &builder) {
+            const auto staging_buffer_descriptor =
+                BufferDescriptor { .size              = staging_buffer_size,
+                                   .usage             = render::HardwareBufferUsage::Transfert_Src,
+                                   .memory_properties = render::MemoryProperty::Host_Visible |
+                                                        render::MemoryProperty::Host_Coherent };
+
+            pass_data.staging_buffer_id =
+                builder.create(fmt::format("{}:{}",
+                                           m_update_draw_command_buffer_pass_name,
+                                           "StagingBuffer"),
+                               staging_buffer_descriptor);
+            pass_data.draw_command_buffer_id = builder.write(m_draw_command_buffer_id);
+        },
+        [this, staging_buffer_size, &frame_graph]([[maybe_unused]] const auto &step_data,
+                                                  const auto &pass_data,
+                                                  auto &cmb) {
+            auto &staging_buffer = frame_graph.getPhysicalBuffer(pass_data.staging_buffer_id);
+            auto &draw_command_buffer =
+                frame_graph.getPhysicalBuffer(pass_data.draw_command_buffer_id);
+
+            staging_buffer.upload(core::toConstByteSpan(m_draw_commands));
+            staging_buffer.flush(0u, staging_buffer_size);
+
+            cmb.copyBuffer(staging_buffer, draw_command_buffer, staging_buffer_size, 0u, 0u);
+        },
+        QueueFlag::Async_Transfert);
+    update_draw_command_pass.setCullImmune(true);
+
+    m_need_update_draw_commands = false;
 }
 
 /////////////////////////////////////

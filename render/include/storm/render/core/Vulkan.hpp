@@ -182,18 +182,20 @@ namespace storm::render {
         std::array { gsl::czstring<> { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
                      VK_KHR_MAINTENANCE1_EXTENSION_NAME };
 
-    static constexpr auto VALIDATION_LAYERS = std::array {
 #ifdef STORMKIT_BUILD_DEBUG
+    static constexpr auto VALIDATION_LAYERS = std::array {
         gsl::czstring<> { "VK_LAYER_KHRONOS_validation" },
     // "VK_LAYER_LUNARG_api_dump",
     #ifdef STORMKIT_OS_LINUX
             "VK_LAYER_MESA_overlay",
     #endif
-#endif
-#if !defined(STORMKIT_OS_MACOS) && !STORMKIT_ENABLE_WAYLAND
+    #if !defined(STORMKIT_OS_MACOS) && !STORMKIT_ENABLE_WAYLAND
             "VK_LAYER_LUNARG_monitor",
-#endif
+    #endif
     };
+#else
+    static constexpr auto VALIDATION_LAYERS = std::array<gsl::czstring<>, 0> {};
+#endif
 
     static constexpr auto VALIDATION_FEATURES =
         std::array { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
@@ -221,7 +223,7 @@ namespace storm::render {
         vkMakeVersion(STORMKIT_MAJOR_VERSION, STORMKIT_MINOR_VERSION, STORMKIT_PATCH_VERSION);
 
 #if defined(STORMKIT_BUILD_DEBUG) || defined(STORMKIT_ENABLE_VALIDATION_LAYERS)
-    static constexpr auto ENABLE_VALIDATION = true;
+    static constexpr auto ENABLE_VALIDATION = false;
 #else
     static constexpr auto ENABLE_VALIDATION = true;
 #endif

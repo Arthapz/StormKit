@@ -12,9 +12,9 @@
 #include <storm/render/resource/Fwd.hpp>
 
 /////////// - StormKit::engine - ///////////
+#include <storm/engine/render/3D/Fwd.hpp>
 #include <storm/engine/render/framegraph/Fwd.hpp>
 #include <storm/engine/render/utils/Fwd.hpp>
-#include <storm/engine/render/3D/Fwd.hpp>
 
 namespace storm::engine {
     class FPSCamera;
@@ -28,4 +28,7 @@ namespace storm::engine {
 
     class PbrRenderSystem;
     DECLARE_PTR_AND_REF(PbrRenderSystem);
+
+    class Model;
+    DECLARE_PTR_AND_REF(Model);
 } // namespace storm::engine
