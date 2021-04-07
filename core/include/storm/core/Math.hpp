@@ -22,6 +22,7 @@
 /// \exclude
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
+#include <glm/gtc/matrix_integer.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>

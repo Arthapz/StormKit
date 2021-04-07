@@ -159,6 +159,7 @@ sources = files([
     'src/render/imgui/imconfig.hpp',
     'src/render/imgui/imgui.cpp',
     'src/render/imgui/imgui_draw.cpp',
+    'src/render/imgui/imgui_tables.cpp',
     'src/render/imgui/imgui_impl_vulkan.cpp',
     'src/render/imgui/imgui_widgets.cpp',
     'src/render/imgui/imgui_widget_flamegraph.cpp',
