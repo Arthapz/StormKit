@@ -1,17 +1,23 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
 #pragma once
 
+/////////// - AppKit - ///////////
 #import <AppKit/NSView.h>
+
+/////////// - StormKit::core - ///////////
 #include <storm/core/Platform.hpp>
 
-namespace storm::window {
-    class WindowImpl;
+namespace storm::window::details {
+    class macOSWindow;
 }
 
 @interface StormView: NSView
-
 - (BOOL)acceptsFirstResponder;
 - (id)initWithFrame:(NSRect)frame
-      withRequester:(storm::window::WindowImpl *)_requester
+      withRequester:(storm::window::details::macOSWindow *)_requester
          withWindow:(NSWindow *)window;
 
 - (NSWindow *)myWindow;
@@ -38,7 +44,7 @@ namespace storm::window {
 
 - (void)updateTrackingAreas;
 
-- (void)setRequester:(storm::window::WindowImpl *)_requester;
+- (void)setRequester:(storm::window::details::macOSWindow *)_requester;
 
 - (NSPoint)relativeToGlobal:(NSPoint)point;
 - (void)setNativeEventRetriever:(void *)native_event;

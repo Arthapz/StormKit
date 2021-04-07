@@ -17,9 +17,11 @@ namespace storm::core {
     #if defined(STORMKIT_OS_MACOS) || defined(STORMKIT_GEN_DOC)
         #define __cpp_concepts_back __cpp_concepts
         #define __cpp_impl_three_way_comparison_back __cpp_impl_three_way_comparison
+        #define OLD_Nil Nil
 
         #undef __cpp_concepts
         #undef __cpp_impl_three_way_comparison
+        #undef Nil
     #endif
 
     #include <range/v3/all.hpp>
@@ -29,8 +31,10 @@ namespace storm::core {
     #if defined(STORMKIT_OS_MACOS) || defined(STORMKIT_GEN_DOC)
         #define __cpp_concepts __cpp_concepts_back
         #define __cpp_impl_three_way_comparison __cpp_impl_three_way_comparison_back
+        #define Nil OLD_Nil
 
         #undef __cpp_concepts_back
         #undef __cpp_impl_three_way_comparison_back
+        #undef OLD_Nil
     #endif
 #endif

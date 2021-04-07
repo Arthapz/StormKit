@@ -29,6 +29,12 @@ namespace storm::window {
             -> bool {
             return !operator==(other);
         }
+
+        [[nodiscard]] constexpr inline auto operator>(const VideoSettings &other) const noexcept
+            -> bool {
+            return (size.width * size.height * size.depth) >
+                   (other.size.width * other.size.height * other.size.height);
+        }
     };
 
 } // namespace storm::window

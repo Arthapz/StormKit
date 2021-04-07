@@ -1,22 +1,32 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
 #pragma once
 
-#include <storm/window/VideoSettings.hpp>
-#include <storm/window/WindowStyle.hpp>
-#include <string>
-
+/////////// - AppKit - ///////////
 #import <AppKit/NSWindow.h>
 
-namespace storm::window {
-    class WindowImpl;
+/////////// - STL - ///////////
+#include <string>
+
+/////////// - StormKit::window - ///////////
+#include <storm/window/VideoSettings.hpp>
+#include <storm/window/WindowStyle.hpp>
+
+namespace storm::window::details {
+    class macOSWindow;
 }
-@interface StormWindowController: NSResponder <NSWindowDelegate>
+
+@class StormView;
+@interface StormWindowController: NSResponder<NSWindowDelegate>
 - (id)initWithSettings:(storm::window::VideoSettings)settings
              withStyle:(storm::window::WindowStyle)style
              withTitle:(std::string)title
-         withRequester:(storm::window::WindowImpl *)_requester;
+         withRequester:(storm::window::details::macOSWindow *)_requester;
 - (void)dealloc;
 
-- (void)setRequester:(storm::window::WindowImpl *)requester;
+- (void)setRequester:(storm::window::details::macOSWindow *)requester;
 
 - (void)close;
 - (BOOL)isOpen;
@@ -26,7 +36,7 @@ namespace storm::window {
 - (void)hideWindow;
 
 - (void)processEvent;
-- (void *)nativeHandle;
+- (StormView *)nativeHandle;
 
 - (NSSize)size;
 

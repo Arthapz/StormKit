@@ -1,46 +1,48 @@
-#import "InputHandlerImpl.h"
-#import "StormView.h"
-#import "Utils.h"
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
 
-#import <AppKit/AppKit.h>
+/////////// - StormKit::window - ///////////
+#import "macOSKeyboard.hpp"
+#import "StormView.hpp"
+#import "Utils.hpp"
+#import "macOSWindow.hpp"
 
 #include <storm/window/Event.hpp>
 #include <storm/window/VideoSettings.hpp>
 #include <storm/window/Window.hpp>
 
+/////////// - SL - ///////////
 #include <cmath>
+
+/////////// - AppKit - ///////////
+#import <AppKit/AppKit.h>
 
 using namespace storm;
 using namespace storm::window;
+using namespace storm::window::details;
 
-void setMousePositionInternal(CGPoint point) {
-    auto move_event =
-        CGEventCreateMouseEvent(nullptr, kCGEventMouseMoved, std::move(point), kCGMouseButtonLeft);
-
-    CGEventPost(kCGSessionEventTap, move_event);
-    CFRelease(move_event);
+/////////////////////////////////////
+/////////////////////////////////////
+macOSKeyboard::macOSKeyboard(const AbstractWindow &window)
+    : Keyboard { window }, m_macos_window { &static_cast<const macOSWindow &>(window) } {
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-InputHandlerImpl::InputHandlerImpl(const Window &window) : AbstractInputHandler { window } {
-}
+macOSKeyboard::~macOSKeyboard() = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-InputHandlerImpl::~InputHandlerImpl() = default;
+macOSKeyboard::macOSKeyboard(macOSKeyboard &&) noexcept = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-InputHandlerImpl::InputHandlerImpl(InputHandlerImpl &&) = default;
+auto macOSKeyboard::operator=(macOSKeyboard &&) noexcept -> macOSKeyboard & = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-InputHandlerImpl &InputHandlerImpl::operator=(InputHandlerImpl &&) = default;
-
-/////////////////////////////////////
-/////////////////////////////////////
-bool InputHandlerImpl::isKeyPressed(Key key) const noexcept {
+auto macOSKeyboard::isKeyPressed(Key key) const noexcept -> bool {
     initIOHID();
 
     auto elements = m_keys[static_cast<core::ArraySize>(key)];
@@ -67,90 +69,15 @@ bool InputHandlerImpl::isKeyPressed(Key key) const noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) const noexcept {
-    auto state = [NSEvent pressedMouseButtons];
-
-    switch (button) {
-        case MouseButton::Left: return (state & (1 << 0)) != 0;
-        case MouseButton::Right: return (state & (1 << 1)) != 0;
-        case MouseButton::Middle: return (state & (1 << 2)) != 0;
-        case MouseButton::Button1: return (state & (1 << 3)) != 0;
-        case MouseButton::Button2: return (state & (1 << 4)) != 0;
-        default: return false;
-    }
-
-    return false;
-}
-
-extern "C" {
-extern const storm::window::VideoSettings *getDesktopModes(storm::core::ArraySize &size);
-}
-/////////////////////////////////////
-/////////////////////////////////////
-core::Position2u InputHandlerImpl::getMousePositionOnDesktop() const noexcept {
-    auto size                 = core::ArraySize { 0u };
-    const auto scale          = [[NSScreen mainScreen] backingScaleFactor];
-    const auto desktop_height = getDesktopModes(size)[0].size.height;
-    const auto pos            = [NSEvent mouseLocation];
-
-    const auto position = core::Vector2u { scale * pos.x, desktop_height - (scale * pos.y) };
-
-    return core::makeNamed<core::Position2u>(std::move(position));
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-void InputHandlerImpl::setMousePositionOnDesktop(core::Position2u position) noexcept {
-    const auto scale = [[NSScreen mainScreen] backingScaleFactor];
-    const auto point = CGPoint { gsl::narrow_cast<double>(position->x / scale),
-                                 gsl::narrow_cast<double>(position->y / scale) };
-
-    setMousePositionInternal(std::move(point));
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-core::Position2i InputHandlerImpl::getMousePositionOnWindow() const noexcept {
-    auto native_handle = static_cast<StormView *>(m_window->nativeHandle());
-    auto window        = [native_handle myWindow];
-    const auto scale   = [[NSScreen mainScreen] backingScaleFactor];
-
-    const auto window_height = m_window->size().height;
-
-    const auto screen_pos = [NSEvent mouseLocation];
-
-    const auto rect        = NSMakeRect(screen_pos.x, screen_pos.y, 0, 0);
-    const auto window_rect = [window convertRectFromScreen:rect];
-
-    const NSPoint pos =
-        [native_handle convertPoint:NSMakePoint(window_rect.origin.x, window_rect.origin.y)
-                           fromView:native_handle];
-    const auto position = core::Vector2i { scale * pos.x, scale * (window_height - pos.y) };
-
-    return core::makeNamed<core::Position2i>(std::move(position));
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-void InputHandlerImpl::setMousePositionOnWindow(core::Position2i position) noexcept {
-    auto native_handle = static_cast<StormView *>(m_window->nativeHandle());
-    const auto scale   = [[NSScreen mainScreen] backingScaleFactor];
-
-    const auto point     = CGPoint { gsl::narrow_cast<double>(position->x / scale),
-                                 gsl::narrow_cast<double>(position->y / scale) };
-    const auto on_screen = [native_handle relativeToGlobal:point];
-
-    setMousePositionInternal(std::move(on_screen));
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-void InputHandlerImpl::setVirtualKeyboardVisible([[maybe_unused]] bool visible) noexcept {
+auto macOSKeyboard::setVirtualKeyboardVisible([[maybe_unused]] bool visible) noexcept -> void {
     // not supported
 }
 
-void InputHandlerImpl::initIOHID() {
+/////////////////////////////////////
+/////////////////////////////////////
+auto macOSKeyboard::initIOHID() -> void {
     static auto is_init = false;
+
     if (is_init) return;
 
     auto tis = TISCopyCurrentKeyboardLayoutInputSource();
@@ -172,7 +99,9 @@ void InputHandlerImpl::initIOHID() {
     is_init = true;
 }
 
-void InputHandlerImpl::initializeKeyboard() {
+/////////////////////////////////////
+/////////////////////////////////////
+auto macOSKeyboard::initializeKeyboard() -> void {
     auto keyboards = copyDevices(kHIDPage_GenericDesktop, kHIDUsage_GD_Keyboard);
 
     auto keyboardCount = CFSetGetCount(keyboards);
@@ -191,7 +120,7 @@ void InputHandlerImpl::initializeKeyboard() {
     CFRelease(keyboards);
 }
 
-void InputHandlerImpl::loadKeyboard(IOHIDDeviceRef keyboard) {
+auto macOSKeyboard::loadKeyboard(IOHIDDeviceRef keyboard) -> void {
     auto keys = IOHIDDeviceCopyMatchingElements(keyboard, nullptr, kIOHIDOptionsTypeNone);
 
     auto keys_count = CFArrayGetCount(keys);
@@ -209,7 +138,9 @@ void InputHandlerImpl::loadKeyboard(IOHIDDeviceRef keyboard) {
     CFRelease(keys);
 }
 
-void InputHandlerImpl::loadKey(IOHIDElementRef key) {
+/////////////////////////////////////
+/////////////////////////////////////
+auto macOSKeyboard::loadKey(IOHIDElementRef key) -> void {
     auto usage_code   = IOHIDElementGetUsage(key);
     auto virtual_code = usageToVirtualCode(usage_code);
 
@@ -246,7 +177,9 @@ void InputHandlerImpl::loadKey(IOHIDElementRef key) {
     }
 }
 
-CFDictionaryRef InputHandlerImpl::copyDevicesMask(core::UInt32 page, core::UInt32 usage) {
+/////////////////////////////////////
+/////////////////////////////////////
+auto macOSKeyboard::copyDevicesMask(core::UInt32 page, core::UInt32 usage) -> CFDictionaryRef {
     auto dict = CFDictionaryCreateMutable(kCFAllocatorDefault,
                                           2,
                                           &kCFTypeDictionaryKeyCallBacks,
@@ -263,7 +196,9 @@ CFDictionaryRef InputHandlerImpl::copyDevicesMask(core::UInt32 page, core::UInt3
     return dict;
 }
 
-CFSetRef InputHandlerImpl::copyDevices(core::UInt32 page, core::UInt32 usage) {
+/////////////////////////////////////
+/////////////////////////////////////
+auto macOSKeyboard::copyDevices(core::UInt32 page, core::UInt32 usage) -> CFSetRef {
     auto mask = copyDevicesMask(page, usage);
 
     IOHIDManagerSetDeviceMatching(m_manager, mask);

@@ -1,10 +1,11 @@
-extern int macosMain(int argc, char **argv);
+extern int macosMain(const int argc, const char **argv);
 
-#import <Foundation/NSFileManager.h>
 #import <Foundation/NSBundle.h>
+#import <Foundation/NSFileManager.h>
 
-int main(int argc, char **argv) {
-	[[NSFileManager defaultManager] changeCurrentDirectoryPath: [[NSBundle mainBundle] resourcePath]];
+int main(const int argc, const char **argv) {
+    [[NSFileManager defaultManager]
+        changeCurrentDirectoryPath:[[NSBundle mainBundle] resourcePath]];
 
-	return macosMain(argc, argv);
+    return macosMain(argc, argv);
 }

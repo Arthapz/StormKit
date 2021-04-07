@@ -25,6 +25,12 @@
     #include "Win32/Win32Keyboard.hpp"
     #include "Win32/Win32Mouse.hpp"
     #include "Win32/Win32Window.hpp"
+#elif defined(STORMKIT_OS_APPLE)
+    #ifdef STORMKIT_OS_MACOS
+        #include "Apple/macOS/macOSKeyboard.hpp"
+        #include "Apple/macOS/macOSMouse.hpp"
+        #include "Apple/macOS/macOSWindow.hpp"
+    #endif
 #endif
 
 using namespace storm;
@@ -81,9 +87,12 @@ auto Window::create(std::string title, const VideoSettings &settings, WindowStyl
             ASSERT(true, "Wayland backend not supported on this system");
 #endif
             break;
-        case WM::macOS:
-            dlog("Using macOS cocoa window backend");
-            ASSERT(true, "Not yet implemented");
+        case WM::macOS: dlog("Using macOS cocoa window backend");
+#ifdef STORMKIT_OS_MACOS
+            m_impl = details::macOSWindow::allocateOwned(std::move(title), settings, style);
+#else
+            ASSERT(true, "macOS backend not supported on this system");
+#endif
             break;
         case WM::iOS:
             dlog("Using iOS cocoa window backend");
@@ -213,15 +222,18 @@ KeyboardOwnedPtr Window::createKeyboardPtr() const {
 #else
             ASSERT(true, "XCB backend not supported on this system");
 #endif
-            break;
         case WM::Wayland:
 #if defined(STORMKIT_OS_LINUX) && STORMKIT_ENABLE_WAYLAND
             return details::WaylandKeyboard::allocateOwned(*m_impl);
 #else
             ASSERT(true, "Wayland backend not supported on this system");
 #endif
-            break;
-        case WM::macOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::macOS:
+#ifdef STORMKIT_OS_MACOS
+            return details::macOSKeyboard::allocateOwned(*m_impl);
+#else
+            ASSERT(true, "macOS backend not supported on this system");
+#endif
         case WM::iOS: ASSERT(true, "Not yet implemented"); break;
         case WM::Android: ASSERT(true, "Not yet implemented"); break;
         case WM::Switch: ASSERT(true, "Not yet implemented"); break;
@@ -247,15 +259,18 @@ MouseOwnedPtr Window::createMousePtr() const {
 #else
             ASSERT(true, "XCB backend not supported on this system");
 #endif
-            break;
         case WM::Wayland:
 #if defined(STORMKIT_OS_LINUX) && STORMKIT_ENABLE_WAYLAND
             return details::WaylandMouse::allocateOwned(*m_impl);
 #else
             ASSERT(true, "Wayland backend not supported on this system");
 #endif
-            break;
-        case WM::macOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::macOS:
+#ifdef STORMKIT_OS_MACOS
+            return details::macOSMouse::allocateOwned(*m_impl);
+#else
+            ASSERT(true, "macOS backend not supported on this system");
+#endif
         case WM::iOS: ASSERT(true, "Not yet implemented"); break;
         case WM::Android: ASSERT(true, "Not yet implemented"); break;
         case WM::Switch: ASSERT(true, "Not yet implemented"); break;
@@ -309,15 +324,18 @@ std::vector<VideoSettings> Window::getDesktopModes() {
 #else
             ASSERT(true, "XCB backend not supported on this system");
 #endif
-            break;
         case WM::Wayland:
 #if defined(STORMKIT_OS_LINUX) && STORMKIT_ENABLE_WAYLAND
             return details::WaylandWindow::getDesktopModes();
 #else
             ASSERT(true, "Wayland backend not supported on this system");
 #endif
-            break;
-        case WM::macOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::macOS:
+#ifdef STORMKIT_OS_MACOS
+            return details::macOSWindow::getDesktopModes();
+#else
+            ASSERT(true, "macOS backend not supported on this system");
+#endif
         case WM::iOS: ASSERT(true, "Not yet implemented"); break;
         case WM::Android: ASSERT(true, "Not yet implemented"); break;
         case WM::Switch: ASSERT(true, "Not yet implemented"); break;
@@ -351,7 +369,12 @@ VideoSettings Window::getDesktopFullscreenSize() {
             ASSERT(true, "Wayland backend not supported on this system");
 #endif
             break;
-        case WM::macOS: ASSERT(true, "Not yet implemented"); break;
+        case WM::macOS:
+#ifdef STORMKIT_OS_MACOS
+            return details::macOSWindow::getDesktopFullscreenSize();
+#else
+            ASSERT(true, "macOS backend not supported on this system");
+#endif
         case WM::iOS: ASSERT(true, "Not yet implemented"); break;
         case WM::Android: ASSERT(true, "Not yet implemented"); break;
         case WM::Switch: ASSERT(true, "Not yet implemented"); break;

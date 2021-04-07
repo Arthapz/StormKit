@@ -10,7 +10,6 @@
 
 #include <climits>
 #include <clocale>
-#include <cuchar>
 
 using namespace storm;
 using namespace storm::log;

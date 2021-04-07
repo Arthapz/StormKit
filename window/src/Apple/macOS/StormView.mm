@@ -1,31 +1,44 @@
-#import "StormView.h"
-#include "Utils.h"
-#import "WindowImpl.h"
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
 
+/////////// - StormKit::Window - ///////////
+#import "StormView.hpp"
+#import "Utils.hpp"
+#import "macOSWindow.hpp"
+
+/////////// - AppKit - ///////////
 #import <AppKit/NSScreen.h>
 #import <AppKit/NSTrackingArea.h>
 #import <AppKit/NSWindow.h>
 
 using namespace storm;
 using namespace storm::window;
+using namespace storm::window::details;
 
 @implementation StormView {
     NSTrackingArea *trackingArea;
-    WindowImpl *requester;
+    macOSWindow *requester;
     NSWindow *windowA;
     BOOL isMouseInside;
     void *nativeEvent;
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (NSWindow *)myWindow {
     return windowA;
 }
+/////////////////////////////////////
+/////////////////////////////////////
 - (BOOL)acceptsFirstResponder {
     return YES;
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (id)initWithFrame:(NSRect)frame
-      withRequester:(WindowImpl *)_requester
+      withRequester:(macOSWindow *)_requester
          withWindow:(NSWindow *)window {
     self = [super initWithFrame:frame];
 
@@ -37,10 +50,14 @@ using namespace storm::window;
     return self;
 }
 
-- (void)setRequester:(WindowImpl *)_requester {
+/////////////////////////////////////
+/////////////////////////////////////
+- (void)setRequester:(macOSWindow *)_requester {
     requester = _requester;
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)mouseDown:(NSEvent *)event {
     /*if(nativeEvent)
      *reinterpret_cast<NSEvent*>(nativeEvent) = *event;*/
@@ -50,88 +67,116 @@ using namespace storm::window;
     [[self nextResponder] mouseDown:event];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)rightMouseDown:(NSEvent *)event {
     [self handleMouseDown:event];
 
     [[self nextResponder] mouseDown:event];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)otherMouseDown:(NSEvent *)event {
     [self handleMouseDown:event];
 
     [[self nextResponder] mouseDown:event];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)handleMouseDown:(NSEvent *)event {
     auto mouse_key = toStormMouseButton([event buttonNumber]);
 
     requester->mouseDownEvent(mouse_key, event.locationInWindow.x, event.locationInWindow.y);
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)mouseUp:(NSEvent *)event {
     [self handleMouseUp:event];
 
     [[self nextResponder] mouseUp:event];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)rightMouseUp:(NSEvent *)event {
     [self handleMouseUp:event];
 
     [[self nextResponder] mouseUp:event];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)otherMouseUp:(NSEvent *)event {
     [self handleMouseUp:event];
 
     [[self nextResponder] mouseUp:event];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)handleMouseUp:(NSEvent *)event {
     auto mouse_key = toStormMouseButton([event buttonNumber]);
 
     requester->mouseUpEvent(mouse_key, event.locationInWindow.x, event.locationInWindow.y);
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)mouseMoved:(NSEvent *)event {
     [self handleMouseMove:event];
 
     [[self nextResponder] mouseMoved:event];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)mouseDragged:(NSEvent *)event {
     [self handleMouseMove:event];
 
     [[self nextResponder] mouseDragged:event];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)rightMouseDragged:(NSEvent *)event {
     [self handleMouseMove:event];
 
     [[self nextResponder] rightMouseDragged:event];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)handleMouseMove:(NSEvent *)event {
     if (isMouseInside) {
         auto point = toStormVec(event.locationInWindow);
 
-        point.y = requester->videoSettings().size.h - point.y;
+        point.y = requester->videoSettings().size.height - point.y;
 
         requester->mouseMoveEvent(point.x, point.y);
     }
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)mouseEntered:(NSEvent *)event {
     isMouseInside = YES;
 
     requester->mouseEnteredEvent();
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)mouseExited:(NSEvent *)event {
     isMouseInside = NO;
 
     requester->mouseExitedEvent();
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)keyDown:(NSEvent *)event {
     auto string = [event charactersIgnoringModifiers];
     auto key    = storm::window::Key::Unknow;
@@ -140,9 +185,11 @@ using namespace storm::window;
 
     if (key == storm::window::Key::Unknow) key = nonLocalizedKeytoStormKey(event.keyCode);
 
-    requester->keyDownEvent(key);
+    requester->keyDownEvent(key, [string characterAtIndex:0]);
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)keyUp:(NSEvent *)event {
     auto string = [event charactersIgnoringModifiers];
     auto key    = storm::window::Key::Unknow;
@@ -151,9 +198,11 @@ using namespace storm::window;
 
     if (key == storm::window::Key::Unknow) key = nonLocalizedKeytoStormKey(event.keyCode);
 
-    requester->keyUpEvent(key);
+    requester->keyUpEvent(key, [string characterAtIndex:0]);
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)updateTrackingAreas {
     [super updateTrackingAreas];
     if (trackingArea != nil) {
@@ -170,6 +219,8 @@ using namespace storm::window;
     [self addTrackingArea:trackingArea];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (NSPoint)convertPointToScreen:(NSPoint)point {
     NSRect rect = NSZeroRect;
     rect.origin = point;
@@ -177,6 +228,8 @@ using namespace storm::window;
     return rect.origin;
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (NSPoint)relativeToGlobal:(NSPoint)point {
     point.y = [self frame].size.height - point.y;
 
@@ -191,6 +244,8 @@ using namespace storm::window;
     return point;
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (CGDirectDisplayID)displayId {
     NSScreen *screen    = [[self window] screen];
     NSNumber *displayId = [[screen deviceDescription] objectForKey:@"NSScreenNumber"];
@@ -198,6 +253,8 @@ using namespace storm::window;
     return [displayId intValue];
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 - (void)setNativeEventRetriever:(void *)native_event {
     nativeEvent = native_event;
 }

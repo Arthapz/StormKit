@@ -23,7 +23,9 @@
 #include <storm/core/TypeTraits.hpp>
 #include <storm/core/Types.hpp>
 
+#ifdef UTF8_CPP20
 #include <cuchar>
+#endif
 
 #define STRINGIFY(x) #x
 #define CASE(x) \

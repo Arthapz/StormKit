@@ -3,7 +3,7 @@ project(
     ['c', 'cpp'],
     version: '0.2.0',
     license: 'MIT',
-    default_options : ['c_std=c11', 'default_library=static']
+    default_options : ['c_std=c17', 'default_library=static']
 )
 
 system_name = host_machine.system()
@@ -17,37 +17,50 @@ is_android = system_name == 'android'
 examples_data_dir = get_option('examples_data_dir')
 
 lib_type = get_option('library_type')
-project_arguments = []
+
+c_arguments = []
+cpp_arguments = []
+
 examples_arguments = []
 
 lib_extension   = ''
 
 if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
-    project_arguments += ['/DSTORMKIT_BUILD', '/std:c++latest', '/permissive-', '/DFMT_HEADER_ONLY', '/DNOMINMAX', '/DUNICODE', '/D_UNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo', '/Zc:wchar_t', '/FS', '/Zc:rvalueCast', '/Zc:inline', '/Zc:strictStrings', '/Zc:throwingNew', '/Zc:__cplusplus', '/Zc:externConstexpr', '/EHsc']
+    c_arguments += ['/DSTORMKIT_BUILD', '/std:clatest', '/permissive-', '/DNOMINMAX', '/DUNICODE', '/D_UNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo', '/Zc:wchar_t', '/FS', '/Zc:inline', '/Zc:strictStrings', '/Zc:throwingNew', '/EHsc']
+    cpp_arguments += ['/DSTORMKIT_BUILD', '/std:c++latest', '/permissive-', '/DFMT_HEADER_ONLY', '/DNOMINMAX', '/DUNICODE', '/D_UNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo', '/Zc:wchar_t', '/FS', '/Zc:rvalueCast', '/Zc:inline', '/Zc:strictStrings', '/Zc:throwingNew', '/Zc:__cplusplus', '/Zc:externConstexpr', '/EHsc']
+
     examples_arguments += ['/std:c++latest', '/permissive-', '/DNOMINMAX', '/DUNICODE', '/D_UNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo']
     lib_extension = '.lib'
 
     message(meson.get_compiler('cpp').get_id())
     if get_option('buildtype') == 'debug'
-        project_arguments += ['/DSTORMKIT_BUILD_DEBUG']
+        c_arguments += ['/DSTORMKIT_BUILD_DEBUG']
+        cpp_arguments += ['/DSTORMKIT_BUILD_DEBUG']
     endif
     if lib_type == 'static'
-        project_arguments += ['/DSTORMKIT_STATIC']
+        c_arguments += ['/DSTORMKIT_STATIC']
+        cpp_arguments += ['/DSTORMKIT_STATIC']
     endif
 
     if meson.get_compiler('cpp').get_id() == 'clang-cl'
-        project_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
+        c_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
+        cpp_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
     endif
 else
-    project_arguments += ['-DSTORMKIT_BUILD', '-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
+    c_arguments += ['-DSTORMKIT_BUILD', '-std=c2x', '-Wno-missing-braces', '-Wno-unknown-pragmas']
+    cpp_arguments += ['-DSTORMKIT_BUILD', '-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
+
     examples_arguments += ['-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas']
     if get_option('buildtype') == 'debug'
-        project_arguments += ['-DSTORMKIT_BUILD_DEBUG', '-ggdb']
+        c_arguments += ['-DSTORMKIT_BUILD_DEBUG', '-ggdb']
+        cpp_arguments += ['-DSTORMKIT_BUILD_DEBUG', '-ggdb']
 
         if meson.get_compiler('cpp').get_id() == 'clang'
-            project_arguments += ['-static-libsan']
+            c_arguments += ['-static-libsan']
+            cpp_arguments += ['-static-libsan']
         else
-            project_arguments += ['-static-libasan']
+            c_arguments += ['-static-libasan']
+            cpp_arguments += ['-static-libasan']
         endif
     endif
 
@@ -61,12 +74,14 @@ else
     endif
 
     if lib_type == 'static'
-        project_arguments += ['-DSTORMKIT_STATIC']
+        c_arguments += ['-DSTORMKIT_STATIC']
+        cpp_arguments += ['-DSTORMKIT_STATIC']
         lib_extension = '.a'
     endif
 endif
 
-add_project_arguments(project_arguments, language: ['c', 'cpp', 'objc', 'objcpp'])
+add_project_arguments(c_arguments, language: ['c', 'objc'])
+add_project_arguments(cpp_arguments, language: ['cpp', 'objcpp'])
 
 enable_doc            = get_option('enable_doc')
 enable_entities       = get_option('enable_entities')

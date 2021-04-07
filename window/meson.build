@@ -54,6 +54,20 @@ wayland_headers = files([
     'src/Linux/Wayland/WaylandWindow.hpp',
 ])
 
+macos_headers = files([
+    'src/Apple/macOS/AutoReleasePoolWrapper.hpp',
+    'src/Apple/macOS/Log.hpp',
+    'src/Apple/macOS/macOSKeyboard.hpp',
+    'src/Apple/macOS/macOSMouse.hpp',
+    'src/Apple/macOS/macOSWindow.hpp',
+    'src/Apple/macOS/StormApplication.h',
+    'src/Apple/macOS/StormApplicationDelegate.h',
+    'src/Apple/macOS/StormWindowController.hpp',
+    'src/Apple/macOS/StormWindow.h',
+    'src/Apple/macOS/StormView.hpp',
+    'src/Apple/macOS/Utils.hpp',
+])
+
 #ide:editable-filelist
 sources = files([
     'src/AbstractWindow.cpp',
@@ -86,7 +100,20 @@ wayland_sources = files([
     'src/Linux/Wayland/WaylandWindow.cpp',
 ])
 
-headers = public_headers + private_headers + x11_headers + wayland_headers + win32_headers + linux_headers
+macos_sources = files([
+    'src/Apple/macOS/AutoReleasePoolWrapper.mm',
+    'src/Apple/macOS/macOSKeyboard.mm',
+    'src/Apple/macOS/macOSMouse.mm',
+    'src/Apple/macOS/macOSWindow.mm',
+    'src/Apple/macOS/StormApplication.m',
+    'src/Apple/macOS/StormApplicationDelegate.m',
+    'src/Apple/macOS/StormWindowController.mm',
+    'src/Apple/macOS/StormWindow.m',
+    'src/Apple/macOS/StormView.mm',
+    'src/Apple/macOS/Utils.mm',
+])
+
+headers = public_headers + private_headers + x11_headers + wayland_headers + win32_headers + linux_headers + macos_headers
 extra_files = headers
 
 if is_linux
@@ -168,6 +195,23 @@ if is_windows
     sources += win32_sources
 else
     extra_files += win32_sources
+endif
+
+if is_macos
+    add_languages('objc')
+    add_languages('objcpp')
+
+    cocoa_dep = dependency('Cocoa')
+    quartz_core_dep = dependency('QuartzCore')
+    iokit_dep = dependency('IOKit')
+    carbon_dep = dependency('Carbon')
+
+
+    private_dependencies += [cocoa_dep, quartz_core_dep, iokit_dep, carbon_dep]
+
+    sources += macos_sources
+else
+    extra_files += macos_sources
 endif
 
 dependencies = public_dependencies + private_dependencies

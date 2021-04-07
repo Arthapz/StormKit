@@ -6,6 +6,8 @@
 
 #include <storm/core/RingBuffer.hpp>
 
+#include <clocale>
+
 int main([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
     using namespace storm;
     using namespace storm::window;

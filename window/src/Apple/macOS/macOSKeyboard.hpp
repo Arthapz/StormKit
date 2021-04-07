@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -10,36 +10,37 @@
 #include <storm/core/Platform.hpp>
 
 /////////// - StormKit::window - ///////////
-#include <storm/window/AbstractInputHandler.hpp>
 #include <storm/window/Fwd.hpp>
 #include <storm/window/Key.hpp>
+#include <storm/window/Keyboard.hpp>
 
 /////////// - Cocoa - ///////////
 #include <Carbon/Carbon.h>
+
+/////////// - IOKit - ///////////
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/hid/IOHIDManager.h>
 
-namespace storm::window {
-    class InputHandlerImpl: public AbstractInputHandler {
-      public:
-        explicit InputHandlerImpl(const Window &window);
-        ~InputHandlerImpl() override;
+namespace storm::window::details {
+    class macOSWindow;
+    using macOSWindowConstPtr = const macOSWindow *;
 
-        InputHandlerImpl(InputHandlerImpl &&);
-        InputHandlerImpl &operator=(InputHandlerImpl &&);
+    class STORMKIT_PRIVATE macOSKeyboard final: public Keyboard {
+      public:
+        explicit macOSKeyboard(const AbstractWindow &window);
+        ~macOSKeyboard() override;
+
+        macOSKeyboard(macOSKeyboard &&) noexcept;
+        macOSKeyboard &operator=(macOSKeyboard &&) noexcept;
 
         bool isKeyPressed(Key key) const noexcept override;
-        bool isMouseButtonPressed(MouseButton button) const noexcept override;
-
-        core::Position2u getMousePositionOnDesktop() const noexcept override;
-        void setMousePositionOnDesktop(core::Position2u position) noexcept override;
-
-        core::Position2i getMousePositionOnWindow() const noexcept override;
-        void setMousePositionOnWindow(core::Position2i position) noexcept override;
 
         void setVirtualKeyboardVisible(bool visible) noexcept override;
 
+        ALLOCATE_HELPERS(macOSKeyboard)
       private:
+        macOSWindowConstPtr m_macos_window;
+
         static void initIOHID();
         static void initializeKeyboard();
         static void loadKeyboard(IOHIDDeviceRef keyboard);
@@ -55,4 +56,4 @@ namespace storm::window {
 
         static inline IOHIDElements m_keys[static_cast<core::ArraySize>(Key::Keycount)] = {};
     };
-} // namespace storm::window
+} // namespace storm::window::details

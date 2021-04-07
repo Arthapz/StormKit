@@ -45,6 +45,9 @@
 
     #include <vulkan/vulkan_xcb.h>
 #endif
+#ifdef STORMKIT_OS_MACOS
+    #include <vulkan/vulkan_macos.h>
+#endif
 
 #include <vulkan/vulkan.hpp>
 

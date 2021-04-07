@@ -13,6 +13,8 @@
 #include <limits>
 #include <vector>
 
+#include <compare>
+
 /////////// - StormKit::core - ///////////
 #include <storm/core/Concepts.hpp>
 #include <storm/core/Span.hpp>

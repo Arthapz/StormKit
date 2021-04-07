@@ -1,3 +1,8 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+// clang-format off
 #pragma once
 
 #include <string_view>
@@ -13,3 +18,4 @@ static constexpr auto STORMKIT_GIT_BRANCH      = std::string_view { "@git_branch
 
 #mesondefine STORMKIT_ENABLE_XCB
 #mesondefine STORMKIT_ENABLE_WAYLAND
+// clang-format on
