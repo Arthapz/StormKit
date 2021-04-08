@@ -1,32 +1,61 @@
-language: cpp
-
 branches:
-    only:
-        - 4-write-documentation
+  only:
+    - master
+    - dev
+    - 16-reimplement-ci
 
-matrix:
+language: cpp
+os: 
+  - linux
+
+cache: 
+  - pip
+  - ccache
+  - directories:
+    - $VCPKG_ROOT
+
+before_install:
+  - |
+    if [ "$TRAVIS_OS_NAME" = "linux" ]
+    then
+      cd ..
+      wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -
+      sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-focal.list https://packages.lunarg.com/vulkan/lunarg-vulkan-focal.list
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      sudo add-apt-repository -y ppa:deadsnakes/ppa
+      sudo apt -q update
+      sudo apt -y install vulkan-sdk gcc-10 g++-10 libxcb-util0-dev tar curl zip unzip libxcb-xinput-dev libwayland-dev python3.9 libxkbcommon-dev libxkbcommon-x11-dev libxcb-randr0-dev libxcb1-dev libxcb-icccm4-dev libxcb-xkb-dev libxcb-keysyms1-dev libxcb-xfixes0-dev
+      sudo pip3 install meson ninja
+
+      export VCPKG_DEFAULT_TRIPLET=x64-linux
+      export CC=gcc-10
+      export CXX=g++-10
+
+      git clone https://github.com/Microsoft/vcpkg.git
+      cd vcpkg
+      ./bootstrap-vcpkg.sh
+      ./vcpkg integrate install
+      ./vcpkg install libpng libjpeg-turbo glm gli fmt rapidjson range-v3 ms-gsl
+
+      export VCPKG_ROOT=`pwd`
+      cd ..
+    fi
+
+before_script:
+  - ls
+  - cd stormkit
+  - meson builddir-shared -Dbuildtype=release -Dlibrary_type=shared -Denable_examples=false --cmake-prefix-path $VCPKG_ROOT/installed/$VCPKG_DEFAULT_TRIPLET/ --prefix=/home/travis/build/Arthapz/StormKit
+  - meson builddir-static -Dbuildtype=release -Dlibrary_type=static -Denable_examples=true --cmake-prefix-path $VCPKG_ROOT/installed/$VCPKG_DEFAULT_TRIPLET/ --prefix=/home/travis/build/Arthapz/StormKit
+script:
+  - ninja -C builddir-shared -j 3
+  - ninja -C builddir-static -j 3
+
+after_script:
+  - ninja -C builddir-shared install
+  - ninja -C builddir-static install
+  
+jobs:
   include:
-    - os: windows
-      env:
-          - MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
-          - VULKAN_SDK="C:\VulkanSDK\1.2.170.0"
-      before_install:
-          - choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
-          - choco install dotnetcore-sdk
-          - dotnet restore
-          - git clone https://github.com/microsoft/vcpkg
-          - ./vcpkg/bootstrap-vcpkg.bat
-
-      install:
-          - curl -L --show-error --output VulkanSDK.exe https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.170.0/windows/VulkanSDK-1.2.170.0-Installer.exe
-          - ./VulkanSDK.exe /SA
-          - ./vcpkg/vcpkg install --triplet x64-windows gli glm libpng libjpeg-turbo ranve-v3 ms-gsl vulkan-sdk
-
-      build:
-          - meson builddir 
-          - ninja -C builddir -j8
-
-      cache:
-         directories:
-              - $HOME/vcpkg
-              - $VULKAN_SDK
+    - name: Ubuntu 20.04 GCC 10
+      os: linux
+      dist: focal
