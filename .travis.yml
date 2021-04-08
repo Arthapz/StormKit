@@ -44,10 +44,16 @@ before_install:
 before_script:
   - ls
   - cd stormkit
-  - meson builddir -Dbuildtype=release -Dstormkit:library_type=static -Dstormkit:enable_examples=true --cmake-prefix-path $VCPKG_ROOT/installed/$VCPKG_DEFAULT_TRIPLET/
+  - meson builddir-shared -Dbuildtype=release -Dlibrary_type=shared -Denable_examples=false --cmake-prefix-path $VCPKG_ROOT/installed/$VCPKG_DEFAULT_TRIPLET/ --prefix=/home/travis/build/Arthapz/StormKit
+  - meson builddir-static -Dbuildtype=release -Dlibrary_type=static -Denable_examples=true --cmake-prefix-path $VCPKG_ROOT/installed/$VCPKG_DEFAULT_TRIPLET/ --prefix=/home/travis/build/Arthapz/StormKit
 script:
-  - ninja -C builddir -j 3
+  - ninja -C builddir-shared -j 3
+  - ninja -C builddir-static -j 3
 
+after_script:
+  - ninja -C builddir-shared install
+  - ninja -C builddir-static install
+  
 jobs:
   include:
     - name: Ubuntu 20.04 GCC 10
