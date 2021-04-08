@@ -33,19 +33,20 @@ static constexpr auto VERTEX_ATTRIBUTE_DESCRIPTIONS =
     std::array { render::VertexInputAttributeDescription { .location = 0,
                                                            .binding  = 0,
                                                            .format   = render::Format::Float3,
-                                                           .Int32   = offsetof(Vertex, position) },
+                                                           .Int32    = offsetof(Vertex, position) },
                  render::VertexInputAttributeDescription { .location = 1,
                                                            .binding  = 0,
                                                            .format   = render::Format::Float3,
-                                                           .Int32   = offsetof(Vertex, normal) },
+                                                           .Int32    = offsetof(Vertex, normal) },
                  render::VertexInputAttributeDescription { .location = 2,
                                                            .binding  = 0,
                                                            .format   = render::Format::Float2,
-                                                           .Int32   = offsetof(Vertex, uv) } };
+                                                           .Int32    = offsetof(Vertex, uv) } };
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-StormKitScene::StormKitScene(engine::Engine &engine) : QObject{nullptr}, engine::State { engine } {
+StormKitScene::StormKitScene(engine::Engine &engine)
+    : QObject { nullptr }, engine::State { engine } {
     const auto extent  = get<engine::Engine>().surface().extent();
     const auto extentf = extent.convertTo<core::Extentf>();
 
@@ -65,7 +66,7 @@ StormKitScene::~StormKitScene() = default;
 ////////////////////////////////////////
 ////////////////////////////////////////
 void StormKitScene::update(core::Secondf delta) {
-    if(!m_initialized) {
+    if (!m_initialized) {
         auto e               = m_world.makeEntity();
         auto &name_component = m_world.addComponent<engine::NameComponent>(e);
         name_component.name  = "MyMesh";
@@ -75,8 +76,9 @@ void StormKitScene::update(core::Secondf delta) {
         mesh_component.vertices.push_back(Vertex { .position = { 0.f, 0.f, 0.f } });
         mesh_component.vertices.push_back(Vertex { .position = { 0.f, 1.f, 0.f } });
         mesh_component.vertices.push_back(Vertex { .position = { 1.f, 1.f, 0.f } });
-        mesh_component.vertex_input_state.binding_descriptions         = BINDING_DESCRIPTIONS;
-        mesh_component.vertex_input_state.input_attribute_descriptions = VERTEX_ATTRIBUTE_DESCRIPTIONS;
+        mesh_component.vertex_input_state.binding_descriptions = BINDING_DESCRIPTIONS;
+        mesh_component.vertex_input_state.input_attribute_descriptions =
+            VERTEX_ATTRIBUTE_DESCRIPTIONS;
 
         m_world.addComponent<engine::MaterialComponent>(
             e,
@@ -88,7 +90,6 @@ void StormKitScene::update(core::Secondf delta) {
         emit newEntity(e);
 
         m_initialized = true;
-
     }
     m_world.step(delta);
 }

@@ -7,5 +7,7 @@
 namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto FPSCamera::feedInputs(FPSCamera::Inputs inputs) -> void { m_inputs = std::move(inputs); }
+    inline auto FPSCamera::feedInputs(FPSCamera::Inputs inputs) -> void {
+        m_inputs = std::move(inputs);
+    }
 } // namespace storm::engine

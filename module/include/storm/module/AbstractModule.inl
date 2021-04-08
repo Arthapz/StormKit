@@ -7,19 +7,19 @@
 namespace storm::module {
     /////////////////////////////////////
     /////////////////////////////////////
-     bool AbstractModule::isLoaded() const noexcept { return m_is_loaded; }
+    bool AbstractModule::isLoaded() const noexcept { return m_is_loaded; }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Signature>
-     std::function<Signature> AbstractModule::getFunc(std::string_view name) {
+    std::function<Signature> AbstractModule::getFunc(std::string_view name) {
         return std::function<Signature>(reinterpret_cast<Signature *>(_getFunc(name)));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Signature>
-     Signature AbstractModule::getCFunc(std::string_view name) {
+    Signature AbstractModule::getCFunc(std::string_view name) {
         return reinterpret_cast<Signature>(_getFunc(name));
     }
 
@@ -27,5 +27,5 @@ namespace storm::module {
     /////////////////////////////////////
     /////////////////////////////////////
     /////////////////////////////////////
-     const std::filesystem::path &AbstractModule::getFilepath() const { return m_filepath; }
+    const std::filesystem::path &AbstractModule::getFilepath() const { return m_filepath; }
 } // namespace storm::module

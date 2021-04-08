@@ -28,7 +28,7 @@ namespace storm::window::details {
         void setPositionOnWindow(core::Position2i position) noexcept override;
 
         ALLOCATE_HELPERS(Win32Mouse)
-     private:
+      private:
         Win32WindowConstPtr m_win32_window;
     };
-} // namespace storm::window
+} // namespace storm::window::details

@@ -14,7 +14,7 @@ namespace storm::core {
     };
 
     template<class... Ts>
-    overload(Ts...)->overload<Ts...>;
+    overload(Ts...) -> overload<Ts...>;
 
     struct nonesuch {
         ~nonesuch()                = delete;

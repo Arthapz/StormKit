@@ -7,27 +7,25 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-     void GraphicsPipeline::setRenderPass(const RenderPass &render_pass) noexcept {
+    void GraphicsPipeline::setRenderPass(const RenderPass &render_pass) noexcept {
         m_render_pass = core::makeConstObserver(render_pass);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     const RenderPass &GraphicsPipeline::renderPass() const noexcept {
-        return *m_render_pass;
-    }
+    const RenderPass &GraphicsPipeline::renderPass() const noexcept { return *m_render_pass; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     void GraphicsPipeline::setState(GraphicsPipelineState state) noexcept {
+    void GraphicsPipeline::setState(GraphicsPipelineState state) noexcept {
         m_state = std::move(state);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     GraphicsPipelineState &GraphicsPipeline::state() noexcept { return m_state; }
+    GraphicsPipelineState &GraphicsPipeline::state() noexcept { return m_state; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     const GraphicsPipelineState &GraphicsPipeline::state() const noexcept { return m_state; }
+    const GraphicsPipelineState &GraphicsPipeline::state() const noexcept { return m_state; }
 } // namespace storm::render

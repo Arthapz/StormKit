@@ -16,11 +16,11 @@
 
 namespace storm::render {
 #ifdef STORMKIT_OS_LINUX
-        static constexpr auto DEFAULT_VULKAN_LIB = std::string_view{"libvulkan.so"};
+    static constexpr auto DEFAULT_VULKAN_LIB = std::string_view { "libvulkan.so" };
 #elif defined(STORMKIT_OS_WINDOWS)
-        static constexpr auto DEFAULT_VULKAN_LIB = std::string_view{"vulkan-1.dll"};
+    static constexpr auto DEFAULT_VULKAN_LIB = std::string_view { "vulkan-1.dll" };
 #elif defined(STORMKIT_OS_APPLE)
-        static constexpr auto DEFAULT_VULKAN_LIB = std::string_view{"libvulkan.dylib"};
+    static constexpr auto DEFAULT_VULKAN_LIB = std::string_view { "libvulkan.dylib" };
 #endif
 
     class STORMKIT_PUBLIC DynamicLoader: public core::NonCopyable {

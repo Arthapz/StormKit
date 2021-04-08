@@ -14,41 +14,41 @@
 #include <storm/render/core/Enums.hpp>
 
 namespace storm::render {
-struct AttachmentDescription {
-    PixelFormat format;
-    SampleCountFlag samples = SampleCountFlag::C1_BIT;
+    struct AttachmentDescription {
+        PixelFormat format;
+        SampleCountFlag samples = SampleCountFlag::C1_BIT;
 
-    AttachmentLoadOperation load_op   = AttachmentLoadOperation::Clear;
-    AttachmentStoreOperation store_op = AttachmentStoreOperation::Store;
+        AttachmentLoadOperation load_op   = AttachmentLoadOperation::Clear;
+        AttachmentStoreOperation store_op = AttachmentStoreOperation::Store;
 
-    AttachmentLoadOperation stencil_load_op   = AttachmentLoadOperation::Dont_Care;
-    AttachmentStoreOperation stencil_store_op = AttachmentStoreOperation::Dont_Care;
+        AttachmentLoadOperation stencil_load_op   = AttachmentLoadOperation::Dont_Care;
+        AttachmentStoreOperation stencil_store_op = AttachmentStoreOperation::Dont_Care;
 
-    TextureLayout source_layout      = TextureLayout::Undefined;
-    TextureLayout destination_layout = TextureLayout::Present_Src;
+        TextureLayout source_layout      = TextureLayout::Undefined;
+        TextureLayout destination_layout = TextureLayout::Present_Src;
 
-    bool resolve = false;
-};
-using AttachmentDescriptions = std::vector<AttachmentDescription>;
-
-struct Subpass {
-    struct Ref {
-        core::UInt32 attachment_id;
-
-        TextureLayout layout = TextureLayout::Color_Attachment_Optimal;
+        bool resolve = false;
     };
+    using AttachmentDescriptions = std::vector<AttachmentDescription>;
 
-    PipelineBindPoint bind_point;
-    std::vector<Ref> attachment_refs;
-};
-using Subpasses = std::vector<Subpass>;
+    struct Subpass {
+        struct Ref {
+            core::UInt32 attachment_id;
 
-struct RenderPassDescription {
-    AttachmentDescriptions attachments;
-    Subpasses subpasses;
+            TextureLayout layout = TextureLayout::Color_Attachment_Optimal;
+        };
 
-    bool isCompatible(const RenderPassDescription &description) const noexcept;
- };
+        PipelineBindPoint bind_point;
+        std::vector<Ref> attachment_refs;
+    };
+    using Subpasses = std::vector<Subpass>;
+
+    struct RenderPassDescription {
+        AttachmentDescriptions attachments;
+        Subpasses subpasses;
+
+        bool isCompatible(const RenderPassDescription &description) const noexcept;
+    };
 } // namespace storm::render
 
 HASH_FUNC(storm::render::AttachmentDescription)

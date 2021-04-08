@@ -7,44 +7,44 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-     QueueFlag Queue::type() const noexcept { return m_queue_flag; }
+    QueueFlag Queue::type() const noexcept { return m_queue_flag; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     const Device &Queue::device() const noexcept { return *m_device; }
+    const Device &Queue::device() const noexcept { return *m_device; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt32 Queue::familyIndex() const noexcept { return m_family_index; }
+    core::UInt32 Queue::familyIndex() const noexcept { return m_family_index; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::Queue Queue::vkQueue() const noexcept {
+    vk::Queue Queue::vkQueue() const noexcept {
         STORMKIT_EXPECTS(m_vk_queue);
         return m_vk_queue;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     Queue::operator vk::Queue() const noexcept {
+    Queue::operator vk::Queue() const noexcept {
         STORMKIT_EXPECTS(m_vk_queue);
         return m_vk_queue;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::Queue Queue::vkHandle() const noexcept { return vkQueue(); }
+    vk::Queue Queue::vkHandle() const noexcept { return vkQueue(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::CommandPool Queue::vkCommandPool() const noexcept {
+    vk::CommandPool Queue::vkCommandPool() const noexcept {
         STORMKIT_EXPECTS(m_vk_command_pool);
         return *m_vk_command_pool;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt64 Queue::vkDebugHandle() const noexcept {
+    core::UInt64 Queue::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkQueue_T *());
     }
 } // namespace storm::render

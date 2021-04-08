@@ -69,9 +69,7 @@ auto App::doInitWindow() -> void {
     m_event_handler = std::make_unique<window::EventHandler>(*m_window);
 
     m_event_handler->addCallback(window::EventType::Closed,
-                                 [this]([[maybe_unused]] const auto &event) {
-                                     m_window->close();
-                                 });
+                                 [this]([[maybe_unused]] const auto &event) { m_window->close(); });
     m_event_handler->addCallback(window::EventType::Resized,
                                  [this]([[maybe_unused]] const auto &event) {
                                      m_engine->recreateSwapchain();

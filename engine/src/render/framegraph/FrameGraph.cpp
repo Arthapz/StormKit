@@ -9,7 +9,6 @@
 #include <storm/engine/render/framegraph/FrameGraphNode.hpp>
 #include <storm/engine/render/framegraph/FrameGraphResource.hpp>
 
-
 using namespace storm;
 using namespace storm::engine;
 

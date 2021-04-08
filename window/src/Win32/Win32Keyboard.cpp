@@ -1,6 +1,6 @@
 #include "Win32Keyboard.hpp"
-#include "Win32Window.hpp"
 #include "Utils.hpp"
+#include "Win32Window.hpp"
 
 using namespace storm;
 using namespace storm::window;

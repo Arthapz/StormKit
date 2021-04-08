@@ -10,9 +10,9 @@
 
 #import "WindowImpl.hpp"
 
-@interface AppDelegate: UIResponder <UIApplicationDelegate>
+@interface AppDelegate: UIResponder<UIApplicationDelegate>
 
-@property(nonatomic) storm::window::WindowImpl *window;
+@property (nonatomic) storm::window::WindowImpl *window;
 
 @end
 

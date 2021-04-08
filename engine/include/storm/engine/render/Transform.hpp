@@ -94,10 +94,10 @@ namespace storm::engine {
         core::Vector3f m_orientation_euler = core::Vector3f { 0.f, 0.f, 0.f };
         core::Vector3f m_scale             = core::Vector3f { 1.f, 1.f, 1.f };
 
-        mutable bool m_orientation_dirty         = true;
-        mutable bool m_dirty                     = true;
+        mutable bool m_orientation_dirty = true;
+        mutable bool m_dirty             = true;
 
-        mutable core::Quaternion m_orientation   = core::Quaternion { 0.f, 0.f, 0.f, 0.f };
+        mutable core::Quaternion m_orientation = core::Quaternion { 0.f, 0.f, 0.f, 0.f };
         mutable Data m_data;
     };
 } // namespace storm::engine

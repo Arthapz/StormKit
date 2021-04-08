@@ -38,7 +38,8 @@ namespace storm::engine {
             requestDescriptorSetLayout(render::DescriptorSetLayoutBindingConstSpan bindings);
 
         render::DescriptorSet &requestDescriptorSet(const render::DescriptorSetLayout &layout,
-                                                    render::DescriptorConstSpan descriptors, bool force_update = false);
+                                                    render::DescriptorConstSpan descriptors,
+                                                    bool force_update = false);
 
         render::Shader &requestShader(render::ShaderStage stage, core::span<const core::Byte> data);
         render::Shader &requestShader(render::ShaderStage stage,

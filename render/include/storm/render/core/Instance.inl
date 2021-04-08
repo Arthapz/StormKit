@@ -7,23 +7,23 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-     const DynamicLoader &Instance::loader() const noexcept { return m_loader; }
+    const DynamicLoader &Instance::loader() const noexcept { return m_loader; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::span<const PhysicalDeviceOwnedPtr> Instance::physicalDevices() {
+    core::span<const PhysicalDeviceOwnedPtr> Instance::physicalDevices() {
         return m_physical_devices;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::Instance Instance::vkInstance() const noexcept {
-         auto instance = vk::Instance{nullptr};
+    vk::Instance Instance::vkInstance() const noexcept {
+        auto instance = vk::Instance { nullptr };
 
-         if(std::holds_alternative<vk::UniqueInstance>(m_vk_instance))
-             instance = *std::get<vk::UniqueInstance>(m_vk_instance);
-         else
-             instance = std::get<vk::Instance>(m_vk_instance);
+        if (std::holds_alternative<vk::UniqueInstance>(m_vk_instance))
+            instance = *std::get<vk::UniqueInstance>(m_vk_instance);
+        else
+            instance = std::get<vk::Instance>(m_vk_instance);
 
         STORMKIT_EXPECTS(instance);
 
@@ -32,17 +32,15 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Instance::operator vk::Instance() const noexcept {
-         return vkInstance();
-    }
+    Instance::operator vk::Instance() const noexcept { return vkInstance(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::Instance Instance::vkHandle() const noexcept { return vkInstance(); }
+    vk::Instance Instance::vkHandle() const noexcept { return vkInstance(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt64 Instance::vkDebugHandle() const noexcept {
+    core::UInt64 Instance::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkInstance_T *());
     }
 } // namespace storm::render

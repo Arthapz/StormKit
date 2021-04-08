@@ -37,7 +37,9 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Camera::rotation() const noexcept -> const core::Vector3f & { return m_orientation; }
+    inline auto Camera::rotation() const noexcept -> const core::Vector3f & {
+        return m_orientation;
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -47,7 +49,9 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Camera::moveSpeed() const noexcept -> const core::Vector3f & { return m_move_speed; }
+    inline auto Camera::moveSpeed() const noexcept -> const core::Vector3f & {
+        return m_move_speed;
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -57,13 +61,13 @@ namespace storm::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Camera::rotationSpeed() const noexcept -> const core::Vector3f & { return m_rotation_speed; }
+    inline auto Camera::rotationSpeed() const noexcept -> const core::Vector3f & {
+        return m_rotation_speed;
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Camera::dirty() const noexcept -> bool {
-        return m_dirty;
-    }
+    inline auto Camera::dirty() const noexcept -> bool { return m_dirty; }
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto Camera::data() const noexcept -> const Data & {

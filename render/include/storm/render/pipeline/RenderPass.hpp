@@ -4,7 +4,6 @@
 
 #pragma once
 
-
 /////////// - StormKit::core - ///////////
 #include <storm/core/Math.hpp>
 #include <storm/core/NonCopyable.hpp>
@@ -33,9 +32,8 @@ namespace storm::render {
 
         Framebuffer createFramebuffer(core::Extentu extent,
                                       TextureViewConstPtrArray attachments) const;
-        FramebufferOwnedPtr
-            createFramebufferPtr(core::Extentu extent,
-                                 TextureViewConstPtrArray attachments) const;
+        FramebufferOwnedPtr createFramebufferPtr(core::Extentu extent,
+                                                 TextureViewConstPtrArray attachments) const;
 
         bool isCompatible(const RenderPass &render_pass) const noexcept;
 

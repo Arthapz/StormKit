@@ -11,8 +11,8 @@
 #include <storm/render/Fwd.hpp>
 #include <storm/render/core/Surface.hpp>
 
-#include "StormKitScene.hpp"
 #include "EntityModel.hpp"
+#include "StormKitScene.hpp"
 
 class StormKitTextureNode;
 class EntityModel;
@@ -20,8 +20,8 @@ class StormKitView: public QQuickItem {
     Q_OBJECT
 
     Q_PROPERTY(bool initialized MEMBER m_initialized NOTIFY initialized)
-    Q_PROPERTY(EntityModel* entities READ entities CONSTANT)
-    Q_PROPERTY(StormKitScene* scene READ scene CONSTANT)
+    Q_PROPERTY(EntityModel *entities READ entities CONSTANT)
+    Q_PROPERTY(StormKitScene *scene READ scene CONSTANT)
 
     QML_ELEMENT
   public:

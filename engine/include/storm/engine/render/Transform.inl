@@ -5,7 +5,9 @@
 namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Transform::position() const noexcept -> const core::Vector3f & { return m_position; }
+    inline auto Transform::position() const noexcept -> const core::Vector3f & {
+        return m_position;
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////

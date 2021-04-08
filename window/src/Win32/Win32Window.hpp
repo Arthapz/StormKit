@@ -19,17 +19,13 @@ namespace storm::window::details {
     class STORMKIT_PRIVATE Win32Window final: public AbstractWindow {
       public:
         Win32Window();
-        Win32Window(std::string title,
-                   const VideoSettings &settings,
-                   WindowStyle style);
+        Win32Window(std::string title, const VideoSettings &settings, WindowStyle style);
         ~Win32Window() override;
 
         Win32Window(Win32Window &&) noexcept;
         Win32Window &operator=(Win32Window &&) noexcept;
 
-        void create(std::string title,
-                    const VideoSettings &settings,
-                    WindowStyle style) override;
+        void create(std::string title, const VideoSettings &settings, WindowStyle style) override;
         void close() noexcept override;
 
         [[nodiscard]] bool pollEvent(storm::window::Event &event) noexcept override;
@@ -67,8 +63,8 @@ namespace storm::window::details {
         bool m_mouse_inside  = false;
 
         mutable core::Extentu m_current_size = { 0u, 0u };
-        core::Extentu m_last_size = { 0u, 0u };
+        core::Extentu m_last_size            = { 0u, 0u };
 
         HWND m_window_handle = nullptr;
     };
-} // namespace storm::window
+} // namespace storm::window::details

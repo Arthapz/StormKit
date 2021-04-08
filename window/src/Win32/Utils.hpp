@@ -14,4 +14,4 @@ namespace storm::window::details {
     STORMKIT_PRIVATE Key win32KeyToStormKitKey(WPARAM key, LPARAM flags) noexcept;
     STORMKIT_PRIVATE int stormKitKeyToWin32(Key key) noexcept;
     STORMKIT_PRIVATE char win32KeyToChar(WPARAM key, LPARAM flags) noexcept;
-}
+} // namespace storm::window::details

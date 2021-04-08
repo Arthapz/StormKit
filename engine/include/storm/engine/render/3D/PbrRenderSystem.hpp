@@ -22,9 +22,9 @@
 #include <storm/engine/Fwd.hpp>
 
 #include <storm/engine/render/Camera.hpp>
+#include <storm/engine/render/RenderQueue.hpp>
 #include <storm/engine/render/RenderSystem.hpp>
 #include <storm/engine/render/Transform.hpp>
-#include <storm/engine/render/RenderQueue.hpp>
 
 namespace storm::engine {
     class STORMKIT_PUBLIC PbrRenderSystem: public RenderSystem {
@@ -41,11 +41,12 @@ namespace storm::engine {
         void update(core::Secondf delta) override;
 
         void resetCamera() override;
+
       protected:
         void setupFrameGraph(FrameGraph &frame_graph, FrameGraphResourceID backbuffer) override;
 
       private:
-        static constexpr auto UPDATE_FREQUENCY   = 1.f / 60.f;
+        static constexpr auto UPDATE_FREQUENCY = 1.f / 60.f;
 
         void updateSceneGlobalBuffer(FrameGraph &frame_graph);
 

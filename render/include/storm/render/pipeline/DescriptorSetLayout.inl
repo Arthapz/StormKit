@@ -7,7 +7,7 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-     void DescriptorSetLayout::addBinding(DescriptorSetLayoutBinding binding) {
+    void DescriptorSetLayout::addBinding(DescriptorSetLayoutBinding binding) {
         m_bindings.emplace_back(std::move(binding));
 
         updateHash();
@@ -15,43 +15,43 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::Hash64 DescriptorSetLayout::hash() const noexcept { return m_hash; }
+    core::Hash64 DescriptorSetLayout::hash() const noexcept { return m_hash; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     storm::core::span<const DescriptorSetLayoutBinding> DescriptorSetLayout::bindings() const
-        noexcept {
+    storm::core::span<const DescriptorSetLayoutBinding>
+        DescriptorSetLayout::bindings() const noexcept {
         return m_bindings;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::DescriptorSetLayout DescriptorSetLayout::vkDescriptorSetLayout() const noexcept {
+    vk::DescriptorSetLayout DescriptorSetLayout::vkDescriptorSetLayout() const noexcept {
         STORMKIT_EXPECTS(m_vk_descriptor_set_layout);
         return *m_vk_descriptor_set_layout;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     DescriptorSetLayout::operator vk::DescriptorSetLayout() const noexcept {
+    DescriptorSetLayout::operator vk::DescriptorSetLayout() const noexcept {
         return vkDescriptorSetLayout();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::DescriptorSetLayout DescriptorSetLayout::vkHandle() const noexcept {
+    vk::DescriptorSetLayout DescriptorSetLayout::vkHandle() const noexcept {
         return vkDescriptorSetLayout();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     bool DescriptorSetLayout::operator==(const DescriptorSetLayout &second) {
+    bool DescriptorSetLayout::operator==(const DescriptorSetLayout &second) {
         return m_hash == second.hash();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt64 DescriptorSetLayout::vkDebugHandle() const noexcept {
+    core::UInt64 DescriptorSetLayout::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkDescriptorSetLayout_T *());
     }
 } // namespace storm::render

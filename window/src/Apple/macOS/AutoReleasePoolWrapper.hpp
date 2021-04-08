@@ -10,8 +10,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-        STORMKIT_PRIVATE void ensureThreadHasPool() noexcept;
-        STORMKIT_PRIVATE void drainThreadPool() noexcept;
+STORMKIT_PRIVATE void ensureThreadHasPool() noexcept;
+STORMKIT_PRIVATE void drainThreadPool() noexcept;
 #ifdef __cplusplus
 }
 #endif

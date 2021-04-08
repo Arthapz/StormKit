@@ -4,7 +4,6 @@
 
 #pragma once
 
-
 #include <QtQuick/QSGSimpleTextureNode>
 #include <QtQuick/QSGTextureProvider>
 

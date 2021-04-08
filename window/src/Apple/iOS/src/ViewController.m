@@ -1,25 +1,25 @@
 #import "ViewController.h"
 
-@interface ViewController()
+@interface ViewController ()
 
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
-	[super viewDidLoad];
+    [super viewDidLoad];
 
-	NSLog(@"VIEW DID LOAD");
+    NSLog(@"VIEW DID LOAD");
 
-	self.view.backgroundColor = UIColor.blueColor;
+    self.view.backgroundColor = UIColor.blueColor;
 }
 
 - (void)didReceiveMemoryWarning {
-	[super didReceiveMemoryWarning];
+    [super didReceiveMemoryWarning];
 }
 
 - (BOOL)prefersStatusBarHidden {
-	return self.hideStatusBar;
+    return self.hideStatusBar;
 }
 
 @end

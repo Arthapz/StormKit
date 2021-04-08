@@ -30,7 +30,7 @@ namespace storm::render {
         PipelineCache &operator=(PipelineCache &&);
 
         GraphicsPipeline &getPipeline(const GraphicsPipelineState &state,
-                                              const RenderPass &render_pass);
+                                      const RenderPass &render_pass);
         ComputePipeline &getPipeline(const ComputePipelineState &state);
 
         inline vk::PipelineCache vkPipelineCache() const noexcept;
@@ -39,7 +39,8 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
-        bool has(const GraphicsPipelineState &state, const RenderPassDescription &description) const noexcept;
+        bool has(const GraphicsPipelineState &state,
+                 const RenderPassDescription &description) const noexcept;
         bool has(const ComputePipelineState &state) const noexcept;
 
         void createNewPipelineCache();
@@ -66,14 +67,15 @@ namespace storm::render {
             } uuid;
         } m_serialized;
 
-
         DeviceConstPtr m_device;
 
         vk::UniquePipelineCache m_vk_pipeline_cache;
 
         std::filesystem::path m_path;
 
-        core::HashMap<GraphicsPipelineState, core::HashMap<RenderPassDescription, GraphicsPipelineOwnedPtr>> m_graphics_pipelines;
+        core::HashMap<GraphicsPipelineState,
+                      core::HashMap<RenderPassDescription, GraphicsPipelineOwnedPtr>>
+            m_graphics_pipelines;
         core::HashMap<ComputePipelineState, ComputePipelineOwnedPtr> m_compute_pipelines;
     };
 } // namespace storm::render

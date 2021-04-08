@@ -4,7 +4,6 @@
 using namespace storm;
 using namespace storm::engine;
 
-
 ////////////////////////////////////////
 ////////////////////////////////////////
 Material::Material() noexcept = default;
@@ -19,4 +18,4 @@ Material::Material(Material &&) noexcept = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-auto Material::operator=(Material &&) noexcept -> Material& = default;
+auto Material::operator=(Material &&) noexcept -> Material & = default;

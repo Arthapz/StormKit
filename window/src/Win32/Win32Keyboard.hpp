@@ -28,4 +28,4 @@ namespace storm::window::details {
 
         ALLOCATE_HELPERS(Win32Keyboard)
     };
-} // namespace storm::window
+} // namespace storm::window::details

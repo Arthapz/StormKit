@@ -6,7 +6,5 @@
 namespace storm::engine {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto PbrRenderSystem::resetCamera() -> void {
-        setCamera(m_default_camera);
-    }
+    inline auto PbrRenderSystem::resetCamera() -> void { setCamera(m_default_camera); }
 } // namespace storm::engine

@@ -20,7 +20,7 @@ namespace storm::engine {
         enum class Type { Perspective, Orthographic };
 
         struct alignas(16) Data {
-            core::Vector4f position  = core::Vector4f { 0.f, 0.f, 0.f, 0.f };
+            core::Vector4f position = core::Vector4f { 0.f, 0.f, 0.f, 0.f };
             core::Matrix projection = core::Matrix { 1.f };
             core::Matrix view       = core::Matrix { 1.f };
         };

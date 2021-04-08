@@ -16,7 +16,7 @@
 namespace storm::image {
 #ifndef STORMKIT_IMAGE_NO_LOGGING
     template<typename... Args>
-    inline void elog(Args &&... args) {
+    inline void elog(Args &&...args) {
         static constexpr auto LOG_MODULE = log::makeModule("image");
 
         log::LogHandler::elog(LOG_MODULE, std::forward<Args>(args)...);

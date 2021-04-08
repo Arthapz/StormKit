@@ -34,4 +34,3 @@ class StormKitScene: public QObject, public storm::engine::State {
 
     bool m_initialized = false;
 };
-

@@ -120,7 +120,8 @@ render::DescriptorSetLayout &ResourceCache::requestDescriptorSetLayout(
 /////////////////////////////////////
 render::DescriptorSet &
     ResourceCache::requestDescriptorSet(const render::DescriptorSetLayout &layout,
-                                        render::DescriptorConstSpan descriptors, bool force_update) {
+                                        render::DescriptorConstSpan descriptors,
+                                        bool force_update) {
     constexpr auto maker = [](render::DescriptorPool &pool,
                               const render::DescriptorSetLayout &layout,
                               render::DescriptorConstSpan descriptors) {

@@ -7,13 +7,13 @@
 namespace storm::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
-     void Logger::setLogLevel(Severity log_level) { m_log_level = log_level; }
+    void Logger::setLogLevel(Severity log_level) { m_log_level = log_level; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-     const LogClock::time_point &Logger::startTime() const noexcept { return m_start_time; }
+    const LogClock::time_point &Logger::startTime() const noexcept { return m_start_time; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-     const Severity &Logger::logLevel() const noexcept { return m_log_level; }
+    const Severity &Logger::logLevel() const noexcept { return m_log_level; }
 } // namespace storm::log

@@ -13,7 +13,8 @@ class ComponentReflector: public QObject {
     Q_OBJECT
 
     Q_PROPERTY(StormKitScene *scene READ scene WRITE setScene NOTIFY sceneChanged)
-    Q_PROPERTY(quint32 current_entity READ currentEntity WRITE setCurrentEntity NOTIFY currentEntityChanged)
+    Q_PROPERTY(quint32 current_entity READ currentEntity WRITE setCurrentEntity NOTIFY
+                   currentEntityChanged)
     Q_ENUMS(ComponentType)
 
   public:

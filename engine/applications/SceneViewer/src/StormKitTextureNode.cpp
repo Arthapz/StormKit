@@ -4,7 +4,6 @@
 
 #include "StormKitTextureNode.hpp"
 
-
 #include <storm/log/LogHandler.hpp>
 
 #include <storm/render/core/CommandBuffer.hpp>
@@ -19,16 +18,16 @@
 
 #include <QtQuick/QQuickItem>
 #include <QtQuick/QQuickWindow>
-#include <QtQuick/QSGTextureProvider>
 #include <QtQuick/QSGSimpleTextureNode>
+#include <QtQuick/QSGTextureProvider>
 
 #include <QVulkanFunctions>
 #include <QVulkanInstance>
 
 using namespace storm;
 
-StormKitTextureNode::StormKitTextureNode(QQuickItem *item, engine::Engine &engine) : m_window { item->window() }, m_engine{&engine} {
-
+StormKitTextureNode::StormKitTextureNode(QQuickItem *item, engine::Engine &engine)
+    : m_window { item->window() }, m_engine { &engine } {
     connect(m_window, &QQuickWindow::beforeRendering, this, &StormKitTextureNode::render);
 }
 
@@ -40,7 +39,11 @@ void StormKitTextureNode::sync() {
 
         auto tex = m_engine->surface().textures()[current].vkHandle();
 
-        auto *wrapper = QNativeInterface::QSGVulkanTexture::fromNative(tex, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, m_size);
+        auto *wrapper =
+            QNativeInterface::QSGVulkanTexture::fromNative(tex,
+                                                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                                           m_window,
+                                                           m_size);
         setTexture(wrapper);
     }
 }

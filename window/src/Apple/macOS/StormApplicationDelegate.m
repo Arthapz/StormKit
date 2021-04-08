@@ -9,14 +9,14 @@
 
 /////////////////////////////////////
 /////////////////////////////////////
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender {
-	return NSTerminateCancel;
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+    return NSTerminateCancel;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)theApplication {
-	return YES;
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication {
+    return YES;
 }
 
 @end

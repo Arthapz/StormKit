@@ -21,7 +21,8 @@ FrameGraphBuilder::FrameGraphBuilder(FrameGraphBuilder &&drawable) noexcept = de
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-auto FrameGraphBuilder::operator=(FrameGraphBuilder &&drawable) noexcept -> FrameGraphBuilder & = default;
+auto FrameGraphBuilder::operator=(FrameGraphBuilder &&drawable) noexcept
+    -> FrameGraphBuilder &      = default;
 
 /////////////////////////////////////
 /////////////////////////////////////

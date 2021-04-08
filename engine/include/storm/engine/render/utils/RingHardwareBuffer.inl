@@ -18,7 +18,9 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline auto RingHardwareBuffer::buffer() const noexcept -> const render::HardwareBuffer &{ return *m_buffer; }
+    inline auto RingHardwareBuffer::buffer() const noexcept -> const render::HardwareBuffer & {
+        return *m_buffer;
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -26,13 +28,19 @@ namespace storm::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline auto RingHardwareBuffer::elementSize() const noexcept -> core::ArraySize { return m_element_size; }
+    inline auto RingHardwareBuffer::elementSize() const noexcept -> core::ArraySize {
+        return m_element_size;
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline auto RingHardwareBuffer::size() const noexcept -> core::ArraySize { return m_buffer->size(); }
+    inline auto RingHardwareBuffer::size() const noexcept -> core::ArraySize {
+        return m_buffer->size();
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline auto RingHardwareBuffer::currentOffset() const noexcept -> core::Int32 { return m_offset; }
+    inline auto RingHardwareBuffer::currentOffset() const noexcept -> core::Int32 {
+        return m_offset;
+    }
 } // namespace storm::engine

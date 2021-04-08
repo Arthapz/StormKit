@@ -7,22 +7,22 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::PipelineCache PipelineCache::vkPipelineCache() const noexcept {
+    vk::PipelineCache PipelineCache::vkPipelineCache() const noexcept {
         STORMKIT_EXPECTS(m_vk_pipeline_cache);
         return *m_vk_pipeline_cache;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     PipelineCache::operator vk::PipelineCache() const noexcept { return vkPipelineCache(); }
+    PipelineCache::operator vk::PipelineCache() const noexcept { return vkPipelineCache(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::PipelineCache PipelineCache::vkHandle() const noexcept { return vkPipelineCache(); }
+    vk::PipelineCache PipelineCache::vkHandle() const noexcept { return vkPipelineCache(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt64 PipelineCache::vkDebugHandle() const noexcept {
+    core::UInt64 PipelineCache::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkPipelineCache_T *());
     }
 } // namespace storm::render

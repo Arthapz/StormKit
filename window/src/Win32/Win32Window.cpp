@@ -60,9 +60,8 @@ auto Win32Window::operator=(Win32Window &&) noexcept -> Win32Window & = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto Win32Window::create(std::string title,
-                         const VideoSettings &settings,
-                         WindowStyle style) -> void {
+auto Win32Window::create(std::string title, const VideoSettings &settings, WindowStyle style)
+    -> void {
     registerWindowClass();
 
     auto _style     = DWORD { WS_BORDER };
@@ -132,7 +131,7 @@ auto Win32Window::close() noexcept -> void {
 /////////////////////////////////////
 /////////////////////////////////////
 auto Win32Window::pollEvent(Event &event) noexcept -> bool {
-    auto message = MSG{};
+    auto message = MSG {};
     ZeroMemory(&message, sizeof(MSG));
 
     while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
@@ -146,7 +145,7 @@ auto Win32Window::pollEvent(Event &event) noexcept -> bool {
 /////////////////////////////////////
 /////////////////////////////////////
 auto Win32Window::waitEvent(Event &event) noexcept -> bool {
-    auto message = MSG{};
+    auto message = MSG {};
     ZeroMemory(&message, sizeof(MSG));
 
     auto has_message = WaitMessage();
@@ -169,8 +168,10 @@ auto Win32Window::setTitle(std::string title) noexcept -> void {
 /////////////////////////////////////
 /////////////////////////////////////
 auto Win32Window::setVideoSettings(const storm::window::VideoSettings &settings) noexcept -> void {
-    auto rectangle =
-        RECT { 0, 0, static_cast<long>(settings.size.width), static_cast<long>(settings.size.height) };
+    auto rectangle = RECT { 0,
+                            0,
+                            static_cast<long>(settings.size.width),
+                            static_cast<long>(settings.size.height) };
 
     AdjustWindowRect(&rectangle, GetWindowLongW(m_window_handle, GWL_STYLE), false);
     auto width  = rectangle.right - rectangle.left;
@@ -182,12 +183,12 @@ auto Win32Window::setVideoSettings(const storm::window::VideoSettings &settings)
 /////////////////////////////////////
 /////////////////////////////////////
 auto Win32Window::size() const noexcept -> const core::Extentu & {
-    auto rect = RECT{};
+    auto rect = RECT {};
     ZeroMemory(&rect, sizeof(RECT));
 
     GetClientRect(m_window_handle, &rect);
 
-    m_current_size.width = rect.right - rect.left;
+    m_current_size.width  = rect.right - rect.left;
     m_current_size.height = rect.bottom - rect.top;
 
     return m_current_size;
@@ -224,10 +225,9 @@ auto Win32Window::getDesktopModes() -> std::vector<VideoSettings> {
         dm.dmSize = sizeof(dm);
 
         for (auto i = 0; EnumDisplaySettings(nullptr, i, &dm) != 0; ++i) {
-            auto video_setting = VideoSettings {
-                .size = { gsl::narrow_cast<core::UInt16>(dm.dmPelsWidth),
-                          gsl::narrow_cast<core::UInt16>(dm.dmPelsHeight) }
-            };
+            auto video_setting =
+                VideoSettings { .size = { gsl::narrow_cast<core::UInt16>(dm.dmPelsWidth),
+                                          gsl::narrow_cast<core::UInt16>(dm.dmPelsHeight) } };
 
             video_settings.emplace_back(video_setting);
         }
@@ -256,16 +256,16 @@ auto Win32Window::getDesktopFullscreenSize() -> VideoSettings {
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto
-    Win32Window::globalOnEvent(HWND handle, UINT message, WPARAM w_param, LPARAM l_param) -> LRESULT {
+auto Win32Window::globalOnEvent(HWND handle, UINT message, WPARAM w_param, LPARAM l_param)
+    -> LRESULT {
     if (message == WM_CREATE) {
         auto lp_create_params = reinterpret_cast<CREATESTRUCT *>(l_param)->lpCreateParams;
 
         SetWindowLongPtrW(handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(lp_create_params));
     }
 
-    auto window =
-        handle ? reinterpret_cast<Win32Window *>(GetWindowLongPtrW(handle, GWLP_USERDATA)) : nullptr;
+    auto window = handle ? reinterpret_cast<Win32Window *>(GetWindowLongPtrW(handle, GWLP_USERDATA))
+                         : nullptr;
     if (window) { window->processEvents(message, w_param, l_param); }
 
     if (message == WM_CLOSE) return 0;
@@ -277,7 +277,7 @@ auto
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto Win32Window::registerWindowClass() -> void{
+auto Win32Window::registerWindowClass() -> void {
     auto window_class = WNDCLASSW {};
     std::memset(&window_class, 0, sizeof(window_class));
 
@@ -290,7 +290,7 @@ auto Win32Window::registerWindowClass() -> void{
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto Win32Window::processEvents(UINT message, WPARAM w_param, LPARAM l_param) -> void{
+auto Win32Window::processEvents(UINT message, WPARAM w_param, LPARAM l_param) -> void {
     if (!m_window_handle) return;
 
     switch (message) {
@@ -412,7 +412,7 @@ auto Win32Window::processEvents(UINT message, WPARAM w_param, LPARAM l_param) ->
         }
         case WM_KEYDOWN: [[fallthrough]];
         case WM_SYSKEYDOWN: {
-            auto key = win32KeyToStormKitKey(w_param, l_param);
+            auto key        = win32KeyToStormKitKey(w_param, l_param);
             auto charactere = win32KeyToChar(w_param, l_param);
 
             keyDownEvent(key, charactere);
@@ -420,7 +420,7 @@ auto Win32Window::processEvents(UINT message, WPARAM w_param, LPARAM l_param) ->
         }
         case WM_KEYUP: [[fallthrough]];
         case WM_SYSKEYUP: {
-            auto key = win32KeyToStormKitKey(w_param, l_param);
+            auto key        = win32KeyToStormKitKey(w_param, l_param);
             auto charactere = win32KeyToChar(w_param, l_param);
 
             keyUpEvent(key, charactere);

@@ -7,25 +7,25 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::Fence Fence::vkFence() const noexcept {
+    vk::Fence Fence::vkFence() const noexcept {
         STORMKIT_EXPECTS(m_vk_fence);
         return *m_vk_fence;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     Fence::operator vk::Fence() const noexcept {
+    Fence::operator vk::Fence() const noexcept {
         STORMKIT_EXPECTS(m_vk_fence);
         return *m_vk_fence;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::Fence Fence::vkHandle() const noexcept { return vkFence(); }
+    vk::Fence Fence::vkHandle() const noexcept { return vkFence(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt64 Fence::vkDebugHandle() const noexcept {
+    core::UInt64 Fence::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkFence_T *());
     }
 } // namespace storm::render

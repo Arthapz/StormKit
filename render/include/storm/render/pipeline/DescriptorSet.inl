@@ -7,28 +7,26 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-     core::span<const DescriptorType> DescriptorSet::types() const noexcept {
-        return m_types;
-    }
+    core::span<const DescriptorType> DescriptorSet::types() const noexcept { return m_types; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::DescriptorSet DescriptorSet::vkDescriptorSet() const noexcept {
+    vk::DescriptorSet DescriptorSet::vkDescriptorSet() const noexcept {
         STORMKIT_EXPECTS(m_vk_descriptor_set);
         return *m_vk_descriptor_set;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     DescriptorSet::operator vk::DescriptorSet() const noexcept { return vkDescriptorSet(); }
+    DescriptorSet::operator vk::DescriptorSet() const noexcept { return vkDescriptorSet(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     vk::DescriptorSet DescriptorSet::vkHandle() const noexcept { return vkDescriptorSet(); }
+    vk::DescriptorSet DescriptorSet::vkHandle() const noexcept { return vkDescriptorSet(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt64 DescriptorSet::vkDebugHandle() const noexcept {
+    core::UInt64 DescriptorSet::vkDebugHandle() const noexcept {
         return reinterpret_cast<core::UInt64>(vkHandle().operator VkDescriptorSet_T *());
     }
 } // namespace storm::render

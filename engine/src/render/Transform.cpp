@@ -52,7 +52,7 @@ auto Transform::recomputeMatrices() const noexcept -> void {
     const auto rotation_matrix    = core::Matrix { quat };
     const auto scale_matrix       = core::scale(core::Matrix { 1.f }, m_scale);
 
-    m_data.transform = scale_matrix * rotation_matrix * translation_matrix;
+    m_data.transform     = scale_matrix * rotation_matrix * translation_matrix;
     m_data.inv_transform = core::inverse(m_data.inv_transform);
 }
 

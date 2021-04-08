@@ -10,11 +10,11 @@
 
 #include <storm/engine/Engine.hpp>
 
+#include <QVulkanInstance>
 #include <QtQuick/QQuickItem>
 #include <QtQuick/QQuickWindow>
-#include <QtQuick/QSGTextureProvider>
 #include <QtQuick/QSGSimpleTextureNode>
-#include <QVulkanInstance>
+#include <QtQuick/QSGTextureProvider>
 
 using namespace storm;
 
@@ -28,22 +28,21 @@ constexpr auto toBufferingCount(int in_flight) noexcept {
     return render::Surface::Buffering::Triple;
 }
 
-StormKitView::StormKitView(QQuickItem *parent) : QQuickItem { parent }, m_model{this} {
+StormKitView::StormKitView(QQuickItem *parent) : QQuickItem { parent }, m_model { this } {
     log::LogHandler::setupDefaultLogger();
     setFlag(ItemHasContents, true);
 }
 
 QSGNode *StormKitView::updatePaintNode(QSGNode *_node, [[maybe_unused]] UpdatePaintNodeData *data) {
-    if(!m_initialized)
-        initialize();
+    if (!m_initialized) initialize();
 
     auto node = static_cast<StormKitTextureNode *>(_node);
 
-    if(!node && (width() <= 0 || height() <= 0)) return nullptr;
+    if (!node && (width() <= 0 || height() <= 0)) return nullptr;
 
-    if(!node) {
-        m_texture_node = new StormKitTextureNode{this, *m_engine};
-        node = m_texture_node;
+    if (!node) {
+        m_texture_node = new StormKitTextureNode { this, *m_engine };
+        node           = m_texture_node;
     }
 
     m_texture_node->sync();
@@ -60,8 +59,7 @@ QSGNode *StormKitView::updatePaintNode(QSGNode *_node, [[maybe_unused]] UpdatePa
 void StormKitView::geometryChange(const QRectF &new_geometry, const QRectF &old_geometry) {
     QQuickItem::geometryChange(new_geometry, old_geometry);
 
-    if(new_geometry.size() != old_geometry.size())
-        update();
+    if (new_geometry.size() != old_geometry.size()) update();
 }
 
 void StormKitView::invalidateSceneGraph() {
@@ -82,14 +80,14 @@ void StormKitView::initialize() {
         rif->getResource(window, QSGRendererInterface::DeviceResource));
 
     const auto frames_in_flight = window->graphicsStateInfo().framesInFlight;
-    m_engine = std::make_unique<engine::Engine>(vk_instance,
+    m_engine                    = std::make_unique<engine::Engine>(vk_instance,
                                                 vk_physical_device,
                                                 vk_device,
                                                 core::Extentu {
                                                     static_cast<core::UInt32>(size().width()),
                                                     static_cast<core::UInt32>(size().height()) },
                                                 toBufferingCount(frames_in_flight));
-    m_scene  = std::make_unique<StormKitScene>(*m_engine);
+    m_scene                     = std::make_unique<StormKitScene>(*m_engine);
     m_model.setWorld(m_scene->world());
 
     connect(m_scene.get(), &StormKitScene::newEntity, &m_model, &EntityModel::addEntity);

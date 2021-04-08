@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <storm/core/Platform.hpp>
 #include <storm/core/NonCopyable.hpp>
+#include <storm/core/Platform.hpp>
 
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
@@ -14,7 +14,7 @@
 #include <storm/render/pipeline/Fwd.hpp>
 
 namespace storm::render {
-    class STORMKIT_PUBLIC AbstractPipeline : public core::NonCopyable {
+    class STORMKIT_PUBLIC AbstractPipeline: public core::NonCopyable {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Pipeline;
 

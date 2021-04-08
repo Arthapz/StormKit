@@ -1,6 +1,6 @@
 #include "Win32Mouse.hpp"
-#include "Win32Window.hpp"
 #include "Utils.hpp"
+#include "Win32Window.hpp"
 
 using namespace storm;
 using namespace storm::window;
@@ -46,7 +46,7 @@ auto Win32Mouse::isButtonPressed(MouseButton button) const noexcept -> bool {
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto Win32Mouse::getPositionOnDesktop() const noexcept -> core::Position2u{
+auto Win32Mouse::getPositionOnDesktop() const noexcept -> core::Position2u {
     auto point = POINT {};
     GetCursorPos(&point);
 

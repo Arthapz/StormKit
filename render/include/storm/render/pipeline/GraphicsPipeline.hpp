@@ -10,19 +10,19 @@
 #include <storm/render/core/Fwd.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
-#include <storm/render/pipeline/Fwd.hpp>
 #include <storm/render/pipeline/AbstractPipeline.hpp>
+#include <storm/render/pipeline/Fwd.hpp>
 #include <storm/render/pipeline/GraphicsPipelineState.hpp>
 
-#define STATE(TYPE, NAME, MEMBER)             \
-    inline TYPE &NAME() noexcept {            \
+#define STATE(TYPE, NAME, MEMBER)                \
+    inline TYPE &NAME() noexcept {               \
         STORMKIT_EXPECTS(m_is_builded == false); \
-        return m_state.MEMBER;                \
-    }                                         \
+        return m_state.MEMBER;                   \
+    }                                            \
     inline const TYPE &NAME() const noexcept { return m_state.MEMBER; }
 
 namespace storm::render {
-    class STORMKIT_PUBLIC GraphicsPipeline final : public AbstractPipeline {
+    class STORMKIT_PUBLIC GraphicsPipeline final: public AbstractPipeline {
       public:
         explicit GraphicsPipeline(const Device &device,
                                   PipelineCacheConstPtr cache = nullptr) noexcept;

@@ -15,7 +15,8 @@
 namespace storm::render {
     class STORMKIT_PUBLIC OffscreenSurface final: public Surface {
       public:
-        OffscreenSurface(core::Extentu extent, const Instance &instance,
+        OffscreenSurface(core::Extentu extent,
+                         const Instance &instance,
                          Buffering buffering = Buffering::Triple);
         ~OffscreenSurface() override;
 

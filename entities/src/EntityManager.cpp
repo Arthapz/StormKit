@@ -71,12 +71,13 @@ bool EntityManager::hasComponent(Entity entity) const {
 bool EntityManager::hasComponent(Entity entity, Component::Type type) const {
     STORMKIT_EXPECTS(entity != INVALID_ENTITY && type != Component::INVALID_TYPE);
 
-    auto it =
-        std::find_if(m_components.at(entity).cbegin(), m_components.at(entity).cend(), [type](auto &i) {
-            if (i.first == type) return true;
+    auto it = std::find_if(m_components.at(entity).cbegin(),
+                           m_components.at(entity).cend(),
+                           [type](auto &i) {
+                               if (i.first == type) return true;
 
-            return false;
-        });
+                               return false;
+                           });
 
     return (it != m_components.at(entity).cend());
 }

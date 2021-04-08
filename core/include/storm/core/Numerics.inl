@@ -12,7 +12,7 @@ namespace storm::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    auto rand(T &&min, T &&max) noexcept -> T{
+    auto rand(T &&min, T &&max) noexcept -> T {
         using Type = std::decay_t<std::remove_cv_t<T>>;
         if constexpr (std::is_floating_point_v<Type>) {
             std::uniform_real_distribution<Type> dis(min, max);

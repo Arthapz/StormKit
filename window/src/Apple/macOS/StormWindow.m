@@ -6,24 +6,24 @@
 #import "StormWindow.h"
 #import "StormApplication.h"
 
-@implementation  StormWindow
+@implementation StormWindow
 
 /////////////////////////////////////
 /////////////////////////////////////
 - (BOOL)acceptsFirstResponder {
-	return YES;
+    return YES;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 - (BOOL)canBecomeKeyWindow {
-	return YES;
+    return YES;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 - (void)performClose:(id)sender {
-	[self close];
+    [self close];
 }
 
 @end

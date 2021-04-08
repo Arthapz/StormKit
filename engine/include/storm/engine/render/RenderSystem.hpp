@@ -24,9 +24,7 @@
 namespace storm::engine {
     class STORMKIT_PUBLIC RenderSystem: public entities::System {
       public:
-        RenderSystem(Engine &engine,
-                     entities::EntityManager &manager,
-                     ComponentTypes types);
+        RenderSystem(Engine &engine, entities::EntityManager &manager, ComponentTypes types);
         ~RenderSystem();
 
         RenderSystem(RenderSystem &&) noexcept;
@@ -50,7 +48,7 @@ namespace storm::engine {
         Entities m_entities;
 
         CameraConstPtr m_camera = nullptr;
-        bool m_camera_switched = true;
+        bool m_camera_switched  = true;
 
       private:
         void addEntity(entities::Entity e);

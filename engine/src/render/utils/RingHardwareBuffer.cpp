@@ -47,7 +47,8 @@ RingHardwareBuffer::RingHardwareBuffer(RingHardwareBuffer &&) noexcept = default
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto RingHardwareBuffer::operator=(RingHardwareBuffer &&) noexcept -> RingHardwareBuffer & = default;
+auto RingHardwareBuffer::operator=(RingHardwareBuffer &&) noexcept
+    -> RingHardwareBuffer &      = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -58,7 +59,7 @@ auto RingHardwareBuffer::next() -> void {
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto RingHardwareBuffer::map(core::UInt32 offset)  -> core::Byte *{
+auto RingHardwareBuffer::map(core::UInt32 offset) -> core::Byte * {
     return m_buffer->map(m_offset + offset);
 }
 

@@ -7,12 +7,12 @@
 namespace storm::module {
     /////////////////////////////////////
     /////////////////////////////////////
-     bool Module::isLoaded() const noexcept { return m_impl->isLoaded(); }
+    bool Module::isLoaded() const noexcept { return m_impl->isLoaded(); }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Signature>
-     std::function<Signature> Module::getFunc(std::string_view name) const {
+    std::function<Signature> Module::getFunc(std::string_view name) const {
         STORMKIT_EXPECTS(!name.empty());
 
         return m_impl->getFunc<Signature>(name);
@@ -21,7 +21,7 @@ namespace storm::module {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Signature>
-     Signature Module::getCFunc(std::string_view name) const {
+    Signature Module::getCFunc(std::string_view name) const {
         STORMKIT_EXPECTS(!name.empty());
 
         return m_impl->getCFunc<Signature>(name);

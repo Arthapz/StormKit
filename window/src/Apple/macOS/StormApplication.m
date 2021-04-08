@@ -10,18 +10,18 @@
 /////////////////////////////////////
 /////////////////////////////////////
 + (void)processEvent {
-	[StormApplication sharedApplication];
+    [StormApplication sharedApplication];
 
-	NSEvent *event = nil;
+    NSEvent *event = nil;
 
-	do {
-		event = [NSApp nextEventMatchingMask: NSEventMaskAny
-					   untilDate: [NSDate distantPast]
-					   inMode: NSDefaultRunLoopMode
-					   dequeue: YES];
+    do {
+        event = [NSApp nextEventMatchingMask:NSEventMaskAny
+                                   untilDate:[NSDate distantPast]
+                                      inMode:NSDefaultRunLoopMode
+                                     dequeue:YES];
 
-		[NSApp sendEvent:event];
-	} while(event != nil);
+        [NSApp sendEvent:event];
+    } while (event != nil);
 }
 
 @end

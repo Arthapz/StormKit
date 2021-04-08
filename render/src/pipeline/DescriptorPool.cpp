@@ -59,7 +59,8 @@ std::vector<render::DescriptorSet>
     auto types = std::vector<DescriptorType> {};
 
     for (const auto &binding : layout.bindings()) {
-        if (std::find(core::ranges::begin(types), core::ranges::end(types), binding.type) == core::ranges::end(types))
+        if (std::find(core::ranges::begin(types), core::ranges::end(types), binding.type) ==
+            core::ranges::end(types))
             types.emplace_back(binding.type);
     }
 
@@ -87,7 +88,8 @@ std::vector<render::DescriptorSetOwnedPtr>
     auto types = std::vector<DescriptorType> {};
 
     for (const auto &binding : layout.bindings()) {
-        if (std::find(core::ranges::begin(types), core::ranges::end(types), binding.type) == core::ranges::end(types))
+        if (std::find(core::ranges::begin(types), core::ranges::end(types), binding.type) ==
+            core::ranges::end(types))
             types.emplace_back(binding.type);
     }
 

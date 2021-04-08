@@ -33,5 +33,5 @@ namespace storm::render {
 
     /////////////////////////////////////
     /////////////////////////////////////
-     inline const core::Extentu &Surface::extent() const noexcept { return m_extent; }
+    inline const core::Extentu &Surface::extent() const noexcept { return m_extent; }
 } // namespace storm::render

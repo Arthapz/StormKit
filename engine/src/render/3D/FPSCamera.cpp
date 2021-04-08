@@ -56,9 +56,9 @@ auto FPSCamera::update(core::Secondf delta) noexcept -> void {
     m_front    = core::normalize(front);
 
     const auto move_speed = delta.count() * m_move_speed;
-    if (m_inputs.up)    m_position += front * move_speed;
-    if (m_inputs.down)  m_position -= front * move_speed;
-    if (m_inputs.left)  m_position -= core::normalize(core::cross(m_front, m_up)) * move_speed;
+    if (m_inputs.up) m_position += front * move_speed;
+    if (m_inputs.down) m_position -= front * move_speed;
+    if (m_inputs.left) m_position -= core::normalize(core::cross(m_front, m_up)) * move_speed;
     if (m_inputs.right) m_position += core::normalize(core::cross(m_front, m_up)) * move_speed;
 
     const auto rotation_matrix = [this]() {
@@ -71,12 +71,12 @@ auto FPSCamera::update(core::Secondf delta) noexcept -> void {
         return mat;
     }();
     auto position = m_position;
-    position.y = -position.y;
+    position.y    = -position.y;
 
     const auto translation_matrix = core::translate(core::Matrix { 1.f }, position);
 
-    m_data.position = core::Vector4f{position, 1.f};
-    m_data.view = rotation_matrix * translation_matrix;
+    m_data.position = core::Vector4f { position, 1.f };
+    m_data.view     = rotation_matrix * translation_matrix;
 
     m_last_x_mouse = m_inputs.x_mouse;
     m_last_y_mouse = m_inputs.y_mouse;

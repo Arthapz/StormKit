@@ -18,7 +18,8 @@ using namespace storm::render;
 
 /////////////////////////////////////
 /////////////////////////////////////
-RenderPass::RenderPass(const render::Device &device, RenderPassDescription description) : m_device { &device }, m_description{std::move(description)} {
+RenderPass::RenderPass(const render::Device &device, RenderPassDescription description)
+    : m_device { &device }, m_description { std::move(description) } {
     build();
 }
 
@@ -120,9 +121,8 @@ void RenderPass::build() {
 
 /////////////////////////////////////
 /////////////////////////////////////
-render::Framebuffer
-    RenderPass::createFramebuffer(core::Extentu extent,
-                                  TextureViewConstPtrArray attachments) const {
+render::Framebuffer RenderPass::createFramebuffer(core::Extentu extent,
+                                                  TextureViewConstPtrArray attachments) const {
     return Framebuffer { *this, std::move(extent), std::move(attachments) };
 }
 
@@ -137,7 +137,8 @@ render::FramebufferOwnedPtr
 /////////////////////////////////////
 /////////////////////////////////////
 bool RenderPass::isCompatible(const RenderPass &render_pass) const noexcept {
-    //TODO implement proper compatibility check https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap7.html#renderpass-compatibility
+    // TODO implement proper compatibility check
+    // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap7.html#renderpass-compatibility
 
     return &render_pass == this;
 }
