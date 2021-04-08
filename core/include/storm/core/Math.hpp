@@ -1,20 +1,28 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+﻿// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
 #pragma once
 
+/////////// - STL - ///////////
 #include <variant>
 
+/////////// - GSL - ///////////
 #include <gsl/string_span>
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Hash.hpp>
 #include <storm/core/NamedType.hpp>
 #include <storm/core/Strings.hpp>
 
+/////////// - GLM - ///////////
+/// \exclude
 #define GLM_FORCE_RADIANS
+
+/// \exclude
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
+#include <glm/gtc/matrix_integer.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -27,164 +35,401 @@
 namespace storm::core {
     using namespace glm;
 
+    /// \exclude
+    namespace details {
+        struct Position2fTag;
+        struct Position2uTag;
+        struct Position2iTag;
+        struct Position3fTag;
+        struct Position3uTag;
+        struct Position3iTag;
+
+        struct MoveOffset2fTag;
+        struct MoveOffset2uTag;
+        struct MoveOffset2iTag;
+        struct MoveExtentfOffsetTag;
+        struct MoveExtentuOffsetTag;
+        struct MoveOffsetTag;
+
+        struct Scale2fTag;
+        struct Scale2uTag;
+        struct Scale2iTag;
+        struct Scale3fTag;
+        struct Scale3uTag;
+        struct Scale3iTag;
+
+        struct Orientation2fTag;
+        struct Orientation2uTag;
+        struct Orientation2iTag;
+        struct Orientation3fTag;
+        struct Orientation3uTag;
+        struct Orientation3iTag;
+
+        struct Rotation2fTag;
+        struct Rotation2uTag;
+        struct Rotation2iTag;
+        struct Rotation3fTag;
+        struct Rotation3uTag;
+        struct Rotation3iTag;
+
+        template<typename T>
+        struct ExtentOffsetTag;
+    } // namespace details
+
+    /// \group vector-types Math vector types.
+    ///
+    /// Aliases to `glm::vec*` types.
+    ///
+    /// \unique_name Vector2<T>
     template<typename T>
     using Vector2 = glm::vec<2, T, glm::defaultp>;
+
+    /// \group vector-types
+    /// \unique_name Vector3<T>
     template<typename T>
     using Vector3 = glm::vec<3, T, glm::defaultp>;
+
+    /// \group vector-types
+    /// \unique_name Vector4<T>
     template<typename T>
-    using Vector4  = glm::vec<4, T, glm::defaultp>;
+    using Vector4 = glm::vec<4, T, glm::defaultp>;
+
+    /// \group vector-types
+    /// \unique_name Vector2f
     using Vector2f = glm::vec2;
+
+    /// \group vector-types
+    /// \unique_name Vector3f
     using Vector3f = glm::vec3;
+
+    /// \group vector-types
+    /// \unique_name Vector4f
     using Vector4f = glm::vec4;
+
+    /// \group vector-types
+    /// \unique_name Vector2u
     using Vector2u = glm::uvec2;
+
+    /// \group vector-types
+    /// \unique_name Vector3u
     using Vector3u = glm::uvec3;
+
+    /// \group vector-types
+    /// \unique_name Vector4u
     using Vector4u = glm::uvec4;
+
+    /// \group vector-types
+    /// \unique_name Vector2i
     using Vector2i = glm::ivec2;
+
+    /// \group vector-types
+    /// \unique_name Vector3i
     using Vector3i = glm::ivec3;
+
+    /// \group vector-types
+    /// \unique_name Vector4i
     using Vector4i = glm::ivec4;
+
+    /// \group matrices-types Math matrices types.
+    ///
+    /// Aliases to `glm::mat*`.
+    ///
+    /// \unique_name Matrix<T>
     template<typename T>
-    using Matrix      = glm::mat<4, 4, T, glm::defaultp>;
-    using Matrixu     = glm::umat4x4;
-    using Matrixi     = glm::imat4x4;
-    using Matrixf     = glm::mat4;
-    using Quaternionf = glm::quat;
+    using MatrixBase = glm::mat<4, 4, T, glm::defaultp>;
 
-    using Position2f = core::NamedType<Vector2f, struct Position2fTag>;
-    using Position2u = core::NamedType<Vector2u, struct Position2uTag>;
-    using Position2i = core::NamedType<Vector2i, struct Position2iTag>;
-    using Position3f = core::NamedType<Vector3f, struct Position3fTag>;
-    using Position3u = core::NamedType<Vector3u, struct Position3uTag>;
-    using Position3i = core::NamedType<Vector3i, struct Position3iTag>;
+    /// \group matrices-types
+    /// \unique_name Matrixu
+    using Matrixu = glm::umat4x4;
 
-    using MoveOffset2f = core::NamedType<Vector2f, struct MoveOffset2fTag>;
-    using MoveOffset2u = core::NamedType<Vector2u, struct MoveOffset2uTag>;
-    using MoveOffset2i = core::NamedType<Vector2i, struct MoveOffset2iTag>;
-    using MoveOffset3f = core::NamedType<Vector3f, struct MoveOffset3fTag>;
-    using MoveOffset3u = core::NamedType<Vector3u, struct MoveOffset3uTag>;
-    using MoveOffset3i = core::NamedType<Vector3i, struct MoveOffset3iTag>;
+    /// \group matrices-types
+    /// \unique_name Matrixi
+    using Matrixi = glm::imat4x4;
 
-    using Scale2f = core::NamedType<Vector2f, struct Scale2fTag>;
-    using Scale2u = core::NamedType<Vector2u, struct Scale2uTag>;
-    using Scale2i = core::NamedType<Vector2i, struct Scale2iTag>;
-    using Scale3f = core::NamedType<Vector3f, struct Scale3fTag>;
-    using Scale3u = core::NamedType<Vector3u, struct Scale3uTag>;
-    using Scale3i = core::NamedType<Vector3i, struct Scale3iTag>;
+    /// \group matrices-types
+    /// \unique_name Matrixf
+    using Matrixf = glm::mat4;
+    using Matrix  = glm::mat4;
 
-    using Orientation2f = core::NamedType<Vector2f, struct Orientation2fTag>;
-    using Orientation2u = core::NamedType<Vector2u, struct Orientation2uTag>;
-    using Orientation2i = core::NamedType<Vector2i, struct Orientation2iTag>;
-    using Orientation3f = core::NamedType<Vector3f, struct Orientation3fTag>;
-    using Orientation3u = core::NamedType<Vector3u, struct Orientation3uTag>;
-    using Orientation3i = core::NamedType<Vector3i, struct Orientation3iTag>;
+    /// \brief Quaternion.
+    ///
+    /// Alias to `glm::quat`.
+    ///
+    /// \unique_name Quaternion
+    using Quaternion = glm::quat;
 
-    using Rotation2f = core::NamedType<Vector2f, struct Rotation2fTag>;
-    using Rotation2u = core::NamedType<Vector2u, struct Rotation2uTag>;
-    using Rotation2i = core::NamedType<Vector2i, struct Rotation2iTag>;
-    using Rotation3f = core::NamedType<Vector3f, struct Rotation3fTag>;
-    using Rotation3u = core::NamedType<Vector3u, struct Rotation3uTag>;
-    using Rotation3i = core::NamedType<Vector3i, struct Rotation3iTag>;
+    /// \group position-types Position types
+    ///
+    /// Strongly typed vector type that represent a position.
+    ///
+    /// \unique_name Position2f
+    using Position2f = core::NamedType<Vector2f, details::Position2fTag>;
 
-    template<typename T>
-    struct ExtentBase {
-        using value_type = T;
+    /// \group position-types
+    /// \unique_name Position2u
+    using Position2u = core::NamedType<Vector2u, details::Position2uTag>;
 
-        union {
-            T width;
-            T w;
-        };
-        union {
-            T height;
-            T h;
-        };
-        union {
-            T depth = 1;
-            T d;
-        };
+    /// \group position-types
+    /// \unique_name Position2i
+    using Position2i = core::NamedType<Vector2i, details::Position2iTag>;
 
-        inline bool operator==(const ExtentBase<T> &other) const noexcept {
-            if constexpr (std::is_floating_point_v<T>)
-                return realIsEqual(w, other.w) && realIsEqual(h, other.h) &&
-                       realIsEqual(d, other.d);
-            else
-                return w == other.w && h == other.h && d == other.d;
-        }
+    /// \group position-types
+    /// \unique_name Position3f
+    using Position3f = core::NamedType<Vector3f, details::Position3fTag>;
 
-        inline bool operator!=(const ExtentBase<T> &other) const noexcept {
-            return !operator==(other);
-        }
+    /// \group position-types
+    /// \unique_name Position3u
+    using Position3u = core::NamedType<Vector3u, details::Position3uTag>;
 
-        inline ExtentBase<T> operator*(T factor) const noexcept {
-            return { .w = w * factor, .h = h * factor, .d = d * factor };
-        }
-        inline ExtentBase<T> operator/(T factor) const noexcept {
-            return { .w = w / factor, .h = h / factor, .d = d / factor };
-        }
+    /// \group position-types
+    /// \unique_name Position3i
+    using Position3i = core::NamedType<Vector3i, details::Position3iTag>;
 
-        template<typename U>
-        inline U convertTo() const noexcept {
-            return { static_cast<typename U::value_type>(width),
-                     static_cast<typename U::value_type>(height),
-                     static_cast<typename U::value_type>(depth) };
-        }
+    /// \group move-offset-types Move offset types
+    ///
+    /// Strongly typed vector type that represent a move offset.
+    ///
+    /// \unique_name MoveOffset2f
+    using MoveOffset2f = core::NamedType<Vector2f, details::MoveOffset2fTag>;
+
+    /// \group move-offset-types
+    /// \unique_name MoveOffset2u
+    using MoveOffset2u = core::NamedType<Vector2u, details::MoveOffset2uTag>;
+
+    /// \group move-offset-types
+    /// \unique_name MoveOffset2i
+    using MoveOffset2i = core::NamedType<Vector2i, details::MoveOffset2iTag>;
+
+    /// \group move-offset-types
+    /// \unique_name MoveExtentfOffset
+    using MoveExtentfOffset = core::NamedType<Vector3f, details::MoveExtentfOffsetTag>;
+
+    /// \group move-offset-types
+    /// \unique_name MoveExtentuOffset
+    using MoveExtentuOffset = core::NamedType<Vector3u, details::MoveExtentuOffsetTag>;
+
+    /// \group move-offset-types
+    /// \unique_name MoveOffset
+    using MoveOffset = core::NamedType<Vector3i, details::MoveOffsetTag>;
+
+    /// \group scale-types Scale types
+    ///
+    /// Strongly typed vector type that represent a scale.
+    ///
+    /// \unique_name Scale2f
+    using Scale2f = core::NamedType<Vector2f, details::Scale2fTag>;
+
+    /// \group scale-types
+    /// \unique_name Scale2u
+    using Scale2u = core::NamedType<Vector2u, details::Scale2uTag>;
+
+    /// \group scale-types
+    /// \unique_name Scale2i
+    using Scale2i = core::NamedType<Vector2i, details::Scale2iTag>;
+
+    /// \group scale-types
+    /// \unique_name Scale3f
+    using Scale3f = core::NamedType<Vector3f, details::Scale3fTag>;
+
+    /// \group scale-types
+    /// \unique_name Scale3u
+    using Scale3u = core::NamedType<Vector3u, details::Scale3uTag>;
+
+    /// \group scale-types
+    /// \unique_name Scale3i
+    using Scale3i = core::NamedType<Vector3i, details::Scale3iTag>;
+
+    /// \group orientation-types Orientation types
+    ///
+    /// Strongly typed vector type that represent an orientation.
+    ///
+    /// \unique_name Orientation2f
+    using Orientation2f = core::NamedType<Vector2f, details::Orientation2fTag>;
+
+    /// \group orientation-types
+    /// \unique_name Orientation2u
+    using Orientation2u = core::NamedType<Vector2u, details::Orientation2uTag>;
+
+    /// \group orientation-types
+    /// \unique_name Orientation2i
+    using Orientation2i = core::NamedType<Vector2i, details::Orientation2iTag>;
+
+    /// \group orientation-types
+    /// \unique_name Orientation3f
+    using Orientation3f = core::NamedType<Vector3f, details::Orientation3fTag>;
+
+    /// \group orientation-types
+    /// \unique_name Orientation3u
+    using Orientation3u = core::NamedType<Vector3u, details::Orientation3uTag>;
+
+    /// \group orientation-types
+    /// \unique_name Orientation3i
+    using Orientation3i = core::NamedType<Vector3i, details::Orientation3iTag>;
+
+    /// \group rotation-types Rotation types
+    ///
+    /// Strongly typed vector type that represent a rotation.
+    ///
+    /// \unique_name Rotation2f
+    using Rotation2f = core::NamedType<Vector2f, details::Rotation2fTag>;
+
+    /// \group rotation-types
+    /// \unique_name Rotation2u
+    using Rotation2u = core::NamedType<Vector2u, details::Rotation2uTag>;
+
+    /// \group rotation-types
+    /// \unique_name Rotation2i
+    using Rotation2i = core::NamedType<Vector2i, details::Rotation2iTag>;
+
+    /// \group rotation-types
+    /// \unique_name Rotation3f
+    using Rotation3f = core::NamedType<Vector3f, details::Rotation3fTag>;
+
+    /// \group rotation-types
+    /// \unique_name Rotation3u
+    using Rotation3u = core::NamedType<Vector3u, details::Rotation3uTag>;
+
+    /// \group rotation-types
+    /// \unique_name Rotation3i
+    using Rotation3i = core::NamedType<Vector3i, details::Rotation3iTag>;
+
+    /// \brief Representation of an extent.
+    /// \requires `T` need to be an arithmetic type (satisfy std::is_floating_point or
+    /// std::is_integral).
+    /// \unique_name ExtentBase<T>
+    template<ARITHMETIC_TYPE_CONCEPT(T)>
+    struct Extent {
+        /// \output_section Public Special Member Functions
+        /// \brief Default construct an extent.
+        ///
+        /// `width` `height` and `depth` are default constructed to 1.
+        constexpr Extent() noexcept = default;
+
+        /// \brief Construct an extent from width, height and optionnaly depth
+        /// \param red The amound of width.
+        /// \param green The amound of height.
+        constexpr Extent(T width, T height, T depth = 1) noexcept;
+
+        /// \brief Copy constructor.
+        ///
+        /// Construct a copy of other.
+        ///
+        /// \param other The copied extent.
+        constexpr Extent(const Extent<T> &other) noexcept = default;
+
+        /// \brief Move constructor.
+        ///
+        /// Move-constructs a `Extent` instance, making it point at the same object that other was
+        /// pointing to.
+        ///
+        /// \param other The moved extent.
+        constexpr Extent(Extent<T> &&other) noexcept = default;
+
+        /// \brief Assigns other to this extent and returns a reference to this extent.
+        /// \param other The extent copied.
+        /// \returns The reference of the copied extent.
+        constexpr Extent<T> &operator=(const Extent<T> &other) noexcept = default;
+
+        /// \brief Move assign other to this Extent instance.
+        /// \param other The extent moved.
+        /// \returns The reference of the moved extent.
+        constexpr Extent<T> &operator=(Extent<T> &&other) noexcept = default;
+
+        /// \brief Construct a extent from the convertion of an other extent.
+        ///
+        /// Values are converted with static_cast.
+        ///
+        /// \param other The extent converted.
+        /// \requires `U` need to be an arithmetic type (satisfy std::is_floating_point or
+        /// std::is_integral).
+        template<ARITHMETIC_TYPE_CONCEPT(U)>
+        constexpr Extent(const Extent<U> &other) noexcept;
+
+        /// \output_section Publics operators members
+        /// \brief Test the equality with an other extent.
+        /// \param other The extent to test
+        /// \returns true if this extent is equal to `other`, otherwise returns false.
+        [[nodiscard]] constexpr bool operator==(const Extent<T> &other) const noexcept;
+
+        /// \brief Multiply an extent with a factor.
+        /// \param factor The factor to multiply
+        /// \returns A newly constructed extent equal to this extent multiplied with `factor`
+        [[nodiscard]] constexpr Extent<T> operator*(T factor) const noexcept;
+
+        /// \brief Divide an extent with a factor.
+        /// \param factor The factor to divide
+        /// \returns A newly constructed extent equal to this extent Divided with `factor`
+        [[nodiscard]] constexpr Extent<T> operator/(T factor) const noexcept;
+
+        /// \brief Multiply this extent with a factor.
+        /// \param factor The factor to multiply
+        /// \returns A reference to this after the multiplication with `factor`
+        [[nodiscard]] constexpr Extent<T> &operator*=(T factor) noexcept;
+
+        /// \brief Divide this extent with a factor.
+        /// \param factor The factor to divide
+        /// \returns A reference to this after the division with `factor`
+        [[nodiscard]] constexpr Extent<T> &operator/=(T factor) noexcept;
+
+        /// \output_section Publics member
+        /// \brief Width attribute.
+        T width = 0;
+
+        /// \brief Height attribute.
+        T height = 0;
+
+        /// \brief Depth attribute.
+        T depth = 1;
     };
 
-    using Extenti = ExtentBase<core::Int32>;
-    using Extentu = ExtentBase<core::UInt32>;
-    using Extentf = ExtentBase<float>;
+    /// \brief Alias of `Extent<Int32>`.
+    /// \unique_name Extenti
+    using Extenti = Extent<core::Int32>;
 
-    inline std::string to_string(const storm::core::Extentu &extent) {
-        return fmt::format("Extent { width: %{1}, height: %{2}, depth: %{3} }",
-                           extent.width,
-                           extent.height,
-                           extent.depth);
-    }
+    /// \brief Alias of `Extent<UInt32>`.
+    /// \unique_name Extentu
+    using Extentu = Extent<core::UInt32>;
 
+    /// \brief Alias of `Extent<float>`.
+    /// \unique_name Extentf
+    using Extentf = Extent<float>;
+
+    /// \group offset-types Offset types
+    ///
+    /// Strongly typed extent type that represent an Extent offset.
+    ///
+    /// \unique_name Offset
     template<typename T>
-    struct OffsetBase {
-        using value_type = T;
+    using ExtentOffset = core::NamedType<Extent<T>, details::ExtentOffsetTag<T>>;
 
-        T x;
-        T y;
-        T z;
+    /// \group offset-types
+    /// \unique_name Offseti
+    using ExtentiOffset = ExtentOffset<core::Int32>;
 
-        inline bool operator==(const OffsetBase<T> &other) const noexcept {
-            if constexpr (std::is_floating_point_v<T>)
-                return realIsEqual(x, other.x) && realIsEqual(y, other.y) &&
-                       realIsEqual(z, other.z);
-            else
-                return x == other.x && y == other.y && z == other.z;
-        }
+    /// \group offset-types
+    /// \unique_name Offseti
+    using ExtentuOffset = ExtentOffset<core::UInt32>;
 
-        inline bool operator!=(const OffsetBase<T> &other) const noexcept {
-            return !operator==(other);
-        }
+    /// \group offset-types
+    /// \unique_name Offseti
+    using ExtentfOffset = ExtentOffset<float>;
 
-        inline OffsetBase<T> operator*(T factor) const noexcept {
-            return { .x = x * factor, .y = y * factor, .z = z * factor };
-        }
-        inline OffsetBase<T> operator/(T factor) const noexcept {
-            return { .x = x / factor, .y = y / factor, .z = z / factor };
-        }
-
-        template<typename U>
-        inline U convertTo() const noexcept {
-            return { static_cast<typename U::value_type>(x),
-                     static_cast<typename U::value_type>(y),
-                     static_cast<typename U::value_type>(z) };
-        }
-    };
-
-    using Offset3i = OffsetBase<core::Int32>;
-    using Offset3u = OffsetBase<core::UInt32>;
-    using Offset3f = OffsetBase<float>;
-
-    inline std::string to_string(const storm::core::Offset3u &offset) {
-        return fmt::format("Offset { x: %{1}, y: %{2}, z: %{3} }", offset.x, offset.y, offset.z);
-    }
 } // namespace storm::core
 
-HASH_FUNC(storm::core::Extentu)
-HASH_FUNC(storm::core::Extentf)
+namespace std {
+    template<ARITHMETIC_TYPE_CONCEPT(T)>
+    struct hash<storm::core::Extent<T>> {
+        [[nodiscard]] constexpr storm::core::Hash64
+            operator()(const storm::core::Extent<T> &extent) const noexcept {
+            auto hash = storm::core::Hash64 { 0 };
+            storm::core::hashCombine(hash, extent.width);
+            storm::core::hashCombine(hash, extent.height);
+            storm::core::hashCombine(hash, extent.depth);
+
+            return hash;
+        }
+    };
+} // namespace std
 
 CUSTOM_FORMAT(storm::core::Vector2f, "Vector2 {{ .x = {}, .y = {} }}", data.x, data.y)
 CUSTOM_FORMAT(storm::core::Position2f, "Position2 {{ .x = {}, .y = {} }}", data->x, data->y)
@@ -203,7 +448,7 @@ CUSTOM_FORMAT(storm::core::Position3f,
               data->x,
               data->y,
               data->z)
-CUSTOM_FORMAT(storm::core::MoveOffset3f,
+CUSTOM_FORMAT(storm::core::MoveExtentfOffset,
               "MoveOffset3 {{ .x = {}, .y = {}, .z = {} }}",
               data->x,
               data->y,
@@ -233,7 +478,7 @@ CUSTOM_FORMAT(storm::core::Vector4f,
 
 CUSTOM_FORMAT(storm::core::Vector2u, "Vector2u {{ .x = {}, .y = {} }}", data.x, data.y)
 CUSTOM_FORMAT(storm::core::Position2u, "Position2u {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::MoveOffset2u, "MoveOffset2 {{ .x = {}, .y = {} }}", data->x, data->y)
+CUSTOM_FORMAT(storm::core::MoveOffset2u, "MoveInt322 {{ .x = {}, .y = {} }}", data->x, data->y)
 CUSTOM_FORMAT(storm::core::Scale2u, "Scale2 {{ .x = {}, .y = {} }}", data->x, data->y)
 CUSTOM_FORMAT(storm::core::Orientation2u, "Orientation2 {{ .x = {}, .y = {} }}", data->x, data->y)
 CUSTOM_FORMAT(storm::core::Rotation2u, "Rotation2 {{ .x = {}, .y = {} }}", data->x, data->y)
@@ -244,8 +489,8 @@ CUSTOM_FORMAT(storm::core::Vector3u,
               data.y,
               data.z)
 CUSTOM_FORMAT(storm::core::Position3u, "Position3u {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::MoveOffset3u,
-              "MoveOffset3 {{ .x = {}, .y = {}, .z = {} }}",
+CUSTOM_FORMAT(storm::core::MoveExtentuOffset,
+              "MoveInt323 {{ .x = {}, .y = {}, .z = {} }}",
               data->x,
               data->y,
               data->z)
@@ -285,7 +530,7 @@ CUSTOM_FORMAT(storm::core::Vector3i,
               data.y,
               data.z)
 CUSTOM_FORMAT(storm::core::Position3i, "Position3i {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::MoveOffset3i,
+CUSTOM_FORMAT(storm::core::MoveOffset,
               "MoveOffset3 {{ .x = {}, .y = {}, .z = {} }}",
               data->x,
               data->y,
@@ -313,7 +558,7 @@ CUSTOM_FORMAT(storm::core::Vector4i,
               data.z,
               data.w)
 
-CUSTOM_FORMAT(storm::core::Matrixf,
+CUSTOM_FORMAT(storm::core::Matrix,
               "Matrix {{\n    {},\n    {},\n    {},\n    {}\n}}",
               data[0],
               data[1],
@@ -321,14 +566,19 @@ CUSTOM_FORMAT(storm::core::Matrixf,
               data[3])
 
 CUSTOM_FORMAT(storm::core::Extenti,
-              "Extent {{ .width = {}, .height = {} }}",
+              "Extenti {{ .width = {}, .height = {}, .depth = {} }}",
               data.width,
-              data.height)
+              data.height,
+              data.depth)
 CUSTOM_FORMAT(storm::core::Extentu,
-              "Extent {{ .width = {}, .height = {} }}",
+              "Extentu {{ .width = {}, .height = {}, .depth = {} }}",
               data.width,
-              data.height)
+              data.height,
+              data.depth)
 CUSTOM_FORMAT(storm::core::Extentf,
-              "Extent {{ .width = {}, .height = {} }}",
+              "Extentf {{ .width = {}, .height = {}. depth = {} }}",
               data.width,
-              data.height)
+              data.height,
+              data.depth)
+
+#include "Math.inl"

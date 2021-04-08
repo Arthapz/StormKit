@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -17,12 +17,15 @@
 #include <storm/render/core/Queue.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
+#include <storm/render/resource/Fwd.hpp>
 #include <storm/render/resource/Texture.hpp>
 
+#include <storm/render/pipeline/ComputePipeline.hpp>
+#include <storm/render/pipeline/Fwd.hpp>
 #include <storm/render/pipeline/GraphicsPipeline.hpp>
 
 namespace storm::render {
-    class STORM_PUBLIC CommandBuffer: public core::NonCopyable {
+    class STORMKIT_PUBLIC CommandBuffer: public core::NonCopyable {
       public:
         enum class State { Initial, Recording, Executable };
 
@@ -38,126 +41,148 @@ namespace storm::render {
 
         void reset() noexcept;
         void build();
-        inline void
-            submit(storm::core::span<const SemaphoreConstObserverPtr> wait_semaphores   = {},
-                   storm::core::span<const SemaphoreConstObserverPtr> signal_semaphores = {},
-                   FenceObserverPtr fence = nullptr) const noexcept;
+        void submit(storm::core::span<const SemaphoreConstPtr> wait_semaphores   = {},
+                    storm::core::span<const SemaphoreConstPtr> signal_semaphores = {},
+                    FencePtr fence = nullptr) const noexcept;
 
-        inline State state() const noexcept;
-        inline CommandBufferLevel level() const noexcept;
+        State state() const noexcept;
+        CommandBufferLevel level() const noexcept;
 
         template<typename CommandT>
-        inline void add(CommandT &&command);
+        void add(CommandT &&command);
         template<typename CommandT, typename... Args>
-        inline void add(Args &&... args);
+        void add(Args &&...args);
 
-        inline void beginDebugRegion(std::string_view name,
-                                     core::RGBColorF color = core::RGBColorDef::White<float>);
-        inline void insertDebugLabel(std::string_view name,
-                                     core::RGBColorF color = core::RGBColorDef::White<float>);
-        inline void endDebugRegion();
+        void beginDebugRegion(std::string_view name,
+                              core::RGBColorF color = core::RGBColorDef::White<float>);
+        void insertDebugLabel(std::string_view name,
+                              core::RGBColorF color = core::RGBColorDef::White<float>);
+        void endDebugRegion();
 
-        inline void begin(bool one_time_submit                    = false,
-                          std::optional<CommandBufferCRef> parent = std::nullopt);
-        inline void end();
+        void begin(bool one_time_submit                            = false,
+                   std::optional<InheritanceInfo> inheritence_info = std::nullopt);
+        void end();
 
-        inline void
-            beginRenderPass(const RenderPass &render_pass,
-                            const Framebuffer &framebuffer,
-                            BeginRenderPassCommand::ClearValues clear_values = { ClearColor {
-                                .color = core::RGBColorDef::Silver<float> } },
-                            bool secondary_command_buffers                   = false);
-        inline void nextSubPass();
-        inline void endRenderPass();
+        void beginRenderPass(const RenderPass &render_pass,
+                             const Framebuffer &framebuffer,
+                             BeginRenderPassCommand::ClearValues clear_values = { ClearColor {
+                                 .color = core::RGBColorDef::Silver<float> } },
+                             bool secondary_command_buffers                   = false);
+        void nextSubPass();
+        void endRenderPass();
 
-        inline void bindGraphicsPipeline(const GraphicsPipeline &pipeline);
+        void bindGraphicsPipeline(const GraphicsPipeline &pipeline);
+        void bindComputePipeline(const ComputePipeline &pipeline);
 
-        inline void draw(core::UInt32 vertex_count,
+        void dispatch(core::UInt32 group_count_x,
+                      core::UInt32 group_count_y,
+                      core::UInt32 group_count_z);
+
+        void draw(core::UInt32 vertex_count,
+                  core::UInt32 instance_count = 1u,
+                  core::UInt32 first_vertex   = 0,
+                  core::UInt32 first_instance = 0);
+        void drawIndexed(core::UInt32 index_count,
                          core::UInt32 instance_count = 1u,
-                         core::UInt32 first_vertex   = 0,
-                         core::UInt32 first_instance = 0);
-        inline void drawIndexed(core::UInt32 index_count,
-                                core::UInt32 instance_count = 1u,
-                                core::UInt32 first_index    = 0u,
-                                core::Offset vertex_offset  = 0,
-                                core::UInt32 first_instance = 0u);
+                         core::UInt32 first_index    = 0u,
+                         core::Int32 vertex_offset   = 0,
+                         core::UInt32 first_instance = 0u);
+        void drawIndirect(const HardwareBuffer &buffer,
+                          core::Int32 offset,
+                          core::UInt32 draw_count,
+                          core::ArraySize stride);
+        void drawIndexedIndirect(const HardwareBuffer &buffer,
+                                 core::Int32 offset,
+                                 core::UInt32 draw_count,
+                                 core::ArraySize stride);
 
-        inline void bindVertexBuffers(std::vector<HardwareBufferCRef> buffers,
-                                      std::vector<core::Offset> offsets);
-        inline void bindIndexBuffer(const HardwareBuffer &buffer,
-                                    core::Offset offset = 0,
-                                    bool large_indices  = false);
-        inline void bindDescriptorSets(const GraphicsPipeline &pipeline,
-                                       std::vector<DescriptorSetCRef> descriptor_sets,
-                                       std::vector<core::UOffset> dynamic_offsets = {});
+        void bindVertexBuffers(std::vector<HardwareBufferConstRef> buffers,
+                               std::vector<core::Int32> Int32s);
+        void bindIndexBuffer(const HardwareBuffer &buffer,
+                             core::Int32 offset = 0,
+                             bool large_indices = false);
+        void bindDescriptorSets(const GraphicsPipeline &pipeline,
+                                std::vector<DescriptorSetConstRef> descriptor_sets,
+                                std::vector<core::UInt32> dynamic_offsets = {});
+        void bindDescriptorSets(const ComputePipeline &pipeline,
+                                std::vector<DescriptorSetConstRef> descriptor_sets,
+                                std::vector<core::UInt32> dynamic_offsets = {});
 
-        inline void copyBuffer(const HardwareBuffer &source,
-                               const HardwareBuffer &destination,
-                               core::ArraySize size,
-                               core::UOffset src_offset = 0u,
-                               core::UOffset dst_offset = 0u);
-        inline void copyBufferToTexture(const HardwareBuffer &source,
-                                        const Texture &destination,
-                                        std::vector<BufferTextureCopy> buffer_image_copies = {});
-        inline void copyTexture(const Texture &source,
-                                const Texture &destination,
-                                TextureLayout source_layout,
-                                TextureLayout destination_layout,
-                                TextureSubresourceLayers source_subresource_layers,
-                                TextureSubresourceLayers destination_subresource_layers,
-                                core::Extentu extent);
+        void copyBuffer(const HardwareBuffer &source,
+                        const HardwareBuffer &destination,
+                        core::ArraySize size,
+                        core::Int32 src_offset = 0u,
+                        core::Int32 dst_offset = 0u);
+        void copyBufferToTexture(const HardwareBuffer &source,
+                                 const Texture &destination,
+                                 std::vector<BufferTextureCopy> buffer_image_copies = {});
+        void copyTextureToBuffer(const Texture &source,
+                                 const HardwareBuffer &destination,
+                                 std::vector<BufferTextureCopy> buffer_image_copies = {});
+        void copyTexture(const Texture &source,
+                         const Texture &destination,
+                         TextureLayout source_layout,
+                         TextureLayout destination_layout,
+                         TextureSubresourceLayers source_subresource_layers,
+                         TextureSubresourceLayers destination_subresource_layers,
+                         core::Extentu extent);
 
-        inline void resolveTexture(const Texture &source,
-                                   const Texture &destination,
-                                   TextureLayout source_layout,
-                                   TextureLayout destination_layout,
-                                   TextureSubresourceLayers source_subresource_layers      = {},
-                                   TextureSubresourceLayers destination_subresource_layers = {});
+        void resolveTexture(const Texture &source,
+                            const Texture &destination,
+                            TextureLayout source_layout,
+                            TextureLayout destination_layout,
+                            TextureSubresourceLayers source_subresource_layers      = {},
+                            TextureSubresourceLayers destination_subresource_layers = {});
 
-        inline void blitTexture(const Texture &source,
-                                const Texture &destination,
-                                TextureLayout source_layout,
-                                TextureLayout destination_layout,
-                                std::vector<BlitRegion> regions,
-                                Filter filter);
+        void blitTexture(const Texture &source,
+                         const Texture &destination,
+                         TextureLayout source_layout,
+                         TextureLayout destination_layout,
+                         std::vector<BlitRegion> regions,
+                         Filter filter);
 
-        inline void transitionTextureLayout(const Texture &texture,
-                                            TextureLayout source_layout,
-                                            TextureLayout destination_layout,
-                                            TextureSubresourceRange subresource_range = {});
+        void transitionTextureLayout(const Texture &texture,
+                                     TextureLayout source_layout,
+                                     TextureLayout destination_layout,
+                                     TextureSubresourceRange subresource_range = {});
 
-        inline void executeSubCommandBuffers(std::vector<CommandBufferCRef> command_buffers);
+        void executeSubCommandBuffers(std::vector<CommandBufferConstRef> command_buffers);
 
-        inline void setViewport(core::UInt32 first_viewport, std::vector<Viewport> viewports);
+        void setViewport(core::UInt32 first_viewport, std::vector<Viewport> viewports);
 
-        inline void setScissor(core::UInt32 first_scissor, std::vector<Scissor> scissors);
+        void setScissor(core::UInt32 first_scissor, std::vector<Scissor> scissors);
 
-        inline void pipelineBarrier(PipelineStageFlag src_mask,
-                                    PipelineStageFlag dst_mask,
-                                    DependencyFlag dependency,
-                                    MemoryBarriers memory_barriers,
-                                    BufferMemoryBarriers buffer_memory_barriers,
-                                    ImageMemoryBarriers image_memory_barriers);
+        void pipelineBarrier(PipelineStageFlag src_mask,
+                             PipelineStageFlag dst_mask,
+                             DependencyFlag dependency,
+                             MemoryBarriers memory_barriers,
+                             BufferMemoryBarriers buffer_memory_barriers,
+                             ImageMemoryBarriers image_memory_barriers);
 
-        inline void pushConstants(const GraphicsPipeline &pipeline,
-                                  ShaderStage stage,
-                                  std::vector<std::byte> data);
+        void pushConstants(const GraphicsPipeline &pipeline,
+                           ShaderStage stage,
+                           std::vector<std::byte> data,
+                           core::UInt32 offset = 0u);
+        void pushConstants(const ComputePipeline &pipeline,
+                           ShaderStage stage,
+                           std::vector<std::byte> data,
+                           core::UInt32 offset = 0u);
 
-        inline vk::CommandBuffer vkCommandBuffer() const noexcept;
-        inline operator vk::CommandBuffer() const noexcept;
-        inline vk::CommandBuffer vkHandle() const noexcept;
-        inline core::UInt64 vkDebugHandle() const noexcept;
+        vk::CommandBuffer vkCommandBuffer() const noexcept;
+        operator vk::CommandBuffer() const noexcept;
+        vk::CommandBuffer vkHandle() const noexcept;
+        core::UInt64 vkDebugHandle() const noexcept;
 
       private:
         State m_state = State::Initial;
-        QueueConstObserverPtr m_queue;
+        QueueConstPtr m_queue;
         CommandBufferLevel m_level;
 
         std::queue<Command> m_commands;
 
         RAIIVkCommandBuffer m_vk_command_buffer;
 
-        core::HashMap<TextureConstObserverPtr, TextureLayout> m_to_update_texture_layout;
+        core::HashMap<TextureConstPtr, TextureLayout> m_to_update_texture_layout;
 
         core::HashSet<std::string> m_debug_labels;
     };

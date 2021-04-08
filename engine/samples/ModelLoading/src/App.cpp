@@ -1,5 +1,7 @@
 #include "App.hpp"
-#include "GLTFScene.hpp"
+#include "Constants.hpp"
+#include "Log.hpp"
+#include "MainState.hpp"
 
 /////////// - StormKit::log - ///////////
 #include <storm/log/LogHandler.hpp>
@@ -18,28 +20,19 @@
 #include <storm/engine/Engine.hpp>
 
 using namespace storm;
-using storm::log::operator""_module;
 
-template<typename T>
-static constexpr auto WINDOW_WIDTH = T { 1280 };
-template<typename T>
-static constexpr auto WINDOW_HEIGHT = T { 768 };
-static constexpr auto WINDOW_TITLE  = "StormKit ModelLoading Example";
-static constexpr auto LOG_MODULE    = "ModelLoading"_module;
-
-App::App() {
-    log::LogHandler::ilog(LOG_MODULE,
-                          "Using StormKit {}.{}.{} {} {}",
-                          STORM_MAJOR_VERSION,
-                          STORM_MINOR_VERSION,
-                          STORM_PATCH_VERSION,
-                          STORM_GIT_BRANCH,
-                          STORM_GIT_COMMIT_HASH);
+App::App() noexcept {
+    ilog("Using StormKit {}.{}.{} {} {}",
+         STORMKIT_MAJOR_VERSION,
+         STORMKIT_MINOR_VERSION,
+         STORMKIT_PATCH_VERSION,
+         STORMKIT_GIT_BRANCH,
+         STORMKIT_GIT_COMMIT_HASH);
 }
 
 App::~App() = default;
 
-void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
+auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) -> void {
     auto model_filepath = std::filesystem::path { EXAMPLES_DATA_DIR "models/Sword.glb" };
 
     for (auto i = 1; i < argc; ++i) {
@@ -50,54 +43,49 @@ void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 
     doInitWindow();
 
-    namespace Chrono = std::chrono;
-    using Clock      = std::chrono::high_resolution_clock;
+    m_engine = std::make_unique<engine::Engine>(*m_window, "ModelLoading");
+    ilog("Image count: {}", m_engine->surface().bufferingCount());
 
-    auto input_handler = window::InputHandler { *m_window };
+    m_engine->pushState<MainState>(*m_engine, *m_window);
 
-    input_handler.setMousePositionOnWindow(
-        core::Position2i { WINDOW_WIDTH<core::Int32> / 2, WINDOW_HEIGHT<core::Int32> / 2 });
-
-    m_scene = std::make_unique<GLTFScene>(*m_engine, *m_window, std::move(model_filepath));
-    m_engine->setScene(*m_scene);
-
-    auto last_timepoint = Clock::now();
     while (m_window->isOpen()) {
-        const auto now_timepoint = Clock::now();
-        const auto delta =
-            Chrono::duration<float, Chrono::seconds::period> { now_timepoint - last_timepoint }
-                .count();
-        last_timepoint = now_timepoint;
-
         m_event_handler->update();
 
-        m_scene->update(delta);
-
-        m_engine->render();
+        m_engine->update();
     }
 
     m_engine->device().waitIdle();
 }
 
-void App::doInitWindow() {
+auto App::doInitWindow() -> void {
     auto video_settings =
-        window::VideoSettings { .size = core::Extentu { .width  = WINDOW_WIDTH<core::UInt32>,
-                                                        .height = WINDOW_HEIGHT<core::UInt32> } };
-    auto window_style = window::WindowStyle::Close;
+        window::VideoSettings { .size = core::Extentu { WINDOW_WIDTH<core::UInt32>,
+                                                        WINDOW_HEIGHT<core::UInt32> } };
+    auto window_style = window::WindowStyle::Close | window::WindowStyle::Resizable;
 
-    if (m_fullscreen) {
-        video_settings = window::Window::getDesktopFullscreenSize();
-        window_style   = window::WindowStyle::Fullscreen;
-    }
+    m_window = std::make_unique<window::Window>(WINDOW_TITLE, video_settings, window_style);
+    if (m_fullscreen) m_window->setFullscreenEnabled(true);
 
-    m_window        = std::make_unique<window::Window>(WINDOW_TITLE, video_settings, window_style);
     m_event_handler = std::make_unique<window::EventHandler>(*m_window);
 
     m_event_handler->addCallback(window::EventType::Closed,
                                  [this]([[maybe_unused]] const auto &event) { m_window->close(); });
+    m_event_handler->addCallback(window::EventType::Resized,
+                                 [this]([[maybe_unused]] const auto &event) {
+                                     m_engine->recreateSwapchain();
+                                 });
     m_event_handler->addCallback(window::EventType::KeyPressed, [this](const auto &event) {
         if (event.key_event.key == window::Key::Escape) m_window->close();
-        else if (event.key_event.key == window::Key::Numpad5)
+        else if (event.key_event.key == window::Key::F11)
+            m_window->setFullscreenEnabled(!m_window->isInFullscreen());
+        else if (event.key_event.key == window::Key::Space) {
+            if (m_camera_enabled) m_engine->currentState<MainState>().disableCamera();
+            else
+                m_engine->currentState<MainState>().enableCamera();
+
+            m_camera_enabled = !m_camera_enabled;
+        }
+        /*else if (event.key_event.key == window::Key::Numpad5)
             m_scene->setDebugView(engine::PBRMaterialInstance::DebugView::D);
         else if (event.key_event.key == window::Key::Numpad4)
             m_scene->setDebugView(engine::PBRMaterialInstance::DebugView::G);
@@ -130,8 +118,6 @@ void App::doInitWindow() {
         else if (event.key_event.key == window::Key::Space)
             m_scene->toggleMeshRotation();
         else if (event.key_event.key == window::Key::W)
-            m_scene->toggleWireframe();
+            m_scene->toggleWireframe();*/
     });
-
-    m_engine = std::make_unique<engine::Engine>(*m_window, "ModelLoading");
 }

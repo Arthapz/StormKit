@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -7,77 +7,127 @@
 namespace storm::engine {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    void Engine::setScene(Scene &scene) noexcept { m_scene = core::makeObserver(scene); }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    render::Instance &Engine::instance() noexcept { return *m_instance; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    const render::Instance &Engine::instance() const noexcept { return *m_instance; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    render::Device &Engine::device() noexcept { return *m_device; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    const render::Device &Engine::device() const noexcept { return *m_device; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    render::Surface &Engine::surface() noexcept { return *m_surface; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    const render::Surface &Engine::surface() const noexcept { return *m_surface; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    render::DescriptorPool &Engine::descriptorPool() noexcept { return *m_descriptor_pool; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    const render::DescriptorPool &Engine::descriptorPool() const noexcept {
-        return *m_descriptor_pool;
+    template<class T, typename... Args>
+    auto Engine::pushState(Args &&...args) -> void {
+        m_state_manager.requestPush<T>(std::forward<Args>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    render::PipelineCache &Engine::pipelineCache() noexcept { return *m_pipeline_cache; }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    const render::PipelineCache &Engine::pipelineCache() const noexcept {
-        return *m_pipeline_cache;
+    template<class T, typename... Args>
+    auto Engine::setState(Args &&...args) -> void {
+        m_state_manager.requestSet(std::forward<Args>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    DebugGUI &Engine::debugGUI() noexcept { return *m_debug_gui; }
+    inline auto Engine::popState() -> void { m_state_manager.requestPop(); }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    const DebugGUI &Engine::debugGUI() const noexcept { return *m_debug_gui; }
+    inline auto Engine::currentState() noexcept -> core::State & { return m_state_manager.top(); }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    float Engine::getCPUTime() const noexcept { return m_cpu_time; }
+    inline auto Engine::currentState() const noexcept -> const core::State & {
+        return m_state_manager.top();
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    Profiler &Engine::profiler() noexcept { return *m_profiler; }
+    template<CHILD_OF_STATE_CONCEPT(State)>
+    auto Engine::currentState() -> State & {
+        return static_cast<State &>(m_state_manager.top());
+    }
+
+    template<CHILD_OF_STATE_CONCEPT(State)>
+    auto Engine::currentState() const -> const State & {
+        return static_cast<State &>(m_state_manager.top());
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    const Profiler &Engine::profiler() const noexcept { return *m_profiler; }
+    inline auto Engine::instance() noexcept -> render::Instance & { return *m_instance; }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    float Engine::maxAnisotropy() const noexcept { return m_max_anisotropy; }
+    inline auto Engine::instance() const noexcept -> const render::Instance & {
+        return *m_instance;
+    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    render::SampleCountFlag Engine::maxSampleCount() const noexcept { return m_max_sample_count; }
+    inline auto Engine::device() noexcept -> render::Device & { return *m_device; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::device() const noexcept -> const render::Device & { return *m_device; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::surface() noexcept -> render::Surface & { return *m_surface; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::surface() const noexcept -> const render::Surface & { return *m_surface; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::getCPUTime() const noexcept -> float { return m_cpu_time; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::profiler() noexcept -> Profiler & { return *m_profiler; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::profiler() const noexcept -> const Profiler & { return *m_profiler; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::maxAnisotropy() const noexcept -> float { return m_max_anisotropy; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::maxSampleCount() const noexcept -> render::SampleCountFlag {
+        return m_max_sample_count;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::currentFrame() noexcept -> render::Surface::Frame & { return *m_frame; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::currentFrame() const noexcept -> const render::Surface::Frame & {
+        return *m_frame;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::resourceCache() noexcept -> ResourceCache & { return *m_resource_cache; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::resourceCache() const noexcept -> const ResourceCache & {
+        return *m_resource_cache;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::frameGraph() noexcept -> FrameGraph & { return *m_frame_graph; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::frameGraph() const noexcept -> const FrameGraph & { return *m_frame_graph; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::deletionQueue() noexcept -> DeletionQueue & { return *m_deletion_queue; }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::deletionQueue() const noexcept -> const DeletionQueue & {
+        return *m_deletion_queue;
+    }
 } // namespace storm::engine

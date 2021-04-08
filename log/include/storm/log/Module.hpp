@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -11,9 +11,9 @@
 #include <storm/core/NamedType.hpp>
 
 namespace storm::log {
-    using Module = core::NamedType<gsl::czstring<>, struct LogModuleParameter>;
+    using Module = core::NamedType<gsl::basic_zstring<const char>, struct LogModuleParameter>;
 
-    constexpr storm::log::Module makeModule(gsl::czstring<> str) {
+    constexpr storm::log::Module makeModule(gsl::basic_zstring<const char> str) {
         return core::makeNamed<Module>(str);
     }
 

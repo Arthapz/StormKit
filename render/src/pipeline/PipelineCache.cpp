@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -7,6 +7,7 @@
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/PhysicalDevice.hpp>
 
+#include <storm/render/pipeline/ComputePipeline.hpp>
 #include <storm/render/pipeline/GraphicsPipeline.hpp>
 #include <storm/render/pipeline/PipelineCache.hpp>
 
@@ -38,27 +39,68 @@ PipelineCache::PipelineCache(PipelineCache &&) = default;
 /////////////////////////////////////
 PipelineCache &PipelineCache::operator=(PipelineCache &&) = default;
 
+/////////////////////////////////////
+/////////////////////////////////////
 GraphicsPipeline &PipelineCache::getPipeline(const GraphicsPipelineState &state,
                                              const RenderPass &pass) {
-    if (!has(state)) {
-        m_pipelines.emplace(state,
-                            m_device->createGraphicsPipelinePtr(core::makeConstObserver(this)));
-        auto &pipeline = m_pipelines[state];
+    const auto pass_description = pass.description();
+    if (!has(state, pass_description)) {
+        auto pipeline = m_device->createGraphicsPipelinePtr(core::makeConstObserver(this));
 
         pipeline->setState(state);
         pipeline->setRenderPass(pass);
         pipeline->build();
+
+        m_graphics_pipelines[state].emplace(pass_description, std::move(pipeline));
     }
 
-    return *m_pipelines[state];
+    return *std::find_if(std::begin(m_graphics_pipelines[state]),
+                         std::end(m_graphics_pipelines[state]),
+                         [&pass_description](const auto &d) {
+                             return d.first.isCompatible(pass_description);
+                         })
+                ->second;
 }
 
-bool PipelineCache::has(const GraphicsPipelineState &state) const noexcept {
-    auto it = m_pipelines.find(state);
+/////////////////////////////////////
+/////////////////////////////////////
+ComputePipeline &PipelineCache::getPipeline(const ComputePipelineState &state) {
+    if (!has(state)) {
+        auto pipeline = m_device->createComputePipelinePtr(core::makeConstObserver(this));
 
-    return it != std::cend(m_pipelines);
+        pipeline->setState(state);
+        pipeline->build();
+
+        m_compute_pipelines[state] = std::move(pipeline);
+    }
+    return *m_compute_pipelines.find(state)->second;
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
+bool PipelineCache::has(const GraphicsPipelineState &state,
+                        const RenderPassDescription &description) const noexcept {
+    auto it = m_graphics_pipelines.find(state);
+    // auto it = core::ranges::find(m_pipelines, state);
+    if (it == std::cend(m_graphics_pipelines)) return false;
+
+    const auto &lookup = it->second;
+
+    auto it2 = std::find_if(std::cbegin(lookup), std::cend(lookup), [&description](const auto &d) {
+        return d.first.isCompatible(description);
+    });
+
+    return it2 != std::cend(lookup);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+bool PipelineCache::has(const ComputePipelineState &state) const noexcept {
+    return m_compute_pipelines.find(state) != std::cend(m_compute_pipelines);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
 void PipelineCache::createNewPipelineCache() {
     using log::operator"" _module;
 
@@ -80,10 +122,12 @@ void PipelineCache::createNewPipelineCache() {
               core::ranges::end(physical_device_infos.pipeline_cache_uuid),
               core::ranges::begin(m_serialized.uuid.value));
 
-    const auto create_info = vk::PipelineCacheCreateInfo {};
-    m_vk_pipeline_cache    = m_device->createVkPipelineCache(std::move(create_info));
+    auto create_info    = vk::PipelineCacheCreateInfo {};
+    m_vk_pipeline_cache = m_device->createVkPipelineCache(std::move(create_info));
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 void PipelineCache::readPipelineCache() {
     using log::operator"" _module;
 
@@ -156,13 +200,15 @@ void PipelineCache::readPipelineCache() {
 
     stream.read(reinterpret_cast<char *>(std::data(data)), std::size(data));
 
-    const auto create_info = vk::PipelineCacheCreateInfo {}
-                                 .setInitialDataSize(std::size(data))
-                                 .setPInitialData(std::data(data));
+    auto create_info = vk::PipelineCacheCreateInfo {}
+                           .setInitialDataSize(std::size(data))
+                           .setPInitialData(std::data(data));
 
     m_vk_pipeline_cache = m_device->createVkPipelineCache(std::move(create_info));
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 void PipelineCache::saveCache() {
     using log::operator"" _module;
 
@@ -177,7 +223,7 @@ void PipelineCache::saveCache() {
     m_serialized.guard.data_size = std::size(data);
     m_serialized.guard.data_hash = 0u;
 
-    for (auto v : data) core::hash_combine(m_serialized.guard.data_hash, v);
+    for (auto v : data) core::hashCombine(m_serialized.guard.data_hash, v);
 
     auto stream = std::ofstream { m_path.string(), std::ios::binary | std::ios::trunc };
     stream.write(reinterpret_cast<char *>(&m_serialized.guard), sizeof(m_serialized.guard));

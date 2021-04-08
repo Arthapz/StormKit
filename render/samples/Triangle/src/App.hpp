@@ -17,7 +17,7 @@ class App: public storm::core::App {
     App();
     ~App() override;
 
-    void run(int argc, char **argv) override;
+    void run(const int argc, const char **argv) override;
 
   private:
     void doInitWindow();
@@ -28,8 +28,8 @@ class App: public storm::core::App {
 
     storm::render::InstanceOwnedPtr m_instance;
     storm::render::DeviceOwnedPtr m_device;
-    storm::render::SurfaceOwnedPtr m_surface;
-    storm::render::QueueConstObserverPtr m_queue;
+    storm::render::WindowSurfaceOwnedPtr m_surface;
+    storm::render::QueueConstPtr m_queue;
     storm::render::TextureViewArray m_surface_views;
 
     storm::render::ShaderOwnedPtr m_vertex_shader;

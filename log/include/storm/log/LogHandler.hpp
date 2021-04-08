@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -11,34 +11,34 @@
 #include <storm/log/Logger.hpp>
 
 namespace storm::log {
-    class STORM_PUBLIC LogHandler: public core::NonDefaultInstanciable {
+    class STORMKIT_PUBLIC LogHandler: public core::NonDefaultInstanciable {
       public:
         template<class T, typename... Args>
-        static void setupLogger(Args &&... param_args);
+        static void setupLogger(Args &&...param_args);
 
         static void setupDefaultLogger();
 
         template<typename... Args>
         static void
-            log(Severity severity, Module module, std::string format_string, Args &&... param_args);
+            log(Severity severity, Module module, std::string format_string, Args &&...param_args);
 
         template<typename... Args>
-        static inline void log(Severity severity, std::string format_string, Args &&... param_args);
+        static inline void log(Severity severity, std::string format_string, Args &&...param_args);
 
         template<typename... Args>
-        static inline void dlog(Args &&... param_args);
+        static inline void dlog(Args &&...param_args);
 
         template<typename... Args>
-        static inline void ilog(Args &&... param_args);
+        static inline void ilog(Args &&...param_args);
 
         template<typename... Args>
-        static inline void wlog(Args &&... param_args);
+        static inline void wlog(Args &&...param_args);
 
         template<typename... Args>
-        static inline void elog(Args &&... param_args);
+        static inline void elog(Args &&...param_args);
 
         template<typename... Args>
-        static inline void flog(Args &&... param_args);
+        static inline void flog(Args &&...param_args);
 
         static Logger &logger();
 
@@ -48,5 +48,28 @@ namespace storm::log {
         static LoggerOwnedPtr m_logger;
     };
 } // namespace storm::log
+
+#define LOGGER(module)                                                               \
+    static constexpr inline auto LOG_MODULE = storm::log::makeModule(module);        \
+    template<typename... Args>                                                       \
+    static inline void dlog(Args &&...param_args) {                                  \
+        storm::log::LogHandler::dlog(LOG_MODULE, std::forward<Args>(param_args)...); \
+    }                                                                                \
+    template<typename... Args>                                                       \
+    static inline void ilog(Args &&...param_args) {                                  \
+        storm::log::LogHandler::ilog(LOG_MODULE, std::forward<Args>(param_args)...); \
+    }                                                                                \
+    template<typename... Args>                                                       \
+    static inline void wlog(Args &&...param_args) {                                  \
+        storm::log::LogHandler::wlog(LOG_MODULE, std::forward<Args>(param_args)...); \
+    }                                                                                \
+    template<typename... Args>                                                       \
+    static inline void elog(Args &&...param_args) {                                  \
+        storm::log::LogHandler::elog(LOG_MODULE, std::forward<Args>(param_args)...); \
+    }                                                                                \
+    template<typename... Args>                                                       \
+    static inline void flog(Args &&...param_args) {                                  \
+        storm::log::LogHandler::flog(LOG_MODULE, std::forward<Args>(param_args)...); \
+    }
 
 #include "LogHandler.inl"

@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -13,24 +13,36 @@
 #include <storm/render/core/DynamicLoader.hpp>
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Fwd.hpp>
+#include <storm/render/core/Surface.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
 namespace storm::render {
-    class STORM_PUBLIC Instance {
+    class STORMKIT_PUBLIC Instance {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Instance;
 
-        Instance(std::string app_name = "");
+        Instance(VkInstance instance);
+        explicit Instance(std::string app_name = "");
         ~Instance();
 
         Instance(Instance &&);
         Instance &operator=(Instance &&);
 
-        Surface createSurface(const window::Window &window) const;
-        SurfaceOwnedPtr createSurfacePtr(const window::Window &window) const;
+        WindowSurface
+            createWindowSurface(const window::Window &window,
+                                Surface::Buffering buffering = Surface::Buffering::Swapchain) const;
+        WindowSurfaceOwnedPtr createWindowSurfacePtr(
+            const window::Window &window,
+            Surface::Buffering buffering = Surface::Buffering::Swapchain) const;
+        OffscreenSurface
+            createOffscreenSurface(core::Extentu extent,
+                                   Surface::Buffering buffering = Surface::Buffering::Triple) const;
+        OffscreenSurfaceOwnedPtr createOffscreenSurfacePtr(
+            core::Extentu,
+            Surface::Buffering buffering = Surface::Buffering::Triple) const;
 
         const render::PhysicalDevice &pickPhysicalDevice() const noexcept;
-        const render::PhysicalDevice &pickPhysicalDevice(const Surface &surface) noexcept;
+        const render::PhysicalDevice &pickPhysicalDevice(const WindowSurface &surface) noexcept;
 
         inline core::span<const PhysicalDeviceOwnedPtr> physicalDevices();
 
@@ -40,16 +52,22 @@ namespace storm::render {
         inline vk::Instance vkHandle() const noexcept;
         inline core::UInt64 vkDebugHandle() const noexcept;
 
-#if defined(STORM_OS_WINDOWS)
+#if defined(STORMKIT_OS_WINDOWS)
         vk::UniqueSurfaceKHR
             createVkSurface(const vk::Win32SurfaceCreateInfoKHR &create_info) const noexcept;
-#elif defined(STORM_OS_MACOS)
+#elif defined(STORMKIT_OS_MACOS)
         vk::UniqueSurfaceKHR
             createVkSurface(const vk::MacOSSurfaceCreateInfoMVK &create_info) const noexcept;
-#elif defined(STORM_OS_LINUX)
+#elif defined(STORMKIT_OS_LINUX)
+    #if STORMKIT_ENABLE_XCB
         vk::UniqueSurfaceKHR
             createVkSurface(const vk::XcbSurfaceCreateInfoKHR &create_info) const noexcept;
-#elif defined(STORM_OS_IOS)
+    #endif
+    #if STORMKIT_ENABLE_WAYLAND
+        vk::UniqueSurfaceKHR
+            createVkSurface(const vk::WaylandSurfaceCreateInfoKHR &create_info) const noexcept;
+    #endif
+#elif defined(STORMKIT_OS_IOS)
         vk::UniqueSurfaceKHR
             createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const noexcept;
 #endif
@@ -65,7 +83,7 @@ namespace storm::render {
         std::vector<PhysicalDeviceOwnedPtr> m_physical_devices;
 
         DynamicLoader m_loader;
-        vk::UniqueInstance m_vk_instance;
+        std::variant<vk::UniqueInstance, vk::Instance> m_vk_instance;
         vk::UniqueDebugUtilsMessengerEXT m_vk_messenger;
 
         std::string m_app_name;

@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -22,7 +22,7 @@ namespace storm::render {
     struct BufferDescriptor {
         DescriptorType type = DescriptorType::Uniform_Buffer;
         core::UInt32 binding;
-        HardwareBufferConstObserverPtr buffer;
+        HardwareBufferConstPtr buffer;
         core::UInt32 range;
         core::UInt32 offset;
     };
@@ -31,16 +31,18 @@ namespace storm::render {
         DescriptorType type = DescriptorType::Combined_Texture_Sampler;
         core::UInt32 binding;
         TextureLayout layout;
-        TextureViewConstObserverPtr texture_view;
-        SamplerConstObserverPtr sampler;
+        TextureViewConstPtr texture_view;
+        SamplerConstPtr sampler;
     };
 
-    using Descriptor      = std::variant<BufferDescriptor, TextureDescriptor>;
-    using DescriptorArray = std::vector<Descriptor>;
+    using Descriptor          = std::variant<BufferDescriptor, TextureDescriptor>;
+    using DescriptorArray     = std::vector<Descriptor>;
+    using DescriptorSpan      = core::span<Descriptor>;
+    using DescriptorConstSpan = core::span<const Descriptor>;
     template<std::size_t N>
     using DescriptorStaticArray = std::array<Descriptor, N>;
 
-    class STORM_PUBLIC DescriptorSet: public core::NonCopyable {
+    class STORMKIT_PUBLIC DescriptorSet: public core::NonCopyable {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Descriptor_Set;
         DescriptorSet(const render::DescriptorPool &pool,
@@ -51,7 +53,7 @@ namespace storm::render {
         DescriptorSet(DescriptorSet &&);
         DescriptorSet &operator=(DescriptorSet &&);
 
-        void update(core::span<const Descriptor> descriptors);
+        void update(DescriptorConstSpan descriptors);
 
         inline core::span<const DescriptorType> types() const noexcept;
 
@@ -61,13 +63,21 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
-        DeviceConstObserverPtr m_device;
-        DescriptorPoolConstObserverPtr m_pool;
+        DeviceConstPtr m_device;
+        DescriptorPoolConstPtr m_pool;
 
         std::vector<DescriptorType> m_types;
 
         RAIIVkDescriptorSet m_vk_descriptor_set;
     };
 } // namespace storm::render
+
+HASH_FUNC(storm::render::BufferDescriptor)
+HASH_FUNC(storm::render::TextureDescriptor)
+HASH_FUNC(storm::render::Descriptor)
+HASH_FUNC(storm::render::DescriptorArray)
+HASH_FUNC(storm::render::DescriptorSpan)
+HASH_FUNC(storm::render::DescriptorConstSpan)
+// TODO hash func for static array
 
 #include "DescriptorSet.inl"

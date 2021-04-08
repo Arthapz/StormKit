@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -7,6 +7,7 @@
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/Queue.hpp>
 
+#include <storm/render/pipeline/ComputePipeline.hpp>
 #include <storm/render/pipeline/DescriptorSet.hpp>
 #include <storm/render/pipeline/Framebuffer.hpp>
 #include <storm/render/pipeline/GraphicsPipeline.hpp>
@@ -107,8 +108,8 @@ void CommandBuffer::reset() noexcept {
 /////////////////////////////////////
 /////////////////////////////////////
 void CommandBuffer::build() {
-    STORM_EXPECTS(m_vk_command_buffer);
-    STORM_EXPECTS(m_state == State::Recording);
+    STORMKIT_EXPECTS(m_vk_command_buffer);
+    STORMKIT_EXPECTS(m_state == State::Recording);
 
     auto commands          = std::exchange(m_commands, std::queue<render::Command> {});
     const auto &device     = m_queue->device();
@@ -127,10 +128,10 @@ void CommandBuffer::build() {
 
                         const auto label_info = vk::DebugUtilsLabelEXT {}
                                                     .setPLabelName(std::data(name))
-                                                    .setColor({ command.color.r,
-                                                                command.color.g,
-                                                                command.color.b,
-                                                                command.color.a });
+                                                    .setColor({ command.color.red,
+                                                                command.color.green,
+                                                                command.color.blue,
+                                                                command.color.alpha });
 
                         m_vk_command_buffer->beginDebugUtilsLabelEXT(label_info, dispatcher);
                     }
@@ -143,10 +144,10 @@ void CommandBuffer::build() {
 
                         const auto label_info = vk::DebugUtilsLabelEXT {}
                                                     .setPLabelName(std::data(name))
-                                                    .setColor({ command.color.r,
-                                                                command.color.g,
-                                                                command.color.b,
-                                                                command.color.a });
+                                                    .setColor({ command.color.red,
+                                                                command.color.green,
+                                                                command.color.blue,
+                                                                command.color.alpha });
 
                         m_vk_command_buffer->insertDebugUtilsLabelEXT(label_info, dispatcher);
                     }
@@ -159,15 +160,29 @@ void CommandBuffer::build() {
                     }
                 },
                 [this, &dispatcher](const BeginCommand &command) {
-                    const auto begin_info = vk::CommandBufferBeginInfo {}.setFlags(
+                    auto begin_info = vk::CommandBufferBeginInfo {}.setFlags(
                         (command.one_time_submit)
                             ? vk::CommandBufferUsageFlagBits::eOneTimeSubmit
                             : vk::CommandBufferUsageFlagBits::eSimultaneousUse);
 
-                    m_vk_command_buffer->begin(begin_info, dispatcher);
+                    auto vk_inheritance_info = vk::CommandBufferInheritanceInfo {};
+                    if (command.inheritence_info.has_value()) {
+                        const auto &inheritance_info = command.inheritence_info.value();
+
+                        vk_inheritance_info = vk::CommandBufferInheritanceInfo {}
+                                                  .setRenderPass(*inheritance_info.render_pass)
+                                                  .setFramebuffer(*inheritance_info.framebuffer)
+                                                  .setSubpass(inheritance_info.subpass);
+
+                        begin_info.setPInheritanceInfo(&vk_inheritance_info);
+                    }
+
+                    const auto result = m_vk_command_buffer->begin(begin_info, dispatcher);
+                    STORMKIT_ENSURES(result == vk::Result::eSuccess);
                 },
                 [this, &dispatcher]([[maybe_unused]] const EndCommand &command) {
-                    m_vk_command_buffer->end(dispatcher);
+                    const auto result = m_vk_command_buffer->end(dispatcher);
+                    STORMKIT_ENSURES(result == vk::Result::eSuccess);
                 },
                 [this, &dispatcher](const BeginRenderPassCommand &command) {
                     const auto &render_pass = static_cast<const RenderPass &>(command.render_pass);
@@ -182,10 +197,10 @@ void CommandBuffer::build() {
                             const auto &clear_color = std::get<ClearColor>(clear_value_variant);
 
                             const auto clear_color_ =
-                                vk::ClearColorValue {}.setFloat32({ clear_color.color.r,
-                                                                    clear_color.color.g,
-                                                                    clear_color.color.b,
-                                                                    clear_color.color.a });
+                                vk::ClearColorValue {}.setFloat32({ clear_color.color.red,
+                                                                    clear_color.color.green,
+                                                                    clear_color.color.blue,
+                                                                    clear_color.color.alpha });
 
                             clear_value.setColor(std::move(clear_color_));
                         } else if (std::holds_alternative<ClearDepthStencil>(clear_value_variant)) {
@@ -211,7 +226,7 @@ void CommandBuffer::build() {
                             .setRenderPass(render_pass)
                             .setFramebuffer(framebuffer)
                             .setClearValueCount(
-                                gsl::narrow_cast<core::UInt32>(std::size(clear_values)))
+                                gsl::narrow_cast<core::Int32>(std::size(clear_values)))
                             .setPClearValues(std::data(clear_values));
 
                     auto subpass_content = vk::SubpassContents::eInline;
@@ -235,8 +250,21 @@ void CommandBuffer::build() {
                                                       pipeline,
                                                       dispatcher);
                 },
+                [this, &dispatcher](const BindComputePipelineCommand &command) {
+                    const auto &pipeline = command.pipeline;
+
+                    m_vk_command_buffer->bindPipeline(vk::PipelineBindPoint::eCompute,
+                                                      pipeline,
+                                                      dispatcher);
+                },
+                [this, &dispatcher](const DispatchCommand &command) {
+                    m_vk_command_buffer->dispatch(command.group_count_x,
+                                                  command.group_count_y,
+                                                  command.group_count_z,
+                                                  dispatcher);
+                },
                 [this, &dispatcher](const DrawCommand &command) {
-                    STORM_EXPECTS(command.vertex_count > 0u);
+                    STORMKIT_EXPECTS(command.vertex_count > 0u);
 
                     m_vk_command_buffer->draw(command.vertex_count,
                                               command.instance_count,
@@ -245,7 +273,7 @@ void CommandBuffer::build() {
                                               dispatcher);
                 },
                 [this, &dispatcher](const DrawIndexedCommand &command) {
-                    STORM_EXPECTS(command.index_count > 0u);
+                    STORMKIT_EXPECTS(command.index_count > 0u);
 
                     m_vk_command_buffer->drawIndexed(command.index_count,
                                                      command.instance_count,
@@ -254,10 +282,28 @@ void CommandBuffer::build() {
                                                      command.first_instance,
                                                      dispatcher);
                 },
+                [this, &dispatcher](const DrawIndirectCommand &command) {
+                    STORMKIT_EXPECTS(command.draw_count > 0u);
+
+                    m_vk_command_buffer->drawIndirect(command.buffer,
+                                                      command.offset,
+                                                      command.draw_count,
+                                                      command.stride,
+                                                      dispatcher);
+                },
+                [this, &dispatcher](const DrawIndexedIndirectCommand &command) {
+                    STORMKIT_EXPECTS(command.draw_count > 0u);
+
+                    m_vk_command_buffer->drawIndexedIndirect(command.buffer,
+                                                             command.offset,
+                                                             command.draw_count,
+                                                             command.stride,
+                                                             dispatcher);
+                },
                 [this, &dispatcher](const BindVertexBuffersCommand &command) {
-                    STORM_EXPECTS(!std::empty(command.buffers));
-                    STORM_EXPECTS(!std::empty(command.offsets));
-                    STORM_EXPECTS(std::size(command.buffers) == std::size(command.offsets));
+                    STORMKIT_EXPECTS(!std::empty(command.buffers));
+                    STORMKIT_EXPECTS(!std::empty(command.offsets));
+                    STORMKIT_EXPECTS(std::size(command.buffers) == std::size(command.offsets));
 
                     auto buffers = std::vector<vk::Buffer> {};
                     auto offsets = std::vector<vk::DeviceSize> {};
@@ -278,7 +324,7 @@ void CommandBuffer::build() {
                                                          dispatcher);
                 },
                 [this, &dispatcher](const BindDescriptorSetsCommand &command) {
-                    STORM_EXPECTS(!std::empty(command.descriptor_sets));
+                    STORMKIT_EXPECTS(!std::empty(command.descriptor_sets));
 
                     auto descriptor_sets = std::vector<vk::DescriptorSet> {};
                     for (const auto &descriptor_set : command.descriptor_sets)
@@ -305,7 +351,6 @@ void CommandBuffer::build() {
                                                     copy_buffers,
                                                     dispatcher);
                 },
-
                 [this, &dispatcher](const CopyBufferToTextureCommand &command) {
                     auto copy_regions = std::vector<vk::BufferImageCopy> {};
                     copy_regions.reserve(std::size(command.buffer_image_copies));
@@ -329,9 +374,9 @@ void CommandBuffer::build() {
                                 .setImageOffset({ buffer_image_copy.offset.x,
                                                   buffer_image_copy.offset.y,
                                                   buffer_image_copy.offset.z })
-                                .setImageExtent({ buffer_image_copy.extent.w,
-                                                  buffer_image_copy.extent.h,
-                                                  buffer_image_copy.extent.d });
+                                .setImageExtent({ buffer_image_copy.extent.width,
+                                                  buffer_image_copy.extent.height,
+                                                  buffer_image_copy.extent.depth });
 
                         copy_regions.emplace_back(std::move(copy_buffer));
                     }
@@ -342,9 +387,45 @@ void CommandBuffer::build() {
                                                            copy_regions,
                                                            dispatcher);
                 },
+                [this, &dispatcher](const CopyTextureToBufferCommand &command) {
+                    auto copy_regions = std::vector<vk::BufferImageCopy> {};
+                    copy_regions.reserve(std::size(command.buffer_image_copies));
+
+                    for (const auto &buffer_image_copy : command.buffer_image_copies) {
+                        const auto image_subresource =
+                            vk::ImageSubresourceLayers {}
+                                .setAspectMask(
+                                    toVK(buffer_image_copy.subresource_layers.aspect_mask))
+                                .setMipLevel(buffer_image_copy.subresource_layers.mip_level)
+                                .setBaseArrayLayer(
+                                    buffer_image_copy.subresource_layers.base_array_layer)
+                                .setLayerCount(buffer_image_copy.subresource_layers.layer_count);
+
+                        const auto copy_buffer =
+                            vk::BufferImageCopy {}
+                                .setBufferOffset(buffer_image_copy.buffer_offset)
+                                .setBufferRowLength(buffer_image_copy.buffer_row_length)
+                                .setBufferImageHeight(buffer_image_copy.buffer_image_height)
+                                .setImageSubresource(std::move(image_subresource))
+                                .setImageOffset({ buffer_image_copy.offset.x,
+                                                  buffer_image_copy.offset.y,
+                                                  buffer_image_copy.offset.z })
+                                .setImageExtent({ buffer_image_copy.extent.width,
+                                                  buffer_image_copy.extent.height,
+                                                  buffer_image_copy.extent.depth });
+
+                        copy_regions.emplace_back(std::move(copy_buffer));
+                    }
+
+                    m_vk_command_buffer->copyImageToBuffer(command.source.vkImage(),
+                                                           vk::ImageLayout::eTransferSrcOptimal,
+                                                           command.destination,
+                                                           copy_regions,
+                                                           dispatcher);
+                },
                 [this, &dispatcher](const CopyTextureCommand &command) {
                     const auto extent =
-                        vk::Extent3D { command.copy_region.w, command.copy_region.h, 1 };
+                        vk::Extent3D { command.copy_region.width, command.copy_region.height, 1 };
 
                     const auto src_subresource =
                         vk::ImageSubresourceLayers {}
@@ -377,8 +458,8 @@ void CommandBuffer::build() {
                                                    dispatcher);
                 },
                 [this, &dispatcher](const ResolveTextureCommand &command) {
-                    const auto extent = vk::Extent3D { command.destination.extent().w,
-                                                       command.destination.extent().h,
+                    const auto extent = vk::Extent3D { command.destination.extent().width,
+                                                       command.destination.extent().height,
                                                        1 };
 
                     const auto src_subresource =
@@ -430,20 +511,20 @@ void CommandBuffer::build() {
                                 .setBaseArrayLayer(region.destination.base_array_layer);
 
                         auto src_offsets = std::array<vk::Offset3D, 2> {};
-                        src_offsets[0].setX(region.source_offset[0].x);
-                        src_offsets[0].setY(region.source_offset[0].y);
-                        src_offsets[0].setZ(region.source_offset[0].z);
-                        src_offsets[1].setX(region.source_offset[1].x);
-                        src_offsets[1].setY(region.source_offset[1].y);
-                        src_offsets[1].setZ(region.source_offset[1].z);
+                        src_offsets[0].setX(region.source_offset[0]->width);
+                        src_offsets[0].setY(region.source_offset[0]->height);
+                        src_offsets[0].setZ(region.source_offset[0]->depth);
+                        src_offsets[1].setX(region.source_offset[1]->width);
+                        src_offsets[1].setY(region.source_offset[1]->height);
+                        src_offsets[1].setZ(region.source_offset[1]->depth);
 
                         auto dst_offsets = std::array<vk::Offset3D, 2> {};
-                        dst_offsets[0].setX(region.destination_offset[0].x);
-                        dst_offsets[0].setY(region.destination_offset[0].y);
-                        dst_offsets[0].setZ(region.destination_offset[0].z);
-                        dst_offsets[1].setX(region.destination_offset[1].x);
-                        dst_offsets[1].setY(region.destination_offset[1].y);
-                        dst_offsets[1].setZ(region.destination_offset[1].z);
+                        dst_offsets[0].setX(region.destination_offset[0]->width);
+                        dst_offsets[0].setY(region.destination_offset[0]->height);
+                        dst_offsets[0].setZ(region.destination_offset[0]->depth);
+                        dst_offsets[1].setX(region.destination_offset[1]->width);
+                        dst_offsets[1].setY(region.destination_offset[1]->height);
+                        dst_offsets[1].setZ(region.destination_offset[1]->depth);
 
                         const auto vk_region = vk::ImageBlit {}
                                                    .setSrcSubresource(std::move(src_subresource))
@@ -501,7 +582,8 @@ void CommandBuffer::build() {
                     vk_command_buffers.reserve(std::size(command.command_buffers));
 
                     for (const auto &cmb : command.command_buffers) {
-                        STORM_EXPECTS(cmb.get().level() == render::CommandBufferLevel::Secondary);
+                        STORMKIT_EXPECTS(cmb.get().level() ==
+                                         render::CommandBufferLevel::Secondary);
                         vk_command_buffers.emplace_back(cmb.get());
                     }
 
@@ -514,8 +596,8 @@ void CommandBuffer::build() {
                     for (const auto &viewport : command.viewports) {
                         viewports.emplace_back(vk::Viewport { viewport.position.x,
                                                               viewport.position.y,
-                                                              viewport.extent.w,
-                                                              viewport.extent.h,
+                                                              viewport.extent.width,
+                                                              viewport.extent.height,
                                                               viewport.depth.x,
                                                               viewport.depth.y });
                     }
@@ -529,7 +611,7 @@ void CommandBuffer::build() {
                     for (const auto &scissor : command.scissors) {
                         scissors.emplace_back(
                             vk::Rect2D { vk::Offset2D { scissor.offset.x, scissor.offset.y },
-                                         { scissor.extent.w, scissor.extent.h } });
+                                         { scissor.extent.width, scissor.extent.height } });
                     }
 
                     m_vk_command_buffer->setScissor(command.first_scissor, scissors, dispatcher);
@@ -598,12 +680,12 @@ void CommandBuffer::build() {
                                                          dispatcher);
                 },
                 [this, &dispatcher](const PushConstantsCommand &command) {
-                    STORM_EXPECTS(command.pipeline != nullptr);
-                    STORM_EXPECTS(!std::empty(command.data));
+                    STORMKIT_EXPECTS(command.pipeline != nullptr);
+                    STORMKIT_EXPECTS(!std::empty(command.data));
 
                     m_vk_command_buffer->pushConstants(command.pipeline->vkPipelineLayout(),
                                                        toVK(command.stage),
-                                                       0u,
+                                                       command.offset,
                                                        std::size(command.data),
                                                        std::data(command.data),
                                                        dispatcher);

@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -11,7 +11,7 @@
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/Enums.hpp>
 #include <storm/render/core/PhysicalDevice.hpp>
-#include <storm/render/core/Surface.hpp>
+#include <storm/render/core/WindowSurface.hpp>
 
 #include <storm/log/LogHandler.hpp>
 
@@ -31,6 +31,8 @@ std::string vendorNameByID(core::UInt64 ID) {
     return "Unknown";
 }
 
+// TODO implement
+// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_driver_properties.html
 /////////////////////////////////////
 /////////////////////////////////////
 PhysicalDevice::PhysicalDevice(vk::PhysicalDevice vk_physical_device, const Instance &instance)
@@ -41,8 +43,16 @@ PhysicalDevice::PhysicalDevice(vk::PhysicalDevice vk_physical_device, const Inst
 
     const auto vendor_id = properties.vendorID;
 
-    m_device_info.device_id         = properties.deviceID;
-    m_device_info.device_name       = properties.deviceName;
+    m_device_info.device_id = properties.deviceID;
+
+    const auto device_name_size = std::char_traits<char>::length(properties.deviceName);
+
+    m_device_info.device_name.resize(device_name_size);
+    std::char_traits<char>::copy(std::data(m_device_info.device_name),
+                                 std::data(properties.deviceName),
+                                 device_name_size);
+    m_device_info.device_name.shrink_to_fit();
+
     m_device_info.vendor_id         = vendor_id;
     m_device_info.vendor_name       = vendorNameByID(vendor_id);
     m_device_info.api_major_version = vkVersionMajor(properties.apiVersion);
@@ -304,7 +314,18 @@ PhysicalDevice::PhysicalDevice(vk::PhysicalDevice vk_physical_device, const Inst
     std::transform(std::cbegin(extensions),
                    std::cend(extensions),
                    std::back_inserter(m_extensions),
-                   [](const auto &extension) { return std::string { extension.extensionName }; });
+                   [](const auto &extension) {
+                       const auto string_size =
+                           std::char_traits<char>::length(extension.extensionName);
+
+                       auto string = std::string {};
+                       string.resize(string_size);
+                       std::char_traits<char>::copy(std::data(string),
+                                                    std::data(extension.extensionName),
+                                                    string_size);
+                       string.shrink_to_fit();
+                       return string;
+                   });
 
     m_vk_memory_properties = m_vk_physical_device.getMemoryProperties();
     for (auto i = 0u; i < m_vk_memory_properties.memoryTypeCount; ++i)
@@ -337,7 +358,7 @@ PhysicalDevice &PhysicalDevice::operator=(PhysicalDevice &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-void PhysicalDevice::checkIfPresentSupportIsEnabled(const Surface &surface) noexcept {
+void PhysicalDevice::checkIfPresentSupportIsEnabled(const WindowSurface &surface) noexcept {
     auto index = 0u;
     for (auto &queue_family : m_queue_families) {
         CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceSupportKHR(index++, surface),
@@ -360,7 +381,7 @@ bool PhysicalDevice::checkExtensionSupport(
     storm::core::span<const gsl::czstring<>> extensions) const noexcept {
     auto required_extensions =
         storm::core::HashSet<std::string_view> { core::ranges::begin(extensions),
-                                               core::ranges::end(extensions) };
+                                                 core::ranges::end(extensions) };
 
     for (const auto &extension : m_extensions) required_extensions.erase(extension);
     auto support = required_extensions.empty();
@@ -382,8 +403,8 @@ render::DeviceOwnedPtr PhysicalDevice::createLogicalDevicePtr() const {
 
 /////////////////////////////////////
 /////////////////////////////////////
-vk::SurfaceCapabilitiesKHR PhysicalDevice::queryVkSurfaceCapabilities(const Surface &surface) const
-    noexcept {
+vk::SurfaceCapabilitiesKHR
+    PhysicalDevice::queryVkSurfaceCapabilities(const WindowSurface &surface) const noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceCapabilitiesKHR(surface), capabilities);
 
     return capabilities;
@@ -392,7 +413,7 @@ vk::SurfaceCapabilitiesKHR PhysicalDevice::queryVkSurfaceCapabilities(const Surf
 /////////////////////////////////////
 /////////////////////////////////////
 std::vector<vk::SurfaceFormatKHR>
-    PhysicalDevice::queryVkSurfaceFormats(const Surface &surface) const noexcept {
+    PhysicalDevice::queryVkSurfaceFormats(const WindowSurface &surface) const noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfaceFormatsKHR(surface), format);
 
     return format;
@@ -400,8 +421,8 @@ std::vector<vk::SurfaceFormatKHR>
 
 /////////////////////////////////////
 /////////////////////////////////////
-std::vector<vk::PresentModeKHR> PhysicalDevice::queryVkPresentModes(const Surface &surface) const
-    noexcept {
+std::vector<vk::PresentModeKHR>
+    PhysicalDevice::queryVkPresentModes(const WindowSurface &surface) const noexcept {
     CHECK_VK_ERROR_VALUE(m_vk_physical_device.getSurfacePresentModesKHR(surface), present_modes);
 
     return present_modes;

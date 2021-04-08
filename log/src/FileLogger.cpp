@@ -15,7 +15,8 @@ FileLogger::FileLogger(LogClock::time_point start, std::filesystem::path path, S
     : Logger { std::move(start), log_level }, m_base_path { std::move(path) } {
     if (!std::filesystem::exists(m_base_path)) std::filesystem::create_directory(m_base_path);
 
-    ASSERT(std::filesystem::is_directory(m_base_path), "path need to be a directory");
+    STORMKIT_EXPECTS_MESSAGE(std::filesystem::is_directory(m_base_path),
+                             "path need to be a directory");
 
     auto filepath                = m_base_path / "log.txt";
     m_streams[filepath.string()] = std::ofstream { filepath.string() };
@@ -46,18 +47,18 @@ void FileLogger::write(Severity severity, Module module, const char *string) {
     const auto time = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
 
     auto filepath = m_base_path / "log.txt";
-    if (std::strcmp(module.get(), "") != 0) {
+    if (std::char_traits<char>::length(module.get()) == 0) {
         filepath = m_base_path / (module.get() + std::string { "-log.txt" });
 
         if (m_streams.find(filepath.string()) == m_streams.cend())
             m_streams[filepath.string()] = std::ofstream { filepath.string() };
     }
 
-    static constexpr const auto LOG_LINE        = "[{0}, {1}s] {2}\n";
-    static constexpr const auto LOG_LINE_MODULE = "[{0}, {1}s, {2}] {3}\n";
+    static constexpr auto LOG_LINE        = "[{0}, {1}s] {2}\n";
+    static constexpr auto LOG_LINE_MODULE = "[{0}, {1}s, {2}] {3}\n";
 
     auto final_string = std::string {};
-    if (std::strcmp(module.get(), "") == 0)
+    if (std::char_traits<char>::length(module.get()) == 0)
         final_string = fmt::format(LOG_LINE, severity, time, string);
     else
         final_string = fmt::format(LOG_LINE_MODULE, severity, time, module.get(), string);

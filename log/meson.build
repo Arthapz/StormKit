@@ -10,10 +10,7 @@ headers = files([
     'include/storm/log/ConsoleLogger.hpp',
     'include/storm/log/FileLogger.hpp',
     'include/storm/log/LogColorizer.hpp',
-])
 
-#ide:editable-filelist
-inls = files([
     'include/storm/log/LogHandler.inl',
     'include/storm/log/Logger.inl',
 ])
@@ -33,25 +30,38 @@ if lib_type == 'shared'
     log_lib_name = 'StormKit-log' + suffix
     log_lib = shared_library(
         log_lib_name,
-        sources + headers,
-        extra_files: inls,
+        sources,
+        extra_files: headers,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,
         include_directories: log_inc,
-        cpp_args: ['-DSTORM_BUILD'],
+        cpp_args: ['-DSTORMKIT_BUILD'],
         install: true
     )
+    destination_path = join_paths(meson.project_build_root(), 'output/bin/')
 else
     log_lib_name = 'StormKit-log-static' + suffix
     log_lib = static_library(
         log_lib_name,
-        sources + headers,
-        extra_files: inls,
+        sources,
+        extra_files: headers,
         gnu_symbol_visibility: 'hidden',
         dependencies: dependencies,
         include_directories: log_inc,
-        cpp_args: ['-DSTORM_BUILD'],
+        cpp_args: ['-DSTORMKIT_BUILD'],
         install: true
+    )
+    destination_path = join_paths(meson.project_build_root(), 'output/lib/')
+endif
+
+if copy_to_bindir
+    log_copy_target = custom_target(
+        'log_copy_target',
+        input: log_lib,
+        output: 'log-fake',
+        command: [copy_file, '@INPUT@', destination_path],
+        install: false,
+        build_by_default: true
     )
 endif
 
@@ -61,4 +71,4 @@ log_dep = declare_dependency(
     dependencies: dependencies
 )
 
-install_headers(headers + inls, subdir : 'storm/log')
+install_headers(headers, subdir : 'storm/log')

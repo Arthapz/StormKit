@@ -1,3 +1,4 @@
+/////////// - StormKit::core - ///////////
 #include <storm/core/State.hpp>
 #include <storm/core/StateManager.hpp>
 
@@ -5,17 +6,17 @@ using namespace storm::core;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-State::State(StateManager &owner) : m_owner { owner } {
+State::State(StateManager &owner) noexcept : m_owner { owner } {
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-State::~State() = default;
+State::~State() noexcept = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-State::State(State &&) = default;
+State::State(State &&) noexcept = default;
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-State &State::operator=(State &&) = default;
+auto State::operator=(State &&) noexcept -> State & = default;

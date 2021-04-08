@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/MainPanel.qml</file>
+        <file>qml/RightPanel.qml</file>
+        <file>qml/LeftPanel.qml</file>
+        <file>qml/NameComponentEditor.qml</file>
+        <file>qml/TransformComponentEditor.qml</file>
+        <file>qml/MeshComponentEditor.qml</file>
+        <file>qml/MaterialComponentEditor.qml</file>
+    </qresource>
+</RCC>

@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -7,52 +7,31 @@
 namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
-     storm::core::span<Texture> Surface::textures() noexcept { return m_textures; }
+    inline storm::core::span<Texture> Surface::textures() noexcept { return m_textures; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     storm::core::span<const Texture> Surface::textures() const noexcept {
+    inline storm::core::span<const Texture> Surface::textures() const noexcept {
         return m_textures;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     PixelFormat Surface::pixelFormat() const noexcept { return m_pixel_format; }
+    inline PixelFormat Surface::pixelFormat() const noexcept { return m_pixel_format; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt32 Surface::bufferingCount() const noexcept { return m_buffering_count; }
+    inline core::UInt32 Surface::bufferingCount() const noexcept { return m_buffering_count; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     core::UInt32 Surface::textureCount() const noexcept { return m_image_count; }
+    inline core::UInt32 Surface::textureCount() const noexcept { return m_image_count; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     bool Surface::needRecreate() const noexcept { return m_need_recreate; }
+    inline bool Surface::needRecreate() const noexcept { return m_need_recreate; }
 
     /////////////////////////////////////
     /////////////////////////////////////
-     const core::Extentu &Surface::extent() const noexcept { return m_extent; }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-     vk::SurfaceKHR Surface::vkSurface() const noexcept {
-        STORM_EXPECTS(m_vk_surface);
-        return *m_vk_surface;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-     Surface::operator vk::SurfaceKHR() const noexcept { return vkSurface(); }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-     vk::SurfaceKHR Surface::vkHandle() const noexcept { return vkSurface(); }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-     core::UInt64 Surface::vkDebugHandle() const noexcept {
-        return reinterpret_cast<core::UInt64>(vkHandle().operator VkSurfaceKHR_T *());
-    }
+    inline const core::Extentu &Surface::extent() const noexcept { return m_extent; }
 } // namespace storm::render

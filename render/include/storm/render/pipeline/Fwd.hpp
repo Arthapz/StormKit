@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -6,12 +6,23 @@
 
 #include <storm/core/Memory.hpp>
 
+#include <storm/render/core/Enums.hpp>
+
 namespace storm::render {
     class AbstractPipeline;
     DECLARE_PTR_AND_REF(AbstractPipeline);
 
+    struct PushConstantRange {
+        ShaderStage stages;
+        core::Int32 offset;
+        core::ArraySize size;
+    };
+
     class GraphicsPipeline;
     DECLARE_PTR_AND_REF(GraphicsPipeline);
+
+    class ComputePipeline;
+    DECLARE_PTR_AND_REF(ComputePipeline);
 
     class RenderPass;
     DECLARE_PTR_AND_REF(RenderPass);

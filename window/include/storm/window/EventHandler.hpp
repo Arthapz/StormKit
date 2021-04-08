@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -15,7 +15,7 @@
 #include <storm/window/Fwd.hpp>
 
 namespace storm::window {
-    class STORM_PUBLIC EventHandler {
+    class STORMKIT_PUBLIC EventHandler {
       public:
         using Callback = std::function<void(const Event &)>;
 
@@ -25,16 +25,16 @@ namespace storm::window {
         EventHandler(const EventHandler &);
         EventHandler &operator=(const EventHandler &);
 
-        EventHandler(EventHandler &&);
-        EventHandler &operator=(EventHandler &&);
+        EventHandler(EventHandler &&) noexcept;
+        EventHandler &operator=(EventHandler &&) noexcept;
 
         void update();
 
-        inline void addCallback(EventType event_type, Callback callback);
-        inline void clearCallbacks(EventType event_type);
+        void addCallback(EventType event_type, Callback callback);
+        void clearCallbacks(EventType event_type);
 
       private:
-        WindowObserverPtr m_window;
+        WindowPtr m_window;
 
         storm::core::HashMap<EventType, std::vector<Callback>> m_callback;
     };

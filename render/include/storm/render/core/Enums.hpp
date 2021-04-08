@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -23,13 +23,18 @@ namespace storm::render {
     inline std::string to_string(PhysicalDeviceType type);
 
     enum class QueueFlag : core::UInt8 {
-        Graphics       = 1,
-        Compute        = 2,
-        Transfert      = 4,
-        Sparse_Binding = 8
+        Graphics       = 1 << 0,
+        Compute        = 1 << 1,
+        Transfert      = 1 << 2,
+        Sparse_Binding = 1 << 3
     };
 
-    enum class ShaderStage : core::UInt8 { Vertex = 1, Fragment = 2, Geometry = 4, Compute = 8 };
+    enum class ShaderStage : core::UInt8 {
+        Vertex   = 1 << 0,
+        Fragment = 1 << 1,
+        Geometry = 1 << 2,
+        Compute  = 1 << 3
+    };
 
     enum class PrimitiveTopology : core::UInt8 {
         Point_List     = 0,
@@ -42,25 +47,30 @@ namespace storm::render {
 
     enum class PolygonMode : core::UInt8 { Fill = 0, Line = 1, Point = 2 };
 
-    enum class CullMode : core::UInt8 { None = 0, Front = 1, Back = 2, Front_Back = Front | Back };
+    enum class CullMode : core::UInt8 {
+        None       = 0,
+        Front      = 1 << 0,
+        Back       = 1 << 1,
+        Front_Back = Front | Back
+    };
 
     enum class FrontFace : core::UInt8 { Clockwise = 0, Counter_Clockwise = 1 };
 
     enum class SampleCountFlag : core::UInt8 {
-        C1_BIT  = 1,
-        C2_BIT  = 2,
-        C4_BIT  = 4,
-        C8_BIT  = 8,
-        C16_BIT = 16,
-        C32_BIT = 32,
-        C64_BIT = 64
+        C1_BIT  = 1 << 0,
+        C2_BIT  = 1 << 1,
+        C4_BIT  = 1 << 2,
+        C8_BIT  = 1 << 3,
+        C16_BIT = 1 << 4,
+        C32_BIT = 1 << 5,
+        C64_BIT = 1 << 6
     };
 
     enum class ColorComponent : core::UInt8 {
-        R    = 1,
-        G    = 2,
-        B    = 4,
-        A    = 8,
+        R    = 1 << 0,
+        G    = 1 << 1,
+        B    = 1 << 2,
+        A    = 1 << 3,
         RG   = R | G,
         RGB  = RG | B,
         RGBA = RGB | A
@@ -207,24 +217,24 @@ namespace storm::render {
         Undefined                                  = 12
     };
 
-    enum class TextureAspectMask : core::UInt8 { Color = 1, Depth = 2, Stencil = 4 };
+    enum class TextureAspectMask : core::UInt8 { Color = 1 << 0, Depth = 1 << 1, Stencil = 1 << 2 };
 
     enum class VertexInputRate : core::UInt8 { Vertex = 0, Instance = 1 };
 
     enum class TextureCreateFlag : core::UInt16 {
         None                        = 0,
-        Sparse_Binding              = 1,
-        Sparse_Residency            = 2,
-        Sparse_Aliased              = 4,
-        Mutable_Format              = 8,
-        Cube_Compatible             = 16,
-        Alias                       = 32,
-        Split_Instance_Bind_Regions = 64,
-        Array_2D_Compatible         = 128,
-        Block_Texel_View_Compatible = 256,
-        Extended_Usage              = 512,
-        Protected                   = 1024,
-        Disjoint                    = 2048
+        Sparse_Binding              = 1 << 0,
+        Sparse_Residency            = 1 << 1,
+        Sparse_Aliased              = 1 << 2,
+        Mutable_Format              = 1 << 3,
+        Cube_Compatible             = 1 << 4,
+        Alias                       = 1 << 5,
+        Split_Instance_Bind_Regions = 1 << 6,
+        Array_2D_Compatible         = 1 << 7,
+        Block_Texel_View_Compatible = 1 << 8,
+        Extended_Usage              = 1 << 9,
+        Protected                   = 1 << 10,
+        Disjoint                    = 1 << 11
     };
 
     enum class Format : core::UInt8 {
@@ -303,33 +313,34 @@ namespace storm::render {
         Undefined      = 254
     };
 
-    enum class HardwareBufferUsage : core::UInt8 {
-        Vertex        = 1,
-        Index         = 2,
-        Transfert_Src = 4,
-        Transfert_Dst = 8,
-        Uniform       = 16,
-        Storage       = 32,
-        Uniform_Texel = 64,
-        Storage_Texel = 128
+    enum class HardwareBufferUsage : core::UInt16 {
+        Vertex        = 1 << 0,
+        Index         = 1 << 1,
+        Transfert_Src = 1 << 2,
+        Transfert_Dst = 1 << 3,
+        Uniform       = 1 << 4,
+        Storage       = 1 << 5,
+        Uniform_Texel = 1 << 6,
+        Storage_Texel = 1 << 7,
+        Indirect      = 1 << 8
     };
 
     enum class TextureUsage : core::UInt16 {
-        Transfert_Src            = 1,
-        Transfert_Dst            = 2,
-        Sampled                  = 4,
-        Storage                  = 8,
-        Color_Attachment         = 16,
-        Depth_Stencil_Attachment = 32,
-        Transient_Attachment     = 64,
-        Input_Attachment         = 128
+        Transfert_Src            = 1 << 0,
+        Transfert_Dst            = 1 << 1,
+        Sampled                  = 1 << 2,
+        Storage                  = 1 << 3,
+        Color_Attachment         = 1 << 4,
+        Depth_Stencil_Attachment = 1 << 5,
+        Transient_Attachment     = 1 << 6,
+        Input_Attachment         = 1 << 7
     };
 
     enum class MemoryProperty : core::UInt8 {
-        Device_Local  = 1,
-        Host_Visible  = 2,
-        Host_Coherent = 4,
-        Host_Cached   = 8
+        Device_Local  = 1 << 0,
+        Host_Visible  = 1 << 1,
+        Host_Coherent = 1 << 2,
+        Host_Cached   = 1 << 3
     };
 
     enum class CommandBufferLevel : core::UInt8 { Primary, Secondary };
@@ -432,49 +443,50 @@ namespace storm::render {
 
     enum class AccessFlag : core::UInt16 {
         None                           = 0,
-        Indirect_Command_Read          = 1,
-        Vertex_Attribute_Read          = 2,
-        Uniform_Read                   = 4,
-        Input_Attachment_Read          = 8,
-        Shader_Read                    = 16,
-        Shader_Write                   = 32,
-        Color_Attachment_Read          = 64,
-        Color_Attachment_Write         = 128,
-        Depth_Stencil_Attachment_Read  = 256,
-        Depth_Stencil_Attachment_Write = 512,
-        Transfer_Read                  = 1024,
-        Transfer_Write                 = 2048,
-        Host_Read                      = 4096,
-        Host_Write                     = 8192,
-        Memory_Read                    = 16384,
-        Memory_Write                   = 32768
+        Indirect_Command_Read          = 1 << 0,
+        Vertex_Attribute_Read          = 1 << 1,
+        Uniform_Read                   = 1 << 2,
+        Input_Attachment_Read          = 1 << 3,
+        Shader_Read                    = 1 << 4,
+        Shader_Write                   = 1 << 5,
+        Color_Attachment_Read          = 1 << 6,
+        Color_Attachment_Write         = 1 << 7,
+        Depth_Stencil_Attachment_Read  = 1 << 8,
+        Depth_Stencil_Attachment_Write = 1 << 9,
+        Transfer_Read                  = 1 << 10,
+        Transfer_Write                 = 1 << 11,
+        Host_Read                      = 1 << 12,
+        Host_Write                     = 1 << 13,
+        Memory_Read                    = 1 << 14,
+        Memory_Write                   = 1 << 15
     };
 
-    enum class PipelineStageFlag : core::UInt16 {
+    enum class PipelineStageFlag : core::UInt32 {
         None                           = 0,
-        Top_Of_Pipe                    = 1,
-        Draw_Indirect                  = 2,
-        Vertex_Input                   = 4,
-        Vertex_Shader                  = 8,
-        Tessellation_Control_Shader    = 16,
-        Tessellation_Evaluation_Shader = 32,
-        Geometry_Shader                = 64,
-        Fragment_Shader                = 128,
-        Early_Fragment_Tests           = 256,
-        Late_Fragment_Tests            = 512,
-        Color_Attachment_Output        = 1024,
-        Transfer                       = 2048,
-        Bottom_Of_Pipe                 = 4096,
-        Host                           = 8192,
-        All_Graphics                   = 16384,
-        All_Commands                   = 32768
+        Top_Of_Pipe                    = 1 << 0,
+        Draw_Indirect                  = 1 << 1,
+        Vertex_Input                   = 1 << 2,
+        Vertex_Shader                  = 1 << 3,
+        Tessellation_Control_Shader    = 1 << 4,
+        Tessellation_Evaluation_Shader = 1 << 5,
+        Geometry_Shader                = 1 << 6,
+        Fragment_Shader                = 1 << 7,
+        Early_Fragment_Tests           = 1 << 8,
+        Late_Fragment_Tests            = 1 << 9,
+        Color_Attachment_Output        = 1 << 10,
+        Compute_Shader                 = 1 << 11,
+        Transfer                       = 1 << 12,
+        Bottom_Of_Pipe                 = 1 << 13,
+        Host                           = 1 << 14,
+        All_Graphics                   = 1 << 15,
+        All_Commands                   = 1 << 16
     };
 
     enum class DependencyFlag : core::UInt8 {
         None         = 0,
-        By_Region    = 1,
-        Device_Group = 2,
-        View_Local   = 4
+        By_Region    = 1 << 0,
+        Device_Group = 1 << 1,
+        View_Local   = 1 << 2
     };
 
     enum class DynamicState : core::UInt8 {
@@ -519,8 +531,7 @@ namespace storm::render {
             case PixelFormat::R32F:
             case PixelFormat::Depth16:
             case PixelFormat::Depth24:
-            case PixelFormat::Depth32F:
-            return 1;
+            case PixelFormat::Depth32F: return 1;
 
             case PixelFormat::RG8_SNorm:
             case PixelFormat::RG8_UNorm:
@@ -536,8 +547,7 @@ namespace storm::render {
             case PixelFormat::RG32F:
             case PixelFormat::Depth16_Stencil8:
             case PixelFormat::Depth24_Stencil8:
-            case PixelFormat::Depth32F_Stencil8:
-            return 2;
+            case PixelFormat::Depth32F_Stencil8: return 2;
 
             case PixelFormat::RGB8_SNorm:
             case PixelFormat::RGB8_UNorm:
@@ -555,8 +565,7 @@ namespace storm::render {
             case PixelFormat::sRGB8:
             case PixelFormat::sBGR8:
             case PixelFormat::RGB_5_6_5_UNorm:
-            case PixelFormat::BGR_11_11_10F:
-            return 3;
+            case PixelFormat::BGR_11_11_10F: return 3;
 
             case PixelFormat::RGBA8_SNorm:
             case PixelFormat::RGBA8_UNorm:
@@ -580,7 +589,7 @@ namespace storm::render {
         return 0u;
     }
 
-    constexpr inline core::UInt8 getByteCountByChannelFor(PixelFormat format) noexcept {
+    constexpr inline core::UInt8 getArraySizeByChannelFor(PixelFormat format) noexcept {
         switch (format) {
             case PixelFormat::R8_SNorm:
             case PixelFormat::R8_UNorm:

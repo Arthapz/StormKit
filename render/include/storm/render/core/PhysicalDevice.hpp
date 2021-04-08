@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -18,7 +18,7 @@
 #include <storm/render/core/Vulkan.hpp>
 
 namespace storm::render {
-    class STORM_PUBLIC PhysicalDevice: public core::NonCopyable {
+    class STORMKIT_PUBLIC PhysicalDevice: public core::NonCopyable {
       public:
         using MemoryProperties           = std::vector<MemoryProperty>;
         using MemoryPropertiesSpan       = core::span<const MemoryProperty>;
@@ -36,13 +36,14 @@ namespace storm::render {
         Device createLogicalDevice() const;
         DeviceOwnedPtr createLogicalDevicePtr() const;
 
-        void checkIfPresentSupportIsEnabled(const Surface &surface) noexcept;
+        void checkIfPresentSupportIsEnabled(const WindowSurface &surface) noexcept;
 
-        vk::SurfaceCapabilitiesKHR queryVkSurfaceCapabilities(const Surface &surface) const
-            noexcept;
-        std::vector<vk::SurfaceFormatKHR> queryVkSurfaceFormats(const Surface &surface) const
-            noexcept;
-        std::vector<vk::PresentModeKHR> queryVkPresentModes(const Surface &surface) const noexcept;
+        vk::SurfaceCapabilitiesKHR
+            queryVkSurfaceCapabilities(const WindowSurface &surface) const noexcept;
+        std::vector<vk::SurfaceFormatKHR>
+            queryVkSurfaceFormats(const WindowSurface &surface) const noexcept;
+        std::vector<vk::PresentModeKHR>
+            queryVkPresentModes(const WindowSurface &surface) const noexcept;
 
         inline const PhysicalDeviceInfo &info() const noexcept;
         inline const RenderCapabilities &capabilities() const noexcept;
@@ -62,7 +63,7 @@ namespace storm::render {
         vk::FormatProperties vkGetFormatProperties(vk::Format format) const noexcept;
 
       private:
-        InstanceConstObserverPtr m_instance;
+        InstanceConstPtr m_instance;
 
         PhysicalDeviceInfo m_device_info;
         RenderCapabilities m_capabilities;
@@ -77,8 +78,8 @@ namespace storm::render {
     };
 
     inline core::ArraySize
-        computeUniformBufferOffsetAlignement(core::ArraySize size,
-                                             const RenderCapabilities &capabilities) {
+        computeUniformBufferInt32Alignement(core::ArraySize size,
+                                            const RenderCapabilities &capabilities) {
         if (size < capabilities.limits.min_uniform_buffer_offset_alignment)
             size = capabilities.limits.min_uniform_buffer_offset_alignment;
         else if (size > capabilities.limits.min_uniform_buffer_offset_alignment)

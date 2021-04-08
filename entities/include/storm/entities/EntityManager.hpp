@@ -1,4 +1,4 @@
-// Copryright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copryright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -21,7 +21,7 @@
 #include <storm/entities/System.hpp>
 
 namespace storm::entities {
-    class STORM_PUBLIC EntityManager final: public storm::core::NonCopyable {
+    class STORMKIT_PUBLIC EntityManager final: public storm::core::NonCopyable {
       public:
         static constexpr auto ADDED_ENTITY_MESSAGE_ID   = 1;
         static constexpr auto REMOVED_ENTITY_MESSAGE_ID = 2;
@@ -34,19 +34,19 @@ namespace storm::entities {
 
         Entity makeEntity();
         void destroyEntity(Entity entity);
-        bool hasEntity(Entity entity);
-        bool hasComponent(Entity entity);
+        bool hasEntity(Entity entity) const;
+        bool hasComponent(Entity entity) const;
 
-        template<typename T>
-        T &addComponent(Entity entity);
+        template<typename T, typename... Args>
+        T &addComponent(Entity entity, Args &&...args);
 
         template<typename T>
         void destroyComponent(Entity entity);
 
         template<typename T>
-        bool hasComponent(Entity entity);
+        bool hasComponent(Entity entity) const;
 
-        bool hasComponent(Entity entity, Component::Type type);
+        bool hasComponent(Entity entity, Component::Type type) const;
 
         template<typename T>
         std::vector<Entity> entitiesWithComponent();
@@ -54,13 +54,17 @@ namespace storm::entities {
         template<typename T>
         T &getComponent(Entity entity);
 
+        template<typename T>
+        const T &getComponent(Entity entity) const;
+
         std::vector<ComponentRef> components(Entity entity);
+        std::vector<ComponentConstRef> components(Entity entity) const;
 
         template<typename T>
         std::vector<std::reference_wrapper<T>> componentsOfType();
 
         template<typename T, typename... Args>
-        T &addSystem(Args &&... args);
+        T &addSystem(Args &&...args);
 
         template<typename T>
         bool hasSystem() const noexcept;
@@ -71,11 +75,11 @@ namespace storm::entities {
         template<typename T>
         const T &getSystem() const;
 
-        void step(core::UInt64 delta);
+        void step(core::Secondf delta);
 
         inline core::ArraySize numberOfEntities() const noexcept;
 
-        void commit(Entity e);
+        // void commit(Entity e);
 
       private:
         void purposeToSystems(Entity e);

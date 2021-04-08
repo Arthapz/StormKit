@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -14,10 +14,11 @@
 #include <storm/render/core/Fwd.hpp>
 #include <storm/render/core/Vulkan.hpp>
 
+#include <storm/render/pipeline/ComputePipelineState.hpp>
 #include <storm/render/pipeline/GraphicsPipelineState.hpp>
 
 namespace storm::render {
-    class STORM_PUBLIC PipelineCache: public core::NonCopyable {
+    class STORMKIT_PUBLIC PipelineCache: public core::NonCopyable {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Pipeline_Cache;
 
@@ -28,8 +29,9 @@ namespace storm::render {
         PipelineCache(PipelineCache &&);
         PipelineCache &operator=(PipelineCache &&);
 
-        render::GraphicsPipeline &getPipeline(const GraphicsPipelineState &state,
-                                              const RenderPass &render_pass);
+        GraphicsPipeline &getPipeline(const GraphicsPipelineState &state,
+                                      const RenderPass &render_pass);
+        ComputePipeline &getPipeline(const ComputePipelineState &state);
 
         inline vk::PipelineCache vkPipelineCache() const noexcept;
         inline operator vk::PipelineCache() const noexcept;
@@ -37,7 +39,9 @@ namespace storm::render {
         inline core::UInt64 vkDebugHandle() const noexcept;
 
       private:
-        bool has(const GraphicsPipelineState &state) const noexcept;
+        bool has(const GraphicsPipelineState &state,
+                 const RenderPassDescription &description) const noexcept;
+        bool has(const ComputePipelineState &state) const noexcept;
 
         void createNewPipelineCache();
         void readPipelineCache();
@@ -63,13 +67,16 @@ namespace storm::render {
             } uuid;
         } m_serialized;
 
-        DeviceConstObserverPtr m_device;
+        DeviceConstPtr m_device;
 
         vk::UniquePipelineCache m_vk_pipeline_cache;
 
         std::filesystem::path m_path;
 
-        storm::core::HashMap<GraphicsPipelineState, GraphicsPipelineOwnedPtr> m_pipelines;
+        core::HashMap<GraphicsPipelineState,
+                      core::HashMap<RenderPassDescription, GraphicsPipelineOwnedPtr>>
+            m_graphics_pipelines;
+        core::HashMap<ComputePipelineState, ComputePipelineOwnedPtr> m_compute_pipelines;
     };
 } // namespace storm::render
 

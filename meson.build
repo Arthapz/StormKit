@@ -3,7 +3,7 @@ project(
     ['c', 'cpp'],
     version: '0.2.0',
     license: 'MIT',
-    default_options : ['c_std=c11', 'default_library=static']
+    default_options : ['c_std=c17', 'default_library=static']
 )
 
 system_name = host_machine.system()
@@ -17,32 +17,51 @@ is_android = system_name == 'android'
 examples_data_dir = get_option('examples_data_dir')
 
 lib_type = get_option('library_type')
-project_arguments = []
+
+c_arguments = []
+cpp_arguments = []
+
 examples_arguments = []
 
 lib_extension   = ''
 
 if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
-    project_arguments += ['/DSTORM_BUILD', '/std:c++latest', '/permissive-', '/DFMT_HEADER_ONLY', '/DNOMINMAX']
-    examples_arguments += ['/std:c++latest', '/permissive-', '/DNOMINMAX']
+    c_arguments += ['/DSTORMKIT_BUILD', '/std:clatest', '/permissive-', '/DNOMINMAX', '/DUNICODE', '/D_UNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo', '/Zc:wchar_t', '/FS', '/Zc:inline', '/Zc:strictStrings', '/Zc:throwingNew', '/EHsc']
+    cpp_arguments += ['/DSTORMKIT_BUILD', '/std:c++latest', '/permissive-', '/DFMT_HEADER_ONLY', '/DNOMINMAX', '/DUNICODE', '/D_UNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo', '/Zc:wchar_t', '/FS', '/Zc:rvalueCast', '/Zc:inline', '/Zc:strictStrings', '/Zc:throwingNew', '/Zc:__cplusplus', '/Zc:externConstexpr', '/EHsc']
+
+    examples_arguments += ['/std:c++latest', '/permissive-', '/DNOMINMAX', '/DUNICODE', '/D_UNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo']
     lib_extension = '.lib'
 
     message(meson.get_compiler('cpp').get_id())
     if get_option('buildtype') == 'debug'
-        project_arguments += ['/DSTORM_BUILD_DEBUG']
+        c_arguments += ['/DSTORMKIT_BUILD_DEBUG']
+        cpp_arguments += ['/DSTORMKIT_BUILD_DEBUG']
     endif
     if lib_type == 'static'
-        project_arguments += ['/DSTORM_STATIC /Od']
+        c_arguments += ['/DSTORMKIT_STATIC']
+        cpp_arguments += ['/DSTORMKIT_STATIC']
     endif
 
     if meson.get_compiler('cpp').get_id() == 'clang-cl'
-        project_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
+        c_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
+        cpp_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
     endif
 else
-    project_arguments += ['-DSTORM_BUILD', '-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
+    c_arguments += ['-DSTORMKIT_BUILD', '-std=c2x', '-Wno-missing-braces', '-Wno-unknown-pragmas']
+    cpp_arguments += ['-DSTORMKIT_BUILD', '-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
+
     examples_arguments += ['-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas']
     if get_option('buildtype') == 'debug'
-        project_arguments += ['-DSTORM_BUILD_DEBUG -O0']
+        c_arguments += ['-DSTORMKIT_BUILD_DEBUG', '-ggdb']
+        cpp_arguments += ['-DSTORMKIT_BUILD_DEBUG', '-ggdb']
+
+        if meson.get_compiler('cpp').get_id() == 'clang'
+            c_arguments += ['-static-libsan']
+            cpp_arguments += ['-static-libsan']
+        else
+            c_arguments += ['-static-libasan']
+            cpp_arguments += ['-static-libasan']
+        endif
     endif
 
     if is_windows
@@ -55,19 +74,27 @@ else
     endif
 
     if lib_type == 'static'
-        project_arguments += ['-DSTORM_STATIC']
+        c_arguments += ['-DSTORMKIT_STATIC']
+        cpp_arguments += ['-DSTORMKIT_STATIC']
         lib_extension = '.a'
     endif
 endif
-add_project_arguments(project_arguments, language: ['c', 'cpp', 'objc', 'objcpp'])
 
-enable_entities   = get_option('enable_entities')
-enable_log        = get_option('enable_log')
-enable_module     = get_option('enable_module')
-enable_window     = get_option('enable_window')
-enable_image      = get_option('enable_image')
-enable_render     = get_option('enable_render')
-enable_engine     = get_option('enable_engine')
+add_project_arguments(c_arguments, language: ['c', 'objc'])
+add_project_arguments(cpp_arguments, language: ['cpp', 'objcpp'])
+
+enable_doc            = get_option('enable_doc')
+enable_entities       = get_option('enable_entities')
+enable_log            = get_option('enable_log')
+enable_module         = get_option('enable_module')
+enable_window         = get_option('enable_window')
+enable_window_xcb     = get_option('enable_window_xcb')
+enable_window_wayland = get_option('enable_window_wayland')
+enable_image          = get_option('enable_image')
+enable_render         = get_option('enable_render')
+enable_engine         = get_option('enable_engine')
+
+copy_to_bindir = get_option('copy_to_bindir')
 
 major_version   = 0
 minor_version   = 2
@@ -83,6 +110,18 @@ if build_type == 'debug' or build_type == 'debugoptimized'
 endif
 
 git_command = find_program('git', required: false)
+doxygen = find_program('doxygen', required: false)
+if not doxygen.found()
+  message('Doxygen not found. Disabling doc generation')
+  enable_doc = false
+endif
+
+sphinx = find_program('sphinx-build', required: false)
+if not sphinx.found()
+  message('Sphinx not found. Disabling doc generation')
+  enable_doc = false
+endif
+
 if not git_command.found()
     message('Failed to extract git commit hash: \ngit not found')
 else
@@ -101,6 +140,35 @@ else
         message('Failed to extract git branch: \n' + git_branch_run.stderr())
     endif
 endif
+
+if copy_to_bindir
+    copy_file = find_program('utils/copy_to_bindir.py')
+endif
+
+summary({
+    'Enable doc': enable_doc,
+    'Enable examples': get_option('enable_examples'),
+    'enable_applications': get_option('enable_applications'),
+    'examples_data_dir': examples_data_dir,
+    'library_type': get_option('library_type'),
+    'build_type': build_type,
+}, section: 'Configuration')
+summary({
+     'enable_log': enable_log,
+     'enable_entities': enable_entities,
+     'enable_module': enable_module,
+     'enable_window': enable_window,
+     'enable_window_xcb': enable_window_xcb,
+     'enable_window_wayland': enable_window_wayland,
+     'enable_image': enable_image,
+     'enable_render': enable_render,
+     'enable_engine': enable_engine,
+}, section: 'Modules')
+summary({
+    'bindir': get_option('bindir'),
+    'libdir': get_option('libdir'),
+    'datadir': get_option('datadir'),
+}, section: 'Directories')
 
 if enable_render
     #assert(enable_image and enable_window and enable_log)
@@ -188,18 +256,18 @@ configure_file(input : 'StormKitSharedTargets-release.cmake.in',
                copy: true)
 
 if lib_type == 'static'
-    install_data(meson.current_build_dir() / 'StormKitStaticTargets.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+    install_data(files(meson.current_build_dir() / 'StormKitStaticTargets.cmake'), install_dir: get_option('libdir') / 'cmake/StormKit')
     if get_option('buildtype') == 'debug'
-        install_data(meson.current_build_dir() / 'StormKitStaticTargets-debug.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+        install_data(files(meson.current_build_dir() / 'StormKitStaticTargets-debug.cmake'), install_dir: get_option('libdir') / 'cmake/StormKit')
     else
-        install_data(meson.current_build_dir() / 'StormKitStaticTargets-release.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+        install_data(files(meson.current_build_dir() / 'StormKitStaticTargets-release.cmake'), install_dir: get_option('libdir') / 'cmake/StormKit')
     endif
 else
-    install_data(meson.current_build_dir() / 'StormKitSharedTargets.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+    install_data(files(meson.current_build_dir() / 'StormKitSharedTargets.cmake'), install_dir: get_option('libdir') / 'cmake/StormKit')
     if get_option('buildtype') == 'debug'
-        install_data(meson.current_build_dir() / 'StormKitSharedTargets-debug.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+        install_data(files(meson.current_build_dir() / 'StormKitSharedTargets-debug.cmake'), install_dir: get_option('libdir') / 'cmake/StormKit')
     else
-        install_data(meson.current_build_dir() / 'StormKitSharedTargets-release.cmake', install_dir: get_option('libdir') / 'cmake/StormKit')
+        install_data(files(meson.current_build_dir() / 'StormKitSharedTargets-release.cmake'), install_dir: get_option('libdir') / 'cmake/StormKit')
     endif
 endif
 

@@ -10,10 +10,10 @@ namespace storm::core {
         explicit Pimpl();
 
         template<typename... Args>
-        explicit Pimpl(Args &&... args);
+        explicit Pimpl(Args &&...args);
 
         template<typename... Args>
-        inline void init(Args &&... args);
+        inline void init(Args &&...args);
 
         inline T *operator->() noexcept;
         inline T const *operator->() const noexcept;

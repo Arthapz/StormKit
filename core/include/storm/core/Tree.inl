@@ -167,7 +167,7 @@ namespace storm::core {
     template<typename TreeNodeClass>
     const typename Tree<TreeNodeClass>::TreeNodeType &
         Tree<TreeNodeClass>::operator[](TreeNodeIndexType index) const noexcept {
-        STORM_EXPECTS(index < std::size(m_tree));
+        STORMKIT_EXPECTS(index < std::size(m_tree));
 
         return m_tree[index];
     }
@@ -176,7 +176,7 @@ namespace storm::core {
     template<typename TreeNodeClass>
     typename Tree<TreeNodeClass>::TreeNodeType &
         Tree<TreeNodeClass>::operator[](TreeNodeIndexType index) noexcept {
-        STORM_EXPECTS(index < std::size(m_tree));
+        STORMKIT_EXPECTS(index < std::size(m_tree));
 
         return m_tree[index];
     }

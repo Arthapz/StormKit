@@ -136,7 +136,7 @@ std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
 
     m_extent            = std::move(extent);
     m_channel_count     = getChannelCountFor(format);
-    m_bytes_per_channel = getByteCountByChannelFor(format);
+    m_bytes_per_channel = getArraySizeByChannelFor(format);
     m_mip_levels        = 1u;
     m_faces             = 1u;
     m_layers            = 1u;

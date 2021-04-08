@@ -21,19 +21,19 @@ EventHandler::EventHandler(const EventHandler &) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-EventHandler &EventHandler::operator=(const EventHandler &) = default;
+auto EventHandler::operator=(const EventHandler &) -> EventHandler & = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-EventHandler::EventHandler(EventHandler &&) = default;
+EventHandler::EventHandler(EventHandler &&) noexcept = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-EventHandler &EventHandler::operator=(EventHandler &&) = default;
+auto EventHandler::operator=(EventHandler &&) noexcept -> EventHandler & = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-void EventHandler::update() {
+auto EventHandler::update() -> void {
     auto event = Event {};
 
     while (m_window->pollEvent(event)) {

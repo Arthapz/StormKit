@@ -37,7 +37,7 @@ Entity EntityManager::makeEntity() {
 /////////////////////////////////////
 /////////////////////////////////////
 void EntityManager::destroyEntity(Entity entity) {
-    STORM_EXPECTS(entity != INVALID_ENTITY);
+    STORMKIT_EXPECTS(entity != INVALID_ENTITY);
 
     if (hasEntity(entity)) {
         m_removed_entities.emplace(entity);
@@ -47,8 +47,8 @@ void EntityManager::destroyEntity(Entity entity) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool EntityManager::hasEntity(Entity entity) {
-    STORM_EXPECTS(entity != INVALID_ENTITY);
+bool EntityManager::hasEntity(Entity entity) const {
+    STORMKIT_EXPECTS(entity != INVALID_ENTITY);
 
     auto it  = m_entities.find(entity);
     auto it2 = m_added_entities.find(entity);
@@ -56,10 +56,8 @@ bool EntityManager::hasEntity(Entity entity) {
     return it != m_entities.cend() || it2 != m_added_entities.cend();
 }
 
-/////////////////////////////////////
-/////////////////////////////////////
-bool EntityManager::hasComponent(Entity entity) {
-    STORM_EXPECTS(entity != INVALID_ENTITY);
+bool EntityManager::hasComponent(Entity entity) const {
+    STORMKIT_EXPECTS(entity != INVALID_ENTITY);
 
     auto it = m_components.find(entity);
 
@@ -70,36 +68,51 @@ bool EntityManager::hasComponent(Entity entity) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool EntityManager::hasComponent(Entity entity, Component::Type type) {
-    STORM_EXPECTS(entity != INVALID_ENTITY && type != Component::INVALID_TYPE);
+bool EntityManager::hasComponent(Entity entity, Component::Type type) const {
+    STORMKIT_EXPECTS(entity != INVALID_ENTITY && type != Component::INVALID_TYPE);
 
-    auto it =
-        std::find_if(m_components[entity].cbegin(), m_components[entity].cend(), [type](auto &i) {
-            if (i.first == type) return true;
+    auto it = std::find_if(m_components.at(entity).cbegin(),
+                           m_components.at(entity).cend(),
+                           [type](auto &i) {
+                               if (i.first == type) return true;
 
-            return false;
-        });
+                               return false;
+                           });
 
-    return (it != m_components[entity].cend());
+    return (it != m_components.at(entity).cend());
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 std::vector<ComponentRef> EntityManager::components(Entity entity) {
-    STORM_EXPECTS(entity != INVALID_ENTITY);
+    STORMKIT_EXPECTS(entity != INVALID_ENTITY);
 
     if (!hasEntity(entity) || !hasComponent(entity)) return {};
 
     auto vec = std::vector<ComponentRef> {};
-    vec.reserve(m_components[entity].size());
-    for (auto &i : m_components[entity]) { vec.emplace_back(*i.second); }
+    vec.reserve(std::size(m_components.at(entity)));
+    for (auto &i : m_components.at(entity)) { vec.emplace_back(std::ref(*i.second)); }
 
     return vec;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void EntityManager::step(uint64_t delta) {
+std::vector<ComponentConstRef> EntityManager::components(Entity entity) const {
+    STORMKIT_EXPECTS(entity != INVALID_ENTITY);
+
+    if (!hasEntity(entity) || !hasComponent(entity)) return {};
+
+    auto vec = std::vector<ComponentConstRef> {};
+    vec.reserve(std::size(m_components.at(entity)));
+    for (auto &i : m_components.at(entity)) { vec.emplace_back(std::cref(*i.second)); }
+
+    return vec;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+void EntityManager::step(core::Secondf delta) {
     for (auto entity : m_added_entities) { m_entities.emplace(entity); }
     m_added_entities.clear();
 
@@ -131,7 +144,7 @@ void EntityManager::step(uint64_t delta) {
 /////////////////////////////////////
 /////////////////////////////////////
 void EntityManager::purposeToSystems(Entity e) {
-    STORM_EXPECTS(e != INVALID_ENTITY);
+    STORMKIT_EXPECTS(e != INVALID_ENTITY);
 
     for (auto &s : m_systems) {
         auto is_reliable = true;
@@ -149,7 +162,7 @@ void EntityManager::purposeToSystems(Entity e) {
 /////////////////////////////////////
 /////////////////////////////////////
 void EntityManager::removeFromSystems(Entity e) {
-    STORM_EXPECTS(e != INVALID_ENTITY);
+    STORMKIT_EXPECTS(e != INVALID_ENTITY);
 
     for (auto &s : m_systems) { s->removeEntity(e); }
 }

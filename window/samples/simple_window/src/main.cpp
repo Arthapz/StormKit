@@ -1,16 +1,19 @@
 #include <storm/log/LogHandler.hpp>
 
-#include <storm/window/InputHandler.hpp>
 #include <storm/window/Window.hpp>
 
 #include <storm/main/Main.hpp>
 
 #include <storm/core/RingBuffer.hpp>
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
+#include <clocale>
+
+int main([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
     using namespace storm;
     using namespace storm::window;
     using namespace storm::log;
+
+    std::setlocale(LC_ALL, "en_US.utf8");
 
     LogHandler::setupDefaultLogger();
 
@@ -19,6 +22,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 
     for (const auto &setting : Window::getDesktopModes())
         LogHandler::ilog("Screen: {}", setting.size);
+
+    LogHandler::ilog("Fullscreen resolution: {}", Window::getDesktopFullscreenSize().size);
 
     while (window.isOpen()) {
         auto event = Event {};
@@ -57,6 +62,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
                 }
                 case EventType::MouseExited: {
                     LogHandler::ilog("Mouse Exited event");
+                    break;
+                }
+                case EventType::LostFocus: {
+                    LogHandler::ilog("Lost focus event");
+                    break;
+                }
+                case EventType::GainedFocus: {
+                    LogHandler::ilog("Gained focus event");
                     break;
                 }
                 case EventType::KeyPressed: {

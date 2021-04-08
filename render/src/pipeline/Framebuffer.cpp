@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -15,7 +15,7 @@ using namespace storm::render;
 /////////////////////////////////////
 Framebuffer::Framebuffer(const RenderPass &render_pass,
                          core::Extentu extent,
-                         TextureViewConstObserverPtrArray attachments)
+                         TextureViewConstPtrArray attachments)
     : m_render_pass { &render_pass }, m_extent { std::move(extent) }, m_attachments { std::move(
                                                                           attachments) } {
     auto vk_attachments = std::vector<vk::ImageView> {};
@@ -27,8 +27,8 @@ Framebuffer::Framebuffer(const RenderPass &render_pass,
             .setRenderPass(*m_render_pass)
             .setAttachmentCount(gsl::narrow_cast<core::UInt32>(std::size(m_attachments)))
             .setPAttachments(std::data(vk_attachments))
-            .setWidth(m_extent.w)
-            .setHeight(m_extent.h)
+            .setWidth(m_extent.width)
+            .setHeight(m_extent.height)
             .setLayers(1);
 
     const auto &device = m_render_pass->device();

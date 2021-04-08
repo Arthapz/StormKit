@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -16,22 +16,24 @@
 namespace storm::window {
     struct VideoSettings {
         core::Extentu size;
-        union {
-            core::UInt8 bitsPerPixel;
-            core::UInt8 bpp;
-        };
-        union {
-            core::UInt16 dotsPerInch;
-            core::UInt16 dpi;
-        };
+        core::UInt8 bpp  = 32u;
+        core::UInt16 dpi = 1u;
 
-        inline bool operator==(const VideoSettings &other) const noexcept {
+        [[nodiscard]] constexpr inline auto operator==(const VideoSettings &other) const noexcept
+            -> bool {
             return size.width == other.size.width && size.height == other.size.height &&
-                   bpp == other.bpp;
+                   bpp == other.bpp && dpi == other.dpi;
         }
 
-        inline bool operator>(const VideoSettings &other) const noexcept {
-            return size.width > other.size.width;
+        [[nodiscard]] constexpr inline auto operator!=(const VideoSettings &other) const noexcept
+            -> bool {
+            return !operator==(other);
+        }
+
+        [[nodiscard]] constexpr inline auto operator>(const VideoSettings &other) const noexcept
+            -> bool {
+            return (size.width * size.height * size.depth) >
+                   (other.size.width * other.size.height * other.size.height);
         }
     };
 

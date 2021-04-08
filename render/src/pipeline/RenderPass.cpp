@@ -1,12 +1,15 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+/////////// - StormKit::core - ///////////
 #include <storm/core/Numerics.hpp>
 #include <storm/core/Ranges.hpp>
 
+/////////// - StormKit::render - ///////////
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/Enums.hpp>
+
 #include <storm/render/pipeline/Framebuffer.hpp>
 #include <storm/render/pipeline/RenderPass.hpp>
 
@@ -15,7 +18,10 @@ using namespace storm::render;
 
 /////////////////////////////////////
 /////////////////////////////////////
-RenderPass::RenderPass(const render::Device &device) : m_device { &device } {};
+RenderPass::RenderPass(const render::Device &device, RenderPassDescription description)
+    : m_device { &device }, m_description { std::move(description) } {
+    build();
+}
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -31,30 +37,10 @@ RenderPass &RenderPass::operator=(RenderPass &&) = default;
 
 /////////////////////////////////////
 /////////////////////////////////////
-core::UInt32 RenderPass::addAttachmentDescription(AttachmentDescription attachment) {
-    m_attachment_descriptions.emplace_back(std::move(attachment));
-
-    return std::size(m_attachment_descriptions) - 1u;
-}
-
-/////////////////////////////////////
-/////////////////////////////////////
-std::vector<core::UInt32>
-    RenderPass::addAttachmentDescriptions(core::span<AttachmentDescription> attachment) {
-    const auto end = std::size(m_attachment_descriptions);
-
-    m_attachment_descriptions.resize(end + std::size(attachment));
-
-    core::ranges::copy(attachment, core::ranges::begin(m_attachment_descriptions) + end);
-
-    return core::genRange<core::UInt32>(end - 1u, std::size(m_attachment_descriptions));
-}
-/////////////////////////////////////
-/////////////////////////////////////
 void RenderPass::build() {
     auto attachments = std::vector<vk::AttachmentDescription> {};
-    attachments.reserve(std::size(m_attachment_descriptions));
-    for (const auto &attachment : m_attachment_descriptions) {
+    attachments.reserve(std::size(m_description.attachments));
+    for (const auto &attachment : m_description.attachments) {
         const auto vk_attachment = vk::AttachmentDescription {}
                                        .setFormat(toVK(attachment.format))
                                        .setSamples(toVKBits(attachment.samples))
@@ -73,13 +59,13 @@ void RenderPass::build() {
     auto subpasses               = std::vector<vk::SubpassDescription> {};
     auto subpasses_deps          = std::vector<vk::SubpassDependency> {};
 
-    for (const auto &subpass : m_subpasses) {
+    for (const auto &subpass : m_description.subpasses) {
         auto &color_attachment_ref = color_attachment_refs.emplace_back();
         color_attachment_ref.reserve(std::size(subpass.attachment_refs));
         auto &resolve_attachment_ref = resolve_attachment_refs.emplace_back();
 
         for (const auto &attachment_ref : subpass.attachment_refs) {
-            if (isDepthFormat(m_attachment_descriptions[attachment_ref.attachment_id].format)) {
+            if (isDepthFormat(m_description.attachments[attachment_ref.attachment_id].format)) {
                 depth_attachment_ref = vk::AttachmentReference {}
                                            .setAttachment(attachment_ref.attachment_id)
                                            .setLayout(toVK(attachment_ref.layout));
@@ -90,7 +76,7 @@ void RenderPass::build() {
                                                .setAttachment(attachment_ref.attachment_id)
                                                .setLayout(toVK(attachment_ref.layout));
 
-            if (m_attachment_descriptions[attachment_ref.attachment_id].resolve)
+            if (m_description.attachments[attachment_ref.attachment_id].resolve)
                 resolve_attachment_ref.emplace_back(std::move(vk_attachment_ref));
             else
                 color_attachment_ref.emplace_back(std::move(vk_attachment_ref));
@@ -135,9 +121,8 @@ void RenderPass::build() {
 
 /////////////////////////////////////
 /////////////////////////////////////
-render::Framebuffer
-    RenderPass::createFramebuffer(core::Extentu extent,
-                                  TextureViewConstObserverPtrArray attachments) const {
+render::Framebuffer RenderPass::createFramebuffer(core::Extentu extent,
+                                                  TextureViewConstPtrArray attachments) const {
     return Framebuffer { *this, std::move(extent), std::move(attachments) };
 }
 
@@ -145,6 +130,15 @@ render::Framebuffer
 /////////////////////////////////////
 render::FramebufferOwnedPtr
     RenderPass::createFramebufferPtr(core::Extentu extent,
-                                     TextureViewConstObserverPtrArray attachments) const {
+                                     TextureViewConstPtrArray attachments) const {
     return std::make_unique<Framebuffer>(*this, std::move(extent), std::move(attachments));
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+bool RenderPass::isCompatible(const RenderPass &render_pass) const noexcept {
+    // TODO implement proper compatibility check
+    // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap7.html#renderpass-compatibility
+
+    return &render_pass == this;
 }

@@ -9,12 +9,15 @@
 #include <storm/render/core/Instance.hpp>
 #include <storm/render/core/PhysicalDevice.hpp>
 #include <storm/render/core/PhysicalDeviceInfo.hpp>
+#include <storm/render/core/WindowSurface.hpp>
 
 #include <storm/render/resource/Sampler.hpp>
 #include <storm/render/resource/Texture.hpp>
 
 using namespace storm;
 using log::operator""_module;
+
+using namespace std::literals;
 
 struct MeshVertex {
     core::Vector2f position;
@@ -24,9 +27,9 @@ struct MeshVertex {
 static constexpr auto TEXTURE_WIDTH  = 250.f;
 static constexpr auto TEXTURE_HEIGHT = 216.f;
 
-static constexpr auto WINDOW_TITLE        = "StormKit Texture Example";
-static constexpr auto LOG_MODULE          = "Texture"_module;
-static constexpr const auto MESH_VERTICES = std::array {
+static constexpr auto WINDOW_TITLE  = "StormKit Texture Example";
+static constexpr auto LOG_MODULE    = "Texture"_module;
+static constexpr auto MESH_VERTICES = std::array {
     MeshVertex { .position = { 0.f, 0.f }, .uv = { 0.f, 0.f } },
     MeshVertex { .position = { 0.f, TEXTURE_HEIGHT }, .uv = { 0.f, 1.f } },
     MeshVertex { .position = { TEXTURE_WIDTH, 0.f }, .uv = { 1.f, 0.f } },
@@ -47,7 +50,7 @@ static constexpr auto MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS =
                                                            .format   = render::Format::Float2,
                                                            .offset   = offsetof(MeshVertex, uv) } };
 static constexpr auto CAMERA_BUFFER_SIZE = sizeof(Camera);
-static constexpr auto MODEL_BUFFER_SIZE  = sizeof(core::Matrixf);
+static constexpr auto MODEL_BUFFER_SIZE  = sizeof(core::Matrix);
 static const auto VERTEX_SHADER_DATA     = std::vector<core::UInt32> {
 #include "vertex.vert.spv.hpp"
 };
@@ -69,7 +72,7 @@ App::~App() {
     m_frame_datas.clear();
 }
 
-void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
+void App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
     while (m_window->isOpen()) {
         auto event = window::Event {};
         while (m_window->pollEvent(event)) {
@@ -82,8 +85,8 @@ void App::run([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
         auto frame       = m_surface->acquireNextFrame();
         auto &frame_data = m_frame_datas[frame.texture_index];
 
-        frame_data.commandbuffer.submit(core::makeConstObserversArray(frame.texture_available),
-                                        core::makeConstObserversArray(frame.render_finished),
+        frame_data.commandbuffer.submit(core::makeConstObserverArray(frame.texture_available),
+                                        core::makeConstObserverArray(frame.render_finished),
                                         frame.in_flight);
 
         m_surface->present(frame);
@@ -105,13 +108,13 @@ void App::doInitBaseRenderObjects() {
     log::LogHandler::ilog(LOG_MODULE, "Render backend successfully initialized");
     log::LogHandler::ilog(LOG_MODULE,
                           "Using StormKit {}.{}.{} {} {}",
-                          STORM_MAJOR_VERSION,
-                          STORM_MINOR_VERSION,
-                          STORM_PATCH_VERSION,
-                          STORM_GIT_BRANCH,
-                          STORM_GIT_COMMIT_HASH);
+                          STORMKIT_MAJOR_VERSION,
+                          STORMKIT_MINOR_VERSION,
+                          STORMKIT_PATCH_VERSION,
+                          STORMKIT_GIT_BRANCH,
+                          STORMKIT_GIT_COMMIT_HASH);
 
-    m_surface = m_instance->createSurfacePtr(*m_window);
+    m_surface = m_instance->createWindowSurfacePtr(*m_window);
 
     const auto &physical_device      = m_instance->pickPhysicalDevice(*m_surface);
     const auto &physical_device_info = physical_device.info();
@@ -135,18 +138,17 @@ void App::doInitBaseRenderObjects() {
 }
 
 void App::doInitMeshRenderObjects() {
-    const auto &surface_extent = m_surface->extent();
-    const auto surface_extentf = surface_extent.convertTo<core::Extentf>();
+    const auto surface_extent  = core::Extentf { m_surface->extent() };
     const auto buffering_count = m_surface->bufferingCount();
 
     // The window center
-    const auto quad_position = core::Vector3f { surface_extentf.w / 2.f - TEXTURE_WIDTH / 2.f,
-                                                surface_extentf.h / 2.f - TEXTURE_HEIGHT / 2.f,
+    const auto quad_position = core::Vector3f { surface_extent.width / 2.f - TEXTURE_WIDTH / 2.f,
+                                                surface_extent.height / 2.f - TEXTURE_HEIGHT / 2.f,
                                                 0.f };
 
-    m_camera = { .projection = core::ortho(0.f, surface_extentf.w, surface_extentf.h, 0.f),
-                 .view       = core::Matrixf { 1.f } };
-    m_model  = core::translate(core::Matrixf { 1.f }, quad_position);
+    m_camera = { .projection = core::ortho(0.f, surface_extent.width, surface_extent.height, 0.f),
+                 .view       = core::Matrix { 1.f } };
+    m_model  = core::translate(core::Matrix { 1.f }, quad_position);
 
     // We load our triangle shaders
     m_vertex_shader = m_device->createShaderPtr(VERTEX_SHADER_DATA, render::ShaderStage::Vertex);
@@ -186,15 +188,12 @@ void App::doInitMeshRenderObjects() {
                                           2);
 
     // We need to create a render pass, the render pass describe how the framebuffer will look
-    m_render_pass = m_device->createRenderPassPtr();
-
-    const auto id = m_render_pass->addAttachmentDescription({ .format = m_surface->pixelFormat() });
-
-    m_render_pass->addSubpass(
-        { .bind_point      = render::PipelineBindPoint::Graphics,
-          .attachment_refs = { render::RenderPass::Subpass::Ref { .attachment_id = id } } });
-
-    m_render_pass->build();
+    auto description = render::RenderPassDescription {
+        .attachments = { { .format = m_surface->pixelFormat() } },
+        .subpasses   = { { .bind_point      = render::PipelineBindPoint::Graphics,
+                         .attachment_refs = { { .attachment_id = 0u } } } }
+    };
+    m_render_pass = m_device->createRenderPassPtr(std::move(description));
     log::LogHandler::ilog(LOG_MODULE, "Renderpass successfully created");
 
     // We create a pipeline, the pipeline describe all the fixed function parameters and the shaders
@@ -204,7 +203,7 @@ void App::doInitMeshRenderObjects() {
     const auto state = render::GraphicsPipelineState {
         .input_assembly_state = { .topology = render::PrimitiveTopology::Triangle_Strip },
         .viewport_state       = { .viewports = { render::Viewport { .position = { 0.f, 0.f },
-                                                              .extent   = surface_extentf,
+                                                              .extent   = surface_extent,
                                                               .depth    = { 0.f, 1.f } } },
                             .scissors  = { render::Scissor { .offset = { 0, 0 },
                                                             .extent = surface_extent } } },
@@ -219,13 +218,14 @@ void App::doInitMeshRenderObjects() {
                                                       render::BlendFactor::One_Minus_Src_Alpha,
                                                   .alpha_blend_operation =
                                                       render::BlendOperation::Add } } },
-        .shader_state = { .shaders = core::makeConstObservers(m_vertex_shader, m_fragment_shader) },
-        .vertex_input_state = { .binding_descriptions = MESH_VERTEX_BINDING_DESCRIPTIONS,
+        .shader_state         = { .shaders =
+                              core::makeConstObserverArray(m_vertex_shader, m_fragment_shader) },
+        .vertex_input_state   = { .binding_descriptions = MESH_VERTEX_BINDING_DESCRIPTIONS,
                                 .input_attribute_descriptions =
                                     MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS },
-        .layout             = { .descriptor_set_layouts =
-                        core::makeConstObservers(m_per_frame_descriptor_set_layout,
-                                                 m_per_mesh_descriptor_set_layout) }
+        .layout               = { .descriptor_set_layouts =
+                        core::makeConstObserverArray(m_per_frame_descriptor_set_layout,
+                                                     m_per_mesh_descriptor_set_layout) }
     };
 
     m_pipeline->setState(std::move(state));
@@ -256,7 +256,7 @@ void App::doInitMeshRenderObjects() {
     m_mesh_data_set =
         m_per_mesh_descriptor_pool->allocateDescriptorSetPtr(*m_per_mesh_descriptor_set_layout);
     m_model_buffer = m_device->createUniformBufferPtr(MODEL_BUFFER_SIZE);
-    m_model_buffer->upload<core::Matrixf>({ &m_model, 1 });
+    m_model_buffer->upload<core::Matrix>({ &m_model, 1 });
     m_model_buffer->flush(0, MODEL_BUFFER_SIZE);
     log::LogHandler::ilog(LOG_MODULE, "{} bytes uploaded to model buffer", MODEL_BUFFER_SIZE);
 
@@ -299,7 +299,7 @@ void App::doInitMeshRenderObjects() {
         frame.commandbuffer.bindDescriptorSets(*m_pipeline, { *m_camera_set, *m_mesh_data_set });
         frame.commandbuffer.bindVertexBuffers({ *m_vertex_buffer }, { 0 });
 
-        frame.commandbuffer.draw(gsl::narrow_cast<core::UInt32>(std::size(MESH_VERTICES)));
+        frame.commandbuffer.draw(gsl::narrow_cast<core::Int32>(std::size(MESH_VERTICES)));
 
         frame.commandbuffer.endRenderPass();
         frame.commandbuffer.end();

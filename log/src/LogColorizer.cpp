@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -9,18 +9,18 @@
 using namespace storm;
 using namespace storm::log;
 
-#if defined(STORM_OS_WINDOWS)
+#if defined(STORMKIT_OS_WINDOWS)
     #include <Windows.h>
 
-[[maybe_unused]] static constexpr const core::UInt8 KBLA = 0;
-[[maybe_unused]] static constexpr const core::UInt8 KRED = 12;
-[[maybe_unused]] static constexpr const core::UInt8 KGRN = 2;
-[[maybe_unused]] static constexpr const core::UInt8 KYEL = 14;
-[[maybe_unused]] static constexpr const core::UInt8 KBLU = 9;
-[[maybe_unused]] static constexpr const core::UInt8 KMAG = 13;
-[[maybe_unused]] static constexpr const core::UInt8 KCYN = 11;
-[[maybe_unused]] static constexpr const core::UInt8 KWHT = 15;
-[[maybe_unused]] static constexpr const core::UInt8 KGRS = 8;
+[[maybe_unused]] static constexpr core::UInt8 KBLA = 0;
+[[maybe_unused]] static constexpr core::UInt8 KRED = 12;
+[[maybe_unused]] static constexpr core::UInt8 KGRN = 2;
+[[maybe_unused]] static constexpr core::UInt8 KYEL = 14;
+[[maybe_unused]] static constexpr core::UInt8 KBLU = 9;
+[[maybe_unused]] static constexpr core::UInt8 KMAG = 13;
+[[maybe_unused]] static constexpr core::UInt8 KCYN = 11;
+[[maybe_unused]] static constexpr core::UInt8 KWHT = 15;
+[[maybe_unused]] static constexpr core::UInt8 KGRS = 8;
 
 namespace storm::log {
     /////////////////////////////////////
@@ -63,7 +63,7 @@ namespace storm::log {
         SetConsoleTextAttribute(handle, (KBLA << 4) + KWHT);
     }
 } // namespace storm::log
-#elif defined(STORM_OS_IOS)
+#elif defined(STORMKIT_OS_IOS)
 namespace storm::log {
     /////////////////////////////////////
     /////////////////////////////////////
@@ -73,29 +73,32 @@ namespace storm::log {
     /////////////////////////////////////
     void colorifyBEnd([[maybe_unused]] bool to_stderr) {}
 } // namespace storm::log
-#elif defined(STORM_POSIX)
+#elif defined(STORMKIT_POSIX)
+using std::literals::string_view_literals::operator""sv;
+
 namespace storm::log {
-    [[maybe_unused]] static constexpr const char *const KNRM = "\x1B[0m";
-    [[maybe_unused]] static constexpr const char *const KRED = "\x1B[31m";
-    [[maybe_unused]] static constexpr const char *const KGRN = "\x1B[32m";
-    [[maybe_unused]] static constexpr const char *const KYEL = "\x1B[33m";
-    [[maybe_unused]] static constexpr const char *const KBLU = "\x1B[34m";
-    [[maybe_unused]] static constexpr const char *const KMAG = "\x1B[35m";
-    [[maybe_unused]] static constexpr const char *const KCYN = "\x1B[36m";
-    [[maybe_unused]] static constexpr const char *const KWHT = "\x1B[37m";
-    [[maybe_unused]] static constexpr const char *const KGRS = "\033[1m";
-    [[maybe_unused]] static constexpr const char *const KINV = "\e[7m";
+    [[maybe_unused]] static constexpr auto KNRM  = "\x1B[0m"sv;
+    [[maybe_unused]] static constexpr auto KRED  = "\x1B[31m"sv;
+    [[maybe_unused]] static constexpr auto KGRN  = "\x1B[32m"sv;
+    [[maybe_unused]] static constexpr auto KYEL  = "\x1B[33m"sv;
+    [[maybe_unused]] static constexpr auto KBLU  = "\x1B[34m"sv;
+    [[maybe_unused]] static constexpr auto KMAG  = "\x1B[35m"sv;
+    [[maybe_unused]] static constexpr auto KCYN  = "\x1B[36m"sv;
+    [[maybe_unused]] static constexpr auto KWHT  = "\x1B[37m"sv;
+    [[maybe_unused]] static constexpr auto KGRS  = "\033[1m"sv;
+    [[maybe_unused]] static constexpr auto KINV  = "\e[7m"sv;
+    [[maybe_unused]] static constexpr auto KBLCK = "\e[30m"sv;
 
     /////////////////////////////////////
     /////////////////////////////////////
     void colorifyBegin(Severity severity, bool to_stderr) noexcept {
         auto &output = (to_stderr) ? std::cerr : std::cout;
         switch (severity) {
-            case Severity::Info: output << KGRS << KINV << KGRN; break;
-            case Severity::Warning: output << KGRS << KINV << KMAG; break;
-            case Severity::Error: output << KGRS << KINV << KYEL; break;
-            case Severity::Fatal: output << KGRS << KINV << KRED; break;
-            case Severity::Debug: output << KGRS << KINV << KCYN; break;
+            case Severity::Info: output << KBLCK << KINV << KGRN; break;
+            case Severity::Warning: output << KBLCK << KINV << KMAG; break;
+            case Severity::Error: output << KBLCK << KINV << KYEL; break;
+            case Severity::Fatal: output << KBLCK << KINV << KRED; break;
+            case Severity::Debug: output << KBLCK << KINV << KCYN; break;
         }
     }
 

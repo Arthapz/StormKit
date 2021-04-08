@@ -1,4 +1,4 @@
-// Copryright (C) 2019 Arthur LAURENT <arthur.laurent4@gmail.com>
+// Copryright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include <gsl/string_span>
+
 #include <storm/core/Hash.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/core/Types.hpp>
@@ -15,9 +17,8 @@
 #include <storm/entities/Fwd.hpp>
 
 namespace storm::entities {
-    struct STORM_PUBLIC Component {
+    struct STORMKIT_PUBLIC Component {
         Component();
-        virtual ~Component() = 0;
 
         Component(const Component &);
         Component &operator=(const Component &);
@@ -30,9 +31,30 @@ namespace storm::entities {
         static constexpr Type INVALID_TYPE = 0;
         static constexpr Type TYPE         = INVALID_TYPE;
     };
-} // namespace storm::entities
 
-constexpr storm::entities::Component::Type operator"" _component_type(const char *str,
-                                                                      storm::core::ArraySize size) {
-    return storm::core::ComponentHash<storm::entities::Component::Type>(str, size);
-}
+    template<typename Result, core::ArraySize size>
+    constexpr inline Result componentHash(gsl::czstring_span<size> str) noexcept {
+        return size == 0 ? 0xcbf29ce484222325UL
+                         : (static_cast<core::Hash64>(str[0]) ^
+                            componentHash<Result, std::size(str) - 1>(str[1])) *
+                               0x100000001b3UL;
+    }
+
+    constexpr Component::Type componentHash(const char *str, core::ArraySize size) noexcept {
+        return size == 0
+                   ? 0xcbf29ce484222325UL
+                   : (static_cast<core::ArraySize>(str[0]) ^ componentHash(str + 1, size - 1)) *
+                         0x100000001b3UL;
+    }
+
+    constexpr Component::Type componentHash(std::string_view str) noexcept {
+        return componentHash(std::data(str), std::size(str));
+    }
+
+    namespace literals {
+        constexpr Component::Type operator"" _component_type(const char *str,
+                                                             core::ArraySize size) {
+            return storm::entities::componentHash(str, size);
+        }
+    } // namespace literals
+} // namespace storm::entities
