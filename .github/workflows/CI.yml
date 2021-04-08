@@ -15,7 +15,7 @@ jobs:
       matrix:
         os:
         - {
-           name: "Ubuntu ( G++,",
+           name: "Ubuntu ( G++10,",
            value: ubuntu-latest
         }
             
@@ -68,6 +68,8 @@ jobs:
         - name: Configure & Build
           id: confandbuild
           run: |
+            export CC=gcc-10
+            export CXX=g++-10
             meson builddir \
               -Denable_examples=true \
               -Dbuildtype=${{ matrix.build_type }} \
