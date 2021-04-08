@@ -72,6 +72,7 @@ jobs:
             export CXX=g++-10
             meson builddir \
               -Denable_examples=true \
+              -Dexamples_data_dir="../share/" \
               -Dbuildtype=${{ matrix.build_type }} \
               -Dlibrary_type=${{ matrix.library_type }} \
               --cmake-prefix-path ${{ runner.workspace }}/vcpkg/installed/x64-linux/ \
@@ -87,7 +88,7 @@ jobs:
           id: upload
           uses: actions/upload-artifact@v1
           with:
-            name: upload artifacts
+            name: ${{ matrix.os.name }}-GCC10-${{ matrix.library_type }}-${{ matrix.build_type }}
             path: ${{ runner.workspace }}/StormKit_Output
 
 
