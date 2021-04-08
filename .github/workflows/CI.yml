@@ -67,17 +67,26 @@ jobs:
             
         - name: Configure & Build
           id: confandbuild
-          env:
-            VCPKG_ROOT: ${{ runner.workspace }}/vcpkg/
-            VCPKG_TRIPLET: x64-linux
-
           run: |
             meson builddir \
               -Denable_examples=true \
               -Dbuildtype=${{ matrix.build_type }} \
               -Dlibrary_type=${{ matrix.library_type }} \
-              --cmake-prefix-path $VCPKG_ROOT/vcpkg/installed/$VCPKG_TRIPLET/ \
+              --cmake-prefix-path ${{ runner.workspace }}/vcpkg/installed/x64-linux/ \
               --prefix=${{ runner.workspace }}/StormKit_Output
             ninja -C builddir -j8
+
+        - name: Install
+          id: install
+          run: |
+            ninja -C builddir install -j8
+
+        - name: Upload artifacts
+          id: upload
+          uses: actions/upload-artifact@v1
+          with:
+            name: upload artifacts
+            path: ${{ runner.workspace }}/StormKit_Output
+
 
 
