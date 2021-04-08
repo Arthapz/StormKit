@@ -7,9 +7,6 @@
 
 using namespace storm::log;
 
-namespace storm::log {
-    LoggerOwnedPtr LogHandler::m_logger = nullptr;
-}
 void LogHandler::setupLogger(LoggerOwnedPtr &&ptr) {
     m_logger = std::move(ptr);
 }

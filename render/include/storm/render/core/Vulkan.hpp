@@ -21,7 +21,7 @@
         #define VK_USE_PLATFORM_WAYLAND_KHR 1
     #endif
 #elif defined(STORMKIT_OS_WINDOWS)
-    #define
+    #define VK_USE_PLATFORM_WIN32_KHR 1
 #elif defined(STORMKIT_OS_MACOS)
     #define VK_USE_PLATFORM_MACOS_MVK 1
 #elif defined(STORMKIT_OS_IOS)
@@ -37,6 +37,7 @@
 
 #include <vulkan/vulkan.h>
 
+#if defined(STORMKIT_OS_LINUX)
 #if STORMKIT_ENABLE_WAYLAND
     #include <vulkan/vulkan_wayland.h>
 #endif
@@ -45,7 +46,7 @@
 
     #include <vulkan/vulkan_xcb.h>
 #endif
-#ifdef STORMKIT_OS_MACOS
+#elif defined(STORMKIT_OS_MACOS)
     #include <vulkan/vulkan_macos.h>
 #endif
 

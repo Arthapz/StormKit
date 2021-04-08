@@ -15,6 +15,8 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
 
+#include <storm/engine/render/Material.hpp>
+
 namespace storm::engine {
     struct STORMKIT_PUBLIC MaterialComponent: public entities::Component {
         MaterialComponent() noexcept = default;
