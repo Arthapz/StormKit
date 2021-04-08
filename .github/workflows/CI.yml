@@ -66,14 +66,14 @@ jobs:
             fetch-depth: 0
             
         - name: Configure & Build
-          uses: BSFishy/meson-build@v1.0.3
-          with:
-            directory: builddir
-            setup-options: |
+          id: confandbuild
+          run: |
+            meson builddir \
               -Denable_examples=true \
               -Dbuildtype=${{ matrix.build_type }} \
               -Dlibrary_type=${{ matrix.library_type }} \
-              --cmake-prefix-path ${{ runner.workspace }}/vcpkg/installed/x64-linux/ \
+              --cmake-prefix-path $VCPKG_ROOT/vcpkg/installed/$RUNVCPKG_VCPKG_TRIPLET/ \
               --prefix=${{ runner.workspace }}/StormKit_Output
+            ninja -C builddir -j8
 
 
