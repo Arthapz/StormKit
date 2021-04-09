@@ -1,3 +1,7 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
 #include "Win32Window.hpp"
 #include "Utils.hpp"
 
@@ -86,28 +90,6 @@ auto Win32Window::create(std::string title, const VideoSettings &settings, Windo
                                       h_instance,
                                       this);
 
-    if ((style & WindowStyle::Fullscreen) == WindowStyle::Fullscreen) {
-        auto mode         = DEVMODE {};
-        mode.dmSize       = sizeof(DEVMODE);
-        mode.dmBitsPerPel = settings.bpp;
-        mode.dmPelsWidth  = settings.size.width;
-        mode.dmPelsHeight = settings.size.height;
-        mode.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
-
-        ChangeDisplaySettings(&mode, CDS_FULLSCREEN);
-
-        SetWindowLongW(m_window_handle, GWL_STYLE, WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-        SetWindowLongW(m_window_handle, GWL_EXSTYLE, WS_EX_APPWINDOW);
-
-        SetWindowPos(m_window_handle,
-                     HWND_TOP,
-                     0,
-                     0,
-                     settings.size.width,
-                     settings.size.height,
-                     SWP_FRAMECHANGED);
-    }
-
     ShowWindow(m_window_handle, SW_SHOWNORMAL);
 
     m_is_open       = true;
@@ -167,17 +149,61 @@ auto Win32Window::setTitle(std::string title) noexcept -> void {
 
 /////////////////////////////////////
 /////////////////////////////////////
-auto Win32Window::setVideoSettings(const storm::window::VideoSettings &settings) noexcept -> void {
-    auto rectangle = RECT { 0,
-                            0,
-                            static_cast<long>(settings.size.width),
-                            static_cast<long>(settings.size.height) };
+void Win32Window::setFullscreenEnabled(bool enabled) noexcept {
+    auto mode         = DEVMODE {};
+    ZeroMemory(&mode, sizeof(DEVMODE));
 
-    AdjustWindowRect(&rectangle, GetWindowLongW(m_window_handle, GWL_STYLE), false);
-    auto width  = rectangle.right - rectangle.left;
-    auto height = rectangle.bottom - rectangle.top;
+    mode.dmSize       = sizeof(DEVMODE);
+    mode.dmBitsPerPel = m_video_settings.bpp;
+    mode.dmPelsWidth  = m_current_size.width;
+    mode.dmPelsHeight = m_current_size.height;
+    mode.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
 
-    SetWindowPos(m_window_handle, nullptr, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+    ChangeDisplaySettings(&mode, CDS_FULLSCREEN);
+
+    SetWindowLongW(m_window_handle, GWL_STYLE, WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+    SetWindowLongW(m_window_handle, GWL_EXSTYLE, WS_EX_APPWINDOW);
+
+    SetWindowPos(m_window_handle,
+                 HWND_TOP,
+                 0,
+                 0,
+                 m_current_size.width,
+                 m_current_size.height,
+                 SWP_FRAMECHANGED);
+
+    m_fullscreen = true;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+void Win32Window::lockMouse() noexcept {
+    auto rect = RECT{};
+    ZeroMemory(&rect, sizeof(RECT));
+
+    GetClientRect(m_window_handle, &rect);
+
+    ClipCursor(&rect);
+    m_mouse_locked = true;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+void Win32Window::unlockMouse() noexcept {
+    ClipCursor(nullptr);
+    m_mouse_locked = false;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+void Win32Window::hideMouse() noexcept {
+    ShowCursor(FALSE);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+void Win32Window::unhideMouse() noexcept {
+    ShowCursor(TRUE);
 }
 
 /////////////////////////////////////

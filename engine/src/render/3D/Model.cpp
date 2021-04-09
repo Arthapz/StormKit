@@ -31,7 +31,7 @@ STORMKIT_PRIVATE bool LoadImageData(tinygltf::Image *image,
                                     const unsigned char *bytes,
                                     int size,
                                     void *) {
-    auto _image = image::Image { core::toConstByteSpan(bytes, size) }.toFormat(
+    /*auto _image = image::Image { core::toConstByteSpan(bytes, size) }.toFormat(
         image::Image::Format::RGBA8_UNorm);
     // if (_image.codec() == image::Image::Codec::PNG) _image = image::Image::flipY(_image);
 
@@ -50,7 +50,7 @@ STORMKIT_PRIVATE bool LoadImageData(tinygltf::Image *image,
 
     core::ranges::copy(core::ranges::begin(data),
                        core::ranges::begin(data) + _size,
-                       reinterpret_cast<core::Byte *>(std::data(image->image)));
+                       reinterpret_cast<core::Byte *>(std::data(image->image)));*/
 
     return true;
 }

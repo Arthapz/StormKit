@@ -32,7 +32,13 @@ namespace storm::window::details {
         [[nodiscard]] bool waitEvent(Event &event) noexcept override;
 
         void setTitle(std::string title) noexcept override;
-        void setVideoSettings(const storm::window::VideoSettings &settings) noexcept override;
+        void setFullscreenEnabled(bool enabled) noexcept override;
+
+        void lockMouse() noexcept override;
+        void unlockMouse() noexcept override;
+
+        void hideMouse() noexcept override;
+        void unhideMouse() noexcept override;
 
         [[nodiscard]] const core::Extentu &size() const noexcept override;
 

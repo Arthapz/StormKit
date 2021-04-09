@@ -72,7 +72,7 @@ auto App::doInitWindow() -> void {
                                  [this]([[maybe_unused]] const auto &event) { m_window->close(); });
     m_event_handler->addCallback(window::EventType::Resized,
                                  [this]([[maybe_unused]] const auto &event) {
-                                     m_engine->recreateSwapchain();
+                                     //m_engine->recreateSwapchain();
                                  });
     m_event_handler->addCallback(window::EventType::KeyPressed, [this](const auto &event) {
         if (event.key_event.key == window::Key::Escape) m_window->close();

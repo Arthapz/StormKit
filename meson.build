@@ -148,7 +148,6 @@ endif
 summary({
     'Enable doc': enable_doc,
     'Enable examples': get_option('enable_examples'),
-    'enable_applications': get_option('enable_applications'),
     'examples_data_dir': examples_data_dir,
     'library_type': get_option('library_type'),
     'build_type': build_type,

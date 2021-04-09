@@ -1,4 +1,4 @@
-vulkan_dep  = dependency('vulkan')
+vulkan_dep  = dependency('vulkan-headers', fallback: ['vulkan-headers', 'vulkan_headers_dep'])
 
 cmake = import('cmake')
 

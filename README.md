@@ -5,10 +5,10 @@ StormKit is my personal C++ toolkit.
 ## Project Health
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c282faa85ff24b049eb7f61f826224b3)](https://www.codacy.com/app/Arthapz/StormKit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Arthapz/StormKit&amp;utm_campaign=Badge_Grade)
 
-| Service | Status |
+| OS | Status |
 | ------- | ------ |
-| Travis  | [![Build Status](https://travis-ci.com/Arthapz/StormKit.svg?branch=master)](https://travis-ci.com/Arthapz/StormKit) |
-| AppVeyor | [![Build Status](https://ci.appveyor.com/api/projects/status/b6oap3jvig088jg7?svg=true)](https://ci.appveyor.com/project/Arthapz/stormkit-u3x29) |
+| Linux   | [![Linux](https://github.com/Arthapz/StormKit/actions/workflows/Linux.yml/badge.svg)](https://github.com/Arthapz/StormKit/actions/workflows/Linux.yml) |
+| Windows | [![Windows](https://github.com/Arthapz/StormKit/actions/workflows/Windows.yml/badge.svg)](https://github.com/Arthapz/StormKit/actions/workflows/Windows.yml) |
 
 ## Getting Started
   - [Install](INSTALL.md)

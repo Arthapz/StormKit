@@ -15,6 +15,8 @@
 /////////// - StormKit::engine - ///////////
 #include <storm/engine/Fwd.hpp>
 
+#include <storm/engine/render/Drawable.hpp>
+
 namespace storm::engine {
     struct STORMKIT_PUBLIC DrawableComponent: public entities::Component {
         DrawableComponent() noexcept = default;

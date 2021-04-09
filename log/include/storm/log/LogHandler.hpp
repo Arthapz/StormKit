@@ -11,7 +11,7 @@
 #include <storm/log/Logger.hpp>
 
 namespace storm::log {
-    class STORMKIT_PUBLIC LogHandler: public core::NonDefaultInstanciable {
+    class STORMKIT_PUBLIC LogHandler final: public core::NonDefaultInstanciable {
       public:
         template<class T, typename... Args>
         static void setupLogger(Args &&...param_args);
@@ -45,7 +45,7 @@ namespace storm::log {
       private:
         static void setupLogger(LoggerOwnedPtr &&ptr);
 
-        static LoggerOwnedPtr m_logger;
+        static inline LoggerOwnedPtr m_logger = nullptr;
     };
 } // namespace storm::log
 

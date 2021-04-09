@@ -222,10 +222,6 @@ if get_option('enable_examples')
     subdir('samples')
 endif
 
-if get_option('enable_applications')
-    subdir('applications')
-endif
-
 install_headers(base_headers, subdir : 'storm/engine')
 install_headers(data_headers, subdir : 'storm/engine/data')
 install_headers(render_headers, subdir : 'storm/engine/render')

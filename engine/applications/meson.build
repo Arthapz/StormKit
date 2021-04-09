@@ -1,4 +1,0 @@
-
-#subdir('PostFX/')
-subdir('SceneViewer/')
-
