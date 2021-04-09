@@ -9,6 +9,7 @@ StormKit is my personal C++ toolkit.
 | ------- | ------ |
 | Linux   | [![Linux](https://github.com/Arthapz/StormKit/actions/workflows/Linux.yml/badge.svg)](https://github.com/Arthapz/StormKit/actions/workflows/Linux.yml) |
 | Windows | [![Windows](https://github.com/Arthapz/StormKit/actions/workflows/Windows.yml/badge.svg)](https://github.com/Arthapz/StormKit/actions/workflows/Windows.yml) |
+| macOS   | [![macOS](https://github.com/Arthapz/StormKit/actions/workflows/macOS.yml/badge.svg)](https://github.com/Arthapz/StormKit/actions/workflows/macOS.yml) |
 
 ## Getting Started
   - [Install](INSTALL.md)
