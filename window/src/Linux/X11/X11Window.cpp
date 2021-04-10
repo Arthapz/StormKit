@@ -38,7 +38,15 @@ using namespace storm;
 using namespace storm::window;
 using namespace storm::window::details;
 
-static constexpr auto window_manager_hints_str = std::string_view("_MOTIF_WM_HINTS");
+static constexpr auto WM_HINTS_STR            = std::string_view("_MOTIF_WM_HINTS");
+static constexpr auto WM_PROTOCOLS            = std::string_view("WM_PROTOCOLS");
+static constexpr auto WM_DELETE_WINDOW        = std::string_view("WM_DELETE_WINDOW");
+static constexpr auto WM_STATE_STR            = std::string_view("_NET_WM_STATE");
+static constexpr auto WM_STATE_FULLSCREEN_STR = std::string_view("_NET_WM_STATE_FULLSCREEN");
+
+static constexpr auto _NET_WM_STATE_REMOVE = 0; // remove/unset property
+static constexpr auto _NET_WM_STATE_ADD    = 1; // add/set property
+static constexpr auto _NET_WM_STATE_TOGGLE = 2; // toggle property
 
 /////////////////////////////////////
 /////////////////////////////////////
@@ -180,27 +188,33 @@ auto X11Window::create(std::string title, const VideoSettings &settings, WindowS
 
     m_window_hints.flags = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
 
-    if ((style & WindowStyle::TitleBar) == WindowStyle::TitleBar) {
+    if (core::checkFlag(style, WindowStyle::TitleBar)) {
         m_window_hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MENU;
         m_window_hints.functions |= MWM_FUNC_MOVE;
     }
 
-    if ((style & WindowStyle::Close) == WindowStyle::Minimizable) {
+    if (core::checkFlag(style, WindowStyle::Close)) {
         m_window_hints.decorations |= 0;
         m_window_hints.functions |= MWM_FUNC_CLOSE;
     }
 
-    if ((style & WindowStyle::Minimizable) == WindowStyle::Minimizable) {
+    if (core::checkFlag(style, WindowStyle::Minimizable)) {
         m_window_hints.decorations |= MWM_DECOR_MINIMIZE;
         m_window_hints.functions |= MWM_FUNC_MINIMIZE;
     }
 
-    if ((style & WindowStyle::Resizable) == WindowStyle::Resizable) {
+    if (core::checkFlag(style, WindowStyle::Resizable)) {
         m_window_hints.decorations |= MWM_DECOR_RESIZE | MWM_DECOR_MAXIMIZE;
         m_window_hints.functions |= MWM_FUNC_RESIZE | MWM_FUNC_MAXIMIZE;
+    } else {
+        auto size_hints = xcb_size_hints_t {};
+
+        xcb_icccm_size_hints_set_min_size(&size_hints, m_extent.width, m_extent.height);
+        xcb_icccm_size_hints_set_max_size(&size_hints, m_extent.width, m_extent.height);
+
+        xcb_icccm_set_wm_normal_hints(m_connection.get(), m_window, &size_hints);
     }
 
-    setFullscreenEnabled(false);
     xcb_flush(m_connection.get());
 
     m_is_open    = true;
@@ -210,21 +224,53 @@ auto X11Window::create(std::string title, const VideoSettings &settings, WindowS
     m_handles.window      = m_window;
     m_handles.key_symbols = m_key_symbols.get();
 
-    m_protocol_cookie = xcb_intern_atom(m_connection.get(), 1, 12, "WM_PROTOCOLS");
-    m_protocol_reply  = xcb_intern_atom_reply(m_connection.get(), m_protocol_cookie, nullptr);
+    using XCBErrorPointer = xcb_generic_error_t *;
+    auto err              = XCBErrorPointer { nullptr };
 
-    m_close_cookie   = xcb_intern_atom(m_connection.get(), 0, 16, "WM_DELETE_WINDOW");
-    m_close_reply    = xcb_intern_atom_reply(m_connection.get(), m_close_cookie, nullptr);
+    m_protocol_cookie =
+        xcb_intern_atom(m_connection.get(), 1, std::size(WM_PROTOCOLS), std::data(WM_PROTOCOLS));
+    m_protocol_reply = xcb_intern_atom_reply(m_connection.get(), m_protocol_cookie, &err);
+    if (err) { elog("Failed to get WM_PROTOCOLS cookie, error: {}", err->error_code); }
+
+    m_close_cookie = xcb_intern_atom(m_connection.get(),
+                                     0,
+                                     std::size(WM_DELETE_WINDOW),
+                                     std::data(WM_DELETE_WINDOW));
+    m_close_reply  = xcb_intern_atom_reply(m_connection.get(), m_close_cookie, nullptr);
+    if (err) { elog("Failed to get WM_DELETE_WINDOW cookie, error: {}", err->error_code); }
+
+    m_state_cookie =
+        xcb_intern_atom(m_connection.get(), 0, std::size(WM_STATE_STR), std::data(WM_STATE_STR));
+    m_state_reply = xcb_intern_atom_reply(m_connection.get(), m_state_cookie, &err);
+    if (err) { elog("Failed to get _NET_WM_STATE cookie, error: {}", err->error_code); }
+
+    m_state_fullscreen_cookie = xcb_intern_atom(m_connection.get(),
+                                                0,
+                                                std::size(WM_STATE_FULLSCREEN_STR),
+                                                std::data(WM_STATE_FULLSCREEN_STR));
+    m_state_fullscreen_reply =
+        xcb_intern_atom_reply(m_connection.get(), m_state_fullscreen_cookie, &err);
+    if (err) { elog("Failed to get _NET_WM_STATE_FULLSCREEN cookie, error: {}", err->error_code); }
+
     m_video_settings = settings;
 
     xcb_change_property(m_connection.get(),
                         XCB_PROP_MODE_REPLACE,
                         m_window,
                         m_protocol_reply->atom,
-                        4,
+                        XCB_ATOM_ATOM,
                         32,
                         1,
                         &m_close_reply->atom);
+
+    xcb_change_property(m_connection.get(),
+                        XCB_PROP_MODE_REPLACE,
+                        m_window,
+                        m_state_reply->atom,
+                        XCB_ATOM_ATOM,
+                        32,
+                        0,
+                        nullptr);
 
     xcb_map_window(m_connection.get(), m_window);
 
@@ -288,53 +334,26 @@ auto X11Window::setTitle(std::string title) noexcept -> void {
 /////////////////////////////////////
 /////////////////////////////////////
 auto X11Window::setFullscreenEnabled(bool enabled) noexcept -> void {
-    if (enabled) {
-        auto wm_state       = xcb_intern_atom(m_connection.get(), 0, 13, "_NET_WM_STATE");
-        auto wm_state_reply = xcb_intern_atom_reply(m_connection.get(), wm_state, nullptr);
-        auto wm_state_fs = xcb_intern_atom(m_connection.get(), 0, 24, "_NET_WM_STATE_FULLSCREEN");
-        auto wm_state_fs_reply = xcb_intern_atom_reply(m_connection.get(), wm_state_fs, nullptr);
+    if (!m_state_reply || !m_state_fullscreen_reply) return;
 
-        xcb_change_property(m_connection.get(),
-                            XCB_PROP_MODE_REPLACE,
-                            m_window,
-                            wm_state_reply->atom,
-                            XCB_ATOM_ATOM,
-                            32,
-                            1,
-                            &wm_state_fs_reply->atom);
-        xcb_flush(m_connection.get());
+    auto ev           = xcb_client_message_event_t {};
+    ev.response_type  = XCB_CLIENT_MESSAGE;
+    ev.type           = m_state_reply->atom;
+    ev.format         = 32;
+    ev.window         = m_window;
+    ev.data.data32[0] = enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
+    ev.data.data32[1] = m_state_fullscreen_reply->atom;
+    ev.data.data32[2] = XCB_ATOM_NONE;
+    ev.data.data32[3] = 0;
+    ev.data.data32[4] = 0;
 
-        free(wm_state_reply);
-        free(wm_state_fs_reply);
-    } else {
-        const auto atom_request = xcb_intern_atom(m_connection.get(),
-                                                  0,
-                                                  std::size(window_manager_hints_str),
-                                                  std::data(window_manager_hints_str));
-        const auto atom_reply   = xcb_intern_atom_reply(m_connection.get(), atom_request, nullptr);
+    xcb_send_event(m_connection.get(),
+                   1,
+                   m_window,
+                   XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+                   reinterpret_cast<const char *>(&ev));
 
-        xcb_change_property(m_connection.get(),
-                            XCB_PROP_MODE_REPLACE,
-                            m_window,
-                            atom_reply->atom,
-                            XCB_ATOM_WM_HINTS,
-                            32,
-                            5,
-                            reinterpret_cast<std::byte *>(&m_window_hints));
-
-        if ((m_style & WindowStyle::Resizable) != WindowStyle::Resizable) {
-            auto size_hints      = xcb_size_hints_t {};
-            size_hints.flags     = XCB_ICCCM_SIZE_HINT_P_MIN_SIZE | XCB_ICCCM_SIZE_HINT_P_MAX_SIZE;
-            size_hints.min_width = size_hints.max_width = m_video_settings.size.width;
-            size_hints.min_height = size_hints.max_height = m_video_settings.size.height;
-            xcb_icccm_set_wm_normal_hints(m_connection.get(), m_window, &size_hints);
-        }
-
-        xcb_flush(m_connection.get());
-
-        free(atom_reply);
-    }
-
+    xcb_flush(m_connection.get());
     m_fullscreen = enabled;
 }
 
@@ -517,8 +536,8 @@ auto X11Window::processEvents(xcb_generic_event_t event) -> void {
         case XCB_CONFIGURE_NOTIFY: {
             auto configure_event = reinterpret_cast<xcb_configure_notify_event_t *>(xevent);
 
-            if ((configure_event->width != m_video_settings.size.width) ||
-                (configure_event->height != m_video_settings.size.height)) {
+            if ((configure_event->width != m_extent.width) ||
+                (configure_event->height != m_extent.height)) {
                 m_extent.width  = configure_event->width;
                 m_extent.height = configure_event->height;
                 AbstractWindow::resizeEvent(configure_event->width, configure_event->height);
