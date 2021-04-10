@@ -96,9 +96,16 @@ namespace storm::window::details {
         } m_xkb_mods;
 
         xcb_intern_atom_cookie_t m_protocol_cookie;
-        xcb_intern_atom_reply_t *m_protocol_reply;
+        xcb_intern_atom_reply_t *m_protocol_reply = nullptr;
+
         xcb_intern_atom_cookie_t m_close_cookie;
-        xcb_intern_atom_reply_t *m_close_reply;
+        xcb_intern_atom_reply_t *m_close_reply = nullptr;
+
+        xcb_intern_atom_cookie_t m_state_cookie;
+        xcb_intern_atom_reply_t *m_state_reply = nullptr;
+
+        xcb_intern_atom_cookie_t m_state_fullscreen_cookie;
+        xcb_intern_atom_reply_t *m_state_fullscreen_reply = nullptr;
 
         struct WindowHints {
             uint32_t flags       = 0;

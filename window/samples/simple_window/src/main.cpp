@@ -25,6 +25,8 @@ int main([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
 
     LogHandler::ilog("Fullscreen resolution: {}", Window::getDesktopFullscreenSize().size);
 
+    auto fullscreen        = false;
+    auto toggle_fullscreen = false;
     while (window.isOpen()) {
         auto event = Event {};
         while (window.pollEvent(event)) {
@@ -77,8 +79,9 @@ int main([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
 
                     if (event.key_event.key == Key::Escape) {
                         window.close();
-                        break;
-                    }
+                        LogHandler::ilog("Closing window");
+                    } else if (event.key_event.key == Key::F11)
+                        toggle_fullscreen = true;
 
                     LogHandler::ilog("Key pressed: {}", key);
                     break;
@@ -96,6 +99,14 @@ int main([[maybe_unused]] const int argc, [[maybe_unused]] const char **argv) {
                 }
                 default: break;
             }
+        }
+
+        if (toggle_fullscreen) {
+            fullscreen = !fullscreen;
+            window.setFullscreenEnabled(fullscreen);
+
+            toggle_fullscreen = false;
+            LogHandler::ilog("Toggle fullscreen to: {}", fullscreen);
         }
     }
 
