@@ -4,7 +4,9 @@
 
 #include "../Log.hpp"
 
-#include <storm/window/Window.hpp>
+#if STORMKIT_ENABLE_WSI
+    #include <storm/window/Window.hpp>
+#endif
 
 #include <storm/render/core/CommandBuffer.hpp>
 #include <storm/render/core/Device.hpp>
@@ -28,16 +30,17 @@ WindowSurface::WindowSurface(const window::Window &window,
                              const render::Instance &instance,
                              Surface::Buffering buffering)
     : Surface { instance, buffering }, m_window { &window } {
-#if defined(STORMKIT_OS_WINDOWS)
+#if STORMKIT_ENABLE_WSI
+    #if defined(STORMKIT_OS_WINDOWS)
     const auto create_info = vk::Win32SurfaceCreateInfoKHR {}
                                  .setHinstance(GetModuleHandleW(nullptr))
                                  .setHwnd(reinterpret_cast<HWND>(m_window->nativeHandle()));
     m_vk_surface = m_instance->createVkSurface(create_info);
-#elif defined(STORMKIT_OS_MACOS)
+    #elif defined(STORMKIT_OS_MACOS)
     const auto create_info = vk::MacOSSurfaceCreateInfoMVK {}.setPView(m_window->nativeHandle());
     m_vk_surface           = m_instance->createVkSurface(create_info);
-#elif defined(STORMKIT_OS_LINUX)
-    #if STORMKIT_ENABLE_WAYLAND
+    #elif defined(STORMKIT_OS_LINUX)
+        #if STORMKIT_ENABLE_WAYLAND
     const auto make_wayland_surface = [this]() {
         struct Handles {
             wl_display *display;
@@ -49,8 +52,8 @@ WindowSurface::WindowSurface(const window::Window &window,
                                      .setSurface(handles->surface);
         m_vk_surface = m_instance->createVkSurface(create_info);
     };
-    #endif
-    #if STORMKIT_ENABLE_XCB
+        #endif
+        #if STORMKIT_ENABLE_XCB
     const auto make_xcb_surface = [this]() {
         struct Handles {
             xcb_connection_t *connection;
@@ -62,9 +65,9 @@ WindowSurface::WindowSurface(const window::Window &window,
                                      .setWindow(handles->window);
         m_vk_surface = m_instance->createVkSurface(create_info);
     };
-    #endif
+        #endif
 
-    #if STORMKIT_ENABLE_WAYLAND && STORMKIT_ENABLE_XCB
+        #if STORMKIT_ENABLE_WAYLAND && STORMKIT_ENABLE_XCB
     auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
 
     if (is_wayland) {
@@ -72,23 +75,30 @@ WindowSurface::WindowSurface(const window::Window &window,
     } else {
         make_xcb_surface();
     }
-    #elif STORMKIT_ENABLE_WAYLAND
+        #elif STORMKIT_ENABLE_WAYLAND
     make_wayland_surface();
-    #elif STORMKIT_ENABLE_XCB
+        #elif STORMKIT_ENABLE_XCB
     make_xcb_surface();
-    #endif
+        #endif
 
-#elif defined(STORMKIT_OS_IOS)
+    #elif defined(STORMKIT_OS_IOS)
     const auto create_info = vk::IOSSurfaceCreateInfoMVK {}.setPView(m_window->nativeHandle());
     m_vk_surface           = m_instance->createVkSurface(create_info);
+    #endif
+#else
+    elog("WSI disabled in this build");
 #endif
 };
 
 /////////////////////////////////////
 /////////////////////////////////////
 WindowSurface::~WindowSurface() {
+#if STORMKIT_ENABLE_WSI
     auto &in_flight = m_in_flight_fences[m_current_frame];
     onSwapchainFenceSignaled(in_flight);
+#else
+    elog("WSI disabled in this build");
+#endif
 }
 
 /////////////////////////////////////
@@ -102,6 +112,7 @@ WindowSurface &WindowSurface::operator=(WindowSurface &&) = default;
 /////////////////////////////////////
 /////////////////////////////////////
 void WindowSurface::initialize(const render::Device &device) {
+#if STORMKIT_ENABLE_WSI
     m_device         = core::makeConstObserver(device);
     m_graphics_queue = core::makeConstObserver(device.graphicsQueue());
 
@@ -128,21 +139,29 @@ void WindowSurface::initialize(const render::Device &device) {
     }
 
     m_device->setObjectName(*this, "StormKit:WindowWindowSurface");
+#else
+    elog("WSI disabled in this build");
+#endif
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 void WindowSurface::recreate() {
+#if STORMKIT_ENABLE_WSI
     STORMKIT_EXPECTS(m_device != nullptr);
 
     m_need_recreate = false;
 
     createSwapchain();
+#else
+    elog("WSI disabled in this build");
+#endif
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 void WindowSurface::destroy() {
+#if STORMKIT_ENABLE_WSI
     m_textures.clear();
 
     m_texture_availables.clear();
@@ -150,11 +169,15 @@ void WindowSurface::destroy() {
     m_in_flight_fences.clear();
 
     destroySwapchain();
+#else
+    elog("WSI disabled in this build");
+#endif
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 render::WindowSurface::Frame WindowSurface::acquireNextFrame() {
+#if STORMKIT_ENABLE_WSI
     const auto &texture_available = m_texture_availables[m_current_frame];
     const auto &render_finished   = m_render_finisheds[m_current_frame];
     auto &in_flight               = m_in_flight_fences[m_current_frame];
@@ -174,11 +197,16 @@ render::WindowSurface::Frame WindowSurface::acquireNextFrame() {
                    .texture_available = core::makeConstObserver(texture_available),
                    .render_finished   = core::makeConstObserver(render_finished),
                    .in_flight         = core::makeObserver(in_flight) };
+#else
+    elog("WSI disabled in this build");
+    return Frame { 0, 0, nullptr, nullptr, nullptr };
+#endif
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 void WindowSurface::present(const render::WindowSurface::Frame &frame) {
+#if STORMKIT_ENABLE_WSI
     auto vk_wait_semaphore = static_cast<const Semaphore &>(*frame.render_finished).vkSemaphore();
 
     const auto present_info = vk::PresentInfoKHR {}
@@ -201,11 +229,15 @@ void WindowSurface::present(const render::WindowSurface::Frame &frame) {
 
     m_current_frame = (m_current_frame + 1);
     if (m_current_frame >= m_buffering_count) m_current_frame -= m_buffering_count;
+#else
+    elog("WSI disabled in this build");
+#endif
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 void WindowSurface::createSwapchain() {
+#if STORMKIT_ENABLE_WSI
     const auto &physical_device = m_device->physicalDevice();
 
     const auto capabilities  = physical_device.queryVkSurfaceCapabilities(*this);
@@ -283,18 +315,26 @@ void WindowSurface::createSwapchain() {
                                 m_vk_swapchain.get().operator VkSwapchainKHR_T *()),
                             DebugObjectType::Swapchain,
                             "StormKit:Swapchain");
+#else
+    elog("WSI disabled in this build");
+#endif
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 void WindowSurface::destroySwapchain() {
+#if STORMKIT_ENABLE_WSI
     if (m_vk_swapchain) m_vk_swapchain.reset(VK_NULL_HANDLE);
+#else
+    elog("WSI disabled in this build");
+#endif
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 vk::SurfaceFormatKHR WindowSurface::chooseSwapSurfaceFormat(
     storm::core::span<const vk::SurfaceFormatKHR> formats) noexcept {
+#if STORMKIT_ENABLE_WSI
     for (const auto &format : formats) {
         if (format.format == vk::Format::eB8G8R8A8Unorm &&
             format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
@@ -302,12 +342,17 @@ vk::SurfaceFormatKHR WindowSurface::chooseSwapSurfaceFormat(
     }
 
     return formats[0];
+#else
+    elog("WSI disabled in this build");
+    return vk::SurfaceFormatKHR {};
+#endif
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 vk::PresentModeKHR WindowSurface::chooseSwapPresentMode(
     storm::core::span<const vk::PresentModeKHR> present_modes) noexcept {
+#if STORMKIT_ENABLE_WSI
     auto present_mode_ = vk::PresentModeKHR::eFifo;
 
     for (const auto &present_mode : present_modes) {
@@ -316,12 +361,17 @@ vk::PresentModeKHR WindowSurface::chooseSwapPresentMode(
     }
 
     return present_mode_;
+#else
+    elog("WSI disabled in this build");
+    return vk::PresentModeKHR { 0 };
+#endif
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 vk::Extent2D
     WindowSurface::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities) noexcept {
+#if STORMKIT_ENABLE_WSI
     constexpr static auto int_max = std::numeric_limits<core::UInt32>::max();
 
     if (capabilities.currentExtent.width != int_max && capabilities.currentExtent.height != int_max)
@@ -336,16 +386,25 @@ vk::Extent2D
                  std::min(capabilities.maxImageExtent.height, actual_extent.height));
 
     return actual_extent;
+#else
+    elog("WSI disabled in this build");
+    return { 0, 0 };
+#endif
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 core::UInt32
     WindowSurface::chooseImageCount(const vk::SurfaceCapabilitiesKHR &capabilities) noexcept {
+#if STORMKIT_ENABLE_WSI
     auto image_count = capabilities.minImageCount + 1;
 
     if (capabilities.maxImageCount > 0 && image_count > capabilities.maxImageCount)
         image_count = capabilities.maxImageCount;
 
     return image_count;
+#else
+    elog("WSI disabled in this build");
+    return 0;
+#endif
 }

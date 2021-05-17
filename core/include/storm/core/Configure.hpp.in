@@ -18,4 +18,5 @@ static constexpr auto STORMKIT_GIT_BRANCH      = std::string_view { "@git_branch
 
 #mesondefine STORMKIT_ENABLE_XCB
 #mesondefine STORMKIT_ENABLE_WAYLAND
+#mesondefine STORMKIT_ENABLE_WSI
 // clang-format on

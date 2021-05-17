@@ -9,7 +9,15 @@
 #include <storm/core/Platform.hpp>
 #include <storm/core/Span.hpp>
 
-#include <storm/window/Fwd.hpp>
+#if STORMKIT_ENABLE_WSI
+    #include <storm/window/Fwd.hpp>
+#else
+namespace storm::window {
+    class Window;
+
+    DECLARE_PTR_AND_REF(Window);
+} // namespace storm::window
+#endif
 
 #include <storm/render/Fwd.hpp>
 #include <storm/render/core/Surface.hpp>

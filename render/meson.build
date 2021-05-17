@@ -36,7 +36,12 @@ endif
 
 vulkan_headers_dep = declare_dependency(dependencies: [vulkan_dep])
 
-public_dependencies = [core_dep, log_dep, image_dep, window_dep, module_dep, vulkan_headers_dep]
+public_dependencies = [core_dep, log_dep, image_dep, module_dep, vulkan_headers_dep]
+
+if enable_window
+    public_dependencies += [window_dep]
+endif
+
 private_dependencies = [spirv_cross_cpp_dep, spirv_cross_glsl_dep, spirv_cross_core_dep]
 
 #ide:editable-filelist
@@ -227,7 +232,7 @@ render_dep = declare_dependency(
     include_directories: public_render_inc
 )
 
-if get_option('enable_examples')
+if get_option('enable_examples') and enable_window
     subdir('samples')
 endif
 

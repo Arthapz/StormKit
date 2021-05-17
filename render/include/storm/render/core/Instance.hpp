@@ -8,7 +8,15 @@
 #include <storm/core/Span.hpp>
 #include <storm/core/Strings.hpp>
 
-#include <storm/window/Window.hpp>
+#if STORMKIT_ENABLE_WSI
+    #include <storm/window/Window.hpp>
+#else
+namespace storm::window {
+    class Window;
+
+    DECLARE_PTR_AND_REF(Window);
+} // namespace storm::window
+#endif
 
 #include <storm/render/core/DynamicLoader.hpp>
 #include <storm/render/core/Enums.hpp>

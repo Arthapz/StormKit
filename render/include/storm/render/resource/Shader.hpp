@@ -19,9 +19,6 @@
 
 #include <storm/render/pipeline/DescriptorSetLayout.hpp>
 
-/////////// - StormKit::window - ///////////
-#include <storm/window/Window.hpp>
-
 namespace storm::render {
     class STORMKIT_PUBLIC Shader: public core::NonCopyable {
       public:

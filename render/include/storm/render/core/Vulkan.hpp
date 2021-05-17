@@ -13,19 +13,21 @@
 #include <storm/core/Configure.hpp>
 #include <storm/core/Platform.hpp>
 
-#if defined(STORMKIT_OS_LINUX)
-    #if STORMKIT_ENABLE_XCB
-        #define VK_USE_PLATFORM_XCB_KHR 1
+#if STORMKIT_ENABLE_WSI
+    #if defined(STORMKIT_OS_LINUX)
+        #if STORMKIT_ENABLE_XCB
+            #define VK_USE_PLATFORM_XCB_KHR 1
+        #endif
+        #if STORMKIT_ENABLE_WAYLAND
+            #define VK_USE_PLATFORM_WAYLAND_KHR 1
+        #endif
+    #elif defined(STORMKIT_OS_WINDOWS)
+        #define VK_USE_PLATFORM_WIN32_KHR 1
+    #elif defined(STORMKIT_OS_MACOS)
+        #define VK_USE_PLATFORM_MACOS_MVK 1
+    #elif defined(STORMKIT_OS_IOS)
+        #define VK_USE_PLATFORM_IOS_MVK 1
     #endif
-    #if STORMKIT_ENABLE_WAYLAND
-        #define VK_USE_PLATFORM_WAYLAND_KHR 1
-    #endif
-#elif defined(STORMKIT_OS_WINDOWS)
-    #define VK_USE_PLATFORM_WIN32_KHR 1
-#elif defined(STORMKIT_OS_MACOS)
-    #define VK_USE_PLATFORM_MACOS_MVK 1
-#elif defined(STORMKIT_OS_IOS)
-    #define VK_USE_PLATFORM_IOS_MVK 1
 #endif
 
 #define VK_NO_PROTOTYPES
@@ -37,17 +39,19 @@
 
 #include <vulkan/vulkan.h>
 
-#if defined(STORMKIT_OS_LINUX)
-#if STORMKIT_ENABLE_WAYLAND
-    #include <vulkan/vulkan_wayland.h>
-#endif
-#if STORMKIT_ENABLE_XCB
-    #include <xcb/xcb.h>
+#if STORMKIT_ENABLE_WSI
+    #if defined(STORMKIT_OS_LINUX)
+        #if STORMKIT_ENABLE_WAYLAND
+            #include <vulkan/vulkan_wayland.h>
+        #endif
+        #if STORMKIT_ENABLE_XCB
+            #include <xcb/xcb.h>
 
-    #include <vulkan/vulkan_xcb.h>
-#endif
-#elif defined(STORMKIT_OS_MACOS)
-    #include <vulkan/vulkan_macos.h>
+            #include <vulkan/vulkan_xcb.h>
+        #endif
+    #elif defined(STORMKIT_OS_MACOS)
+        #include <vulkan/vulkan_macos.h>
+    #endif
 #endif
 
 #include <vulkan/vulkan.hpp>
@@ -182,9 +186,12 @@ namespace storm::render {
         return static_cast<std::remove_reference_t<T>>(static_cast<core::UInt32>(version & 0xfffu));
     }
 
-    static constexpr auto DEVICE_EXTENSIONS =
-        std::array { gsl::czstring<> { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
-                     VK_KHR_MAINTENANCE1_EXTENSION_NAME };
+    static constexpr auto DEVICE_EXTENSIONS = std::array {
+#if STORMKIT_ENABLE_WSI
+        gsl::czstring<> { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
+#endif
+            gsl::czstring<> { VK_KHR_MAINTENANCE1_EXTENSION_NAME },
+    };
 
 #ifdef STORMKIT_BUILD_DEBUG
     static constexpr auto VALIDATION_LAYERS = std::array {
@@ -198,30 +205,34 @@ namespace storm::render {
     #endif
     };
 #else
-    static constexpr auto VALIDATION_LAYERS = std::array<gsl::czstring<>, 0> {};
+    static constexpr auto VALIDATION_LAYERS   = std::array<gsl::czstring<>, 0> {};
 #endif
 
     static constexpr auto VALIDATION_FEATURES =
         std::array { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
                      VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT };
 
+#if STORMKIT_ENABLE_WSI
     static constexpr auto INSTANCE_EXTENSIONS = std::array {
         gsl::czstring<> { VK_KHR_SURFACE_EXTENSION_NAME },
-#if defined(STORMKIT_OS_LINUX)
-    #if STORMKIT_ENABLE_WAYLAND
+    #if defined(STORMKIT_OS_LINUX)
+        #if STORMKIT_ENABLE_WAYLAND
             VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME,
-    #endif
-    #if STORMKIT_ENABLE_XCB
+        #endif
+        #if STORMKIT_ENABLE_XCB
             VK_KHR_XCB_SURFACE_EXTENSION_NAME,
-    #endif
-#elif defined(STORMKIT_OS_WINDOWS)
+        #endif
+    #elif defined(STORMKIT_OS_WINDOWS)
             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-#elif defined(STORMKIT_OS_MACOS)
+    #elif defined(STORMKIT_OS_MACOS)
             VK_MVK_MACOS_SURFACE_EXTENSION_NAME,
-#elif defined(STORMKIT_OS_IOS)
+    #elif defined(STORMKIT_OS_IOS)
             VK_MVK_IOS_SURFACE_EXTENSION_NAME,
-#endif
+    #endif
     };
+#else
+    static constexpr auto INSTANCE_EXTENSIONS = std::array<gsl::czstring<>, 0> {};
+#endif
 
     static constexpr auto STORMKIT_VERSION =
         vkMakeVersion(STORMKIT_MAJOR_VERSION, STORMKIT_MINOR_VERSION, STORMKIT_PATCH_VERSION);
@@ -229,7 +240,7 @@ namespace storm::render {
 #if defined(STORMKIT_BUILD_DEBUG) || defined(STORMKIT_ENABLE_VALIDATION_LAYERS)
     static constexpr auto ENABLE_VALIDATION = true;
 #else
-    static constexpr auto ENABLE_VALIDATION = false;
+    static constexpr auto ENABLE_VALIDATION   = false;
 #endif
 
     inline void checkVkError(vk::Result result,

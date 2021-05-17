@@ -81,6 +81,7 @@ conf_data.set('git_commit_hash', git_commit_hash)
 conf_data.set('git_branch', git_branch)
 conf_data.set10('STORMKIT_ENABLE_XCB', enable_window_xcb)
 conf_data.set10('STORMKIT_ENABLE_WAYLAND', enable_window_wayland)
+conf_data.set10('STORMKIT_ENABLE_WSI', enable_window)
 
 configure_file(input : 'include/storm/core/Configure.hpp.in',
              output : 'Configure.hpp',

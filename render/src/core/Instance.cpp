@@ -292,22 +292,32 @@ const render::PhysicalDevice &
 /////////////////////////////////////
 vk::UniqueSurfaceKHR
     Instance::createVkSurface(const vk::Win32SurfaceCreateInfoKHR &create_info) const noexcept {
+    #if STORMKIT_ENABLE_WSI
     auto instance = vkInstance();
 
     CHECK_VK_ERROR_VALUE(instance.createWin32SurfaceKHRUnique(create_info), surface);
 
     return surface;
+    #else
+    elog("WSI disabled in this build");
+    return VK_NULL_HANDLE;
+    #endif
 }
 #elif defined(STORMKIT_OS_MACOS)
 /////////////////////////////////////
 /////////////////////////////////////
 vk::UniqueSurfaceKHR
     Instance::createVkSurface(const vk::MacOSSurfaceCreateInfoMVK &create_info) const noexcept {
+    #if STORMKIT_ENABLE_WSI
     auto instance = vkInstance();
 
     CHECK_VK_ERROR_VALUE(instance.createMacOSSurfaceMVKUnique(create_info), surface);
 
     return surface;
+    #else
+    elog("WSI disabled in this build");
+    return VK_NULL_HANDLE;
+    #endif
 }
 #elif defined(STORMKIT_OS_LINUX)
     #if STORMKIT_ENABLE_XCB
@@ -315,11 +325,16 @@ vk::UniqueSurfaceKHR
 /////////////////////////////////////
 vk::UniqueSurfaceKHR
     Instance::createVkSurface(const vk::XcbSurfaceCreateInfoKHR &create_info) const noexcept {
+        #if STORMKIT_ENABLE_WSI
     auto instance = vkInstance();
 
     CHECK_VK_ERROR_VALUE(instance.createXcbSurfaceKHRUnique(create_info), surface);
 
     return surface;
+        #else
+    elog("WSI disabled in this build");
+    return VK_NULL_HANDLE;
+        #endif
 }
     #endif
     #if STORMKIT_ENABLE_WAYLAND
@@ -327,6 +342,7 @@ vk::UniqueSurfaceKHR
 /////////////////////////////////////
 vk::UniqueSurfaceKHR
     Instance::createVkSurface(const vk::WaylandSurfaceCreateInfoKHR &create_info) const noexcept {
+        #if STORMKIT_ENABLE_WSI
     auto instance = vkInstance();
 
     CHECK_VK_ERROR_VALUE(instance.createWaylandSurfaceKHRUnique(create_info,
@@ -335,6 +351,10 @@ vk::UniqueSurfaceKHR
                          surface);
 
     return surface;
+        #else
+    elog("WSI disabled in this build");
+    return VK_NULL_HANDLE;
+        #endif
 }
     #endif
 #elif defined(STORMKIT_OS_IOS)
@@ -342,11 +362,16 @@ vk::UniqueSurfaceKHR
 /////////////////////////////////////
 vk::UniqueSurfaceKHR
     Instance::createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const noexcept {
+    #if STORMKIT_ENABLE_WSI
     auto instance = vkInstance();
 
     CHECK_VK_ERROR_VALUE(instance.createIOSSurfaceMVKUnique(create_info), surface);
 
     return surface;
+    #else
+    elog("WSI disabled in this build");
+    return VK_NULL_HANDLE;
+    #endif
 }
 #endif
 
