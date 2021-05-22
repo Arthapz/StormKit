@@ -85,7 +85,7 @@ namespace storm::render {
         [[nodiscard]] inline operator vk::Image() const noexcept;
         [[nodiscard]] inline vk::Image vkHandle() const noexcept;
         [[nodiscard]] inline core::UInt64 vkDebugHandle() const noexcept;
-        [[nodiscard]] const VmaAllocation &vkAllocation() const noexcept { return *m_vma_texture_memory; }
+        [[nodiscard]] VmaAllocation vkAllocation() const noexcept { return m_vma_texture_memory.handle(); }
       private:
         DeviceConstPtr m_device;
 
