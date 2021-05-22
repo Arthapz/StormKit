@@ -11,16 +11,28 @@ struct PNGReadParam {
     core::ByteConstSpan &data;
 };
 
-void png_read_func(png_struct *ps, png_byte *d, png_size_t length) noexcept {
+struct PNGWriteParam {
+    core::ByteArray &data;
+};
+
+static void png_read_func(png_struct *ps, png_byte *d, png_size_t length) noexcept {
     auto &param = *reinterpret_cast<PNGReadParam *>(png_get_io_ptr(ps));
 
-    auto *_d = reinterpret_cast<storm::core::Byte *>(d);
+    auto _d = core::toByteSpan(d, length);
+    auto data = param.data.subspan(param.readed, length);
 
-    std::copy(std::begin(param.data) + param.readed,
-              std::begin(param.data) + param.readed + length,
-              _d);
+    std::ranges::copy(data, std::ranges::begin(_d));
 
     param.readed += length;
+}
+
+static void png_write_func(png_struct *ps, png_byte *d, png_size_t length) {
+    auto &param = *reinterpret_cast<PNGWriteParam *>(png_get_io_ptr(ps));
+
+    auto _d = core::toByteSpan(d, length);
+    param.data.reserve(std::size(param.data) + length);
+
+    std::ranges::copy(_d, std::back_inserter(param.data));
 }
 
 std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
@@ -148,6 +160,53 @@ std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {
 
 std::optional<std::string> Image::savePNG(const std::filesystem::path &filepath) const noexcept {
     auto _filename = filepath;
+
+    auto output = core::ByteArray{};
+
+    if(auto result = savePNG(output))
+        return result;
+
+    auto stream = std::ofstream{filepath, std::ios::binary};
+    stream.write(reinterpret_cast<const char *>(std::data(output)), std::size(output));
+
+    return std::nullopt;
+}
+
+std::optional<std::string> Image::savePNG(core::ByteArray &output) const noexcept {
+    auto write_param = PNGWriteParam { output };
+
+    auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+    if (!png_ptr) return "[libpng] Failed to init (png_create_write_struct)";
+
+    auto info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+        return "[libpng] Failed to init (png_create_info_struct)";
+        png_destroy_write_struct(&png_ptr, nullptr);
+    }
+
+    png_set_write_fn(png_ptr, &write_param, png_write_func, nullptr);
+    png_set_sig_bytes(png_ptr, 8);
+    png_write_info(png_ptr, info_ptr);
+
+    png_set_IHDR(png_ptr,
+                 info_ptr,
+                 m_extent.width,
+                 m_extent.height,
+                 8,
+                 PNG_COLOR_TYPE_RGBA,
+                 PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_DEFAULT,
+                 PNG_FILTER_TYPE_DEFAULT);
+
+    auto rows = std::vector<core::Byte*>{m_extent.height, nullptr};
+    for(auto i = 0u; i < m_extent.height; ++i)
+        rows[i] = const_cast<core::Byte*>(&m_data[i * m_extent.width * m_channel_count]); // TODO Fix this shit
+
+    png_set_rows(png_ptr, info_ptr, reinterpret_cast<png_bytepp>(std::data(rows)));
+    png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, nullptr);
+
+    png_destroy_info_struct(png_ptr, &info_ptr);
+    png_destroy_write_struct(&png_ptr, nullptr);
 
     return std::nullopt;
 }

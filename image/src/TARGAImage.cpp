@@ -13,3 +13,7 @@ std::optional<std::string> Image::saveTARGA(const std::filesystem::path &filepat
 
     return std::nullopt;
 }
+
+std::optional<std::string> Image::saveTARGA(core::ByteArray &output) const noexcept {
+    return std::nullopt;
+}

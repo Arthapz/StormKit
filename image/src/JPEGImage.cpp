@@ -153,3 +153,65 @@ std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath
 
     return std::nullopt;
 }
+
+std::optional<std::string> Image::saveJPEG(core::ByteArray &output) const noexcept {
+    using uchar_ptr = unsigned char *;
+
+    auto output_ptr = uchar_ptr{nullptr};
+
+    auto this_rgb = toFormat(Format::RGB8_UNorm);
+
+    auto info      = jpeg_compress_struct {};
+    auto error_mgr = jpeg_error_mgr {};
+
+    auto error_data = JpegErrorData {};
+
+    info.err             = jpeg_std_error(&error_mgr);
+    info.client_data     = &error_data;
+    info.dest->next_output_byte = output_ptr;
+    info.dest->free_in_buffer = std::size(output)
+        ;
+    error_mgr.error_exit = jpeg_error_callback;
+
+    auto data          = this_rgb.data(0, 0, 0);
+    const auto &extent = this_rgb.extent(0);
+
+    jpeg_create_compress(&info);
+
+
+    auto out_size = core::ArraySize{0};
+    jpeg_mem_dest(&info, &output_ptr, &out_size);
+
+    info.image_width      = extent.width;
+    info.image_height     = extent.height;
+    info.input_components = getChannelCountFor(Format::RGB8_UNorm);
+    info.in_color_space   = JCS_RGB;
+    jpeg_set_defaults(&info);
+    jpeg_set_quality(&info, 75, TRUE);
+
+    jpeg_start_compress(&info, TRUE);
+
+    auto row_ptr = std::array<core::Byte *, 1> { nullptr };
+    while (info.next_scanline < info.image_height) {
+        const auto index = info.next_scanline * 3u * info.image_width;
+        row_ptr[0]       = std::data(data) + index;
+
+        jpeg_write_scanlines(&info, reinterpret_cast<JSAMPARRAY>(std::data(row_ptr)), 1);
+    }
+
+    jpeg_finish_compress(&info);
+    jpeg_destroy_compress(&info);
+
+    if (setjmp(error_data.setjmp_buffer)) {
+        jpeg_destroy_compress(&info);
+        return error_data.msg;
+    }
+
+    output.reserve((out_size));
+
+    std::ranges::copy(core::toConstByteSpan(output_ptr, out_size), std::back_inserter(output));
+    if(output_ptr != nullptr)
+        std::free(output_ptr);
+
+    return std::nullopt;
+}

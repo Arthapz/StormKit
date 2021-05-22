@@ -14,3 +14,8 @@ std::optional<std::string> Image::savePPM(const std::filesystem::path &filepath,
 
     return std::nullopt;
 }
+
+std::optional<std::string> Image::savePPM(core::ByteArray &output,
+                                          CodecArgs args) const noexcept {
+    return std::nullopt;
+}

@@ -13,3 +13,7 @@ std::optional<std::string> Image::saveHDR(const std::filesystem::path &filepath)
 
     return std::nullopt;
 }
+
+std::optional<std::string> Image::saveHDR([[maybe_unused]] core::ByteArray &output) const noexcept {
+    return std::nullopt;
+}

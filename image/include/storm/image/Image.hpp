@@ -108,6 +108,8 @@ namespace storm::image {
         bool saveToFile(std::filesystem::path filename,
                         Codec codec,
                         CodecArgs args = CodecArgs::Binary) const noexcept;
+        std::vector<core::Byte> saveToMemory(Codec codec,
+                                             CodecArgs args = CodecArgs::Binary) const noexcept;
 
         void create(core::Extentu extent, Format format) noexcept;
 
@@ -194,6 +196,15 @@ namespace storm::image {
         std::optional<std::string> saveTARGA(const std::filesystem::path &filepath) const noexcept;
         std::optional<std::string> saveHDR(const std::filesystem::path &filepath) const noexcept;
         std::optional<std::string> saveKTX(const std::filesystem::path &filepath) const noexcept;
+
+        std::optional<std::string> saveJPEG(core::ByteArray &output) const noexcept;
+        std::optional<std::string> saveTGA(core::ByteArray &output) const noexcept;
+        std::optional<std::string> savePNG(core::ByteArray &output) const noexcept;
+        std::optional<std::string> savePPM(core::ByteArray &output,
+                                           CodecArgs args) const noexcept;
+        std::optional<std::string> saveTARGA(core::ByteArray &output) const noexcept;
+        std::optional<std::string> saveHDR(core::ByteArray &output) const noexcept;
+        std::optional<std::string> saveKTX(core::ByteArray &output) const noexcept;
 
         core::Extentu m_extent           = { 0u, 0u, 0u };
         core::UInt32 m_channel_count     = 0u;

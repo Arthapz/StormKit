@@ -454,6 +454,78 @@ bool Image::saveToFile(std::filesystem::path filepath, Codec codec, CodecArgs ar
 
 /////////////////////////////////////
 /////////////////////////////////////
+std::vector<core::Byte> Image::saveToMemory(Codec codec, CodecArgs args) const noexcept
+{
+    STORMKIT_EXPECTS(codec != Image::Codec::Unknown);
+    STORMKIT_EXPECTS(codec != Image::Codec::Autodetect);
+    STORMKIT_EXPECTS(!std::empty(m_data));
+
+    auto output = core::ByteArray{};
+
+    switch (codec) {
+        case Image::Codec::JPEG: {
+            if (auto result = saveJPEG(output); result.has_value()) {
+                elog("Failed to parse JPEG data\n    reason{}",
+                     result.value());
+                return {};
+            }
+
+            return output;
+        }
+        case Image::Codec::PNG: {
+            if (auto result = savePNG(output); result.has_value()) {
+                elog("Failed to save PNG file\n    reason{}",
+                     result.value());
+                return {};
+            }
+
+            return output;
+        }
+        case Image::Codec::TARGA: {
+            if (auto result = saveTARGA(output); result.has_value()) {
+                elog("Failed to open TARGA file\n    reason{}",
+                     result.value());
+                return {};
+            }
+
+            return output;
+        }
+        case Image::Codec::PPM: {
+            if (auto result = savePPM(output, args); result.has_value()) {
+                elog("Failed to parse PPM data\n    reason{}",
+                     result.value());
+                return {};
+            }
+
+            return output;
+        }
+        case Image::Codec::HDR: {
+            if (auto result = saveHDR(output); result.has_value()) {
+                elog("Failed to parse HDR data\n    reason{}",
+                     result.value());
+                return {};
+            }
+
+            return output;
+        }
+        case Image::Codec::KTX: {
+            if (auto result = saveKTX(output); result.has_value()) {
+                elog("Failed to parse KTX data\n    reason{}",
+                     result.value());
+                return {};
+            }
+
+            return output;
+        }
+        default:
+            return {};
+    }
+
+    return {};
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
 void Image::create(core::Extentu extent, Format format) noexcept {
     STORMKIT_EXPECTS(extent.width > 0u && extent.height > 0u && extent.depth > 0u &&
                      format != Format::Undefined);

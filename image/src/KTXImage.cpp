@@ -111,3 +111,7 @@ std::optional<std::string> Image::loadKTX(core::ByteConstSpan data) noexcept {
 std::optional<std::string> Image::saveKTX(const std::filesystem::path &filepath) const noexcept {
     return std::nullopt;
 }
+
+std::optional<std::string> Image::saveKTX(core::ByteArray &output) const noexcept {
+    return std::nullopt;
+}
