@@ -30,7 +30,8 @@ namespace storm::render {
                 TextureCreateFlag flags    = TextureCreateFlag::None,
                 SampleCountFlag samples    = SampleCountFlag::C1_BIT,
                 TextureUsage usage         = TextureUsage::Sampled | TextureUsage::Transfert_Dst |
-                                     TextureUsage::Transfert_Src);
+                                     TextureUsage::Transfert_Src,
+                MemoryProperty property = MemoryProperty::Device_Local);
         Texture(const Device &device,
                 core::Extentu extent,
                 render::PixelFormat format,

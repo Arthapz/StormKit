@@ -571,28 +571,39 @@ DescriptorPoolOwnedPtr Device::createDescriptorPoolPtr(std::vector<DescriptorPoo
     return std::make_unique<DescriptorPool>(*this, std::move(sizes), max_sets);
 }
 
+/////////////////////////////////////
+/////////////////////////////////////
 Texture Device::createTexture(core::Extentu extent,
-                              render::PixelFormat format,
+                              PixelFormat format,
                               core::UInt32 layers,
                               core::UInt32 mip_levels,
                               TextureType type,
                               TextureCreateFlag flags,
                               SampleCountFlag samples,
-                              TextureUsage usage) const {
-    return Texture { *this, std::move(extent), format, layers, mip_levels, type,
-                     flags, samples,           usage };
+                              TextureUsage usage, MemoryProperty property) const {
+    return Texture { *this,
+                     std::move(extent),
+                     format,
+                     layers,
+                     mip_levels,
+                     type,
+                     flags,
+                     samples,
+                     usage,
+                     property };
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 TextureOwnedPtr Device::createTexturePtr(core::Extentu extent,
-                                         render::PixelFormat format,
+                                         PixelFormat format,
                                          core::UInt32 layers,
                                          core::UInt32 mip_levels,
                                          TextureType type,
                                          TextureCreateFlag flags,
                                          SampleCountFlag samples,
-                                         TextureUsage usage) const {
+                                         TextureUsage usage,
+                                         MemoryProperty property) const {
     return std::make_unique<Texture>(*this,
                                      std::move(extent),
                                      format,
@@ -601,7 +612,8 @@ TextureOwnedPtr Device::createTexturePtr(core::Extentu extent,
                                      type,
                                      flags,
                                      samples,
-                                     usage);
+                                     usage,
+                                     property);
 }
 
 /////////////////////////////////////

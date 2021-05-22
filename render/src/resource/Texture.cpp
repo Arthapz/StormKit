@@ -100,13 +100,14 @@ constexpr auto toPixelFormat(image::Image::Format format) noexcept {
 /////////////////////////////////////
 Texture::Texture(const Device &device,
                  core::Extentu extent,
-                 render::PixelFormat format,
+                 PixelFormat format,
                  core::UInt32 layers,
                  core::UInt32 mip_levels,
                  TextureType type,
                  TextureCreateFlag flags,
                  SampleCountFlag samples,
-                 TextureUsage usage)
+                 TextureUsage usage,
+                 MemoryProperty property)
     : m_device { &device }, m_extent { std::move(extent) }, m_format { format },
       m_layers { layers }, m_mip_levels { mip_levels }, m_type { type }, m_flags { flags },
       m_samples { samples }, m_usage { usage }, m_vma_texture_memory { DELETER, *m_device } {
@@ -131,7 +132,7 @@ Texture::Texture(const Device &device,
 
     const auto requirements = m_device->getVkImageMemoryRequirements(*m_vk_texture);
     const auto alloc_info =
-        VmaAllocationCreateInfo { .requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT };
+        VmaAllocationCreateInfo { .requiredFlags = toVK(property).operator unsigned int() };
 
     m_vma_texture_memory.reset(m_device->allocateVmaAllocation(alloc_info, requirements));
 
