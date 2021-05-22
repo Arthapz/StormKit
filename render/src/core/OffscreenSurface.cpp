@@ -87,6 +87,7 @@ void OffscreenSurface::initialize(const render::Device &device) {
                                 fmt::format("StormKit:InFlightFence ({})", i));
     }
     command_buffer.end();
+    command_buffer.build();
 
     command_buffer.submit({}, {}, &fence);
 
