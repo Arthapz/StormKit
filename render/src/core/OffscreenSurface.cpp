@@ -45,6 +45,8 @@ void OffscreenSurface::initialize(const render::Device &device) {
     m_device         = core::makeConstObserver(&device);
     m_graphics_queue = core::makeConstObserver(&device.graphicsQueue());
 
+    m_pixel_format = PixelFormat::RGBA8_UNorm;
+
     STORMKIT_EXPECTS_MESSAGE(m_buffering != Buffering::Swapchain,
                              "Offscreen surface don't support Swapchain image count");
 
@@ -62,7 +64,7 @@ void OffscreenSurface::initialize(const render::Device &device) {
     for (auto i = 0u; i < m_buffering_count; ++i) {
         auto &texture = m_textures.emplace_back(
             device.createTexture(m_extent,
-                                 PixelFormat::RGBA8_UNorm,
+                                 m_pixel_format,
                                  1u,
                                  1u,
                                  TextureType::T2D,
