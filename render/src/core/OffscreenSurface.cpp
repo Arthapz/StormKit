@@ -55,6 +55,10 @@ void OffscreenSurface::initialize(const render::Device &device) {
         default: break;
     }
 
+    auto command_buffer = m_device->graphicsQueue().createCommandBuffer();
+    auto fence = m_device->createFence();
+
+    command_buffer.begin(true);
     for (auto i = 0u; i < m_buffering_count; ++i) {
         auto &texture = m_textures.emplace_back(
             device.createTexture(m_extent,
@@ -66,6 +70,8 @@ void OffscreenSurface::initialize(const render::Device &device) {
                                  SampleCountFlag::C1_BIT,
                                  TextureUsage::Color_Attachment | TextureUsage::Transfert_Src |
                                      TextureUsage::Sampled));
+        command_buffer.transitionTextureLayout(texture, TextureLayout::Undefined, TextureLayout::Color_Attachment_Optimal);
+
         m_vk_images.emplace_back(texture);
 
         m_texture_availables.emplace_back(device.createSemaphore());
@@ -80,6 +86,11 @@ void OffscreenSurface::initialize(const render::Device &device) {
         m_device->setObjectName(m_in_flight_fences.back(),
                                 fmt::format("StormKit:InFlightFence ({})", i));
     }
+    command_buffer.end();
+
+    command_buffer.submit({}, {}, &fence);
+
+    fence.wait();
 }
 
 /////////////////////////////////////
