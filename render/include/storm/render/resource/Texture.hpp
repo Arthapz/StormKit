@@ -31,6 +31,7 @@ namespace storm::render {
                 SampleCountFlag samples    = SampleCountFlag::C1_BIT,
                 TextureUsage usage         = TextureUsage::Sampled | TextureUsage::Transfert_Dst |
                                      TextureUsage::Transfert_Src,
+                TextureTiling tiling = TextureTiling::Optimal,
                 MemoryProperty property = MemoryProperty::Device_Local);
         Texture(const Device &device,
                 core::Extentu extent,

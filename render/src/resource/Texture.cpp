@@ -107,6 +107,7 @@ Texture::Texture(const Device &device,
                  TextureCreateFlag flags,
                  SampleCountFlag samples,
                  TextureUsage usage,
+                 TextureTiling tiling,
                  MemoryProperty property)
     : m_device { &device }, m_extent { std::move(extent) }, m_format { format },
       m_layers { layers }, m_mip_levels { mip_levels }, m_type { type }, m_flags { flags },
@@ -122,7 +123,7 @@ Texture::Texture(const Device &device,
                                  .setMipLevels(m_mip_levels)
                                  .setArrayLayers(m_layers * m_faces)
                                  .setSamples(toVKBits(m_samples))
-                                 .setTiling(vk::ImageTiling::eOptimal)
+                                 .setTiling(toVK(tiling))
                                  .setUsage(toVK(usage))
                                  .setSharingMode(vk::SharingMode::eExclusive)
                                  .setInitialLayout(vk::ImageLayout::eUndefined)

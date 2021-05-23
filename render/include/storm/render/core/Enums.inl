@@ -730,6 +730,14 @@ namespace storm::render {
     };
 
     AS_AND_FROM(dynamic_state_map, DynamicState, vk::DynamicState)
+
+    static const auto texture_tiling_map = storm::core::HashMap<vk::ImageTiling, TextureTiling> {
+        { vk::ImageTiling::eOptimal, TextureTiling::Optimal },
+        { vk::ImageTiling::eLinear, TextureTiling::Linear },
+        { vk::ImageTiling::eDrmFormatModifierEXT, TextureTiling::DRM_Ext },
+    };
+
+    AS_AND_FROM(texture_tiling_map, TextureTiling, vk::ImageTiling)
 } // namespace storm::render
 
 #undef AS_AND_FROM

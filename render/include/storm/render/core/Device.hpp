@@ -114,6 +114,7 @@ namespace storm::render {
                               TextureUsage usage      = TextureUsage::Sampled |
                                                         TextureUsage::Transfert_Dst |
                                                         TextureUsage::Transfert_Src,
+                              TextureTiling tiling    = TextureTiling::Optimal,
                               MemoryProperty property = MemoryProperty::Device_Local) const;
         TextureOwnedPtr
             createTexturePtr(core::Extentu extent,
@@ -126,6 +127,7 @@ namespace storm::render {
                              TextureUsage usage      = TextureUsage::Sampled |
                                                        TextureUsage::Transfert_Dst |
                                                        TextureUsage::Transfert_Src,
+                              TextureTiling tiling    = TextureTiling::Optimal,
                               MemoryProperty property = MemoryProperty::Device_Local) const;
 
         Sampler createSampler(Sampler::Settings settings = Sampler::Settings {}) const;

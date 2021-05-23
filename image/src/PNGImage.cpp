@@ -186,23 +186,23 @@ std::optional<std::string> Image::savePNG(core::ByteArray &output) const noexcep
 
     png_set_write_fn(png_ptr, &write_param, png_write_func, nullptr);
     png_set_sig_bytes(png_ptr, 8);
-    png_write_info(png_ptr, info_ptr);
 
     png_set_IHDR(png_ptr,
                  info_ptr,
                  m_extent.width,
                  m_extent.height,
                  8,
-                 PNG_COLOR_TYPE_RGBA,
+                 PNG_COLOR_TYPE_RGB_ALPHA,
                  PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_DEFAULT,
                  PNG_FILTER_TYPE_DEFAULT);
 
     auto rows = std::vector<core::Byte*>{m_extent.height, nullptr};
     for(auto i = 0u; i < m_extent.height; ++i)
-        rows[i] = const_cast<core::Byte*>(&m_data[i * m_extent.width * m_channel_count]); // TODO Fix this shit
+        rows[i] = const_cast<core::Byte*>(&m_data[i * m_extent.width * m_channel_count * m_bytes_per_channel]); // TODO Fix this shit
 
     png_set_rows(png_ptr, info_ptr, reinterpret_cast<png_bytepp>(std::data(rows)));
+    png_write_info(png_ptr, info_ptr);
     png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, nullptr);
 
     png_destroy_info_struct(png_ptr, &info_ptr);

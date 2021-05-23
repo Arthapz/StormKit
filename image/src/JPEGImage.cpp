@@ -168,9 +168,6 @@ std::optional<std::string> Image::saveJPEG(core::ByteArray &output) const noexce
 
     info.err             = jpeg_std_error(&error_mgr);
     info.client_data     = &error_data;
-    info.dest->next_output_byte = output_ptr;
-    info.dest->free_in_buffer = std::size(output)
-        ;
     error_mgr.error_exit = jpeg_error_callback;
 
     auto data          = this_rgb.data(0, 0, 0);
@@ -178,8 +175,8 @@ std::optional<std::string> Image::saveJPEG(core::ByteArray &output) const noexce
 
     jpeg_create_compress(&info);
 
-
-    auto out_size = core::ArraySize{0};
+    using ulong = unsigned long;
+    auto out_size = ulong{0};
     jpeg_mem_dest(&info, &output_ptr, &out_size);
 
     info.image_width      = extent.width;
@@ -208,6 +205,8 @@ std::optional<std::string> Image::saveJPEG(core::ByteArray &output) const noexce
     }
 
     output.reserve((out_size));
+
+    std::cerr << out_size << std::endl;
 
     std::ranges::copy(core::toConstByteSpan(output_ptr, out_size), std::back_inserter(output));
     if(output_ptr != nullptr)

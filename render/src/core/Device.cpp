@@ -580,7 +580,9 @@ Texture Device::createTexture(core::Extentu extent,
                               TextureType type,
                               TextureCreateFlag flags,
                               SampleCountFlag samples,
-                              TextureUsage usage, MemoryProperty property) const {
+                              TextureUsage usage,
+                              TextureTiling tiling,
+                              MemoryProperty property) const {
     return Texture { *this,
                      std::move(extent),
                      format,
@@ -590,6 +592,7 @@ Texture Device::createTexture(core::Extentu extent,
                      flags,
                      samples,
                      usage,
+                     tiling,
                      property };
 }
 
@@ -603,6 +606,7 @@ TextureOwnedPtr Device::createTexturePtr(core::Extentu extent,
                                          TextureCreateFlag flags,
                                          SampleCountFlag samples,
                                          TextureUsage usage,
+                                         TextureTiling tiling,
                                          MemoryProperty property) const {
     return std::make_unique<Texture>(*this,
                                      std::move(extent),
@@ -613,6 +617,7 @@ TextureOwnedPtr Device::createTexturePtr(core::Extentu extent,
                                      flags,
                                      samples,
                                      usage,
+                                     tiling,
                                      property);
 }
 

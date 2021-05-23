@@ -651,6 +651,12 @@ namespace storm::render {
 
         return 0u;
     }
+
+    enum class TextureTiling {
+        Optimal = 0u,
+        Linear  = 1u,
+        DRM_Ext = 1000158000
+    };
 } // namespace storm::render
 
 FLAG_ENUM(storm::render::QueueFlag)
