@@ -39,10 +39,8 @@ DescriptorSet &DescriptorSet::operator=(DescriptorSet &&) = default;
 void DescriptorSet::update(core::span<const render::Descriptor> descriptors) {
     STORMKIT_EXPECTS(!std::empty(descriptors));
 
-    auto vk_buffer_infos =
-        std::vector<std::tuple<core::Int32, vk::DescriptorBufferInfo, vk::DescriptorType>> {};
-    auto vk_image_infos =
-        std::vector<std::tuple<core::Int32, vk::DescriptorImageInfo, vk::DescriptorType>> {};
+    auto vk_buffer_infos = core::HashMap<core::UInt32, std::pair<std::vector<vk::DescriptorBufferInfo>, vk::DescriptorType>>{};
+    auto vk_image_infos = core::HashMap<core::UInt32, std::pair<std::vector<vk::DescriptorImageInfo>, vk::DescriptorType>>{};
 
     for (const auto &descriptor_proxy : descriptors) {
         if (std::holds_alternative<BufferDescriptor>(descriptor_proxy)) {
@@ -53,9 +51,9 @@ void DescriptorSet::update(core::span<const render::Descriptor> descriptors) {
                                          .setOffset(descriptor.offset)
                                          .setRange(descriptor.range);
 
-            vk_buffer_infos.emplace_back(descriptor.binding,
-                                         std::move(buffer_info),
-                                         toVK(descriptor.type));
+            auto &buffer_infos = vk_buffer_infos[descriptor.binding];
+            buffer_infos.first.emplace_back(buffer_info);
+            buffer_infos.second = toVK(descriptor.type);
         } else if (std::holds_alternative<TextureDescriptor>(descriptor_proxy)) {
             const auto &descriptor = std::get<TextureDescriptor>(descriptor_proxy);
 
@@ -65,35 +63,37 @@ void DescriptorSet::update(core::span<const render::Descriptor> descriptors) {
 
             if (descriptor.sampler != nullptr) image_info.setSampler(*descriptor.sampler);
 
-            vk_image_infos.emplace_back(descriptor.binding,
-                                        std::move(image_info),
-                                        toVK(descriptor.type));
+            auto &image_infos = vk_image_infos[descriptor.binding];
+            image_infos.first.emplace_back(image_info);
+            image_infos.second = toVK(descriptor.type);
         }
     }
 
     auto vk_write_infos = std::vector<vk::WriteDescriptorSet> {};
     vk_write_infos.reserve(std::size(vk_buffer_infos) + std::size(vk_image_infos));
 
-    for (const auto &[binding, vk_buffer_info, type] : vk_buffer_infos) {
+    for (const auto &[binding, data] : vk_buffer_infos) {
+        auto &[descriptors, type] = data;
         const auto write_info = vk::WriteDescriptorSet {}
                                     .setDstSet(*m_vk_descriptor_set)
                                     .setDstBinding(binding)
                                     .setDstArrayElement(0)
-                                    .setDescriptorCount(1)
+                                    .setDescriptorCount(std::size(descriptors))
                                     .setDescriptorType(type)
-                                    .setPBufferInfo(&vk_buffer_info);
+                                    .setPBufferInfo(std::data(descriptors));
 
         vk_write_infos.emplace_back(std::move(write_info));
     }
 
-    for (const auto &[binding, vk_image_info, type] : vk_image_infos) {
+    for (const auto &[binding, data] : vk_image_infos) {
+        auto &[descriptors, type] = data;
         const auto write_info = vk::WriteDescriptorSet {}
                                     .setDstSet(*m_vk_descriptor_set)
                                     .setDstBinding(binding)
                                     .setDstArrayElement(0)
-                                    .setDescriptorCount(1)
+                                    .setDescriptorCount(std::size(descriptors))
                                     .setDescriptorType(type)
-                                    .setPImageInfo(&vk_image_info);
+                                    .setPImageInfo(std::data(descriptors));
 
         vk_write_infos.emplace_back(std::move(write_info));
     }
