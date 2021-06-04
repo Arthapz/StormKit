@@ -24,6 +24,7 @@ namespace storm::render {
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Render_Pass;
 
+        RenderPass(const Device &device, vk::RenderPass render_pass);
         explicit RenderPass(const Device &device, RenderPassDescription description);
         ~RenderPass();
 
@@ -53,7 +54,7 @@ namespace storm::render {
 
         RenderPassDescription m_description;
 
-        RAIIVkRenderPass m_vk_render_pass;
+        std::variant<RAIIVkRenderPass, vk::RenderPass> m_vk_render_pass;
     };
 } // namespace storm::render
 

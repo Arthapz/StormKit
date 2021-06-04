@@ -16,8 +16,15 @@ namespace storm::render {
     /////////////////////////////////////
     /////////////////////////////////////
     vk::RenderPass RenderPass::vkRenderPass() const noexcept {
-        STORMKIT_EXPECTS(m_vk_render_pass);
-        return *m_vk_render_pass;
+        auto render_pass = vk::RenderPass{nullptr};
+
+        if(std::holds_alternative<RAIIVkRenderPass>(m_vk_render_pass))
+            render_pass = *std::get<RAIIVkRenderPass>(m_vk_render_pass);
+        else render_pass = std::get<vk::RenderPass>(m_vk_render_pass);
+
+        STORMKIT_EXPECTS(render_pass);
+
+        return render_pass;
     }
 
     /////////////////////////////////////

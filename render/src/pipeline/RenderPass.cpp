@@ -18,6 +18,13 @@ using namespace storm::render;
 
 /////////////////////////////////////
 /////////////////////////////////////
+RenderPass::RenderPass(const render::Device &device, vk::RenderPass render_pass)
+    : m_device{&device} {
+    m_vk_render_pass = render_pass;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
 RenderPass::RenderPass(const render::Device &device, RenderPassDescription description)
     : m_device { &device }, m_description { std::move(description) } {
     build();
@@ -142,3 +149,4 @@ bool RenderPass::isCompatible(const RenderPass &render_pass) const noexcept {
 
     return &render_pass == this;
 }
+
