@@ -300,7 +300,7 @@ vk::UniqueSurfaceKHR
     return surface;
     #else
     elog("WSI disabled in this build");
-    return VK_NULL_HANDLE;
+    return vk::UniqueSurfaceKHR{VK_NULL_HANDLE};
     #endif
 }
 #elif defined(STORMKIT_OS_MACOS)
@@ -316,7 +316,7 @@ vk::UniqueSurfaceKHR
     return surface;
     #else
     elog("WSI disabled in this build");
-    return VK_NULL_HANDLE;
+    return vk::UniqueSurfaceKHR{VK_NULL_HANDLE};
     #endif
 }
 #elif defined(STORMKIT_OS_LINUX)
@@ -333,7 +333,7 @@ vk::UniqueSurfaceKHR
     return surface;
         #else
     elog("WSI disabled in this build");
-    return VK_NULL_HANDLE;
+    return vk::UniqueSurfaceKHR{VK_NULL_HANDLE};
         #endif
 }
     #endif
@@ -353,7 +353,7 @@ vk::UniqueSurfaceKHR
     return surface;
         #else
     elog("WSI disabled in this build");
-    return VK_NULL_HANDLE;
+    return vk::UniqueSurfaceKHR{VK_NULL_HANDLE};
         #endif
 }
     #endif
@@ -370,7 +370,7 @@ vk::UniqueSurfaceKHR
     return surface;
     #else
     elog("WSI disabled in this build");
-    return VK_NULL_HANDLE;
+    return vk::UniqueSurfaceKHR{VK_NULL_HANDLE};
     #endif
 }
 #endif

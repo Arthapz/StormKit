@@ -51,6 +51,8 @@
         #endif
     #elif defined(STORMKIT_OS_MACOS)
         #include <vulkan/vulkan_macos.h>
+    #elif defined(STORMKIT_OS_WIN32)
+        #include <vulkan/vulkan_win32.h>
     #endif
 #endif
 

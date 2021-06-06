@@ -16,6 +16,10 @@ namespace storm::window {
 
     DECLARE_PTR_AND_REF(Window);
 } // namespace storm::window
+
+namespace vk {
+    struct Win32SurfaceCreateInfoKHR;
+}
 #endif
 
 #include <storm/render/core/DynamicLoader.hpp>
@@ -79,6 +83,7 @@ namespace storm::render {
         vk::UniqueSurfaceKHR
             createVkSurface(const vk::IOSSurfaceCreateInfoMVK &create_info) const noexcept;
 #endif
+
       private:
         void createInstance() noexcept;
         void createDebugReportCallback();
