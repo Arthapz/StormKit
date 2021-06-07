@@ -221,7 +221,7 @@ auto DebugGUI::render(storm::render::CommandBuffer &cmb, const render::RenderPas
 
     for (auto i : m_frame_times) m_max_fps = std::max(m_max_fps, static_cast<core::UInt32>(i));
 
-    const auto title = fmt::format("{}\n\n\n0", m_max_fps);
+    const auto title = core::format("{}\n\n\n0", m_max_fps);
     ImGui::PlotHistogram(title.c_str(),
                          std::data(m_frame_times),
                          std::size(m_frame_times),

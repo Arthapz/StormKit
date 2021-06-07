@@ -16,9 +16,6 @@
 
 #include <storm/core/Span.hpp>
 
-#include <fmt/core.h>
-#include <fmt/format.h>
-
 #include <storm/core/Assert.hpp>
 #include <storm/core/TypeTraits.hpp>
 #include <storm/core/Types.hpp>
@@ -31,21 +28,6 @@
 #define CASE(x) \
     case x:     \
         return STRINGIFY(x);
-
-#define CUSTOM_FORMAT(TYPE, OUTPUT_STR, ...)                          \
-    namespace fmt {                                                   \
-        template<>                                                    \
-        struct formatter<TYPE> {                                      \
-            template<typename ParseContext>                           \
-            constexpr auto parse(ParseContext &ctx) {                 \
-                return ctx.begin();                                   \
-            }                                                         \
-            template<typename FormatContext>                          \
-            auto format(const TYPE &data, FormatContext &ctx) {       \
-                return format_to(ctx.out(), OUTPUT_STR, __VA_ARGS__); \
-            }                                                         \
-        };                                                            \
-    }
 
 #if !defined(__cpp_lib_char8_t)
 using char8_t     = unsigned char;

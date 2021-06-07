@@ -1,5 +1,10 @@
+/////////// - StormKit::core - ///////////
+#include <storm/core/Format.hpp>
+
 /////////// - StormKit::image - ///////////
 #include <storm/image/Image.hpp>
+
+using namespace std::literals;
 
 using namespace storm;
 using namespace storm::image;
@@ -32,13 +37,13 @@ std::optional<std::string> Image::savePPM(core::ByteArray &output,
     auto image = toFormat(Format::RGB8_UNorm);
 
     if(args == CodecArgs::Ascii) {
-        auto result = fmt::format("P3\n{}\n{}\n255\n", m_extent.width, m_extent.height);
+        auto result = core::format("P3\n{}\n{}\n255\n"sv, m_extent.width, m_extent.height);
 
         for(auto i = 0u; i < image.extent().height; ++i) {
             for(auto j = 0u; j < image.extent().width; ++j) {
                 auto pixel = image.pixel(i * image.extent().width + j);
 
-                result += fmt::format("{} {} {}\n", pixel[0], pixel[1], pixel[2]);
+                result += core::format("{} {} {}\n"sv, pixel[0], pixel[1], pixel[2]);
             }
 
             result += '\n';
@@ -47,7 +52,7 @@ std::optional<std::string> Image::savePPM(core::ByteArray &output,
         output.reserve(std::size(result));
         std::ranges::copy(core::toConstByteSpan(result), std::back_inserter(output));
     } else if(args == CodecArgs::Binary) {
-        auto header = fmt::format("P3\n{}\n{}\n255\n", m_extent.width, m_extent.height);
+        auto header = core::format("P3\n{}\n{}\n255\n"sv, m_extent.width, m_extent.height);
         output.reserve(std::size(output) + std::size(image.data()));
 
         std::ranges::copy(core::toConstByteSpan(header), std::back_inserter(output));

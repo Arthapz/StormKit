@@ -18,6 +18,7 @@
 /////////// - StormKit::core - ///////////
 #include <storm/core/Concepts.hpp>
 #include <storm/core/Span.hpp>
+#include <storm/core/Format.hpp>
 
 namespace storm::core {
     /// \group uint-types Unsigned types
@@ -251,6 +252,8 @@ namespace storm::core {
         return core::span<const Byte>(reinterpret_cast<const Byte *>(ptr), _size);
     }
 } // namespace storm::core
+
+CUSTOM_FORMAT(storm::core::Byte, "{}", static_cast<std::uint16_t>(data))
 
 namespace std {
     template<typename T>

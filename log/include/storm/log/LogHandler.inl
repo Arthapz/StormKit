@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include <fmt/core.h>
+/////////// - StormKit::core - ///////////
+#include <storm/core/Format.hpp>
 #include <queue>
 #include <storm/core/Strings.hpp>
 
@@ -25,18 +26,18 @@ namespace storm::log {
     template<typename... Args>
     void LogHandler::log(Severity severity,
                          Module module,
-                         std::string format_string,
+                         std::string_view format_string,
                          Args &&...param_args) {
         if (!m_logger) setupDefaultLogger();
 
-        auto memory_buffer = fmt::basic_memory_buffer<char> {};
-        fmt::format_to(memory_buffer, format_string, std::forward<Args>(param_args)...);
+        auto memory_buffer = std::string{};
+        core::format_to(std::back_inserter(memory_buffer), format_string, std::forward<Args>(param_args)...);
 
-        logger().write(severity, module, std::data(fmt::to_string(memory_buffer)));
+        logger().write(severity, module, std::data(memory_buffer));
     }
 
     template<typename... Args>
-    void LogHandler::log(Severity severity, std::string format_string, Args &&...param_args) {
+    void LogHandler::log(Severity severity, std::string_view format_string, Args &&...param_args) {
         log(severity, ""_module, std::move(format_string), std::forward<Args>(param_args)...);
     }
 

@@ -13,7 +13,7 @@
 /////////// - StormKit::core - ///////////
 #include <storm/core/Hash.hpp>
 #include <storm/core/NamedType.hpp>
-#include <storm/core/Strings.hpp>
+#include <storm/core/Format.hpp>
 
 /////////// - GLM - ///////////
 /// \exclude
@@ -308,7 +308,7 @@ namespace storm::core {
         /// \brief Construct an extent from width, height and optionnaly depth
         /// \param red The amound of width.
         /// \param green The amound of height.
-        constexpr Extent(T width, T height, T depth = 1) noexcept;
+        constexpr Extent(T width, T height, T depth = T{1}) noexcept;
 
         /// \brief Copy constructor.
         ///

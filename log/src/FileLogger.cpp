@@ -1,11 +1,14 @@
 #include <iostream>
 
+/////////// - StormKit::core - ///////////
+#include <storm/core/Format.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/core/Ranges.hpp>
 #include <storm/core/Strings.hpp>
 
 #include <storm/log/FileLogger.hpp>
 
+using namespace std::literals;
 using namespace storm;
 using namespace storm::log;
 
@@ -54,14 +57,14 @@ void FileLogger::write(Severity severity, Module module, const char *string) {
             m_streams[filepath.string()] = std::ofstream { filepath.string() };
     }
 
-    static constexpr auto LOG_LINE        = "[{0}, {1}s] {2}\n";
-    static constexpr auto LOG_LINE_MODULE = "[{0}, {1}s, {2}] {3}\n";
+    static constexpr auto LOG_LINE        = "[{0}, {1}s] {2}\n"sv;
+    static constexpr auto LOG_LINE_MODULE = "[{0}, {1}s, {2}] {3}\n"sv;
 
     auto final_string = std::string {};
     if (std::char_traits<char>::length(module.get()) == 0)
-        final_string = fmt::format(LOG_LINE, severity, time, string);
+        final_string = core::format(LOG_LINE, severity, time, string);
     else
-        final_string = fmt::format(LOG_LINE_MODULE, severity, time, module.get(), string);
+        final_string = core::format(LOG_LINE_MODULE, severity, time, module.get(), string);
 
     m_streams[filepath.string()] << final_string << std::flush;
 }
