@@ -23,21 +23,21 @@ RenderQueue::RenderQueue(Engine &engine,
       m_index_buffer_pool { m_buffering_count }, m_draw_data_buffer_pool { m_buffering_count },
       m_draw_command_buffer_pool { m_buffering_count },
       m_transform_buffer_pool { m_buffering_count }, m_material_buffer_pool { m_buffering_count } {
-    m_vertex_buffer_name       = fmt::format("{}:VertexBuffer", m_system_name);
-    m_index_buffer_name        = fmt::format("{}:IndexBuffer", m_system_name);
-    m_draw_data_buffer_name    = fmt::format("{}:DrawDataBuffer", m_system_name);
-    m_draw_command_buffer_name = fmt::format("{}:DrawCommandBuffer", m_system_name);
+    m_vertex_buffer_name       = core::format("{}:VertexBuffer", m_system_name);
+    m_index_buffer_name        = core::format("{}:IndexBuffer", m_system_name);
+    m_draw_data_buffer_name    = core::format("{}:DrawDataBuffer", m_system_name);
+    m_draw_command_buffer_name = core::format("{}:DrawCommandBuffer", m_system_name);
 
-    m_transform_buffer_name = fmt::format("{}:TransformBuffer", m_system_name);
-    m_material_buffer_name  = fmt::format("{}:MaterialBuffer", m_system_name);
+    m_transform_buffer_name = core::format("{}:TransformBuffer", m_system_name);
+    m_material_buffer_name  = core::format("{}:MaterialBuffer", m_system_name);
 
     m_update_vertices_and_indices_pass_name =
-        fmt::format("{}:UpdateVerticesAndIndicesBufferPass", m_system_name);
-    m_update_draw_data_buffer_pass_name = fmt::format("{}:UpdateDrawDataBufferPass", m_system_name);
+        core::format("{}:UpdateVerticesAndIndicesBufferPass", m_system_name);
+    m_update_draw_data_buffer_pass_name = core::format("{}:UpdateDrawDataBufferPass", m_system_name);
     m_update_draw_command_buffer_pass_name =
-        fmt::format("{}:UpdateDrawCommandBufferPass", m_system_name);
+        core::format("{}:UpdateDrawCommandBufferPass", m_system_name);
     m_update_transform_buffer_pass_name =
-        fmt::format("{}:UpdateTransformBufferPass", m_system_name);
+        core::format("{}:UpdateTransformBufferPass", m_system_name);
 
     m_transforms.emplace_back(
         Transform::Data { core::Matrix { 1.f }, core::inverse(core::Matrix { 1.f }) });
@@ -120,8 +120,8 @@ auto RenderQueue::updateVertexAndIndexBuffer(FrameGraph &frame_graph) -> void {
         return core::ranges::any_of(m_draws, [](const auto &entry) { return !entry.merged; });
     }();
 
-    const auto vertex_buffer_name = fmt::format("{}:{}", m_vertex_buffer_name, m_frame_counter);
-    const auto index_buffer_name  = fmt::format("{}:{}", m_index_buffer_name, m_frame_counter);
+    const auto vertex_buffer_name = core::format("{}:{}", m_vertex_buffer_name, m_frame_counter);
+    const auto index_buffer_name  = core::format("{}:{}", m_index_buffer_name, m_frame_counter);
 
     if (!need_to_merge_vert_indices) {
         auto &vertex_buffer = m_vertex_buffer_pool.get();
@@ -237,7 +237,7 @@ auto RenderQueue::updateVertexAndIndexBuffer(FrameGraph &frame_graph) -> void {
         m_update_vertices_and_indices_pass_name,
         [this, &staging_buffer_descriptor](auto &pass_data, FrameGraphBuilder &builder) {
             pass_data.staging_buffer_id =
-                builder.create(fmt::format("{}:{}",
+                builder.create(core::format("{}:{}",
                                            m_update_vertices_and_indices_pass_name,
                                            "StagingBuffer"),
                                staging_buffer_descriptor);
@@ -277,7 +277,7 @@ auto RenderQueue::updateDrawDataBuffer(FrameGraph &frame_graph) -> void {
     };
 
     const auto draw_data_buffer_name =
-        fmt::format("{}:{}", m_draw_data_buffer_name, m_frame_counter);
+        core::format("{}:{}", m_draw_data_buffer_name, m_frame_counter);
 
     if (!m_need_update_draw_data) {
         auto &draw_data_buffer = m_draw_data_buffer_pool.get();
@@ -325,7 +325,7 @@ auto RenderQueue::updateDrawDataBuffer(FrameGraph &frame_graph) -> void {
                                                         render::MemoryProperty::Host_Coherent };
 
             pass_data.staging_buffer_id =
-                builder.create(fmt::format("{}:{}",
+                builder.create(core::format("{}:{}",
                                            m_update_draw_data_buffer_pass_name,
                                            "StagingBuffer"),
                                staging_buffer_descriptor);
@@ -357,7 +357,7 @@ void RenderQueue::updateDrawCommandsBuffer(FrameGraph &frame_graph) {
     };
 
     const auto draw_command_buffer_name =
-        fmt::format("{}:{}", m_draw_command_buffer_name, m_frame_counter);
+        core::format("{}:{}", m_draw_command_buffer_name, m_frame_counter);
 
     if (!m_need_update_draw_commands) {
         auto &draw_command_buffer = m_draw_command_buffer_pool.get();
@@ -406,7 +406,7 @@ void RenderQueue::updateDrawCommandsBuffer(FrameGraph &frame_graph) {
                                                         render::MemoryProperty::Host_Coherent };
 
             pass_data.staging_buffer_id =
-                builder.create(fmt::format("{}:{}",
+                builder.create(core::format("{}:{}",
                                            m_update_draw_command_buffer_pass_name,
                                            "StagingBuffer"),
                                staging_buffer_descriptor);
@@ -461,7 +461,7 @@ auto RenderQueue::updateTransformBuffer(FrameGraph &frame_graph) -> void {
     }
 
     const auto transform_buffer_name =
-        fmt::format("{}:{}", m_transform_buffer_name, m_frame_counter);
+        core::format("{}:{}", m_transform_buffer_name, m_frame_counter);
 
     if (!reupload) {
         auto &transform_buffer = m_transform_buffer_pool.get();
@@ -513,7 +513,7 @@ auto RenderQueue::updateTransformBuffer(FrameGraph &frame_graph) -> void {
                                                         render::MemoryProperty::Host_Coherent };
 
             pass_data.staging_buffer_id =
-                builder.create(fmt::format("{}:{}",
+                builder.create(core::format("{}:{}",
                                            m_update_transform_buffer_pass_name,
                                            "StagingBuffer"),
                                staging_buffer_descriptor);

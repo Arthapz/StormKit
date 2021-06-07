@@ -16,9 +16,6 @@
 
 #include <storm/core/Span.hpp>
 
-#include <fmt/core.h>
-#include <fmt/format.h>
-
 #include <storm/core/Assert.hpp>
 #include <storm/core/TypeTraits.hpp>
 #include <storm/core/Types.hpp>

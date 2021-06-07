@@ -127,9 +127,9 @@ PbrRenderSystem::PbrRenderSystem(Engine &engine, entities::EntityManager &manage
         core::makeObserver(resource_cache.requestShader(render::ShaderStage::Fragment,
                                                         PBR_FORWARD_FRAGMENT_SHADER_DATA));
 
-    m_forward_plus_pass_name = fmt::format("{}:Forward+", m_system_name);
+    m_forward_plus_pass_name = core::format("{}:Forward+", m_system_name);
     m_update_scene_global_buffer_pass_name =
-        fmt::format("{}:UpdateSceneGlobalBufferPass", m_system_name);
+        core::format("{}:UpdateSceneGlobalBufferPass", m_system_name);
 
     setCamera(m_default_camera);
 }
@@ -338,7 +338,7 @@ auto PbrRenderSystem::updateSceneGlobalBuffer(FrameGraph &frame_graph) -> void {
     const auto reupload = m_camera->dirty() || m_camera_switched;
 
     const auto scene_global_buffer_name =
-        fmt::format("{}:SceneGlobalBuffer:{}", m_system_name, m_frame_counter);
+        core::format("{}:SceneGlobalBuffer:{}", m_system_name, m_frame_counter);
 
     if (!reupload) {
         auto &scene_global_buffer = m_scene_global_buffer_pool.get();

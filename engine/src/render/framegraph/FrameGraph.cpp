@@ -271,7 +271,7 @@ void FrameGraph::buildRenderPasses() {
                     auto &view             = m_texture_views.emplace_back(
                         texture.createViewPtr(render::TextureViewType::T2D,
                                               render::TextureSubresourceRange { aspect_mask }));
-                    device.setObjectName(*view, fmt::format("{}:View", getResource(id).name()));
+                    device.setObjectName(*view, core::format("{}:View", getResource(id).name()));
 
                     views.emplace_back(core::makeConstObserver(view));
                 } else if (std::holds_alternative<BufferDescriptor>(resource.descriptor())) {
@@ -305,13 +305,13 @@ void FrameGraph::buildRenderPasses() {
             step.frame_buffer = core::makeObserver(frame_buffer);
             step.clear_values = std::move(clear_values);
 
-            device.setObjectName(*step.render_pass, fmt::format("{}:RenderPass", node.name()));
-            device.setObjectName(*step.frame_buffer, fmt::format("{}:FrameBuffer", node.name()));
+            device.setObjectName(*step.render_pass, core::format("{}:RenderPass", node.name()));
+            device.setObjectName(*step.frame_buffer, core::format("{}:FrameBuffer", node.name()));
             if (node.hasGraphicsPipeline()) {
                 step.pipeline = core::makeObserver(
                     cache.requestGraphicsPipeline(node.graphicsPipeline(), *step.render_pass));
                 device.setObjectName(*step.pipeline,
-                                     fmt::format("{}:GraphicsPipeline", node.name()));
+                                     core::format("{}:GraphicsPipeline", node.name()));
             }
         } else if (queue_flags == QueueFlag::Transfert) {
             auto cmb = device.graphicsQueue().createCommandBufferPtr();
