@@ -7,6 +7,8 @@
 
 /////////// - StormKit::core - ///////////
 #include <storm/core/Strings.hpp>
+/////////// - StormKit::core - ///////////
+#include <storm/core/Format.hpp>
 
 /////////// - StormKit::render - ///////////
 #include <storm/render/core/Device.hpp>
@@ -213,7 +215,7 @@ Device::Device(const PhysicalDevice &physical_device, const Instance &instance)
     STORMKIT_ENSURES(result == VK_SUCCESS);
 
     setObjectName(*this,
-                  fmt::format("StormKit:Device ({})", m_physical_device->info().device_name));
+                  core::format("StormKit:Device ({})", m_physical_device->info().device_name));
 }
 
 Device::Device(VkDevice device, const PhysicalDevice &physical_device, const Instance &instance)
@@ -367,7 +369,7 @@ Device::Device(VkDevice device, const PhysicalDevice &physical_device, const Ins
     STORMKIT_ENSURES(result == VK_SUCCESS);
 
     setObjectName(*this,
-                  fmt::format("StormKit:Device ({})", m_physical_device->info().device_name));
+                  core::format("StormKit:Device ({})", m_physical_device->info().device_name));
 }
 
 /////////////////////////////////////
@@ -748,6 +750,20 @@ RAIIVkPipeline Device::createVkGraphicsPipeline(const vk::GraphicsPipelineCreate
                          pipeline);
 
     return pipeline;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+RAIIVkPipeline Device::createVkGraphicsPipelineUnsafe(const vk::GraphicsPipelineCreateInfo &create_info,
+                                                const vk::PipelineCache &cache) const noexcept {
+    auto result = vkDevice().createGraphicsPipelineUnique(cache,
+                                                                 create_info,
+                                                                 nullptr,
+                                                                 m_vk_dispatcher);
+
+    if(result.result != vk::Result::eSuccess) return {};
+
+    return std::move(result.value);
 }
 
 /////////////////////////////////////

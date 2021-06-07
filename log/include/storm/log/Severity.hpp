@@ -6,7 +6,7 @@
 
 #include <storm/core/Flags.hpp>
 #include <storm/core/Strings.hpp>
-#include <string>
+#include <storm/core/Format.hpp>
 
 namespace storm::log {
     enum class Severity { Info, Warning, Error, Fatal, Debug };
@@ -27,3 +27,4 @@ namespace storm::log {
 FLAG_ENUM(storm::log::Severity)
 
 CUSTOM_FORMAT(storm::log::Severity, "{}", storm::log::severityToString(data));
+

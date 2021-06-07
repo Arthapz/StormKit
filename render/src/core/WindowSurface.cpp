@@ -8,6 +8,9 @@
     #include <storm/window/Window.hpp>
 #endif
 
+/////////// - StormKit::core - ///////////
+#include <storm/core/Format.hpp>
+
 #include <storm/render/core/CommandBuffer.hpp>
 #include <storm/render/core/Device.hpp>
 #include <storm/render/core/Enums.hpp>
@@ -131,11 +134,11 @@ void WindowSurface::initialize(const render::Device &device) {
         m_in_flight_fences.emplace_back(device.createFence());
 
         m_device->setObjectName(m_texture_availables.back(),
-                                fmt::format("StormKit:TextureAvailableSemaphore ({})", i));
+                                core::format("StormKit:TextureAvailableSemaphore ({})", i));
         m_device->setObjectName(m_render_finisheds.back(),
-                                fmt::format("StormKit:RenderFinishedSemaphore ({})", i));
+                                core::format("StormKit:RenderFinishedSemaphore ({})", i));
         m_device->setObjectName(m_in_flight_fences.back(),
-                                fmt::format("StormKit:InFlightFence ({})", i));
+                                core::format("StormKit:InFlightFence ({})", i));
     }
 
     m_device->setObjectName(*this, "StormKit:WindowWindowSurface");
@@ -289,7 +292,7 @@ void WindowSurface::createSwapchain() {
     for (const auto &vk_image : m_vk_images) {
         auto &texture = m_textures.emplace_back(*m_device, m_extent, m_pixel_format, vk_image);
 
-        m_device->setObjectName(texture, fmt::format("StormKit:SwapchainImage ({})", i++));
+        m_device->setObjectName(texture, core::format("StormKit:SwapchainImage ({})", i++));
     }
 
     auto transition_command_buffer = m_graphics_queue->createCommandBuffer();

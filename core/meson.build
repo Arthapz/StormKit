@@ -1,9 +1,13 @@
-fmt_dep = dependency('fmt')
 glm_dep = dependency('glm')
 gsl_dep = dependency('Microsoft.GSL', method: 'cmake', modules: ['Microsoft.GSL::GSL'])
 range_v3_dep = dependency('range-v3')
 
-dependencies = [fmt_dep, glm_dep, gsl_dep, range_v3_dep]
+dependencies = [glm_dep, gsl_dep, range_v3_dep]
+
+if not is_windows
+    fmt_dep = dependency('fmt')
+    dependencies += [fmt_dep]
+endif
 
 #ide:editable-filelist
 headers = files([
@@ -13,6 +17,7 @@ headers = files([
     'include/storm/core/Concepts.hpp',
     'include/storm/core/Configure.hpp',
     'include/storm/core/Flags.hpp',
+    'include/storm/core/Format.hpp',
     'include/storm/core/Hash.hpp',
     'include/storm/core/Memory.hpp',
     'include/storm/core/NamedType.hpp',

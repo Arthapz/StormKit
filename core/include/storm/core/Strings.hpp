@@ -32,21 +32,6 @@
     case x:     \
         return STRINGIFY(x);
 
-#define CUSTOM_FORMAT(TYPE, OUTPUT_STR, ...)                          \
-    namespace fmt {                                                   \
-        template<>                                                    \
-        struct formatter<TYPE> {                                      \
-            template<typename ParseContext>                           \
-            constexpr auto parse(ParseContext &ctx) {                 \
-                return ctx.begin();                                   \
-            }                                                         \
-            template<typename FormatContext>                          \
-            auto format(const TYPE &data, FormatContext &ctx) {       \
-                return format_to(ctx.out(), OUTPUT_STR, __VA_ARGS__); \
-            }                                                         \
-        };                                                            \
-    }
-
 #if !defined(__cpp_lib_char8_t)
 using char8_t     = unsigned char;
 using std::string = std::basic_string<char8_t>;

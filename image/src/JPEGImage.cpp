@@ -1,3 +1,6 @@
+/////////// - StormKit::core - ///////////
+#include <storm/core/Format.hpp>
+
 /////////// - StormKit::image - ///////////
 #include <storm/image/Image.hpp>
 
@@ -105,7 +108,7 @@ std::optional<std::string> Image::saveJPEG(const std::filesystem::path &filepath
     error_mgr.error_exit = jpeg_error_callback;
 
     for (auto i = 0u; i < this_rgb.mipLevels(); ++i) {
-        if (i >= 1u) _filename += fmt::format("_mip{}", i);
+        if (i >= 1u) _filename += core::format("_mip{}", i);
 
         auto file = std::fopen(_filename.string().c_str(), "wb");
         if (file == nullptr) {

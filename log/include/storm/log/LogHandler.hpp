@@ -10,6 +10,9 @@
 #include <storm/log/Fwd.hpp>
 #include <storm/log/Logger.hpp>
 
+#include <string>
+#include <string_view>
+
 namespace storm::log {
     class STORMKIT_PUBLIC LogHandler final: public core::NonDefaultInstanciable {
       public:
@@ -20,10 +23,10 @@ namespace storm::log {
 
         template<typename... Args>
         static void
-            log(Severity severity, Module module, std::string format_string, Args &&...param_args);
+            log(Severity severity, Module module, std::string_view format_string, Args &&...param_args);
 
         template<typename... Args>
-        static inline void log(Severity severity, std::string format_string, Args &&...param_args);
+        static inline void log(Severity severity, std::string_view format_string, Args &&...param_args);
 
         template<typename... Args>
         static inline void dlog(Args &&...param_args);

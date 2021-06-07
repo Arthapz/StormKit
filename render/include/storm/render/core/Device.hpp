@@ -264,6 +264,9 @@ namespace storm::render {
         RAIIVkPipeline createVkGraphicsPipeline(
             const vk::GraphicsPipelineCreateInfo &create_info,
             const vk::PipelineCache &cache = VK_NULL_HANDLE) const noexcept;
+        RAIIVkPipeline createVkGraphicsPipelineUnsafe(
+            const vk::GraphicsPipelineCreateInfo &create_info,
+            const vk::PipelineCache &cache = VK_NULL_HANDLE) const noexcept;
         RAIIVkPipeline
             createVkComputePipeline(const vk::ComputePipelineCreateInfo &create_info,
                                     const vk::PipelineCache &cache = VK_NULL_HANDLE) const noexcept;
