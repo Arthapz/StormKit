@@ -1,5 +1,9 @@
 vulkan_dep  = dependency('vulkan-headers', fallback: ['vulkan-headers', 'vulkan_headers_dep'])
 
+enable_spirv_introspect = get_option('enable_render_introspect_spirv')
+
+args = {}
+if enable_spirv_introspect
 cmake = import('cmake')
 
 spirv_cross_core_dep = dependency('spirv_cross_core', method: 'cmake', modules: ['spirv-cross-core'], required: false)
@@ -33,6 +37,11 @@ if not spirv_cross_cpp_dep.found() or not spirv_cross_core_dep.found() or not sp
     spirv_cross_cpp_dep = spirv_cross.dependency('spirv-cross-cpp')
     spirv_cross_glsl_dep = spirv_cross.dependency('spirv-cross-glsl')
 endif
+private_dependencies = [spirv_cross_cpp_dep, spirv_cross_glsl_dep, spirv_cross_core_dep]
+args += {
+'cpp_args': ['-DSTORMKIT_ENABLE_SPIRV_INTROSPECT']
+}
+endif
 
 vulkan_headers_dep = declare_dependency(dependencies: [vulkan_dep])
 
@@ -42,7 +51,6 @@ if enable_window
     public_dependencies += [window_dep]
 endif
 
-private_dependencies = [spirv_cross_cpp_dep, spirv_cross_glsl_dep, spirv_cross_core_dep]
 
 #ide:editable-filelist
 general_headers = files([
@@ -185,7 +193,7 @@ sources = files([
 
 headers = general_headers + core_headers + resource_headers + pipeline_headers + sync_headers
 
-args = {'extra_files': headers + private_headers, 'gnu_symbol_visibility': 'hidden'}
+args += {'extra_files': headers + private_headers, 'gnu_symbol_visibility': 'hidden'}
 
 public_render_inc = ['include/']
 private_render_inc = []
