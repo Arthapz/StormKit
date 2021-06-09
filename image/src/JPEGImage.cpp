@@ -211,7 +211,7 @@ std::optional<std::string> Image::saveJPEG(core::ByteArray &output) const noexce
 
     std::cerr << out_size << std::endl;
 
-    std::ranges::copy(core::toConstByteSpan(output_ptr, out_size), std::back_inserter(output));
+    core::ranges::copy(core::toConstByteSpan(output_ptr, out_size), std::back_inserter(output));
     if(output_ptr != nullptr)
         std::free(output_ptr);
 

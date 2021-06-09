@@ -66,16 +66,17 @@ namespace storm::core {
             }                                                         \
         };                                                            \
     }
-#elif __has_include(<fmt/fmt.h>)
-    #include <fmt/fmt.h>
+#elif __has_include(<fmt/format.h>)
+    #include <fmt/format.h>
 namespace storm::core {
     template<class ... Args>
-    auto format(Args&& ... args) -> decltype(std::format(fmt::forward<Args>(args)...)) {
-        return fmt::format(std::forward<Args>(args)...);
+    auto format(std::string_view f, const Args& ... args) -> std::string {
+        return fmt::format(f, args...);
     }
-    template<class ... Args>
-    auto format_to(Args&& ... args) -> decltype(std::format_to(std::forward<Args>(args)...)) {
-        return fmt::format_to(std::forward<Args>(args)...);
+
+    template<class OutputIt, class ... Args>
+    auto format_to(OutputIt it, std::string_view f, const Args& ... args) -> OutputIt {
+        return fmt::format_to(it, f, args...);
     }
 } // namespace storm::core
 
@@ -95,4 +96,3 @@ namespace storm::core {
     }
 
 #endif
-

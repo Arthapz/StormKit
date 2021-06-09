@@ -19,6 +19,7 @@ namespace storm::window {
 
 namespace vk {
     struct Win32SurfaceCreateInfoKHR;
+    struct MacOSSurfaceCreateInfoMVK;
 }
 #endif
 

@@ -1,12 +1,16 @@
 glm_dep = dependency('glm')
 gsl_dep = dependency('Microsoft.GSL', method: 'cmake', modules: ['Microsoft.GSL::GSL'])
-range_v3_dep = dependency('range-v3')
 
-dependencies = [glm_dep, gsl_dep, range_v3_dep]
+dependencies = [glm_dep, gsl_dep]
 
 if not is_windows
     fmt_dep = dependency('fmt')
     dependencies += [fmt_dep]
+endif
+
+if is_macos
+    range_v3_dep = dependency('range-v3')
+    dependencies += [range_v3_dep]
 endif
 
 #ide:editable-filelist
