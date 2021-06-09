@@ -21,7 +21,7 @@ static void png_read_func(png_struct *ps, png_byte *d, png_size_t length) noexce
     auto _d = core::toByteSpan(d, length);
     auto data = param.data.subspan(param.readed, length);
 
-    std::ranges::copy(data, std::ranges::begin(_d));
+    core::ranges::copy(data, core::ranges::begin(_d));
 
     param.readed += length;
 }
@@ -32,7 +32,7 @@ static void png_write_func(png_struct *ps, png_byte *d, png_size_t length) {
     auto _d = core::toByteSpan(d, length);
     param.data.reserve(std::size(param.data) + length);
 
-    std::ranges::copy(_d, std::back_inserter(param.data));
+    core::ranges::copy(_d, std::back_inserter(param.data));
 }
 
 std::optional<std::string> Image::loadPNG(core::ByteConstSpan data) noexcept {

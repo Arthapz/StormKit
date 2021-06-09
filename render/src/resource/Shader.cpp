@@ -7,8 +7,10 @@
 #include <fstream>
 #include <streambuf>
 
+#ifdef STORMKIT_ENABLE_SPIRV_INTROSPECT
 /////////// - spirv-cross - ///////////
 #include <spirv_glsl.hpp>
+#endif
 
 /////////// - StormKit::log - ///////////
 #include <storm/log/LogHandler.hpp>
@@ -87,6 +89,7 @@ void Shader::compile() noexcept {
 /////////////////////////////////////
 /////////////////////////////////////
 void Shader::reflect() noexcept {
+#ifdef STORMKIT_ENABLE_SPIRV_INTROSPECT
     auto ir = std::vector<core::UInt32> {};
     ir.resize(std::size(m_source) / sizeof(core::UInt32));
     std::memcpy(std::data(ir), std::data(m_source), std::size(m_source));
@@ -116,5 +119,6 @@ void Shader::reflect() noexcept {
     add_bindings(resources.sampled_images, DescriptorType::Sampled_Image);
     add_bindings(resources.storage_images, DescriptorType::Storage_Image);
 
+#endif
     // m_descriptor_set_layout.bake();
 }

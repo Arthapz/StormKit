@@ -50,13 +50,13 @@ std::optional<std::string> Image::savePPM(core::ByteArray &output,
         }
 
         output.reserve(std::size(result));
-        std::ranges::copy(core::toConstByteSpan(result), std::back_inserter(output));
+        core::ranges::copy(core::toConstByteSpan(result), std::back_inserter(output));
     } else if(args == CodecArgs::Binary) {
         auto header = core::format("P3\n{}\n{}\n255\n"sv, m_extent.width, m_extent.height);
         output.reserve(std::size(output) + std::size(image.data()));
 
-        std::ranges::copy(core::toConstByteSpan(header), std::back_inserter(output));
-        std::ranges::copy(image.data(), std::back_inserter(output));
+        core::ranges::copy(core::toConstByteSpan(header), std::back_inserter(output));
+        core::ranges::copy(image.data(), std::back_inserter(output));
     }
 
     return std::nullopt;
