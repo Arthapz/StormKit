@@ -245,7 +245,7 @@ void Texture::loadFromMemory(core::ByteConstSpan data,
                              bool generate_mips) {
     buffer.upload<core::Byte>(data);
 
-    command_buffer.beginDebugRegion(core::format("Upload Texture"), core::RGBColorDef::Lime<float>);
+    command_buffer.beginDebugRegion("Upload Texture", core::RGBColorDef::Lime<float>);
     command_buffer.transitionTextureLayout(*this,
                                            TextureLayout::Undefined,
                                            TextureLayout::Transfer_Dst_Optimal,

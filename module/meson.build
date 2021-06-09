@@ -77,7 +77,8 @@ endif
 module_dep = declare_dependency(
     link_with: module_lib,
     include_directories: module_inc,
-    dependencies: dependencies
+    dependencies: dependencies,
+    compile_args: cpp_arguments,
 )
 
 install_headers(headers + inls, subdir : 'storm/module')

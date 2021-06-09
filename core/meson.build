@@ -3,10 +3,10 @@ gsl_dep = dependency('Microsoft.GSL', method: 'cmake', modules: ['Microsoft.GSL:
 
 dependencies = [glm_dep, gsl_dep]
 
-if not is_windows
+#if not is_windows
     fmt_dep = dependency('fmt')
     dependencies += [fmt_dep]
-endif
+#endif
 
 if is_macos
     range_v3_dep = dependency('range-v3')
@@ -140,7 +140,8 @@ endif
 core_dep = declare_dependency(
     link_with: core_lib, 
     include_directories: core_inc,
-    dependencies: dependencies
+    dependencies: dependencies,
+    compile_args: cpp_arguments,
 )
 
 install_headers(headers, subdir : 'storm/core')

@@ -53,9 +53,9 @@ void ConsoleLogger::flush() {
 ////////////////////////////////////////
 void ConsoleLogger::write(Severity severity, Module module, const char *string) {
     const auto now  = LogClock::now();
-    const auto time = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
+    const auto time = std::chrono::duration_cast<core::Secondf>(now - m_start_time);
 
-    static constexpr auto LOG_LINE        = "[{1}s]"sv;
+    static constexpr auto LOG_LINE        = "[{0}, {1}s]"sv;
     static constexpr auto LOG_LINE_MODULE = "[{0}, {1}s, {2}]"sv;
 
     auto str = std::string {};

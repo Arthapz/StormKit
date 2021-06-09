@@ -6,6 +6,7 @@
 
 #include <array>
 #include <cfloat>
+#include <storm/core/Format.hpp>
 #include <chrono>
 #include <functional>
 #include <iomanip>

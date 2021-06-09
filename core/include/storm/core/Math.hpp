@@ -414,6 +414,155 @@ namespace storm::core {
     /// \unique_name Offseti
     using ExtentfOffset = ExtentOffset<float>;
 
+FORMATTER(storm::core::Vector2f, "Vector2 {{ .x = {}, .y = {} }}", data.x, data.y)
+FORMATTER(storm::core::Position2f, "Position2 {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::MoveOffset2f, "MoveOffset2 {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::Scale2f, "Scale2 {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::Orientation2f, "Orientation2 {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::Rotation2f, "Rotation2 {{ .x = {}, .y = {} }}", data->x, data->y)
+
+FORMATTER(storm::core::Vector3f,
+              "Vector3 {{ .x = {}, .y = {}, .z = {} }}",
+              data.x,
+              data.y,
+              data.z)
+FORMATTER(storm::core::Position3f,
+              "Position3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+FORMATTER(storm::core::MoveExtentfOffset,
+              "MoveOffset3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+FORMATTER(storm::core::Scale3f,
+              "Scale3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+FORMATTER(storm::core::Orientation3f,
+              "Orientation3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+FORMATTER(storm::core::Rotation3f,
+              "Rotation3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+
+FORMATTER(storm::core::Vector4f,
+              "Vector4 {{ .x = {}, .y = {}, .z = {}, .w = {} }}",
+              data.x,
+              data.y,
+              data.z,
+              data.w)
+
+FORMATTER(storm::core::Vector2u, "Vector2u {{ .x = {}, .y = {} }}", data.x, data.y)
+FORMATTER(storm::core::Position2u, "Position2u {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::MoveOffset2u, "MoveInt322 {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::Scale2u, "Scale2 {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::Orientation2u, "Orientation2 {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::Rotation2u, "Rotation2 {{ .x = {}, .y = {} }}", data->x, data->y)
+
+FORMATTER(storm::core::Vector3u,
+              "Vector3u {{ .x = {}, .y = {}, .z = {} }}",
+              data.x,
+              data.y,
+              data.z)
+FORMATTER(storm::core::Position3u, "Position3u {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::MoveExtentuOffset,
+              "MoveInt323 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+FORMATTER(storm::core::Scale3u,
+              "Scale3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+FORMATTER(storm::core::Orientation3u,
+              "Orientation3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+FORMATTER(storm::core::Rotation3u,
+              "Rotation3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+
+FORMATTER(storm::core::Vector4u,
+              "Vector4u {{ .x = {}, .y = {}, .z = {}, .w = {} }}",
+              data.x,
+              data.y,
+              data.z,
+              data.w)
+
+FORMATTER(storm::core::Vector2i, "Vector2i {{ .x = {}, .y = {} }}", data.x, data.y)
+FORMATTER(storm::core::Position2i, "Position2i {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::MoveOffset2i, "MoveOffset2 {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::Scale2i, "Scale2 {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::Orientation2i, "Orientation2 {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::Rotation2i, "Rotation2 {{ .x = {}, .y = {} }}", data->x, data->y)
+
+FORMATTER(storm::core::Vector3i,
+              "Vector3i {{ .x = {}, .y = {}, .z = {} }}",
+              data.x,
+              data.y,
+              data.z)
+FORMATTER(storm::core::Position3i, "Position3i {{ .x = {}, .y = {} }}", data->x, data->y)
+FORMATTER(storm::core::MoveOffset,
+              "MoveOffset3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+FORMATTER(storm::core::Scale3i,
+              "Scale3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+FORMATTER(storm::core::Orientation3i,
+              "Orientation3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+FORMATTER(storm::core::Rotation3i,
+              "Rotation3 {{ .x = {}, .y = {}, .z = {} }}",
+              data->x,
+              data->y,
+              data->z)
+
+FORMATTER(storm::core::Vector4i,
+              "Vector4i {{ .x = {}, .y = {}, .z = {}, .w = {} }}",
+              data.x,
+              data.y,
+              data.z,
+              data.w)
+
+FORMATTER(storm::core::Matrix,
+              "Matrix {{\n    {},\n    {},\n    {},\n    {}\n}}",
+              data[0],
+              data[1],
+              data[2],
+              data[3])
+
+FORMATTER(storm::core::Extenti,
+              "Extenti {{ .width = {}, .height = {}, .depth = {} }}",
+              data.width,
+              data.height,
+              data.depth)
+FORMATTER(storm::core::Extentu,
+              "Extentu {{ .width = {}, .height = {}, .depth = {} }}",
+              data.width,
+              data.height,
+              data.depth)
+FORMATTER(storm::core::Extentf,
+              "Extentf {{ .width = {}, .height = {}. depth = {} }}",
+              data.width,
+              data.height,
+              data.depth)
 } // namespace storm::core
 
 namespace std {
@@ -431,154 +580,58 @@ namespace std {
     };
 } // namespace std
 
-CUSTOM_FORMAT(storm::core::Vector2f, "Vector2 {{ .x = {}, .y = {} }}", data.x, data.y)
-CUSTOM_FORMAT(storm::core::Position2f, "Position2 {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::MoveOffset2f, "MoveOffset2 {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::Scale2f, "Scale2 {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::Orientation2f, "Orientation2 {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::Rotation2f, "Rotation2 {{ .x = {}, .y = {} }}", data->x, data->y)
+CUSTOM_FORMAT(storm::core::Vector2f, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Position2f, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::MoveOffset2f, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Scale2f, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Orientation2f, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Rotation2f, storm::core::toString(data))
 
-CUSTOM_FORMAT(storm::core::Vector3f,
-              "Vector3 {{ .x = {}, .y = {}, .z = {} }}",
-              data.x,
-              data.y,
-              data.z)
-CUSTOM_FORMAT(storm::core::Position3f,
-              "Position3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
-CUSTOM_FORMAT(storm::core::MoveExtentfOffset,
-              "MoveOffset3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
-CUSTOM_FORMAT(storm::core::Scale3f,
-              "Scale3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
-CUSTOM_FORMAT(storm::core::Orientation3f,
-              "Orientation3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
-CUSTOM_FORMAT(storm::core::Rotation3f,
-              "Rotation3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
+CUSTOM_FORMAT(storm::core::Vector3f, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Position3f, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::MoveExtentfOffset, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Scale3f, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Orientation3f, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Rotation3f, storm::core::toString(data))
 
-CUSTOM_FORMAT(storm::core::Vector4f,
-              "Vector4 {{ .x = {}, .y = {}, .z = {}, .w = {} }}",
-              data.x,
-              data.y,
-              data.z,
-              data.w)
+CUSTOM_FORMAT(storm::core::Vector4f, storm::core::toString(data))
 
-CUSTOM_FORMAT(storm::core::Vector2u, "Vector2u {{ .x = {}, .y = {} }}", data.x, data.y)
-CUSTOM_FORMAT(storm::core::Position2u, "Position2u {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::MoveOffset2u, "MoveInt322 {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::Scale2u, "Scale2 {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::Orientation2u, "Orientation2 {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::Rotation2u, "Rotation2 {{ .x = {}, .y = {} }}", data->x, data->y)
+CUSTOM_FORMAT(storm::core::Vector2u, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Position2u, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::MoveOffset2u, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Scale2u, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Orientation2u, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Rotation2u, storm::core::toString(data))
 
-CUSTOM_FORMAT(storm::core::Vector3u,
-              "Vector3u {{ .x = {}, .y = {}, .z = {} }}",
-              data.x,
-              data.y,
-              data.z)
-CUSTOM_FORMAT(storm::core::Position3u, "Position3u {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::MoveExtentuOffset,
-              "MoveInt323 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
-CUSTOM_FORMAT(storm::core::Scale3u,
-              "Scale3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
-CUSTOM_FORMAT(storm::core::Orientation3u,
-              "Orientation3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
-CUSTOM_FORMAT(storm::core::Rotation3u,
-              "Rotation3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
+CUSTOM_FORMAT(storm::core::Vector3u, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Position3u, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::MoveExtentuOffset, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Scale3u, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Orientation3u, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Rotation3u, storm::core::toString(data))
 
-CUSTOM_FORMAT(storm::core::Vector4u,
-              "Vector4u {{ .x = {}, .y = {}, .z = {}, .w = {} }}",
-              data.x,
-              data.y,
-              data.z,
-              data.w)
+CUSTOM_FORMAT(storm::core::Vector4u, storm::core::toString(data))
 
-CUSTOM_FORMAT(storm::core::Vector2i, "Vector2i {{ .x = {}, .y = {} }}", data.x, data.y)
-CUSTOM_FORMAT(storm::core::Position2i, "Position2i {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::MoveOffset2i, "MoveOffset2 {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::Scale2i, "Scale2 {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::Orientation2i, "Orientation2 {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::Rotation2i, "Rotation2 {{ .x = {}, .y = {} }}", data->x, data->y)
+CUSTOM_FORMAT(storm::core::Vector2i, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Position2i, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::MoveOffset2i, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Scale2i, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Orientation2i, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Rotation2i, storm::core::toString(data))
 
-CUSTOM_FORMAT(storm::core::Vector3i,
-              "Vector3i {{ .x = {}, .y = {}, .z = {} }}",
-              data.x,
-              data.y,
-              data.z)
-CUSTOM_FORMAT(storm::core::Position3i, "Position3i {{ .x = {}, .y = {} }}", data->x, data->y)
-CUSTOM_FORMAT(storm::core::MoveOffset,
-              "MoveOffset3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
-CUSTOM_FORMAT(storm::core::Scale3i,
-              "Scale3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
-CUSTOM_FORMAT(storm::core::Orientation3i,
-              "Orientation3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
-CUSTOM_FORMAT(storm::core::Rotation3i,
-              "Rotation3 {{ .x = {}, .y = {}, .z = {} }}",
-              data->x,
-              data->y,
-              data->z)
+CUSTOM_FORMAT(storm::core::Vector3i, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Position3i, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::MoveOffset, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Scale3i, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Orientation3i, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Rotation3i, storm::core::toString(data))
 
-CUSTOM_FORMAT(storm::core::Vector4i,
-              "Vector4i {{ .x = {}, .y = {}, .z = {}, .w = {} }}",
-              data.x,
-              data.y,
-              data.z,
-              data.w)
+CUSTOM_FORMAT(storm::core::Vector4i, storm::core::toString(data))
 
-CUSTOM_FORMAT(storm::core::Matrix,
-              "Matrix {{\n    {},\n    {},\n    {},\n    {}\n}}",
-              data[0],
-              data[1],
-              data[2],
-              data[3])
+CUSTOM_FORMAT(storm::core::Matrix, storm::core::toString(data))
 
-CUSTOM_FORMAT(storm::core::Extenti,
-              "Extenti {{ .width = {}, .height = {}, .depth = {} }}",
-              data.width,
-              data.height,
-              data.depth)
-CUSTOM_FORMAT(storm::core::Extentu,
-              "Extentu {{ .width = {}, .height = {}, .depth = {} }}",
-              data.width,
-              data.height,
-              data.depth)
-CUSTOM_FORMAT(storm::core::Extentf,
-              "Extentf {{ .width = {}, .height = {}. depth = {} }}",
-              data.width,
-              data.height,
-              data.depth)
+CUSTOM_FORMAT(storm::core::Extenti, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Extentu, storm::core::toString(data))
+CUSTOM_FORMAT(storm::core::Extentf, storm::core::toString(data))
 
 #include "Math.inl"

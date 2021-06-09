@@ -258,7 +258,8 @@ endif
 window_dep = declare_dependency(
     link_with: window_lib,
     include_directories: window_inc,
-    dependencies: public_dependencies
+    dependencies: public_dependencies,
+    compile_args: cpp_arguments,
 )
 
 if get_option('enable_examples')

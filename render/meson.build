@@ -237,7 +237,8 @@ endif
 render_dep = declare_dependency(
     link_with: render_lib,
     dependencies: public_dependencies,
-    include_directories: public_render_inc
+    include_directories: public_render_inc,
+    compile_args: cpp_arguments,
 )
 
 if get_option('enable_examples') and enable_window

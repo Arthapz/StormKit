@@ -216,6 +216,7 @@ engine_dep = declare_dependency(
     link_with: engine_lib,
     dependencies: public_dependencies,
     include_directories: engine_inc,
+    compile_args: cpp_arguments,
 )
 
 if get_option('enable_examples')

@@ -99,6 +99,7 @@ image_dep = declare_dependency(
     link_with: image_lib,
     dependencies: public_dependencies,
     include_directories: image_inc,
+    compile_args: cpp_arguments,
 )
 
 install_headers(headers + inls, subdir : 'storm/image')

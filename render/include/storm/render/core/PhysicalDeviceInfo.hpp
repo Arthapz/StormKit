@@ -29,9 +29,7 @@ namespace storm::render {
 
         PhysicalDeviceType type;
     };
-} // namespace storm::render
-
-CUSTOM_FORMAT(storm::render::PhysicalDeviceInfo,
+FORMATTER(storm::render::PhysicalDeviceInfo,
               "PhysicalDeviceInfo {{\n"
               "   device_id: {:#06x},\n"
               "   device_name: {},\n"
@@ -52,3 +50,6 @@ CUSTOM_FORMAT(storm::render::PhysicalDeviceInfo,
               data.driver_minor_version,
               data.driver_patch_version,
               storm::render::to_string(data.type));
+} // namespace storm::render
+
+CUSTOM_FORMAT(storm::render::PhysicalDeviceInfo, storm::render::toString(data))

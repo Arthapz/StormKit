@@ -68,7 +68,8 @@ endif
 log_dep = declare_dependency(
     link_with: log_lib,
     include_directories: log_inc,
-    dependencies: dependencies
+    dependencies: dependencies,
+    compile_args: cpp_arguments,
 )
 
 install_headers(headers, subdir : 'storm/log')

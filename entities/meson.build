@@ -62,7 +62,8 @@ endif
 entities_dep = declare_dependency(
     link_with: entities_lib, 
     include_directories: entities_inc,
-    dependencies: dependencies
+    dependencies: dependencies,
+    compile_args: cpp_arguments,
 )
 
 install_headers(headers, subdir : 'storm/entities')

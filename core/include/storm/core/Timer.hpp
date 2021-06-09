@@ -5,6 +5,7 @@
 #pragma once
 
 #include <atomic>
+#include <storm/core/Format.hpp>
 #include <chrono>
 #include <ciso646>
 #include <condition_variable>

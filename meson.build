@@ -21,56 +21,52 @@ lib_type = get_option('library_type')
 c_arguments = []
 cpp_arguments = []
 
-examples_arguments = []
-
 lib_extension   = ''
 
-if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
-    c_arguments += ['/DSTORMKIT_BUILD', '/std:clatest', '/permissive-', '/DNOMINMAX', '/DUNICODE', '/D_UNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo', '/Zc:wchar_t', '/FS', '/Zc:inline', '/Zc:strictStrings', '/Zc:throwingNew', '/EHsc']
-    cpp_arguments += ['/DSTORMKIT_BUILD', '/std:c++latest', '/permissive-', '/DFMT_HEADER_ONLY', '/DNOMINMAX', '/DUNICODE', '/D_UNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo', '/Zc:wchar_t', '/FS', '/Zc:rvalueCast', '/Zc:inline', '/Zc:strictStrings', '/Zc:throwingNew', '/Zc:__cplusplus', '/Zc:externConstexpr', '/EHsc']
+compiler = meson.get_compiler('cpp')
+major_version   = 0
+minor_version   = 2
+patch_version   = 0
+milestone       = 'alpha'
+build_type      = get_option('buildtype')
+git_commit_hash = 'unknown'
+git_branch      = 'unknown'
+suffix          = ''
 
-    examples_arguments += ['/std:c++latest', '/permissive-', '/DNOMINMAX', '/DUNICODE', '/D_UNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo']
+if compiler.get_id() == 'msvc' or compiler.get_id() == 'clang-cl'
+    c_arguments += ['/std:clatest', '/DNOMINMAX', '/DUNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo']
+    cpp_arguments += ['/std:c++latest', '/DNOMINMAX', '/DUNICODE', '/D_ENABLE_EXTENDED_ALIGNED_STORAGE', '/nologo', '/Zc:__cplusplus']
     lib_extension = '.lib'
 
-    message(meson.get_compiler('cpp').get_id())
-    if get_option('buildtype') == 'debug'
+    if build_type == 'debug'
         c_arguments += ['/DSTORMKIT_BUILD_DEBUG']
         cpp_arguments += ['/DSTORMKIT_BUILD_DEBUG']
     endif
+
+    if compiler.get_id() == 'clang-cl'
+        c_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
+        cpp_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
+    endif
+
     if lib_type == 'static'
         c_arguments += ['/DSTORMKIT_STATIC']
         cpp_arguments += ['/DSTORMKIT_STATIC']
     endif
-
-    if meson.get_compiler('cpp').get_id() == 'clang-cl'
-        c_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
-        cpp_arguments += ['-fcolor-diagnostics', '-fdiagnostics-color', '-Wno-missing-braces', '-Wno-unused-command-line-argument', '-fansi-escape-codes']
-    endif
 else
-    c_arguments += ['-DSTORMKIT_BUILD', '-std=c2x', '-Wno-missing-braces', '-Wno-unknown-pragmas']
-    cpp_arguments += ['-DSTORMKIT_BUILD', '-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas', '-DFMT_HEADER_ONLY']
-
-    examples_arguments += ['-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas']
-    if get_option('buildtype') == 'debug'
-        c_arguments += ['-DSTORMKIT_BUILD_DEBUG', '-ggdb']
-        cpp_arguments += ['-DSTORMKIT_BUILD_DEBUG', '-ggdb']
-
-        if meson.get_compiler('cpp').get_id() == 'clang'
-            c_arguments += ['-static-libsan']
-            cpp_arguments += ['-static-libsan']
-        else
-            c_arguments += ['-static-libasan']
-            cpp_arguments += ['-static-libasan']
-        endif
-    endif
+    c_arguments += ['-std=c2x', '-Wno-missing-braces', '-Wno-unknown-pragmas']
+    cpp_arguments += ['-std=c++2a', '-Wno-missing-braces', '-Wno-unknown-pragmas']
 
     if is_windows
         lib_extension = '.a'
-        examples_arguments += ['-DNOMINMAX']
     elif is_macos
         lib_extension = '.dylib'
     else
         lib_extension = '.so'
+    endif
+
+    if build_type == 'debug'
+        c_arguments += ['-DSTORMKIT_BUILD_DEBUG']
+        cpp_arguments += ['-DSTORMKIT_BUILD_DEBUG']
     endif
 
     if lib_type == 'static'
@@ -82,6 +78,7 @@ endif
 
 add_project_arguments(c_arguments, language: ['c', 'objc'])
 add_project_arguments(cpp_arguments, language: ['cpp', 'objcpp'])
+add_project_arguments(['-DSTORMKIT_BUILD'], language: ['c', 'objc', 'cpp', 'objcpp'])
 
 enable_doc            = get_option('enable_doc')
 enable_entities       = get_option('enable_entities')
@@ -96,14 +93,6 @@ enable_engine         = get_option('enable_engine')
 
 copy_to_bindir = get_option('copy_to_bindir')
 
-major_version   = 0
-minor_version   = 2
-patch_version   = 0
-milestone       = 'alpha'
-build_type      = get_option('buildtype')
-git_commit_hash = 'unknown'
-git_branch      = 'unknown'
-suffix          = ''
 
 if build_type == 'debug' or build_type == 'debugoptimized'
     suffix += '-debug'

@@ -4012,6 +4012,8 @@ VMA_CALL_PRE void VMA_CALL_POST vmaDestroyImage(
 #include <utility>
 
 #if VMA_RECORDING_ENABLED
+    #include <storm/core/Format.hpp>
+
     #include <chrono>
     #if defined(_WIN32)
         #include <windows.h>

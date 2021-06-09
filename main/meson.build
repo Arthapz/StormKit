@@ -66,7 +66,8 @@ endif
 main_dep = declare_dependency(
     link_with: main_lib,
     include_directories: main_inc,
-    dependencies: dependencies
+    dependencies: dependencies,
+    compile_args: cpp_arguments,
 )
 
 install_headers(headers, subdir : 'storm/main')

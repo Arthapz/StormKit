@@ -6,6 +6,7 @@
 
 /////////// - STL - ///////////
 #include <array>
+#include <storm/core/Format.hpp>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -253,7 +254,7 @@ namespace storm::core {
     }
 } // namespace storm::core
 
-CUSTOM_FORMAT(storm::core::Byte, "{}", static_cast<std::uint16_t>(data))
+CUSTOM_FORMAT(storm::core::Byte, std::to_string(static_cast<std::uint16_t>(data)))
 
 namespace std {
     template<typename T>

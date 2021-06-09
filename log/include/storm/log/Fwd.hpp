@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <storm/core/Format.hpp>
+
 #include <chrono>
 #include <storm/core/Memory.hpp>
 

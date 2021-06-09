@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <ranges>
+
 #include <storm/core/Configure.hpp>
 #include <storm/core/Platform.hpp>
 #include <storm/core/Concepts.hpp>
@@ -23,21 +25,34 @@ namespace storm::core {
 
 } // namespace storm::core
 
-#define CUSTOM_FORMAT(TYPE, OUTPUT_STR, ...)                          \
-        template<class CharT>                                                    \
-        struct std::formatter<TYPE, CharT> : std::formatter<std::string, CharT> {   \
-            template<typename FormatContext>                          \
-            auto format(const TYPE &data, FormatContext &ctx) {       \
-                return std::formatter<std::string, CharT>::format(std::format(OUTPUT_STR, __VA_ARGS__), ctx); \
+    #define FORMATTER(TYPE, OUTPUT_STR, ...) \
+    inline auto toString(const TYPE &data) noexcept { \
+        return storm::core::format(OUTPUT_STR, __VA_ARGS__); \
+    }
+
+#define CUSTOM_FORMAT(TYPE, METHOD)                          \
+        template<>                                                    \
+        struct std::formatter<TYPE> : std::formatter<std::string> {   \
+            auto format(const TYPE &data, format_context &ctx) {       \
+                std::ranges::copy(METHOD, ctx.out()); \
+return ctx.out(); \
+            }                                                         \
+        };
+#define CUSTOM_FORMAT_STRING_VIEW(TYPE, METHOD)                          \
+        template<>                                                    \
+        struct std::formatter<TYPE> : std::formatter<std::string_view> {   \
+            auto format(const TYPE &data, format_context &ctx) {       \
+                std::ranges::copy(METHOD, ctx.out()); \
+return ctx.out(); \
             }                                                         \
         };
 
-template <storm::core::Enumeration Enum, class CharT>
-struct std::formatter<Enum, CharT> : std::formatter<std::underlying_type_t<Enum>, CharT> {
-    template <typename FormatContext>
-    auto format(Enum e, FormatContext &ctx) {
+template <storm::core::Enumeration Enum>
+struct std::formatter<Enum> : std::formatter<std::underlying_type_t<Enum>> {
+    auto format(Enum e, format_context &ctx) {
         using underlying_type = std::underlying_type_t<Enum>;
-        return std::formatter<underlying_type, CharT>::format(static_cast<underlying_type>(e), ctx);
+
+        return std::formatter<underlying_type>::format(static_cast<underlying_type>(e), ctx); \
     }
 };
 #elif __has_include(<experimental/format>)  && !defined(STORMKIT_GEN_DOC)

@@ -11,7 +11,7 @@
 namespace storm::log {
     enum class Severity { Info, Warning, Error, Fatal, Debug };
 
-    inline std::string_view severityToString(Severity severity) {
+    constexpr auto toString(Severity severity) noexcept -> std::string_view {
         switch (severity) {
             case Severity::Info: return "Information";
             case Severity::Warning: return "Warning";
@@ -26,5 +26,5 @@ namespace storm::log {
 
 FLAG_ENUM(storm::log::Severity)
 
-CUSTOM_FORMAT(storm::log::Severity, "{}", storm::log::severityToString(data));
+CUSTOM_FORMAT_STRING_VIEW(storm::log::Severity, storm::log::toString(data));
 
