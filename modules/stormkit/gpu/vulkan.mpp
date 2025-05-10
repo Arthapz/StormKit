@@ -1,0 +1,11 @@
+export module stormkit.gpu.vulkan;
+
+export import :utils;
+
+export {
+    extern "C" {
+#include <volk.h>
+
+#include <vk_mem_alloc.h>
+    }
+}

@@ -136,6 +136,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsNotIndirection = not IsIndirection<T>;
 
     template<class T>
+    concept IsScopedEnumeration = std::is_scoped_enum_v<T> and IsNotByte<T>;
+
+    template<class T>
     concept IsEnumeration = std::is_enum_v<T> and IsNotByte<T>;
 
     template<typename T>

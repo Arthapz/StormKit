@@ -28,6 +28,12 @@ export namespace stormkit { inline namespace core { namespace monadic {
 
     template<typename T>
     [[nodiscard]]
+    constexpr auto identity(T&& value) noexcept -> decltype(auto);
+    template<typename T>
+    [[nodiscard]]
+    constexpr auto consume(T& value) noexcept -> decltype(auto);
+    template<typename T>
+    [[nodiscard]]
     constexpr auto value() noexcept -> decltype(auto);
     template<typename T>
     [[nodiscard]]
@@ -53,6 +59,8 @@ export namespace stormkit { inline namespace core { namespace monadic {
     constexpr auto wrap() noexcept;
     [[nodiscard]]
     constexpr auto as_byte() noexcept;
+    [[nodiscard]]
+    constexpr auto as_view() noexcept;
 
     template<typename T,
              std::invocable<T>                              First,
@@ -110,6 +118,24 @@ export namespace stormkit { inline namespace core { namespace monadic {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core { namespace monadic {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    [[nodiscard]]
+    STORMKIT_FORCE_INLINE constexpr auto identity(T&& value) noexcept -> decltype(auto) {
+        return [value = std::forward<T>(value)] mutable noexcept -> decltype(auto) {
+            return std::forward_like<T>(value);
+        };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    [[nodiscard]]
+    STORMKIT_FORCE_INLINE constexpr auto consume(T& value) noexcept -> decltype(auto) {
+        return [value = std::move(value)] mutable noexcept -> T { return std::move(value); };
+    }
+
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto value() noexcept -> decltype(auto) {
@@ -175,6 +201,16 @@ namespace stormkit { inline namespace core { namespace monadic {
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto as_byte() noexcept {
         return [](auto&& val) static noexcept { return core::as<Byte>(val); };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto as_view() noexcept {
+        return []<typename T>(T& val) static noexcept {
+            if constexpr (meta::IsStringLike<T>) return std::string_view { val };
+            else
+                return std::span<T> { val };
+        };
     }
 
     /////////////////////////////////////

@@ -23,6 +23,8 @@ BitFieldColonSpacing: After
 BreakBeforeConceptDeclarations: 'true'
 BreakBinaryOperations: RespectPrecedence
 EmptyLineBeforeAccessModifier: LogicalBlock
+EnumTrailingComma: Insert
+FixNamespaceComments: 'true'
 IndentExternBlock: Indent
 IndentGotoLabels: 'false'
 IndentRequiresClause: 'true'
@@ -30,6 +32,13 @@ InsertBraces: 'false'
 InsertTrailingCommas: Wrapped
 LambdaBodyIndentation: Signature
 PPIndentWidth: 4
+PenaltyBreakAssignment: 1000
+PenaltyReturnTypeOnItsOwnLine: 1000
+PenaltyBreakBeforeFirstCallParameter: 1000
+PenaltyBreakOpenParenthesis: 1000
+PenaltyBreakBeforeMemberAccess: 10
+PenaltyIndentedWhitespace: 1
+ContinuationIndentWidth: 2
 ReferenceAlignment: Left
 # RemoveBracesLLVM: 'true'
 RequiresClausePosition: OwnLine
@@ -64,7 +73,6 @@ ColumnLimit: '100'
 CompactNamespaces: 'true'
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
 ConstructorInitializerIndentWidth: '4'
-ContinuationIndentWidth: '4'
 IncludeBlocks: Preserve
 IndentCaseLabels: 'true'
 IndentWidth: '4'
@@ -76,7 +84,6 @@ MaxEmptyLinesToKeep: '1'
 NamespaceIndentation: All
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: false
-PenaltyBreakAssignment: '0'
 PointerAlignment: Left
 SortIncludes: 'true'
 SortUsingDeclarations: 'true'
@@ -91,7 +98,6 @@ SpacesInAngles: 'false'
 Standard: c++20
 TabWidth: '4'
 UseTab: Never
-PenaltyBreakBeforeFirstCallParameter: '120'
 ---
 Language: ObjC
 AlignAfterOpenBracket: Align
@@ -137,8 +143,12 @@ MaxEmptyLinesToKeep: '1'
 NamespaceIndentation: All
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: false
-PenaltyBreakAssignment: '0'
 PointerAlignment: Right
+PenaltyBreakAssignment: 1000
+PenaltyReturnTypeOnItsOwnLine: 1000
+PenaltyBreakBeforeFirstCallParameter: 1000
+PenaltyBreakOpenParenthesis: 1000
+PenaltyBreakBeforeMemberAccess: 10
 SortIncludes: 'true'
 SortUsingDeclarations: 'true'
 SpaceAfterTemplateKeyword: 'false'
@@ -152,7 +162,6 @@ SpacesInAngles: 'false'
 Standard: c++20
 TabWidth: '4'
 UseTab: Never
-PenaltyBreakBeforeFirstCallParameter: '120'
 PenaltyIndentedWhitespace: '1'
 QualifierAlignment: Custom
 QualifierOrder: [static, inline, volatile, restrict, constexpr, const, type]
