@@ -1,7 +1,7 @@
 -- Compile shaders to includables headers
 rule("compile.shaders", function()
     set_extensions(".nzsl", ".nzslb")
-    add_deps("@nzsl/find_nzsl")
+    add_deps("find_nzsl")
     on_config(function(target)
         local archives = {}
 
@@ -44,7 +44,7 @@ rule("compile.shaders", function()
         import("lib.detect.find_tool")
 
         local outputdir = path.join(import("core.project.config").builddir(), "shaders")
-        local nzslc = find_tool("nzslc") -- target:data("nzslc")
+        local nzslc = target:data("nzslc")
         local runenvs = target:data("nzsl_runenv")
         assert(nzslc, "nzslc not found! please install nzsl package with nzslc enabled")
 
