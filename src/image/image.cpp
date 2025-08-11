@@ -26,14 +26,8 @@ namespace stormkit::image {
         inline constexpr auto KTX_HEADER
           = into_bytes({ 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A });
 
-        inline constexpr auto PNG_HEADER = into_bytes({ 0x89,
-                                                        0x50,
-                                                        0x4E,
-                                                        0x47,
-                                                        0x0D,
-                                                        0x0A,
-                                                        0x1A,
-                                                        0x0A });
+        inline constexpr auto
+          PNG_HEADER = into_bytes({ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
 
         inline constexpr auto QOI_HEADER = into_bytes({ 0x71, 0x6f, 0x69, 0x66 });
 
@@ -245,9 +239,9 @@ namespace stormkit::image {
             };
         }
 
-        return io::readfile(filepath)
-          .transform_error([](auto&& error) static noexcept -> Error {
-              return { Error::Reason::UNKNOWN, error.message() };
+        return io::read(filepath)
+          .transform_error([](auto&&) static noexcept -> Error {
+              return { Error::Reason::UNKNOWN, "" };
           })
           .and_then([this,
                      &filepath,

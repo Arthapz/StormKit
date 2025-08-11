@@ -42,8 +42,8 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     auto load_ppm(std::span<const Byte>) noexcept
       -> std::expected<image::Image, image::Image::Error> {
-        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
-                                       .str_error = "loader from memory" });
+        assert(false, "Not implemented yet !");
+        return {};
     }
 
     /////////////////////////////////////
@@ -52,19 +52,13 @@ namespace stormkit::image::details {
                   image::Image::CodecArgs      args,
                   const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error> {
-        auto result = save_ppm(image, args);
-
-        if (!result) return std::unexpected(result.error());
-
-        auto stream = std::ofstream {};
-
-        if (args == image::Image::CodecArgs::ASCII) stream.open(filepath);
-        else
-            stream.open(filepath, std::ios::binary);
-
-        io::write(stream, *result);
-
-        return {};
+        return save_ppm(image, args)
+          .and_then([&filepath](auto&& val) noexcept {
+              return io::write(filepath, val).transform_error([](auto&&) static noexcept {
+                  return Error { .reason = Error::Reason::FAILED_TO_SAVE, .str_error = "" };
+              });
+          })
+          .transform(monadic::discard());
     }
 
     /////////////////////////////////////

@@ -164,21 +164,24 @@ namespace stormkit::image::details {
         for (auto i : range(image_rgb.mip_levels())) {
             if (i >= 1u) _filename += to_native_encoding(std::format("_mip{}", i));
 
-            auto file = std::fopen(_filename.string().c_str(), "wb");
-            if (file == nullptr) {
-                auto error = std::string { 95 };
-                error      = std::strerror(errno);
-                error.shrink_to_fit();
-
+            auto file = io::File::open(_filename, io::Access::WRITE);
+            if (not file)
                 return std::unexpected(Error { .reason    = Reason::FAILED_TO_SAVE,
                                                .str_error = error_data.msg });
-            }
 
             auto        data   = image_rgb.data(0, 0, 0);
             const auto& extent = image_rgb.extent(0);
 
+            auto out =
+#ifdef STORMKIT_OS_WINDOWS
+              _fdopen
+#else
+              fdopen
+#endif
+              (file->native_descriptor(), "w");
+
             jpeg_create_compress(&info);
-            jpeg_stdio_dest(&info, file);
+            jpeg_stdio_dest(&info, out);
 
             info.image_width      = extent.width;
             info.image_height     = extent.height;
@@ -200,8 +203,7 @@ namespace stormkit::image::details {
             jpeg_finish_compress(&info);
             jpeg_destroy_compress(&info);
 
-            std::fflush(file);
-            std::fclose(file);
+            file->flush();
         }
 
         if (setjmp(error_data.setjmp_buffer)) {
