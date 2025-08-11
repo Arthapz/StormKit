@@ -113,7 +113,7 @@ namespace {
                 auto vec  = std::vector { 1, 3, 5, 6, 9 };
                 auto refs = to_refs<std::set>(vec);
 
-                auto i = 0;
+                auto i = 0u;
                 for (auto&& ref : refs) EXPECTS(*ref == vec[i++]);
             } },
           { "Ref.to_refs.default",
@@ -121,7 +121,7 @@ namespace {
                 constexpr auto vec  = std::array { 1, 3, 5, 6, 9 };
                 auto           refs = to_refs(vec);
 
-                auto i = 0;
+                auto i = 0u;
                 for (auto&& ref : refs) EXPECTS(ref == vec[i++]);
             } },
           }
