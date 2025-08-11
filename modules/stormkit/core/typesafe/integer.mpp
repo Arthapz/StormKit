@@ -19,9 +19,7 @@ import :meta.concepts;
 export {
     namespace stormkit { inline namespace core {
         namespace cpp {
-            using Char = char;
-
-            using UChar     = unsigned short;
+            using UChar     = unsigned char;
             using UShort    = unsigned short;
             using UInt      = unsigned int;
             using ULong     = unsigned long;
