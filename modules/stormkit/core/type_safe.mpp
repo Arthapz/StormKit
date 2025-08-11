@@ -6,6 +6,7 @@ export module stormkit.core:typesafe;
 
 export import :typesafe.boolean;
 export import :typesafe.byte;
+export import :typesafe.character;
 export import :typesafe.ref;
 export import :typesafe.integer;
 export import :typesafe.floating_point;
