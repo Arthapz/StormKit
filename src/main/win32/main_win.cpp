@@ -2,8 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-#include <windows.h>
-#undef __nullnullterminated
+#include <stormkit/core/platform/windows.hpp>
 
 #include <cstdio>
 #include <cstdlib>
