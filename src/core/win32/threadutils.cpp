@@ -1,7 +1,6 @@
 module;
 
-#include <windows.h>
-#undef __nullnullterminated
+#include <stormkit/core/platform/windows.hpp>
 
 module stormkit.core;
 
