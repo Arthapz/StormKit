@@ -38,21 +38,15 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     auto load_tga(std::span<const Byte>) noexcept
       -> std::expected<image::Image, image::Image::Error> {
-        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
-                                       .str_error = "loader from memory" });
+        assert(false, "Not implemented yet !");
+        return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_tga(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_tga(const image::Image&, const std::filesystem::path&) noexcept
       -> std::expected<void, image::Image::Error> {
-        auto result = save_tga(image);
-
-        if (!result) return std::unexpected(result.error());
-
-        auto stream = std::ofstream { filepath, std::ios::binary };
-        io::write(stream, *result);
-
+        assert(false, "Not implemented yet !");
         return {};
     }
 
@@ -60,7 +54,7 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     auto save_tga(const image::Image&) noexcept
       -> std::expected<std::vector<Byte>, image::Image::Error> {
-        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
-                                       .str_error = "save to file" });
+        assert(false, "Not implemented yet !");
+        return {};
     }
 } // namespace stormkit::image::details

@@ -33,21 +33,15 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     auto load_hdr(std::span<const Byte>) noexcept
       -> std::expected<image::Image, image::Image::Error> {
-        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
-                                       .str_error = "loader from file" });
+        assert(false, "Not implemented yet !");
+        return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_hdr(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_hdr(const image::Image&, const std::filesystem::path&) noexcept
       -> std::expected<void, image::Image::Error> {
-        auto result = save_hdr(image);
-
-        if (!result) return std::unexpected(result.error());
-
-        auto stream = std::ofstream { filepath, std::ios::binary };
-        io::write(stream, *result);
-
+        assert(false, "Not implemented yet !");
         return {};
     }
 
@@ -55,7 +49,7 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     auto save_hdr(const image::Image&) noexcept
       -> std::expected<std::vector<Byte>, image::Image::Error> {
-        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
-                                       .str_error = "save to file" });
+        assert(false, "Not implemented yet !");
+        return {};
     }
 } // namespace stormkit::image::details

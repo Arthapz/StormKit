@@ -134,23 +134,15 @@ namespace stormkit::image::details {
         /*image_data.format            = format;*/
         /**/
         /*return Image { std::move(image_data) };*/
-        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
-                                       .str_error = "load to memory" });
+        assert(false, "Not implemented yet !");
+        return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_ktx(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_ktx(const image::Image&, const std::filesystem::path&) noexcept
       -> std::expected<void, image::Image::Error> {
-        auto result = save_ktx(image);
-
-        if (!result) return std::unexpected(result.error());
-
-        auto& output = *result;
-
-        auto stream = std::ofstream { filepath, std::ios::binary };
-        io::write(stream, as_bytes(output));
-
+        assert(false, "Not implemented yet !");
         return {};
     }
 
@@ -158,7 +150,7 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     auto save_ktx(const image::Image&) noexcept
       -> std::expected<std::vector<Byte>, image::Image::Error> {
-        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
-                                       .str_error = "save to memory" });
+        assert(false, "Not implemented yet !");
+        return {};
     }
 } // namespace stormkit::image::details
