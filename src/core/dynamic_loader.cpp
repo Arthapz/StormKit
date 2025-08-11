@@ -9,7 +9,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 
 #ifdef STORMKIT_OS_WINDOWS
-    #include <windows.h>
+    #include <stormkit/core/platform/windows.hpp>
 #else
     #include <dlfcn.h>
     #include <errno.h>

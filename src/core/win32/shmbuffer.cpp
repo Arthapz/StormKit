@@ -4,7 +4,7 @@
 
 module;
 
-#include <windows.h>
+#include <stormkit/core/platform/windows.hpp>
 
 #include <WinNT.h>
 
@@ -33,7 +33,7 @@ namespace stormkit { inline namespace core {
         // TODO handle reallocation
         m_handle = ::CreateFileMapping(INVALID_HANDLE_VALUE,
                                        nullptr,
-                                       page_access,
+                                       as<DWORD>(page_access),
                                        0,
                                        as<DWORD>(m_size),
                                        stdr::data(m_name));
@@ -42,7 +42,7 @@ namespace stormkit { inline namespace core {
                 std::error_code { as<i32>(GetLastError()), std::system_category() }
             };
 
-        const auto file_access = init<u32>([access = m_access](auto& file_access) noexcept {
+        const auto file_access = init_by<u32>([access = m_access](auto& file_access) noexcept {
             if (check_flag_bit(access, Access::READ)) file_access |= FILE_MAP_READ;
             if (check_flag_bit(access, Access::WRITE)) file_access |= FILE_MAP_WRITE;
         });

@@ -10,7 +10,7 @@ module;
     #include <wayland-client.h>
     #include <xcb/xcb.h>
 #elif defined(STORMKIT_OS_WINDOWS)
-    #include <windows.h>
+    #include <stormkit/core/platform/windows.hpp>
 #endif
 
 #include <volk.h>
