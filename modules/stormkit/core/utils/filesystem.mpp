@@ -29,7 +29,7 @@ import :utils.contract;
 
 import :typesafe.byte;
 import :typesafe.integer;
-import :typesafe.characters;
+import :typesafe.character;
 import :typesafe.flags;
 import :typesafe.integer_casts;
 
