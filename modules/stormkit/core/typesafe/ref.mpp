@@ -24,6 +24,9 @@ import :hash.base;
 export {
     namespace stormkit { inline namespace core {
         template<typename T>
+        using ptr = T*;
+
+        template<typename T>
         class [[nodiscard]] [[gsl::Pointer]] Ref {
           public:
             using ElementType   = T;
