@@ -1,0 +1,51 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <errno.h>
+
+#include <cstring>
+
+#include <string>
+
+#include <system_error>
+
+export module stormkit.core:errors;
+
+export namespace stormkit { inline namespace core {
+    template<typename T>
+    struct Error {
+        T code;
+    };
+
+    struct SystemError: Error<std::errc> {
+        static SystemError from_errno() noexcept;
+    };
+
+    auto to_string(const SystemError& error) noexcept -> std::string;
+}} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline SystemError from_errno() noexcept {
+        return SystemError { std::errc { errno } };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto to_string(const SystemError& error) noexcept -> std::string {
+        return std::strerror(static_cast<int>(error.code));
+    }
+}} // namespace stormkit::core
