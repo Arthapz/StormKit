@@ -18,11 +18,11 @@ export namespace stormkit { inline namespace core {
     template<HashValue OutputType = hash32>
     constexpr auto hash_combine(auto&& value) -> OutputType;
 
-    constexpr auto hash_combine(HashValue auto& hash, meta::IsHashable auto&& v) noexcept;
-
-    constexpr auto hash_combine(HashValue auto& hash, std::ranges::range auto&& range) noexcept;
+    template<typename T>
+    constexpr auto hash_combine(HashValue auto& hash, T&& range) noexcept;
 
     template<typename... Args>
+        requires(sizeof...(Args) > 1)
     constexpr auto hash_combine(HashValue auto& hash, Args&&... args) noexcept;
 }} // namespace stormkit::core
 
@@ -40,20 +40,24 @@ namespace stormkit { inline namespace core {
         return hash;
     }
 
-    constexpr auto hash_combine(HashValue auto& hash, meta::IsHashable auto&& value) noexcept {
-        const auto hasher = std::hash<std::remove_cvref_t<decltype(value)>> {};
-        hash ^= hasher(std::forward<decltype(value)>(value))
-                + 0x9e3779b9
-                + (hash << 6)
-                + (hash >> 2);
-    }
-
-    constexpr auto hash_combine(HashValue auto& hash, std::ranges::range auto&& range) noexcept {
-        for (auto&& value : range) hash_combine(hash, std::forward<decltype(value)>(value));
+    template<typename T>
+    constexpr auto hash_combine(HashValue auto& hash, T&& value) noexcept {
+        if constexpr (std::ranges::range<T>)
+            for (auto&& elem : value) hash_combine(hash, elem);
+        else {
+            const auto hasher = std::hash<meta::CanonicalType<T>> {};
+            hash ^= hasher(std::forward<T>(value)) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        }
     }
 
     template<typename... Args>
+        requires(sizeof...(Args) > 1)
     constexpr auto hash_combine(HashValue auto& hash, Args&&... args) noexcept {
+#if defined(__cpp_expansion_statements) and __cpp_expansion_statements >= 202500L
+        template for (constexpr auto elem : { std::forward<Args>(args)... })
+          hash_combine(hash, std::forward<Args>(elem));
+#else
         (hash_combine(hash, std::forward<Args>(args)), ...);
+#endif
     }
 }} // namespace stormkit::core
