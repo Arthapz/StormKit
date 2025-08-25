@@ -393,11 +393,11 @@ namespace std {
                                          FormatContext& ctx) const -> decltype(ctx.out()) {
         auto out = ctx.out();
 
-        stdr::copy("[vec2: .x = "sv, out);
+        stdr::copy("{ vec2: .x = "sv, out);
         formatter<T, CharT>::format(vec.x, ctx);
-        stdr::copy(".y = "sv, out);
+        stdr::copy(" .y = "sv, out);
         formatter<T, CharT>::format(vec.y, ctx);
-        stdr::copy("]"sv, out);
+        stdr::copy(" }"sv, out);
 
         return std::move(out);
     }
@@ -407,11 +407,7 @@ namespace std {
     auto hash<stormkit::math::vec3<T>>::operator()(const stormkit::math::vec3<T>& vec)
       const noexcept -> stormkit::u64 {
         auto hash = stormkit::hash64 { 0 };
-
-        stormkit::hash_combine(hash, vec.x);
-        stormkit::hash_combine(hash, vec.y);
-        stormkit::hash_combine(hash, vec.z);
-
+        stormkit::hash_combine(hash, vec.x, vec.y, vec.z);
         return hash;
     }
 
@@ -422,13 +418,13 @@ namespace std {
                                          FormatContext& ctx) const -> decltype(ctx.out()) {
         auto out = ctx.out();
 
-        stdr::copy("[vec2: .x = "sv, out);
+        stdr::copy("{ vec3: .x = "sv, out);
         formatter<T, CharT>::format(vec.x, ctx);
-        stdr::copy(".y = "sv, out);
+        stdr::copy(" .y = "sv, out);
         formatter<T, CharT>::format(vec.y, ctx);
-        stdr::copy(".z = "sv, out);
+        stdr::copy(" .z = "sv, out);
         formatter<T, CharT>::format(vec.z, ctx);
-        stdr::copy("]"sv, out);
+        stdr::copy(" }"sv, out);
 
         return std::move(out);
     }
@@ -438,12 +434,7 @@ namespace std {
     auto hash<stormkit::math::vec4<T>>::operator()(const stormkit::math::vec4<T>& vec)
       const noexcept -> stormkit::u64 {
         auto hash = stormkit::hash64 { 0 };
-
-        stormkit::hash_combine(hash, vec.x);
-        stormkit::hash_combine(hash, vec.y);
-        stormkit::hash_combine(hash, vec.z);
-        stormkit::hash_combine(hash, vec.w);
-
+        stormkit::hash_combine(hash, vec.x, vec.y, vec.z, vec.w);
         return hash;
     }
 
@@ -454,15 +445,15 @@ namespace std {
                                          FormatContext& ctx) const -> decltype(ctx.out()) {
         auto out = ctx.out();
 
-        stdr::copy("[vec2: .x = "sv, out);
+        stdr::copy("{ vec4: .x = "sv, out);
         formatter<T, CharT>::format(vec.x, ctx);
-        stdr::copy(".y = "sv, out);
+        stdr::copy(" .y = "sv, out);
         formatter<T, CharT>::format(vec.y, ctx);
-        stdr::copy(".z = "sv, out);
+        stdr::copy(" .z = "sv, out);
         formatter<T, CharT>::format(vec.z, ctx);
-        stdr::copy(".w = "sv, out);
+        stdr::copy(" .w = "sv, out);
         formatter<T, CharT>::format(vec.w, ctx);
-        stdr::copy("]"sv, out);
+        stdr::copy(" }"sv, out);
 
         return std::move(out);
     }

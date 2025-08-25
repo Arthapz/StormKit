@@ -327,11 +327,11 @@ auto std::formatter<math::Extent<T, 2>>::format(const math::Extent<T, 2>& extent
                                                 FormatContext&            ctx) const noexcept
   -> decltype(ctx.out()) {
     auto&& out = ctx.out();
-    format_to(out, "[ .width = ");
+    format_to(out, "{{ .width = ");
     formatter<T>::format(extent.width, ctx);
     format_to(out, ", .height = ");
     formatter<T>::format(extent.height, ctx);
-    return format_to(out, "]");
+    return format_to(out, " }}");
 }
 
 /////////////////////////////////////
@@ -342,13 +342,13 @@ auto std::formatter<math::Extent<T, 3>>::format(const math::Extent<T, 3>& extent
                                                 FormatContext&            ctx) const noexcept
   -> decltype(ctx.out()) {
     auto&& out = ctx.out();
-    format_to(out, "[ .width = ");
+    format_to(out, "{{ .width = ");
     formatter<T>::format(extent.width, ctx);
     format_to(out, ", .height = ");
     formatter<T>::format(extent.height, ctx);
     format_to(out, ", .depth = ");
     formatter<T>::format(extent.depth, ctx);
-    return format_to(out, "]");
+    return format_to(out, " }}");
 }
 
 /////////////////////////////////////
@@ -357,10 +357,7 @@ template<meta::IsArithmetic T>
 constexpr auto std::hash<math::Extent<T, 2>>::operator()(const math::Extent<T, 2>&
                                                            extent) noexcept {
     auto hash = hash64 { 0 };
-
-    hash_combine(hash, extent.width);
-    hash_combine(hash, extent.height);
-
+    hash_combine(hash, extent.width, extent.height);
     return hash;
 }
 
@@ -370,11 +367,7 @@ template<meta::IsArithmetic T>
 constexpr auto std::hash<math::Extent<T, 3>>::operator()(const math::Extent<T, 3>&
                                                            extent) noexcept {
     auto hash = hash64 { 0 };
-
-    hash_combine(hash, extent.width);
-    hash_combine(hash, extent.height);
-    hash_combine(hash, extent.depth);
-
+    hash_combine(hash, extent.width, extent.height, extent.depth);
     return hash;
 }
 
