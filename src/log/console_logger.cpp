@@ -47,36 +47,31 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto ConsoleLogger::write(Severity severity, const Module& m, CZString string) noexcept
+    auto ConsoleLogger::write(Severity severity, const Module& module, CZString string) noexcept
       -> void {
-        const auto now  = LogClock::now();
-        const auto time = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time);
+        const auto now      = LogClock::now();
+        const auto time     = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time);
+        const auto is_error = severity == Severity::ERROR or severity == Severity::FATAL;
+        const auto out      = (is_error) ? get_stderr() : get_stdout();
 
-        const auto str = [&]() {
-            if (std::empty(m.name)) return std::format("[{}, {:%S}]", as_string(severity), time);
+        const auto header = [&severity, &module, &time] noexcept {
+            if (std::empty(module.name))
+                return std::format("[{}, {:%S}]", as_string(severity), time);
             else
-                return std::format("[{}, {:%S}, {}]", as_string(severity), time, m.name);
+                return std::format("[{}, {:%S}, {}]", as_string(severity), time, module.name);
         }();
 
-        const auto is_error = severity == Severity::ERROR or severity == Severity::FATAL;
-        const auto output   = (is_error) ? get_stderr() : get_stdout();
+        const auto prefixed_string = [&header, string] noexcept {
+            const auto header_length = stdr::size(header) + 1;
 
-        const auto header_length = stdr::size(str) + 1;
-        auto       prefix        = std::string {};
-        prefix.resize(header_length + 1, ' ');
-        prefix.front()             = '\n';
-        const auto prefixed_string = core::replace(string, "\n", prefix);
-        // not yet
-        /*
-        auto state          = std::mbstate_t {};
-        std::string out_str = std::string { MB_LEN_MAX };
-        for (const auto &c : str) std::c8rtomb(std::data(out_str), c, &state);
+            auto prefix = std::string {};
+            prefix.resize(header_length + 1, ' ');
+            prefix.front() = '\n';
+            return replace(string, "\n", prefix);
+        }();
 
-        state                  = std::mbstate_t {};
-        std::string out_string = std::string { MB_LEN_MAX };
-        for (const auto &c : string) { std::c8rtomb(std::data(out_string), c, &state); }*/
-        const auto header = std::format("{} ", StyleMap.at(severity) | str);
-        std::println(output, "{}{}", header, prefixed_string);
+        const auto styled_header = std::format("{} ", StyleMap.at(severity) | header);
+        std::println(out, "{}{}", styled_header, prefixed_string);
     }
 
     ////////////////////////////////////////
