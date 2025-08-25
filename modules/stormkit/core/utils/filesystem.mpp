@@ -226,7 +226,7 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline Descriptor<mode>::Descriptor(Descriptor&& other) noexcept
-        : m_descriptor { std::exchange(other.m_descriptor) } {
+        : m_descriptor { std::exchange(other.m_descriptor, 0) } {
     }
 
     ////////////////////////////////////////
