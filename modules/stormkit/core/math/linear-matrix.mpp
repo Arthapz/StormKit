@@ -725,7 +725,7 @@ inline auto std::formatter<T, CharT>::format(const T& mat, FormatContext& ctx) c
         return insert;
     };
 
-    format_to(out, "[mat:");
+    format_to(out, "{ mat:");
     auto l = 0u;
     if constexpr (stormkit::meta::IsIntegral<typename T::value_type>) {
         auto max_digit = 0u;
@@ -737,7 +737,7 @@ inline auto std::formatter<T, CharT>::format(const T& mat, FormatContext& ctx) c
                       (l > 0) ? "      "sv : " "sv,
                       slice,
                       max_digit,
-                      (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "]"sv);
+                      (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "}"sv);
             ++l;
         }
     } else {
@@ -751,7 +751,7 @@ inline auto std::formatter<T, CharT>::format(const T& mat, FormatContext& ctx) c
                       (l > 0) ? "      "sv : " "sv,
                       slice,
                       max_digit,
-                      (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "]"sv);
+                      (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "}"sv);
             ++l;
         }
     }
