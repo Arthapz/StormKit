@@ -157,7 +157,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto consume(T&& value) noexcept -> decltype(auto) {
-        return [value = std::move(value)] mutable noexcept -> meta::CanonicalType<T> {
+        return [value = std::move(value)](auto&&...) mutable noexcept -> meta::CanonicalType<T> {
             return std::move(value);
         };
     }
