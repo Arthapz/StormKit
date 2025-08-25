@@ -167,23 +167,35 @@ export {
         };
     } // namespace stormkit::gpu
 
-    HASH_FUNC(stormkit::gpu::AttachmentDescription,
-              value.format,
-              value.samples,
-              value.load_op,
-              value.store_op,
-              value.stencil_load_op,
-              value.stencil_store_op,
-              value.source_layout,
-              value.destination_layout,
-              value.resolve)
-    HASH_FUNC(stormkit::gpu::Subpass::Ref, value.attachment_id, value.layout)
-    HASH_FUNC(stormkit::gpu::Subpass,
-              value.bind_point,
-              value.color_attachment_refs,
-              value.depth_attachment_ref,
-              value.resolve_attachment_refs)
-    HASH_FUNC(stormkit::gpu::RenderPassDescription, value.attachments, value.subpasses)
+    namespace std {
+        template<>
+        struct hash<stormkit::gpu::AttachmentDescription> {
+            [[nodiscard]]
+            constexpr auto operator()(const stormkit::gpu::AttachmentDescription&) const noexcept
+              -> stormkit::hash64;
+        };
+
+        template<>
+        struct hash<stormkit::gpu::Subpass::Ref> {
+            [[nodiscard]]
+            constexpr auto operator()(const stormkit::gpu::Subpass::Ref&) const noexcept
+              -> stormkit::hash64;
+        };
+
+        template<>
+        struct hash<stormkit::gpu::Subpass> {
+            [[nodiscard]]
+            constexpr auto operator()(const stormkit::gpu::Subpass&) const noexcept
+              -> stormkit::hash64;
+        };
+
+        template<>
+        struct hash<stormkit::gpu::RenderPassDescription> {
+            [[nodiscard]]
+            constexpr auto operator()(const stormkit::gpu::RenderPassDescription&) const noexcept
+              -> stormkit::hash64;
+        };
+    } // namespace std
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,10 +227,8 @@ namespace stormkit::gpu {
                                     const math::Extent2<u32>&         extent,
                                     std::vector<Ref<const ImageView>> attachments) noexcept
       -> Expected<FrameBuffer> {
-        auto frame_buffer = FrameBuffer { device,
-                                          extent,
-                                          std::move(attachments),
-                                          PrivateFuncTag {} };
+        auto
+          frame_buffer = FrameBuffer { device, extent, std::move(attachments), PrivateFuncTag {} };
         return frame_buffer.do_init(render_pass).transform(core::monadic::consume(frame_buffer));
     }
 
@@ -240,14 +250,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline FrameBuffer::~FrameBuffer() noexcept
-      = default;
+    inline FrameBuffer::~FrameBuffer() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept
-      = default;
+    inline FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -340,14 +348,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline RenderPass::~RenderPass() noexcept
-      = default;
+    inline RenderPass::~RenderPass() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline RenderPass::RenderPass(RenderPass&& other) noexcept
-      = default;
+    inline RenderPass::RenderPass(RenderPass&& other) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -398,3 +404,45 @@ namespace stormkit::gpu {
         return m_vk_handle;
     }
 } // namespace stormkit::gpu
+
+constexpr auto std::hash<stormkit::gpu::AttachmentDescription>::
+  operator()(const stormkit::gpu::AttachmentDescription& value) const noexcept -> stormkit::hash64 {
+    auto hash = stormkit::hash64 { 0 };
+    stormkit::hash_combine(hash,
+                           value.format,
+                           value.samples,
+                           value.load_op,
+                           value.store_op,
+                           value.stencil_load_op,
+                           value.stencil_store_op,
+                           value.source_layout,
+                           value.destination_layout,
+                           value.resolve);
+    return hash;
+}
+
+constexpr auto std::hash<stormkit::gpu::Subpass::Ref>::operator()(const stormkit::gpu::Subpass::Ref&
+                                                                    value) const noexcept
+  -> stormkit::hash64 {
+    auto hash = stormkit::hash64 { 0 };
+    stormkit::hash_combine(hash, value.attachment_id, value.layout);
+    return hash;
+}
+
+constexpr auto std::hash<stormkit::gpu::Subpass>::operator()(const stormkit::gpu::Subpass& value)
+  const noexcept -> stormkit::hash64 {
+    auto hash = stormkit::hash64 { 0 };
+    stormkit::hash_combine(hash,
+                           value.bind_point,
+                           value.color_attachment_refs,
+                           value.depth_attachment_ref,
+                           value.resolve_attachment_refs);
+    return hash;
+}
+
+constexpr auto std::hash<stormkit::gpu::RenderPassDescription>::
+  operator()(const stormkit::gpu::RenderPassDescription& value) const noexcept -> stormkit::hash64 {
+    auto hash = stormkit::hash64 { 0 };
+    stormkit::hash_combine(hash, value.attachments, value.subpasses);
+    return hash;
+}
