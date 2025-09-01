@@ -42,8 +42,7 @@ export {
             virtual ~Logger() noexcept;
 
             virtual auto write(Severity severity, const Module& module, CZString string) noexcept
-              -> void
-              = 0;
+              -> void                             = 0;
             virtual auto flush() noexcept -> void = 0;
 
             auto set_log_level(Severity log_level) noexcept -> void;
@@ -122,8 +121,7 @@ export {
         [[nodiscard]]
         constexpr auto operator""_module() noexcept -> stormkit::log::Module;
 
-        class STORMKIT_API
-        FileLogger final: public Logger {
+        class STORMKIT_API FileLogger final: public Logger {
           public:
             FileLogger(LogClock::time_point start, std::filesystem::path path) noexcept;
             FileLogger(LogClock::time_point  start,
@@ -147,8 +145,7 @@ export {
             std::filesystem::path m_base_path;
         };
 
-        class STORMKIT_API
-        ConsoleLogger final: public Logger {
+        class STORMKIT_API ConsoleLogger final: public Logger {
           public:
             explicit ConsoleLogger(LogClock::time_point start) noexcept;
             ConsoleLogger(LogClock::time_point start, Severity log_level) noexcept;
@@ -166,20 +163,7 @@ export {
             auto flush() noexcept -> void override;
         };
     } // namespace stormkit::log
-
-    DISABLE_DEFAULT_FORMATER_FOR_ENUM(stormkit::log::Severity)
     FLAG_ENUM(stormkit::log::Severity)
-
-    namespace std {
-        template<stormkit::meta::IsStrict<stormkit::log::Severity> T, class CharT>
-        struct formatter<T, CharT>: formatter<basic_string_view<CharT>, CharT> {
-            template<class FormatContext>
-            auto format(T data, FormatContext& ctx) const noexcept -> decltype(ctx.out()) {
-                return formatter<basic_string_view<CharT>,
-                                 CharT>::format(stormkit::log::as_string(data), ctx);
-            }
-        };
-    } // namespace std
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,24 +173,20 @@ export {
 using namespace std::literals;
 
 namespace stormkit::log {
-    namespace details { namespace {
-        constexpr auto SEVERITY_TO_STRING = frozen::make_unordered_map<Severity, std::string_view>({
-          { Severity::INFO,    "INFO"sv    },
-          { Severity::WARNING, "WARNING"sv },
-          { Severity::ERROR,   "ERROR"sv   },
-          { Severity::FATAL,   "FATAL"sv   },
-          { Severity::DEBUG,   "DEBUG"sv   }
-        });
-    }} // namespace details
-
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     inline constexpr auto as_string(Severity severity) noexcept -> std::string_view {
-        const auto it = details::SEVERITY_TO_STRING.find(severity);
-        EXPECTS(it != std::ranges::cend(details::SEVERITY_TO_STRING));
+        switch (severity) {
+            case Severity::INFO: return "INFO";
+            case Severity::WARNING: return "WARNING";
+            case Severity::ERROR: return "ERROR";
+            case Severity::FATAL: return "FATAL";
+            case Severity::DEBUG: return "DEBUG";
+            default: break;
+        }
 
-        return it->second;
+        std::unreachable();
     }
 
     ////////////////////////////////////////
@@ -287,8 +267,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ConsoleLogger::ConsoleLogger(const ConsoleLogger&) noexcept
-      = default;
+    inline ConsoleLogger::ConsoleLogger(const ConsoleLogger&) noexcept = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -298,8 +277,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ConsoleLogger::ConsoleLogger(ConsoleLogger&&) noexcept
-      = default;
+    inline ConsoleLogger::ConsoleLogger(ConsoleLogger&&) noexcept = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -309,14 +287,12 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ConsoleLogger::~ConsoleLogger() noexcept
-      = default;
+    inline ConsoleLogger::~ConsoleLogger() noexcept = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline FileLogger::FileLogger(FileLogger&&) noexcept
-      = default;
+    inline FileLogger::FileLogger(FileLogger&&) noexcept = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -326,8 +302,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline FileLogger::~FileLogger() noexcept
-      = default;
+    inline FileLogger::~FileLogger() noexcept = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
