@@ -16,6 +16,14 @@ import :typesafe.byte;
 namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core {
+
+    // template<template<class> typename Container = std::inplace_vector, typename T>
+    template<template<class> typename Container = std::vector, typename T>
+    constexpr auto filled_with(usize size, T value) noexcept -> Container<T>;
+
+    template<usize N, typename T>
+    constexpr auto filled_with(T value) noexcept -> std::array<T, N>;
+
     template<stdr::range Out, stdr::input_range... Inputs>
     constexpr auto merge(Out& output, const Inputs&... ranges) noexcept -> void;
 
@@ -74,6 +82,27 @@ export namespace stormkit { inline namespace core {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<template<class> typename Container = std::vector, typename T>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto filled_with(usize size, T value) noexcept -> Container<T> {
+        auto out = Container<T> {};
+        out.resize(size);
+        std::ranges::fill(out, value);
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<usize N, typename T>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto filled_with(T value) noexcept -> std::array<T, N> {
+        auto out = std::array<T, N> {};
+        std::ranges::fill(out, value);
+        return out;
+    }
+
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<stdr::range Out, stdr::input_range... Inputs>
