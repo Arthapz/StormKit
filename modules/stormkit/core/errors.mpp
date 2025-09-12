@@ -157,8 +157,8 @@ namespace stormkit { inline namespace core {
         const auto code = static_cast<int>(error.code);
 #ifdef STORMKIT_OS_WINDOWS
         thread_local auto STRERROR_BUFFER = std::array<char, 512> {};
-        strerror_s(stdr::begin(STRERROR_BUFFER), stdr::size(STRERROR_BUFFER), code);
-        return std::string { stdr::begin(STRERROR_BUFFER) };
+        strerror_s(stdr::data(STRERROR_BUFFER), stdr::size(STRERROR_BUFFER), code);
+        return std::string { stdr::data(STRERROR_BUFFER) };
 #else
         return std::strerror(code);
 #endif

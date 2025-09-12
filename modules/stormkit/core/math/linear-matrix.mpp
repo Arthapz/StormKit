@@ -44,17 +44,15 @@ export {
 
             template<typename Self>
             [[nodiscard]]
-            constexpr auto begin(this Self& self) noexcept
-              -> core::meta::ForwardConst<Self, value_type>*;
+            constexpr auto begin(this Self& self) noexcept -> decltype(auto);
             [[nodiscard]]
-            constexpr auto cbegin() const noexcept -> const value_type*;
+            constexpr auto cbegin() const noexcept -> decltype(auto);
 
             template<typename Self>
             [[nodiscard]]
-            constexpr auto end(this Self& self) noexcept
-              -> core::meta::ForwardConst<Self, value_type>*;
+            constexpr auto end(this Self& self) noexcept -> decltype(auto);
             [[nodiscard]]
-            constexpr auto cend() const noexcept -> const value_type*;
+            constexpr auto cend() const noexcept -> decltype(auto);
 
             template<typename Self>
             [[nodiscard]]
@@ -399,8 +397,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T, usize M, usize N>
     template<typename Self>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto mat<T, M, N>::begin(this Self& self) noexcept
-      -> core::meta::ForwardConst<Self, value_type>* {
+    constexpr auto mat<T, M, N>::begin(this Self& self) noexcept -> decltype(auto) {
         return stdr::begin(self.values);
     }
 
@@ -408,7 +405,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T, usize M, usize N>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto mat<T, M, N>::cbegin() const noexcept -> const value_type* {
+    constexpr auto mat<T, M, N>::cbegin() const noexcept -> decltype(auto) {
         return stdr::cbegin(values);
     }
 
@@ -417,8 +414,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T, usize M, usize N>
     template<typename Self>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto mat<T, M, N>::end(this Self& self) noexcept
-      -> core::meta::ForwardConst<Self, value_type>* {
+    constexpr auto mat<T, M, N>::end(this Self& self) noexcept -> decltype(auto) {
         return stdr::end(self.values);
     }
 
@@ -426,7 +422,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T, usize M, usize N>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto mat<T, M, N>::cend() const noexcept -> const value_type* {
+    constexpr auto mat<T, M, N>::cend() const noexcept -> decltype(auto) {
         return stdr::cend(values);
     }
 
