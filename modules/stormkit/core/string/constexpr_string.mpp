@@ -67,7 +67,7 @@ namespace stormkit { inline namespace core {
     template<std::size_t N>
         STORMKIT_FORCE_INLINE
     constexpr auto ConstexprString<N>::end(this auto& self) noexcept -> decltype(auto) {
-        return stdr::begin(self.data) + self.size();
+        return stdr::begin(self.data) + static_cast<std::ptrdiff_t>(self.size());
     }
 
     /////////////////////////////////////
