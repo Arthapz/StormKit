@@ -36,21 +36,15 @@ export {
                 } -> Is<std::format_context::iterator>;
             };
         } // namespace meta
-    }} // namespace stormkit::core
-}
 
-export namespace stormkit { inline namespace core {
-    inline constexpr struct {
-        template<meta::HasFormatAs T, typename FormatContext>
-        static constexpr auto operator()(const T& value, FormatContext& ctx) noexcept
-          -> FormatContext::iterator {
-            return format_as(value, ctx);
-        }
-    } format_fn = {};
-}} // namespace stormkit::core
+        inline constexpr struct {
+            template<meta::HasFormatAs T, typename FormatContext>
+            static constexpr auto operator()(const T& value, FormatContext& ctx) noexcept
+              -> FormatContext::iterator {
+                return format_as(value, ctx);
+            }
+        } format_fn = {};
 
-export {
-    namespace stormkit { inline namespace core {
         template<typename FormatContext>
         auto format_as(std::byte, FormatContext&) noexcept -> FormatContext::iterator;
 
