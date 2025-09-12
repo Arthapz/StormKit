@@ -11,11 +11,9 @@ export module stormkit.core:typesafe.flags;
 import std;
 
 import :meta;
-import :math.combinatoric;
-import :math.arithmetic;
 
 import :string.constexpr_string;
-
+import :math.combinatoric;
 import :typesafe.integer;
 
 export {
