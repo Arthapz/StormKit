@@ -124,9 +124,9 @@ modules = {
                     end
                 end)
             elseif is_plat("mingw") then
-                add_syslinks("user32", "shell32")
+                add_syslinks("user32", "shell32", "Gdi32")
             elseif is_plat("windows") then
-                add_syslinks("user32", "shell32")
+                add_syslinks("user32", "shell32", "Gdi32")
             end
         end,
     },
