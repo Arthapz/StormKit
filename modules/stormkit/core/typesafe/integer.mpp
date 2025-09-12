@@ -109,42 +109,144 @@ export {
         };
 #endif
 
-        template<meta::IsIntegral T>
-        class Integer {
-          public:
-            using Type = T;
+        [[nodiscard]]
+        constexpr auto operator""_i8(u64) noexcept -> i8;
+        [[nodiscard]]
+        constexpr auto operator""_i16(u64) noexcept -> i16;
+        [[nodiscard]]
+        constexpr auto operator""_i32(u64) noexcept -> i32;
+        [[nodiscard]]
+        constexpr auto operator""_i64(u64) noexcept -> i64;
+        [[nodiscard]]
+        constexpr auto operator""_i128(u64) noexcept -> i128;
 
-            Integer() = delete;
+        [[nodiscard]]
+        constexpr auto operator""_u8(u64) noexcept -> u8;
+        [[nodiscard]]
+        constexpr auto operator""_u16(u64) noexcept -> u16;
+        [[nodiscard]]
+        constexpr auto operator""_u32(u64) noexcept -> u32;
+        [[nodiscard]]
+        constexpr auto operator""_u64(u64) noexcept -> u64;
+        [[nodiscard]]
+        constexpr auto operator""_u128(u64) noexcept -> u128;
 
-            constexpr Integer(T value);
-
-          private:
-            T m_value;
-        };
-
-        template<meta::IsIntegral T>
-        Integer(T) -> Integer<T>;
+        [[nodiscard]]
+        constexpr auto operator""_usize(u64) noexcept -> usize;
+        [[nodiscard]]
+        constexpr auto operator""_isize(u64) noexcept -> isize;
+        [[nodiscard]]
+        constexpr auto operator""_ioffset(u64) noexcept -> ioffset;
+        [[nodiscard]]
+        constexpr auto operator""_uptr(u64) noexcept -> uptr;
+        [[nodiscard]]
+        constexpr auto operator""_iptr(u64) noexcept -> iptr;
     }} // namespace stormkit::core
-
-    template<class T, class CharT>
-    struct std::formatter<stormkit::core::Integer<T>, CharT>: std::formatter<T, CharT> {
-        template<class FormatContext>
-        auto format(stormkit::core::Integer<T> data, FormatContext& ctx) const noexcept
-          -> decltype(ctx.out());
-    };
 }
 
-////////////////////////////////////////////////////////////////////
-///                      IMPLEMENTATION                          ///
-////////////////////////////////////////////////////////////////////
+namespace stormkit { inline namespace core {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_i8(u64 value) noexcept -> i8 {
+        return static_cast<i8>(value);
+    }
 
-/////////////////////////////////////
-/////////////////////////////////////
-template<class T, class CharT>
-template<class FormatContext>
-STORMKIT_FORCE_INLINE
-auto std::formatter<stormkit::core::Integer<T>, CharT>::format(stormkit::core::Integer<T> data,
-                                                               FormatContext& ctx) const noexcept
-  -> decltype(ctx.out()) {
-    return std::formatter<T, CharT>::format(static_cast<T>(data), ctx);
-}
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_i16(u64 value) noexcept -> i16 {
+        return static_cast<i16>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_i32(u64 value) noexcept -> i32 {
+        return static_cast<i32>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_i64(u64 value) noexcept -> i64 {
+        return static_cast<i64>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_i128(u64 value) noexcept -> i128 {
+        return static_cast<i128>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_u8(u64 value) noexcept -> u8 {
+        return static_cast<u8>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_u16(u64 value) noexcept -> u16 {
+        return static_cast<u16>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_u32(u64 value) noexcept -> u32 {
+        return static_cast<u32>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_u64(u64 value) noexcept -> u64 {
+        return static_cast<u64>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_u128(u64 value) noexcept -> u128 {
+        return static_cast<u128>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_usize(u64 value) noexcept -> usize {
+        return static_cast<usize>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_isize(u64 value) noexcept -> isize {
+        return static_cast<isize>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_ioffset(u64 value) noexcept -> ioffset {
+        return static_cast<ioffset>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_iptr(u64 value) noexcept -> iptr {
+        return static_cast<iptr>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto operator""_uptr(u64 value) noexcept -> uptr {
+        return static_cast<uptr>(value);
+    }
+}} // namespace stormkit::core
