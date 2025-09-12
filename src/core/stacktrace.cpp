@@ -24,6 +24,27 @@ import :console;
 import :string.operations;
 
 namespace stormkit { inline namespace core {
+    auto prettify(std::string_view str) -> std::string {
+        auto out = std::string { str };
+        out      = replace(out, "::__1::", "::");
+        out      = replace(out, "::$_0::", "::");
+        out      = replace(out, "__invoke", "invoke");
+        out      = replace(out, "__function", "function");
+        out      = replace(out, "[abi:se210000]", "");
+        out      = replace(out, "[abi:ne210000]", "");
+        out      = replace(out, "basic_string_view<char, std::char_traits<char>>", "string_view");
+        out      = replace(out, "basic_string_view<char, std::char_traits<char> >", "string_view");
+        out      = replace(out,
+                      "basic_string<char, std::char_traits<char>, "
+                           "std::allocator<char>>",
+                      "string");
+        out      = replace(out,
+                      "basic_string<char, std::char_traits<char>, "
+                           "std::allocator<char> >",
+                      "string");
+        return out;
+    }
+
     /////////////////////////////////////
     /////////////////////////////////////
     auto print_stacktrace(int ignore_count) noexcept -> void {
@@ -46,19 +67,20 @@ namespace stormkit { inline namespace core {
                 continue;
             }
     #ifdef STORMKIT_COMPILER_MSSTL
-            auto       splitted = split(frame.description(), '+');
+            auto       splitted = split(frame.description(), "+");
             const auto address  = from_string<u64>(splitted[1].substr(2), 16)
                                    .transform_error([&splitted](auto&& err) noexcept {
                                        std::println(get_stderr(),
                                                     "Failed to parse {}, reason: {}",
                                                     splitted[0],
-                                                    err.message());
+                                                    err);
                                        return 0;
                                    })
                                    .value();
-            splitted                    = split(splitted[0], '!');
-            const auto module           = (std::size(splitted) >= 1) ? splitted[0] : ""s;
-            auto       formatted_symbol = (std::size(splitted) >= 2) ? splitted[1] : ""s;
+            splitted = split(splitted[0], "!");
+            [[maybe_unused]]
+            const auto module           = (std::size(splitted) >= 1) ? splitted[0] : ""sv;
+            auto       formatted_symbol = (std::size(splitted) >= 2) ? splitted[1] : ""sv;
     #elifdef STORMKIT_COMPILER_LIBCPP
             // clang-format off
             // e.g 0x5adc4b1dc9fc: __invoke<(lambda at src/gpu/core/device.cpp:401:22)>: /opt/llvm-git/include/c++/v1/__type_traits/invoke.h:179
@@ -76,22 +98,10 @@ namespace stormkit { inline namespace core {
                                    })
                                    .value();
 
-            auto formatted_symbol = (stdr::size(splitted) > 2)
-                                      ? "\n    in " + (YELLOW_TEXT_STYLE | splitted[1]).render()
-                                      : ""s;
-            formatted_symbol      = replace(formatted_symbol, "::__1::", "::");
-            formatted_symbol      = replace(formatted_symbol, "::$_0::", "::");
-            formatted_symbol      = replace(formatted_symbol, "__invoke", "invoke");
-            formatted_symbol      = replace(formatted_symbol, "__function", "function");
-            formatted_symbol      = replace(formatted_symbol, "[abi:se210000]", "");
-            formatted_symbol      = replace(formatted_symbol, "[abi:ne210000]", "");
-            formatted_symbol      = replace(formatted_symbol,
-                                       "basic_string_view<char, std::char_traits<char>>",
-                                       "string_view");
-            formatted_symbol      = replace(formatted_symbol,
-                                       "basic_string<char, std::char_traits<char>, "
-                                            "std::allocator<char>>",
-                                       "string");
+            auto formatted_symbol = prettify((stdr::size(splitted) > 2)
+                                               ? "\n    in "
+                                                   + (YELLOW_TEXT_STYLE | splitted[1]).render()
+                                               : ""s);
     #else
             const auto address          = 0;
             const auto formatted_symbol = ""s;
@@ -135,21 +145,7 @@ namespace stormkit { inline namespace core {
                 i += 1;
                 continue;
             }
-            auto symbol = frame.symbol;
-    #ifdef STORMKIT_COMPILER_LIBCPP
-            symbol = replace(symbol, "::$_0::", "::");
-            symbol = replace(symbol, "::__1::", "::");
-            symbol = replace(symbol, "__invoke", "invoke");
-            symbol = replace(symbol, "__function", "function");
-            symbol = replace(symbol, "[abi:se210000]", "");
-            symbol = replace(symbol, "[abi:ne210000]", "");
-    #endif
-            symbol = replace(symbol,
-                             "basic_string_view<char, std::char_traits<char>>",
-                             "string_view");
-            symbol = replace(symbol,
-                             "basic_string<char, std::char_traits<char>, std::allocator<char>>",
-                             "string");
+            auto symbol = prettify(frame.symbol);
 
             const auto object_address = (frame.object_address == 0
                                            ? "inlined"
