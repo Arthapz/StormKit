@@ -20,8 +20,6 @@ import std;
 
 import :meta.concepts;
 
-import :math.arithmetic;
-
 export namespace stormkit { inline namespace core {
 #ifdef __STDCPP_FLOAT16_T__
     using f16 = std::float16_t;
