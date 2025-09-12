@@ -10,14 +10,9 @@ export module stormkit.core:math.arithmetic;
 
 import std;
 
-import :meta;
-import :hash;
-import :typesafe;
-import :functional;
+import :meta.concepts;
 
-using namespace stormkit;
-
-namespace stdr = std::ranges;
+import :typesafe.safecasts;
 
 export {
     namespace stormkit { inline namespace core { namespace math {
@@ -49,6 +44,9 @@ export {
                              const T& rmax,
                              const T& tmin,
                              const T& tmax) noexcept -> T;
+
+        template<stormkit::core::meta::IsArithmetic T>
+        constexpr auto abs(T n) noexcept -> T;
     }}} // namespace stormkit::core::math
 }
 
@@ -95,4 +93,18 @@ namespace stormkit { inline namespace core { namespace math {
         return ((x - rmin) * (tmax - tmin) / (rmax - rmin)) + tmin;
     }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::core::meta::IsArithmetic T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto abs(T n) noexcept -> T {
+        if constexpr (stormkit::meta::IsSigned<T>) return n;
+        else {
+            if consteval {
+                return (n > 0) ? n : n * T { -1 };
+            } else {
+                return std::abs(n);
+            }
+        }
+    }
 }}} // namespace stormkit::core::math
