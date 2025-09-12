@@ -21,15 +21,12 @@ rule("stormkit.flags", function()
         local target_set = target.set
         local startswith = string.startswith
         if get_config("sanitizers") then
-            if
-                not startswith(cxx, "clang")
-                or startswith(cxx, "clang") and target:has_runtime("c++_shared", "c++_static")
-            then
-                target_set(target, "policy", "build.sanitizer.address", true)
-                target_set(target, "policy", "build.sanitizer.undefined", true)
+            if cxx ~= "cl.exe" and cxx ~= "clang-cl.exe" then
+              target_set(target, "policy", "build.sanitizer.address", true)
+              target_set(target, "policy", "build.sanitizer.undefined", true)
             end
         end
-        if startswith(cxx, "clang") or startswith(cxx, "g++") or startswith(cxx, "gcc") or get_config("mold") then
+        if cxx ~= "cl.exe" and cxx ~= "clang-cl.exe" and get_config("mold") then
             target_add(target, "ldflags", "-fuse-ld=mold")
             target_add(target, "shflags", "-fuse-ld=mold")
         end
@@ -128,9 +125,7 @@ rule("stormkit.flags", function()
                 sh = target:has_runtime("c++_shared", "c++_static") and { "-fexperimental-library" } or {},
             },
         }
-        local toolchain = get_config("toolchain")
-        local is_clang = toolchain and (toolchain == "clang" or toolchain == "llvm") or false
-        if is_plat("macosx") or is_clang then
+        if target:has_tool("cxx", "clang", "clangxx") then
             target_add(target, "cxxflags", flags.clang.cxx or {}, { tools = { "clang", "clangxx" } })
             target_add(target, "cxxflags", flags.clang.cx or {}, { tools = { "clang", "clangxx" } })
             target_add(target, "cflags", flags.clang.cx or {}, { tools = { "clang" } })
@@ -144,7 +139,7 @@ rule("stormkit.flags", function()
             end
         end
 
-        if is_plat("linux") and (not toolchain or toolchain == "gcc") then
+        if target:has_tool("cxx", "gcc", "gxx") then
             target_add(target, "cxxflags", flags.gcc.cxx or {}, { tools = { "gcc", "g++" } })
             target_add(target, "cxxflags", flags.gcc.cx or {}, { tools = { "gcc", "g++" } })
             target_add(target, "cflags", flags.gcc.cx or {}, { tools = { "gcc" } })
@@ -154,7 +149,7 @@ rule("stormkit.flags", function()
             target_add(target, "syslinks", "stdc++exp", "stdc++fs")
         end
 
-        if is_plat("windows") and (not toolchain or toolchain == "clang-cl") then
+        if target:has_tool("cxx", "cl", "clang_cl") then
             target_add(target, "cxxflags", flags.cl.cxx or {}, { tools = { "cl", "clang_cl" } })
             target_add(target, "cxxflags", flags.cl.cx or {}, { tools = { "cl", "clang_cl" } })
             target_add(target, "cflags", flags.cl.cx or {}, { tools = { "cl", "clang_cl" } })
