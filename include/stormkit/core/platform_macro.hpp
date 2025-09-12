@@ -92,14 +92,22 @@
     #define STORMKIT_LIFETIMEBOUND
 #endif
 
-#if __has_cpp_attribute(gnu::pure)
-    #define STORMKIT_PURE [[gnu::pure]]
+#if not defined(STORMKIT_COMPILER_MSVC)
+    #if __has_cpp_attribute(gnu::pure)
+        #define STORMKIT_PURE [[gnu::pure]]
+    #else
+        #define STORMKIT_PURE
+    #endif
 #else
     #define STORMKIT_PURE
 #endif
 
-#if __has_cpp_attribute(gnu::const)
-    #define STORMKIT_CONST [[gnu::const]]
+#if not defined(STORMKIT_COMPILER_MSVC)
+    #if __has_cpp_attribute(gnu::const)
+        #define STORMKIT_CONST [[gnu::const]]
+    #else
+        #define STORMKIT_CONST
+    #endif
 #else
     #define STORMKIT_CONST
 #endif
