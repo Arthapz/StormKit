@@ -31,7 +31,7 @@ import :typesafe.byte;
 import :typesafe.integer;
 import :typesafe.character;
 import :typesafe.flags;
-import :typesafe.integer_casts;
+import :typesafe.safecasts;
 
 import :functional.monadic;
 

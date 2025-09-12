@@ -14,7 +14,6 @@ export import :utils.dynamic_loader;
 export import :utils.filesystem;
 export import :utils.function_ref;
 export import :utils.handle;
-// export import :math.arithmetic;
 export import :utils.numeric_range;
 export import :utils.pimpl;
 export import :utils.random;

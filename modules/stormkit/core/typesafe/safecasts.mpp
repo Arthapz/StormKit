@@ -1,0 +1,387 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.core:typesafe.safecasts;
+
+import std;
+
+import :meta.concepts;
+import :typesafe.boolean;
+import :typesafe.floating_point;
+
+export {
+    namespace stormkit { inline namespace core {
+        template<typename... Args>
+        [[nodiscard]]
+        constexpr auto is_impl(Args...) noexcept -> bool = delete
+#if defined(STORMKIT_COMPILER_MSVC)
+          ;
+#else
+          ("No is value queryier for theses arguments");
+#endif
+
+        template<typename T, typename... Args>
+        [[nodiscard]]
+        constexpr auto is_impl(Args...) noexcept -> bool = delete
+#if defined(STORMKIT_COMPILER_MSVC)
+          ;
+#else
+          ("No is type queryier for these arguments");
+#endif
+
+        template<typename T, typename... Args>
+        [[nodiscard]]
+        constexpr auto as_impl(Args..., const std::source_location&) noexcept -> T = delete
+#if defined(STORMKIT_COMPILER_MSVC)
+          ;
+#else
+          ("No as caster for these arguments");
+#endif
+
+        template<typename T, typename... Args>
+        [[nodiscard]]
+        constexpr auto narrow_impl(Args...) noexcept -> T = delete
+#if defined(STORMKIT_COMPILER_MSVC)
+          ;
+#else
+          ("No narrow caster for these arguments");
+#endif
+
+        namespace meta {
+            template<typename... Args>
+            concept HasIsValueQueryier = requires(const Args&... args) {
+                { is_impl(args...) } -> IsBooleanTestable;
+            };
+
+            template<typename T, typename U>
+            concept HasIsTypeQueryier = requires(const U& value) {
+                { is_impl<T>(value) } -> IsBooleanTestable;
+            };
+
+            template<typename T, typename U>
+            concept HasAsCaster = requires(const U& value) { as_impl<T>(value); };
+
+            template<typename T, typename U>
+            concept HasNarrowCaster = requires(const U& value) {
+                { narrow_impl<T>(value) } -> Is<T>;
+            };
+        } // namespace meta
+
+        struct Equal {};
+
+        template<typename T>
+        struct IsFn final {
+            template<typename U>
+            [[nodiscard]]
+            static constexpr auto operator()(const U& value) noexcept -> decltype(auto);
+        };
+
+        template<>
+        struct IsFn<Equal> final {
+            template<typename... Args>
+            [[nodiscard]]
+            static constexpr auto operator()(const Args&... args) noexcept -> decltype(auto);
+        };
+
+        template<typename T>
+        inline constexpr auto is = IsFn<T> {};
+
+        template<typename... Args>
+        [[nodiscard]]
+        constexpr auto is_equal(const Args&... args) noexcept -> bool;
+
+        template<typename T>
+        struct AsFn final {
+            template<typename U>
+            [[nodiscard]]
+            static constexpr auto operator()(U&& value,
+                                             const std::source_location&
+                                               location = std::source_location::current()) noexcept
+              -> decltype(auto);
+        };
+
+        template<typename T>
+        inline constexpr auto as = AsFn<T> {};
+
+        template<typename T>
+        struct NarrowFn final {
+            template<typename U>
+            [[nodiscard]]
+            static constexpr auto operator()(U&& value) noexcept -> decltype(auto);
+        };
+
+        template<typename T>
+        inline constexpr auto narrow = NarrowFn<T> {};
+
+        template<meta::IsFloatingPoint T>
+        [[nodiscard]]
+        constexpr auto is_impl(T first, T second, T epsilon = EPSILON<T>) noexcept -> bool;
+
+        template<meta::IsFloatingPoint T, meta::IsFloatingPoint U>
+        [[nodiscard]]
+        constexpr auto is_impl(T first, U second, auto epsilon = EPSILON<T>) noexcept -> bool;
+
+        template<meta::IsFloatingPoint T, meta::IsIntegral U>
+        [[nodiscard]]
+        constexpr auto is_impl(T first, U second, T epsilon = EPSILON<T>) noexcept -> bool;
+
+        template<meta::IsIntegral T, meta::IsFloatingPoint U>
+        [[nodiscard]]
+        constexpr auto is_impl(T first, U second, U epsilon = EPSILON<U>) noexcept -> bool;
+
+        template<meta::IsIntegral T, meta::IsIntegral U>
+        [[nodiscard]]
+        constexpr auto is_impl(T first, U second) noexcept -> bool;
+
+        template<typename T, meta::IsVariantType U>
+        [[nodiscard]]
+        constexpr auto is_impl(const U& value) noexcept -> bool;
+
+        template<meta::IsArithmetic T, meta::IsArithmetic U>
+        [[nodiscard]]
+        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
+
+        template<meta::IsByte T, meta::IsArithmetic U>
+        [[nodiscard]]
+        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
+
+        template<meta::IsArithmetic T, meta::IsByte U>
+        [[nodiscard]]
+        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
+
+        template<typename T, meta::IsVariantType U>
+        [[nodiscard]]
+        constexpr auto as_impl(U&& value, const std::source_location&) noexcept -> T;
+
+        template<meta::IsArithmetic T, meta::IsArithmetic U>
+        [[nodiscard]]
+        constexpr auto narrow_impl(U value) noexcept -> T;
+
+        template<meta::IsArithmetic T, meta::IsByte U>
+        [[nodiscard]]
+        constexpr auto narrow_impl(U value) noexcept -> T;
+
+        template<meta::IsByte T, meta::IsArithmetic U>
+        [[nodiscard]]
+        constexpr auto narrow_impl(U value) noexcept -> T;
+    }} // namespace stormkit::core
+
+    // template<typename T, typename U>
+    //     requires(stormkit::meta::HasEqualityOperator<T, U>)
+    // constexpr auto is_impl(const T& first, const U& second) noexcept -> bool;
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To, typename From>
+        requires((meta::IsArithmetic<To> or meta::IsByte<To>)
+                 and (meta::IsArithmetic<From> or meta::IsByte<From>))
+    constexpr auto isSafeNarrowing(const From& from) noexcept -> Boolean {
+        if constexpr ((meta::IsArithmetic<From> and meta::IsByte<To>)
+                      or (meta::IsByte<From> and meta::IsArithmetic<To>))
+            return (static_cast<From>(static_cast<To>(from)) == from);
+        else if constexpr (meta::IsArithmetic<From> and meta::IsArithmetic<To>)
+            return (static_cast<From>(static_cast<To>(from)) == from)
+                   or (meta::IsSigned<To> != meta::IsUnsigned<From>
+                       and ((static_cast<To>(from) < To {}) == (from < From {})));
+        std::unreachable();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename... Args>
+    STORMKIT_FORCE_INLINE
+    constexpr auto IsFn<Equal>::operator()(const Args&... values) noexcept -> decltype(auto) {
+        return is_impl(values...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    template<typename U>
+    STORMKIT_FORCE_INLINE
+    constexpr auto IsFn<T>::operator()(const U& value) noexcept -> decltype(auto) {
+        return is_impl<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename... Args>
+    STORMKIT_FORCE_INLINE
+    constexpr auto is_equal(const Args&... args) noexcept -> bool {
+        return is<Equal>(args...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    template<typename U>
+    STORMKIT_FORCE_INLINE
+    constexpr auto AsFn<T>::operator()(U&& value, const std::source_location& location) noexcept
+      -> decltype(auto) {
+        return as_impl<T>(std::forward<U>(value), location);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    template<typename U>
+    STORMKIT_FORCE_INLINE
+    constexpr auto NarrowFn<T>::operator()(U&& value) noexcept -> decltype(auto) {
+        return narrow_impl<T>(std::forward<U>(value));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsFloatingPoint T>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto is_impl(T first, T second, T epsilon) noexcept -> bool {
+        const auto diff = math::abs(first - second);
+        const auto a    = math::abs(first);
+        const auto b    = math::abs(second);
+        const auto ab   = (a > b) ? b : a;
+        return diff <= (ab * epsilon);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsFloatingPoint T, meta::IsFloatingPoint U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto is_impl(T first, U second, auto epsilon) noexcept -> bool {
+        const auto diff = math::abs(first - second);
+        const auto a    = math::abs(first);
+        const auto b    = math::abs(second);
+        const auto ab   = (a > b) ? b : a;
+        return diff <= (ab * epsilon);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsFloatingPoint T, meta::IsIntegral U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto is_impl(T first, U second, T epsilon) noexcept -> bool {
+        return is_impl(first, as<T>(second), epsilon);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsIntegral T, meta::IsFloatingPoint U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto is_impl(T first, U second, U epsilon) noexcept -> bool {
+        return is_impl(as<U>(first), second, epsilon);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsIntegral T, meta::IsIntegral U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto is_impl(T first, U second) noexcept -> bool {
+        return first == second;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, meta::IsVariantType U>
+    STORMKIT_FORCE_INLINE
+    constexpr auto is_impl(const U& value) noexcept -> bool {
+        return std::holds_alternative<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
+        if constexpr (meta::IsNarrowing<T, meta::CanonicalType<U>>)
+            expects(isSafeNarrowing<T>(value),
+                    "Lossy narrowing detected, please use narrow() only if you really "
+                    "want unsafe "
+                    "narrowing",
+                    location);
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsByte T, stormkit::meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
+        if constexpr (meta::IsNarrowing<T, meta::CanonicalType<U>>)
+            expects(isSafeNarrowing<T>(value),
+                    "Lossy narrowing detected, please use narrow() only if you really "
+                    "want unsafe "
+                    "narrowing",
+                    location);
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsByte U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
+        if constexpr (meta::IsNarrowing<T, meta::CanonicalType<U>>)
+            expects(isSafeNarrowing<T>(value),
+                    "Lossy narrowing detected, please use narrow() only if you really "
+                    "want unsafe "
+                    "narrowing",
+                    location);
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, meta::IsVariantType U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto as_impl(U&& value, const std::source_location&) noexcept -> T {
+        return std::get<T>(std::forward<U>(value));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto narrow_impl(U value) noexcept -> T {
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsByte U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto narrow_impl(U value) noexcept -> T {
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsByte T, stormkit::meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto narrow_impl(U value) noexcept -> T {
+        return static_cast<T>(value);
+    }
+
+    // template auto as_impl<u8, u8>() -> u8;
+    // template auto as_impl<u16, u8>() -> u16;
+    // template auto as_impl<u32, u8>() -> u32;
+    // template auto as_impl<i8, u8>() -> i8;
+    // template auto as_impl<i16, u8>() -> i16;
+    // template auto as_impl<i32, u8>() -> i32;
+
+    // template auto narrow_impl<u8, u8>() -> u8;
+    // template auto narrow_impl<u16, u8>() -> u16;
+    // template auto narrow_impl<u32, u8>() -> u32;
+    // template auto narrow_impl<i8, u8>() -> i8;
+    // template auto narrow_impl<i16, u8>() -> i16;
+    // template auto narrow_impl<i32, u8>() -> i32;
+}} // namespace stormkit::core

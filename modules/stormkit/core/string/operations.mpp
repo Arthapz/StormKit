@@ -15,7 +15,7 @@ import :meta.traits;
 import :meta.concepts;
 import :typesafe.integer;
 import :string.czstring;
-import :typesafe.integer_casts;
+import :typesafe.safecasts;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;

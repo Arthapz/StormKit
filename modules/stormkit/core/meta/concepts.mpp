@@ -263,6 +263,40 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T, typename U>
     concept IsSameSigneness = (IsSigned<T> and IsSigned<U>) or (IsUnsigned<T> and IsUnsigned<U>);
 
+    template<typename To, typename From>
+    concept IsSignNarrowing = (IsSigned<From> ? not IsSigned<To>
+                                              : IsSigned<To> and sizeof(From) == sizeof(To));
+
+    template<typename To, typename From>
+    concept IsByteNarrowing = ((IsArithmetic<To> and IsByte<From>)
+                               or (IsByte<To> and IsArithmetic<From>))
+                              and (IsByte<To> and sizeof(To) != sizeof(From));
+
+    template<typename To, typename From>
+    concept IsNarrowing = (IsFloatingPoint<From> and IsIntegral<To>)
+                          or (IsFloatingPoint<From>
+                              and IsFloatingPoint<To>
+                              and sizeof(From) > sizeof(To))
+                          or (IsIntegralOrEnumeration<From> and IsFloatingPoint<To>)
+                          or (IsIntegral<From>
+                              and IsIntegral<To>
+                              and (sizeof(From) > sizeof(To) or IsSignNarrowing<To, From>))
+                          or (IsEnumeration<From>
+                              and IsIntegral<To>
+                              and (sizeof(From) > sizeof(To)
+                                   or IsSignNarrowing<std::underlying_type_t<From>, From>))
+                          or (IsPointer<From> and Is<To, bool>);
+
+    template<typename To, typename From>
+    concept IsUnsafePointerConvertion = IsPointer<To>
+                                        and IsPointer<From>
+                                        and not requires(To to, From from) { to = from; };
+
+    template<typename To, auto from>
+    concept IsSafeNarrowing = IsArithmetic<To>
+                              and IsArithmetic<decltype(from)>
+                              and not is_safe_narrowing<To>(from);
+
     template<typename T1, typename T2>
     concept HasEqualityOperator = requires(const T1& first, const T2& second) {
         { first == second } -> IsBooleanTestable;

@@ -9,7 +9,7 @@ import std;
 import :utils.contract;
 import :meta;
 import :hash;
-import :typesafe.integer_casts;
+import :typesafe.safecasts;
 import :typesafe.integer;
 import :typesafe.floating_point;
 import :string.constexpr_string;
