@@ -13,6 +13,7 @@ import std;
 import :meta.concepts;
 import :typesafe.boolean;
 import :typesafe.floating_point;
+import :utils.contract;
 
 export {
     namespace stormkit { inline namespace core {
@@ -246,9 +247,9 @@ namespace stormkit { inline namespace core {
     template<meta::IsFloatingPoint T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_impl(T first, T second, T epsilon) noexcept -> bool {
-        const auto diff = math::abs(first - second);
-        const auto a    = math::abs(first);
-        const auto b    = math::abs(second);
+        const auto diff = std::abs(first - second);
+        const auto a    = std::abs(first);
+        const auto b    = std::abs(second);
         const auto ab   = (a > b) ? b : a;
         return diff <= (ab * epsilon);
     }
@@ -258,9 +259,9 @@ namespace stormkit { inline namespace core {
     template<meta::IsFloatingPoint T, meta::IsFloatingPoint U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_impl(T first, U second, auto epsilon) noexcept -> bool {
-        const auto diff = math::abs(first - second);
-        const auto a    = math::abs(first);
-        const auto b    = math::abs(second);
+        const auto diff = std::abs(first - second);
+        const auto a    = std::abs(first);
+        const auto b    = std::abs(second);
         const auto ab   = (a > b) ? b : a;
         return diff <= (ab * epsilon);
     }
