@@ -20,6 +20,8 @@ import std;
 
 import :meta.concepts;
 
+import :math.arithmetic;
+
 export namespace stormkit { inline namespace core {
 #ifdef __STDCPP_FLOAT16_T__
     using f16 = std::float16_t;
@@ -53,4 +55,7 @@ export namespace stormkit { inline namespace core {
 
     template<meta::IsFloatingPoint T>
     inline constexpr auto EPSILON = std::numeric_limits<T>::epsilon();
+}} // namespace stormkit::core
+
+export namespace stormkit { inline namespace core {
 }} // namespace stormkit::core
