@@ -12,10 +12,6 @@ module;
     #define STD_STACKTRACE_SUPPORTED
 #endif
 
-#if not defined(STD_STACKTRACE_SUPPORTED)
-    #include <cpptrace/cpptrace.hpp>
-#endif
-
 module stormkit.core;
 
 import std;
@@ -49,13 +45,15 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     auto print_stacktrace(int ignore_count) noexcept -> void {
         const auto thread_name = get_current_thread_name();
+        const auto stderr      = get_stderr();
+        ;
         if (not std::empty(thread_name))
-            std::println(get_stderr(),
+            std::println(stderr,
                          "================= CALLSTACK (thread name: {}, id: {}) =================",
                          thread_name,
                          std::this_thread::get_id());
         else
-            std::println(get_stderr(),
+            std::println(stderr,
                          "================= CALLSTACK (thread id: {}) =================",
                          std::this_thread::get_id());
 #ifdef STD_STACKTRACE_SUPPORTED
@@ -67,20 +65,23 @@ namespace stormkit { inline namespace core {
                 continue;
             }
     #ifdef STORMKIT_COMPILER_MSSTL
-            auto       splitted = split(frame.description(), "+");
-            const auto address  = from_string<u64>(splitted[1].substr(2), 16)
-                                   .transform_error([&splitted](auto&& err) noexcept {
-                                       std::println(get_stderr(),
+            const auto frame_str = std::to_string(frame);
+            auto       splitted  = split(frame_str, "+");
+            const auto address   = from_string<u64>(splitted[1].substr(2), 16)
+                                   .transform_error([stderr, &splitted](auto&& err) noexcept {
+                                       std::println(stderr,
                                                     "Failed to parse {}, reason: {}",
                                                     splitted[0],
                                                     err);
                                        return 0;
                                    })
                                    .value();
-            splitted = split(splitted[0], "!");
-            [[maybe_unused]]
-            const auto module           = (std::size(splitted) >= 1) ? splitted[0] : ""sv;
-            auto       formatted_symbol = (std::size(splitted) >= 2) ? splitted[1] : ""sv;
+            splitted                    = split(splitted[0], "!");
+            const auto formatted_symbol = prettify((stdr::size(splitted) >= 2)
+                                                     ? "\n    in "
+                                                         + (YELLOW_TEXT_STYLE | splitted[1])
+                                                             .render()
+                                                     : ""s);
     #elifdef STORMKIT_COMPILER_LIBCPP
             // clang-format off
             // e.g 0x5adc4b1dc9fc: __invoke<(lambda at src/gpu/core/device.cpp:401:22)>: /opt/llvm-git/include/c++/v1/__type_traits/invoke.h:179
@@ -89,8 +90,8 @@ namespace stormkit { inline namespace core {
             const auto frame_str = std::to_string(frame);
             const auto splitted  = split(frame_str, ": ");
             const auto address   = from_string<u64>(splitted[0].substr(2), 16)
-                                   .transform_error([&splitted](auto&& err) noexcept {
-                                       std::println(get_stderr(),
+                                   .transform_error([stderr, &splitted](auto&& err) noexcept {
+                                       std::println(stderr,
                                                     "Failed to parse {}, reason: {}",
                                                     splitted[0],
                                                     err);
@@ -98,24 +99,21 @@ namespace stormkit { inline namespace core {
                                    })
                                    .value();
 
-            auto formatted_symbol = prettify((stdr::size(splitted) > 2)
-                                               ? "\n    in "
-                                                   + (YELLOW_TEXT_STYLE | splitted[1]).render()
-                                               : ""s);
+            const auto formatted_symbol = prettify((stdr::size(splitted) > 2)
+                                                     ? "\n    in "
+                                                         + (YELLOW_TEXT_STYLE | splitted[1])
+                                                             .render()
+                                                     : ""s);
     #else
+            // TODO LIBSTDC++
             const auto address          = 0;
             const auto formatted_symbol = ""s;
-
     #endif
             const auto object_address = (address == 0 ? "inlined"
                                                       : std::format("{:#010x}", address));
 
-            // const auto formatted_symbol = (symbol == "")
-            //                                 ? ""
-            //                                 : std::format(" in{}", YELLOW_TEXT_STYLE | symbol);
-
             if (not std::ranges::empty(frame.source_file()) and frame.source_line() != 0) {
-                std::println(get_stderr(),
+                std::println(stderr,
                              "{}# {}{}\n    at {}:{}",
                              (i++ - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
@@ -123,14 +121,14 @@ namespace stormkit { inline namespace core {
                              GREEN_TEXT_STYLE | frame.source_file(),
                              BLUE_TEXT_STYLE | frame.source_line());
             } else if (not std::ranges::empty(frame.source_file())) {
-                std::println(get_stderr(),
+                std::println(stderr,
                              "{}# {}{}\n    at {}",
                              (i++ - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
                              formatted_symbol,
                              GREEN_TEXT_STYLE | frame.source_file());
             } else {
-                std::println(get_stderr(),
+                std::println(stderr,
                              "{}# {}{}",
                              (i++ - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
@@ -138,43 +136,10 @@ namespace stormkit { inline namespace core {
             }
         }
 #else
-        const auto st = cpptrace::stacktrace::current();
-        auto       i  = 0;
-        for (auto&& frame : st) {
-            if (i < ignore_count) {
-                i += 1;
-                continue;
-            }
-            auto symbol = prettify(frame.symbol);
-
-            const auto object_address = (frame.object_address == 0
-                                           ? "inlined"
-                                           : std::format("{:#010x}", frame.object_address));
-
-            const auto formatted_symbol = (frame.symbol == "")
-                                            ? ""
-                                            : std::format("\n    in {}",
-                                                          YELLOW_TEXT_STYLE | symbol);
-
-            if (frame.line.has_value() and frame.column.has_value()) {
-                std::println(get_stderr(),
-                             "{}# {}{}\n    at {}:{}:{}",
-                             (i++ - ignore_count),
-                             BLUE_TEXT_STYLE | object_address,
-                             formatted_symbol,
-                             GREEN_TEXT_STYLE | frame.filename,
-                             BLUE_TEXT_STYLE | frame.line.value(),
-                             BLUE_TEXT_STYLE | frame.column.value());
-            } else
-                std::println(get_stderr(),
-                             "{}# {}{}\n    at {}",
-                             (i++ - ignore_count),
-                             BLUE_TEXT_STYLE | object_address,
-                             formatted_symbol,
-                             GREEN_TEXT_STYLE | frame.filename);
-        }
+        std::println(stderr, "std::stacktrace not supported!")
 #endif
-        std::println("============================================================================="
+        std::println(stderr,
+                     "============================================================================="
                      "===============");
     }
 }} // namespace stormkit::core
