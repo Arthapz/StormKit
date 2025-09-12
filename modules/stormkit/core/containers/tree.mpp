@@ -15,7 +15,9 @@ export module stormkit.core:containers.tree;
 import std;
 
 import :typesafe.integer;
+import :typesafe.safecasts;
 import :utils.handle;
+import :utils.contract;
 
 export namespace stormkit { inline namespace core {
     class STORMKIT_API TreeNode {

@@ -13,7 +13,7 @@ import std;
 import :meta;
 
 import :containers.utils;
-import :typesafe.integer_casts;
+import :typesafe.safecasts;
 import :functional.utils;
 import :typesafe.ref;
 import :typesafe.byte;
@@ -48,7 +48,7 @@ export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]
     constexpr auto emplace_to(std::ranges::range auto& container) noexcept -> decltype(auto);
     [[nodiscard]]
-    constexpr auto is(auto&& value) noexcept -> decltype(auto);
+    constexpr auto is_equal(auto&& value) noexcept -> decltype(auto);
     [[nodiscard]]
     constexpr auto append_to(std::ranges::range auto& range) noexcept -> decltype(auto);
     [[nodiscard]]
@@ -99,7 +99,7 @@ export namespace stormkit { inline namespace core { namespace monadic {
     constexpr auto get() noexcept -> decltype(auto);
 
     [[nodiscard]]
-    constexpr auto is() noexcept -> decltype(auto);
+    constexpr auto is_equal() noexcept -> decltype(auto);
 
     template<typename T>
     [[nodiscard]]
@@ -198,9 +198,9 @@ namespace stormkit { inline namespace core { namespace monadic {
     template<typename T>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto is(T&& value) noexcept -> decltype(auto) {
+    constexpr auto is_equal(T&& value) noexcept -> decltype(auto) {
         return [value = std::forward<T>(value)]<typename U>(U&& other) {
-            return core::is(value, std::forward<U>(other));
+            return core::is_equal(value, std::forward<U>(other));
         };
     }
 
@@ -383,9 +383,9 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is() noexcept -> decltype(auto) {
+    constexpr auto is_equal() noexcept -> decltype(auto) {
         return []<typename T, typename U>(T&& first, U&& second) static noexcept -> decltype(auto) {
-            return core::is(std::forward<T>(first), std::forward<U>(second));
+            return core::is_equal(std::forward<T>(first), std::forward<U>(second));
         };
     }
 

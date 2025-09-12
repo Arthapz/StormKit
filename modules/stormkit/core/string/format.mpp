@@ -12,9 +12,8 @@ import std;
 
 import :meta;
 import :typesafe.integer;
-import :typesafe.integer_casts;
+import :typesafe.safecasts;
 import :utils.time;
-import :math.arithmetic;
 import :string.operations;
 
 export {

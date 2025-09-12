@@ -20,6 +20,9 @@ import :meta.strong_type;
 import :utils.contract;
 import :typesafe.integer;
 import :typesafe.floating_point;
+import :typesafe.safecasts;
+
+import :functional.utils;
 
 // TODO improve template deduction
 
@@ -795,8 +798,8 @@ namespace stormkit { inline namespace core { namespace math {
                                T                      near,
                                T                      far,
                                SquareMatrixSpan<T, 4> out) noexcept -> void {
-        EXPECTS(not is(aspect, T { 0 }));
-        EXPECTS(not is(near, far));
+        EXPECTS(not is_equal(aspect, T { 0 }));
+        EXPECTS(not is_equal(near, far));
 
         const auto half_fov_y = std::tan(fov_y.get() / T { 2 });
 

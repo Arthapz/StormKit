@@ -13,7 +13,7 @@ export module stormkit.core:utils.handle;
 import std;
 
 import :hash;
-import :typesafe.integer_casts;
+import :typesafe.safecasts;
 import :typesafe.integer;
 import :meta;
 

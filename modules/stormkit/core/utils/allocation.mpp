@@ -13,7 +13,7 @@ export module stormkit.core:utils.allocation;
 import std;
 
 import :meta;
-import :typesafe.integer_casts;
+import :typesafe.safecasts;
 
 struct MemoryAllocationError {
     std::string_view type;
