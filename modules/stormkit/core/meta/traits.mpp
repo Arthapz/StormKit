@@ -14,25 +14,28 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<bool Cond, typename IfRes, typename ElseRes>
     using If = std::conditional_t<Cond, IfRes, ElseRes>;
 
-    template<class T>
+    template<typename T>
     using CanonicalType = std::remove_cvref_t<T>;
 
     template<auto value>
     using CanonicalTypeOf = CanonicalType<decltype(value)>;
 
-    template<class T>
+    template<typename T>
     using DecayType = std::decay_t<T>;
 
-    template<class T>
+    template<typename T>
+    using RemoveConst = std::remove_const_t<T>;
+
+    template<typename T>
     using RemoveReferencesType = std::remove_reference_t<T>;
 
-    template<class T>
+    template<typename T>
     using RemoveIndirectionsType = std::remove_pointer_t<std::remove_reference_t<T>>;
 
-    template<class T>
+    template<typename T>
     using ElementType = typename std::pointer_traits<T>::element_type;
 
-    template<class T>
+    template<typename T>
     using PointerType = typename std::pointer_traits<T>::pointer;
 
     template<stdr::range Range>
@@ -53,7 +56,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<IsArithmetic T, IsArithmetic V>
     using SafeNarrowHelperOtherType = std::conditional_t<is_greater<T, V>(), V, T>;
 
-    template<class T, typename U>
+    template<typename T, typename U>
     struct ForwardConstTrait {
       private:
         using T1 = RemoveIndirectionsType<T>;
@@ -64,10 +67,10 @@ export namespace stormkit { inline namespace core { namespace meta {
         using Type = U2;
     };
 
-    template<class T, typename U>
+    template<typename T, typename U>
     using ForwardConst = ForwardConstTrait<T, U>::Type;
 
-    template<class T, typename U>
+    template<typename T, typename U>
     struct ForwardLikeTrait {
       private:
         using U1 = ForwardConst<T, U>;
@@ -80,7 +83,7 @@ export namespace stormkit { inline namespace core { namespace meta {
         using Type = U3;
     };
 
-    template<class T, typename U>
+    template<typename T, typename U>
     using ForwardLike = ForwardLikeTrait<T, U>::Type;
 
     template<typename... Ts>
