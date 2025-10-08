@@ -73,6 +73,8 @@ export {
             };
         } // namespace meta
 
+        struct Underlying {};
+
         struct Equal {};
 
         template<typename T>
@@ -159,6 +161,16 @@ export {
         [[nodiscard]]
         constexpr auto as_impl(U&& value, const std::source_location&) noexcept -> T;
 
+        template<meta::IsEnumeration T, meta::IsArithmetic U>
+        [[nodiscard]]
+        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
+
+        template<typename T, meta::IsEnumeration U>
+            requires(meta::IsArithmetic<T> or meta::Is<T, Underlying>)
+        [[nodiscard]]
+        constexpr auto as_impl(U value, const std::source_location&) noexcept
+          -> meta::If<meta::Is<T, Underlying>, meta::UnderlyingType<U>, T>;
+
         template<meta::IsArithmetic T, meta::IsArithmetic U>
         [[nodiscard]]
         constexpr auto narrow_impl(U value) noexcept -> T;
@@ -168,6 +180,14 @@ export {
         constexpr auto narrow_impl(U value) noexcept -> T;
 
         template<meta::IsByte T, meta::IsArithmetic U>
+        [[nodiscard]]
+        constexpr auto narrow_impl(U value) noexcept -> T;
+
+        template<meta::IsArithmetic T, meta::IsEnumeration U>
+        [[nodiscard]]
+        constexpr auto narrow_impl(U value) noexcept -> T;
+
+        template<meta::IsEnumeration T, meta::IsArithmetic U>
         [[nodiscard]]
         constexpr auto narrow_impl(U value) noexcept -> T;
     }} // namespace stormkit::core
@@ -343,9 +363,30 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, meta::IsVariantType U>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_impl(U&& value, const std::source_location&) noexcept -> T {
         return std::get<T>(std::forward<U>(value));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsEnumeration T, meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_impl(U value, const std::source_location&) noexcept -> T {
+        // TODO WHEN REFLEXION IS IMPLEMENTED, CHECK IF `value` IS A VALID T VALUE
+        return narrow<U>(as<meta::UnderlyingType<T>>(value));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, meta::IsEnumeration U>
+        requires(meta::IsArithmetic<T> or meta::Is<T, Underlying>)
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_impl(U value, const std::source_location&) noexcept
+      -> meta::If<meta::Is<T, Underlying>, meta::UnderlyingType<U>, T> {
+        if constexpr (meta::Is<T, Underlying>) return narrow<meta::UnderlyingType<U>>(value);
+        else
+            return as<T>(narrow<meta::UnderlyingType<U>>(value));
     }
 
     /////////////////////////////////////
@@ -367,6 +408,22 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<stormkit::meta::IsByte T, stormkit::meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto narrow_impl(U value) noexcept -> T {
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsArithmetic T, meta::IsEnumeration U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto narrow_impl(U value) noexcept -> T {
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsEnumeration T, meta::IsArithmetic U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
     constexpr auto narrow_impl(U value) noexcept -> T {
         return static_cast<T>(value);
