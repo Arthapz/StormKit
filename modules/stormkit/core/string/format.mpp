@@ -155,10 +155,13 @@ template<class FormatContext>
 auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const
   -> FormatContext::iterator {
     auto&& out = ctx.out();
-    if constexpr (requires { as_string(value); })
-        return std::format_to(out, "{}", as_string(value));
-    else
-        return std::format_to(out, "{}", narrow<stormkit::meta::UnderlyingType<T>>(value));
+    if constexpr (requires {
+                      { as_string(value) } -> meta::Is<std::string_view>;
+                  }) {
+        const auto strvalue = as_string(value);
+        return format_to(out, "{}", strvalue);
+    } else
+        return format_to(out, "{}", as<stormkit::Underlying>(value));
 }
 
 /////////////////////////////////////
@@ -178,8 +181,9 @@ template<class FormatContext>
 auto std::formatter<std::error_code, CharT>::format(const std::error_code& code,
                                                     FormatContext&         ctx) const
   -> FormatContext::iterator {
-    auto&& out = ctx.out();
-    return format_to(out, "{}", code.message());
+    auto&&     out     = ctx.out();
+    const auto message = code.message();
+    return format_to(out, "{}", message);
 }
 
 /////////////////////////////////////
@@ -188,6 +192,7 @@ template<typename CharT>
 template<class FormatContext>
 auto std::formatter<std::errc, CharT>::format(const std::errc& code, FormatContext& ctx) const
   -> FormatContext::iterator {
-    auto&& out = ctx.out();
-    return format_to(out, "{}", make_error_code(code).message());
+    auto&&     out     = ctx.out();
+    const auto message = make_error_code(code).message();
+    return format_to(out, "{}", message);
 }
