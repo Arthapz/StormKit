@@ -30,6 +30,7 @@ export namespace stormkit { inline namespace core {
                                               std::expected>;
 
         static constexpr auto take(T&& value) noexcept -> RAIICapsule;
+        static constexpr auto empty() noexcept -> RAIICapsule;
 
         constexpr ~RAIICapsule() noexcept;
 
@@ -91,6 +92,15 @@ namespace stormkit { inline namespace core {
                                                                                     value) noexcept
       -> RAIICapsule {
         return RAIICapsule { std::move(value) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    STORMKIT_FORCE_INLINE
+    constexpr auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::empty() noexcept
+      -> RAIICapsule {
+        return RAIICapsule { RELEASE_VALUE };
     }
 
     /////////////////////////////////////
