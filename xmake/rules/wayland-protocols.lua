@@ -14,8 +14,7 @@
         end)
     end
 ]]
-rule("wayland.protocols")
-do
+rule("wayland.protocols", function()
     set_extensions(".xml")
 
     on_load(function(target)
@@ -86,4 +85,4 @@ do
         batchcmds:set_depmtime(os.mtime(privatefile))
         batchcmds:set_depcache(target:dependfile(privatefile))
     end)
-end
+end)
