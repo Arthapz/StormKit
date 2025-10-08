@@ -95,12 +95,8 @@ export {
         ///```
         namespace RGBColorDef {
             template<meta::IsColorComponent T>
-            inline constexpr auto BLACK = RGBColor<T> {
-                T { 0 },
-                T { 0 },
-                T { 0 },
-                max_color_component_value<T>()
-            };
+            inline constexpr auto
+              BLACK = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
             inline constexpr auto Gray = RGBColor<T> { max_color_component_value<T>() / T { 2 },
@@ -213,6 +209,10 @@ export {
             template<meta::IsColorComponent T>
             inline constexpr auto TRANSPARENT = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, T { 0 } };
         } // namespace RGBColorDef
+
+        template<typename T, typename FormatContext>
+        constexpr auto format_as(const RGBColor<T>&, FormatContext& ctx) noexcept
+          -> decltype(ctx.out());
     }} // namespace stormkit::core
 
     TEMPLATED_HASH_EQUAL_FUNC(stormkit::core::RGBColor,
@@ -351,5 +351,29 @@ namespace stormkit { inline namespace core {
     template<meta::IsColorComponent T>
     constexpr RGBColor<T>::operator std::array<ValueType, 4>() const noexcept {
         return { red, green, blue, alpha };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename FormatContext>
+        STORMKIT_FORCE_INLINE
+    constexpr auto format_as(const RGBColor<T>& color, FormatContext& ctx) noexcept
+      -> decltype(ctx.out()) {
+        if constexpr (meta::Is<T, u8>)
+            return std::format_to(ctx.out(),
+                                  "{{red: {}, green: {}, blue: {}, alpha: {}}}",
+                                  color.red,
+                                  color.green,
+                                  color.blue,
+                                  color.alpha);
+        else {
+            const auto color_u8 = RGBColorU { color };
+            return std::format_to(ctx.out(),
+                                  "{{red: {}, green: {}, blue: {}, alpha: {}}}",
+                                  color_u8.red,
+                                  color_u8.green,
+                                  color_u8.blue,
+                                  color_u8.alpha);
+        }
     }
 }} // namespace stormkit::core
