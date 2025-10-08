@@ -6,6 +6,8 @@ module stormkit.core;
 
 import std;
 
+#pragma clang diagnostic ignored "-Wlanguage-extension-token"
+
 inline constexpr auto MS_VC_EXCEPTION = DWORD { 0x406D1388 };
 
 #pragma pack(push, 8)
