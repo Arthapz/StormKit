@@ -34,9 +34,6 @@ export namespace stormkit { inline namespace core {
     auto to_upper(std::string_view string, const std::locale& locale) noexcept -> std::string;
 
     [[nodiscard]]
-    constexpr auto as_czstring(std::string_view value) noexcept -> CZString;
-
-    [[nodiscard]]
     constexpr auto replace(std::string_view in,
                            std::string_view pattern,
                            std::string_view replacement) noexcept -> std::string;
@@ -52,6 +49,11 @@ export namespace stormkit { inline namespace core {
     template<typename T>
     [[nodiscard]]
     constexpr auto from_string(std::string_view) noexcept -> T = delete;
+
+    template<typename T>
+        requires(as_string(std::declval<T>()))
+    [[nodiscard]]
+    constexpr auto to_string(T&& value) noexcept -> std::string;
 
     template<meta::IsIntegral T>
     [[nodiscard]]
@@ -73,6 +75,14 @@ export namespace stormkit { inline namespace core {
     auto from_string(std::string_view  data,
                      std::chars_format fmt = std::chars_format::general) noexcept
       -> std::expected<T, std::errc>;
+
+    [[nodiscard]]
+    constexpr auto as_czstring(std::string_view value) noexcept -> CZString;
+
+    template<typename T>
+        requires(as_string(std::declval<T>()))
+    [[nodiscard]]
+    constexpr auto as_czstring(T&& value) noexcept -> CZString;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -80,12 +90,16 @@ export namespace stormkit { inline namespace core {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     constexpr auto to_upper(char c) -> char {
         if (c >= 'a' && c <= 'z') return c - 32;
         return c;
     }
 
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     constexpr auto to_lower(char c) -> char {
         if (c >= 'A' && c <= 'Z') return c + 32;
@@ -146,13 +160,6 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_czstring(std::string_view value) noexcept -> CZString {
-        return stdr::data(value);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
     inline constexpr auto replace(std::string_view in,
                                   std::string_view pattern,
                                   std::string_view replacement) noexcept -> std::string {
@@ -170,8 +177,18 @@ namespace stormkit { inline namespace core {
                | stdr::to<std::string>();
     }
 
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+        requires(as_string(std::declval<T>()))
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    constexpr auto to_string(T&& value) noexcept -> std::string {
+        return std::string { as_string(std::forward<T>(value)) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<meta::IsIntegral T>
-    [[nodiscard]]
     constexpr auto to_string(T value, int base) noexcept -> std::expected<std::string, std::errc> {
         auto out = std::expected<std::string, std::errc> { std::in_place };
         out->resize(16);
@@ -189,6 +206,8 @@ namespace stormkit { inline namespace core {
         return out;
     }
 
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     // TODO add an argument to customize string buffer size
     template<meta::IsFloatingPoint T>
     [[nodiscard]]
@@ -211,6 +230,8 @@ namespace stormkit { inline namespace core {
         return out;
     }
 
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<meta::IsIntegral T>
     inline constexpr auto from_string(std::string_view data, i32 base) noexcept
       -> std::expected<T, std::errc> {
@@ -225,6 +246,8 @@ namespace stormkit { inline namespace core {
         return std::expected<T, std::errc> { std::in_place, value };
     }
 
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<meta::IsFloatingPoint T>
     inline auto from_string(std::string_view data, std::chars_format fmt) noexcept
       -> std::expected<T, std::errc> {
@@ -237,5 +260,21 @@ namespace stormkit { inline namespace core {
             return std::unexpected<std::errc> { std::in_place, std::move(errc) };
 
         return std::expected<T, std::errc> { std::in_place, value };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_czstring(std::string_view value) noexcept -> CZString {
+        return stdr::data(value);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+        requires(as_string(std::declval<T>()))
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_czstring(T value) noexcept -> CZString {
+        return stdr::data(as_string(std::forward<T>(value)));
     }
 }} // namespace stormkit::core
