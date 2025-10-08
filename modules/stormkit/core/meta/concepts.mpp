@@ -249,6 +249,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<class From, typename To>
     concept IsConvertibleTo = std::convertible_to<From, To>;
 
+    template<class T, class... U>
+    concept IsConvertibleToOneOf = (IsConvertibleTo<T, U> or ...);
+
     template<class From, typename To>
     concept IsExplicitConvertibleTo = IsConvertibleTo<From, To> or requires(From&& from) {
         { static_cast<To>(std::forward<From>(from)) } -> Is<To>;
