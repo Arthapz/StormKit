@@ -1,6 +1,5 @@
 -- Turns resources into includables headers
-rule("stormkit.utils.resource2cpp")
-do
+rule("stormkit.utils.resource2cpp", function()
     before_build(function(target, opt)
         import("core.base.option")
         if xmake.version():ge("2.5.9") then
@@ -58,4 +57,4 @@ do
 
         target:add("includedirs", target_dir)
     end)
-end
+end)
