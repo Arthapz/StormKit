@@ -67,6 +67,7 @@ option("engine", {
 option("compile_commands", { default = false, category = "root menu/support" })
 option("vsxmake", { default = false, category = "root menu/support" })
 
+option("rad", { default = false, category = "root menu/others" })
 option("devmode", {
     category = "root menu/others",
     deps = { "tests", "examples", "compile_commands", "mold", "sanitizers", "engine", "mode" },
