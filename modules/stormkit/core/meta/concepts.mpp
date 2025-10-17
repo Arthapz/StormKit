@@ -20,22 +20,43 @@ namespace stormkit { inline namespace core { namespace meta::details {
       -> std::true_type {
         return {};
     }
+
+    template<template<typename, auto...> class T, typename T1, auto... Args>
+    constexpr auto is_specialization_of_helper_nttp_tv(const T<T1, Args...>&) noexcept
+      -> std::true_type {
+        return {};
+    }
+
+    template<template<class, class, auto...> typename T, typename T1, typename T2, auto... Args>
+    constexpr auto is_specialization_of_helper_nttp_ttv(const T<T1, T2, Args...>&) noexcept
+      -> std::true_type {
+        return {};
+    }
 }}} // namespace stormkit::core::meta::details
 
 export namespace stormkit { inline namespace core { namespace meta {
+    template<class T, class U>
+    concept IsStrict = std::same_as<T, U>;
+
+    template<class T, class U>
+    concept Same = std::same_as<T, U>;
+
+    template<class T, class U>
+    concept Is = IsStrict<T, U> or std::derived_from<T, U>;
+
     template<class T>
     concept IsHashable = requires(std::remove_cvref_t<T>& a) {
         { std::hash<std::remove_cvref_t<T>> {}(a) } -> std::convertible_to<std::size_t>;
     };
 
     template<class T, class U>
-    concept IsStrict = std::same_as<T, U>;
-
-    template<class T, class U>
     concept IsCanonical = IsStrict<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
 
-    template<class T, class U>
-    concept Is = IsStrict<T, U> or std::derived_from<T, U> or std::derived_from<U, T>;
+    template<typename T, typename U>
+    concept PlainIs = Same<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+
+    template<class T>
+    concept IsPlain = Is<T, std::remove_cvref_t<T>>;
 
     template<class T, class... U>
     concept Are = (Is<T, U> and ...);
@@ -190,6 +211,20 @@ export namespace stormkit { inline namespace core { namespace meta {
         { details::is_specialization_of_helper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
     };
 
+    template<typename S, template<class, auto...> typename T>
+    concept IsSpecializationOfNTTP_TV = requires(S&& s) {
+        {
+            details::is_specialization_of_helper_nttp_tv<T>(std::forward<S>(s))
+        } -> IsStrict<std::true_type>;
+    };
+
+    template<typename S, template<class, class, auto> typename T>
+    concept IsSpecializationOfNTTP_TTV = requires(S&& s) {
+        {
+            details::is_specialization_of_helper_nttp_ttv<T>(std::forward<S>(s))
+        } -> IsStrict<std::true_type>;
+    };
+
     template<typename S, template<typename, auto...> class T>
     concept IsSpecializationWithNTTPOf = requires(S&& s) {
         {
@@ -226,7 +261,7 @@ export namespace stormkit { inline namespace core { namespace meta {
                          and std::convertible_to<std::invoke_result_t<T, U>, std::uint64_t>;
 
     // doesn't work atm
-    template<class T, class CharT>
+    template<class T, class CharT = char>
     concept IsFormattable = true; // requires(std::formatter<T, CharT> f, T val) { f.format("{}",
                                   // val); };
 
@@ -239,6 +274,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<class T>
     concept IsConst = std::is_const_v<T>;
+
+    template<class T>
+    concept IsVolatile = std::is_volatile_v<T>;
 
     template<class T>
     concept IsNotConst = not IsConst<T>;
@@ -328,6 +366,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T>
     concept IsNoexceptMoveAssignable = std::is_nothrow_move_assignable_v<T>;
 
+    template<typename T, typename U>
+    concept IsNoexceptAssignable = std::is_nothrow_assignable_v<T, U>;
+
     template<typename T>
     concept IsNoexceptDestructible = std::is_nothrow_destructible_v<T>;
 
@@ -348,4 +389,7 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename T>
     concept IsMoveAssignable = std::is_move_assignable_v<T>;
+
+    template<typename T, typename U>
+    concept IsAssignable = std::is_assignable_v<T, U>;
 }}} // namespace stormkit::core::meta
