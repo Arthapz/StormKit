@@ -10,8 +10,7 @@ export module stormkit.core:functional.utils;
 
 import std;
 
-import :meta.concepts;
-import :meta.traits;
+import :meta;
 
 namespace stormkit { inline namespace core { namespace details {
     struct EitherFunc {

@@ -11,8 +11,7 @@ export module stormkit.core:typesafe.boolean;
 
 import std;
 
-import :meta.concepts;
-import :meta.traits;
+import :meta;
 
 export {
     namespace stormkit { inline namespace core {
@@ -56,44 +55,51 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr Boolean::Boolean(bool value) noexcept : m_value { value } {
+    STORMKIT_FORCE_INLINE
+    constexpr Boolean::Boolean(bool value) noexcept
+        : m_value { value } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto Boolean::operator=(bool value) noexcept -> Boolean& {
+    STORMKIT_FORCE_INLINE
+    constexpr auto Boolean::operator=(bool value) noexcept -> Boolean& {
         m_value = value;
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr Boolean::operator bool() const noexcept {
+    STORMKIT_FORCE_INLINE
+    constexpr Boolean::operator bool() const noexcept {
         return m_value;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto Boolean::operator!() const noexcept -> Boolean {
+    STORMKIT_FORCE_INLINE
+    constexpr auto Boolean::operator!() const noexcept -> Boolean {
         return Boolean { !m_value };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto operator==(Boolean first, Boolean second) noexcept
-        -> bool {
+    STORMKIT_FORCE_INLINE
+    constexpr auto operator==(Boolean first, Boolean second) noexcept -> bool {
         return static_cast<bool>(first) == static_cast<bool>(second);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto operator==(bool first, Boolean second) noexcept -> bool {
+    STORMKIT_FORCE_INLINE
+    constexpr auto operator==(bool first, Boolean second) noexcept -> bool {
         return first == static_cast<bool>(second);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto operator==(Boolean first, bool second) noexcept -> bool {
+    STORMKIT_FORCE_INLINE
+    constexpr auto operator==(Boolean first, bool second) noexcept -> bool {
         return static_cast<bool>(first) == second;
     }
 }} // namespace stormkit::core

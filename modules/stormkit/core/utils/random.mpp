@@ -11,7 +11,8 @@ export module stormkit.core:utils.random;
 import std;
 
 import :typesafe;
-import :meta.concepts;
+
+import :meta;
 
 export namespace stormkit { inline namespace core {
     auto seed(u32 seed) noexcept -> void;

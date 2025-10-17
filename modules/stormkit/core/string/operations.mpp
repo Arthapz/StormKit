@@ -11,10 +11,13 @@ export module stormkit.core:string.operations;
 import std;
 
 import :utils.contract;
-import :meta.traits;
-import :meta.concepts;
+
+import :meta;
+
 import :typesafe.integer;
+
 import :string.czstring;
+
 import :typesafe.safecasts;
 
 namespace stdr = std::ranges;

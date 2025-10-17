@@ -10,7 +10,7 @@ export module stormkit.core:math.arithmetic;
 
 import std;
 
-import :meta.concepts;
+import :meta;
 
 import :typesafe.safecasts;
 

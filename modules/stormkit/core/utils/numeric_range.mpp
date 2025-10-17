@@ -10,8 +10,8 @@ export module stormkit.core:utils.numeric_range;
 
 import std;
 
-import :meta.traits;
-import :meta.concepts;
+import :meta;
+
 import :typesafe;
 
 import :coroutines;
@@ -42,10 +42,13 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto range(const T& end) noexcept -> decltype(auto);
 
+    template<meta::IsArithmetic T, meta::IsArithmetic U>
+    [[nodiscard]]
+    constexpr auto range(const T& begin, const U& end) noexcept -> decltype(auto);
+
     template<meta::IsArithmetic T, meta::IsArithmetic U, meta::IsArithmetic V = U>
     [[nodiscard]]
-    constexpr auto range(const T& begin, const U& end, const V& step = V { 1 }) noexcept
-      -> decltype(auto);
+    constexpr auto range(const T& begin, const U& end, const V& step) noexcept -> decltype(auto);
 
     [[nodiscard]]
     constexpr auto range(meta::IsNumericsRangePure auto&& range) noexcept -> decltype(auto);
@@ -62,6 +65,9 @@ export namespace stormkit { inline namespace core {
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
+
+namespace stdr = std::ranges;
+namespace stdv = std::views;
 
 namespace stormkit { inline namespace core {
 #define FOR(a, b)  for (auto a = b.begin; a < b.end; a += b.step)
@@ -182,8 +188,28 @@ namespace stormkit { inline namespace core {
     struct Range {
         using Type = typename T::RangeType;
 
+        struct Sentinel {
+            Type val;
+        };
+
         struct Iterator {
+            using value_type      = T;
+            using difference_type = isize;
+
             constexpr Iterator(Type val, Type step) noexcept : m_val { val }, m_step { step } {}
+
+            constexpr Iterator(const Iterator&) noexcept = default;
+            constexpr Iterator(Iterator&&) noexcept      = default;
+            constexpr ~Iterator() noexcept               = default;
+
+            constexpr auto operator=(const Iterator&) noexcept -> Iterator& = default;
+            constexpr auto operator=(Iterator&&) noexcept -> Iterator&      = default;
+
+            constexpr auto operator=(const Sentinel& end) noexcept -> Iterator& {
+                m_val = end.val;
+
+                return *this;
+            }
 
             constexpr auto operator+(std::size_t index) noexcept -> decltype(auto) {
                 auto cpy = clone(*this);
@@ -217,50 +243,45 @@ namespace stormkit { inline namespace core {
                 return m_val == other.m_val;
             }
 
+            constexpr auto operator==(const Sentinel& end) const noexcept -> bool {
+                if (m_step > 0) return m_val >= end.val;
+
+                return m_val <= end.val;
+            }
+
             constexpr auto operator!=(const Iterator& other) const noexcept {
                 return m_val != other.m_val;
             }
 
-            constexpr auto operator*() const noexcept -> Type { return m_val; }
+            constexpr auto operator*() const noexcept -> const Type& { return m_val; }
 
           private:
             Type m_val;
             Type m_step;
         };
 
-        constexpr explicit Range(T&& range)
-            : m_begin { range.begin, range.step }, m_end { range.end, range.step } {}
+        constexpr explicit Range(meta::IsStrict<T> auto&& range)
+            : m_range { std::forward<decltype(range)>(range) } {}
 
-        template<typename Self>
-        constexpr auto begin(this Self&& self) noexcept -> decltype(auto) {
-            return std::forward_like<Self>(self.m_begin);
+        constexpr auto begin() const noexcept -> Iterator {
+            return { m_range.begin, m_range.step };
         }
 
-        constexpr auto cbegin() const noexcept -> const Iterator& { return m_begin; }
+        constexpr auto cbegin() const noexcept -> Iterator { return begin(); }
 
-        template<typename Self>
-        constexpr auto end(this Self&& self) noexcept -> decltype(auto) {
-            return std::forward_like<Self>(self.m_end);
-        }
+        constexpr auto end() const noexcept -> Sentinel { return { m_range.end }; }
 
-        constexpr auto cend() const noexcept -> const Iterator& { return m_end; }
-
-        // template<typename Self>
-        // auto operator[](std::size_t index) const noexcept -> Type {
-        //     return *(m_begin + index);
-        // }
+        constexpr auto cend() const noexcept -> Sentinel { return end(); }
 
       private:
-        Iterator m_begin;
-        Iterator m_end;
+        T m_range;
     };
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     constexpr auto range(meta::IsNumericsRangePure auto&& range) noexcept -> decltype(auto) {
-        // return ranges::views::iota(range.begin, range.end) | ranges::view::stride(range.step);
-        return Range { std::forward<decltype(range)>(range) };
+        return Range<meta::CanonicalType<decltype(range)>> { std::forward<decltype(range)>(range) };
     }
 
     /////////////////////////////////////
@@ -272,6 +293,14 @@ namespace stormkit { inline namespace core {
         return range(NumericsRange<Type> { .begin = as<Type>(begin),
                                            .end   = as<Type>(end),
                                            .step  = as<Type>(step) });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsArithmetic T, meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE
+    constexpr auto range(const T& begin, const U& end) noexcept -> decltype(auto) {
+        return stdv::iota(begin, end);
     }
 
     /////////////////////////////////////

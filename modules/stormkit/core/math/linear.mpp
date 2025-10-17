@@ -13,25 +13,19 @@ import std;
 
 import :math.arithmetic;
 
-import :meta.traits;
-import :meta.concepts;
-import :meta.strong_type;
-
 import :utils.contract;
-import :typesafe.integer;
-import :typesafe.floating_point;
-import :typesafe.safecasts;
 
-import :functional.utils;
+import :meta;
+import :typesafe;
+import :functional;
 
 // TODO improve template deduction
-
 export namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
-    using Euler = core::meta::StrongType<T, struct EulerAngleTag>;
+    using Euler = StrongType<T, struct EulerAngleTag, ArithmeticTag, ImplicitConvertionTag>;
 
     template<core::meta::IsArithmetic T>
-    using Radian = core::meta::StrongType<T, struct RadianAngleTag>;
+    using Radian = StrongType<T, struct RadianAngleTag, ArithmeticTag, ImplicitConvertionTag>;
 
     template<core::meta::IsArithmetic T, usize... Sizes>
         requires(sizeof...(Sizes) >= 1)
@@ -224,38 +218,6 @@ export namespace stormkit { inline namespace core { namespace math {
                            VectorSpan<T, 3>       center,
                            VectorSpan<T, 3>       up,
                            SquareMatrixSpan<T, 4> out) noexcept -> void;
-
-    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
-        requires core::meta::IsSameSigneness<T, U>
-    auto add_tag(Euler<T>, U) -> Euler<T>;
-
-    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
-        requires core::meta::IsSameSigneness<T, U>
-    auto sub_tag(Euler<T>, U) -> Euler<T>;
-
-    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
-        requires core::meta::IsSameSigneness<T, U>
-    auto mul_tag(Euler<T>, U) -> Euler<T>;
-
-    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
-        requires core::meta::IsSameSigneness<T, U>
-    auto div_tag(Euler<T>, U) -> Euler<T>;
-
-    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
-        requires core::meta::IsSameSigneness<T, U>
-    auto add_tag(Radian<T>, U) -> Radian<T>;
-
-    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
-        requires core::meta::IsSameSigneness<T, U>
-    auto sub_tag(Radian<T>, U) -> Radian<T>;
-
-    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
-        requires core::meta::IsSameSigneness<T, U>
-    auto mul_tag(Radian<T>, U) -> Radian<T>;
-
-    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
-        requires core::meta::IsSameSigneness<T, U>
-    auto div_tag(Radian<T>, U) -> Radian<T>;
 }}} // namespace stormkit::core::math
 
 ////////////////////////////////////////////////////////////////////
@@ -347,7 +309,7 @@ namespace stormkit { inline namespace core { namespace math {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto radians(T degres) noexcept -> Radian<T> {
         static constexpr auto one_rad = std::numbers::pi_v<T> / T { 180 };
-        return core::meta::make_named<Radian<T>>(degres * one_rad);
+        return Radian { degres * one_rad };
     }
 
     ////////////////////////////////////////

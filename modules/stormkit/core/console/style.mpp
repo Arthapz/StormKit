@@ -14,7 +14,8 @@ import frozen;
 
 import :typesafe.boolean;
 import :typesafe.flags;
-import :meta.traits;
+
+import :meta;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;

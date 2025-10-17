@@ -6,10 +6,6 @@ export module stormkit.core:math;
 
 import std;
 
-import :meta.concepts;
-
-import :typesafe.integer;
-
 export import :math.arithmetic;
 export import :math.linear;
 export import :math.linear.vector;
@@ -18,3 +14,4 @@ export import :math.trigonometry;
 export import :math.hypercomplex;
 export import :math.extent;
 export import :math.combinatoric;
+export import :math.geometry;

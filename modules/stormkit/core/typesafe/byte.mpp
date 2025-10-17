@@ -12,9 +12,10 @@ export module stormkit.core:typesafe.byte;
 
 import std;
 
-import :meta.concepts;
-import :meta.traits;
+import :meta;
+
 import :typesafe.integer;
+
 import :utils.contract;
 import :utils.tags;
 
