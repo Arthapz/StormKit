@@ -4,9 +4,11 @@
 
 export module stormkit.core:meta;
 
+export import :meta.algorithms;
 export import :meta.concepts;
-export import :meta.traits;
-export import :meta.strong_type;
+export import :meta.type_traits;
+export import :meta.type_query;
+export import :meta.type_manipulation;
 export import :meta.priority_tag;
 
 export namespace stormkit { inline namespace core {

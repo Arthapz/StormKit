@@ -18,7 +18,7 @@ export module stormkit.core:typesafe.floating_point;
 
 import std;
 
-import :meta.concepts;
+import :meta;
 
 export namespace stormkit { inline namespace core {
 #ifdef __STDCPP_FLOAT16_T__

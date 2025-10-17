@@ -10,8 +10,7 @@ export module stormkit.core:math.linear.matrix;
 
 import std;
 
-import :meta.traits;
-import :meta.concepts;
+import :meta;
 
 import :typesafe.integer;
 import :typesafe.floating_point;

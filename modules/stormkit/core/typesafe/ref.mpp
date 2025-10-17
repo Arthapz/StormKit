@@ -14,12 +14,14 @@ export module stormkit.core:typesafe.ref;
 
 import std;
 
-import :meta.concepts;
-import :meta.traits;
+import :meta;
+
 import :utils.contract;
+
 import :typesafe.boolean;
 import :typesafe.integer;
-import :hash.base;
+
+import :hash;
 
 export {
     namespace stormkit { inline namespace core {
@@ -260,16 +262,16 @@ export {
 
     namespace std {
         template<typename T>
-        struct pointer_traits<stormkit::core::Ref<T>> {
-            using pointer         = typename stormkit::core::Ref<T>::PointerType;
-            using element_type    = typename stormkit::core::Ref<T>::ElementType;
+        struct pointer_traits<stormkit::Ref<T>> {
+            using pointer         = typename stormkit::Ref<T>::PointerType;
+            using element_type    = typename stormkit::Ref<T>::ElementType;
             using difference_type = std::ptrdiff_t;
         };
 
         template<typename T>
-        struct hash<Ref<T>> {
+        struct hash<stormkit::Ref<T>> {
             [[nodiscard]]
-            auto operator()(const Ref<T>& ref) const noexcept -> u64;
+            auto operator()(const stormkit::Ref<T>& ref) const noexcept -> stormkit::u64;
         };
     } // namespace std
 }
@@ -779,6 +781,8 @@ namespace stormkit { inline namespace core {
                | std::ranges::to<Out>();
     }
 }} // namespace stormkit::core
+
+using namespace stormkit;
 
 template<typename T>
 inline auto std::hash<Ref<T>>::operator()(const Ref<T>& ref) const noexcept -> u64 {

@@ -10,8 +10,7 @@ export module stormkit.core:functional.error_handling;
 
 import std;
 
-import :meta.concepts;
-import :meta.traits;
+import :meta;
 
 import :console;
 import :utils.contract;

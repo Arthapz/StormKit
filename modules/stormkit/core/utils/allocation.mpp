@@ -14,6 +14,7 @@ import std;
 
 import :meta;
 import :typesafe.safecasts;
+import :typesafe.integer;
 
 export namespace stormkit { inline namespace core {
     struct MemoryAllocationError {
