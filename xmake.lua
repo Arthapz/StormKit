@@ -15,6 +15,14 @@ set_version("0.1.0", { build = "%Y%m%d%H%M" })
 
 includes("xmake/rules/*.lua")
 
+---------------------------- options ----------------------------
+includes("xmake/options.lua")
+
+if get_config("devmode") then
+    set_policy("build.c++.modules.non_cascading_changes", false)
+    set_policy("build.c++.modules.hide_dependencies", true)
+end
+
 ---------------------------- global rules ----------------------------
 if get_config("vsxmake") then add_rules("plugin.vsxmake.autoupdate") end
 
@@ -33,14 +41,6 @@ add_vectorexts("fma")
 add_vectorexts("neon")
 add_vectorexts("avx", "avx2")
 add_vectorexts("sse", "sse2", "sse3", "ssse3", "sse4.2")
-
----------------------------- options ----------------------------
-includes("xmake/options.lua")
-
-if get_config("devmode") then
-    set_policy("build.c++.modules.non_cascading_changes", false)
-    set_policy("build.c++.modules.hide_dependencies", true)
-end
 
 ---------------------------- global configs ----------------------------
 set_allowedmodes(allowed_modes)
