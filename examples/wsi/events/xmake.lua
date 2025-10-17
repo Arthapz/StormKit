@@ -1,9 +1,9 @@
-target("event_handler", function()
+target("events", function()
     set_kind("binary")
     set_languages("cxxlatest", "clatest")
 
     add_rules("stormkit.flags")
-    add_rules("platform.windows.subsystem.windows")
+    add_rules("platform.windows.subsystem.console")
 
     add_deps("stormkit-core", "stormkit-main", "stormkit-log", "stormkit-wsi")
 

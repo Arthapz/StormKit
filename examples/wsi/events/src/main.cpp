@@ -1,0 +1,100 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+import std;
+
+import stormkit.core;
+import stormkit.log;
+import stormkit.wsi;
+
+#include <stormkit/log/log_macro.hpp>
+#include <stormkit/main/main_macro.hpp>
+
+LOGGER("Events");
+
+using namespace stormkit;
+using namespace std::literals;
+
+namespace stdr = std::ranges;
+
+////////////////////////////////////////
+////////////////////////////////////////
+auto main(std::span<const std::string_view> args) -> int {
+    wsi::parse_args(args);
+    auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
+
+    const auto monitors = wsi::get_monitors();
+    ilog("--- Monitors ---");
+    ilog("{}", monitors);
+
+    auto window = wsi::Window::open("Hello world",
+                                    { .width = 800u, .height = 600u },
+                                    wsi::WindowFlag::RESIZEABLE);
+    ilog("wm: {}", window.wm());
+
+    window.on<wsi::EventType::CLOSED>([&window] mutable noexcept { window.close(); });
+
+    window
+      .on(wsi::ResizedEventFunc { [](const math::Extent2<u32>& extent) static noexcept {
+              ilog("Resize event: {}", extent);
+          } },
+          wsi::MonitorChangedEventFunc { [](const wsi::Monitor& monitor) noexcept {
+              ilog("Monitor changed event: {}", monitor);
+          } },
+          wsi::MouseMovedEventFunc { [](u8 /*id*/, const math::vec2i& position) noexcept {
+              ilog("Mouse move event: {}", position);
+          } },
+          wsi::MouseButtonDownEventFunc {
+            [](u8 /*id*/, wsi::MouseButton button, const math::vec2i& position) noexcept {
+                ilog("Mouse button down event: {} {}", button, position);
+            } },
+          wsi::MouseButtonUpEventFunc {
+            [](u8 /*id*/, wsi::MouseButton button, const math::vec2i& position) noexcept {
+                ilog("Mouse button up event: {} {}", button, position);
+            } },
+          wsi::ActivateEventFunc { [] noexcept { ilog("Activate event"); } },
+          wsi::DeactivateEventFunc { [] noexcept { ilog("Deactivate event"); } },
+          wsi::KeyDownEventFunc { [&window](u8 /*id*/, wsi::Key key, char /*c*/) mutable noexcept {
+              switch (key) {
+                  case wsi::Key::ESCAPE:
+                      window.close();
+                      ilog("Closing window");
+                      break;
+                  case wsi::Key::F11:
+                      window.toggle_fullscreen();
+                      ilog("Toggling fullscreen to {}", window.fullscreen());
+                      break;
+                  case wsi::Key::F1:
+                      window.toggle_hidden_mouse();
+                      ilog("Toggling hidden mouse to {}", window.is_mouse_hidden());
+                      break;
+                  case wsi::Key::F2:
+                      window.toggle_locked_mouse();
+                      ilog("Toggling locked mouse to {}", window.is_mouse_locked());
+                      break;
+                  case wsi::Key::F3:
+                      window.toggle_confined_mouse();
+                      ilog("Toggling confined mouse to {}", window.is_mouse_confined());
+                      break;
+                  case wsi::Key::F4:
+                      window.toggle_relative_mouse();
+                      ilog("Toggling relative mouse to {}", window.is_mouse_relative());
+                      break;
+                  case wsi::Key::F5:
+                      window.toggle_key_repeat();
+                      ilog("Toggling key repeat to {}", window.is_key_repeat_enabled());
+                      break;
+                  default: break;
+              }
+
+              ilog("Key down: {}", key);
+          } },
+          wsi::KeyUpEventFunc { [](u8 /*id*/, wsi::Key key, char /*c*/) noexcept {
+              ilog("Key up: {}", key);
+          } });
+
+    window.event_loop();
+
+    return 0;
+}
