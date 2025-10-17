@@ -11,12 +11,17 @@ export module stormkit.core:meta.algorithms;
 import std;
 
 import :meta.concepts;
-import :meta.traits;
 
 export namespace stormkit { inline namespace core { namespace meta {
+    template<bool Cond, typename IfRes, typename ElseRes>
+    using If = std::conditional_t<Cond, IfRes, ElseRes>;
+
+    template<bool Cond, typename True, typename False>
+    using Select = std::conditional_t<Cond, True, False>;
+
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
     constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept
-        -> std::size_t;
+      -> std::size_t;
 }}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
@@ -27,14 +32,14 @@ namespace stormkit { inline namespace core { namespace meta {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename... Ts, typename Predicate>
-    STORMKIT_FORCE_INLINE constexpr auto variant_type_find_if_impl(Predicate&& predicate) noexcept
-        -> std::size_t {
+    STORMKIT_FORCE_INLINE
+    constexpr auto variant_type_find_if_impl(Predicate&& predicate) noexcept -> std::size_t {
         auto found = std::variant_npos;
         [&]<std::size_t... Indices>(std::index_sequence<Indices...>) noexcept {
             if constexpr ((requires {
                               {
                                   std::forward<Predicate>(predicate)
-                                      .template operator()<Indices, Ts>
+                                    .template operator()<Indices, Ts>
                               } -> IsBooleanTestable;
                           } and ...))
                 (((std::forward<Predicate>(predicate).template operator()<Indices, Ts>())
@@ -49,9 +54,9 @@ namespace stormkit { inline namespace core { namespace meta {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
-    STORMKIT_FORCE_INLINE constexpr auto variant_type_find_if(const Variant<Ts...>&,
-                                                              Predicate&& predicate) noexcept
-        -> std::size_t {
+    STORMKIT_FORCE_INLINE
+    constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept
+      -> std::size_t {
         return variant_type_find_if_impl<Ts...>(std::forward<Predicate>(predicate));
     }
 }}} // namespace stormkit::core::meta
