@@ -51,7 +51,7 @@ namespace stormkit::wsi::win32 {
 
         auto get_client_rect(HWND window_handle) noexcept -> RECT;
 
-        auto get_monitor_scale(HMONITOR monitor) -> math::vec2f;
+        // auto get_monitor_scale(HMONITOR monitor) -> math::vec2f;
 
         auto CALLBACK
           global_on_event(HWND handle, UINT message, WPARAM w_param, LPARAM l_param) noexcept
@@ -128,8 +128,8 @@ namespace stormkit::wsi::win32 {
                                                     style,
                                                     CW_USEDEFAULT,
                                                     CW_USEDEFAULT,
-                                                    extent.width,
-                                                    extent.height,
+                                                    as<int>(extent.width),
+                                                    as<int>(extent.height),
                                                     nullptr,
                                                     nullptr,
                                                     h_instance,
@@ -438,7 +438,7 @@ namespace stormkit::wsi::win32 {
 
         const auto [width, height] = m_gdi_frame_data.extent;
 
-        const auto byte_count = width * height * sizeof(u32);
+        const auto byte_count = as<usize>(width * height) * sizeof(u32);
 
         const auto frame_bitmap_info = BITMAPINFOHEADER {
             .biSize          = sizeof(BITMAPINFOHEADER),
@@ -459,10 +459,10 @@ namespace stormkit::wsi::win32 {
         m_gdi_frame_data
           .bitmap                   = HBitmap::create(m_gdi_frame_data.context,
                                                       std::bit_cast<const BITMAPINFO*>(&frame_bitmap_info),
-                                                      DIB_RGB_COLORS,
+                                                      as<UINT>(DIB_RGB_COLORS),
                                                       &ptr,
                                                       nullptr,
-                                                      0);
+                                                      as<DWORD>(0));
         m_gdi_frame_data.pixels_ptr = ptr;
         m_gdi_frame_data.extent     = { width, height };
         SelectObject(m_gdi_frame_data.context, m_gdi_frame_data.bitmap);
@@ -501,25 +501,24 @@ namespace stormkit::wsi::win32 {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto get_monitor_scale(HMONITOR monitor) -> math::vec2f {
-            auto scale = math::vec2f {};
+        // auto get_monitor_scale(HMONITOR monitor) -> math::vec2f {
+        //     auto scale = math::vec2f {};
 
-            auto x_dpi       = 0u;
-            auto y_dpi       = 0u;
-            auto default_dpi = as<f32>(USER_DEFAULT_SCREEN_DPI);
+        //    auto x_dpi       = 0u;
+        //    auto y_dpi       = 0u;
+        //    auto default_dpi = as<f32>(USER_DEFAULT_SCREEN_DPI);
 
-            GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &x_dpi, &y_dpi);
+        //    GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &x_dpi, &y_dpi);
 
-            scale.x = as<f32>(x_dpi) / default_dpi;
-            scale.x = as<f32>(y_dpi) / default_dpi;
+        //    scale.x = as<f32>(x_dpi) / default_dpi;
+        //    scale.x = as<f32>(y_dpi) / default_dpi;
 
-            return scale;
-        }
+        //    return scale;
+        // }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto handle_global_events(UINT message, WPARAM w_param, LPARAM l_param) noexcept
-          -> std::optional<LRESULT> {
+        auto handle_global_events(UINT, WPARAM, LPARAM) noexcept -> std::optional<LRESULT> {
             return std::nullopt;
         }
 
@@ -572,7 +571,6 @@ namespace stormkit::wsi::win32 {
                     if (window.win32_state().external_context) break;
 
                     const auto& gdi_frame_data = window.gdi_frame_data();
-                    const auto [width, height] = window.framebuffer_extent();
 
                     auto ps                               = PAINTSTRUCT {};
                     auto hdc                              = BeginPaint(window_handle, &ps);
@@ -592,8 +590,8 @@ namespace stormkit::wsi::win32 {
                         auto& gdi_frame_data = window.gdi_frame_data();
                         window.gdiinit();
 
-                        const auto width  = as<u32>(gdi_frame_data.extent.width);
-                        const auto height = as<u32>(gdi_frame_data.extent.height);
+                        const auto width  = as<i32>(gdi_frame_data.extent.width);
+                        const auto height = as<i32>(gdi_frame_data.extent.height);
 
                         auto ps  = PAINTSTRUCT {};
                         auto hdc = BeginPaint(window_handle, &ps);
