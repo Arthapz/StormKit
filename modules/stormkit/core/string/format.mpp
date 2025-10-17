@@ -121,9 +121,11 @@ namespace stormkit { inline namespace core {
     }
 }} // namespace stormkit::core
 
+using namespace stormkit;
+
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::HasFormatAs T, typename CharT>
+template<meta::HasFormatAs T, typename CharT>
 template<class ParseContext>
 constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept
   -> ParseContext::iterator {
@@ -132,16 +134,16 @@ constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::HasFormatAs T, typename CharT>
+template<meta::HasFormatAs T, typename CharT>
 template<class FormatContext>
 auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const noexcept
   -> FormatContext::iterator {
-    return stormkit::core::format_fn(value, ctx);
+    return core::format_fn(value, ctx);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::IsDefaultFormattedEnumeration T, typename CharT>
+template<meta::IsDefaultFormattedEnumeration T, typename CharT>
 template<class ParseContext>
 constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept
   -> ParseContext::iterator {
@@ -150,7 +152,7 @@ constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::IsDefaultFormattedEnumeration T, typename CharT>
+template<meta::IsDefaultFormattedEnumeration T, typename CharT>
 template<class FormatContext>
 auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const
   -> FormatContext::iterator {
@@ -161,12 +163,12 @@ auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const
         const auto strvalue = as_string(value);
         return format_to(out, "{}", strvalue);
     } else
-        return format_to(out, "{}", as<stormkit::Underlying>(value));
+        return format_to(out, "{}", as<Underlying>(value));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::IsPointer T, typename CharT>
+template<meta::IsPointer T, typename CharT>
 template<class FormatContext>
 auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const
   -> FormatContext::iterator {
