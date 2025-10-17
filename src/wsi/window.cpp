@@ -14,42 +14,24 @@ import std;
 
 import stormkit.core;
 
+import :window;
+
 #if defined(STORMKIT_OS_WINDOWS)
-import :win32.window_impl;
+import :win32.window;
 
-namespace stormkit::wsi {
-    class WindowImpl: public win32::WindowImpl {
-      public:
-        using win32::WindowImpl::WindowImpl;
-    };
-} // namespace stormkit::wsi
+namespace impl = stormkit::wsi::win32;
 #elif defined(STORMKIT_OS_LINUX)
-import :linux.window_impl;
+import :linux.window;
 
-namespace stormkit::wsi {
-    class WindowImpl: public linux::WindowImpl {
-      public:
-        using linux::WindowImpl::WindowImpl;
-    };
-} // namespace stormkit::wsi
+namespace impl = stormkit::wsi::linux;
 #elif defined(STORMKIT_OS_MACOS)
-import :macos.window_impl;
+import :macos.window;
 
-namespace stormkit::wsi {
-    class WindowImpl: public macos::WindowImpl {
-      public:
-        using macos::WindowImpl::WindowImpl;
-    };
-} // namespace stormkit::wsi
+namespace impl = stormkkit::wsi::macos;
 #elif defined(STORMKIT_OS_IOS)
-import :ios.window_impl;
+import :ios.window;
 
-namespace stormkit::wsi {
-    class WindowImpl: public ios::WindowImpl {
-      public:
-        using ios::WindowImpl::WindowImpl;
-    };
-} // namespace stormkit::wsi
+namespace impl = stormkit::wsi::ios;
 #else
     #error "OS not supported !"
 #endif
@@ -57,54 +39,35 @@ namespace stormkit::wsi {
 using namespace std::literals;
 
 namespace stormkit::wsi {
-    namespace {
-        auto wm_hint = std::optional<WM> {};
+    class WindowImpl: public impl::Window {
+      public:
+        using impl::Window::Window;
+    };
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    Window::Window() noexcept : m_wm { wsi::wm() }, m_impl { m_wm } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto parse_args(std::span<const std::string_view> args) noexcept -> void {
-        auto hint = std::ranges::find_if(args, [](auto&& v) {
-            return v == "--x11" or v == "--wayland";
-        });
-
-        if (hint != std::ranges::cend(args)) {
-            if (*hint == "--x11") wm_hint = WM::X11;
-            else if (*hint == "--wayland")
-                wm_hint = WM::WAYLAND;
-        }
-    }
+    Window::~Window() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::Window() noexcept : m_impl { wm() } {
-    }
+    Window::Window(Window&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::Window(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
-        : m_impl { wm() } {
-        create(std::move(title), size, flags);
-    }
+    auto Window::operator=(Window&&) noexcept -> Window& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::~Window() = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    Window::Window(Window&&) = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    Window& Window::operator=(Window&&) = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::create(std::string               title,
-                        const math::Extent2<u32>& size,
-                        WindowFlag                flags) noexcept -> void {
-        m_impl->create(std::move(title), size, flags);
+    auto Window::open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
+      -> Window {
+        auto window = Window {};
+        window.m_impl->open(std::move(title), size, flags);
+        return window;
     }
 
     /////////////////////////////////////
@@ -115,14 +78,14 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::clear(const RGBColorU& color) noexcept -> void {
+    auto Window::clear(const rgbcolor<u8>& color) noexcept -> void {
         m_impl->clear(color);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_pixels_to(std::span<const RGBColorU> colors) noexcept -> void {
-        m_impl->set_pixels_to(colors);
+    auto Window::fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void {
+        m_impl->fill_framebuffer(colors);
     }
 
     /////////////////////////////////////
@@ -133,20 +96,20 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::poll_event(Event& event) noexcept -> bool {
-        return m_impl->poll_event(event);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::wait_event(Event& event) noexcept -> bool {
-        return m_impl->wait_event(event);
+    auto Window::handle_events() noexcept -> void {
+        m_impl->handle_events();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::visible() const noexcept -> bool {
         return m_impl->visible();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::current_monitor() const noexcept -> const Monitor& {
+        return m_impl->current_monitor();
     }
 
     /////////////////////////////////////
@@ -169,7 +132,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::extent() const noexcept -> math::Extent2<u32> {
+    auto Window::extent() const noexcept -> const math::Extent2<u32>& {
         return m_impl->extent();
     }
 
@@ -271,58 +234,85 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position_on_desktop(const math::vec2u& position, u32 mouse_id) noexcept
-      -> void {
-        WindowImpl::set_mouse_position_on_desktop(wm(), position, mouse_id);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::get_monitor_settings() -> std::vector<Monitor> {
-        return WindowImpl::get_monitor_settings(wm());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::get_primary_monitor_settings() -> Monitor {
-        const auto settings = get_monitor_settings();
-
-        const auto it = std::ranges::find_if(settings, [](const auto& monitor) {
-            return check_flag_bit(monitor.flags, Monitor::Flags::PRIMARY);
-        });
-
-        ENSURES(it != std::ranges::cend(settings));
-
-        return *it;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    WM Window::wm() noexcept {
-#if defined(STORMKIT_OS_WINDOWS)
-        return WM::WIN32;
-#elif defined(STORMKIT_OS_MACOS)
-        return WM::MACOS;
-#elif defined(STORMKIT_OS_IOS)
-        return WM::IOS;
-#elif defined(STORMKIT_OS_ANDROID)
-        return WM::ANDROID;
-#elif defined(STORMKIT_OS_SWITCH)
-        return WM::SWITCH;
-#elif defined(STORMKIT_OS_LINUX)
-        auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
-
-        if (wm_hint) return wm_hint.value();
-        else if (is_wayland)
-            return WM::WAYLAND;
-        else
-            return WM::X11;
-#endif
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
     auto Window::native_handle() const noexcept -> NativeHandle {
         return m_impl->native_handle();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_closed(ClosedEventFunc&& callback) noexcept -> void {
+        m_impl->closed_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_monitor_changed(MonitorChangedEventFunc&& callback) noexcept -> void {
+        m_impl->monitor_changed_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_resized(ResizedEventFunc&& callback) noexcept -> void {
+        m_impl->resized_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_restored(RestoredEventFunc&& callback) noexcept -> void {
+        m_impl->restored_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_minimized(MinimizedEventFunc&& callback) noexcept -> void {
+        m_impl->minimized_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_maximized(MaximizedEventFunc&& callback) noexcept -> void {
+        m_impl->maximized_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_key_down(KeyDownEventFunc&& callback) noexcept -> void {
+        m_impl->key_down_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_key_up(KeyUpEventFunc&& callback) noexcept -> void {
+        m_impl->key_up_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_mouse_button_down(MouseButtonDownEventFunc&& callback) noexcept -> void {
+        m_impl->mouse_button_down_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_mouse_button_up(MouseButtonUpEventFunc&& callback) noexcept -> void {
+        m_impl->mouse_button_up_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_mouse_moved(MouseMovedEventFunc&& callback) noexcept -> void {
+        m_impl->mouse_moved_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_activate(ActivateEventFunc&& callback) noexcept -> void {
+        m_impl->activate_event = std::move(callback);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::on_deactivate(DeactivateEventFunc&& callback) noexcept -> void {
+        m_impl->deactivate_event = std::move(callback);
     }
 } // namespace stormkit::wsi
