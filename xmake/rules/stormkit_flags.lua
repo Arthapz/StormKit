@@ -13,10 +13,14 @@ rule("stormkit.flags", function()
     end)
     on_load("windows", function(target)
         import("core.tool.compiler")
+        if get_config("rad") and is_subhost("windows") then
+            target:add("ldflags", "-fuse-ld=radlink")
+            target:add("shflags", "-fuse-ld=radlink")
+        end
         local compinst = compiler.load("cxx")
         local cxx = path.filename(compinst:program())
         if get_config("sanitizers") then
-            if cxx ~= "cl.exe" and cxx ~= "clang-cl.exe" then
+            if target:has_runtime("c++_shared", "c++_static") then
                 target:set("policy", "build.sanitizer.address", true)
                 target:set("policy", "build.sanitizer.undefined", true)
             end
