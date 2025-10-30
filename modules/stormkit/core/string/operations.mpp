@@ -86,6 +86,9 @@ export namespace stormkit { inline namespace core {
         requires(as_string(std::declval<T>()))
     [[nodiscard]]
     constexpr auto as_czstring(T&& value) noexcept -> CZString;
+
+    template<meta::IsCharType T>
+    constexpr auto is_text(T c) noexcept -> bool;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -279,5 +282,13 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_czstring(T value) noexcept -> CZString {
         return stdr::data(as_string(std::forward<T>(value)));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsCharType T>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto is_text(T c) noexcept -> bool {
+        return (c >= 32 and c <= 126) or (c >= 128);
     }
 }} // namespace stormkit::core
