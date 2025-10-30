@@ -28,13 +28,17 @@ auto main(std::span<const std::string_view> args) -> int {
     ilog("--- Monitors ---");
     ilog("{}", monitors);
 
-    auto window = wsi::Window::open("Hello world",
+    auto window = wsi::Window::open("StormKit WSI events Example",
                                     { .width = 800u, .height = 600u },
                                     wsi::WindowFlag::RESIZEABLE);
     ilog("wm: {}", window.wm());
 
-    window.on<wsi::EventType::CLOSED>([&window] mutable noexcept { window.close(); });
+    window.on<wsi::EventType::CLOSED>([] static noexcept {
+        ilog("Close event");
+        return true;
+    });
 
+    auto foo = 0;
     window
       .on(wsi::ResizedEventFunc { [](const math::Extent2<u32>& extent) static noexcept {
               ilog("Resize event: {}", extent);
@@ -53,48 +57,69 @@ auto main(std::span<const std::string_view> args) -> int {
             [](u8 /*id*/, wsi::MouseButton button, const math::vec2i& position) noexcept {
                 ilog("Mouse button up event: {} {}", button, position);
             } },
+          wsi::RestoredEventFunc { [] noexcept { ilog("Restored event"); } },
+          wsi::MinimizedEventFunc { [] noexcept { ilog("Minimized event"); } },
           wsi::ActivateEventFunc { [] noexcept { ilog("Activate event"); } },
           wsi::DeactivateEventFunc { [] noexcept { ilog("Deactivate event"); } },
-          wsi::KeyDownEventFunc { [&window](u8 /*id*/, wsi::Key key, char /*c*/) mutable noexcept {
-              switch (key) {
-                  case wsi::Key::ESCAPE:
-                      window.close();
-                      ilog("Closing window");
-                      break;
-                  case wsi::Key::F11:
-                      window.toggle_fullscreen();
-                      ilog("Toggling fullscreen to {}", window.fullscreen());
-                      break;
-                  case wsi::Key::F1:
-                      window.toggle_hidden_mouse();
-                      ilog("Toggling hidden mouse to {}", window.is_mouse_hidden());
-                      break;
-                  case wsi::Key::F2:
-                      window.toggle_locked_mouse();
-                      ilog("Toggling locked mouse to {}", window.is_mouse_locked());
-                      break;
-                  case wsi::Key::F3:
-                      window.toggle_confined_mouse();
-                      ilog("Toggling confined mouse to {}", window.is_mouse_confined());
-                      break;
-                  case wsi::Key::F4:
-                      window.toggle_relative_mouse();
-                      ilog("Toggling relative mouse to {}", window.is_mouse_relative());
-                      break;
-                  case wsi::Key::F5:
-                      window.toggle_key_repeat();
-                      ilog("Toggling key repeat to {}", window.is_key_repeat_enabled());
-                      break;
-                  default: break;
-              }
+          wsi::KeyDownEventFunc {
+            [&window, &foo](u8 /*id*/, wsi::Key key, char c) mutable noexcept {
+                switch (key) {
+                    case wsi::Key::ESCAPE:
+                        window.close();
+                        ilog("Closing window");
+                        break;
+                    case wsi::Key::W: {
+                        auto extent = window.extent();
+                        extent.width += 10;
+                        window.set_extent(extent);
+                    } break;
+                    case wsi::Key::T: {
+                        window
+                          .set_title(std::format("StormKit WSI Events Example | T pressed {} times",
+                                                 ++foo));
+                    } break;
+                    case wsi::Key::H: {
+                        auto extent = window.extent();
+                        extent.height += 10;
+                        window.set_extent(extent);
+                    } break;
+                    case wsi::Key::F11:
+                        window.toggle_fullscreen();
+                        ilog("Toggling fullscreen to {}", window.fullscreen());
+                        break;
+                    case wsi::Key::F1:
+                        window.toggle_hidden_mouse();
+                        ilog("Toggling hidden mouse to {}", window.is_mouse_hidden());
+                        break;
+                    case wsi::Key::F2:
+                        window.toggle_locked_mouse();
+                        ilog("Toggling locked mouse to {}", window.is_mouse_locked());
+                        break;
+                    case wsi::Key::F3:
+                        window.toggle_confined_mouse();
+                        ilog("Toggling confined mouse to {}", window.is_mouse_confined());
+                        break;
+                    case wsi::Key::F4:
+                        window.toggle_relative_mouse();
+                        ilog("Toggling relative mouse to {}", window.is_mouse_relative());
+                        break;
+                    case wsi::Key::F5:
+                        window.toggle_key_repeat();
+                        ilog("Toggling key repeat to {}", window.is_key_repeat_enabled());
+                        break;
+                    default: break;
+                }
 
-              ilog("Key down: {}", key);
-          } },
+                ilog("Key down --\n    code: {}\n    value: '{}'\n    raw_value: 0x{:0x})",
+                     key,
+                     c,
+                     c);
+            } },
           wsi::KeyUpEventFunc { [](u8 /*id*/, wsi::Key key, char /*c*/) noexcept {
-              ilog("Key up: {}", key);
+              ilog("Key up --\n    code: {}", key);
           } });
 
-    window.event_loop();
+    window.event_loop([&] mutable { window.clear(); });
 
     return 0;
 }

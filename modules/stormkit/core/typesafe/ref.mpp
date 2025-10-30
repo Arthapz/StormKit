@@ -40,6 +40,10 @@ export {
             using element_type = ElementType;
             using pointer      = PointerType;
 
+            constexpr Ref(std::nullopt_t) noexcept
+                requires(Optional == true);
+            constexpr Ref(std::nullptr_t) noexcept
+                requires(Optional == true);
             constexpr Ref() noexcept
                 requires(Optional == true);
             constexpr ~Ref() noexcept;
@@ -286,6 +290,24 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
     constexpr Ref<T, Optional>::Ref() noexcept
+        requires(Optional == true)
+        : m_value { nullptr } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, bool Optional>
+    STORMKIT_FORCE_INLINE
+    constexpr Ref<T, Optional>::Ref(std::nullopt_t) noexcept
+        requires(Optional == true)
+        : m_value { nullptr } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, bool Optional>
+    STORMKIT_FORCE_INLINE
+    constexpr Ref<T, Optional>::Ref(std::nullptr_t) noexcept
         requires(Optional == true)
         : m_value { nullptr } {
     }
@@ -644,7 +666,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto unref(const Ref<T>& value) noexcept -> const T& {
         return *value;
     }
@@ -652,7 +674,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsNotConst T>
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto unref_mut(const Ref<T>& value) noexcept -> T& {
         return *value;
     }

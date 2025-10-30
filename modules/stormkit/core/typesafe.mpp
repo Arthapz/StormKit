@@ -17,6 +17,7 @@ export import :typesafe.integer;
 export import :typesafe.floating_point;
 export import :typesafe.flags;
 export import :typesafe.safecasts;
+export import :typesafe.checked_value;
 
 export namespace stormkit { inline namespace core {
     template<typename T>

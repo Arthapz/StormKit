@@ -87,7 +87,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     auto CommandBuffer::begin(bool                           one_time_submit,
                               std::optional<InheritanceInfo> inheritance_info) noexcept
-      -> Expected<void> {
+      -> Expected<Ref<CommandBuffer>> {
         EXPECTS(m_state == State::INITIAL);
 
         const auto vk_inheritance_info = [&inheritance_info] {
@@ -119,7 +119,10 @@ namespace stormkit::gpu {
         };
 
         return vk_call(m_vk_device_table->vkBeginCommandBuffer, m_vk_handle, &begin_info)
-          .transform([this] noexcept { m_state = State::RECORDING; })
+          .transform([this, &self = *this] noexcept {
+              m_state = State::RECORDING;
+              return as_ref_mut(self);
+          })
           .transform_error(monadic::from_vk<Result>());
     }
 
@@ -295,27 +298,30 @@ namespace stormkit::gpu {
 
         if (stdr::empty(buffer_image_copies)) buffer_image_copies = DEFAULT_COPY;
 
-        const auto vk_copy_regions
-          = buffer_image_copies
-            | stdv::transform([](auto&& buffer_image_copy) noexcept {
-                  const auto image_subresource = VkImageSubresourceLayers {
-                      .aspectMask = to_vk<VkImageAspectFlags>(buffer_image_copy.subresource_layers
-                                                                .aspect_mask),
-                      .mipLevel   = buffer_image_copy.subresource_layers.mip_level,
-                      .baseArrayLayer = buffer_image_copy.subresource_layers.base_array_layer,
-                      .layerCount     = buffer_image_copy.subresource_layers.layer_count,
-                  };
+        const auto
+          vk_copy_regions = buffer_image_copies
+                            | stdv::transform([](auto&& buffer_image_copy) noexcept {
+                                  const auto image_subresource = VkImageSubresourceLayers {
+                                      .aspectMask = to_vk<VkImageAspectFlags>(buffer_image_copy
+                                                                                .subresource_layers
+                                                                                .aspect_mask),
+                                      .mipLevel   = buffer_image_copy.subresource_layers.mip_level,
+                                      .baseArrayLayer = buffer_image_copy.subresource_layers
+                                                          .base_array_layer,
+                                      .layerCount = buffer_image_copy.subresource_layers
+                                                      .layer_count,
+                                  };
 
-                  return VkBufferImageCopy {
-                      .bufferOffset      = buffer_image_copy.buffer_offset,
-                      .bufferRowLength   = buffer_image_copy.buffer_row_length,
-                      .bufferImageHeight = buffer_image_copy.buffer_image_height,
-                      .imageSubresource  = image_subresource,
-                      .imageOffset       = to_vk<VkOffset3D>(buffer_image_copy.offset),
-                      .imageExtent       = to_vk(buffer_image_copy.extent)
-                  };
-              })
-            | stdr::to<std::vector>();
+                                  return VkBufferImageCopy {
+                                      .bufferOffset      = buffer_image_copy.buffer_offset,
+                                      .bufferRowLength   = buffer_image_copy.buffer_row_length,
+                                      .bufferImageHeight = buffer_image_copy.buffer_image_height,
+                                      .imageSubresource  = image_subresource,
+                                      .imageOffset = to_vk<VkOffset3D>(buffer_image_copy.offset),
+                                      .imageExtent = to_vk(buffer_image_copy.extent)
+                                  };
+                              })
+                            | stdr::to<std::vector>();
 
         vk_call(m_vk_device_table->vkCmdCopyBufferToImage,
                 m_vk_handle,
@@ -341,27 +347,30 @@ namespace stormkit::gpu {
 
         if (stdr::empty(buffer_image_copies)) buffer_image_copies = DEFAULT_COPY;
 
-        const auto vk_copy_regions
-          = buffer_image_copies
-            | stdv::transform([](auto&& buffer_image_copy) noexcept {
-                  const auto image_subresource = VkImageSubresourceLayers {
-                      .aspectMask = to_vk<VkImageAspectFlags>(buffer_image_copy.subresource_layers
-                                                                .aspect_mask),
-                      .mipLevel   = buffer_image_copy.subresource_layers.mip_level,
-                      .baseArrayLayer = buffer_image_copy.subresource_layers.base_array_layer,
-                      .layerCount     = buffer_image_copy.subresource_layers.layer_count,
-                  };
+        const auto
+          vk_copy_regions = buffer_image_copies
+                            | stdv::transform([](auto&& buffer_image_copy) noexcept {
+                                  const auto image_subresource = VkImageSubresourceLayers {
+                                      .aspectMask = to_vk<VkImageAspectFlags>(buffer_image_copy
+                                                                                .subresource_layers
+                                                                                .aspect_mask),
+                                      .mipLevel   = buffer_image_copy.subresource_layers.mip_level,
+                                      .baseArrayLayer = buffer_image_copy.subresource_layers
+                                                          .base_array_layer,
+                                      .layerCount = buffer_image_copy.subresource_layers
+                                                      .layer_count,
+                                  };
 
-                  return VkBufferImageCopy {
-                      .bufferOffset      = buffer_image_copy.buffer_offset,
-                      .bufferRowLength   = buffer_image_copy.buffer_row_length,
-                      .bufferImageHeight = buffer_image_copy.buffer_image_height,
-                      .imageSubresource  = image_subresource,
-                      .imageOffset       = to_vk<VkOffset3D>(buffer_image_copy.offset),
-                      .imageExtent       = to_vk(buffer_image_copy.extent)
-                  };
-              })
-            | stdr::to<std::vector>();
+                                  return VkBufferImageCopy {
+                                      .bufferOffset      = buffer_image_copy.buffer_offset,
+                                      .bufferRowLength   = buffer_image_copy.buffer_row_length,
+                                      .bufferImageHeight = buffer_image_copy.buffer_image_height,
+                                      .imageSubresource  = image_subresource,
+                                      .imageOffset = to_vk<VkOffset3D>(buffer_image_copy.offset),
+                                      .imageExtent = to_vk(buffer_image_copy.extent)
+                                  };
+                              })
+                            | stdr::to<std::vector>();
 
         vk_call(m_vk_device_table->vkCmdCopyImageToBuffer,
                 m_vk_handle,
@@ -473,33 +482,33 @@ namespace stormkit::gpu {
                                    Filter                      filter) noexcept -> CommandBuffer& {
         EXPECTS(m_state == State::RECORDING);
 
-        const auto vk_regions
-          = regions
-            | stdv::transform([](auto&& region) noexcept {
-                  const auto vk_src_subresource_layers = VkImageSubresourceLayers {
-                      .aspectMask     = to_vk<VkImageAspectFlags>(region.src.aspect_mask),
-                      .mipLevel       = region.src.mip_level,
-                      .baseArrayLayer = region.src.base_array_layer,
-                      .layerCount     = region.src.layer_count
-                  };
+        const auto
+          vk_regions = regions
+                       | stdv::transform([](auto&& region) noexcept {
+                             const auto vk_src_subresource_layers = VkImageSubresourceLayers {
+                                 .aspectMask = to_vk<VkImageAspectFlags>(region.src.aspect_mask),
+                                 .mipLevel   = region.src.mip_level,
+                                 .baseArrayLayer = region.src.base_array_layer,
+                                 .layerCount     = region.src.layer_count
+                             };
 
-                  const auto vk_dst_subresource_layers = VkImageSubresourceLayers {
-                      .aspectMask     = to_vk<VkImageAspectFlags>(region.dst.aspect_mask),
-                      .mipLevel       = region.dst.mip_level,
-                      .baseArrayLayer = region.dst.base_array_layer,
-                      .layerCount     = region.dst.layer_count
-                  };
+                             const auto vk_dst_subresource_layers = VkImageSubresourceLayers {
+                                 .aspectMask = to_vk<VkImageAspectFlags>(region.dst.aspect_mask),
+                                 .mipLevel   = region.dst.mip_level,
+                                 .baseArrayLayer = region.dst.base_array_layer,
+                                 .layerCount     = region.dst.layer_count
+                             };
 
-                  return VkImageBlit {
-                      .srcSubresource = vk_src_subresource_layers,
-                      .srcOffsets     = { to_vk<VkOffset3D>(region.src_offset[0]),
-                                         to_vk<VkOffset3D>(region.src_offset[1]) },
-                      .dstSubresource = vk_dst_subresource_layers,
-                      .dstOffsets     = { to_vk<VkOffset3D>(region.dst_offset[0]),
-                                         to_vk<VkOffset3D>(region.dst_offset[1]) },
-                  };
-              })
-            | stdr::to<std::vector>();
+                             return VkImageBlit {
+                                 .srcSubresource = vk_src_subresource_layers,
+                                 .srcOffsets     = { to_vk<VkOffset3D>(region.src_offset[0]),
+                                                    to_vk<VkOffset3D>(region.src_offset[1]) },
+                                 .dstSubresource = vk_dst_subresource_layers,
+                                 .dstOffsets     = { to_vk<VkOffset3D>(region.dst_offset[0]),
+                                                    to_vk<VkOffset3D>(region.dst_offset[1]) },
+                             };
+                         })
+                       | stdr::to<std::vector>();
 
         vk_call(m_vk_device_table->vkCmdBlitImage,
                 m_vk_handle,
@@ -579,36 +588,37 @@ namespace stormkit::gpu {
                        std::span<const BufferMemoryBarrier> buffer_memory_barriers,
                        std::span<const ImageMemoryBarrier>  image_memory_barriers) noexcept
       -> CommandBuffer& {
-        const auto vk_memory_barriers = memory_barriers
-                                        | stdv::transform([](auto&& barrier) noexcept
-                                                            -> decltype(auto) {
-                                              return VkMemoryBarrier {
-                                                  .sType         = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
-                                                  .pNext         = nullptr,
-                                                  .srcAccessMask = to_vk<VkAccessFlags>(barrier
-                                                                                          .src),
-                                                  .dstAccessMask = to_vk<VkAccessFlags>(barrier
-                                                                                          .dst),
-                                              };
-                                          })
-                                        | stdr::to<std::vector>();
+        const auto
+          vk_memory_barriers = memory_barriers
+                               | stdv::transform([](auto&& barrier) noexcept -> decltype(auto) {
+                                     return VkMemoryBarrier {
+                                         .sType         = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+                                         .pNext         = nullptr,
+                                         .srcAccessMask = to_vk<VkAccessFlags>(barrier.src),
+                                         .dstAccessMask = to_vk<VkAccessFlags>(barrier.dst),
+                                     };
+                                 })
+                               | stdr::to<std::vector>();
 
-        const auto vk_buffer_memory_barriers
-          = buffer_memory_barriers
-            | stdv::transform([](auto&& barrier) noexcept -> decltype(auto) {
-                  return VkBufferMemoryBarrier {
-                      .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-                      .pNext               = nullptr,
-                      .srcAccessMask       = to_vk<VkAccessFlags>(barrier.src),
-                      .dstAccessMask       = to_vk<VkAccessFlags>(barrier.dst),
-                      .srcQueueFamilyIndex = barrier.src_queue_family_index,
-                      .dstQueueFamilyIndex = barrier.dst_queue_family_index,
-                      .buffer              = to_vk(barrier.buffer),
-                      .offset              = barrier.offset,
-                      .size                = barrier.size
-                  };
-              })
-            | stdr::to<std::vector>();
+        const auto
+          vk_buffer_memory_barriers = buffer_memory_barriers
+                                      | stdv::transform([](auto&& barrier) noexcept
+                                                          -> decltype(auto) {
+                                            return VkBufferMemoryBarrier {
+                                                .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                                                .pNext = nullptr,
+                                                .srcAccessMask = to_vk<VkAccessFlags>(barrier.src),
+                                                .dstAccessMask = to_vk<VkAccessFlags>(barrier.dst),
+                                                .srcQueueFamilyIndex = barrier
+                                                                         .src_queue_family_index,
+                                                .dstQueueFamilyIndex = barrier
+                                                                         .dst_queue_family_index,
+                                                .buffer = to_vk(barrier.buffer),
+                                                .offset = barrier.offset,
+                                                .size   = barrier.size
+                                            };
+                                        })
+                                      | stdr::to<std::vector>();
 
         const auto vk_image_memory_barriers
           = image_memory_barriers

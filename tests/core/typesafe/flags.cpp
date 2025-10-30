@@ -112,7 +112,7 @@ namespace {
 
                 {
                     auto foo = (~Flag2::B);
-                    EXPECTS(foo == (~Flag2::B));
+                    EXPECTS(foo == static_cast<int>(~Flag2::B));
                 }
             },
           }, {

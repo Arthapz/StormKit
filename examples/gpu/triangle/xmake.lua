@@ -14,7 +14,8 @@ target("triangle", function()
     set_languages("cxxlatest", "clatest")
 
     add_rules("stormkit.flags")
-    add_rules("platform.windows.subsystem.windows")
+    -- add_rules("platform.windows.subsystem.windows")
+    add_rules("platform.windows.subsystem.console")
 
     add_rules("compile.shaders")
     add_deps("stormkit-core", "stormkit-main", "stormkit-log", "stormkit-wsi", "stormkit-gpu")
@@ -38,7 +39,7 @@ target("triangle", function()
         set_rundir("$(projectdir)")
     end
 
-    -- add_cxflags("--embed-dir=$(builddir)/shaders", {tools = {"clang", "clangxx", "clang-cl", "gcc", "gxx"}})
+    add_embeddirs("$(builddir)/shaders")
 
     set_group("examples/stormkit-gpu")
 end)

@@ -1,6 +1,6 @@
 #import "View.h"
 #import "ViewController.h"
-#import "WindowImpl.hpp"
+#import "Window.hpp"
 
 #import <UIKit/UIApplication.h>
 #import <UIKit/UIScreen.h>
@@ -13,27 +13,27 @@ using namespace storm::window;
 
 /////////////////////////////////////
 /////////////////////////////////////
-WindowImpl::WindowImpl() noexcept
+Window::Window() noexcept
     : AbstractWindow {}, m_window { nil }, m_view_controller { nil }, m_view { nil } {
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-WindowImpl::WindowImpl(const std::string &title,
+Window::Window(const std::string &title,
                        const storm::window::VideoSettings &settings,
                        const storm::window::WindowStyle style) noexcept
-    : WindowImpl {} {
+    : Window {} {
     create(title, settings, style);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-WindowImpl::~WindowImpl() {
+Window::~Window() {
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WindowImpl::create(const std::string &title,
+void Window::create(const std::string &title,
                         const VideoSettings &settings,
                         WindowStyle style) noexcept {
     m_title          = title;
@@ -64,12 +64,12 @@ void WindowImpl::create(const std::string &title,
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WindowImpl::close() noexcept {
+void Window::close() noexcept {
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool WindowImpl::poll_event(storm::window::Event &event, void *) noexcept {
+bool Window::poll_event(storm::window::Event &event, void *) noexcept {
     while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0001, true) == kCFRunLoopRunHandledSource);
 
     return AbstractWindow::poll_event(event);
@@ -77,7 +77,7 @@ bool WindowImpl::poll_event(storm::window::Event &event, void *) noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool WindowImpl::wait_event(storm::window::Event &event, void *native_event) noexcept {
+bool Window::wait_event(storm::window::Event &event, void *native_event) noexcept {
     ;
     while (!AbstractWindow::wait_event(event, native_event));
 
@@ -86,34 +86,34 @@ bool WindowImpl::wait_event(storm::window::Event &event, void *native_event) noe
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WindowImpl::set_title(const std::string &title) noexcept {
+void Window::set_title(const std::string &title) noexcept {
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void WindowImpl::setVideoSettings(const VideoSettings &settings) noexcept {
+void Window::setVideoSettings(const VideoSettings &settings) noexcept {
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-storm::core::Extentu WindowImpl::size() const noexcept {
+storm::core::Extentu Window::size() const noexcept {
     return m_video_settings.size;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool WindowImpl::is_open() const noexcept {
+bool Window::is_open() const noexcept {
     return true;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool WindowImpl::isVisible() const noexcept {
+bool Window::isVisible() const noexcept {
     return true;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-storm::window::NativeHandle WindowImpl::native_handle() const noexcept {
+storm::window::NativeHandle Window::native_handle() const noexcept {
     return m_view;
 }

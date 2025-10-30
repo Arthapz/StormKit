@@ -2,6 +2,10 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
 export module stormkit.core:math.extent;
 
 import std;
@@ -9,10 +13,7 @@ import std;
 import :utils.contract;
 import :meta;
 import :hash;
-import :typesafe.safecasts;
-import :typesafe.integer;
-import :typesafe.floating_point;
-import :string.constexpr_string;
+import :typesafe;
 
 using namespace stormkit;
 using namespace std::literals;
@@ -31,7 +32,11 @@ export {
             using OrderingType         = meta::ArithmeticOrderingType<T>;
 
             template<core::meta::IsArithmetic U>
-            constexpr auto to() const noexcept -> Extent<U, 2>;
+            constexpr auto narrow_to() const noexcept -> Extent<U, 2>;
+
+            template<core::meta::IsArithmetic U>
+            constexpr auto to(const std::source_location& = std::source_location::current())
+              const noexcept -> Extent<U, 2>;
 
             template<usize NEW_RANK>
             constexpr auto to() const noexcept -> Extent<T, NEW_RANK>;
@@ -53,7 +58,11 @@ export {
             using OrderingType         = meta::ArithmeticOrderingType<T>;
 
             template<core::meta::IsArithmetic U>
-            constexpr auto to() const noexcept -> Extent<U, 3>;
+            constexpr auto narrow_to() const noexcept -> Extent<U, 3>;
+
+            template<core::meta::IsArithmetic U>
+            constexpr auto to(const std::source_location& = std::source_location::current())
+              const noexcept -> Extent<U, 3>;
 
             template<usize NEW_RANK>
             constexpr auto to() const noexcept -> Extent<T, NEW_RANK>;
@@ -70,6 +79,12 @@ export {
 
         template<core::meta::IsArithmetic T>
         using Extent3 = Extent<T, 3>;
+
+        template<core::meta::IsArithmetic T>
+        Extent(T, T) -> Extent<T, 2>;
+
+        template<core::meta::IsArithmetic T>
+        Extent(T, T, T) -> Extent<T, 3>;
 
         namespace meta {
             template<class T>
@@ -174,14 +189,26 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<core::meta::IsArithmetic T>
     template<core::meta::IsArithmetic U>
-    constexpr auto Extent<T, 2>::to() const noexcept -> Extent<U, 2> {
-        return { .width = as<U>(width), .height = as<U>(height) };
+    STORMKIT_PURE
+    constexpr auto Extent<T, 2>::narrow_to() const noexcept -> Extent<U, 2> {
+        return { .width = narrow<U>(width), .height = narrow<U>(height) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    template<core::meta::IsArithmetic U>
+    STORMKIT_PURE
+    constexpr auto Extent<T, 2>::to(const std::source_location& location) const noexcept
+      -> Extent<U, 2> {
+        return { .width = as<U>(width, location), .height = as<U>(height, location) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<core::meta::IsArithmetic T>
     template<usize NEW_RANK>
+    STORMKIT_PURE
     constexpr auto Extent<T, 2>::to() const noexcept -> Extent<T, NEW_RANK> {
         using Out        = Extent<ElementType, NEW_RANK>;
         using Array      = std::array<ElementType, RANK>;
@@ -204,14 +231,30 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<core::meta::IsArithmetic T>
     template<core::meta::IsArithmetic U>
-    constexpr auto Extent<T, 3>::to() const noexcept -> Extent<U, 3> {
-        return { .width = as<U>(width), .height = as<U>(height), .depth = as<U>(depth) };
+    STORMKIT_PURE
+    constexpr auto Extent<T, 3>::narrow_to() const noexcept -> Extent<U, 3> {
+        return { .width  = narrow<U>(width),
+                 .height = narrow<U>(height),
+                 .depth  = narrow<U>(depth) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    template<core::meta::IsArithmetic U>
+    STORMKIT_PURE
+    constexpr auto Extent<T, 3>::to(const std::source_location& location) const noexcept
+      -> Extent<U, 3> {
+        return { .width  = as<U>(width, location),
+                 .height = as<U>(height, location),
+                 .depth  = as<U>(depth, location) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<core::meta::IsArithmetic T>
     template<usize NEW_RANK>
+    STORMKIT_PURE
     constexpr auto Extent<T, 3>::to() const noexcept -> Extent<T, NEW_RANK> {
         using Out        = Extent<ElementType, NEW_RANK>;
         using Array      = std::array<ElementType, RANK>;
@@ -233,6 +276,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsExtent Extent>
+    STORMKIT_PURE
     constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept ->
       typename Extent::OrderingType {
         using Array                = std::array<typename Extent::ElementType, Extent::RANK>;
@@ -251,6 +295,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsExtent Extent>
+    STORMKIT_PURE
     constexpr auto operator==(const Extent& first, const Extent& second) noexcept -> bool {
         using Array                = std::array<typename Extent::ElementType, Extent::RANK>;
         static constexpr auto RANK = Extent::RANK;
@@ -267,6 +312,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsExtent Extent>
+    STORMKIT_PURE
     constexpr auto operator*(Extent&& event, typename Extent::ElemenType factor) noexcept
       -> core::meta::CanonicalType<Extent> {
         return core::meta::CanonicalType<Extent> { std::forward<Extent>(event) } *= factor;
@@ -275,6 +321,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsExtent Extent>
+    STORMKIT_PURE
     constexpr auto operator/(Extent&& event, typename Extent::ElemenType factor) noexcept
       -> core::meta::CanonicalType<Extent> {
         return core::meta::CanonicalType<Extent> { std::forward<Extent>(event) } /= factor;
@@ -283,6 +330,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsExtent Extent>
+    STORMKIT_PURE
     constexpr auto operator*=(Extent& extent, typename Extent::ElementType factor) noexcept
       -> Extent& {
         using ElementType            = typename Extent::ElementType;
@@ -295,6 +343,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsExtent Extent>
+    STORMKIT_PURE
     constexpr auto operator/=(Extent& extent, typename Extent::ElementType factor) noexcept
       -> Extent& {
         using ElementType            = typename Extent::ElementType;

@@ -70,7 +70,7 @@ export namespace stormkit { inline namespace core {
                              location = std::source_location::current()) noexcept -> void;
 
     namespace casts::core {
-        template<meta::IsStrictOneOf<std::string, std::string_view> To>
+        template<meta::SameAsOneOf<std::string, std::string_view> To>
         [[nodiscard]]
         constexpr auto as(AssertType t) noexcept -> To;
     }

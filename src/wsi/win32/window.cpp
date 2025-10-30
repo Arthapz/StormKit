@@ -75,9 +75,6 @@ namespace stormkit::wsi::win32 {
             }
         }
 
-        m_mouse_states.push_back({ .id = GLOBAL_MOUSE_ID });
-        m_keyboard_states.push_back({ .id = GLOBAL_KEYBOARD_ID });
-
         g_window_count += 1;
     }
 
@@ -123,17 +120,17 @@ namespace stormkit::wsi::win32 {
         SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
 
         m_window_handle           = CreateWindowExA(style_ex,
-                                                    CLASS_NAME,
-                                                    std::data(title),
-                                                    style,
-                                                    CW_USEDEFAULT,
-                                                    CW_USEDEFAULT,
-                                                    as<int>(extent.width),
-                                                    as<int>(extent.height),
-                                                    nullptr,
-                                                    nullptr,
-                                                    h_instance,
-                                                    this);
+                                          CLASS_NAME,
+                                          std::data(title),
+                                          style,
+                                          CW_USEDEFAULT,
+                                          CW_USEDEFAULT,
+                                          as<int>(extent.width),
+                                          as<int>(extent.height),
+                                          nullptr,
+                                          nullptr,
+                                          h_instance,
+                                          this);
         m_state.open              = true;
         auto        win32_monitor = MonitorFromWindow(m_window_handle, MONITOR_DEFAULTTONEAREST);
         const auto  monitors      = get_monitors();
@@ -162,6 +159,9 @@ namespace stormkit::wsi::win32 {
 
         if (m_window_handle) DestroyWindow(m_window_handle);
 
+        m_keyboard_states = {};
+        m_mouse_states    = {};
+
         m_window_handle = nullptr;
     }
 
@@ -172,9 +172,9 @@ namespace stormkit::wsi::win32 {
 
         auto       hbrush = HBrush::create(RGB(color.r, color.g, color.b));
         const auto rect   = RECT { 0,
-                                   0,
-                                   as<LONG>(m_state.framebuffer_extent.width),
-                                   as<LONG>(m_state.framebuffer_extent.height) };
+                                 0,
+                                 as<LONG>(m_state.extent.width),
+                                 as<LONG>(m_state.extent.height) };
 
         FillRect(m_gdi_frame_data.context, &rect, hbrush);
         InvalidateRect(m_window_handle, nullptr, FALSE);
@@ -186,7 +186,7 @@ namespace stormkit::wsi::win32 {
     auto Window::fill_framebuffer(std::span<const rgbcolor<u8>> pixels) noexcept -> void {
         if (m_win32_state.external_context) return;
 
-        const auto [width, height] = framebuffer_extent();
+        const auto [width, height] = extent();
         const auto count           = std::min(as<u32>(stdr::size(pixels)), height * width);
         stdr::copy(pixels
                      | stdv::take(count)
@@ -434,7 +434,7 @@ namespace stormkit::wsi::win32 {
         const auto hdesktop = GetDC(nullptr);
 
         m_gdi_frame_data        = GDIFrameData {};
-        m_gdi_frame_data.extent = framebuffer_extent().to<LONG>();
+        m_gdi_frame_data.extent = extent().to<LONG>();
 
         const auto [width, height] = m_gdi_frame_data.extent;
 
@@ -456,13 +456,13 @@ namespace stormkit::wsi::win32 {
 
         auto ptr                 = core::ptr<void> { nullptr };
         m_gdi_frame_data.context = Hdc::create(hdesktop);
-        m_gdi_frame_data
-          .bitmap                   = HBitmap::create(m_gdi_frame_data.context,
-                                                      std::bit_cast<const BITMAPINFO*>(&frame_bitmap_info),
-                                                      as<UINT>(DIB_RGB_COLORS),
-                                                      &ptr,
-                                                      nullptr,
-                                                      as<DWORD>(0));
+        m_gdi_frame_data.bitmap  = HBitmap::
+          create(m_gdi_frame_data.context,
+                 std::bit_cast<const BITMAPINFO*>(&frame_bitmap_info),
+                 as<UINT>(DIB_RGB_COLORS),
+                 &ptr,
+                 nullptr,
+                 as<DWORD>(0));
         m_gdi_frame_data.pixels_ptr = ptr;
         m_gdi_frame_data.extent     = { width, height };
         SelectObject(m_gdi_frame_data.context, m_gdi_frame_data.bitmap);
@@ -536,10 +536,17 @@ namespace stormkit::wsi::win32 {
                 case WM_CLOSE: window.closed_event(); return 0;
                 case WM_CREATE: window.WindowBase::set_open(true); break;
                 case WM_NCDESTROY: window.WindowBase::set_open(false); break;
+                case WM_MOUSEACTIVATE: {
+                    return MA_ACTIVATEANDEAT
+                }
                 case WM_ACTIVATE: {
-                    if (LOWORD(w_param) == WA_INACTIVE) window.deactivate_event();
-                    else
+                    if (LOWORD(w_param) == WA_INACTIVE) {
+                        m_state.active = false;
+                        window.deactivate_event();
+                    } else {
+                        m_state.active = true;
                         window.activate_event();
+                    }
                 } break;
                 case WM_NCLBUTTONDOWN:
                     if (SendMessageA(window_handle, WM_NCHITTEST, w_param, l_param) == HTCAPTION) {
@@ -555,13 +562,13 @@ namespace stormkit::wsi::win32 {
                 case WM_WINDOWPOSCHANGING: {
                     auto win32_monitor = MonitorFromWindow(window_handle, MONITOR_DEFAULTTONEAREST);
                     if (window.current_monitor().native_handle != win32_monitor) {
-                        const auto monitors = get_monitors();
-                        const auto&
-                          _monitor = *stdr::find_if(monitors,
-                                                    [&win32_monitor](auto&& monitor) noexcept {
-                                                        return monitor.native_handle
-                                                               == win32_monitor;
-                                                    });
+                        const auto  monitors = get_monitors();
+                        const auto& _monitor = *stdr::find_if(monitors,
+                                                              [&win32_monitor](auto&&
+                                                                                 monitor) noexcept {
+                                                                  return monitor.native_handle
+                                                                         == win32_monitor;
+                                                              });
 
                         window.set_current_monitor(_monitor);
                         window.monitor_changed_event(std::move(_monitor));
@@ -600,8 +607,8 @@ namespace stormkit::wsi::win32 {
                     }
 
                     switch (w_param) {
-                        case SIZE_MAXIMIZED: window.maximized_event(); break;
                         case SIZE_MINIMIZED: window.minimized_event(); break;
+                        case SIZE_RESTORED: window.restored_event(); break;
                         default: break;
                     }
 
@@ -621,14 +628,17 @@ namespace stormkit::wsi::win32 {
                                  WPARAM  w_param,
                                  LPARAM  l_param) noexcept -> void {
             const auto window_handle = std::bit_cast<HWND>(window.native_handle());
+            if (not m_state.active) return;
 
             switch (message) {
                 case WM_LBUTTONDOWN: [[fallthrough]];
                 case WM_RBUTTONDOWN: [[fallthrough]];
                 case WM_MBUTTONDOWN: [[fallthrough]];
                 case WM_XBUTTONDOWN: {
-                    const auto [x,
-                                y] = extract_mouse_position(window_handle, w_param, l_param, false);
+                    const auto [x, y] = extract_mouse_position(window_handle,
+                                                               w_param,
+                                                               l_param,
+                                                               false);
                     const auto button = extract_mouse_button(message, w_param, l_param);
                     window.mouse_button_down_event(GLOBAL_MOUSE_ID, button, math::vec2i { x, y });
                 } break;
@@ -636,8 +646,10 @@ namespace stormkit::wsi::win32 {
                 case WM_RBUTTONUP: [[fallthrough]];
                 case WM_MBUTTONUP: [[fallthrough]];
                 case WM_XBUTTONUP: {
-                    const auto [x,
-                                y] = extract_mouse_position(window_handle, w_param, l_param, false);
+                    const auto [x, y] = extract_mouse_position(window_handle,
+                                                               w_param,
+                                                               l_param,
+                                                               false);
                     const auto button = extract_mouse_button(message, w_param, l_param);
                     window.mouse_button_up_event(GLOBAL_MOUSE_ID, button, math::vec2i { x, y });
                 } break;
@@ -680,8 +692,10 @@ namespace stormkit::wsi::win32 {
                             window.win32_state().mouse_tracked = true;
                     }
 
-                    const auto [x,
-                                y] = extract_mouse_position(window_handle, w_param, l_param, false);
+                    const auto [x, y] = extract_mouse_position(window_handle,
+                                                               w_param,
+                                                               l_param,
+                                                               false);
 
                     if (state.locked and state.relative) {
                         const auto relative_x = x - as<i32>(state.locked_at.x);

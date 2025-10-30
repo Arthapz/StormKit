@@ -32,11 +32,12 @@ auto main(const std::span<const std::string_view> args) noexcept -> int {
         return stdfs::path { args[2] };
     }();
 
-    const auto template_data
-      = io::readfile(io::text_file_tag, template_path)
-          .transform_error(monadic::assert(std::format("Failed to read file {}, reason: ",
-                                                       template_path.c_str())))
-          .value();
+    const auto
+      template_data = io::readfile(io::text_file_tag, template_path)
+                        .transform_error(monadic::
+                                           assert(std::format("Failed to read file {}, reason: ",
+                                                              template_path.c_str())))
+                        .value();
 
     auto out = std::string {};
     out.reserve(stdr::size(template_data));

@@ -14,6 +14,7 @@ import :meta;
 
 import :typesafe.boolean;
 import :typesafe.floating_point;
+import :typesafe.integer;
 
 import :utils.contract;
 
@@ -21,7 +22,8 @@ export {
     namespace stormkit { inline namespace core {
         template<typename... Args>
         [[nodiscard]]
-        constexpr auto is_impl(Args...) noexcept -> bool = delete
+        constexpr auto is_equal_impl(Args...) noexcept -> bool
+          = delete
 #if defined(STORMKIT_COMPILER_MSVC)
           ;
 #else
@@ -30,7 +32,8 @@ export {
 
         template<typename T, typename... Args>
         [[nodiscard]]
-        constexpr auto is_impl(Args...) noexcept -> bool = delete
+        constexpr auto is_impl(Args...) noexcept -> bool
+          = delete
 #if defined(STORMKIT_COMPILER_MSVC)
           ;
 #else
@@ -39,7 +42,8 @@ export {
 
         template<typename T, typename... Args>
         [[nodiscard]]
-        constexpr auto as_impl(Args..., const std::source_location&) noexcept -> T = delete
+        constexpr auto as_impl(Args..., const std::source_location&) noexcept -> T
+          = delete
 #if defined(STORMKIT_COMPILER_MSVC)
           ;
 #else
@@ -48,65 +52,70 @@ export {
 
         template<typename T, typename... Args>
         [[nodiscard]]
-        constexpr auto narrow_impl(Args...) noexcept -> T = delete
+        constexpr auto narrow_impl(Args...) noexcept -> T
+          = delete
 #if defined(STORMKIT_COMPILER_MSVC)
           ;
 #else
           ("No narrow caster for these arguments");
 #endif
 
-        namespace meta {
-            template<typename... Args>
-            concept HasIsValueQueryier = requires(const Args&... args) {
-                { is_impl(args...) } -> IsBooleanTestable;
-            };
-
-            template<typename T, typename U>
-            concept HasIsTypeQueryier = requires(const U& value) {
-                { is_impl<T>(value) } -> IsBooleanTestable;
-            };
-
-            template<typename T, typename U>
-            concept HasAsCaster = requires(const U& value) { as_impl<T>(value); };
-
-            template<typename T, typename U>
-            concept HasNarrowCaster = requires(const U& value) {
-                { narrow_impl<T>(value) } -> Is<T>;
-            };
-        } // namespace meta
-
         struct Underlying {};
 
         struct Equal {};
+
+        namespace meta {
+            template<typename... Args>
+            concept HasIsValueQueryier = requires(Args&&... args) {
+                { is_equal_impl<Args...>(std::forward<Args>(args)...) } -> IsBooleanTestable;
+            };
+
+            template<typename T, typename U>
+            concept HasIsTypeQueryier = requires(U&& value) {
+                { is_impl<T>(std::forward<U>(value)) } -> IsBooleanTestable;
+            };
+
+            template<typename T, typename U>
+            concept HasAsCaster = requires(U&& value) { as_impl<T>(std::forward<U>(value)); };
+
+            template<typename T, typename U>
+            concept HasNarrowCaster = requires(U&& value) {
+                { narrow_impl<T>(std::forward<U>(value)) } -> Is<T>;
+            };
+        } // namespace meta
+
+        struct IsEqualFn final {
+            template<typename... Args>
+            [[nodiscard]]
+            static constexpr auto operator()(const Args&... value) noexcept -> bool;
+        };
 
         template<typename T>
         struct IsFn final {
             template<typename U>
             [[nodiscard]]
-            static constexpr auto operator()(const U& value) noexcept -> decltype(auto);
+            static constexpr auto operator()(const U& value) noexcept -> bool;
         };
 
         template<>
         struct IsFn<Equal> final {
             template<typename... Args>
             [[nodiscard]]
-            static constexpr auto operator()(const Args&... args) noexcept -> decltype(auto);
+            static constexpr auto operator()(const Args&... args) noexcept -> bool;
         };
 
         template<typename T>
         inline constexpr auto is = IsFn<T> {};
 
-        template<typename... Args>
-        [[nodiscard]]
-        constexpr auto is_equal(const Args&... args) noexcept -> bool;
+        inline constexpr auto is_equal = IsEqualFn {};
 
         template<typename T>
         struct AsFn final {
             template<typename U>
             [[nodiscard]]
-            static constexpr auto operator()(U&& value,
-                                             const std::source_location&
-                                               location = std::source_location::current()) noexcept
+            static constexpr auto operator()(U&&                         value,
+                                             const std::source_location& location = std::
+                                               source_location::current()) noexcept
               -> decltype(auto);
         };
 
@@ -123,65 +132,93 @@ export {
         template<typename T>
         inline constexpr auto narrow = NarrowFn<T> {};
 
+        ////////////////////////////////////////////////////////////////////
+        ///                      ARITHMETIC                              ///
+        ////////////////////////////////////////////////////////////////////
         template<meta::IsFloatingPoint T>
         [[nodiscard]]
-        constexpr auto is_impl(T first, T second, T epsilon = EPSILON<T>) noexcept -> bool;
+        constexpr auto is_equal_impl(T first, T second, T epsilon = EPSILON<T>) noexcept -> bool;
 
         template<meta::IsFloatingPoint T, meta::IsFloatingPoint U>
         [[nodiscard]]
-        constexpr auto is_impl(T first, U second, auto epsilon = EPSILON<T>) noexcept -> bool;
+        constexpr auto is_equal_impl(T first, U second, auto epsilon = EPSILON<U>) noexcept -> bool;
 
         template<meta::IsFloatingPoint T, meta::IsIntegral U>
         [[nodiscard]]
-        constexpr auto is_impl(T first, U second, T epsilon = EPSILON<T>) noexcept -> bool;
+        constexpr auto is_equal_impl(T first, U second, T epsilon = EPSILON<T>) noexcept -> bool;
 
         template<meta::IsIntegral T, meta::IsFloatingPoint U>
         [[nodiscard]]
-        constexpr auto is_impl(T first, U second, U epsilon = EPSILON<U>) noexcept -> bool;
+        constexpr auto is_equal_impl(T first, U second, U epsilon = EPSILON<U>) noexcept -> bool;
 
         template<meta::IsIntegral T, meta::IsIntegral U>
         [[nodiscard]]
+        constexpr auto is_equal_impl(T first, U second) noexcept -> bool;
+
+        template<meta::IsEnumeration T>
+        [[nodiscard]]
+        constexpr auto is_equal_impl(T first, T second) noexcept -> bool;
+
+        template<meta::ConvertibleTo<std::string_view> T, meta::ConvertibleTo<std::string_view> U>
+        [[nodiscard]]
+        constexpr auto is_equal_impl(T&& first, U&& second) noexcept -> bool;
+
+        template<meta::IsArithmetic T, meta::IsArithmetic U>
+        [[nodiscard]]
+        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
+
+        template<meta::IsArithmetic T, meta::IsArithmetic U>
+        [[nodiscard]]
+        constexpr auto narrow_impl(U value) noexcept -> T;
+
+        ////////////////////////////////////////////////////////////////////
+        ///                           BYTES                              ///
+        ////////////////////////////////////////////////////////////////////
+        template<meta::IsByte T, meta::IsByte U>
+        [[nodiscard]]
+        constexpr auto is_impl(T first, T second) noexcept -> bool;
+
+        template<meta::IsByte T, meta::IsArithmetic U>
+        [[nodiscard]]
+        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
+
+        template<meta::IsArithmetic T, meta::IsByte U>
+        [[nodiscard]]
+        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
+
+        template<meta::IsArithmetic T, meta::IsByte U>
+        [[nodiscard]]
+        constexpr auto narrow_impl(U value) noexcept -> T;
+
+        template<meta::IsByte T, meta::IsArithmetic U>
+        [[nodiscard]]
+        constexpr auto narrow_impl(U value) noexcept -> T;
+
+        ////////////////////////////////////////////////////////////////////
+        ///                       ENUMERATION                            ///
+        ////////////////////////////////////////////////////////////////////
+        template<meta::IsEnumeration T, meta::IsEnumeration U>
+            requires(meta::Same<T, U>)
+        [[nodiscard]]
         constexpr auto is_impl(T first, U second) noexcept -> bool;
 
-        template<typename T, meta::IsVariantType U>
-        [[nodiscard]]
-        constexpr auto is_impl(const U& value) noexcept -> bool;
-
-        template<meta::IsArithmetic T, meta::IsArithmetic U>
-        [[nodiscard]]
-        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
-
-        template<meta::IsByte T, meta::IsArithmetic U>
-        [[nodiscard]]
-        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
-
-        template<meta::IsArithmetic T, meta::IsByte U>
-        [[nodiscard]]
-        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
-
-        template<typename T, meta::IsVariantType U>
-        [[nodiscard]]
-        constexpr auto as_impl(U&& value, const std::source_location&) noexcept -> T;
-
-        template<meta::IsEnumeration T, meta::IsArithmetic U>
-        [[nodiscard]]
-        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
-
         template<typename T, meta::IsEnumeration U>
-            requires(meta::IsArithmetic<T> or meta::Is<T, Underlying>)
+            requires(meta::Same<T, Underlying>)
         [[nodiscard]]
         constexpr auto as_impl(U value, const std::source_location&) noexcept
-          -> meta::If<meta::Is<T, Underlying>, meta::UnderlyingType<U>, T>;
+          -> meta::UnderlyingType<U>;
 
-        template<meta::IsArithmetic T, meta::IsArithmetic U>
+        template<meta::IsEnumeration T, meta::IsArithmetic U>
+            requires(meta::Same<meta::UnderlyingType<T>, U>)
         [[nodiscard]]
-        constexpr auto narrow_impl(U value) noexcept -> T;
+        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
 
-        template<meta::IsArithmetic T, meta::IsByte U>
+        template<meta::IsArithmetic T, meta::IsEnumeration U>
+            requires(meta::Same<T, meta::UnderlyingType<U>>)
         [[nodiscard]]
-        constexpr auto narrow_impl(U value) noexcept -> T;
+        constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
 
-        template<meta::IsByte T, meta::IsArithmetic U>
+        template<meta::IsEnumeration T, meta::IsEnumeration U>
         [[nodiscard]]
         constexpr auto narrow_impl(U value) noexcept -> T;
 
@@ -192,11 +229,19 @@ export {
         template<meta::IsEnumeration T, meta::IsArithmetic U>
         [[nodiscard]]
         constexpr auto narrow_impl(U value) noexcept -> T;
-    }} // namespace stormkit::core
 
-    // template<typename T, typename U>
-    //     requires(stormkit::meta::HasEqualityOperator<T, U>)
-    // constexpr auto is_impl(const T& first, const U& second) noexcept -> bool;
+        ////////////////////////////////////////////////////////////////////
+        ///                          STL                                 ///
+        ////////////////////////////////////////////////////////////////////
+        template<typename T, meta::IsVariantType U>
+        [[nodiscard]]
+        constexpr auto is_impl(const U& value) noexcept -> bool;
+
+        template<typename T, meta::IsVariantType U>
+        [[nodiscard]]
+        constexpr auto as_impl(U&& value, const std::source_location&) noexcept
+          -> meta::ForwardLike<U, T>;
+    }} // namespace stormkit::core
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,8 +269,16 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename... Args>
     STORMKIT_FORCE_INLINE
-    constexpr auto IsFn<Equal>::operator()(const Args&... values) noexcept -> decltype(auto) {
-        return is_impl(values...);
+    constexpr auto IsEqualFn::operator()(const Args&... values) noexcept -> bool {
+        return is_equal_impl(values...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename... Args>
+    STORMKIT_FORCE_INLINE
+    constexpr auto IsFn<Equal>::operator()(const Args&... values) noexcept -> bool {
+        return is_equal(values...);
     }
 
     /////////////////////////////////////
@@ -233,16 +286,8 @@ namespace stormkit { inline namespace core {
     template<typename T>
     template<typename U>
     STORMKIT_FORCE_INLINE
-    constexpr auto IsFn<T>::operator()(const U& value) noexcept -> decltype(auto) {
+    constexpr auto IsFn<T>::operator()(const U& value) noexcept -> bool {
         return is_impl<T>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename... Args>
-    STORMKIT_FORCE_INLINE
-    constexpr auto is_equal(const Args&... args) noexcept -> bool {
-        return is<Equal>(args...);
     }
 
     /////////////////////////////////////
@@ -264,11 +309,14 @@ namespace stormkit { inline namespace core {
         return narrow_impl<T>(std::forward<U>(value));
     }
 
+    ////////////////////////////////////////////////////////////////////
+    ///                      ARITHMETIC                              ///
+    ////////////////////////////////////////////////////////////////////
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsFloatingPoint T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_impl(T first, T second, T epsilon) noexcept -> bool {
+    constexpr auto is_equal_impl(T first, T second, T epsilon) noexcept -> bool {
         const auto diff = std::abs(first - second);
         const auto a    = std::abs(first);
         const auto b    = std::abs(second);
@@ -280,7 +328,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsFloatingPoint T, meta::IsFloatingPoint U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_impl(T first, U second, auto epsilon) noexcept -> bool {
+    constexpr auto is_equal_impl(T first, U second, auto epsilon) noexcept -> bool {
         const auto diff = std::abs(first - second);
         const auto a    = std::abs(first);
         const auto b    = std::abs(second);
@@ -292,21 +340,125 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsFloatingPoint T, meta::IsIntegral U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_impl(T first, U second, T epsilon) noexcept -> bool {
-        return is_impl(first, as<T>(second), epsilon);
+    constexpr auto is_equal_impl(T first, U second, T epsilon) noexcept -> bool {
+        return is_equal_impl(first, as<T>(second), epsilon);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsIntegral T, meta::IsFloatingPoint U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_impl(T first, U second, U epsilon) noexcept -> bool {
-        return is_impl(as<U>(first), second, epsilon);
+    constexpr auto is_equal_impl(T first, U second, U epsilon) noexcept -> bool {
+        return is_equal_impl(as<U>(first), second, epsilon);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsIntegral T, meta::IsIntegral U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto is_equal_impl(T first, U second) noexcept -> bool {
+        if constexpr (meta::IsNarrowing<T, meta::ToPlainType<U>>) {
+            using SafeT        = meta::SafeNarrowHelperType<T, U>;
+            const auto _first  = as<SafeT>(first);
+            const auto _second = as<SafeT>(second);
+            return _first == _second;
+        } else
+            return first == second;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsEnumeration T>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto is_equal_impl(T first, T second) noexcept -> bool {
+        return first == second;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::ConvertibleTo<std::string_view> T, meta::ConvertibleTo<std::string_view> U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto is_equal_impl(T&& first, U&& second) noexcept -> bool {
+        return std::string_view { std::forward<T>(first) }
+               == std::string_view { std::forward<U>(second) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
+        if constexpr (meta::IsNarrowing<T, meta::ToPlainType<U>>)
+            expects(isSafeNarrowing<T>(value),
+                    "Lossy narrowing detected, please use narrow() only if you really "
+                    "want unsafe "
+                    "narrowing",
+                    location);
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto narrow_impl(U value) noexcept -> T {
+        return static_cast<T>(value);
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    ///                      BYTES                              ///
+    ////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsByte T, stormkit::meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
+        if constexpr (meta::IsNarrowing<T, meta::ToPlainType<U>>)
+            expects(isSafeNarrowing<T>(value),
+                    "Lossy narrowing detected, please use narrow() only if you really "
+                    "want unsafe "
+                    "narrowing",
+                    location);
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsByte U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
+        if constexpr (meta::IsNarrowing<T, meta::ToPlainType<U>>)
+            expects(isSafeNarrowing<T>(value),
+                    "Lossy narrowing detected, please use narrow() only if you really "
+                    "want unsafe "
+                    "narrowing",
+                    location);
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsByte U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto narrow_impl(U value) noexcept -> T {
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsByte T, stormkit::meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto narrow_impl(U value) noexcept -> T {
+        return static_cast<T>(value);
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    ///                       ENUMERATION                            ///
+    ////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsEnumeration T, meta::IsEnumeration U>
+        requires(meta::Same<T, U>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_impl(T first, U second) noexcept -> bool {
         return first == second;
@@ -314,102 +466,37 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, meta::IsVariantType U>
-    STORMKIT_FORCE_INLINE
-    constexpr auto is_impl(const U& value) noexcept -> bool {
-        return std::holds_alternative<T>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsArithmetic U>
+    template<typename T, meta::IsEnumeration U>
+        requires(meta::Same<T, Underlying>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
-        if constexpr (meta::IsNarrowing<T, meta::CanonicalType<U>>)
-            expects(isSafeNarrowing<T>(value),
-                    "Lossy narrowing detected, please use narrow() only if you really "
-                    "want unsafe "
-                    "narrowing",
-                    location);
-        return static_cast<T>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<stormkit::meta::IsByte T, stormkit::meta::IsArithmetic U>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
-        if constexpr (meta::IsNarrowing<T, meta::CanonicalType<U>>)
-            expects(isSafeNarrowing<T>(value),
-                    "Lossy narrowing detected, please use narrow() only if you really "
-                    "want unsafe "
-                    "narrowing",
-                    location);
-        return static_cast<T>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsByte U>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
-        if constexpr (meta::IsNarrowing<T, meta::CanonicalType<U>>)
-            expects(isSafeNarrowing<T>(value),
-                    "Lossy narrowing detected, please use narrow() only if you really "
-                    "want unsafe "
-                    "narrowing",
-                    location);
-        return static_cast<T>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, meta::IsVariantType U>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_impl(U&& value, const std::source_location&) noexcept -> T {
-        return std::get<T>(std::forward<U>(value));
+    constexpr auto as_impl(U value, const std::source_location&) noexcept
+      -> meta::UnderlyingType<U> {
+        // TODO WHEN REFLEXION IS IMPLEMENTED, CHECK IF `value` IS A VALID ENUMERATION VALUE
+        return as<meta::UnderlyingType<U>>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsEnumeration T, meta::IsArithmetic U>
+        requires(meta::Same<meta::UnderlyingType<T>, U>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_impl(U value, const std::source_location&) noexcept -> T {
-        // TODO WHEN REFLEXION IS IMPLEMENTED, CHECK IF `value` IS A VALID T VALUE
-        return narrow<U>(as<meta::UnderlyingType<T>>(value));
+        // TODO WHEN REFLEXION IS IMPLEMENTED, CHECK IF `value` IS A VALID ENUMERATION VALUE
+        return narrow<U>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, meta::IsEnumeration U>
-        requires(meta::IsArithmetic<T> or meta::Is<T, Underlying>)
+    template<meta::IsArithmetic T, meta::IsEnumeration U>
+        requires(meta::Same<T, meta::UnderlyingType<U>>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_impl(U value, const std::source_location&) noexcept
-      -> meta::If<meta::Is<T, Underlying>, meta::UnderlyingType<U>, T> {
-        if constexpr (meta::Is<T, Underlying>) return narrow<meta::UnderlyingType<U>>(value);
-        else
-            return as<T>(narrow<meta::UnderlyingType<U>>(value));
+    constexpr auto as_impl(U value, const std::source_location&) noexcept -> T {
+        return narrow<meta::UnderlyingType<U>>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsArithmetic U>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto narrow_impl(U value) noexcept -> T {
-        return static_cast<T>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsByte U>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto narrow_impl(U value) noexcept -> T {
-        return static_cast<T>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<stormkit::meta::IsByte T, stormkit::meta::IsArithmetic U>
+    template<meta::IsEnumeration T, meta::IsEnumeration U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
     constexpr auto narrow_impl(U value) noexcept -> T {
         return static_cast<T>(value);
@@ -431,17 +518,376 @@ namespace stormkit { inline namespace core {
         return static_cast<T>(value);
     }
 
-    // template auto as_impl<u8, u8>() -> u8;
-    // template auto as_impl<u16, u8>() -> u16;
-    // template auto as_impl<u32, u8>() -> u32;
-    // template auto as_impl<i8, u8>() -> i8;
-    // template auto as_impl<i16, u8>() -> i16;
-    // template auto as_impl<i32, u8>() -> i32;
+    ////////////////////////////////////////////////////////////////////
+    ///                          STL                                 ///
+    ////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, meta::IsVariantType U>
+    STORMKIT_FORCE_INLINE
+    constexpr auto is_impl(const U& value) noexcept -> bool {
+        return std::holds_alternative<T>(value);
+    }
 
-    // template auto narrow_impl<u8, u8>() -> u8;
-    // template auto narrow_impl<u16, u8>() -> u16;
-    // template auto narrow_impl<u32, u8>() -> u32;
-    // template auto narrow_impl<i8, u8>() -> i8;
-    // template auto narrow_impl<i16, u8>() -> i16;
-    // template auto narrow_impl<i32, u8>() -> i32;
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, meta::IsVariantType U>
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_impl(U&& value, const std::source_location&) noexcept
+      -> meta::ForwardLike<U, T> {
+        return std::forward_like<U>(std::get<T>(value));
+    }
+
+#define IS_EQUAL_INSTANCIATE(t1, t2) template auto is_equal_impl<t1, t2>(t1, t2) noexcept -> bool;
+#define IS_EQUAL_INSTANCIATE_F1(t1, t2) \
+    template auto is_equal_impl<t1, t2, t1>(t1, t2, t1) noexcept -> bool;
+#define IS_EQUAL_INSTANCIATE_F2(t1, t2) template auto is_equal_impl(t1, t2, t2) noexcept -> bool
+
+    IS_EQUAL_INSTANCIATE(u8, u8);
+    IS_EQUAL_INSTANCIATE(u8, i8);
+    IS_EQUAL_INSTANCIATE(u8, u16);
+    IS_EQUAL_INSTANCIATE(u8, i16);
+    IS_EQUAL_INSTANCIATE(u8, u32);
+    IS_EQUAL_INSTANCIATE(u8, i32);
+    IS_EQUAL_INSTANCIATE(u8, u64);
+    IS_EQUAL_INSTANCIATE(u8, i64);
+    IS_EQUAL_INSTANCIATE(u8, u128);
+    IS_EQUAL_INSTANCIATE(u8, i128);
+    IS_EQUAL_INSTANCIATE_F2(u8, f32);
+    IS_EQUAL_INSTANCIATE_F2(u8, f64);
+    IS_EQUAL_INSTANCIATE(u8, std::byte);
+
+    IS_EQUAL_INSTANCIATE(i8, u8);
+    IS_EQUAL_INSTANCIATE(i8, i8);
+    IS_EQUAL_INSTANCIATE(i8, u16);
+    IS_EQUAL_INSTANCIATE(i8, i16);
+    IS_EQUAL_INSTANCIATE(i8, u32);
+    IS_EQUAL_INSTANCIATE(i8, i32);
+    IS_EQUAL_INSTANCIATE(i8, u64);
+    IS_EQUAL_INSTANCIATE(i8, i64);
+    IS_EQUAL_INSTANCIATE(i8, u128);
+    IS_EQUAL_INSTANCIATE(i8, i128);
+    IS_EQUAL_INSTANCIATE_F2(i8, f32);
+    IS_EQUAL_INSTANCIATE_F2(i8, f64);
+    IS_EQUAL_INSTANCIATE(i8, std::byte);
+
+    IS_EQUAL_INSTANCIATE(u16, u8);
+    IS_EQUAL_INSTANCIATE(u16, i8);
+    IS_EQUAL_INSTANCIATE(u16, u16);
+    IS_EQUAL_INSTANCIATE(u16, i16);
+    IS_EQUAL_INSTANCIATE(u16, u32);
+    IS_EQUAL_INSTANCIATE(u16, i32);
+    IS_EQUAL_INSTANCIATE(u16, u64);
+    IS_EQUAL_INSTANCIATE(u16, i64);
+    IS_EQUAL_INSTANCIATE(u16, u128);
+    IS_EQUAL_INSTANCIATE(u16, i128);
+    IS_EQUAL_INSTANCIATE_F2(u16, f32);
+    IS_EQUAL_INSTANCIATE_F2(u16, f64);
+    IS_EQUAL_INSTANCIATE(u16, std::byte);
+
+    IS_EQUAL_INSTANCIATE(i16, u8);
+    IS_EQUAL_INSTANCIATE(i16, i8);
+    IS_EQUAL_INSTANCIATE(i16, u16);
+    IS_EQUAL_INSTANCIATE(i16, i16);
+    IS_EQUAL_INSTANCIATE(i16, u32);
+    IS_EQUAL_INSTANCIATE(i16, i32);
+    IS_EQUAL_INSTANCIATE(i16, u64);
+    IS_EQUAL_INSTANCIATE(i16, i64);
+    IS_EQUAL_INSTANCIATE(i16, u128);
+    IS_EQUAL_INSTANCIATE(i16, i128);
+    IS_EQUAL_INSTANCIATE_F2(i16, f32);
+    IS_EQUAL_INSTANCIATE_F2(i16, f64);
+    IS_EQUAL_INSTANCIATE(i16, std::byte);
+
+    IS_EQUAL_INSTANCIATE(u32, u8);
+    IS_EQUAL_INSTANCIATE(u32, i8);
+    IS_EQUAL_INSTANCIATE(u32, u16);
+    IS_EQUAL_INSTANCIATE(u32, i16);
+    IS_EQUAL_INSTANCIATE(u32, u32);
+    IS_EQUAL_INSTANCIATE(u32, i32);
+    IS_EQUAL_INSTANCIATE(u32, u64);
+    IS_EQUAL_INSTANCIATE(u32, i64);
+    IS_EQUAL_INSTANCIATE(u32, u128);
+    IS_EQUAL_INSTANCIATE(u32, i128);
+    IS_EQUAL_INSTANCIATE_F2(u32, f32);
+    IS_EQUAL_INSTANCIATE_F2(u32, f64);
+    IS_EQUAL_INSTANCIATE(u32, std::byte);
+
+    IS_EQUAL_INSTANCIATE(i32, u8);
+    IS_EQUAL_INSTANCIATE(i32, i8);
+    IS_EQUAL_INSTANCIATE(i32, u16);
+    IS_EQUAL_INSTANCIATE(i32, i16);
+    IS_EQUAL_INSTANCIATE(i32, u32);
+    IS_EQUAL_INSTANCIATE(i32, i32);
+    IS_EQUAL_INSTANCIATE(i32, u64);
+    IS_EQUAL_INSTANCIATE(i32, i64);
+    IS_EQUAL_INSTANCIATE(i32, u128);
+    IS_EQUAL_INSTANCIATE(i32, i128);
+    IS_EQUAL_INSTANCIATE_F2(i32, f32);
+    IS_EQUAL_INSTANCIATE_F2(i32, f64);
+    IS_EQUAL_INSTANCIATE(i32, std::byte);
+
+    IS_EQUAL_INSTANCIATE(u64, u8);
+    IS_EQUAL_INSTANCIATE(u64, i8);
+    IS_EQUAL_INSTANCIATE(u64, u16);
+    IS_EQUAL_INSTANCIATE(u64, i16);
+    IS_EQUAL_INSTANCIATE(u64, u32);
+    IS_EQUAL_INSTANCIATE(u64, i32);
+    IS_EQUAL_INSTANCIATE(u64, u64);
+    IS_EQUAL_INSTANCIATE(u64, i64);
+    IS_EQUAL_INSTANCIATE(u64, u128);
+    IS_EQUAL_INSTANCIATE(u64, i128);
+    IS_EQUAL_INSTANCIATE_F2(u64, f32);
+    IS_EQUAL_INSTANCIATE_F2(u64, f64);
+    IS_EQUAL_INSTANCIATE(u64, std::byte);
+
+    IS_EQUAL_INSTANCIATE(i64, u8);
+    IS_EQUAL_INSTANCIATE(i64, i8);
+    IS_EQUAL_INSTANCIATE(i64, u16);
+    IS_EQUAL_INSTANCIATE(i64, i16);
+    IS_EQUAL_INSTANCIATE(i64, u32);
+    IS_EQUAL_INSTANCIATE(i64, i32);
+    IS_EQUAL_INSTANCIATE(i64, u64);
+    IS_EQUAL_INSTANCIATE(i64, i64);
+    IS_EQUAL_INSTANCIATE(i64, u128);
+    IS_EQUAL_INSTANCIATE(i64, i128);
+    IS_EQUAL_INSTANCIATE_F2(i64, f32);
+    IS_EQUAL_INSTANCIATE_F2(i64, f64);
+    IS_EQUAL_INSTANCIATE(i64, std::byte);
+
+    IS_EQUAL_INSTANCIATE(u128, u8);
+    IS_EQUAL_INSTANCIATE(u128, i8);
+    IS_EQUAL_INSTANCIATE(u128, u16);
+    IS_EQUAL_INSTANCIATE(u128, i16);
+    IS_EQUAL_INSTANCIATE(u128, u32);
+    IS_EQUAL_INSTANCIATE(u128, i32);
+    IS_EQUAL_INSTANCIATE(u128, u64);
+    IS_EQUAL_INSTANCIATE(u128, i64);
+    IS_EQUAL_INSTANCIATE(u128, u128);
+    IS_EQUAL_INSTANCIATE(u128, i128);
+    IS_EQUAL_INSTANCIATE_F2(u128, f32);
+    IS_EQUAL_INSTANCIATE_F2(u128, f64);
+    IS_EQUAL_INSTANCIATE(u128, std::byte);
+
+    IS_EQUAL_INSTANCIATE(i128, u8);
+    IS_EQUAL_INSTANCIATE(i128, i8);
+    IS_EQUAL_INSTANCIATE(i128, u16);
+    IS_EQUAL_INSTANCIATE(i128, i16);
+    IS_EQUAL_INSTANCIATE(i128, u32);
+    IS_EQUAL_INSTANCIATE(i128, i32);
+    IS_EQUAL_INSTANCIATE(i128, u64);
+    IS_EQUAL_INSTANCIATE(i128, i64);
+    IS_EQUAL_INSTANCIATE(i128, u128);
+    IS_EQUAL_INSTANCIATE(i128, i128);
+    IS_EQUAL_INSTANCIATE_F2(i128, f32);
+    IS_EQUAL_INSTANCIATE_F2(i128, f64);
+    IS_EQUAL_INSTANCIATE(i128, std::byte);
+
+    IS_EQUAL_INSTANCIATE_F1(f32, u8);
+    IS_EQUAL_INSTANCIATE_F1(f32, i8);
+    IS_EQUAL_INSTANCIATE_F1(f32, u16);
+    IS_EQUAL_INSTANCIATE_F1(f32, i16);
+    IS_EQUAL_INSTANCIATE_F1(f32, u32);
+    IS_EQUAL_INSTANCIATE_F1(f32, i32);
+    IS_EQUAL_INSTANCIATE_F1(f32, u64);
+    IS_EQUAL_INSTANCIATE_F1(f32, i64);
+    IS_EQUAL_INSTANCIATE_F1(f32, u128);
+    IS_EQUAL_INSTANCIATE_F1(f32, i128);
+    IS_EQUAL_INSTANCIATE_F1(f32, f32);
+    IS_EQUAL_INSTANCIATE_F1(f32, f64);
+    IS_EQUAL_INSTANCIATE_F1(f32, std::byte);
+
+    IS_EQUAL_INSTANCIATE_F1(f64, u8);
+    IS_EQUAL_INSTANCIATE_F1(f64, i8);
+    IS_EQUAL_INSTANCIATE_F1(f64, u16);
+    IS_EQUAL_INSTANCIATE_F1(f64, i16);
+    IS_EQUAL_INSTANCIATE_F1(f64, u32);
+    IS_EQUAL_INSTANCIATE_F1(f64, i32);
+    IS_EQUAL_INSTANCIATE_F1(f64, u64);
+    IS_EQUAL_INSTANCIATE_F1(f64, i64);
+    IS_EQUAL_INSTANCIATE_F1(f64, u128);
+    IS_EQUAL_INSTANCIATE_F1(f64, i128);
+    IS_EQUAL_INSTANCIATE_F1(f64, f32);
+    IS_EQUAL_INSTANCIATE_F1(f64, f64);
+    IS_EQUAL_INSTANCIATE_F1(f64, std::byte);
+
+#undef IS_EQUAL_INSTANCIATE
+#undef IS_EQUAL_INSTANCIATE_F1
+#undef IS_EQUAL_INSTANCIATE_F2
+
+#define AS_NARROW_INSTANCIATE(t1, t2)                                                    \
+    template auto stormkit::as_impl<t1>(t2, const std::source_location&) noexcept -> t1; \
+    template auto stormkit::narrow_impl<t1>(t2) noexcept -> t1
+
+    AS_NARROW_INSTANCIATE(u8, u8);
+    AS_NARROW_INSTANCIATE(u8, i8);
+    AS_NARROW_INSTANCIATE(u8, u16);
+    AS_NARROW_INSTANCIATE(u8, i16);
+    AS_NARROW_INSTANCIATE(u8, u32);
+    AS_NARROW_INSTANCIATE(u8, i32);
+    AS_NARROW_INSTANCIATE(u8, u64);
+    AS_NARROW_INSTANCIATE(u8, i64);
+    AS_NARROW_INSTANCIATE(u8, u128);
+    AS_NARROW_INSTANCIATE(u8, i128);
+    AS_NARROW_INSTANCIATE(u8, f32);
+    AS_NARROW_INSTANCIATE(u8, f64);
+    AS_NARROW_INSTANCIATE(u8, std::byte);
+
+    AS_NARROW_INSTANCIATE(i8, u8);
+    AS_NARROW_INSTANCIATE(i8, i8);
+    AS_NARROW_INSTANCIATE(i8, u16);
+    AS_NARROW_INSTANCIATE(i8, i16);
+    AS_NARROW_INSTANCIATE(i8, u32);
+    AS_NARROW_INSTANCIATE(i8, i32);
+    AS_NARROW_INSTANCIATE(i8, u64);
+    AS_NARROW_INSTANCIATE(i8, i64);
+    AS_NARROW_INSTANCIATE(i8, u128);
+    AS_NARROW_INSTANCIATE(i8, i128);
+    AS_NARROW_INSTANCIATE(i8, f32);
+    AS_NARROW_INSTANCIATE(i8, f64);
+    AS_NARROW_INSTANCIATE(i8, std::byte);
+
+    AS_NARROW_INSTANCIATE(u16, u8);
+    AS_NARROW_INSTANCIATE(u16, i8);
+    AS_NARROW_INSTANCIATE(u16, u16);
+    AS_NARROW_INSTANCIATE(u16, i16);
+    AS_NARROW_INSTANCIATE(u16, u32);
+    AS_NARROW_INSTANCIATE(u16, i32);
+    AS_NARROW_INSTANCIATE(u16, u64);
+    AS_NARROW_INSTANCIATE(u16, i64);
+    AS_NARROW_INSTANCIATE(u16, u128);
+    AS_NARROW_INSTANCIATE(u16, i128);
+    AS_NARROW_INSTANCIATE(u16, f32);
+    AS_NARROW_INSTANCIATE(u16, f64);
+    AS_NARROW_INSTANCIATE(u16, std::byte);
+
+    AS_NARROW_INSTANCIATE(i16, u8);
+    AS_NARROW_INSTANCIATE(i16, i8);
+    AS_NARROW_INSTANCIATE(i16, u16);
+    AS_NARROW_INSTANCIATE(i16, i16);
+    AS_NARROW_INSTANCIATE(i16, u32);
+    AS_NARROW_INSTANCIATE(i16, i32);
+    AS_NARROW_INSTANCIATE(i16, u64);
+    AS_NARROW_INSTANCIATE(i16, i64);
+    AS_NARROW_INSTANCIATE(i16, u128);
+    AS_NARROW_INSTANCIATE(i16, i128);
+    AS_NARROW_INSTANCIATE(i16, f32);
+    AS_NARROW_INSTANCIATE(i16, f64);
+    AS_NARROW_INSTANCIATE(i16, std::byte);
+
+    AS_NARROW_INSTANCIATE(u32, u8);
+    AS_NARROW_INSTANCIATE(u32, i8);
+    AS_NARROW_INSTANCIATE(u32, u16);
+    AS_NARROW_INSTANCIATE(u32, i16);
+    AS_NARROW_INSTANCIATE(u32, u32);
+    AS_NARROW_INSTANCIATE(u32, i32);
+    AS_NARROW_INSTANCIATE(u32, u64);
+    AS_NARROW_INSTANCIATE(u32, i64);
+    AS_NARROW_INSTANCIATE(u32, u128);
+    AS_NARROW_INSTANCIATE(u32, i128);
+    AS_NARROW_INSTANCIATE(u32, f32);
+    AS_NARROW_INSTANCIATE(u32, f64);
+    AS_NARROW_INSTANCIATE(u32, std::byte);
+
+    AS_NARROW_INSTANCIATE(i32, u8);
+    AS_NARROW_INSTANCIATE(i32, i8);
+    AS_NARROW_INSTANCIATE(i32, u16);
+    AS_NARROW_INSTANCIATE(i32, i16);
+    AS_NARROW_INSTANCIATE(i32, u32);
+    AS_NARROW_INSTANCIATE(i32, i32);
+    AS_NARROW_INSTANCIATE(i32, u64);
+    AS_NARROW_INSTANCIATE(i32, i64);
+    AS_NARROW_INSTANCIATE(i32, u128);
+    AS_NARROW_INSTANCIATE(i32, i128);
+    AS_NARROW_INSTANCIATE(i32, f32);
+    AS_NARROW_INSTANCIATE(i32, f64);
+    AS_NARROW_INSTANCIATE(i32, std::byte);
+
+    AS_NARROW_INSTANCIATE(u64, u8);
+    AS_NARROW_INSTANCIATE(u64, i8);
+    AS_NARROW_INSTANCIATE(u64, u16);
+    AS_NARROW_INSTANCIATE(u64, i16);
+    AS_NARROW_INSTANCIATE(u64, u32);
+    AS_NARROW_INSTANCIATE(u64, i32);
+    AS_NARROW_INSTANCIATE(u64, u64);
+    AS_NARROW_INSTANCIATE(u64, i64);
+    AS_NARROW_INSTANCIATE(u64, u128);
+    AS_NARROW_INSTANCIATE(u64, i128);
+    AS_NARROW_INSTANCIATE(u64, f32);
+    AS_NARROW_INSTANCIATE(u64, f64);
+    AS_NARROW_INSTANCIATE(u64, std::byte);
+
+    AS_NARROW_INSTANCIATE(i64, u8);
+    AS_NARROW_INSTANCIATE(i64, i8);
+    AS_NARROW_INSTANCIATE(i64, u16);
+    AS_NARROW_INSTANCIATE(i64, i16);
+    AS_NARROW_INSTANCIATE(i64, u32);
+    AS_NARROW_INSTANCIATE(i64, i32);
+    AS_NARROW_INSTANCIATE(i64, u64);
+    AS_NARROW_INSTANCIATE(i64, i64);
+    AS_NARROW_INSTANCIATE(i64, u128);
+    AS_NARROW_INSTANCIATE(i64, i128);
+    AS_NARROW_INSTANCIATE(i64, f32);
+    AS_NARROW_INSTANCIATE(i64, f64);
+    AS_NARROW_INSTANCIATE(i64, std::byte);
+
+    AS_NARROW_INSTANCIATE(u128, u8);
+    AS_NARROW_INSTANCIATE(u128, i8);
+    AS_NARROW_INSTANCIATE(u128, u16);
+    AS_NARROW_INSTANCIATE(u128, i16);
+    AS_NARROW_INSTANCIATE(u128, u32);
+    AS_NARROW_INSTANCIATE(u128, i32);
+    AS_NARROW_INSTANCIATE(u128, u64);
+    AS_NARROW_INSTANCIATE(u128, i64);
+    AS_NARROW_INSTANCIATE(u128, u128);
+    AS_NARROW_INSTANCIATE(u128, i128);
+    AS_NARROW_INSTANCIATE(u128, f32);
+    AS_NARROW_INSTANCIATE(u128, f64);
+    AS_NARROW_INSTANCIATE(u128, std::byte);
+
+    AS_NARROW_INSTANCIATE(i128, u8);
+    AS_NARROW_INSTANCIATE(i128, i8);
+    AS_NARROW_INSTANCIATE(i128, u16);
+    AS_NARROW_INSTANCIATE(i128, i16);
+    AS_NARROW_INSTANCIATE(i128, u32);
+    AS_NARROW_INSTANCIATE(i128, i32);
+    AS_NARROW_INSTANCIATE(i128, u64);
+    AS_NARROW_INSTANCIATE(i128, i64);
+    AS_NARROW_INSTANCIATE(i128, u128);
+    AS_NARROW_INSTANCIATE(i128, i128);
+    AS_NARROW_INSTANCIATE(i128, f32);
+    AS_NARROW_INSTANCIATE(i128, f64);
+    AS_NARROW_INSTANCIATE(i128, std::byte);
+
+    AS_NARROW_INSTANCIATE(f32, u8);
+    AS_NARROW_INSTANCIATE(f32, i8);
+    AS_NARROW_INSTANCIATE(f32, u16);
+    AS_NARROW_INSTANCIATE(f32, i16);
+    AS_NARROW_INSTANCIATE(f32, u32);
+    AS_NARROW_INSTANCIATE(f32, i32);
+    AS_NARROW_INSTANCIATE(f32, u64);
+    AS_NARROW_INSTANCIATE(f32, i64);
+    AS_NARROW_INSTANCIATE(f32, u128);
+    AS_NARROW_INSTANCIATE(f32, i128);
+    AS_NARROW_INSTANCIATE(f32, f32);
+    AS_NARROW_INSTANCIATE(f32, f64);
+    AS_NARROW_INSTANCIATE(f32, std::byte);
+
+    AS_NARROW_INSTANCIATE(f64, u8);
+    AS_NARROW_INSTANCIATE(f64, i8);
+    AS_NARROW_INSTANCIATE(f64, u16);
+    AS_NARROW_INSTANCIATE(f64, i16);
+    AS_NARROW_INSTANCIATE(f64, u32);
+    AS_NARROW_INSTANCIATE(f64, i32);
+    AS_NARROW_INSTANCIATE(f64, u64);
+    AS_NARROW_INSTANCIATE(f64, i64);
+    AS_NARROW_INSTANCIATE(f64, u128);
+    AS_NARROW_INSTANCIATE(f64, i128);
+    AS_NARROW_INSTANCIATE(f64, f32);
+    AS_NARROW_INSTANCIATE(f64, f64);
+    AS_NARROW_INSTANCIATE(f64, std::byte);
+
+#undef AS_NARROW_INSTANCIATE
 }} // namespace stormkit::core
+
+using namespace stormkit;

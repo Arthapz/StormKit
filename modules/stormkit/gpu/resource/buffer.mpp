@@ -162,8 +162,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Buffer::Buffer(Buffer&& other) noexcept
-      = default;
+    inline Buffer::Buffer(Buffer&& other) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -186,10 +185,8 @@ namespace stormkit::gpu {
     inline auto Buffer::allocate(const Device&     device,
                                  const CreateInfo& info,
                                  bool persistently_mapped) noexcept -> Expected<Heap<Buffer>> {
-        auto buffer = std::make_unique<Buffer>(device,
-                                               info,
-                                               persistently_mapped,
-                                               PrivateFuncTag {});
+        auto
+          buffer = std::make_unique<Buffer>(device, info, persistently_mapped, PrivateFuncTag {});
         return buffer->do_init(info.property).transform(core::monadic::consume(buffer));
     }
 
@@ -326,7 +323,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::IsNot<std::span<const Byte>> T>
+    template<core::meta::IsNot<ByteView> T>
     STORMKIT_FORCE_INLINE
     inline auto Buffer::upload(const T& data, ioffset offset) noexcept -> Expected<void> {
         const auto bytes = as_bytes(data);

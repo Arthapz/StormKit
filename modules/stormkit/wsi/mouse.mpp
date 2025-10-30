@@ -13,7 +13,7 @@ import std;
 import stormkit.core;
 
 export namespace stormkit::wsi {
-    inline constexpr auto GLOBAL_MOUSE_ID = 0;
+    inline constexpr auto GLOBAL_MOUSE_ID = 0_u8;
 
     enum class MouseButton : u8 {
         LEFT = 0,

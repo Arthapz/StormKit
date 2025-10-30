@@ -29,7 +29,9 @@ LOGGER("stormkit.examples.gpu.textured_cube");
 namespace stdc = std::chrono;
 namespace stdr = std::ranges;
 
+using namespace std::literals;
 using namespace stormkit;
+using namespace stormkit::literals;
 
 struct SubmissionResource {
     gpu::Fence         in_flight;
@@ -134,24 +136,17 @@ auto main(std::span<const std::string_view> args) -> int {
 
     wsi::parse_args(args);
 
-    // initialize logger
     auto logger_singleton = log::Logger::create_logger_instance<log::ConsoleLogger>();
 
-    const auto monitors = wsi::Window::get_monitor_settings();
-    ilog("--- Monitors ---");
-    ilog("{}", monitors);
-
-    // initialize WSI
-    auto window = wsi::Window {
-        "Stormkit GPU Textured cube example",
-        { 1280u, 800u },
-        wsi::WindowFlag::CLOSE | wsi::WindowFlag::EXTERNAL_CONTEXT
-    };
-
-    auto event_handler = wsi::EventHandler {};
-
     // initialize gpu backend (vulkan or webgpu depending the platform)
-    gpu::initialize_backend();
+    // gpu::initialize_backend().transform_error(monadic::assert("Failed to initialize gpu
+    // backend"));
+    auto _ = gpu::initialize_backend()
+               .transform_error(monadic::assert("Failed to initialize gpu backend"));
+
+    auto window = wsi::Window::open("Stormkit GPU Textured cube example",
+                                    { 1280_u64, 800_u64 },
+                                    wsi::WindowFlag::DEFAULT | wsi::WindowFlag::EXTERNAL_CONTEXT);
 
     // create gpu instance and attach surface to window
     const auto instance = gpu::Instance::create("textured_cube")
@@ -196,20 +191,20 @@ auto main(std::span<const std::string_view> args) -> int {
           .transform_error(monadic::assert("Failed to create raster queue command pool"))
           .value();
 
-    const auto descriptor_pool
-      = gpu::DescriptorPool::create(device,
-                                    {
-                                      gpu::DescriptorPool::Size {
-                                                                 .type             = gpu::DescriptorType::UNIFORM_BUFFER,
-                                                                 .descriptor_count = BUFFERING_COUNT,
-                                                                 },
-                                      gpu::DescriptorPool::Size {
-                                                                 .type = gpu::DescriptorType::COMBINED_IMAGE_SAMPLER,
-                                                                 .descriptor_count = BUFFERING_COUNT }
-    },
-                                    BUFFERING_COUNT * 2)
-          .transform_error(monadic::assert("Failed to create descriptor pool"))
-          .value();
+    static constexpr auto POOL_SIZES = std::array {
+        gpu::DescriptorPool::Size {
+                                   .type             = gpu::DescriptorType::UNIFORM_BUFFER,
+                                   .descriptor_count = BUFFERING_COUNT,
+                                   },
+        gpu::DescriptorPool::Size { .type             = gpu::DescriptorType::COMBINED_IMAGE_SAMPLER,
+                                   .descriptor_count = BUFFERING_COUNT }
+    };
+    const auto descriptor_pool = gpu::DescriptorPool::create(device,
+                                                             POOL_SIZES,
+                                                             BUFFERING_COUNT * 2)
+                                   .transform_error(monadic::
+                                                      assert("Failed to create descriptor pool"))
+                                   .value();
 
     // load shaders
     const auto vertex_shader = gpu::Shader::load_from_file(device,
@@ -333,7 +328,7 @@ auto main(std::span<const std::string_view> args) -> int {
 
     // load texture
     auto image = image::Image {};
-    image.load_from_file(TEXTURE_DIR "/cube.png").transform_error(monadic::assert());
+    image.load_from_file(TEXTURE_DIR "/cube.png").transform_error(monadic::assert()).value();
 
     auto texture = gpu::Image::create(device,
                                       { .extent = image.extent(),
@@ -352,43 +347,49 @@ auto main(std::span<const std::string_view> args) -> int {
               .transform_error(monadic::assert("Failed to allocate gpu texture staging buffer"))
               .value();
 
-        staging_buffer.upload(image.data());
+        staging_buffer.upload(image.data())
+          .transform_error(monadic::assert("Failed to upload texture data to staging buffer"))
+          .value();
 
         auto cpy_fence = gpu::Fence::create(device)
                            .transform_error(monadic::
                                               assert("Failed to create copy texture buffer fence"))
                            .value();
 
+        const auto copy = {
+            gpu::BufferImageCopy {
+                                  .buffer_offset       = 0,
+                                  .buffer_row_length   = 0,
+                                  .buffer_image_height = 0,
+                                  .subresource_layers  = {},
+                                  .offset              = {},
+                                  .extent              = image.extent() }
+        };
         auto copy_cmb = command_pool.create_command_buffer()
                           .transform_error(monadic::assert("Failed to allocate copy texture buffer "
                                                            "commandbuffer"))
                           .value();
 
-        copy_cmb.begin();
-
-        copy_cmb.begin_debug_region("Upload vertex data to vertex buffer")
+        copy_cmb.begin()
+          .transform_error(monadic::assert("Failed to begin texture upload command buffer"))
+          .value()
+          ->begin_debug_region("Upload texture data")
           .transition_image_layout(texture,
                                    gpu::ImageLayout::UNDEFINED,
                                    gpu::ImageLayout::TRANSFER_DST_OPTIMAL)
-          .copy_buffer_to_image(staging_buffer,
-                                texture,
-                                {
-                                  gpu::BufferImageCopy { .buffer_offset       = 0,
-                                                        .buffer_row_length   = 0,
-                                                        .buffer_image_height = 0,
-                                                        .subresource_layers  = {},
-                                                        .offset              = {},
-                                                        .extent              = image.extent() }
-        })
+          .copy_buffer_to_image(staging_buffer, texture, as_view(copy))
           .transition_image_layout(texture,
                                    gpu::ImageLayout::TRANSFER_DST_OPTIMAL,
                                    gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL)
-          .end_debug_region();
+          .end_debug_region()
+          .end()
+          .transform_error(monadic::assert("Failed to end texture upload command buffer"))
+          .value()
+          ->submit(raster_queue, {}, {}, {}, as_ref(cpy_fence))
+          .transform_error(monadic::assert("Failed to submit texture upload command buffer"))
+          .value();
 
-        copy_cmb.end();
-        copy_cmb.submit(raster_queue, {}, {}, {}, as_ref(cpy_fence));
-
-        cpy_fence.wait().transform_error(monadic::assert());
+        auto _ = cpy_fence.wait().transform_error(monadic::assert());
     }
 
     auto texture_view = gpu::ImageView::create(device, texture)
@@ -431,20 +432,22 @@ auto main(std::span<const std::string_view> args) -> int {
                               .transform_error(monadic::assert("Failed to create descriptor set"))
                               .value(),
         });
-        auto& res = submission_resources.back();
-        res.descriptor_set
-          .update({ gpu::Descriptor { gpu::BufferDescriptor {
-                      .binding = 0,
-                      .buffer  = as_ref(res.viewer_buffer),
-                      .range   = sizeof(ViewerData),
-                      .offset  = 0,
-                    } },
-                    { gpu::ImageDescriptor {
-                      .binding    = 1,
-                      .layout     = gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
-                      .image_view = as_ref(texture_view),
-                      .sampler    = as_ref(sampler),
-                    } } });
+        auto&      res  = submission_resources.back();
+        const auto sets = std::array<gpu::Descriptor, 2> {
+            gpu::BufferDescriptor {
+                                   .binding = 0,
+                                   .buffer  = as_ref(res.viewer_buffer),
+                                   .range   = sizeof(ViewerData),
+                                   .offset  = 0,
+                                   },
+            gpu::ImageDescriptor {
+                                   .binding    = 1,
+                                   .layout     = gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
+                                   .image_view = as_ref(texture_view),
+                                   .sampler    = as_ref(sampler),
+                                   }
+        };
+        res.descriptor_set.update(sets);
     }
 
     const auto& images = swapchain.images();
@@ -505,19 +508,21 @@ auto main(std::span<const std::string_view> args) -> int {
         const auto& resources = swapchain_image_resources.back();
 
         auto& transition_cmb = transition_cmbs[image_index];
-        transition_cmb.begin(true);
-
-        transition_cmb.begin_debug_region(std::format("transition image {}", image_index))
-          .transition_image_layout(swap_image,
-                                   gpu::ImageLayout::UNDEFINED,
-                                   gpu::ImageLayout::PRESENT_SRC)
-          .transition_image_layout(resources.depth_image,
-                                   gpu::ImageLayout::UNDEFINED,
-                                   gpu::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                   { .aspect_mask = depth_aspect_flag })
-          .end_debug_region();
-
-        transition_cmb.end();
+        *transition_cmb.begin(true)
+           .transform_error(monadic::assert("Failed to begin texture transition command buffer"))
+           .value()
+           ->begin_debug_region(std::format("transition image {}", image_index))
+           .transition_image_layout(swap_image,
+                                    gpu::ImageLayout::UNDEFINED,
+                                    gpu::ImageLayout::PRESENT_SRC)
+           .transition_image_layout(resources.depth_image,
+                                    gpu::ImageLayout::UNDEFINED,
+                                    gpu::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                    { .aspect_mask = depth_aspect_flag })
+           .end_debug_region()
+           .end()
+           .transform_error(monadic::assert("Failed to begin texture transition command buffer"))
+           .transform(monadic::discard());
 
         ++image_index;
     }
@@ -527,7 +532,9 @@ auto main(std::span<const std::string_view> args) -> int {
                          .value();
 
     const auto cmbs = to_refs(transition_cmbs);
-    raster_queue.submit({ .command_buffers = cmbs }, as_ref(fence));
+    raster_queue.submit({ .command_buffers = cmbs }, as_ref(fence))
+      .transform_error(monadic::assert("Failed to submit texture transition command buffers"))
+      .value();
 
     // setup vertex buffer
     const auto vertex_buffer
@@ -547,7 +554,9 @@ auto main(std::span<const std::string_view> args) -> int {
               .transform_error(monadic::assert("Failed to allocate gpu vertex staging buffer"))
               .value();
 
-        staging_buffer.upload(VERTICES);
+        staging_buffer.upload(VERTICES)
+          .transform_error(monadic::assert("Failed to upload vertex data to staging buffer"))
+          .value();
 
         auto cpy_fence = gpu::Fence::create(device)
                            .transform_error(monadic::
@@ -559,28 +568,27 @@ auto main(std::span<const std::string_view> args) -> int {
                                                            "commandbuffer"))
                           .value();
 
-        copy_cmb.begin();
-
-        copy_cmb.begin_debug_region("Upload vertex data to vertex buffer")
+        copy_cmb.begin()
+          .transform_error(monadic::assert("Failed to begin vertices upload command buffer"))
+          .value()
+          ->begin_debug_region("Upload vertex data to vertex buffer")
           .copy_buffer(staging_buffer, vertex_buffer, VERTICES_SIZE)
-          .end_debug_region();
-
-        copy_cmb.end();
-        copy_cmb.submit(raster_queue, {}, {}, {}, as_ref(cpy_fence));
+          .end_debug_region()
+          .end()
+          .transform_error(monadic::assert("Failed to begin vertices upload command buffer"))
+          .value()
+          ->submit(raster_queue, {}, {}, {}, as_ref(cpy_fence));
 
         cpy_fence.wait().transform_error(monadic::assert());
     }
 
-    event_handler.set_callbacks({
-      { wsi::EventType::CLOSED,      [&window](const wsi::Event&) noexcept { window.close(); } },
-      { wsi::EventType::KEY_PRESSED,
-       [&window](const wsi::Event& event) noexcept {
-            const auto key_event = as<wsi::KeyPressedEventData>(event.data);
-            if (key_event.key == wsi::Key::ESCAPE) window.close();
-        }                                                                                      },
+    window.on<wsi::EventType::KEY_DOWN>([&window](u8 /*id*/,
+                                                  wsi::Key key,
+                                                  char /*c*/) mutable noexcept {
+        if (key == wsi::Key::ESCAPE) window.close();
     });
 
-    auto current_frame = 0uz;
+    auto current_frame = 0_u64;
 
     const auto window_extent_f32 = window_extent.to<f32>();
     auto       viewer_data       = ViewerData {
@@ -599,12 +607,10 @@ auto main(std::span<const std::string_view> args) -> int {
     using SecondF = stdc::duration<float, stdc::seconds::period>;
 
     auto start_time = clock::now();
-    while (window.is_open()) {
+    window.event_loop([&] noexcept {
         LOG_MODULE.flush();
 
         const auto current_time = clock::now();
-
-        event_handler.update(window);
 
         // get next swapchain image
         auto& submission_resource = submission_resources[current_frame];
@@ -644,27 +650,36 @@ auto main(std::span<const std::string_view> args) -> int {
         // render in it
         auto&       render_cmb     = submission_resource.render_cmb;
         const auto& descriptor_set = submission_resource.descriptor_set;
-        render_cmb.reset();
-        render_cmb.begin();
 
-        render_cmb.begin_debug_region("Render textured cube")
-          .begin_render_pass(render_pass,
-                             framebuffer,
-                             { { gpu::ClearColor { .color = RGBColorDef::SILVER<float> } },
-                               { gpu::ClearDepthStencil {} } })
+        static constexpr auto CLEAR_VALUES = std::array<gpu::ClearValue, 2> {
+            gpu::ClearColor { .color = RGBColorDef::SILVER<float> },
+            gpu::ClearDepthStencil {}
+        };
+        static constexpr auto OFFSETS        = std::array { 0_u64 };
+        static constexpr auto PIPELINE_FLAGS = std::array {
+            gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT
+        };
+
+        render_cmb.reset()
+          .transform_error(monadic::assert("Failed to reset render command buffer"))
+          .value()
+          ->begin()
+          .transform_error(monadic::assert("Failed to begin render command buffer"))
+          .value()
+          ->begin_debug_region("Render textured cube")
+          .begin_render_pass(render_pass, framebuffer, CLEAR_VALUES)
           .bind_pipeline(pipeline)
-          .bind_vertex_buffers(to_refs(vertex_buffer), { 0uz })
+          .bind_vertex_buffers(to_refs(vertex_buffer), OFFSETS)
           .bind_descriptor_sets(pipeline, pipeline_layout, as_refs(descriptor_set), {})
           .draw(stdr::size(VERTICES))
           .end_render_pass()
-          .end_debug_region();
-
-        render_cmb.end();
-        render_cmb.submit(raster_queue,
-                          as_refs(wait),
-                          { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT },
-                          as_refs(signal),
-                          as_ref(in_flight));
+          .end_debug_region()
+          .end()
+          .transform_error(monadic::assert("Failed to end render command buffer"))
+          .value()
+          ->submit(raster_queue, as_refs(wait), PIPELINE_FLAGS, as_refs(signal), as_ref(in_flight))
+          .transform_error(monadic::assert("Failed to submit render command buffer"))
+          .value();
 
         // present it
         auto update_current_frame = [&current_frame](auto&&) mutable noexcept {
@@ -674,7 +689,7 @@ auto main(std::span<const std::string_view> args) -> int {
         raster_queue.present(as_refs(swapchain), as_refs(signal), as_view(image_index))
           .transform(update_current_frame)
           .transform_error(monadic::assert("Failed to present swapchain image"));
-    }
+    });
 
     raster_queue.wait_idle();
     device.wait_idle();

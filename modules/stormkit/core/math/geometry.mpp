@@ -67,7 +67,7 @@ export namespace stormkit { inline namespace core { namespace math {
     constexpr auto to_rect(const bounding_rect<T>& _rect) noexcept -> rect<T>;
 
     template<typename T>
-    constexpr auto AABB(const rect<T> rect1, const rect<T>& rect2) noexcept -> bool;
+    constexpr auto AABB(const rect<T>& rect1, const rect<T>& rect2) noexcept -> bool;
 
     template<typename T>
     constexpr auto AABB(const vec2<T>& pos, const bounding_rect<T>& rect) noexcept -> bool;
@@ -160,7 +160,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto to_bounding_rect(const rect<T>& _rect) noexcept -> bounding_rect<T> {
         return { _rect.x, _rect.y, _rect.x + _rect.width, _rect.y + _rect.height };
     }
@@ -168,7 +168,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto to_rect(const bounding_rect<T>& _rect) noexcept -> rect<T> {
         return { _rect.left, _rect.top, _rect.right - _rect.left, _rect.bottom - _rect.top };
     }
@@ -176,8 +176,8 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto AABB(const bounding_rect<T> rect1, const bounding_rect<T>& rect2) noexcept
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    constexpr auto AABB(const bounding_rect<T>& rect1, const bounding_rect<T>& rect2) noexcept
       -> bool {
         return rect1.left < rect2.right
                and rect1.right > rect2.left
@@ -188,15 +188,15 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto AABB(const rect<T> rect1, const rect<T>& rect2) noexcept -> bool {
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    constexpr auto AABB(const rect<T>& rect1, const rect<T>& rect2) noexcept -> bool {
         return AABB(to_bounding_rect(rect1), to_bounding_rect(rect2));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto AABB(const vec2<T>& pos, const bounding_rect<T>& rect) noexcept -> bool {
         return pos.x >= rect.left
                and pos.x <= rect.right
@@ -207,7 +207,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto AABB(const vec2<T>& pos, const rect<T>& rect) noexcept -> bool {
         return AABB(pos, to_bounding_rect(rect));
     }

@@ -26,7 +26,7 @@ import stormkit.core;
 import :linux.wayland;
 import :linux.wayland.context;
 import :linux.wayland.input;
-import :linux.wayland.window_impl;
+import :linux.wayland.window;
 import :linux.wayland.log;
 
 namespace stdr = std::ranges;
@@ -107,8 +107,8 @@ namespace stormkit::wsi::linux::wayland::wl {
         template<auto member>
         constexpr auto make_binder() noexcept -> decltype(auto) {
             return [](Globals& _globals, void* ptr) static noexcept {
-                using U = meta::CanonicalType<decltype(globals.*member)>;
-                (_globals.*member).reset(std::bit_cast<typename U::value_type>(ptr));
+                using U            = meta::ToPlainType<decltype(globals.*member)>;
+                (_globals.*member) = U::take(std::bit_cast<meta::UnderlyingType<U>>(ptr));
             };
         }
 
@@ -117,10 +117,9 @@ namespace stormkit::wsi::linux::wayland::wl {
         template<auto member>
         constexpr auto make_binder_to_array() noexcept -> decltype(auto) {
             return [](Globals& _globals, void* ptr) static noexcept {
-                using Vec = meta::CanonicalType<decltype(globals.*member)>;
-                using U   = meta::CanonicalType<typename Vec::value_type>;
-                auto& ret = (_globals.*member).emplace_back();
-                ret.reset(std::bit_cast<typename U::value_type>(ptr));
+                using Vec = meta::ToPlainType<decltype(globals.*member)>;
+                using U   = meta::UnderlyingType<Vec>;
+                (_globals.*member).push_back(U::take(std::bit_cast<meta::UnderlyingType<U>>(ptr)));
             };
         }
 
@@ -198,13 +197,13 @@ namespace stormkit::wsi::linux::wayland::wl {
 
         auto _globals = Globals {};
 
-        _globals.display = wl::Display { std::in_place, nullptr };
+        _globals.display = wl::Display::create(nullptr);
         if (not _globals.display) {
             elog("Failed to initialize Wayland display");
             return false;
         }
 
-        _globals.registry = wl::Registry { std::in_place, _globals.display };
+        _globals.registry = wl::Registry::create(_globals.display);
         if (not _globals.registry) {
             elog("Failed to initialize Wayland display");
             return false;
@@ -234,14 +233,10 @@ namespace stormkit::wsi::linux::wayland::wl {
 
             const auto theme = std::getenv("XCURSOR_THEME");
 
-            _globals
-              .cursor_theme = wl::CursorTheme { std::in_place, theme, cursor_size, _globals.shm };
-            _globals.cursor_theme_high_dpi = wl::CursorTheme {
-                std::in_place,
-                theme,
-                cursor_size * 2,
-                _globals.shm
-            };
+            _globals.cursor_theme = wl::CursorTheme::create(theme, cursor_size, _globals.shm);
+            _globals.cursor_theme_high_dpi = wl::CursorTheme::create(theme,
+                                                                     cursor_size * 2,
+                                                                     _globals.shm);
         }
 
         _globals.initialized = true;
@@ -338,7 +333,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     auto output_scale_handler(void* data, wl_output* output, i32 scale_factor) noexcept -> void {
         auto& _globals       = *std::bit_cast<Globals*>(data);
         auto& monitor        = get_monitor(_globals, output);
-        monitor.scale_factor = scale_factor;
+        monitor.scale_factor = as<u32>(scale_factor);
     }
 
     /////////////////////////////////////

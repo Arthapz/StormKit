@@ -2,8 +2,8 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-#ifndef WINDOW_IMPL_HPP
-#define WINDOW_IMPL_HPP
+#ifndef window_HPP
+#define window_HPP
 
 #include <string>
 
@@ -25,13 +25,13 @@ using ViewPtr           = struct objc_class*;
 #endif
 
 namespace storm::window {
-    class STORMKIT_PRIVATE WindowImpl: public storm::window::AbstractWindow {
+    class STORMKIT_PRIVATE Window: public storm::window::AbstractWindow {
       public:
-        WindowImpl() noexcept;
-        WindowImpl(const std::string&                  title,
+        Window() noexcept;
+        Window(const std::string&                  title,
                    const storm::window::VideoSettings& settings,
                    storm::window::WindowStyle          style) noexcept;
-        ~WindowImpl() override;
+        ~Window() override;
 
         void create(const std::string&                  title,
                     const storm::window::VideoSettings& settings,

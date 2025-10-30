@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #if defined(STORMKIT_OS_LINUX)
@@ -37,6 +38,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     auto Surface::do_init_from_window(const Instance& instance, const wsi::Window& window) noexcept
       -> Expected<void> {
+        EXPECTS(window.is_open());
         m_vk_instance = instance.native_handle();
 #if defined(STORMKIT_OS_WINDOWS)
         const auto create_surface = [&window, &instance] {
@@ -45,7 +47,7 @@ namespace stormkit::gpu {
                 .pNext     = nullptr,
                 .flags     = 0,
                 .hinstance = GetModuleHandleW(nullptr),
-                .hwnd      = reinterpret_cast<HWND>(window.native_handle())
+                .hwnd      = std::bit_cast<HWND>(window.native_handle())
             };
             return vk_call<VkSurfaceKHR>(vkCreateWin32SurfaceKHR,
                                          instance.native_handle(),
@@ -55,11 +57,12 @@ namespace stormkit::gpu {
 #elif defined(STORMKIT_OS_MACOS)
         const auto create_surface = [&window, &instance] {
             const auto create_info = VkMacOSSurfaceCreateInfoMVK {
-                .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+                .sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK,
                 .pNext = nullptr,
                 .flags = 0,
                 .pView = window.native_handle()
             };
+            std::println("{}", window.native_handle());
             return vk_call<VkSurfaceKHR>(vkCreateMacOSSurfaceMVK,
                                          instance.native_handle(),
                                          &create_info,

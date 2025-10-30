@@ -73,7 +73,7 @@ export namespace stormkit::wsi::linux::x11 {
 } // namespace stormkit::wsi::linux::x11
 
 export namespace stormkit::wsi::linux::x11::xcb {
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto atom_error(std::string_view atom_name) -> decltype(auto) {
         return [atom_name]<typename Error>(Error&& error) noexcept -> Error {
             elog("Failed to get atom "

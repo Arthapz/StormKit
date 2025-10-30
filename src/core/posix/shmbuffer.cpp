@@ -34,7 +34,7 @@ namespace stormkit { inline namespace core {
         const auto shm_access = (check_flag_bit(m_access, Access::WRITE) ? O_RDWR : O_RDONLY)
                                 | ((m_handle != nullptr) ? O_TRUNC : O_CREAT);
 
-        const auto mode = init_by<i32>([access = m_access](auto& mode) noexcept {
+        const auto mode = init_by<mode_t>([access = m_access](auto& mode) noexcept {
             if (check_flag_bit(access, Access::READ)) mode |= S_IRUSR;
             if (check_flag_bit(access, Access::WRITE)) mode |= S_IWUSR;
         });

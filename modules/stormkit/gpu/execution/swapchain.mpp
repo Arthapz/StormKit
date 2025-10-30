@@ -96,14 +96,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline SwapChain::~SwapChain()
-      = default;
+    inline SwapChain::~SwapChain() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline SwapChain::SwapChain(SwapChain&&) noexcept
-      = default;
+    inline SwapChain::SwapChain(SwapChain&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -123,7 +121,7 @@ namespace stormkit::gpu {
           .do_init(device,
                    surface,
                    extent,
-                   old_swapchain.has_value() ? old_swapchain.value()->native_handle() : nullptr)
+                   old_swapchain ? old_swapchain->native_handle() : nullptr)
           .transform(core::monadic::consume(swapchain));
     }
 
@@ -140,7 +138,7 @@ namespace stormkit::gpu {
           ->do_init(device,
                     surface,
                     extent,
-                    old_swapchain.has_value() ? old_swapchain.value()->native_handle() : nullptr)
+                    old_swapchain ? old_swapchain->native_handle() : nullptr)
           .transform(core::monadic::consume(swapchain));
     }
 

@@ -2,6 +2,9 @@
 # Created by https://www.gitignore.io/api/qt,c++,macos,linux,cmake,windows,exercism,qtcreator,executable,sublimetext,visualstudio,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=qt,c++,macos,linux,cmake,windows,exercism,qtcreator,executable,sublimetext,visualstudio,visualstudiocode
 
+.xmake_configure_flags
+.xmake_target_to_run
+
 ### C++ ###
 # Prerequisites
 *.d

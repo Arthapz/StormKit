@@ -14,6 +14,9 @@ namespace stormkit { inline namespace core { namespace meta {
         template<typename T>
         using ToPlainType = std::remove_cvref_t<T>;
 
+        // template<typename T, template<typename> concept C>
+        // concept PlainTypeTo = C<ToPlainType<T>>;
+
         template<typename T>
         using CanonicalType = std::remove_cvref_t<T>;
 
@@ -21,7 +24,10 @@ namespace stormkit { inline namespace core { namespace meta {
         using CanonicalTypeOf = CanonicalType<decltype(value)>;
 
         template<typename T>
-        using DecayType = std::decay_t<T>;
+        using ToDecayedType = std::decay_t<T>;
+
+        // template<typename T, template<typename> concept C>
+        // concept DecayedTypeTo = C<ToDecayedType<T>>;
 
         template<typename T>
         using AddConst = std::add_const_t<T>;
@@ -61,22 +67,24 @@ namespace stormkit { inline namespace core { namespace meta {
         };
 
         template<typename T, typename U>
-        struct ForwardLike {
+        struct ForwardRef {
           private:
-            using U1 = ForwardConst<T, U>;
-            using U2 = Select<IsLValueReference<T>, AddLValueReference<U1>, U1>;
+            using U2 = Select<IsLValueReference<T>, AddLValueReference<U>, U>;
             using U3 = Select<IsRValueReference<T>, AddRValueReference<U2>, U2>;
 
           public:
-            using Type = U3;
+            using Type = U2;
         };
     } // namespace details
 
     export {
         template<typename T, typename U>
-        using ForwardLike = details::ForwardLike<T, U>::Type;
+        using ForwardConst = details::ForwardConst<T, U>::Type;
 
         template<typename T, typename U>
-        using ForwardConst = details::ForwardConst<T, U>::Type;
+        using ForwardRefTo = details::ForwardRef<T, U>::Type;
+
+        template<typename T, typename U>
+        using ForwardLike = ForwardRefTo<T, ForwardConst<T, U>>;
     }
 }}} // namespace stormkit::core::meta

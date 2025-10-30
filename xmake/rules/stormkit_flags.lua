@@ -1,28 +1,32 @@
 rule("stormkit.flags", function()
     on_load("linux", "mingw", "macos", "ios", "android", function(target)
-        if get_config("sanitizers") then
+        if get_config("lto") then target:set("policy", "build.optimization.lto", true) end
+        if get_config("mold") and not is_subhost("windows") then
+            target:add("ldflags", "-fuse-ld=mold", { force = true })
+            target:add("shflags", "-fuse-ld=mold", { force = true })
+        end
+        target:set("utf-8", true)
+
+        if get_config("sanitizers") and is_mode("release") then
             target:set("policy", "build.sanitizer.address", true)
             target:set("policy", "build.sanitizer.undefined", true)
         end
-        if get_config("lto") then target:set("policy", "build.optimization.lto", true) end
-        if get_config("mold") and not is_subhost("windows") then
-            target:add("ldflags", "-fuse-ld=mold")
-            target:add("shflags", "-fuse-ld=mold")
-        end
-        target:set("utf-8", true)
     end)
     on_load("windows", function(target)
         import("core.tool.compiler")
+        local rad_enabled = false
         if get_config("rad") and is_subhost("windows") then
-            target:add("ldflags", "-fuse-ld=radlink")
-            target:add("shflags", "-fuse-ld=radlink")
+            rad_enabled = true
+            target:add("ldflags", "-fuse-ld=radlink", { force = true })
+            target:add("shflags", "-fuse-ld=radlink", { force = true })
         end
-        local compinst = compiler.load("cxx")
-        local cxx = path.filename(compinst:program())
-        if get_config("sanitizers") then
-            if target:has_runtime("c++_shared", "c++_static") then
-                target:set("policy", "build.sanitizer.address", true)
-                target:set("policy", "build.sanitizer.undefined", true)
+
+        if get_config("sanitizers") and is_mode("release") then
+            if get_config("toolchain") == "llvm" or get_config("toolchain") == "clang" then
+                if get_config("runtimes") == "c++_shared" or get_config("runtimes") == "c++_static" then
+                    target:set("policy", "build.sanitizer.address", true)
+                    target:set("policy", "build.sanitizer.undefined", true)
+                end
             end
         end
     end)
@@ -35,10 +39,7 @@ rule("stormkit.flags", function()
         target:set("symbols", "hidden")
         if is_mode("release") then
             target:set("optimize", "fastest")
-        elseif is_mode("debug") then
-            target:set("symbols", "debug", "hidden")
-        elseif is_mode("releasedbg") then
-            target:set("optimize", "fast")
+        elseif is_mode("debug", "releasedbg") then
             target:set("symbols", "debug", "hidden")
         end
         target:set("fpmodels", "fast")
@@ -84,6 +85,12 @@ rule("stormkit.flags", function()
                         "-Wconversion",
                         "-Wshadow",
                         "-fdiagnostics-color=always",
+                        "-fstack-protector-strong",
+                        "-fstack-clash-protection",
+                        "-fcf-protection=full",
+                        "-ftrivial-auto-var-init=zero",
+                        "-Wsuggest-attribute=pure",
+                        "-Wsuggest-attribute=const",
                     },
                     is_mode("debug", "releasedbg") and { "-ggdb3", "-fno-omit-frame-pointer", "-fno-sanitize-merge" }
                         or {}
@@ -112,7 +119,13 @@ rule("stormkit.flags", function()
                         "-fdiagnostics-color=always",
                         "-fcolor-diagnostics",
                         "-fansi-escape-codes",
+                        "-fstack-protector-strong",
+                        "-fstack-clash-protection",
+                        "-ftrivial-auto-var-init=zero",
                     },
+                    is_plat("linux") and {
+                        "-fcf-protection=full",
+                    } or {},
                     is_mode("debug", "releasedbg") and { "-ggdb3", "-fno-omit-frame-pointer", "-fno-sanitize-merge" }
                         or {},
                     target:has_runtime("c++_shared", "c++_static") and { "-fexperimental-library" } or {}
@@ -122,48 +135,90 @@ rule("stormkit.flags", function()
                 mxx = {
                     "-fexperimental-library",
                 },
-                ld = target:has_runtime("c++_shared", "c++_static") and { "-fexperimental-library" } or {},
+                ld = table.join(
+                    target:has_runtime("c++_shared", "c++_static") and { "-fexperimental-library" } or {},
+                    (
+                        target:is_plat("windows")
+                        and is_mode("release")
+                        and target:has_runtime("c++_shared", "c++_static")
+                    )
+                            and { "-Xlinker -NODEFAULTLIB:libcmt" }
+                        or {}
+                ),
                 sh = target:has_runtime("c++_shared", "c++_static") and { "-fexperimental-library" } or {},
             },
         }
         if target:has_tool("cxx", "clang", "clangxx") then
-            target:add("cxxflags", flags.clang.cxx or {}, { tools = { "clang", "clangxx" } })
-            target:add("cxxflags", flags.clang.cx or {}, { tools = { "clang", "clangxx" } })
-            target:add("cflags", flags.clang.cx or {}, { tools = { "clang" } })
-            target:add("mxflags", flags.clang.mx or {}, { tools = { "clang" } })
-            target:add("mxxflags", flags.clang.mxx or {}, { tools = { "clang", "clang++" } })
-            target:add("ldflags", flags.clang.ld or {}, { tools = { "clang", "clangxx", "lld" } })
-            target:add("shflags", flags.clang.sh or {}, { tools = { "clang", "clangxx", "lld" } })
-            target:add("arflags", flags.clang.ar or {}, { tools = { "clang", "clangxx", "llvm-ar" } })
+            target:add("cxxflags", flags.clang.cxx or {}, { tools = { "clang", "clangxx" }, force = true })
+            target:add("cxxflags", flags.clang.cx or {}, { tools = { "clang", "clangxx" }, force = true })
+            target:add("cflags", flags.clang.cx or {}, { tools = { "clang" }, force = true })
+            target:add("mxflags", flags.clang.mx or {}, { tools = { "clang" }, force = true })
+            target:add("mxxflags", flags.clang.mxx or {}, { tools = { "clang", "clang++" }, force = true })
+            target:add("ldflags", flags.clang.ld or {}, { tools = { "clang", "clangxx", "lld" }, force = true })
+            target:add("shflags", flags.clang.sh or {}, { tools = { "clang", "clangxx", "lld" }, force = true })
+            target:add("arflags", flags.clang.ar or {}, { tools = { "clang", "clangxx", "llvm-ar" }, force = true })
             if (is_plat("linux") or is_plat("mingw")) and not target:has_runtime("c++_shared", "c++_static") then
                 target:add("syslinks", "stdc++exp", "stdc++fs")
             end
         end
 
         if target:has_tool("cxx", "gcc", "gxx") then
-            target:add("cxxflags", flags.gcc.cxx or {}, { tools = { "gcc", "g++" } })
-            target:add("cxxflags", flags.gcc.cx or {}, { tools = { "gcc", "g++" } })
-            target:add("cflags", flags.gcc.cx or {}, { tools = { "gcc" } })
-            target:add("ldflags", flags.gcc.ld or {}, { tools = { "gcc", "g++", "ld" } })
-            target:add("shflags", flags.gcc.sh or {}, { tools = { "gcc", "g++", "ld" } })
-            target:add("arflags", flags.gcc.ar or {}, { tools = { "gcc", "g++", "ar" } })
+            target:add("cxxflags", flags.gcc.cxx or {}, { tools = { "gcc", "g++" }, force = true })
+            target:add("cxxflags", flags.gcc.cx or {}, { tools = { "gcc", "g++" }, force = true })
+            target:add("cflags", flags.gcc.cx or {}, { tools = { "gcc" }, force = true })
+            target:add("ldflags", flags.gcc.ld or {}, { tools = { "gcc", "g++", "ld" }, force = true })
+            target:add("shflags", flags.gcc.sh or {}, { tools = { "gcc", "g++", "ld" }, force = true })
+            target:add("arflags", flags.gcc.ar or {}, { tools = { "gcc", "g++", "ar" }, force = true })
             target:add("syslinks", "stdc++exp", "stdc++fs")
         end
 
         if target:has_tool("cxx", "cl", "clang_cl") then
-            target:add("cxxflags", flags.cl.cxx or {}, { tools = { "cl", "clang_cl" } })
-            target:add("cxxflags", flags.cl.cx or {}, { tools = { "cl", "clang_cl" } })
-            target:add("cflags", flags.cl.cx or {}, { tools = { "cl", "clang_cl" } })
-            target:add("ldflags", flags.cl.ld or {}, { tools = { "cl", "link" } })
-            target:add("shflags", flags.cl.sh or {}, { tools = { "cl", "link" } })
-            target:add("arflags", flags.cl.ar or {}, { tools = { "cl", "clang_cl" } })
+            target:add("cxxflags", flags.cl.cxx or {}, { tools = { "cl", "clang_cl" }, force = true })
+            target:add("cxxflags", flags.cl.cx or {}, { tools = { "cl", "clang_cl" }, force = true })
+            target:add("cflags", flags.cl.cx or {}, { tools = { "cl", "clang_cl" }, force = true })
+            target:add("ldflags", flags.cl.ld or {}, { tools = { "cl", "link" }, force = true })
+            target:add("shflags", flags.cl.sh or {}, { tools = { "cl", "link" }, force = true })
+            target:add("arflags", flags.cl.ar or {}, { tools = { "cl", "clang_cl" }, force = true })
         end
 
         if is_plat("windows") then
             local runtimes = { is_mode("debug") and "MDd" or "MD" }
-            if not target:has_runtime("c++_shared", "c++_static", "stdc++_shared", "stdc++_static") then
-                target:add("defines", "_MSVC_STL_HARDENING")
-            elseif target:has_runtime("c++_shared") then
+
+            local libcpp = target:has_runtime("c++_shared", "c++_static")
+            local libstdcpp = target:has_runtime("stdc++_shared", "stdc++_static")
+
+            if is_mode("debug") then
+                if libcpp then
+                    target:add("defines", "_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG")
+                elseif libstdcpp then
+                    target:add("defines", "_FORTIFY_SOURCE=3")
+                    if get_config("devmode") then
+                        target:add("defines", "_GLIBCXX_DEBUG")
+                    else
+                        target:add("defines", "_GLIBCXX_ASSERTIONS")
+                    end
+                else
+                    target:add("defines", "_MSVC_STL_HARDENING=1")
+                end
+            elseif is_mode("releasedbg") then
+                if libcpp then
+                    target:add("defines", "_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE")
+                elseif libstdcpp then
+                    target:add("defines", "_FORTIFY_SOURCE=2", "_GLIBCXX_ASSERTIONS")
+                else
+                    target:add("defines", "_MSVC_STL_HARDENING=1")
+                end
+            elseif is_mode("release") then
+                if libcpp then
+                    target:add("defines", "_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST")
+                elseif libstdcpp then
+                    target:add("defines", "_FORTIFY_SOURCE=1")
+                else
+                    target:add("defines", "_MSVC_STL_HARDENING=1")
+                end
+            end
+
+            if target:has_runtime("c++_shared") then
                 table.insert(runtimes, "c++_shared")
             elseif target:has_runtime("c++_static") then
                 table.insert(runtimes, "c++_static")

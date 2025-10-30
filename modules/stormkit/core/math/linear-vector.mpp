@@ -11,9 +11,7 @@ export module stormkit.core:math.linear.vector;
 import std;
 
 import :meta;
-
-import :typesafe.integer;
-import :typesafe.floating_point;
+import :typesafe;
 
 import :math.linear;
 
@@ -35,6 +33,9 @@ export {
             template<typename Self>
             constexpr auto operator[](this Self& self, usize i) noexcept
               -> core::meta::ForwardConst<Self, value_type&>;
+
+            template<core::meta::IsArithmetic U>
+            constexpr auto to() const noexcept -> vec2<U>;
         };
 
         using vec2f32 = vec2<f32>;
@@ -64,6 +65,9 @@ export {
             template<typename Self>
             constexpr auto operator[](this Self& self, usize i) noexcept
               -> core::meta::ForwardConst<Self, value_type&>;
+
+            template<core::meta::IsArithmetic U>
+            constexpr auto to() const noexcept -> vec3<U>;
         };
 
         using vec3f32 = vec3<f32>;
@@ -94,6 +98,9 @@ export {
             template<typename Self>
             constexpr auto operator[](this Self& self, usize i) noexcept
               -> core::meta::ForwardConst<Self, value_type&>;
+
+            template<core::meta::IsArithmetic U>
+            constexpr auto to() const noexcept -> vec4<U>;
         };
 
         using vec4f32 = vec4<f32>;
@@ -240,7 +247,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     template<typename Self>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto vec2<T>::operator[](this Self& self, usize i) noexcept
       -> core::meta::ForwardConst<Self, value_type&> {
         static constexpr auto* members = { &vec2::x, &vec2::y };
@@ -251,8 +258,17 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
+    template<core::meta::IsArithmetic U>
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    constexpr auto vec2<T>::to() const noexcept -> vec2<U> {
+        return { core::as<U>(x), core::as<U>(y) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
     template<typename Self>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto vec3<T>::operator[](this Self& self, usize i) noexcept
       -> core::meta::ForwardConst<Self, value_type&> {
         static constexpr auto* members = { &vec3::x, &vec3::y, &vec3::z };
@@ -263,8 +279,17 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
+    template<core::meta::IsArithmetic U>
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    constexpr auto vec3<T>::to() const noexcept -> vec3<U> {
+        return { core::as<U>(x), core::as<U>(y), core::as<U>(z) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
     template<typename Self>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto vec4<T>::operator[](this Self& self, usize i) noexcept
       -> core::meta::ForwardConst<Self, value_type&> {
         static constexpr auto* members = { &vec4::x, &vec4::y, &vec4::z, &vec4::w };
@@ -274,8 +299,17 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    template<core::meta::IsArithmetic U>
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    constexpr auto vec4<T>::to() const noexcept -> vec4<U> {
+        return { core::as<U>(x), core::as<U>(y), core::as<U>(z), core::as<U>(w) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<meta::IsVec T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto normalize(const T& a) noexcept -> T {
         auto out = T {};
 
@@ -287,7 +321,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsVec T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto add(const T& a, const T& b) noexcept -> T {
         auto out = T {};
 
@@ -299,7 +333,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsVec T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto sub(const T& a, const T& b) noexcept -> T {
         auto out = T {};
 
@@ -311,7 +345,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsVec T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto mul(const T& a, typename T::value_type b) noexcept -> T {
         auto out = T {};
 
@@ -323,7 +357,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsVec T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto div(const T& a, typename T::value_type b) noexcept -> T {
         auto out = T {};
 
@@ -335,7 +369,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsVec T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto dot(const T& a, const T& b) noexcept -> typename T::value_type {
         return dot(as_mdspan(a), as_mdspan(b));
     }
@@ -343,7 +377,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto cross(const vec3<T>& a, const vec3<T>& b) noexcept -> vec3<T> {
         auto out = vec3<T> {};
 
@@ -355,7 +389,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsVec T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto as_mdspan(const T& value) noexcept
       -> VectorSpan<const typename T::value_type, T::EXTENT[0]> {
         return VectorSpan<const typename T::value_type, T::EXTENT[0]> { &value.x, T::EXTENT };
@@ -365,7 +399,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<meta::IsVec T>
         requires(not core::meta::IsConst<T>)
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto as_mdspan_mut(T& value) noexcept
       -> VectorSpan<typename T::value_type, T::EXTENT[0]> {
         return VectorSpan<typename T::value_type, T::EXTENT[0]> { &value.x, T::EXTENT };
@@ -374,7 +408,7 @@ namespace stormkit { inline namespace core { namespace math {
 
 namespace std {
     template<stormkit::core::meta::IsArithmetic T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto hash<stormkit::math::vec2<T>>::operator()(const stormkit::math::vec2<T>& vec)
       const noexcept -> stormkit::u64 {
         auto hash = stormkit::hash64 { 0 };
@@ -402,7 +436,7 @@ namespace std {
     }
 
     template<stormkit::core::meta::IsArithmetic T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto hash<stormkit::math::vec3<T>>::operator()(const stormkit::math::vec3<T>& vec)
       const noexcept -> stormkit::u64 {
         auto hash = stormkit::hash64 { 0 };
@@ -429,7 +463,7 @@ namespace std {
     }
 
     template<stormkit::core::meta::IsArithmetic T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto hash<stormkit::math::vec4<T>>::operator()(const stormkit::math::vec4<T>& vec)
       const noexcept -> stormkit::u64 {
         auto hash = stormkit::hash64 { 0 };

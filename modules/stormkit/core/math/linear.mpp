@@ -276,7 +276,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<usize... Sizes, stdr::contiguous_range T>
         requires(core::meta::IsArithmetic<core::meta::RangeType<T>>)
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto as_mdspan(const T& data) noexcept
       -> TensorSpan<const core::meta::RangeType<T>, Sizes...> {
         EXPECTS(stdr::size(data) == (Sizes * ...));
@@ -288,7 +288,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<usize... Sizes, stdr::contiguous_range T>
         requires(core::meta::IsArithmetic<core::meta::RangeType<T>>
                  and not core::meta::IsConst<core::meta::RangeType<T>>)
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto as_mdspan_mut(T& data) noexcept
       -> TensorSpan<core::meta::RangeType<T>, Sizes...> {
         EXPECTS(stdr::size(data) == (Sizes * ...));
@@ -298,7 +298,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsTensorSpan To, meta::IsTensorSpan From>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto as(const From& data) noexcept -> To {
         return To { data };
     }
@@ -306,7 +306,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto radians(T degres) noexcept -> Radian<T> {
         static constexpr auto one_rad = std::numbers::pi_v<T> / T { 180 };
         return Radian { degres * one_rad };
@@ -391,7 +391,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize N>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto dot(const VectorSpan<const T, N>& a, const VectorSpan<const T, N>& b) noexcept
       -> T {
         auto out = T { 0 };
@@ -448,7 +448,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<typename T, usize M>
         requires(not core::meta::IsConst<T>)
-    STORMKIT_CONST
+    STORMKIT_PURE
     constexpr auto determinant(const SquareMatrixSpan<const T, M>& mat) noexcept -> T {
         if constexpr (M == 0) return 1;
         else if constexpr (M == 1)
@@ -498,7 +498,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize M, usize N>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto is_inversible(const MatrixSpan<const T, M, N>& mat) noexcept -> bool {
         if constexpr (M != N) return false;
         else if constexpr (M == 0)

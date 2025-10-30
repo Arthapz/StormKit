@@ -57,7 +57,7 @@ export {
 namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_CONST
+    STORMKIT_PURE
     constexpr auto Monitor::operator<=>(const Monitor& other) const noexcept
       -> std::strong_ordering {
         if (auto ret = flags <=> other.flags; ret != 0) return ret;

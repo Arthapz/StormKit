@@ -42,7 +42,7 @@ namespace stormkit::wsi::linux::x11 {
             case XCB_BUTTON_INDEX_3: return MouseButton::RIGHT;
             case XCB_BUTTON_INDEX_4: return MouseButton::BUTTON_1;
             case XCB_BUTTON_INDEX_5: return MouseButton::BUTTON_2;
-            default: return MouseButton::UNKNOWN;
+            default: break;
         }
 
         std::unreachable();

@@ -31,13 +31,13 @@ namespace stormkit { inline namespace core {
         out      = replace(out, "basic_string_view<char, std::char_traits<char>>", "string_view");
         out      = replace(out, "basic_string_view<char, std::char_traits<char> >", "string_view");
         out      = replace(out,
-                      "basic_string<char, std::char_traits<char>, "
+                           "basic_string<char, std::char_traits<char>, "
                            "std::allocator<char>>",
-                      "string");
+                           "string");
         out      = replace(out,
-                      "basic_string<char, std::char_traits<char>, "
+                           "basic_string<char, std::char_traits<char>, "
                            "std::allocator<char> >",
-                      "string");
+                           "string");
         return out;
     }
 

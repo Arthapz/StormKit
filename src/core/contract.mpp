@@ -46,6 +46,7 @@ namespace stormkit { inline namespace core {
                              ConsoleStyle { .fg        = ConsoleColor::RED,
                                             .modifiers = StyleModifier::BOLD }
                                | message);
+                std::fflush(get_stderr());
 
                 std::terminate();
             }

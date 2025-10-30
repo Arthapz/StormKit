@@ -10,11 +10,10 @@ extern "C" {
 #include <xkbcommon/xkbcommon-x11.h>
 #include <xkbcommon/xkbcommon.h>
 
-#include <xcb/randr.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_icccm.h>
+#include <xcb/xcb_image.h>
 #include <xcb/xcb_keysyms.h>
-#include <xcb/xcb_xrm.h>
 #include <xcb/xfixes.h>
 #include <xcb/xinput.h>
 
@@ -34,41 +33,53 @@ import stormkit.core;
 
 import :linux.common.xkb;
 
-import :linux.x11.window_impl;
+import :linux.x11.window;
 import :linux.x11.context;
 import :linux.x11.xcb;
 import :linux.x11.log;
 import :linux.x11.utils;
 
+namespace stdr = std::ranges;
+namespace stdv = std::views;
+
 namespace stormkit::wsi::linux::x11 {
     namespace {
         [[maybe_unused]]
-        constexpr auto WM_HINTS_STR            = std::string_view("_MOTIF_WM_HINTS");
+        constexpr auto WM_HINTS_STR
+          = std::string_view("_MOTIF_WM_HINTS");
         constexpr auto WM_PROTOCOLS            = std::string_view("WM_PROTOCOLS");
         constexpr auto WM_DELETE_WINDOW        = std::string_view("WM_DELETE_WINDOW");
         constexpr auto WM_STATE_STR            = std::string_view("_NET_WM_STATE");
         constexpr auto WM_STATE_FULLSCREEN_STR = std::string_view("_NET_WM_STATE_FULLSCREEN");
+        constexpr auto WM_STATE_HIDDEN_STR     = std::string_view("_NET_WM_STATE_HIDDEN");
 
         constexpr auto MWM_HINTS_FUNCTIONS   = 1 << 0;
         constexpr auto MWM_HINTS_DECORATIONS = 1 << 1;
 
-        constexpr auto MWM_DECOR_BORDER   = 1 << 1;
-        constexpr auto MWM_DECOR_RESIZE   = 1 << 2;
-        constexpr auto MWM_DECOR_TITLE    = 1 << 3;
-        constexpr auto MWM_DECOR_MENU     = 1 << 4;
-        constexpr auto MWM_DECOR_MINIMIZE = 1 << 5;
-        constexpr auto MWM_DECOR_MAXIMIZE = 1 << 6;
+        constexpr auto MWM_DECOR_BORDER = 1 << 1;
+        constexpr auto MWM_DECOR_RESIZE = 1 << 2;
+        constexpr auto MWM_DECOR_TITLE  = 1 << 3;
+        constexpr auto MWM_DECOR_MENU   = 1 << 4;
+        [[maybe_unused]]
+        constexpr auto MWM_DECOR_MINIMIZE
+          = 1 << 5;
+        [[maybe_unused]]
+        constexpr auto MWM_DECOR_MAXIMIZE
+          = 1 << 6;
 
-        constexpr auto MWM_FUNC_RESIZE   = 1 << 1;
-        constexpr auto MWM_FUNC_MOVE     = 1 << 2;
-        constexpr auto MWM_FUNC_MINIMIZE = 1 << 3;
+        constexpr auto MWM_FUNC_RESIZE = 1 << 1;
+        constexpr auto MWM_FUNC_MOVE   = 1 << 2;
+        [[maybe_unused]]
+        constexpr auto MWM_FUNC_MINIMIZE
+          = 1 << 3;
         constexpr auto MWM_FUNC_MAXIMIZE = 1 << 4;
         constexpr auto MWM_FUNC_CLOSE    = 1 << 5;
 
         constexpr auto _NET_WM_STATE_REMOVE = 0; // remove/unset property
         constexpr auto _NET_WM_STATE_ADD    = 1; // add/set property
         [[maybe_unused]]
-        constexpr auto _NET_WM_STATE_TOGGLE = 2; // toggle property
+        constexpr auto _NET_WM_STATE_TOGGLE
+          = 2; // toggle property
 
         constexpr auto MOUSE_RAW_EVENTS    = u32 { XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_PRESS
                                                 | XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_RELEASE
@@ -113,67 +124,78 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     inline auto is_ext_event(xcb_generic_event_t* event, int opcode) noexcept -> bool {
         return std::bit_cast<xcb_ge_generic_event_t*>(event)->extension == opcode;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    WindowImpl::~WindowImpl() noexcept {
+    Window::~Window() noexcept {
         xcb_flush(xcb::get_globals().connection);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::create(std::string               title,
-                            const math::Extent2<u32>& extent,
-                            WindowFlag                flags) noexcept -> void {
-        auto& connection = xcb::get_globals().connection;
+    auto Window::open(std::string               title,
+                      const math::Extent2<u32>& extent,
+                      WindowFlag                flags) noexcept -> void {
+        const auto& connection = xcb::get_globals().connection;
 
-        auto screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-        m_window    = xcb::Window { std::in_place, connection };
+        const auto screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+        m_window          = xcb::Window::create(connection);
 
-        m_state.dpi = xcb::get_xft_value<f32>("Xft.dpi").value_or(96.f) / 96.f;
+        // m_dpi = xcb::get_xft_value<f32>("Xft.dpi").value_or(96.f) / 96.f;
 
-        const auto width  = extent.width * m_state.dpi;
-        const auto height = extent.height * m_state.dpi;
-
+        const auto [width, height] = extent;
         {
-            u32 value_list[] = { screen->white_pixel, screen->black_pixel, EVENTS };
+            m_color_map = xcb::ColorMap::create(connection);
+            xcb_create_colormap(connection,
+                                XCB_COLORMAP_ALLOC_NONE,
+                                m_color_map,
+                                screen->root,
+                                screen->root_visual);
+            const auto value_list = std::array<u32, 3> { screen->white_pixel, EVENTS, m_color_map };
 
-            auto cookie = xcb_create_window_checked(connection,
-                                                    XCB_COPY_FROM_PARENT,
-                                                    m_window,
-                                                    screen->root,
-                                                    0,
-                                                    0,
-                                                    as<u16>(width),
-                                                    as<u16>(height),
-                                                    1,
-                                                    XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                                                    screen->root_visual,
-                                                    XCB_CW_BACK_PIXEL
-                                                      | XCB_CW_BORDER_PIXEL
-                                                      | XCB_CW_EVENT_MASK,
-                                                    value_list);
+            const auto cookie = xcb_create_window_checked(connection,
+                                                          screen->root_depth,
+                                                          m_window,
+                                                          screen->root,
+                                                          0,
+                                                          0,
+                                                          narrow<u16>(width),
+                                                          narrow<u16>(height),
+                                                          1,
+                                                          XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                                                          screen->root_visual,
+                                                          XCB_CW_BACK_PIXEL
+                                                            | XCB_CW_EVENT_MASK
+                                                            | XCB_CW_COLORMAP,
+                                                          stdr::data(value_list));
 
             auto error = xcb_request_check(connection, cookie);
             if (error) [[unlikely]] {
-                m_window.reset();
                 elog("Failed to create window\n    > reason: {}",
                      xcb::get_error(as_ref_mut(error)));
                 return;
             }
         }
 
-        m_state.extent             = extent;
-        m_state.framebuffer_extent = extent;
-        m_state.framebuffer_extent.width *= m_state.dpi;
-        m_state.framebuffer_extent.height *= m_state.dpi;
+        {
+            using Reply = RAIICapsule<xcb_get_geometry_reply_t*,
+                                      xcb_get_geometry_reply,
+                                      std::free,
+                                      struct XCBGeometryReplyTag>;
+
+            const auto cookie = xcb_get_geometry(connection, m_window);
+            const auto reply  = Reply::create(connection, cookie, nullptr);
+            ensures(reply != nullptr, "Failed to query window geometry");
+            m_state.extent.width  = reply.handle()->width;
+            m_state.extent.height = reply.handle()->height;
+        }
 
         // init key_symbol map, this is needed to extract the keysymbol from event
-        m_key_symbols = xcb::KeySymbols { std::in_place, connection };
+        m_key_symbols = xcb::KeySymbols::create(connection);
         ensures(m_key_symbols, "Failed to initialize XKB symbols map");
 
         auto xkb_ext_reply = xcb_get_extension_data(connection, &xcb_xkb_id);
@@ -187,7 +209,7 @@ namespace stormkit::wsi::linux::x11 {
                                             std::free,
                                             struct XCBXKBReplyTag>;
             const auto cookie = xcb_xkb_use_extension(connection, major_version, minor_version);
-            const auto reply  = Reply { std::in_place, connection, cookie, nullptr };
+            const auto reply  = Reply::create(connection, cookie, nullptr);
 
             ensures(reply != nullptr, "Failed to enable XCB_XKB extension");
             ensures(reply.handle()->supported,
@@ -204,7 +226,7 @@ namespace stormkit::wsi::linux::x11 {
                                       struct XFixesQueryTag>;
 
             const auto cookie = xcb_xfixes_query_version(connection, 4, 0);
-            const auto reply  = Reply { std::in_place, connection, cookie, nullptr };
+            const auto reply  = Reply::create(connection, cookie, nullptr);
 
             ensures(reply != nullptr, "Failed to query XCB_XFIXES extension version");
             dlog("XCB_XFIXES extension loaded, version: {}.{}",
@@ -221,7 +243,7 @@ namespace stormkit::wsi::linux::x11 {
                                       struct InputXIQueryTag>;
 
             const auto cookie = xcb_input_xi_query_version(connection, 2, XCB_INPUT_MINOR_VERSION);
-            const auto reply  = Reply { std::in_place, connection, cookie, nullptr };
+            const auto reply  = Reply::create(connection, cookie, nullptr);
 
             ensures(reply != nullptr, "Failed to query XCB_INPUT_XI extension version");
             dlog("XCB_INPUT_XI extension loaded, version: {}.{}",
@@ -272,19 +294,9 @@ namespace stormkit::wsi::linux::x11 {
 
         window_hints.flags = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
 
-        if (check_flag_bit(flags, WindowFlag::TITLE_BAR)) {
+        if (not check_flag_bit(flags, WindowFlag::BORDERLESS)) {
             window_hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MENU;
-            window_hints.functions |= MWM_FUNC_MOVE;
-        }
-
-        if (check_flag_bit(flags, WindowFlag::CLOSE)) {
-            window_hints.decorations |= 0;
-            window_hints.functions |= MWM_FUNC_CLOSE;
-        }
-
-        if (check_flag_bit(flags, WindowFlag::MINIMIZABLE)) {
-            window_hints.decorations |= MWM_DECOR_MINIMIZE;
-            window_hints.functions |= MWM_FUNC_MINIMIZE;
+            window_hints.functions |= MWM_FUNC_MOVE | MWM_FUNC_CLOSE;
         }
 
         if (check_flag_bit(flags, WindowFlag::RESIZEABLE)) {
@@ -310,7 +322,7 @@ namespace stormkit::wsi::linux::x11 {
                                   5,
                                   &window_hints);
           })
-          .transform_error(xcb::atom_error(WM_STATE_STR));
+          .transform_error(xcb::atom_error(WM_HINTS_STR));
 
         m_handles.connection  = connection;
         m_handles.window      = m_window;
@@ -345,47 +357,62 @@ namespace stormkit::wsi::linux::x11 {
           })
           .transform_error(xcb::atom_error(WM_STATE_STR));
 
+        xcb::get_atom(WM_STATE_HIDDEN_STR, false)
+          .transform_error(xcb::atom_error(WM_STATE_HIDDEN_STR));
+
         xcb_map_window(connection, m_window);
 
         xcb_flush(connection);
 
-        m_title = std::move(title);
-        m_open  = true;
+        if (not check_flag_bit(flags, WindowFlag::EXTERNAL_CONTEXT)) {
+            m_graphics_context = xcb::GraphicsContext::create(connection);
+            const auto values  = std::array<u32, 3> { screen->white_pixel,
+                                                      screen->black_pixel,
+                                                      0_u32 };
+            xcb_create_gc(connection,
+                          m_graphics_context,
+                          m_window,
+                          XCB_GC_BACKGROUND | XCB_GC_FOREGROUND | XCB_GC_GRAPHICS_EXPOSURES,
+                          stdr::data(values));
+
+            update_framebuffer();
+        }
+
+        xcb_flush(connection);
+
+        m_state.title = std::move(title);
+        m_state.open  = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::close() noexcept -> void {
+    auto Window::close() noexcept -> void {
+        const auto& connection = xcb::get_globals().connection;
+        if (m_window) xcb_unmap_window(connection, m_window);
+
+        m_image            = xcb::Image::empty();
+        m_framebuffer      = {};
+        m_graphics_context = xcb::GraphicsContext::empty();
+
         m_window.reset();
-
-        m_title.clear();
-        m_open                     = false;
-        m_key_repeat_enabled       = false;
-        m_virtual_keyboard_visible = false;
-
-        m_xi_opcode = 0;
+        m_color_map.reset();
+        m_handles = {};
 
         m_key_symbols.reset();
+        m_keymap.reset();
+        m_xkb_state.reset();
+        m_mods = {};
 
-        m_state = {};
-
-        m_keyboard_state = {};
-        m_mouse_state    = {};
+        m_xi_opcode       = 0;
+        m_dpi             = 1.f;
+        m_keyboard_states = {};
+        m_mouse_states    = {};
+        m_state           = {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::clear(const RGBColorU&) noexcept -> void {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto WindowImpl::set_pixels_to(std::span<const RGBColorU>) noexcept -> void {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto WindowImpl::poll_event(Event& event) noexcept -> bool {
+    auto Window::handle_events() noexcept -> void {
         using Event = RAIICapsule<xcb_generic_event_t*,
                                   xcb_poll_for_event,
                                   std::free,
@@ -393,11 +420,12 @@ namespace stormkit::wsi::linux::x11 {
 
         auto& globals = xcb::get_globals();
 
-        for (auto xevent = Event { std::in_place, globals.connection }; xevent;
+        for (auto xevent = Event::create(globals.connection); xevent;
              xevent.reset(xcb_poll_for_event(globals.connection)))
             process_events(xevent);
 
-        if (m_mouse_state.locked) {
+        if (m_mouse_states[GLOBAL_MOUSE_ID].locked) {
+            const auto locked_at = m_mouse_states[GLOBAL_MOUSE_ID].locked_at.to<f32>();
             xcb_warp_pointer(globals.connection,
                              XCB_NONE,
                              m_window,
@@ -405,39 +433,74 @@ namespace stormkit::wsi::linux::x11 {
                              0,
                              0,
                              0,
-                             as<i16>(m_mouse_state.locked_at.x * m_state.dpi),
-                             as<i16>(m_mouse_state.locked_at.y * m_state.dpi));
+                             as<i16>(locked_at.x),
+                             as<i16>(locked_at.y));
 
-            if (m_mouse_state.hidden) xcb_xfixes_hide_cursor(globals.connection, m_window);
+            if (m_mouse_states[GLOBAL_MOUSE_ID].hidden)
+                xcb_xfixes_hide_cursor(globals.connection, m_window);
             else
                 xcb_xfixes_show_cursor(globals.connection, m_window);
         }
-
-        return WindowImplBase::poll_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::wait_event(Event& event) noexcept -> bool {
-        using Event = RAIICapsule<xcb_generic_event_t*,
-                                  xcb_poll_for_event,
-                                  std::free,
-                                  struct EventTag>;
+    auto Window::clear(const rgbcolor<u8>& color) noexcept -> void {
+        expects(m_graphics_context, "clear called on a window opened with EXTERNAL_CONTEXT flag");
+        const auto _color = (255_u32 << 24)
+                            | as<u32>(color.r) << 16
+                            | as<u32>(color.g) << 8
+                            | color.b;
+        stdr::fill(m_framebuffer, _color);
 
-        auto& globals = xcb::get_globals();
-
-        auto xevent = Event {};
-        while (!xevent) xevent = Event { std::in_place, globals.connection };
-
-        process_events(xevent);
-
-        return WindowImplBase::wait_event(event);
+        const auto& connection = xcb::get_globals().connection;
+        const auto  cookie     = xcb_image_put(connection,
+                                          m_window,
+                                          m_graphics_context,
+                                          m_image,
+                                          0,
+                                          0,
+                                          0);
+        auto        error      = xcb_request_check(connection, cookie);
+        if (error) [[unlikely]] {
+            elog("Failed to copy image\n    > reason: {}", xcb::get_error(as_ref_mut(error)));
+        }
+        // dlog("cleared");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_title(std::string title) noexcept -> void {
-        auto& globals = xcb::get_globals();
+    auto Window::fill_framebuffer(std::span<const rgbcolor<u8>> pixels) noexcept -> void {
+        expects(m_graphics_context,
+                "fill_framebuffer called on a window opened with EXTERNAL_CONTEXT flag");
+        const auto count = std::min(stdr::size(pixels), stdr::size(m_framebuffer));
+        stdr::copy(pixels
+                     | stdv::take(count)
+                     | stdv::transform([](const auto& col) static noexcept {
+                           return (255_u32 << 24)
+                                  | as<u32>(col.r) << 16
+                                  | as<u32>(col.g) << 8
+                                  | col.b;
+                       }),
+                   stdr::begin(m_framebuffer));
+
+        const auto& connection = xcb::get_globals().connection;
+        const auto  cookie     = xcb_image_put(connection,
+                                          m_window,
+                                          m_graphics_context,
+                                          m_image,
+                                          0,
+                                          0,
+                                          0);
+        auto        error      = xcb_request_check(connection, cookie);
+        if (error) [[unlikely]]
+            elog("Failed to copy image\n    > reason: {}", xcb::get_error(as_ref_mut(error)));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_title(std::string title) noexcept -> void {
+        const auto& globals = xcb::get_globals();
 
         xcb_change_property(globals.connection,
                             XCB_PROP_MODE_REPLACE,
@@ -450,12 +513,29 @@ namespace stormkit::wsi::linux::x11 {
 
         xcb_flush(globals.connection);
 
-        m_title = std::move(title);
+        m_state.title = std::move(title);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_fullscreen(bool enabled) noexcept -> void {
+    auto Window::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
+        auto& globals = xcb::get_globals();
+
+        const auto mask   = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
+        const auto width  = as<f32>(extent.width);
+        const auto height = as<f32>(extent.height);
+        const auto values = std::array<i32, 2> { as<i32>(width), as<i32>(height) };
+
+        xcb_configure_window(globals.connection, m_window, mask, stdr::data(values));
+
+        xcb_flush(globals.connection);
+
+        m_state.extent = extent;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_fullscreen(bool enabled) noexcept -> void {
         xcb::get_atom(WM_STATE_FULLSCREEN_STR, false)
           .transform_error(xcb::atom_error(WM_STATE_FULLSCREEN_STR))
           .and_then([](auto&& fullscreen_atom) static noexcept {
@@ -491,7 +571,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::confine_mouse(bool confined, u32) noexcept -> void {
+    auto Window::confine_mouse(bool confined, u8) noexcept -> void {
         auto& globals = xcb::get_globals();
 
         if (confined) {
@@ -511,22 +591,25 @@ namespace stormkit::wsi::linux::x11 {
         } else
             xcb_ungrab_pointer(globals.connection, XCB_CURRENT_TIME);
 
-        if (m_mouse_state.hidden) xcb_xfixes_hide_cursor(globals.connection, m_window);
+        if (m_mouse_states[GLOBAL_MOUSE_ID].hidden)
+            xcb_xfixes_hide_cursor(globals.connection, m_window);
         else
             xcb_xfixes_show_cursor(globals.connection, m_window);
 
         xcb_flush(globals.connection);
 
-        m_mouse_state.confined = confined;
+        m_mouse_states[GLOBAL_MOUSE_ID].confined = confined;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::lock_mouse(bool locked, u32) noexcept -> void {
+    auto Window::lock_mouse(bool locked, u8) noexcept -> void {
         auto& globals = xcb::get_globals();
 
         if (locked) {
-            m_mouse_state.locked_at = m_mouse_state.last_position;
+            m_mouse_states[GLOBAL_MOUSE_ID].locked_at = m_mouse_states[GLOBAL_MOUSE_ID]
+                                                          .last_position;
+            const auto locked_at = m_mouse_states[GLOBAL_MOUSE_ID].locked_at.to<f32>();
             xcb_warp_pointer(globals.connection,
                              XCB_NONE,
                              m_window,
@@ -534,21 +617,22 @@ namespace stormkit::wsi::linux::x11 {
                              0,
                              0,
                              0,
-                             as<i16>(m_mouse_state.locked_at.x * m_state.dpi),
-                             as<i16>(m_mouse_state.locked_at.y * m_state.dpi));
+                             as<i16>(locked_at.x),
+                             as<i16>(locked_at.y));
         }
 
-        if (m_mouse_state.hidden) xcb_xfixes_hide_cursor(globals.connection, m_window);
+        if (m_mouse_states[GLOBAL_MOUSE_ID].hidden)
+            xcb_xfixes_hide_cursor(globals.connection, m_window);
         else
             xcb_xfixes_show_cursor(globals.connection, m_window);
 
         xcb_flush(globals.connection);
-        m_mouse_state.locked = locked;
+        m_mouse_states[GLOBAL_MOUSE_ID].locked = locked;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::hide_mouse(bool hidden, u32) noexcept -> void {
+    auto Window::hide_mouse(bool hidden, u8) noexcept -> void {
         auto& globals = xcb::get_globals();
 
         if (hidden) xcb_xfixes_hide_cursor(globals.connection, m_window);
@@ -557,18 +641,18 @@ namespace stormkit::wsi::linux::x11 {
 
         xcb_flush(globals.connection);
 
-        m_mouse_state.hidden = hidden;
+        m_mouse_states[GLOBAL_MOUSE_ID].hidden = hidden;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_relative_mouse(bool relative, u32) noexcept -> void {
-        m_mouse_state.relative = relative;
+    auto Window::set_relative_mouse(bool relative, u8) noexcept -> void {
+        m_mouse_states[GLOBAL_MOUSE_ID].relative = relative;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_key_repeat(bool enabled, u32) noexcept -> void {
+    auto Window::set_key_repeat(bool enabled, u8) noexcept -> void {
         auto& globals = xcb::get_globals();
 
         const auto MASK = ((enabled) ? KEYBOARD_EVENTS : KEYBOARD_RAW_EVENTS) | MOUSE_RAW_EVENTS;
@@ -590,20 +674,21 @@ namespace stormkit::wsi::linux::x11 {
 
         xcb_flush(globals.connection);
 
-        m_key_repeat_enabled = enabled;
+        m_keyboard_states[GLOBAL_KEYBOARD_ID].key_repeat = enabled;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::show_virtual_keyboard(bool) noexcept -> void {
-        elog("x11::WindowImpl::show_virtual_keyboard isn't yet implemented");
+    auto Window::show_virtual_keyboard(bool) noexcept -> void {
+        elog("x11::Window::show_virtual_keyboard isn't yet implemented");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_mouse_position(const math::vec2i& position, u32) noexcept -> void {
+    auto Window::set_mouse_position(const math::vec2i& position, u8) noexcept -> void {
         auto& globals = xcb::get_globals();
 
+        const auto _position = position.to<f32>();
         xcb_warp_pointer(globals.connection,
                          XCB_NONE,
                          m_window,
@@ -611,110 +696,19 @@ namespace stormkit::wsi::linux::x11 {
                          0,
                          0,
                          0,
-                         as<i16>(position.x * m_state.dpi),
-                         as<i16>(position.y * m_state.dpi));
+                         as<i16>(_position.x),
+                         as<i16>(_position.y));
 
         xcb_flush(globals.connection);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_mouse_position_on_desktop(const math::vec2u& position, u32) noexcept
-      -> void {
-        auto& globals = xcb::get_globals();
+    auto Window::process_events(xcb_generic_event_t* event) -> void {
+        if (not event) return;
 
-        const auto default_screen_id = 0;
-        auto       root_window       = default_root_window(globals.connection, default_screen_id);
+        dlog("process_events");
 
-        xcb_warp_pointer(globals.connection,
-                         XCB_NONE,
-                         root_window,
-                         0,
-                         0,
-                         0,
-                         0,
-                         as<i16>(position.x),
-                         as<i16>(position.y));
-
-        xcb_flush(globals.connection);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto WindowImpl::get_monitor_settings() -> std::vector<Monitor> {
-        auto& globals = xcb::get_globals();
-
-        using Monitors = RAIICapsule<xcb_randr_get_monitors_reply_t*,
-                                     xcb_randr_get_monitors_reply,
-                                     std::free,
-                                     struct MonitorTag>;
-        using Output   = RAIICapsule<xcb_randr_get_output_info_reply_t*,
-                                     xcb_randr_get_output_info_reply,
-                                     std::free,
-                                     struct OutputTag>;
-        using CRTC     = RAIICapsule<xcb_randr_get_crtc_info_reply_t*,
-                                     xcb_randr_get_crtc_info_reply,
-                                     std::free,
-                                     struct CRTCTag>;
-
-        const auto root = xcb_setup_roots_iterator(xcb_get_setup(globals.connection)).data;
-
-        auto xcb_monitors = Monitors { std::in_place,
-                                       globals.connection,
-                                       xcb_randr_get_monitors(globals.connection, root->root, 0),
-                                       nullptr };
-        auto monitors     = std::vector<Monitor> {};
-
-        auto xcb_monitor_iter = xcb_randr_get_monitors_monitors_iterator(xcb_monitors);
-        for (auto i = 0; xcb_monitor_iter.rem;
-             xcb_randr_monitor_info_next(&xcb_monitor_iter), ++i) {
-            auto monitor_info = xcb_monitor_iter.data;
-
-            xcb_randr_select_input(globals.connection, root->root, true);
-
-            auto& monitor = monitors.emplace_back();
-            if (monitor_info->primary) monitor.flags = Monitor::Flags::PRIMARY;
-
-            auto name = xcb::get_atom_name(monitor_info->name);
-            if (!name) monitor.name = std::format("Monitor {}", i);
-            else
-                monitor.name = std::move(*name);
-
-            auto len     = xcb_randr_monitor_info_outputs_length(monitor_info);
-            auto outputs = xcb_randr_monitor_info_outputs(monitor_info);
-
-            for (auto j : range(len)) {
-                auto output_cookie = xcb_randr_get_output_info(globals.connection,
-                                                               outputs[j],
-                                                               xcb_monitors.handle()->timestamp);
-                auto output = Output { std::in_place, globals.connection, output_cookie, nullptr };
-
-                if (!output) continue;
-                if (output.handle()->connection != XCB_RANDR_CONNECTION_CONNECTED) continue;
-                if (output.handle()->crtc != XCB_NONE) continue;
-
-                auto crtc_cookie = xcb_randr_get_crtc_info(globals.connection,
-                                                           output.handle()->crtc,
-                                                           output.handle()->timestamp);
-                auto crtc        = CRTC { std::in_place, globals.connection, crtc_cookie, nullptr };
-
-                if (crtc == nullptr) {}
-
-                monitor.extents.emplace_back(math::Extent2<u32> { as<u32>(crtc.handle()->width),
-                                                                  as<u32>(crtc.handle()->height) });
-            }
-
-            if (stdr::empty(monitor.extents))
-                monitor.extents
-                  .emplace_back(math::Extent2<u32> { as<u32>(xcb_monitor_iter.data->width),
-                                                     as<u32>(xcb_monitor_iter.data->height) });
-        }
-        return monitors;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto WindowImpl::process_events(xcb_generic_event_t* event) -> void {
         auto*      xevent        = event;
         const auto response_type = xevent->response_type & ~0x80;
 
@@ -722,79 +716,75 @@ namespace stormkit::wsi::linux::x11 {
             case XCB_KEY_PRESS: {
                 auto kevent = std::bit_cast<xcb_key_press_event_t*>(xevent);
                 handle_key_event(kevent->detail, true);
-                break;
-            }
+            } break;
             case XCB_KEY_RELEASE: {
                 auto kevent = std::bit_cast<xcb_key_release_event_t*>(xevent);
                 handle_key_event(kevent->detail, false);
-                break;
-            }
+            } break;
             case XCB_MOTION_NOTIFY: {
                 auto mouse_event = std::bit_cast<xcb_motion_notify_event_t*>(xevent);
 
-                const auto x = narrow<u32>(mouse_event->event_x / m_state.dpi);
-                const auto y = narrow<u32>(mouse_event->event_y / m_state.dpi);
+                const auto x = narrow<u32>(mouse_event->event_x);
+                const auto y = narrow<u32>(mouse_event->event_y);
 
-                if (m_mouse_state.locked)
-                    if (x == m_mouse_state.locked_at.x and y == m_mouse_state.locked_at.y) break;
+                if (m_mouse_states[GLOBAL_MOUSE_ID].locked)
+                    if (x == m_mouse_states[GLOBAL_MOUSE_ID].locked_at.x
+                        and y == m_mouse_states[GLOBAL_MOUSE_ID].locked_at.y)
+                        break;
 
-                if (m_mouse_state.relative) {
-                    const auto dx = x - m_mouse_state.last_position.x;
-                    const auto dy = y - m_mouse_state.last_position.y;
+                if (m_mouse_states[GLOBAL_MOUSE_ID].relative) {
+                    const auto dx = x - m_mouse_states[GLOBAL_MOUSE_ID].last_position.x;
+                    const auto dy = y - m_mouse_states[GLOBAL_MOUSE_ID].last_position.y;
 
-                    WindowImplBase::mouse_move_event(dx, dy);
+                    mouse_moved_event(GLOBAL_MOUSE_ID, math::vec2 { dx, dy }.to<i32>());
                 } else
-                    WindowImplBase::mouse_move_event(x, y);
+                    mouse_moved_event(GLOBAL_MOUSE_ID, math::vec2 { x, y }.to<i32>());
 
-                m_mouse_state.last_position.x = x;
-                m_mouse_state.last_position.y = y;
+                m_mouse_states[GLOBAL_MOUSE_ID].last_position.x = x;
+                m_mouse_states[GLOBAL_MOUSE_ID].last_position.y = y;
 
-                break;
-            }
+            } break;
             case XCB_BUTTON_PRESS: {
                 auto button_event = std::bit_cast<xcb_button_press_event_t*>(xevent);
 
                 auto button = button_event->detail;
-                WindowImplBase::mouse_down_event(x11_button_to_stormkit(button),
-                                                 button_event->event_x / m_state.dpi,
-                                                 button_event->event_y / m_state.dpi);
-                break;
-            }
+                mouse_button_down_event(GLOBAL_MOUSE_ID,
+                                        x11_button_to_stormkit(button),
+                                        math::vec2 { button_event->event_x, button_event->event_y }
+                                          .to<i32>());
+            } break;
             case XCB_BUTTON_RELEASE: {
                 auto button_event = std::bit_cast<xcb_button_press_event_t*>(xevent);
 
                 auto button = button_event->detail;
-                WindowImplBase::mouse_up_event(x11_button_to_stormkit(button),
-                                               button_event->event_x,
-                                               button_event->event_y);
-                break;
-            }
+                mouse_button_up_event(GLOBAL_MOUSE_ID,
+                                      x11_button_to_stormkit(button),
+                                      math::vec2 { button_event->event_x, button_event->event_y }
+                                        .to<i32>());
+            } break;
             case XCB_CONFIGURE_NOTIFY: {
                 auto configure_event = std::bit_cast<xcb_configure_notify_event_t*>(xevent);
 
                 if ((configure_event->width != m_state.extent.width)
                     || (configure_event->height != m_state.extent.height)) {
-                    m_state.extent.width  = configure_event->width;
-                    m_state.extent.height = configure_event->height;
-                    WindowImplBase::resize_event(configure_event->width, configure_event->height);
+                    m_state.extent = math::Extent2 { configure_event->width,
+                                                     configure_event->height }
+                                       .narrow_to<u32>();
+
+                    if (m_graphics_context) update_framebuffer();
+
+                    resized_event(m_state.extent);
                 }
-                break;
-            }
-            case XCB_ENTER_NOTIFY: WindowImplBase::mouse_entered_event(); break;
-            case XCB_LEAVE_NOTIFY: WindowImplBase::mouse_exited_event(); break;
-            case XCB_VISIBILITY_NOTIFY: // TODO XCB_VISIBILITY_NOTIFY
-                /*if(xevent.xvisibility.wsi.== m_window
-                        m_is_visible = xevent.xvisibility.state !=
-                   VisibilityFullyObscured;*/
-                break;
-            case XCB_DESTROY_NOTIFY: // TODO XCB_DESTROY_NOTIFY
-                break;
+            } break;
             case XCB_CLIENT_MESSAGE: {
+                auto client_message_event = std::bit_cast<xcb_client_message_event_t*>(xevent);
+
                 xcb::get_atom(WM_DELETE_WINDOW, false)
-                  .transform([this](auto&&) noexcept { WindowImplBase::close_event(); })
+                  .transform([this, &client_message_event](auto&& atom) noexcept {
+                      if (client_message_event->data.data32[0] == atom) closed_event();
+                  })
                   .transform_error(xcb::atom_error(WM_DELETE_WINDOW));
-                break;
-            }
+            } break;
             case XCB_MAPPING_NOTIFY: {
                 auto mapping_notify_event = std::bit_cast<xcb_mapping_notify_event_t*>(xevent);
 
@@ -803,7 +793,37 @@ namespace stormkit::wsi::linux::x11 {
                     update_keymap();
                 }
                 break;
-            }
+            } break;
+            case XCB_PROPERTY_NOTIFY: {
+                auto property_notify_event = std::bit_cast<xcb_property_notify_event_t*>(xevent);
+                auto _                     = xcb::get_atom(WM_STATE_STR, false)
+                           .transform([this, property_notify_event](auto wm_state_atom) {
+                               if (wm_state_atom == property_notify_event->atom) {
+                                   auto&      globals = xcb::get_globals();
+                                   const auto cookie  = xcb_get_property(globals.connection,
+                                                                        false,
+                                                                        m_window,
+                                                                        wm_state_atom,
+                                                                        XCB_ATOM_ATOM,
+                                                                        0,
+                                                                        32);
+
+                                   auto       error = xcb::GenericError::empty();
+                                   auto       reply = xcb_get_property_reply(globals.connection,
+                                                                       cookie,
+                                                                       &error.handle());
+                                   const auto value = std::bit_cast<
+                                     xcb_atom_t*>(xcb_get_property_value(reply));
+                                   if (value)
+                                       auto _ = xcb::get_atom(WM_STATE_HIDDEN_STR, false)
+                                                  .transform([this, &value](
+                                                               auto wm_state_hidden_atom) noexcept {
+                                                      if (*value == wm_state_hidden_atom)
+                                                          minimized_event();
+                                                  });
+                               }
+                           });
+            } break;
             case XCB_GE_GENERIC: {
                 if (is_ext_event(xevent, m_xi_opcode)) {
                     auto xievent = std::bit_cast<xcb_ge_generic_event_t*>(xevent);
@@ -812,101 +832,146 @@ namespace stormkit::wsi::linux::x11 {
                         case XCB_INPUT_RAW_KEY_PRESS: {
                             auto _xievent = std::bit_cast<xcb_input_key_press_event_t*>(xevent);
                             handle_key_event(as<xcb_keycode_t>(_xievent->detail), true);
-                            break;
-                        }
+                        } break;
                         case XCB_INPUT_KEY_RELEASE: [[fallthrough]];
                         case XCB_INPUT_RAW_KEY_RELEASE: {
                             auto _xievent = std::bit_cast<xcb_input_key_press_event_t*>(xevent);
                             handle_key_event(as<xcb_keycode_t>(_xievent->detail), false);
-                            break;
-                        }
+                        } break;
                         case XCB_INPUT_BUTTON_PRESS: [[fallthrough]];
                         case XCB_INPUT_RAW_BUTTON_PRESS: {
-                            auto
-                              button_event = std::bit_cast<xcb_input_button_press_event_t*>(xevent);
+                            auto button_event = std::bit_cast<
+                              xcb_input_button_press_event_t*>(xevent);
 
                             auto button = button_event->detail;
-                            WindowImplBase::
-                              mouse_down_event(x11_button_to_stormkit(as<xcb_button_t>(button)),
-                                               button_event->event_x,
-                                               button_event->event_y);
-                            break;
-                        }
+                            WindowBase::mouse_button_down_event(
+                              GLOBAL_MOUSE_ID,
+                              x11_button_to_stormkit(as<xcb_button_t>(button)),
+                              math::vec2i { button_event->event_x, button_event->event_y });
+                        } break;
                         case XCB_INPUT_BUTTON_RELEASE: [[fallthrough]];
                         case XCB_INPUT_RAW_BUTTON_RELEASE: {
                             auto button_event = std::bit_cast<
                               xcb_input_button_release_event_t*>(xevent);
 
                             auto button = button_event->detail;
-                            WindowImplBase::
-                              mouse_down_event(x11_button_to_stormkit(as<xcb_button_t>(button)),
-                                               button_event->event_x,
-                                               button_event->event_y);
-                            break;
-                        }
+                            WindowBase::mouse_button_up_event(
+                              GLOBAL_MOUSE_ID,
+                              x11_button_to_stormkit(as<xcb_button_t>(button)),
+                              math::vec2i { button_event->event_x, button_event->event_y });
+                        } break;
                     }
-                    break;
                 }
-            }
+            } break;
+            // case XCB_EXPOSE: {
+            //     dlog("EXPOSE");
+            //     if (m_graphics_context) {
+            //         auto& connection           = xcb::get_globals().connection;
+            //         const auto [width, height] = m_state.extent.to<u16>();
+            //         xcb_copy_area(connection,
+            //                       m_pixmap,
+            //                       m_window,
+            //                       m_graphics_context,
+            //                       0,
+            //                       0,
+            //                       0,
+            //                       0,
+            //                       width,
+            //                       height);
+            //         xcb_flush(connection);
+            //     }
+            // } break;
+            default: dlog("UNHANDLED"); break;
         }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::update_keymap() -> void {
+    auto Window::update_keymap() -> void {
         auto& globals = xcb::get_globals();
 
         const auto device_id = xkb_x11_get_core_keyboard_device_id(globals.connection);
 
-        m_keyboard_state.keymap = common::xkb::Keymap {
-            xkb_x11_keymap_new_from_device(globals.xkb_context,
-                                           globals.connection,
-                                           device_id,
-                                           XKB_KEYMAP_COMPILE_NO_FLAGS)
-        };
-        if (not m_keyboard_state.keymap) {
+        m_keymap = common::xkb::Keymap::
+          take(xkb_x11_keymap_new_from_device(globals.xkb_context,
+                                              globals.connection,
+                                              device_id,
+                                              XKB_KEYMAP_COMPILE_NO_FLAGS));
+        if (not m_keymap) {
             elog("Failed to compile a keymap");
             return;
         }
 
-        m_keyboard_state.state = common::xkb::State {
-            xkb_x11_state_new_from_device(m_keyboard_state.keymap, globals.connection, device_id)
-        };
-        if (not m_keyboard_state.state) {
+        m_xkb_state = common::xkb::State::take(xkb_x11_state_new_from_device(m_keymap,
+                                                                             globals.connection,
+                                                                             device_id));
+        if (not m_xkb_state) {
             elog("Failed to create XKB state");
             return;
         }
 
-        m_handles.state = m_keyboard_state.state;
+        m_handles.state = m_xkb_state;
 
-        m_keyboard_state.mods = common::xkb::Mods {
-            .shift   = xkb_keymap_mod_get_index(m_keyboard_state.keymap, XKB_MOD_NAME_SHIFT),
-            .lock    = xkb_keymap_mod_get_index(m_keyboard_state.keymap, XKB_MOD_NAME_CAPS),
-            .control = xkb_keymap_mod_get_index(m_keyboard_state.keymap, XKB_MOD_NAME_CTRL),
-            .mod1    = xkb_keymap_mod_get_index(m_keyboard_state.keymap, "Mod1"),
-            .mod2    = xkb_keymap_mod_get_index(m_keyboard_state.keymap, "Mod2"),
-            .mod3    = xkb_keymap_mod_get_index(m_keyboard_state.keymap, "Mod3"),
-            .mod4    = xkb_keymap_mod_get_index(m_keyboard_state.keymap, "Mod4"),
-            .mod5    = xkb_keymap_mod_get_index(m_keyboard_state.keymap, "Mod5")
+        m_mods = common::xkb::Mods {
+            .shift   = xkb_keymap_mod_get_index(m_keymap, XKB_MOD_NAME_SHIFT),
+            .lock    = xkb_keymap_mod_get_index(m_keymap, XKB_MOD_NAME_CAPS),
+            .control = xkb_keymap_mod_get_index(m_keymap, XKB_MOD_NAME_CTRL),
+            .mod1    = xkb_keymap_mod_get_index(m_keymap, "Mod1"),
+            .mod2    = xkb_keymap_mod_get_index(m_keymap, "Mod2"),
+            .mod3    = xkb_keymap_mod_get_index(m_keymap, "Mod3"),
+            .mod4    = xkb_keymap_mod_get_index(m_keymap, "Mod4"),
+            .mod5    = xkb_keymap_mod_get_index(m_keymap, "Mod5")
         };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::handle_key_event(xcb_keycode_t keycode, bool down) noexcept -> void {
+    auto Window::handle_key_event(xcb_keycode_t keycode, bool down) noexcept -> void {
         auto symbol = xkb_keysym_t {};
 
         auto character = char {};
-        symbol         = xkb_state_key_get_one_sym(m_keyboard_state.state, keycode);
-        xkb_state_key_get_utf8(m_keyboard_state.state,
+        symbol         = xkb_state_key_get_one_sym(m_xkb_state, keycode);
+        xkb_state_key_get_utf8(m_xkb_state,
                                keycode,
                                std::bit_cast<char*>(&character),
                                sizeof(char));
 
         auto key = common::xkb_key_to_stormkit(symbol);
 
-        if (down) WindowImplBase::key_down_event(key, character);
+        if (down) key_down_event(GLOBAL_KEYBOARD_ID, key, character);
         else
-            WindowImplBase::key_up_event(key, character);
+            key_up_event(GLOBAL_KEYBOARD_ID, key, character);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::update_framebuffer() noexcept -> void {
+        const auto& connection = xcb::get_globals().connection;
+        const auto  screen     = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+
+        m_image.reset();
+
+        const auto format          = XCB_IMAGE_FORMAT_Z_PIXMAP;
+        const auto depth           = screen->root_depth;
+        const auto [width, height] = m_state.extent.to<u16>();
+        m_image                    = xcb::Image::create(connection,
+                                     width,
+                                     height,
+                                     format,
+                                     depth,
+                                     nullptr,
+                                     0_u32,
+                                     nullptr);
+
+        m_framebuffer = { std::bit_cast<u32*>(m_image.handle()->data), m_image.handle()->size / 8 };
+
+        xcb_flush(connection);
+
+        dlog("updated framebuffer to extent: {}:{} with dpi: {} with size: {} {}",
+             m_image.handle()->width,
+             m_image.handle()->height,
+             m_dpi,
+             stdr::size(m_framebuffer),
+             depth);
     }
 } // namespace stormkit::wsi::linux::x11
