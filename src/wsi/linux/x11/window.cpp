@@ -329,7 +329,7 @@ namespace stormkit::wsi::linux::x11 {
                                   atom,
                                   atom,
                                   8,
-                                  sizeof(CLASS_NAME) / sizeof(CLASS_NAME[0]),
+                                  32,
                                   CLASS_NAME);
           })
           .transform_error(xcb::atom_error(WM_HINTS_STR));
