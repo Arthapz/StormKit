@@ -171,12 +171,18 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& state = *std::bit_cast<KeyboardState*>(data);
         if (not state.focused_window or not state.xkb_state) return;
 
-        auto character = char {};
+        auto characters = std::array<char, 10> {};
+        // stdr
 
         const auto keycode = key + 8;
 
         const auto symbol = xkb_state_key_get_one_sym(state.xkb_state, keycode);
-        xkb_state_key_get_utf8(state.xkb_state, keycode, &character, sizeof(char));
+        const auto count  = xkb_state_key_get_utf8(state.xkb_state,
+                                                   keycode,
+                                                   stdr::data(characters),
+                                                   stdr::size(characters));
+
+        const auto character = (count > 0 and is_text(characters[0])) ? characters[0] : '?';
 
         const auto skey = common::xkb_key_to_stormkit(symbol);
 
