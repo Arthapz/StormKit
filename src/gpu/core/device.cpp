@@ -304,7 +304,7 @@ namespace stormkit::gpu {
 
         const auto swapchain_available = [&] {
             for (const auto& ext : SWAPCHAIN_EXTENSIONS)
-                if (stdr::none_of(device_extensions, core::monadic::is(ext))) return false;
+                if (stdr::none_of(device_extensions, core::monadic::is_equal(ext))) return false;
 
             return true;
         }();
@@ -313,7 +313,7 @@ namespace stormkit::gpu {
 
         const auto raytracing_available = [&] {
             for (const auto& ext : RAYTRACING_EXTENSIONS)
-                if (stdr::none_of(device_extensions, core::monadic::is(ext))) return false;
+                if (stdr::none_of(device_extensions, core::monadic::is_equal(ext))) return false;
 
             return true;
         }();
@@ -420,10 +420,12 @@ namespace stormkit::gpu {
                                  bool                              wait_all,
                                  const std::chrono::milliseconds&  timeout) const noexcept
       -> Expected<Result> {
+        static constexpr auto POSSIBLE_RESULTS = std::array { VK_SUCCESS, VK_NOT_READY };
+
         const auto vk_fences = fences | stdv::transform(monadic::to_vk()) | stdr::to<std::vector>();
 
         return vk_call<VkResult>(m_vk_device_table.vkWaitForFences,
-                                 { VK_SUCCESS, VK_NOT_READY },
+                                 as_view(POSSIBLE_RESULTS),
                                  m_vk_handle,
                                  stdr::size(vk_fences),
                                  stdr::data(vk_fences),

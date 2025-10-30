@@ -126,7 +126,7 @@ export {
               -> decltype(ctx.out());
         };
     } // namespace std
-} // namespace stormkit::core
+}
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
@@ -137,7 +137,6 @@ namespace stdr = std::ranges;
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    // template<>
     STORMKIT_FORCE_INLINE
     inline auto Error<std::errc>::from_errno() noexcept -> Error<std::errc> {
         return SystemError { std::errc { errno } };
@@ -152,7 +151,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE
     inline auto to_string(const SystemError& error) noexcept -> std::string {
         const auto code = static_cast<int>(error.code);
 #ifdef STORMKIT_OS_WINDOWS
@@ -166,11 +165,11 @@ namespace stormkit { inline namespace core {
 }} // namespace stormkit::core
 
 namespace std {
-
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, class CharT>
     template<class FormatContext>
+    STORMKIT_FORCE_INLINE
     inline auto formatter<stormkit::core::Error<T>,
                           CharT>::format(const stormkit::core::Error<T>& error,
                                          FormatContext& ctx) const -> decltype(ctx.out()) {
@@ -181,6 +180,7 @@ namespace std {
     ////////////////////////////////////////
     template<typename T, class CharT>
     template<class ParseContext>
+    STORMKIT_FORCE_INLINE
     constexpr auto formatter<stormkit::core::DecoratedError<T>,
                              CharT>::parse(ParseContext& ctx) noexcept -> decltype(ctx.begin()) {
         return ctx.begin();
@@ -190,6 +190,7 @@ namespace std {
     ////////////////////////////////////////
     template<typename T, class CharT>
     template<class FormatContext>
+    STORMKIT_FORCE_INLINE
     inline auto formatter<stormkit::core::DecoratedError<T>,
                           CharT>::format(const stormkit::core::DecoratedError<T>& error,
                                          FormatContext& ctx) const -> decltype(ctx.out()) {

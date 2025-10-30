@@ -14,22 +14,6 @@ import :meta;
 
 namespace stormkit { inline namespace core { namespace details {
     struct EitherFunc {
-#ifdef STORMKIT_COMPILER_MSVC
-        [[nodiscard]]
-        constexpr auto operator()(bool                  condition,
-                                  std::invocable auto&& true_,
-                                  std::invocable auto&& false_) const noexcept
-          -> decltype(false_());
-
-        template<typename T>
-            requires meta::IsOptionalType<meta::CanonicalType<T>>
-        [[nodiscard]]
-        constexpr auto operator()(T&& optional,
-                                  std::invocable<typename meta::CanonicalType<T>::value_type> auto&&
-                                                        true_,
-                                  std::invocable auto&& false_) const noexcept
-          -> decltype(false_());
-#else
         [[nodiscard]]
         static constexpr auto operator()(bool                  condition,
                                          std::invocable auto&& true_,
@@ -37,36 +21,30 @@ namespace stormkit { inline namespace core { namespace details {
           -> decltype(false_());
 
         template<typename T>
-            requires meta::IsOptionalType<meta::CanonicalType<T>>
+        using ForwardArg = meta::ForwardLike<T, meta::UnderlyingType<meta::ToPlainType<T>>>;
+
+        template<meta::IsPointer T>
         [[nodiscard]]
-        static constexpr auto operator()(T&&                      optional,
-                                         std::invocable<typename meta::CanonicalType<
-                                           T>::value_type> auto&& true_,
-                                         std::invocable auto&&    false_) noexcept
+        static constexpr auto operator()(T                                            value,
+                                         std::invocable<meta::ElementType<T>&> auto&& true_,
+                                         std::invocable auto&& false_) noexcept
           -> decltype(false_());
-#endif
+
+        template<meta::IsContainedSemantics T>
+            requires(meta::IsConvertibleTo<bool, T>)
+        [[nodiscard]]
+        static constexpr auto operator()(T&&                                  value,
+                                         std::invocable<ForwardArg<T>> auto&& true_,
+                                         std::invocable auto&&                false_) noexcept
+          -> decltype(false_());
     };
 }}} // namespace stormkit::core::details
 
 export namespace stormkit { inline namespace core {
     inline constexpr auto either = details::EitherFunc {};
 
+    using std::bind_back;
     using std::bind_front;
-    // template<auto Func, typename... Args>
-    // [[nodiscard]]
-    // constexpr auto bind_front(Args&&... args) noexcept -> decltype(auto);
-
-    // template<typename Func, typename... Args>
-    // [[nodiscard]]
-    // constexpr auto bind_front(Func&& func, Args&&... args) noexcept -> decltype(auto);
-
-    template<typename Func, typename... Args>
-    [[nodiscard]]
-    constexpr auto bind_back(Func&& func, Args&&... args) noexcept -> decltype(auto);
-
-    template<auto Func, typename... Args>
-    [[nodiscard]]
-    constexpr auto bind_back(Args&&... args) noexcept -> decltype(auto);
 
     template<typename T, typename Func, typename... Args>
         requires(std::invocable<Func, T&, Args...>
@@ -86,82 +64,64 @@ namespace stormkit { inline namespace core {
         STORMKIT_FORCE_INLINE
         constexpr auto EitherFunc::operator()(bool                  condition,
                                               std::invocable auto&& true_,
-                                              std::invocable auto&& false_)
-#ifdef STORMKIT_COMPILER_MSVC
-          const
-#endif
-          noexcept -> decltype(false_()) {
+                                              std::invocable auto&& false_) noexcept
+          -> decltype(false_()) {
             if (condition) return true_();
             return false_();
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<typename T>
-            requires meta::IsOptionalType<meta::CanonicalType<T>>
+        template<meta::IsPointer T>
         STORMKIT_FORCE_INLINE
-        constexpr auto EitherFunc::
-          operator()(T&&                                                                optional,
-                     std::invocable<typename meta::CanonicalType<T>::value_type> auto&& true_,
-                     std::invocable auto&&                                              false_)
-#ifdef STORMKIT_COMPILER_MSVC
-            const
-#endif
-          noexcept -> decltype(false_()) {
-            if (optional != std::nullopt) return true_(*std::forward<T>(optional));
+        constexpr auto EitherFunc::operator()(T                                            value,
+                                              std::invocable<meta::ElementType<T>&> auto&& true_,
+                                              std::invocable auto&& false_) noexcept
+          -> decltype(false_()) {
+            if (static_cast<bool>(value)) return true_(*value);
+            return false_();
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<meta::IsContainedSemantics T>
+            requires(meta::IsConvertibleTo<bool, T>)
+        STORMKIT_FORCE_INLINE
+        constexpr auto EitherFunc::operator()(T&&                                  value,
+                                              std::invocable<ForwardArg<T>> auto&& true_,
+                                              std::invocable auto&&                false_) noexcept
+          -> decltype(false_()) {
+            if (static_cast<bool>(value)) return true_(std::forward_like<T>(*value));
             return false_();
         }
     } // namespace details
 
-    // /////////////////////////////////////
-    // /////////////////////////////////////
-    // template<auto Func, typename... Args>
-    // STORMKIT_FORCE_INLINE constexpr auto bind_front(Args&&... args) noexcept -> decltype(auto) {
-    //     return std::bind_front<Func>(std::forward<Args>(args)...);
-    // }
-
-    // /////////////////////////////////////
-    // /////////////////////////////////////
-    // template<typename Func, typename... Args>
-    // STORMKIT_FORCE_INLINE constexpr auto bind_front(Func&& func, Args&&... args) noexcept
-    //     -> decltype(auto) {
-    //     return std::bind_front(std::forward<Func>(func), std::forward<Args>(args)...);
-    // }
-
+#if not(defined(__cpp_lib_bind_back) and __cpp_lib_bind_back >= 202306L)
     /////////////////////////////////////
     /////////////////////////////////////
     template<auto Func, typename... Args>
     STORMKIT_FORCE_INLINE
     constexpr auto bind_back(Args&&... args) noexcept -> decltype(auto) {
-#if defined(__cpp_lib_bind_back) and __cpp_lib_bind_back >= 202306L
         return std::bind_back<Func>(std::forward<Args>(args)...);
-#else
         using FuncType = decltype(Func);
         if constexpr (meta::IsPointer<FuncType> or std::is_member_pointer_v<FuncType>)
             static_assert(Func != nullptr);
-        return [... bound_args(std::forward<Args>(args))]<typename Self, typename... CallArgs>(
-                 this Self&&,
-                 CallArgs&&... call_args) noexcept(std::
-                                                     is_nothrow_invocable_v<
-                                                       FuncType,
-                                                       CallArgs...,
-                                                       meta::ForwardLike<Self,
-                                                                         meta::DecayType<Args>>...>)
-                 -> decltype(auto) {
-            return std::invoke(Func,
-                               std::forward<CallArgs>(call_args)...,
-                               std::forward_like<Self>(bound_args)...);
-        };
+        return
+          [... bound_args(std::forward<Args>(args))]<typename Self, typename... CallArgs>(
+            this Self&&,
+            CallArgs&&... call_args) noexcept(std::
+                                                is_nothrow_invocable_v<
+                                                  FuncType,
+                                                  CallArgs...,
+                                                  meta::ForwardLike<Self,
+                                                                    meta::ToDecayedType<Args>>...>)
+            -> decltype(auto) {
+              return std::invoke(Func,
+                                 std::forward<CallArgs>(call_args)...,
+                                 std::forward_like<Self>(bound_args)...);
+          };
+    }
 #endif
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename Func, typename... Args>
-    STORMKIT_FORCE_INLINE
-    constexpr auto bind_back(Func&& func, Args&&... args) noexcept -> decltype(auto) {
-        return std::bind_back(std::forward<Func>(func), std::forward<Args>(args)...);
-    }
 
     /////////////////////////////////////
     /////////////////////////////////////

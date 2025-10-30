@@ -27,7 +27,7 @@ namespace impl = stormkit::wsi::linux;
 #elif defined(STORMKIT_OS_MACOS)
 import :macos.window;
 
-namespace impl = stormkkit::wsi::macos;
+namespace impl = stormkit::wsi::macos;
 #elif defined(STORMKIT_OS_IOS)
 import :ios.window;
 
@@ -138,12 +138,6 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::framebuffer_extent() const noexcept -> math::Extent2<u32> {
-        return m_impl->framebuffer_extent();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
     auto Window::set_fullscreen(bool fullscreen) noexcept -> void {
         m_impl->set_fullscreen(fullscreen);
     }
@@ -156,61 +150,61 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::confine_mouse(bool confine, u32 mouse_id) noexcept -> void {
+    auto Window::confine_mouse(bool confine, u8 mouse_id) noexcept -> void {
         m_impl->confine_mouse(confine, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_confined(u32 mouse_id) const noexcept -> bool {
+    auto Window::is_mouse_confined(u8 mouse_id) const noexcept -> bool {
         return m_impl->is_mouse_confined(mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::lock_mouse(bool locked, u32 mouse_id) noexcept -> void {
+    auto Window::lock_mouse(bool locked, u8 mouse_id) noexcept -> void {
         m_impl->lock_mouse(locked, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_locked(u32 mouse_id) const noexcept -> bool {
+    auto Window::is_mouse_locked(u8 mouse_id) const noexcept -> bool {
         return m_impl->is_mouse_locked(mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::hide_mouse(bool hidden, u32 mouse_id) noexcept -> void {
+    auto Window::hide_mouse(bool hidden, u8 mouse_id) noexcept -> void {
         m_impl->hide_mouse(hidden, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_hidden(u32 mouse_id) const noexcept -> bool {
+    auto Window::is_mouse_hidden(u8 mouse_id) const noexcept -> bool {
         return m_impl->is_mouse_hidden(mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_relative_mouse(bool enabled, u32 mouse_id) noexcept -> void {
+    auto Window::set_relative_mouse(bool enabled, u8 mouse_id) noexcept -> void {
         m_impl->set_relative_mouse(enabled, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_relative(u32 mouse_id) const noexcept -> bool {
+    auto Window::is_mouse_relative(u8 mouse_id) const noexcept -> bool {
         return m_impl->is_mouse_relative(mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_key_repeat(bool enabled, u32 keyboard_id) noexcept -> void {
+    auto Window::set_key_repeat(bool enabled, u8 keyboard_id) noexcept -> void {
         return m_impl->set_key_repeat(enabled, keyboard_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_key_repeat_enabled(u32 keyboard_id) const noexcept -> bool {
+    auto Window::is_key_repeat_enabled(u8 keyboard_id) const noexcept -> bool {
         return m_impl->is_key_repeat_enabled(keyboard_id);
     }
 
@@ -228,7 +222,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::vec2i& position, u32 mouse_id) noexcept -> void {
+    auto Window::set_mouse_position(const math::vec2i& position, u8 mouse_id) noexcept -> void {
         m_impl->set_mouse_position(position, mouse_id);
     }
 
@@ -241,78 +235,72 @@ namespace stormkit::wsi {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_closed(ClosedEventFunc&& callback) noexcept -> void {
-        m_impl->closed_event = std::move(callback);
+        m_impl->set_closed_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_monitor_changed(MonitorChangedEventFunc&& callback) noexcept -> void {
-        m_impl->monitor_changed_event = std::move(callback);
+        m_impl->set_monitor_changed_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_resized(ResizedEventFunc&& callback) noexcept -> void {
-        m_impl->resized_event = std::move(callback);
+        m_impl->set_resized_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_restored(RestoredEventFunc&& callback) noexcept -> void {
-        m_impl->restored_event = std::move(callback);
+        m_impl->set_restored_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_minimized(MinimizedEventFunc&& callback) noexcept -> void {
-        m_impl->minimized_event = std::move(callback);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::on_maximized(MaximizedEventFunc&& callback) noexcept -> void {
-        m_impl->maximized_event = std::move(callback);
+        m_impl->set_minimized_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_key_down(KeyDownEventFunc&& callback) noexcept -> void {
-        m_impl->key_down_event = std::move(callback);
+        m_impl->set_key_down_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_key_up(KeyUpEventFunc&& callback) noexcept -> void {
-        m_impl->key_up_event = std::move(callback);
+        m_impl->set_key_up_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_mouse_button_down(MouseButtonDownEventFunc&& callback) noexcept -> void {
-        m_impl->mouse_button_down_event = std::move(callback);
+        m_impl->set_mouse_button_down_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_mouse_button_up(MouseButtonUpEventFunc&& callback) noexcept -> void {
-        m_impl->mouse_button_up_event = std::move(callback);
+        m_impl->set_mouse_button_up_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_mouse_moved(MouseMovedEventFunc&& callback) noexcept -> void {
-        m_impl->mouse_moved_event = std::move(callback);
+        m_impl->set_mouse_moved_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_activate(ActivateEventFunc&& callback) noexcept -> void {
-        m_impl->activate_event = std::move(callback);
+        m_impl->set_activate_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::on_deactivate(DeactivateEventFunc&& callback) noexcept -> void {
-        m_impl->deactivate_event = std::move(callback);
+        m_impl->set_deactivate_event(std::move(callback));
     }
 } // namespace stormkit::wsi

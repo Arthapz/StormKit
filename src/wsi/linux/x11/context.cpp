@@ -38,16 +38,16 @@ namespace stormkit::wsi::linux::x11::xcb {
     auto init() noexcept -> bool {
         if (initialized) return true;
 
-        globals.connection = xcb::Connection { std::in_place, nullptr, nullptr };
+        globals.connection = xcb::Connection::create(nullptr, nullptr);
         if (not globals.connection or xcb_connection_has_error(globals.connection)) {
             elog("Failed to connect to X11");
             return false;
         }
 
-        globals.error_context = xcb::ErrorContext { std::in_place, globals.connection };
+        globals.error_context = xcb::ErrorContext::create(globals.connection);
         if (not globals.error_context) elog("Failed to setup X11 error context");
 
-        globals.xkb_context = common::xkb::Context { std::in_place, XKB_CONTEXT_NO_FLAGS };
+        globals.xkb_context = common::xkb::Context::create(XKB_CONTEXT_NO_FLAGS);
 
         initialized = true;
         dlog("Successfully connected to X11");
@@ -68,8 +68,6 @@ namespace stormkit::wsi::linux::x11::xcb {
     /////////////////////////////////////
     auto get_atom(std::string_view name, bool only_if_exists) noexcept
       -> std::expected<xcb_atom_t, Error> {
-        auto& globals = get_globals();
-
         auto out = std::expected<xcb_atom_t, Error> {};
 
         auto it = atoms.find(name);
@@ -79,11 +77,10 @@ namespace stormkit::wsi::linux::x11::xcb {
                                                 (only_if_exists) ? 1 : 0,
                                                 as<u16>(stdr::size(name)),
                                                 stdr::data(name));
-            auto       error  = xcb::GenericError {};
-            const auto reply  = xcb::InternAtomReply { std::in_place,
-                                                      globals.connection,
-                                                      cookie,
-                                                      &error.handle() };
+            auto       error  = xcb::GenericError::empty();
+            const auto reply  = xcb::InternAtomReply::create(globals.connection,
+                                                             cookie,
+                                                             &error.handle());
 
             if (error or not reply.handle())
                 out = std::unexpected<Error> { std::in_place, get_error(as_ref_mut(*error)) };
@@ -103,9 +100,8 @@ namespace stormkit::wsi::linux::x11::xcb {
 
         const auto cookie = xcb_get_atom_name(globals.connection, atom);
 
-        auto error = xcb::GenericError {};
-        const auto
-          reply = xcb::AtomNameReply { std::in_place, globals.connection, cookie, &error.handle() };
+        auto       error = xcb::GenericError::empty();
+        const auto reply = xcb::AtomNameReply::create(globals.connection, cookie, &error.handle());
         if (error) out = std::unexpected<Error> { std::in_place, get_error(as_ref_mut(*error)) };
         else
             out = std::string { xcb_get_atom_name_name(reply),
@@ -117,7 +113,7 @@ namespace stormkit::wsi::linux::x11::xcb {
     /////////////////////////////////////
     /////////////////////////////////////
     auto get_error(Ref<xcb_generic_error_t> error) -> std::string {
-        auto guard = xcb::GenericError { error };
+        auto guard = xcb::GenericError::take(error);
 
         const auto major = xcb_errors_get_name_for_major_code(globals.error_context,
                                                               error->major_code);
@@ -127,8 +123,8 @@ namespace stormkit::wsi::linux::x11::xcb {
 
         const auto* extension = CZString { nullptr };
         const auto  str_error = xcb_errors_get_name_for_error(globals.error_context,
-                                                             error->major_code,
-                                                             &extension);
+                                                              error->major_code,
+                                                              &extension);
 
         return std::format("{} extension: {} major: {} minor: {}\n",
                            str_error,
@@ -144,13 +140,10 @@ namespace stormkit::wsi::linux::x11::xcb {
         auto out = std::expected<Ref<xcb_input_xi_device_info_t>, Error> { std::unexpect };
 
         const auto cookie = xcb_input_xi_query_device(globals.connection, device_id);
-        auto       error  = xcb::GenericError {};
-        const auto reply  = xcb::InputXIQueryDeviceReply {
-            std::in_place,
-            globals.connection,
-            cookie,
-            &error.handle()
-        };
+        auto       error  = xcb::GenericError::empty();
+        const auto reply  = xcb::InputXIQueryDeviceReply::create(globals.connection,
+                                                                 cookie,
+                                                                 &error.handle());
 
         if (error) out = std::unexpected<Error> { std::in_place, get_error(as_ref_mut(*error)) };
         else {

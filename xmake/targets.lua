@@ -4,7 +4,8 @@ modules = {
         modulename = "core",
         has_headers = true,
         public_defines = {
-            "FROZEN_USE_STD_MODULE",
+            "FROZEN_STD_MODULE",
+            "UNORDERED_DENSE_STD_MODULE=1",
         },
         custom = function()
             if is_plat("windows") then add_packages("wil") end
@@ -71,17 +72,32 @@ modules = {
             "libxcb",
             "xcb-util-keysyms",
             "xcb-util",
+            "xcb-util-image",
             "xcb-util-wm",
-            "xcb-util-xrm",
             "xcb-util-errors",
             "wayland",
             "wayland-protocols",
             "libxkbcommon",
         } or nil,
-        frameworks = is_plat("macosx") and { "CoreFoundation", "Foundation", "AppKit", "Metal", "IOKit", "QuartzCore" }
-            or nil,
+        -- frameworks = is_plat("macosx") and { "CoreFoundation", "Foundation", "AppKit", "Metal", "IOKit", "QuartzCore" }
+        -- or nil,
         custom = function()
-            if is_plat("macosx") then
+            if is_plat("macosx", "iphoneos", "tvos") then
+                if is_plat("macosx") then
+                    add_files("src/wsi/macos/swift/*.swift", { public = true })
+                    add_files("src/wsi/macos/swift/*.m")
+                    set_values("swift.modulename", "macOS")
+                    add_scflags("-Isrc/wsi/macos/swift")
+                elseif is_plat("iphoneos") then
+                    add_files("src/wsi/ios/swift/*.swift", { public = true })
+                    add_scflags("-Isrc/wsi/ios/swift")
+                    set_values("swift.modulename", "iOS")
+                elseif is_plat("tvos") then
+                    add_files("src/wsi/tvos/swift/*.swift", { public = true })
+                    add_scflags("-Isrc/wsi/tvos/swift")
+                    set_values("swift.modulename", "tvOS")
+                end
+                set_values("swift.interop", "cxx")
             elseif is_plat("linux") then
                 add_rules("wayland.protocols")
 

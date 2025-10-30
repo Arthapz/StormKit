@@ -8,11 +8,11 @@
 #import <UIKit/UIApplication.h>
 #import <UIKit/UIResponder.h>
 
-#import "window_impl.hpp"
+#import "window.hpp"
 
 @interface AppDelegate: UIResponder<UIApplicationDelegate>
 
-@property (nonatomic) storm::window::WindowImpl* window;
+@property (nonatomic) storm::window::Window* window;
 
 @end
 

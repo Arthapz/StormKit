@@ -155,14 +155,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Fence::~Fence()
-      = default;
+    inline Fence::~Fence() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Fence::Fence(Fence&&) noexcept
-      = default;
+    inline Fence::Fence(Fence&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -173,8 +171,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto Fence::status() const noexcept -> Expected<Status> {
+        static constexpr auto POSSIBLE_RESULTS = std::array { VK_SUCCESS, VK_NOT_READY };
         return vk_call<VkResult>(m_vk_device_table->vkGetFenceStatus,
-                                 { VK_SUCCESS, VK_NOT_READY },
+                                 as_view(POSSIBLE_RESULTS),
                                  m_vk_device,
                                  m_vk_handle)
           .transform([](auto&& result) static noexcept {
@@ -188,8 +187,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto Fence::wait(const std::chrono::milliseconds& wait_for) const -> Expected<Result> {
+        static constexpr auto POSSIBLE_RESULTS = std::array { VK_SUCCESS, VK_NOT_READY };
         return vk_call<VkResult>(m_vk_device_table->vkWaitForFences,
-                                 { VK_SUCCESS, VK_NOT_READY },
+                                 as_view(POSSIBLE_RESULTS),
                                  m_vk_device,
                                  1u,
                                  &m_vk_handle.value(),
@@ -266,14 +266,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Semaphore::~Semaphore()
-      = default;
+    inline Semaphore::~Semaphore() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Semaphore::Semaphore(Semaphore&&) noexcept
-      = default;
+    inline Semaphore::Semaphore(Semaphore&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

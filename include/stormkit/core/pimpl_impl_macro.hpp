@@ -26,8 +26,8 @@
             template<class... Args>                                                \
             auto Pimpl<T, Defer>::init(Args&&... args) -> void {                   \
                 m_data = stormkit::allocate<T>(std::forward<Args>(args)...)        \
-                             .transform_error(stormkit::core :.monadic::assert())  \
-                             .value();                                             \
+                           .transform_error(stormkit::core :.monadic::assert())    \
+                           .value();                                               \
             }                                                                      \
             template<class T, bool Defer>                                          \
             auto Pimpl<T, Defer>::operator->() noexcept -> T* {                    \

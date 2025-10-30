@@ -1,0 +1,7 @@
+module SwiftStormKitCpp {
+	header "CppBridge.hpp"
+}
+
+module SwiftStormKitObjc {
+	header "ObjCBridge.h"
+}

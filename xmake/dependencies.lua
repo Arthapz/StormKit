@@ -3,8 +3,8 @@ includes("ktx.lua")
 local global_package_configs = {
     configs = {
         shared = get_config("shared_deps"),
-        ["x11"] = true,
-        wayland = true,
+        ["x11"] = is_plat("linux"),
+        wayland = is_plat("linux"),
         modules = true,
         std_import = true,
         cpp = "latest",

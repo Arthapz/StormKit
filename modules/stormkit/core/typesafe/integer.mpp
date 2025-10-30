@@ -4,7 +4,6 @@
 
 module;
 
-#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #ifdef STORMKIT_COMPILER_MSVC
@@ -16,34 +15,6 @@ export module stormkit.core:typesafe.integer;
 import std;
 
 import :meta;
-
-import :utils.contract;
-
-namespace stormkit { inline namespace core {
-    namespace meta::details {
-        template<typename T>
-        using WrappedValueType = typename meta::ToPlainType<T>::ValueType;
-
-        template<typename T>
-        concept IsWrappedValueType = PlainIs<T, WrappedValueType<T>>;
-    } // namespace meta::details
-
-    template<meta::IsArithmetic T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_positive(const T& value) noexcept -> bool {
-        if constexpr (meta::IsUnsigned<T>) return true;
-        else
-            return value >= 0;
-    }
-
-    template<meta::IsArithmetic T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_negative(const T& value) noexcept -> bool {
-        if constexpr (meta::IsSigned<T>) return value < 0;
-        else
-            return false;
-    }
-}} // namespace stormkit::core
 
 export {
     namespace stormkit { inline namespace core {
@@ -137,499 +108,148 @@ export {
         enum class iptr : std::intptr_t {
         };
 #endif
-
-        template<typename T, typename Tag, auto check_fn>
-        struct CheckedValue {
-            using ValueType = T;
-
-            template<meta::PlainIs<T> U>
-            constexpr CheckedValue(U&& _value) : value { std::forward<U>(_value) } {
-                EXPECTS(check_fn(value));
-            }
-
-            template<meta::PlainIs<T> U>
-            constexpr auto operator=(U&& _value) noexcept -> CheckedValue& {
-                value = _value;
-                ENSURES(check_fn(value));
-                return *this;
-            }
-
-            constexpr operator T() noexcept { return value; }
-
-            constexpr auto operator+(meta::PlainIs<ValueType> auto&& other) const noexcept
-              -> CheckedValue
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator+(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-              -> CheckedValue
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator+=(meta::PlainIs<ValueType> auto&& other) noexcept
-              -> CheckedValue&
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator+=(meta::PlainIs<CheckedValue> auto&& other) noexcept
-              -> CheckedValue&
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator-(meta::PlainIs<ValueType> auto&& other) const noexcept
-              -> CheckedValue
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator-(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-              -> CheckedValue
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator-=(meta::PlainIs<ValueType> auto&& other) noexcept
-              -> CheckedValue&
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator-=(meta::PlainIs<CheckedValue> auto&& other) noexcept
-              -> CheckedValue&
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator*(meta::PlainIs<ValueType> auto&& other) const noexcept
-              -> CheckedValue
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator*(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-              -> CheckedValue
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator*=(meta::PlainIs<ValueType> auto&& other) noexcept
-              -> CheckedValue&
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator*=(meta::PlainIs<CheckedValue> auto&& other) noexcept
-              -> CheckedValue&
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator/(meta::PlainIs<ValueType> auto&& other) const noexcept
-              -> CheckedValue
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator/(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-              -> CheckedValue
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator/=(meta::PlainIs<ValueType> auto&& other) noexcept
-              -> CheckedValue&
-                requires(meta::IsArithmetic<T>);
-
-            constexpr auto operator/=(meta::PlainIs<CheckedValue> auto&& other) noexcept
-              -> CheckedValue&
-                requires(meta::IsArithmetic<T>);
-
-            T value;
-        };
-
-        namespace meta {
-            template<typename T>
-            concept IsCheckedValue = IsSpecializationOfNTTP_TTV<T, CheckedValue>;
-        }
-
-        template<meta::IsCheckedValue T>
-            requires(meta::IsArithmetic<typename meta::ToPlainType<T>::ValueType>)
-        constexpr auto operator+(meta::PlainIs<typename meta::ToPlainType<T>::ValueType> auto&&
-                                     first,
-                                 T&& second) noexcept -> meta::ToPlainType<T>;
-
-        template<meta::IsCheckedValue T>
-            requires(meta::IsArithmetic<typename meta::ToPlainType<T>::ValueType>)
-        constexpr auto operator-(meta::PlainIs<typename meta::ToPlainType<T>::ValueType> auto&&
-                                     first,
-                                 T&& second) noexcept -> meta::ToPlainType<T>;
-
-        template<meta::IsCheckedValue T>
-            requires(meta::IsArithmetic<typename meta::ToPlainType<T>::ValueType>)
-        constexpr auto operator*(meta::PlainIs<typename meta::ToPlainType<T>::ValueType> auto&&
-                                     first,
-                                 T&& second) noexcept -> meta::ToPlainType<T>;
-
-        template<meta::IsCheckedValue T>
-            requires(meta::IsArithmetic<typename meta::ToPlainType<T>::ValueType>)
-        constexpr auto operator/(meta::PlainIs<typename meta::ToPlainType<T>::ValueType> auto&&
-                                     first,
-                                 T&& second) noexcept -> meta::ToPlainType<T>;
-
-        template<meta::IsFormattable T, typename Tag, auto check_fn, typename FormatContext>
-        constexpr auto format_as(const CheckedValue<T, Tag, check_fn>& val, FormatContext& ctx)
-          -> decltype(ctx.out());
-
-        template<typename T>
-        using Positive = CheckedValue<T, struct PositiveTag, is_positive<T>>;
-
-        template<typename T>
-        using Negative = CheckedValue<T, struct NegativeTag, is_negative<T>>;
+        [[nodiscard]]
+        constexpr auto operator""_i8(unsigned long long) noexcept -> i8;
+        [[nodiscard]]
+        constexpr auto operator""_i16(unsigned long long) noexcept -> i16;
+        [[nodiscard]]
+        constexpr auto operator""_i32(unsigned long long) noexcept -> i32;
+        [[nodiscard]]
+        constexpr auto operator""_i64(unsigned long long) noexcept -> i64;
+        [[nodiscard]]
+        constexpr auto operator""_i128(unsigned long long) noexcept -> i128;
 
         [[nodiscard]]
-        constexpr auto operator""_i8(u64) noexcept -> i8;
+        constexpr auto operator""_u8(unsigned long long) noexcept -> u8;
         [[nodiscard]]
-        constexpr auto operator""_i16(u64) noexcept -> i16;
+        constexpr auto operator""_u16(unsigned long long) noexcept -> u16;
         [[nodiscard]]
-        constexpr auto operator""_i32(u64) noexcept -> i32;
+        constexpr auto operator""_u32(unsigned long long) noexcept -> u32;
         [[nodiscard]]
-        constexpr auto operator""_i64(u64) noexcept -> i64;
+        constexpr auto operator""_u64(unsigned long long) noexcept -> u64;
         [[nodiscard]]
-        constexpr auto operator""_i128(u64) noexcept -> i128;
+        constexpr auto operator""_u128(unsigned long long) noexcept -> u128;
 
         [[nodiscard]]
-        constexpr auto operator""_u8(u64) noexcept -> u8;
+        constexpr auto operator""_usize(unsigned long long) noexcept -> usize;
         [[nodiscard]]
-        constexpr auto operator""_u16(u64) noexcept -> u16;
+        constexpr auto operator""_isize(unsigned long long) noexcept -> isize;
         [[nodiscard]]
-        constexpr auto operator""_u32(u64) noexcept -> u32;
+        constexpr auto operator""_ioffset(unsigned long long) noexcept -> ioffset;
         [[nodiscard]]
-        constexpr auto operator""_u64(u64) noexcept -> u64;
+        constexpr auto operator""_uptr(unsigned long long) noexcept -> uptr;
         [[nodiscard]]
-        constexpr auto operator""_u128(u64) noexcept -> u128;
-
-        [[nodiscard]]
-        constexpr auto operator""_usize(u64) noexcept -> usize;
-        [[nodiscard]]
-        constexpr auto operator""_isize(u64) noexcept -> isize;
-        [[nodiscard]]
-        constexpr auto operator""_ioffset(u64) noexcept -> ioffset;
-        [[nodiscard]]
-        constexpr auto operator""_uptr(u64) noexcept -> uptr;
-        [[nodiscard]]
-        constexpr auto operator""_iptr(u64) noexcept -> iptr;
+        constexpr auto operator""_iptr(unsigned long long) noexcept -> iptr;
     }} // namespace stormkit::core
 }
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+(meta::PlainIs<ValueType> auto&& other)
-      const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return { value + std::forward<decltype(other)>(other) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+(meta::PlainIs<CheckedValue> auto&&
-                                                               other) const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator+(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+=(meta::PlainIs<ValueType> auto&&
-                                                                other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        value += std::forward<decltype(other)>(other);
-        return *this;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+=(meta::PlainIs<CheckedValue> auto&&
-                                                                other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator+=(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-(meta::PlainIs<ValueType> auto&& other)
-      const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return { value - std::forward<decltype(other)>(other) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-(meta::PlainIs<CheckedValue> auto&&
-                                                               other) const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator-(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-=(meta::PlainIs<ValueType> auto&&
-                                                                other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        value -= std::forward<decltype(other)>(other);
-        return *this;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-=(meta::PlainIs<CheckedValue> auto&&
-                                                                other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator-=(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*(meta::PlainIs<ValueType> auto&& other)
-      const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return { value * std::forward<decltype(other)>(other) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*(meta::PlainIs<CheckedValue> auto&&
-                                                               other) const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator*(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*=(meta::PlainIs<ValueType> auto&&
-                                                                other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        value *= std::forward<decltype(other)>(other);
-        return *this;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*=(meta::PlainIs<CheckedValue> auto&&
-                                                                other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator*=(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/(meta::PlainIs<ValueType> auto&& other)
-      const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return { value / std::forward<decltype(other)>(other) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/(meta::PlainIs<CheckedValue> auto&&
-                                                               other) const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator/(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/=(meta::PlainIs<ValueType> auto&&
-                                                                other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        value /= std::forward<decltype(other)>(other);
-        return *this;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/=(meta::PlainIs<CheckedValue> auto&&
-                                                                other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator/=(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsCheckedValue T>
-        requires(meta::IsArithmetic<typename meta::ToPlainType<T>::ValueType>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator+(meta::PlainIs<typename meta::ToPlainType<T>::ValueType> auto&& first,
-                             T&& second) noexcept -> meta::ToPlainType<T> {
-        return std::forward<T>(second).operator+(std::forward<decltype(first)>(first));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsCheckedValue T>
-        requires(meta::IsArithmetic<typename meta::ToPlainType<T>::ValueType>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator-(meta::PlainIs<typename meta::ToPlainType<T>::ValueType> auto&& first,
-                             T&& second) noexcept -> meta::ToPlainType<T> {
-        return std::forward<T>(second).operator-(std::forward<decltype(first)>(first));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsCheckedValue T>
-        requires(meta::IsArithmetic<typename meta::ToPlainType<T>::ValueType>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator*(meta::PlainIs<typename meta::ToPlainType<T>::ValueType> auto&& first,
-                             T&& second) noexcept -> meta::ToPlainType<T> {
-        return std::forward<T>(second).operator*(std::forward<decltype(first)>(first));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsCheckedValue T>
-        requires(meta::IsArithmetic<typename meta::ToPlainType<T>::ValueType>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator/(meta::PlainIs<typename meta::ToPlainType<T>::ValueType> auto&& first,
-                             T&& second) noexcept -> meta::ToPlainType<T> {
-        return std::forward<T>(second).operator/(std::forward<decltype(first)>(first));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsFormattable T, typename Tag, auto check_fn, typename FormatContext>
-        STORMKIT_FORCE_INLINE
-    constexpr auto format_as(const CheckedValue<T, Tag, check_fn>& val, FormatContext& ctx)
-      -> decltype(ctx.out()) {
-        auto&& out = ctx.out();
-        return std::format_to(out, "{}", val.value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_i8(u64 value) noexcept -> i8 {
+    constexpr auto operator""_i8(unsigned long long value) noexcept -> i8 {
         return static_cast<i8>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_i16(u64 value) noexcept -> i16 {
+    constexpr auto operator""_i16(unsigned long long value) noexcept -> i16 {
         return static_cast<i16>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_i32(u64 value) noexcept -> i32 {
+    constexpr auto operator""_i32(unsigned long long value) noexcept -> i32 {
         return static_cast<i32>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_i64(u64 value) noexcept -> i64 {
+    constexpr auto operator""_i64(unsigned long long value) noexcept -> i64 {
         return static_cast<i64>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_i128(u64 value) noexcept -> i128 {
+    constexpr auto operator""_i128(unsigned long long value) noexcept -> i128 {
         return static_cast<i128>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_u8(u64 value) noexcept -> u8 {
+    constexpr auto operator""_u8(unsigned long long value) noexcept -> u8 {
         return static_cast<u8>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_u16(u64 value) noexcept -> u16 {
+    constexpr auto operator""_u16(unsigned long long value) noexcept -> u16 {
         return static_cast<u16>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_u32(u64 value) noexcept -> u32 {
+    constexpr auto operator""_u32(unsigned long long value) noexcept -> u32 {
         return static_cast<u32>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_u64(u64 value) noexcept -> u64 {
+    constexpr auto operator""_u64(unsigned long long value) noexcept -> u64 {
         return static_cast<u64>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_u128(u64 value) noexcept -> u128 {
+    constexpr auto operator""_u128(unsigned long long value) noexcept -> u128 {
         return static_cast<u128>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_usize(u64 value) noexcept -> usize {
+    constexpr auto operator""_usize(unsigned long long value) noexcept -> usize {
         return static_cast<usize>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_isize(u64 value) noexcept -> isize {
+    constexpr auto operator""_isize(unsigned long long value) noexcept -> isize {
         return static_cast<isize>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_ioffset(u64 value) noexcept -> ioffset {
+    constexpr auto operator""_ioffset(unsigned long long value) noexcept -> ioffset {
         return static_cast<ioffset>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_iptr(u64 value) noexcept -> iptr {
+    constexpr auto operator""_iptr(unsigned long long value) noexcept -> iptr {
         return static_cast<iptr>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto operator""_uptr(u64 value) noexcept -> uptr {
+    constexpr auto operator""_uptr(unsigned long long value) noexcept -> uptr {
         return static_cast<uptr>(value);
     }
 }} // namespace stormkit::core

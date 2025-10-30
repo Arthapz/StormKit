@@ -26,7 +26,7 @@ import :linux.common.xkb;
 import :linux.wayland;
 import :linux.wayland.context;
 import :linux.wayland.input;
-import :linux.wayland.window_impl;
+import :linux.wayland.window;
 import :linux.wayland.log;
 
 namespace stormkit::wsi::linux::wayland::wl {
@@ -84,28 +84,25 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals       = *std::bit_cast<Globals*>(data);
         auto  _capabilities = narrow<wl_seat_capability>(capabilities);
         if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_KEYBOARD)) {
-            auto& [keyboard,
-                   state] = globals.keyboards
-                              .emplace_back(wl::Keyboard { std::in_place, seat }, KeyboardState {});
+            auto& [keyboard, state] = globals.keyboards
+                                        .emplace_back(wl::Keyboard::create(seat), KeyboardState {});
             wl_keyboard_add_listener(keyboard, &g_keyboard_listener, &state);
 
-            state.repeat.timer_fd = common::FD {
-                timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK)
-            };
+            state.repeat.timer_fd = common::FD::take(timerfd_create(CLOCK_MONOTONIC,
+                                                                    TFD_CLOEXEC | TFD_NONBLOCK));
         }
         if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_POINTER)) {
-            auto& [pointer,
-                   state] = globals.pointers
-                              .emplace_back(wl::Pointer { std::in_place, seat }, PointerState {});
+            auto& [pointer, state] = globals.pointers
+                                       .emplace_back(wl::Pointer::create(seat), PointerState {});
             wl_pointer_add_listener(pointer, &g_pointer_listener, &state);
-            state.cursor.surface = wl::Surface { std::in_place, globals.compositor };
+            state.cursor.surface = wl::Surface::create(globals.compositor);
             if (globals.cursor_shape_manager)
-                state.cursor.shape_device = wl::CursorShapeDevice { std::in_place,
-                                                                    globals.cursor_shape_manager,
-                                                                    pointer };
+                state.cursor
+                  .shape_device = wl::CursorShapeDevice::create(globals.cursor_shape_manager,
+                                                                pointer);
         }
         if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_TOUCH)) {
-            auto& _ = globals.touchs.emplace_back(wl::Touch { std::in_place, seat }, TouchState {});
+            auto& _ = globals.touchs.emplace_back(wl::Touch::create(seat), TouchState {});
             // wl_touch_add_listener(touch, &g_touch_listener, &globals);
         }
     }
@@ -153,7 +150,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         if (data == nullptr) return;
         auto& globals = get_globals();
         if (not globals.xkb_context)
-            globals.xkb_context = common::xkb::Context { std::in_place, XKB_CONTEXT_NO_FLAGS };
+            globals.xkb_context = common::xkb::Context::create(XKB_CONTEXT_NO_FLAGS);
 
         auto& state = *std::bit_cast<KeyboardState*>(data);
         if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
@@ -245,20 +242,17 @@ namespace stormkit::wsi::linux::wayland::wl {
     /////////////////////////////////////
     auto update_keymap(KeyboardState& state, std::string_view keymap) noexcept -> void {
         auto& globals    = get_globals();
-        state.xkb_keymap = common::xkb::Keymap {
-            std::in_place,
-            globals.xkb_context,
-            std::data(keymap),
-            XKB_KEYMAP_FORMAT_TEXT_V1,
-            XKB_KEYMAP_COMPILE_NO_FLAGS
-        };
+        state.xkb_keymap = common::xkb::Keymap::create(globals.xkb_context,
+                                                       std::data(keymap),
+                                                       XKB_KEYMAP_FORMAT_TEXT_V1,
+                                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
 
         if (not state.xkb_keymap) {
             elog("Failed to compile a keymap");
             return;
         }
 
-        state.xkb_state = common::xkb::State { std::in_place, state.xkb_keymap };
+        state.xkb_state = common::xkb::State::create(state.xkb_keymap);
 
         if (not state.xkb_state) {
             elog("Failed to create XKB state");

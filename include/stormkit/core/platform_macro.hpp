@@ -35,13 +35,16 @@
     #define STORMKIT_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
     #define STORMKIT_PUSH_WARNINGS     _Pragma("warning(push)")
     #define STORMKIT_POP_WARNINGS      _Pragma("warning(pop))")
+    #define STORMKIT_ARRAY_IF_MSVC     std::array
 #elif defined(_MSC_VER) and defined(__clang__)
     #if defined(_LIBCPP_VERSION)
         #define STORMKIT_COMPILER_LIBCPP "libc++"
         #define STORMKIT_COMPILER_CXXLIB STORMKIT_COMPILER_LIBCPP
+        #define STORMKIT_ARRAY_IF_MSVC
     #else
         #define STORMKIT_COMPILER_MSSTL  "MSSTL"
         #define STORMKIT_COMPILER_CXXLIB STORMKIT_COMPILER_MSSTL
+        #define STORMKIT_ARRAY_IF_MSVC   std::array
     #endif
     #define STORMKIT_EXPORT            __declspec(dllexport)
     #define STORMKIT_IMPORT            __declspec(dllimport)
@@ -65,6 +68,7 @@
     #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]]
     #define STORMKIT_INTRINSIC
     #define STORMKIT_NO_UNIQUE_ADDRESS [[no_unique_address]]
+    #define STORMKIT_ARRAY_IF_MSVC
 #else
     #if defined(_LIBCPP_VERSION)
         #define STORMKIT_COMPILER_LIBCPP "libc++"
@@ -80,6 +84,7 @@
     #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]]
     #define STORMKIT_INTRINSIC
     #define STORMKIT_NO_UNIQUE_ADDRESS [[no_unique_address]]
+    #define STORMKIT_ARRAY_IF_MSVC
 #endif
 
 #if __has_cpp_attribute(lifetimebound)

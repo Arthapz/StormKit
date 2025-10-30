@@ -11,6 +11,7 @@ export module stormkit.core:math.combinatoric;
 import std;
 
 import :typesafe.integer;
+import :math.arithmetic;
 import :meta;
 
 export namespace stormkit { inline namespace core { namespace math {

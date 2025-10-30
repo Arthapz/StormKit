@@ -24,7 +24,10 @@ export namespace stormkit::gpu {
         struct PrivateFuncTag {};
 
       public:
-        using LoadError = std::variant<core::SystemError, Result>;
+        enum class Error {
+            INVALID_SPIRV,
+        };
+        using LoadError = std::variant<core::SystemError, Result, Error>;
         template<typename T>
         using LoadExpected               = std::expected<T, LoadError>;
         static constexpr auto DEBUG_TYPE = DebugObjectType::SHADER_MODULE;
@@ -161,9 +164,10 @@ namespace stormkit::gpu {
                                        ShaderStageFlag type) noexcept -> LoadExpected<Shader> {
         return io::File::open(filepath, io::Access::READ)
           .transform_error(sys_to_load_error)
-          .and_then([](auto&& file) static noexcept {
+          .and_then([](auto&& file) static noexcept -> LoadExpected<std::vector<SpirvID>> {
               const auto size = file.size();
-
+              if (size % sizeof(SpirvID) != 0)
+                  return std::unexpected { LoadError { Error::INVALID_SPIRV } };
               auto spirv = std::vector<SpirvID>(size / sizeof(SpirvID));
               return file.read_to(as_bytes(spirv))
                 .transform(core::monadic::consume(spirv))
@@ -172,8 +176,8 @@ namespace stormkit::gpu {
           .and_then([&type, &device](auto&& spirv) noexcept {
               auto shader = Shader { device, std::move(spirv), type, PrivateFuncTag {} };
               return shader.do_init()
-                .transform(core::monadic::consume(shader))
-                .transform_error(result_to_load_error);
+                .transform_error(result_to_load_error)
+                .transform(core::monadic::consume(shader));
           });
     }
 

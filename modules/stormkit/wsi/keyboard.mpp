@@ -13,7 +13,7 @@ import std;
 import stormkit.core;
 
 export namespace stormkit::wsi {
-    inline constexpr auto GLOBAL_KEYBOARD_ID = 0;
+    inline constexpr auto GLOBAL_KEYBOARD_ID = 0_u8;
 
     enum class Key : u8 {
         A = 0,
@@ -52,56 +52,45 @@ export namespace stormkit::wsi {
         NUM_7,
         NUM_8,
         NUM_9,
-        ESCAPE,
-        L_CONTROL,
-        L_SHIFT,
-        L_ALT,
-        L_SYSTEM,
-        R_CONTROL,
-        R_SHIFT,
-        R_ALT,
-        R_SYSTEM,
-        MENU,
-        L_BRACKET,
-        R_BRACKET,
-        SEMI_COLON,
-        COMMA,
-        PERIOD,
-        QUOTE,
-        SLASH,
-        BACK_SLASH,
-        TILDE,
-        EQUAL,
-        HYPHEN,
-        SPACE,
-        ENTER,
-        BACK_SPACE,
-        TAB,
-        PAGE_UP,
-        PAGE_DOWN,
-        BEGIN,
-        END,
-        HOME,
-        INSERT,
-        DELETE,
-        ADD,
-        SUBSTRACT,
-        MULTIPLY,
-        DIVIDE,
+
         LEFT,
         RIGHT,
         UP,
         DOWN,
-        NUMPAD_0,
-        NUMPAD_1,
-        NUMPAD_2,
-        NUMPAD_3,
-        NUMPAD_4,
-        NUMPAD_5,
-        NUMPAD_6,
-        NUMPAD_7,
-        NUMPAD_8,
-        NUMPAD_9,
+
+        L_CONTROL,
+        L_SHIFT,
+        L_ALT,
+        L_META,
+        R_CONTROL,
+        R_SHIFT,
+        R_ALT,
+        R_META,
+
+        ESCAPE,
+        TAB,
+        MENU,
+
+        QUOTE,
+        BACK_SLASH,
+        COMMA,
+        EQUAL,
+
+        GRAVE_ACCENT,
+        L_BRACKET,
+        MINUS,
+        PERIOD,
+        R_BRACKET,
+        SEMI_COLON,
+        SLASH,
+
+        ISO,
+
+        BACK_SPACE,
+        CAPS_LOCK,
+        ENTER,
+        SPACE,
+
         F1,
         F2,
         F3,
@@ -117,7 +106,40 @@ export namespace stormkit::wsi {
         F13,
         F14,
         F15,
-        PAUSE,
+        F16,
+        F17,
+        F18,
+        F19,
+        F20,
+
+        PRINT_SCREEN,
+
+        INSERT,
+        DELETE,
+        HOME,
+        END,
+        PAGE_UP,
+        PAGE_DOWN,
+
+        NUMPAD_LOCK,
+        NUMPAD_ADD,
+        NUMPAD_DECIMAL,
+        NUMPAD_DIVIDE,
+        NUMPAD_ENTER,
+        NUMPAD_EQUAL,
+        NUMPAD_MULTIPLY,
+        NUMPAD_SUBTRACT,
+        NUMPAD_0,
+        NUMPAD_1,
+        NUMPAD_2,
+        NUMPAD_3,
+        NUMPAD_4,
+        NUMPAD_5,
+        NUMPAD_6,
+        NUMPAD_7,
+        NUMPAD_8,
+        NUMPAD_9,
+
         UNKNOWN = std::numeric_limits<u8>::max(),
     };
     constexpr auto as_string(Key key) noexcept -> std::string_view;
@@ -168,56 +190,45 @@ namespace stormkit::wsi {
             case Key::NUM_7: return "Key::NUM_7";
             case Key::NUM_8: return "Key::NUM_8";
             case Key::NUM_9: return "Key::NUM_9";
-            case Key::ESCAPE: return "Key::ESCAPE";
-            case Key::L_CONTROL: return "Key::L_CONTROL";
-            case Key::L_SHIFT: return "Key::L_SHIFT";
-            case Key::L_ALT: return "Key::L_ALT";
-            case Key::L_SYSTEM: return "Key::L_SYSTEM";
-            case Key::R_CONTROL: return "Key::R_CONTROL";
-            case Key::R_SHIFT: return "Key::R_SHIFT";
-            case Key::R_ALT: return "Key::R_ALT";
-            case Key::R_SYSTEM: return "Key::R_SYSTEM";
-            case Key::MENU: return "Key::MENU";
-            case Key::L_BRACKET: return "Key::L_BRACKET";
-            case Key::R_BRACKET: return "Key::R_BRACKET";
-            case Key::SEMI_COLON: return "Key::SEMI_COLON";
-            case Key::COMMA: return "Key::COMMA";
-            case Key::PERIOD: return "Key::PERIOD";
-            case Key::QUOTE: return "Key::QUOTE";
-            case Key::SLASH: return "Key::SLASH";
-            case Key::BACK_SLASH: return "Key::BACK_SLASH";
-            case Key::TILDE: return "Key::TILDE";
-            case Key::EQUAL: return "Key::EQUAL";
-            case Key::HYPHEN: return "Key::HYPHEN";
-            case Key::SPACE: return "Key::SPACE";
-            case Key::ENTER: return "Key::ENTER";
-            case Key::BACK_SPACE: return "Key::BACK_SPACE";
-            case Key::TAB: return "Key::TAB";
-            case Key::PAGE_UP: return "Key::PAGE_UP";
-            case Key::PAGE_DOWN: return "Key::PAGE_DOWN";
-            case Key::BEGIN: return "Key::BEGIN";
-            case Key::END: return "Key::END";
-            case Key::HOME: return "Key::HOME";
-            case Key::INSERT: return "Key::INSERT";
-            case Key::DELETE: return "Key::DELETE";
-            case Key::ADD: return "Key::ADD";
-            case Key::SUBSTRACT: return "Key::SUBSTRACT";
-            case Key::MULTIPLY: return "Key::MULTIPLY";
-            case Key::DIVIDE: return "Key::DIVIDE";
+
             case Key::LEFT: return "Key::LEFT";
             case Key::RIGHT: return "Key::RIGHT";
             case Key::UP: return "Key::UP";
             case Key::DOWN: return "Key::DOWN";
-            case Key::NUMPAD_0: return "Key::NUMPAD_0";
-            case Key::NUMPAD_1: return "Key::NUMPAD_1";
-            case Key::NUMPAD_2: return "Key::NUMPAD_2";
-            case Key::NUMPAD_3: return "Key::NUMPAD_3";
-            case Key::NUMPAD_4: return "Key::NUMPAD_4";
-            case Key::NUMPAD_5: return "Key::NUMPAD_5";
-            case Key::NUMPAD_6: return "Key::NUMPAD_6";
-            case Key::NUMPAD_7: return "Key::NUMPAD_7";
-            case Key::NUMPAD_8: return "Key::NUMPAD_8";
-            case Key::NUMPAD_9: return "Key::NUMPAD_9";
+
+            case Key::L_CONTROL: return "Key::L_CONTROL";
+            case Key::L_SHIFT: return "Key::L_SHIFT";
+            case Key::L_ALT: return "Key::L_ALT";
+            case Key::L_META: return "Key::L_META";
+            case Key::R_CONTROL: return "Key::R_CONTROL";
+            case Key::R_SHIFT: return "Key::R_SHIFT";
+            case Key::R_ALT: return "Key::R_ALT";
+            case Key::R_META: return "Key::R_META";
+
+            case Key::ESCAPE: return "Key::ESCAPE";
+            case Key::TAB: return "Key::TAB";
+            case Key::MENU: return "Key::MENU";
+
+            case Key::QUOTE: return "Key::QUOTE";
+            case Key::BACK_SLASH: return "Key::BACK_SLASH";
+            case Key::COMMA: return "Key::COMMA";
+            case Key::EQUAL: return "Key::EQUAL";
+
+            case Key::GRAVE_ACCENT: return "Key::GRAVE_ACCENT";
+            case Key::L_BRACKET: return "Key::L_BRACKET";
+            case Key::MINUS: return "Key::MINUS";
+            case Key::PERIOD: return "Key::PERIOD";
+            case Key::R_BRACKET: return "Key::R_BRACKET";
+            case Key::SEMI_COLON: return "Key::SEMI_COLON";
+            case Key::SLASH: return "Key::SLASH";
+
+            case Key::ISO: return "Key::ISO";
+
+            case Key::BACK_SPACE: return "Key::BACK_SPACE";
+            case Key::CAPS_LOCK: return "Key::CAPS_LOCK";
+            case Key::ENTER: return "Key::ENTER";
+            case Key::SPACE: return "Key::SPACE";
+
             case Key::F1: return "Key::F1";
             case Key::F2: return "Key::F2";
             case Key::F3: return "Key::F3";
@@ -233,12 +244,42 @@ namespace stormkit::wsi {
             case Key::F13: return "Key::F13";
             case Key::F14: return "Key::F14";
             case Key::F15: return "Key::F15";
-            case Key::PAUSE: return "Key::PAUSE";
-            case Key::UNKNOWN: [[fallthrough]];
-            default: return "Key::UNKNOWN";
-        }
+            case Key::F16: return "Key::F16";
+            case Key::F17: return "Key::F17";
+            case Key::F18: return "Key::F18";
+            case Key::F19: return "Key::F19";
+            case Key::F20: return "Key::F20";
 
-        return "UNKNOWN";
-        // std::unreachable();
+            case Key::PRINT_SCREEN: return "Key::PRINT_SCREEN";
+
+            case Key::INSERT: return "Key::INSERT";
+            case Key::DELETE: return "Key::DELETE";
+            case Key::HOME: return "Key::HOME";
+            case Key::END: return "Key::END";
+            case Key::PAGE_UP: return "Key::PAGE_UP";
+            case Key::PAGE_DOWN: return "Key::PAGE_DOWN";
+
+            case Key::NUMPAD_LOCK: return "Key::NUMPAD_LOCK";
+            case Key::NUMPAD_ADD: return "Key::NUMPAD_ADD";
+            case Key::NUMPAD_DECIMAL: return "Key::NUMPAD_DECIMAL";
+            case Key::NUMPAD_DIVIDE: return "Key::NUMPAD_DIVIDE";
+            case Key::NUMPAD_ENTER: return "Key::NUMPAD_ENTER";
+            case Key::NUMPAD_EQUAL: return "Key::NUMPAD_EQUAL";
+            case Key::NUMPAD_MULTIPLY: return "Key::NUMPAD_MULTIPLY";
+            case Key::NUMPAD_SUBTRACT: return "Key::NUMPAD_SUBTRACT";
+            case Key::NUMPAD_0: return "Key::NUMPAD_0";
+            case Key::NUMPAD_1: return "Key::NUMPAD_1";
+            case Key::NUMPAD_2: return "Key::NUMPAD_2";
+            case Key::NUMPAD_3: return "Key::NUMPAD_3";
+            case Key::NUMPAD_4: return "Key::NUMPAD_4";
+            case Key::NUMPAD_5: return "Key::NUMPAD_5";
+            case Key::NUMPAD_6: return "Key::NUMPAD_6";
+            case Key::NUMPAD_7: return "Key::NUMPAD_7";
+            case Key::NUMPAD_8: return "Key::NUMPAD_8";
+            case Key::NUMPAD_9: return "Key::NUMPAD_9";
+            case Key::UNKNOWN: return "Key::UNKNOWN";
+            default: break;
+        }
+        std::unreachable();
     }
 } // namespace stormkit::wsi

@@ -22,7 +22,7 @@ import :linux.common.fd;
 import :linux.common.xkb;
 
 export namespace stormkit::wsi::linux::wayland {
-    class WindowImpl;
+    class Window;
 
     namespace wl {
         struct PointerState {
@@ -43,18 +43,18 @@ export namespace stormkit::wsi::linux::wayland {
 
             std::array<PointerButtonState, 5> button_state;
 
-            wl::ConfinedPointer confined_pointer;
-            wl::LockedPointer   locked_pointer;
-            wl::RelativePointer relative_pointer;
+            wl::ConfinedPointer confined_pointer = wl::ConfinedPointer::empty();
+            wl::LockedPointer   locked_pointer   = wl::LockedPointer::empty();
+            wl::RelativePointer relative_pointer = wl::RelativePointer::empty();
 
             struct Cursor {
                 std::string name;
 
-                wl::Surface           surface;
-                wl::CursorShapeDevice shape_device;
+                wl::Surface           surface      = wl::Surface::empty();
+                wl::CursorShapeDevice shape_device = wl::CursorShapeDevice::empty();
             } cursor;
 
-            WindowImpl* focused_window = nullptr;
+            Window* focused_window = nullptr;
 
             wl_fixed_t x;
             wl_fixed_t y;
@@ -71,7 +71,7 @@ export namespace stormkit::wsi::linux::wayland {
             struct repeat {
                 i32        rate;
                 i32        delay;
-                common::FD timer_fd;
+                common::FD timer_fd = common::FD::empty();
 
                 char c;
                 Key  key;
@@ -79,11 +79,11 @@ export namespace stormkit::wsi::linux::wayland {
                 bool enabled = false;
             } repeat;
 
-            common::xkb::Keymap xkb_keymap;
-            common::xkb::State  xkb_state;
+            common::xkb::Keymap xkb_keymap = common::xkb::Keymap::empty();
+            common::xkb::State  xkb_state  = common::xkb::State::empty();
             common::xkb::Mods   xkb_mods;
 
-            WindowImpl* focused_window = nullptr;
+            Window* focused_window = nullptr;
 
             std::array<KeyState, 102> keyboard_state = {
                 KeyState { XKB_KEY_a,            false },

@@ -58,7 +58,8 @@ namespace stormkit { inline namespace core {
     template<typename FormatContext>
     auto format_as(const MemoryAllocationError& error, FormatContext& ctx) noexcept
       -> FormatContext::iterator {
-        return std::format_to(ctx,
+        auto&& out = ctx.out();
+        return std::format_to(out,
                               "Failed to allocate type {} of {} byte{}",
                               error.type,
                               error.size,

@@ -14,11 +14,11 @@
                                          const std::source_location& location) noexcept -> To; \
     };
 
-#define ASCASTER_STRICT_DEFINE(_To, _From)                                                \
-    template<stormkit::meta::IsStrict<_To> To, stormkit::meta::IsStrict<_From> From>      \
-    STORMKIT_FORCE_INLINE constexpr auto stormkit::casts::AsCaster<To, From>::operator()( \
-        const From&                                  from,                                \
-        [[maybe_unused]] const std::source_location& location) noexcept -> To
+#define ASCASTER_STRICT_DEFINE(_To, _From)                                                         \
+    template<stormkit::meta::IsStrict<_To> To, stormkit::meta::IsStrict<_From> From>               \
+    STORMKIT_FORCE_INLINE constexpr auto stormkit::casts::AsCaster<To, From>::                     \
+      operator()(const From& from, [[maybe_unused]] const std::source_location& location) noexcept \
+      -> To
 
 #define ASCASTER_STRICT(_To, _From)     \
     ASCASTER_STRICT_DECLARE(_To, _From) \
@@ -31,11 +31,11 @@
                                          const std::source_location& location) noexcept -> To; \
     };
 
-#define ASCASTER_DEFINE(_To, _From)                                                       \
-    template<_To To, _From From>                                                          \
-    STORMKIT_FORCE_INLINE constexpr auto stormkit::casts::AsCaster<To, From>::operator()( \
-        const From&                                  from,                                \
-        [[maybe_unused]] const std::source_location& location) noexcept -> To
+#define ASCASTER_DEFINE(_To, _From)                                                                \
+    template<_To To, _From From>                                                                   \
+    STORMKIT_FORCE_INLINE constexpr auto stormkit::casts::AsCaster<To, From>::                     \
+      operator()(const From& from, [[maybe_unused]] const std::source_location& location) noexcept \
+      -> To
 
 #define ASCASTER(_To, _From)     \
     ASCASTER_DECLARE(_To, _From) \
@@ -48,11 +48,11 @@
                                          const std::source_location& location) noexcept -> To; \
     };
 
-#define NARROWCASTER_STRICT_DEFINE(_To, _From)                                                \
-    template<stormkit::meta::IsStrict<_To> To, stormkit::meta::IsStrict<_From> From>          \
-    STORMKIT_FORCE_INLINE constexpr auto stormkit::casts::NarrowCaster<To, From>::operator()( \
-        const From&                                  from,                                    \
-        [[maybe_unused]] const std::source_location& location) noexcept -> To
+#define NARROWCASTER_STRICT_DEFINE(_To, _From)                                                     \
+    template<stormkit::meta::IsStrict<_To> To, stormkit::meta::IsStrict<_From> From>               \
+    STORMKIT_FORCE_INLINE constexpr auto stormkit::casts::NarrowCaster<To, From>::                 \
+      operator()(const From& from, [[maybe_unused]] const std::source_location& location) noexcept \
+      -> To
 
 #define NARROWCASTER_STRICT(_To, _From)     \
     NARROWCASTER_STRICT_DECLARE(_To, _From) \
@@ -65,11 +65,11 @@
                                          const std::source_location& location) noexcept -> To; \
     };
 
-#define NARROWCASTER_DEFINE(_To, _From)                                                       \
-    template<_To To, _From From>                                                              \
-    STORMKIT_FORCE_INLINE constexpr auto stormkit::casts::NarrowCaster<To, From>::operator()( \
-        const From&                                  from,                                    \
-        [[maybe_unused]] const std::source_location& location) noexcept -> To
+#define NARROWCASTER_DEFINE(_To, _From)                                                            \
+    template<_To To, _From From>                                                                   \
+    STORMKIT_FORCE_INLINE constexpr auto stormkit::casts::NarrowCaster<To, From>::                 \
+      operator()(const From& from, [[maybe_unused]] const std::source_location& location) noexcept \
+      -> To
 
 #define NARROWCASTER(_To, _From)     \
     NARROWCASTER_DECLARE(_To, _From) \

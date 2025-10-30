@@ -42,7 +42,8 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
     concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind
+      group:
+        ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind
         }}-${{ matrix.mode }}
 
     steps:
@@ -78,7 +79,7 @@ jobs:
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: branch@dev
+          xmake-version: Arthapz/xmake#branch@improve-xcode-toolchain
           actions-cache-folder: .xmake-cache
 
       - name: Cache XMake
@@ -117,7 +118,8 @@ jobs:
            --mold=y \
            --on_ci=y \
            --toolchain=llvm \
-           --sdk="$(brew --prefix)/opt/llvm/" \
+           --sdk="$(brew --prefix llvm)" \
+           --sc="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend" \
            --runtimes="c++_shared"
 
       - name: Cache packages

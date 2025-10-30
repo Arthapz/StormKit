@@ -15,64 +15,79 @@ import :meta.type_manipulation;
 
 namespace stdr = std::ranges;
 
-export namespace stormkit { inline namespace core { namespace meta {
-    template<typename T>
-    using ElementType = typename std::pointer_traits<T>::element_type;
+namespace stormkit { inline namespace core { namespace meta {
+    namespace details {
+        template<typename... Ts>
+        struct AlwaysTrue: std::false_type {};
 
-    template<typename T>
-    using PointerType = typename std::pointer_traits<T>::pointer;
+        template<typename... Ts>
+        struct AlwaysFalse: std::false_type {};
 
-    template<stdr::range Range>
-    using IteratorType = stdr::iterator_t<Range>;
+        template<typename T>
+        struct UnderlyingType;
 
-    template<stdr::range Range>
-    using SentinelType = stdr::sentinel_t<Range>;
+        template<typename T>
+        concept HasValueType = requires() { typename T::ValueType; };
 
-    template<stdr::input_range Range>
-    using RangeType = RemoveReferencesType<stdr::range_reference_t<Range>>;
+        template<typename T>
+        concept HasStdValueType = requires() { typename T::value_type; };
 
-    template<IsArithmetic T, IsArithmetic V>
-    constexpr auto is_greater() noexcept;
+        template<HasValueType T>
+        struct UnderlyingType<T> {
+            using Type = typename T::ValueType;
+        };
 
-    template<IsArithmetic T, IsArithmetic V>
-    using SafeNarrowHelperType = std::conditional_t<is_greater<T, V>(), T, V>;
+        template<HasStdValueType T>
+            requires(not HasValueType<T>)
+        struct UnderlyingType<T> {
+            using Type = typename T::value_type;
+        };
 
-    template<IsArithmetic T, IsArithmetic V>
-    using SafeNarrowHelperOtherType = std::conditional_t<is_greater<T, V>(), V, T>;
+        template<IsEnumeration T>
+        struct UnderlyingType<T> {
+            using Type = std::underlying_type_t<T>;
+        };
+    } // namespace details
 
-    template<typename... Ts>
-    struct AlwaysTrue: std::false_type {};
+    export {
+        template<typename T>
+        using ElementType = typename std::pointer_traits<T>::element_type;
 
-    template<typename... Ts>
-    struct AlwaysFalse: std::false_type {};
+        template<typename T>
+        using PointerType = typename std::pointer_traits<T>::pointer;
 
-    template<typename T>
-    struct UnderlyingTypeTrait {
-        using Type = T;
-    };
+        template<stdr::range Range>
+        using IteratorType = stdr::iterator_t<Range>;
 
-    template<IsContainedSemantics T>
-    struct UnderlyingTypeTrait<T> {
-        using Type = typename T::value_type;
-    };
+        template<stdr::range Range>
+        using SentinelType = stdr::sentinel_t<Range>;
 
-    template<IsEnumeration T>
-    struct UnderlyingTypeTrait<T> {
-        using Type = std::underlying_type_t<T>;
-    };
+        template<stdr::input_range Range>
+        using RangeType = RemoveReferencesType<stdr::range_reference_t<Range>>;
 
-    template<typename T>
-    using UnderlyingType = UnderlyingTypeTrait<T>::Type;
+        template<IsArithmetic T, IsArithmetic V>
+        constexpr auto is_greater() noexcept;
 
-    template<IsArithmetic T>
-    using ArithmeticOrderingType = std::
-      conditional_t<IsIntegral<T>, std::strong_ordering, std::weak_ordering>;
+        template<IsArithmetic T, IsArithmetic V>
+        using SafeNarrowHelperType = Select<is_greater<T, V>(), T, V>;
 
-    template<IsEnumeration>
-    constexpr auto enumerate() noexcept -> decltype(auto) = delete;
+        template<IsArithmetic T, IsArithmetic V>
+        using SafeNarrowHelperOtherType = Select<is_greater<T, V>(), V, T>;
 
-    template<typename T>
-    consteval auto name_of() noexcept -> std::string_view;
+        template<typename T>
+        using UnderlyingType = details::UnderlyingType<T>::Type;
+
+        template<IsArithmetic T>
+        using ArithmeticOrderingType = Select<IsIntegral<T>,
+                                              std::strong_ordering,
+                                              std::weak_ordering>;
+
+        template<IsEnumeration>
+        constexpr auto enumerate() noexcept -> decltype(auto) = delete;
+
+        template<typename T>
+        consteval auto name_of() noexcept -> std::string_view;
+    }
 }}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
@@ -95,17 +110,17 @@ namespace stormkit { inline namespace core { namespace meta {
     template<typename T>
     consteval auto name_of() noexcept -> std::string_view {
 #if defined(STORMKIT_COMPILER_GCC)
-        constexpr auto prefix   = std::string_view(" [with T = ");
-        constexpr auto suffix   = std::string_view("]");
-        constexpr auto function = std::string_view(__PRETTY_FUNCTION__);
+        constexpr auto prefix   = std::string_view { " [with T = " };
+        constexpr auto suffix   = std::string_view { "]" };
+        constexpr auto function = std::string_view { __PRETTY_FUNCTION__ };
 #elif defined(STORMKIT_COMPILER_CLANG)
-        constexpr auto prefix   = std::string_view(" [T = ");
-        constexpr auto suffix   = std::string_view("]");
-        constexpr auto function = std::string_view(__PRETTY_FUNCTION__);
+        constexpr auto prefix   = std::string_view { " [T = " };
+        constexpr auto suffix   = std::string_view { "]" };
+        constexpr auto function = std::string_view { __PRETTY_FUNCTION__ };
 #elif defined(STORMKIT_COMPILER_MSVC)
-        constexpr auto prefix   = std::string_view("<");
-        constexpr auto suffix   = std::string_view(">(void)");
-        constexpr auto function = std::string_view(__FUNCSIG__);
+        constexpr auto prefix   = std::string_view { "<" };
+        constexpr auto suffix   = std::string_view { ">(void)" };
+        constexpr auto function = std::string_view { __FUNCSIG__ };
 #else
     #error Unsupported compiler
 #endif

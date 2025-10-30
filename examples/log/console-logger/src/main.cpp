@@ -25,9 +25,9 @@ struct std::formatter<Bar, CharT>: std::formatter<std::basic_string<CharT>, Char
 };
 
 struct Foo {
-    u32 a = 0u;
-    float  b = 2.3f;
-    Bar    c = Bar {};
+    u32   a = 0u;
+    float b = 2.3f;
+    Bar   c = Bar {};
 };
 
 template<class CharT>

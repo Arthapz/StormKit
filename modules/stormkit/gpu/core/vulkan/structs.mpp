@@ -79,7 +79,7 @@ namespace stormkit::gpu {
           requires { std::declval<T>().native_handle(); }
           or requires { std::declval<T>()->native_handle(); })
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
+    STORMKIT_PURE
     inline auto to_vk(const T& value) noexcept -> decltype(auto) {
         if constexpr (core::meta::IsPointer<T>) return value->native_handle();
         else
@@ -88,7 +88,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto to_vk(const Viewport& viewport) noexcept -> VkViewport {
         return VkViewport {
             .x        = viewport.position.x,
@@ -102,7 +102,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto to_vk(const Scissor& scissor) noexcept -> VkRect2D {
         return VkRect2D {
             .offset = { scissor.offset.x,     scissor.offset.y      },
@@ -112,7 +112,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto from_vk(const VkViewport& viewport) noexcept -> Viewport {
         return Viewport {
             .position = { viewport.x,              viewport.y                },
@@ -125,7 +125,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Out>
         STORMKIT_FORCE_INLINE
-        STORMKIT_CONST
+        STORMKIT_PURE
     constexpr auto to_vk(const math::vec2i& vector) noexcept -> Out {
         return Out { .x = vector.x, .y = vector.y };
     }
@@ -134,14 +134,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Out>
         STORMKIT_FORCE_INLINE
-        STORMKIT_CONST
+        STORMKIT_PURE
     constexpr auto to_vk(const math::vec3i& vector) noexcept -> Out {
         return Out { .x = vector.x, .y = vector.y, .z = vector.z };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto from_vk(const VkFormatProperties& properties) noexcept -> FormatProperties {
         return {
             .linear_tiling_features  = from_vk<FormatFeatureFlag>(properties.linearTilingFeatures),
@@ -152,14 +152,14 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto from_vk(const VkOffset2D& offset) noexcept -> math::vec2i {
         return math::vec2i { offset.x, offset.y };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto from_vk(const VkOffset3D& offset) noexcept -> math::vec3i {
         return math::vec3i { offset.x, offset.y, offset.z };
     }
@@ -168,7 +168,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<math::meta::IsExtent2 Extent>
         STORMKIT_FORCE_INLINE
-        STORMKIT_CONST
+        STORMKIT_PURE
     constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent2D {
         return VkExtent2D { .width = as<u32>(extent.width), .height = as<u32>(extent.height) };
     }
@@ -177,7 +177,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<math::meta::IsExtent3 Extent>
         STORMKIT_FORCE_INLINE
-        STORMKIT_CONST
+        STORMKIT_PURE
     constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent3D {
         return VkExtent3D { .width  = as<u32>(extent.width),
                             .height = as<u32>(extent.height),
@@ -188,7 +188,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<math::meta::IsExtent2 Extent>
         STORMKIT_FORCE_INLINE
-        STORMKIT_CONST
+        STORMKIT_PURE
     constexpr auto from_vk(const VkExtent2D& extent) noexcept -> Extent {
         using T = typename Extent::ElementType;
         return Extent { .width = as<T>(extent.width), .height = as<T>(extent.height) };
@@ -198,7 +198,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<math::meta::IsExtent3 Extent>
         STORMKIT_FORCE_INLINE
-        STORMKIT_CONST
+        STORMKIT_PURE
     constexpr auto from_vk(const VkExtent3D& extent) noexcept -> Extent {
         using T = typename Extent::ElementType;
         return Extent { .width = as<T>(extent.width), .height = as<T>(extent.height) };

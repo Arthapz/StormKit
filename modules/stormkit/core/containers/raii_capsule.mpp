@@ -133,7 +133,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::operator T()
       const noexcept {
         return m_handle;
@@ -142,7 +142,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::handle() noexcept
       -> T& {
         return m_handle;
@@ -151,7 +151,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::handle() const noexcept
       -> T {
         return m_handle;
@@ -160,7 +160,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::release() noexcept
       -> T {
         auto tmp = std::exchange(m_handle, RELEASE_VALUE);

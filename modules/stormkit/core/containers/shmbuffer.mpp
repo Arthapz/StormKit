@@ -138,7 +138,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::begin(this Self& self) noexcept -> decltype(auto) {
         EXPECTS(self.m_handle);
         return stdr::begin(std::forward<Self&>(self).m_data);
@@ -146,7 +146,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::cbegin() const noexcept -> decltype(auto) {
         EXPECTS(m_handle);
         return stdr::cbegin(m_data);
@@ -155,7 +155,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::end(this Self& self) noexcept -> decltype(auto) {
         EXPECTS(self.m_handle);
         return stdr::end(std::forward<Self&>(self).m_data);
@@ -163,7 +163,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::cend() const noexcept -> decltype(auto) {
         EXPECTS(m_handle);
         return stdr::cend(m_data);
@@ -172,7 +172,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::operator[](this Self& self, usize index) noexcept
       -> meta::ForwardConst<Self, Byte>& {
         EXPECTS(self.m_handle);
@@ -183,7 +183,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::at(this Self& self, usize index) noexcept -> meta::ForwardConst<Self, Byte>& {
         EXPECTS(self.m_handle);
         EXPECTS(index < self.m_size);
@@ -192,7 +192,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::size() const noexcept -> usize {
         return m_size;
     }
@@ -200,7 +200,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::data(this Self& self) noexcept -> meta::ForwardConst<Self, Byte>* {
         EXPECTS(self.m_handle);
         return stdr::data(std::forward<Self&>(self).m_data);
@@ -209,21 +209,21 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::native_handle(this Self& self) noexcept -> meta::ForwardConst<Self, void>* {
         return std::forward<Self&>(self).m_handle;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::name() const noexcept -> const std::string& {
         return m_name;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
     auto SHMBuffer::access() const noexcept -> Access {
         return m_access;
     }

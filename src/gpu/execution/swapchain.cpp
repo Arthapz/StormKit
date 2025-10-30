@@ -53,10 +53,10 @@ namespace stormkit::gpu {
                 && capabilities.currentExtent.height != int_max)
                 return capabilities.currentExtent;
 
-            auto actual_extent   = to_vk(extent);
-            actual_extent.width  = std::max(capabilities.minImageExtent.width,
-                                           std::min(capabilities.maxImageExtent.width,
-                                                    actual_extent.width));
+            auto actual_extent = to_vk(extent);
+            actual_extent
+              .width             = std::max(capabilities.minImageExtent.width,
+                                            std::min(capabilities.maxImageExtent.width, actual_extent.width));
             actual_extent.height = std::max(capabilities.minImageExtent.height,
                                             std::min(capabilities.maxImageExtent.height,
                                                      actual_extent.height));
@@ -173,9 +173,13 @@ namespace stormkit::gpu {
     auto SwapChain::acquire_next_image(std::chrono::nanoseconds wait,
                                        const Semaphore&         image_available) const noexcept
       -> Expected<NextImage> {
+        static constexpr auto POSSIBLE_RESULTS = std::array { VK_SUCCESS,
+                                                              VK_ERROR_OUT_OF_DATE_KHR,
+                                                              VK_SUBOPTIMAL_KHR };
+
         auto id = u32 { 0 };
         return vk_call<VkResult>(m_vk_device_table->vkAcquireNextImageKHR,
-                                 { VK_SUCCESS, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR },
+                                 as_view(POSSIBLE_RESULTS),
                                  m_vk_device,
                                  m_vk_handle,
                                  wait.count(),

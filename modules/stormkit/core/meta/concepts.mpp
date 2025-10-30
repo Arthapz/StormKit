@@ -42,18 +42,42 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept Same = std::same_as<T, U>;
 
     template<class T, class U>
-    concept Is = IsStrict<T, U> or std::derived_from<T, U>;
+    concept SameAs = std::same_as<T, U>;
+
+    template<typename T, typename U>
+    concept DerivedFrom = std::derived_from<T, U>;
+
+    template<class T, class U>
+    concept Is = SameAs<T, U> or DerivedFrom<T, U>;
+
+    template<class T, class U>
+    concept IsNot = not Is<T, U>;
+
+    // template<typename T, template<typename> concept C>
+    // concept Not = not C<T>;
+
+    // template<typename T, template<typename> concept... C>
+    // concept AllOf = (C<T> and ...);
+
+    // template<typename T, template<typename> concept... C>
+    // concept AnyOf = (C<T> or ...);
+
+    template<class From, typename To>
+    concept ConvertibleTo = std::convertible_to<From, To>;
+
+    template<class From, typename To>
+    concept IsConvertibleTo = std::convertible_to<From, To>;
 
     template<class T>
     concept IsHashable = requires(std::remove_cvref_t<T>& a) {
-        { std::hash<std::remove_cvref_t<T>> {}(a) } -> std::convertible_to<std::size_t>;
+        std::hash<std::remove_cvref_t<T>> {}(a);
     };
 
     template<class T, class U>
     concept IsCanonical = IsStrict<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
 
     template<typename T, typename U>
-    concept PlainIs = Same<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+    concept PlainIs = Is<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
 
     template<class T>
     concept IsPlain = Is<T, std::remove_cvref_t<T>>;
@@ -62,13 +86,13 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept Are = (Is<T, U> and ...);
 
     template<class T, class... U>
+    concept AnyOf = (Is<T, U> or ...);
+
+    template<class T, class... U>
     concept IsOneOf = (Is<T, U> or ...);
 
     template<class T, class... U>
-    concept IsStrictOneOf = (IsStrict<T, U> or ...);
-
-    template<class T, class U>
-    concept IsNot = not Is<T, U>;
+    concept SameAsOneOf = (SameAs<T, U> or ...);
 
     template<class T>
     concept IsByte = IsStrict<T, std::byte>;
@@ -169,13 +193,19 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsEnumeration = std::is_enum_v<T> and IsNotByte<T>;
 
     template<typename T>
-    concept IsIntegral = (std::integral<T> and not IsStrict<T, bool> and not IsByte<T>)
-                         or Is<T,
-                               std::ranges::range_difference_t<
-                                 std::ranges::iota_view<long long, long long>>>
-                         or Is<T,
-                               std::ranges::range_difference_t<
-                                 std::ranges::iota_view<unsigned long long, unsigned long long>>>;
+    concept IsIntegral
+      = (std::integral<T> and not IsStrict<T, bool> and not IsByte<T>)
+        or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
+        or Is<T,
+              std::ranges::range_difference_t<
+                std::ranges::iota_view<unsigned long long, unsigned long long>>>
+#if defined(STORMKIT_COMPILER_MSVC)
+        or Is<T, std::_Unsigned128>
+        or Is<T, std::__Signed128>;
+#else
+        or Is<T, __int128>
+        or Is<T, unsigned __int128>;
+#endif
 
     template<typename T>
     concept IsIntegralOrEnumeration = IsIntegral<T> or IsEnumeration<T>;
@@ -203,7 +233,6 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsContainedSemantics = requires(T& val) {
         typename T::value_type;
         { val.operator*() } -> IsReferenceTo<typename T::value_type>;
-        val.operator bool();
     };
 
     template<typename S, template<typename...> class T>
@@ -284,9 +313,6 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<class From, typename To>
     concept IsBraceInitializableTo = requires(From&& from) { To { std::forward<From>(from) }; };
 
-    template<class From, typename To>
-    concept IsConvertibleTo = std::convertible_to<From, To>;
-
     template<class T, class... U>
     concept IsConvertibleToOneOf = (IsConvertibleTo<T, U> or ...);
 
@@ -296,10 +322,20 @@ export namespace stormkit { inline namespace core { namespace meta {
     };
 
     template<typename T>
-    concept IsUnsigned = std::is_unsigned_v<T>;
+    concept IsUnsigned = std::is_unsigned_v<T>
+#if defined(STORMKIT_COMPILER_MSVC)
+                         or Is<T, std::_Unsigned128>;
+#else
+                         or Is<T, unsigned __int128>;
+#endif
 
     template<typename T>
-    concept IsSigned = std::is_signed_v<T>;
+    concept IsSigned = std::is_signed_v<T>
+#if defined(STORMKIT_COMPILER_MSVC)
+                       or Is<T, std::__Signed128>;
+#else
+                       or Is<T, __int128>;
+#endif
 
     template<typename T, typename U>
     concept IsSameSigneness = (IsSigned<T> and IsSigned<U>) or (IsUnsigned<T> and IsUnsigned<U>);
@@ -342,6 +378,8 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept HasEqualityOperator = requires(const T1& first, const T2& second) {
         { first == second } -> IsBooleanTestable;
     };
+
+    static_assert(HasEqualityOperator<char*, std::string>);
 
     template<typename T, typename... Args>
     concept EnableCtor = sizeof...(Args) != 1

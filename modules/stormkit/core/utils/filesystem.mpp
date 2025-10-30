@@ -14,6 +14,9 @@ module;
     #include <io.h>
     #include <sys/stat.h>
 #else
+    #include <fcntl.h>
+    #include <sys/stat.h>
+    #include <sys/types.h>
     #include <unistd.h>
 #endif
 
@@ -157,9 +160,7 @@ namespace stormkit { inline namespace core { namespace io {
             switch (mode) {
                 case Mode::BINARY: return 0;
     #ifdef STORMKIT_OS_WINDOWS
-                // case Mode::AINSI: return _O_TEXT;
                 case Mode::UTF8: return _O_U8TEXT;
-                // case Mode::UTF16: return _O_U16TEXT;
                 case Mode::WIDE: return _O_WTEXT;
                 default: break;
     #else
@@ -179,11 +180,14 @@ namespace stormkit { inline namespace core { namespace io {
         }();
 
         auto ret = 0;
-        auto
-          err = _sopen_s(&ret, stdr::data(p), posix_access | text_mode, _SH_DENYWR, win32_access);
-        if (err != 0) return std::unexpected { SystemError { std::errc { err } } };
+        const auto
+          // err = _sopen_s(&ret, stdr::data(p), posix_access | text_mode, _SH_DENYNO,
+          // win32_access);
+          err
+          = _sopen_s(&ret, stdr::data(p), posix_access | text_mode, _SH_SECURE, win32_access);
+        if (err != 0) return std::unexpected { SystemError::from_errno() };
 #else
-        const auto ret = open(stdr::data(p), posix_access);
+        const auto ret = ::open(stdr::data(p), posix_access);
         if (ret == -1) return std::unexpected { SystemError::from_errno() };
 #endif
         return Expected<Descriptor<mode>> { std::in_place, PrivateFuncTag {}, ret };
@@ -199,9 +203,11 @@ namespace stormkit { inline namespace core { namespace io {
 #ifdef STORMKIT_OS_WINDOWS
             _close
 #else
-            close
+            ::close
 #endif
               (m_descriptor);
+            m_descriptor = 0;
+            m_size       = 0;
         }
     }
 
@@ -219,6 +225,8 @@ namespace stormkit { inline namespace core { namespace io {
     STORMKIT_FORCE_INLINE
     inline Descriptor<mode>::Descriptor(Descriptor&& other) noexcept
         : m_descriptor { std::exchange(other.m_descriptor, 0) } {
+        m_size = other.m_size.load();
+        other.m_size.store(0);
     }
 
     ////////////////////////////////////////
@@ -230,6 +238,8 @@ namespace stormkit { inline namespace core { namespace io {
             return *this;
 
         m_descriptor = std::exchange(other.m_descriptor, 0);
+        m_size       = other.m_size.load();
+        other.m_size.store(0);
     }
 
     ////////////////////////////////////////
@@ -237,11 +247,12 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto Descriptor<mode>::read_to(std::span<Byte> out) noexcept -> Expected<usize> {
+        EXPECTS(m_descriptor != 0);
         const auto ret =
 #ifdef STORMKIT_OS_WINDOWS
           _read
 #else
-          read
+          ::read
 #endif
           (m_descriptor, std::bit_cast<void*>(stdr::data(out)), as<u32>(stdr::size(out)));
 
@@ -274,11 +285,12 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto Descriptor<mode>::write(std::span<const Byte> data) noexcept -> Expected<usize> {
+        EXPECTS(m_descriptor != 0);
         const auto ret =
 #ifdef STORMKIT_OS_WINDOWS
           _write
 #else
-          write
+          ::write
 #endif
           (m_descriptor, std::bit_cast<const void*>(stdr::data(data)), as<u32>(stdr::size(data)));
 
@@ -311,10 +323,13 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto Descriptor<mode>::flush() noexcept -> void {
+        EXPECTS(m_descriptor != 0);
 #ifdef STORMKIT_OS_WINDOWS
         _commit
-#else
+#elifdef STORMKIT_OS_LINUX
         fdatasync
+#else
+        fsync
 #endif
           (m_descriptor);
     }
@@ -324,6 +339,7 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto Descriptor<mode>::position() const noexcept -> usize {
+        EXPECTS(m_descriptor != 0);
         return as<usize>(
 #ifdef STORMKIT_OS_WINDOWS
           _lseek
@@ -338,7 +354,8 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto Descriptor<mode>::size() const noexcept -> usize {
-        if (m_size == 0 and m_descriptor != 0) {
+        EXPECTS(m_descriptor != 0);
+        if (m_size == 0) {
             const auto old_pos = position();
 #ifdef STORMKIT_OS_WINDOWS
             _lseek(m_descriptor, 0, SEEK_SET);
@@ -359,6 +376,7 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto Descriptor<mode>::native_descriptor() const noexcept -> int {
+        EXPECTS(m_descriptor != 0);
         return m_descriptor;
     }
 

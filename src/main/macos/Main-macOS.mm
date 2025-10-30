@@ -1,6 +1,3 @@
-#import <Foundation/NSBundle.h>
-#import <Foundation/NSFileManager.h>
-
 #include <span>
 #include <string_view>
 #include <vector>
@@ -9,10 +6,7 @@
 
 extern auto user_main(std::span<const std::string_view>) -> int;
 
-auto main(const int argc, const char **argv) -> int {
-    [[NSFileManager defaultManager]
-        changeCurrentDirectoryPath:[[NSBundle mainBundle] resourcePath]];
-
+auto main(const int argc, const char** argv) -> int {
     setup_signal_handler();
     set_current_thread_name("MainThread");
 
