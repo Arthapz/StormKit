@@ -42,7 +42,7 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    auto as_string(WM wm) noexcept -> std::string_view {
+    constexpr auto as_string(WM wm) noexcept -> std::string_view {
         switch (wm) {
             case WM::WIN32: return "WM::WIN32";
             case WM::WAYLAND: return "WM::WAYLAND";
