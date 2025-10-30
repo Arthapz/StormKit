@@ -89,7 +89,6 @@ namespace stormkit::wsi::win32 {
           { VK_OEM_7,      { Key::QUOTE, '"' }           },
           { VK_OEM_5,      { Key::BACK_SLASH, '\\' }     },
           { VK_OEM_COMMA,  { Key::COMMA, ',' }           },
-          { VK_EQUAL,      { Key::EQUAL, '=' }           },
 
           { VK_OEM_3,      { Key::GRAVE_ACCENT '`' }     },
           { VK_OEM_4,      { Key::L_BRACKET, '{' }       },
@@ -101,7 +100,7 @@ namespace stormkit::wsi::win32 {
 
           { VK_OEM_102,    { Key::ISO, '?' }             },
 
-          { VK_BACK_SPACE, { Key::BACK_SPACE, '?' }      },
+          { VK_BACK,       { Key::BACK_SPACE, '?' }      },
           { VK_CAPITAL,    { Key::CAPS_LOCK, '?' }       },
           { VK_RETURN,     { Key::ENTER, '\n' }          },
           { VK_SPACE,      { Key::SPACE, ' ' }           },
@@ -132,15 +131,15 @@ namespace stormkit::wsi::win32 {
           { VK_DELETE,     { Key::DELETE, '?' }          },
           { VK_HOME,       { Key::HOME, '?' }            },
           { VK_END,        { Key::END, '?' }             },
-          { VK_PAGE_DOWN,  { Key::PAGE_DOWN, '?' }       },
-          { VK_PAGE_UP,    { Key::PAGE_UP, '?' }         },
+          { VK_NEXT,       { Key::PAGE_DOWN, '?' }       },
+          { VK_PRIOR,      { Key::PAGE_UP, '?' }         },
 
           { VK_NUMLOCK,    { Key::NUMPAD_LOCK, '?' }     },
           { VK_ADD,        { Key::NUMPAD_ADD, '+' }      },
           { VK_DIVIDE,     { Key::NUMPAD_DIVIDE, '/' }   },
           { VK_EQUAL,      { Key::NUMPAD_EQUAL, '=' }    },
           { VK_MULTIPLY,   { Key::NUMPAD_MULTIPLY, '*' } },
-          { VK_SUBSTRACT,  { Key::NUMPAD_SUBTRACT, '-' } },
+          { VK_SUBTRACT,   { Key::NUMPAD_SUBTRACT, '-' } },
           { VK_NUMPAD0,    { Key::NUMPAD_0, '0' }        },
           { VK_NUMPAD1,    { Key::NUMPAD_1, '1' }        },
           { VK_NUMPAD2,    { Key::NUMPAD_2, '2' }        },
@@ -154,7 +153,7 @@ namespace stormkit::wsi::win32 {
         });
 
         constexpr auto KEY_AS_SCANCODE = [] static noexcept -> decltype(auto) {
-            auto out = std::array<std::pair<Key, xkb_keysym_t>, 111> {};
+            auto out = std::array<std::pair<Key, WPARAM>, 111> {};
             auto i   = 0_usize;
             for (const auto& [key, value] : SCANCODE_AS_KEY)
                 out[i++] = std::make_pair(value.first, key);
