@@ -24,10 +24,10 @@ export namespace stormkit::wsi {
         SWITCH,
     };
 
-    auto as_string(WM wm) noexcept -> std::string_view;
+    constexpr auto as_string(WM wm) noexcept -> std::string_view;
 
     STORMKIT_API
-    auto parse_args(std::span<const std::string_view> args) noexcept -> void;
+    auto           parse_args(std::span<const std::string_view> args) noexcept -> void;
 
     [[nodiscard]]
     STORMKIT_API
