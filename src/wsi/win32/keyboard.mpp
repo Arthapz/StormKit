@@ -9,6 +9,9 @@ module;
 
 export module stormkit.wsi:win32.keyboard;
 
+import std;
+import frozen;
+
 import stormkit.core;
 import stormkit.wsi;
 
@@ -22,294 +25,168 @@ export namespace stormkit::wsi::win32 {
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
+namespace stdr = std::ranges;
+
 namespace stormkit::wsi::win32 {
+    namespace {
+        constexpr auto SCANCODE_AS_KEY = frozen::make_map<WPARAM, std::pair<Key, char>>({
+          { 'A',           { Key::A, 'A' }               },
+          { 'B',           { Key::B, 'B' }               },
+          { 'C',           { Key::C, 'C' }               },
+          { 'D',           { Key::D, 'D' }               },
+          { 'E',           { Key::E, 'E' }               },
+          { 'F',           { Key::F, 'F' }               },
+          { 'G',           { Key::G, 'G' }               },
+          { 'H',           { Key::H, 'H' }               },
+          { 'I',           { Key::I, 'I' }               },
+          { 'J',           { Key::J, 'J' }               },
+          { 'K',           { Key::K, 'K' }               },
+          { 'L',           { Key::L, 'L' }               },
+          { 'M',           { Key::M, 'M' }               },
+          { 'N',           { Key::N, 'N' }               },
+          { 'O',           { Key::O, 'O' }               },
+          { 'P',           { Key::P, 'P' }               },
+          { 'Q',           { Key::Q, 'Q' }               },
+          { 'R',           { Key::R, 'R' }               },
+          { 'S',           { Key::S, 'S' }               },
+          { 'T',           { Key::T, 'T' }               },
+          { 'U',           { Key::U, 'U' }               },
+          { 'V',           { Key::V, 'V' }               },
+          { 'W',           { Key::W, 'W' }               },
+          { 'X',           { Key::X, 'X' }               },
+          { 'Y',           { Key::Y, 'Y' }               },
+          { 'Z',           { Key::Z, 'Z' }               },
+
+          { '0',           { Key::NUM_0, '0' }           },
+          { '1',           { Key::NUM_1, '1' }           },
+          { '2',           { Key::NUM_2, '2' }           },
+          { '3',           { Key::NUM_3, '3' }           },
+          { '4',           { Key::NUM_4, '4' }           },
+          { '5',           { Key::NUM_5, '5' }           },
+          { '6',           { Key::NUM_6, '6' }           },
+          { '7',           { Key::NUM_7, '7' }           },
+          { '8',           { Key::NUM_8, '8' }           },
+          { '9',           { Key::NUM_9, '9' }           },
+
+          { VK_LEFT,       { Key::LEFT, '?' }            },
+          { VK_RIGHT,      { Key::RIGHT, '?' }           },
+          { VK_UP,         { Key::UP, '?' }              },
+          { VK_DOWN,       { Key::DOWN, '?' }            },
+
+          { VK_LCONTROL,   { Key::L_CONTROL, '?' }       },
+          { VK_LSHIFT,     { Key::L_SHIFT, '?' }         },
+          { VK_LMENU,      { Key::L_ALT, '?' }           },
+          { VK_LWIN,       { Key::L_META, '?' }          },
+          { VK_RCONTROL,   { Key::R_CONTROL, '?' }       },
+          { VK_RSHIFT,     { Key::R_SHIFT, '?' }         },
+          { VK_RMENU,      { Key::R_ALT, '?' }           },
+          { VK_RWIN,       { Key::R_META, '?' }          },
+
+          { VK_ESCAPE,     { Key::ESCAPE, '?' }          },
+          { VK_TAB,        { Key::TAB, '\t' }            },
+          { 0x15D,         { Key::MENU, '?' }            },
+
+          { VK_OEM_7,      { Key::QUOTE, '"' }           },
+          { VK_OEM_5,      { Key::BACK_SLASH, '\\' }     },
+          { VK_OEM_COMMA,  { Key::COMMA, ',' }           },
+          { VK_EQUAL,      { Key::EQUAL, '=' }           },
+
+          { VK_OEM_3,      { Key::GRAVE_ACCENT '`' }     },
+          { VK_OEM_4,      { Key::L_BRACKET, '{' }       },
+          { VK_OEM_MINUS,  { Key::MINUS, '-' }           },
+          { VK_OEM_PERIOD, { Key::PERIOD, '.' }          },
+          { VK_OEM_6,      { Key::R_BRACKET, '}' }       },
+          { VK_OEM_1,      { Key::SEMI_COLON, ';' }      },
+          { VK_OEM_2,      { Key::SLASH, '/' }           },
+
+          { VK_OEM_102,    { Key::ISO, '?' }             },
+
+          { VK_BACK_SPACE, { Key::BACK_SPACE, '?' }      },
+          { VK_CAPITAL,    { Key::CAPS_LOCK, '?' }       },
+          { VK_RETURN,     { Key::ENTER, '\n' }          },
+          { VK_SPACE,      { Key::SPACE, ' ' }           },
+
+          { VK_F1,         { Key::F1, '?' }              },
+          { VK_F2,         { Key::F2, '?' }              },
+          { VK_F3,         { Key::F3, '?' }              },
+          { VK_F4,         { Key::F4, '?' }              },
+          { VK_F5,         { Key::F5, '?' }              },
+          { VK_F6,         { Key::F6, '?' }              },
+          { VK_F7,         { Key::F7, '?' }              },
+          { VK_F8,         { Key::F8, '?' }              },
+          { VK_F9,         { Key::F9, '?' }              },
+          { VK_F10,        { Key::F10, '?' }             },
+          { VK_F11,        { Key::F11, '?' }             },
+          { VK_F12,        { Key::F12, '?' }             },
+          { VK_F14,        { Key::F14, '?' }             },
+          { VK_F15,        { Key::F15, '?' }             },
+          { VK_F16,        { Key::F16, '?' }             },
+          { VK_F17,        { Key::F17, '?' }             },
+          { VK_F18,        { Key::F18, '?' }             },
+          { VK_F19,        { Key::F19, '?' }             },
+          { VK_F20,        { Key::F20, '?' }             },
+
+          { VK_PRINT,      { Key::PRINT_SCREEN, '?' }    },
+
+          { VK_INSERT,     { Key::INSERT, '?' }          },
+          { VK_DELETE,     { Key::DELETE, '?' }          },
+          { VK_HOME,       { Key::HOME, '?' }            },
+          { VK_END,        { Key::END, '?' }             },
+          { VK_PAGE_DOWN,  { Key::PAGE_DOWN, '?' }       },
+          { VK_PAGE_UP,    { Key::PAGE_UP, '?' }         },
+
+          { VK_NUMLOCK,    { Key::NUMPAD_LOCK, '?' }     },
+          { VK_ADD,        { Key::NUMPAD_ADD, '+' }      },
+          { VK_DIVIDE,     { Key::NUMPAD_DIVIDE, '/' }   },
+          { VK_EQUAL,      { Key::NUMPAD_EQUAL, '=' }    },
+          { VK_MULTIPLY,   { Key::NUMPAD_MULTIPLY, '*' } },
+          { VK_SUBSTRACT,  { Key::NUMPAD_SUBTRACT, '-' } },
+          { VK_NUMPAD0,    { Key::NUMPAD_0, '0' }        },
+          { VK_NUMPAD1,    { Key::NUMPAD_1, '1' }        },
+          { VK_NUMPAD2,    { Key::NUMPAD_2, '2' }        },
+          { VK_NUMPAD3,    { Key::NUMPAD_3, '3' }        },
+          { VK_NUMPAD4,    { Key::NUMPAD_4, '4' }        },
+          { VK_NUMPAD5,    { Key::NUMPAD_5, '5' }        },
+          { VK_NUMPAD6,    { Key::NUMPAD_6, '6' }        },
+          { VK_NUMPAD7,    { Key::NUMPAD_7, '7' }        },
+          { VK_NUMPAD8,    { Key::NUMPAD_8, '8' }        },
+          { VK_NUMPAD9,    { Key::NUMPAD_9, '9' }        },
+        });
+
+        constexpr auto KEY_AS_SCANCODE = [] static noexcept -> decltype(auto) {
+            auto out = std::array<std::pair<Key, xkb_keysym_t>, 111> {};
+            auto i   = 0_usize;
+            for (const auto& [key, value] : SCANCODE_AS_KEY)
+                out[i++] = std::make_pair(value.first, key);
+
+            return frozen::make_map(out);
+        }();
+    } // namespace
+
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_CONST
-    constexpr auto extract_key(WPARAM key, LPARAM flags) noexcept -> Key {
-        switch (key) {
-            case VK_SHIFT: {
-                static const auto l_shift  = MapVirtualKey(VK_LSHIFT, MAPVK_VK_TO_VSC);
-                auto              scancode = as<u32>((flags & (0xFF << 16)) >> 16);
-                return scancode == l_shift ? Key::L_SHIFT : Key::R_SHIFT;
-            }
-            case VK_MENU: return (HIWORD(flags) & KF_EXTENDED) ? Key::R_ALT : Key::L_ALT;
-            case VK_CONTROL: return (HIWORD(flags) & KF_EXTENDED) ? Key::R_CONTROL : Key::L_CONTROL;
-            case VK_LWIN: return Key::L_SYSTEM;
-            case VK_RWIN: return Key::R_SYSTEM;
-            case VK_APPS: return Key::MENU;
-            case VK_OEM_1: return Key::SEMI_COLON;
-            case VK_OEM_2: return Key::SLASH;
-            case VK_OEM_PLUS: return Key::EQUAL;
-            case VK_OEM_MINUS: return Key::HYPHEN;
-            case VK_OEM_4: return Key::L_BRACKET;
-            case VK_OEM_6: return Key::R_BRACKET;
-            case VK_OEM_COMMA: return Key::COMMA;
-            case VK_OEM_PERIOD: return Key::PERIOD;
-            case VK_OEM_7: return Key::QUOTE;
-            case VK_OEM_5: return Key::BACK_SLASH;
-            case VK_OEM_3: return Key::TILDE;
-            case VK_ESCAPE: return Key::ESCAPE;
-            case VK_SPACE: return Key::SPACE;
-            case VK_RETURN: return Key::ENTER;
-            case VK_BACK: return Key::BACK_SPACE;
-            case VK_TAB: return Key::TAB;
-            case VK_PRIOR: return Key::PAGE_UP;
-            case VK_NEXT: return Key::PAGE_DOWN;
-            case VK_END: return Key::END;
-            case VK_HOME: return Key::HOME;
-            case VK_INSERT: return Key::INSERT;
-            case VK_DELETE: return Key::DELETE;
-            case VK_ADD: return Key::ADD;
-            case VK_SUBTRACT: return Key::SUBSTRACT;
-            case VK_MULTIPLY: return Key::MULTIPLY;
-            case VK_DIVIDE: return Key::DIVIDE;
-            case VK_PAUSE: return Key::PAUSE;
-            case VK_F1: return Key::F1;
-            case VK_F2: return Key::F2;
-            case VK_F3: return Key::F3;
-            case VK_F4: return Key::F4;
-            case VK_F5: return Key::F5;
-            case VK_F6: return Key::F6;
-            case VK_F7: return Key::F7;
-            case VK_F8: return Key::F8;
-            case VK_F9: return Key::F9;
-            case VK_F10: return Key::F10;
-            case VK_F11: return Key::F11;
-            case VK_F12: return Key::F12;
-            case VK_F13: return Key::F13;
-            case VK_F14: return Key::F14;
-            case VK_F15: return Key::F15;
-            case VK_LEFT: return Key::LEFT;
-            case VK_RIGHT: return Key::RIGHT;
-            case VK_UP: return Key::UP;
-            case VK_DOWN: return Key::DOWN;
-            case VK_NUMPAD0: return Key::NUMPAD_0;
-            case VK_NUMPAD1: return Key::NUMPAD_1;
-            case VK_NUMPAD2: return Key::NUMPAD_2;
-            case VK_NUMPAD3: return Key::NUMPAD_3;
-            case VK_NUMPAD4: return Key::NUMPAD_4;
-            case VK_NUMPAD5: return Key::NUMPAD_5;
-            case VK_NUMPAD6: return Key::NUMPAD_6;
-            case VK_NUMPAD7: return Key::NUMPAD_7;
-            case VK_NUMPAD8: return Key::NUMPAD_8;
-            case VK_NUMPAD9: return Key::NUMPAD_9;
-            case 'A': return Key::A;
-            case 'Z': return Key::Z;
-            case 'E': return Key::E;
-            case 'R': return Key::R;
-            case 'T': return Key::T;
-            case 'Y': return Key::Y;
-            case 'U': return Key::U;
-            case 'I': return Key::I;
-            case 'O': return Key::O;
-            case 'P': return Key::P;
-            case 'Q': return Key::Q;
-            case 'S': return Key::S;
-            case 'D': return Key::D;
-            case 'F': return Key::F;
-            case 'G': return Key::G;
-            case 'H': return Key::H;
-            case 'J': return Key::J;
-            case 'K': return Key::K;
-            case 'L': return Key::L;
-            case 'M': return Key::M;
-            case 'W': return Key::W;
-            case 'X': return Key::X;
-            case 'C': return Key::C;
-            case 'V': return Key::V;
-            case 'B': return Key::B;
-            case 'N': return Key::N;
-            case '0': return Key::NUM_0;
-            case '1': return Key::NUM_1;
-            case '2': return Key::NUM_2;
-            case '3': return Key::NUM_3;
-            case '4': return Key::NUM_4;
-            case '5': return Key::NUM_5;
-            case '6': return Key::NUM_6;
-            case '7': return Key::NUM_7;
-            case '8': return Key::NUM_8;
-            case '9': return Key::NUM_9;
-            default: break;
-        }
-        return Key::UNKNOWN;
+    constexpr auto extract_key(WPARAM key, LPARAM) noexcept -> Key {
+        const auto it = SCANCODE_AS_KEY.find(key);
+        if (it == stdr::cend(SCANCODE_AS_KEY)) return Key::UNKNOWN;
+        return it->second.first;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_CONST
     constexpr auto convert_key(Key key) noexcept -> int {
-        switch (key) {
-            case Key::A: return 'A';
-            case Key::B: return 'B';
-            case Key::C: return 'C';
-            case Key::D: return 'D';
-            case Key::E: return 'E';
-            case Key::F: return 'F';
-            case Key::G: return 'G';
-            case Key::H: return 'H';
-            case Key::I: return 'I';
-            case Key::J: return 'J';
-            case Key::K: return 'K';
-            case Key::L: return 'L';
-            case Key::M: return 'M';
-            case Key::N: return 'N';
-            case Key::O: return 'O';
-            case Key::P: return 'P';
-            case Key::Q: return 'Q';
-            case Key::R: return 'R';
-            case Key::S: return 'S';
-            case Key::T: return 'T';
-            case Key::U: return 'U';
-            case Key::V: return 'V';
-            case Key::W: return 'W';
-            case Key::X: return 'X';
-            case Key::Y: return 'Y';
-            case Key::Z: return 'Z';
-            case Key::NUM_0: return '0';
-            case Key::NUM_1: return '1';
-            case Key::NUM_2: return '2';
-            case Key::NUM_3: return '3';
-            case Key::NUM_4: return '4';
-            case Key::NUM_5: return '5';
-            case Key::NUM_6: return '6';
-            case Key::NUM_7: return '7';
-            case Key::NUM_8: return '8';
-            case Key::NUM_9: return '9';
-            case Key::ESCAPE: return VK_ESCAPE;
-            case Key::L_CONTROL: return VK_LCONTROL;
-            case Key::L_SHIFT: return VK_LSHIFT;
-            case Key::L_ALT: return VK_LMENU;
-            case Key::L_SYSTEM: return VK_LWIN;
-            case Key::R_CONTROL: return VK_RCONTROL;
-            case Key::R_SHIFT: return VK_RSHIFT;
-            case Key::R_ALT: return VK_RMENU;
-            case Key::R_SYSTEM: return VK_RWIN;
-            case Key::MENU: return VK_APPS;
-            case Key::L_BRACKET: return VK_OEM_4;
-            case Key::R_BRACKET: return VK_OEM_6;
-            case Key::SEMI_COLON: return VK_OEM_1;
-            case Key::COMMA: return VK_OEM_COMMA;
-            case Key::PERIOD: return VK_OEM_PERIOD;
-            case Key::QUOTE: return VK_OEM_7;
-            case Key::SLASH: return VK_OEM_2;
-            case Key::BACK_SLASH: return VK_OEM_5;
-            case Key::TILDE: return VK_OEM_3;
-            case Key::EQUAL: return VK_OEM_PLUS;
-            case Key::HYPHEN: return VK_OEM_MINUS;
-            case Key::SPACE: return VK_SPACE;
-            case Key::ENTER: return VK_RETURN;
-            case Key::BACK_SPACE: return VK_BACK;
-            case Key::TAB: return VK_TAB;
-            case Key::PAGE_UP: return VK_PRIOR;
-            case Key::PAGE_DOWN: return VK_NEXT;
-            case Key::END: return VK_END;
-            case Key::HOME: return VK_HOME;
-            case Key::INSERT: return VK_INSERT;
-            case Key::DELETE: return VK_DELETE;
-            case Key::ADD: return VK_ADD;
-            case Key::SUBSTRACT: return VK_SUBTRACT;
-            case Key::MULTIPLY: return VK_MULTIPLY;
-            case Key::DIVIDE: return VK_DIVIDE;
-            case Key::LEFT: return VK_LEFT;
-            case Key::RIGHT: return VK_RIGHT;
-            case Key::UP: return VK_UP;
-            case Key::DOWN: return VK_DOWN;
-            case Key::NUMPAD_0: return VK_NUMPAD0;
-            case Key::NUMPAD_1: return VK_NUMPAD1;
-            case Key::NUMPAD_2: return VK_NUMPAD2;
-            case Key::NUMPAD_3: return VK_NUMPAD3;
-            case Key::NUMPAD_4: return VK_NUMPAD4;
-            case Key::NUMPAD_5: return VK_NUMPAD5;
-            case Key::NUMPAD_6: return VK_NUMPAD6;
-            case Key::NUMPAD_7: return VK_NUMPAD7;
-            case Key::NUMPAD_8: return VK_NUMPAD8;
-            case Key::NUMPAD_9: return VK_NUMPAD9;
-            case Key::F1: return VK_F1;
-            case Key::F2: return VK_F2;
-            case Key::F3: return VK_F3;
-            case Key::F4: return VK_F4;
-            case Key::F5: return VK_F5;
-            case Key::F6: return VK_F6;
-            case Key::F7: return VK_F7;
-            case Key::F8: return VK_F8;
-            case Key::F9: return VK_F9;
-            case Key::F10: return VK_F10;
-            case Key::F11: return VK_F11;
-            case Key::F12: return VK_F12;
-            case Key::F13: return VK_F13;
-            case Key::F14: return VK_F14;
-            case Key::F15: return VK_F15;
-            case Key::PAUSE: return VK_PAUSE;
-            default: return 0;
-        }
-        std::unreachable();
+        ENSURES(key != Key::UNKNOWN);
+        const auto it = KEY_AS_SCANCODE.find(key);
+        return it->second;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_CONST
     constexpr auto extract_key_to_char(WPARAM key, LPARAM) noexcept -> char {
-        switch (key) {
-            case VK_OEM_COMMA: return ',';
-            case VK_OEM_PERIOD: return '.';
-            case VK_SPACE: return ' ';
-            case VK_RETURN: return '\n';
-            case VK_TAB: return '\t';
-            case VK_OEM_PLUS: [[fallthrough]];
-            case VK_ADD: return '+';
-            case VK_OEM_MINUS: [[fallthrough]];
-            case VK_SUBTRACT: return '-';
-            case VK_MULTIPLY: return '*';
-            case VK_DIVIDE: return '/';
-            case 'A': return 'A';
-            case 'Z': return 'Z';
-            case 'E': return 'E';
-            case 'R': return 'R';
-            case 'T': return 'T';
-            case 'Y': return 'Y';
-            case 'U': return 'U';
-            case 'I': return 'I';
-            case 'O': return 'O';
-            case 'P': return 'P';
-            case 'Q': return 'Q';
-            case 'S': return 'S';
-            case 'D': return 'D';
-            case 'F': return 'F';
-            case 'G': return 'G';
-            case 'H': return 'H';
-            case 'J': return 'J';
-            case 'K': return 'K';
-            case 'L': return 'L';
-            case 'M': return 'M';
-            case 'W': return 'W';
-            case 'X': return 'X';
-            case 'C': return 'C';
-            case 'V': return 'V';
-            case 'B': return 'B';
-            case 'N': return 'N';
-            case VK_NUMPAD0: [[fallthrough]];
-            case '0': return '0';
-            case VK_NUMPAD1: [[fallthrough]];
-            case '1': return '1';
-            case VK_NUMPAD2: [[fallthrough]];
-            case '2': return '2';
-            case VK_NUMPAD3: [[fallthrough]];
-            case '3': return '3';
-            case VK_NUMPAD4: [[fallthrough]];
-            case '4': return '4';
-            case VK_NUMPAD5: [[fallthrough]];
-            case '5': return '5';
-            case VK_NUMPAD6: [[fallthrough]];
-            case '6': return '6';
-            case VK_NUMPAD7: [[fallthrough]];
-            case '7': return '7';
-            case VK_NUMPAD8: [[fallthrough]];
-            case '8': return '8';
-            case VK_NUMPAD9: [[fallthrough]];
-            case '9': return '9';
-            default: break;
-        }
-        return '\0';
+        const auto it = SCANCODE_AS_KEY.find(key);
+        if (it == stdr::cend(SCANCODE_AS_KEY)) return '?';
+        return it->second.second;
     }
 } // namespace stormkit::wsi::win32
