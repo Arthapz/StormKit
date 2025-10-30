@@ -299,6 +299,9 @@ export namespace stormkit { inline namespace core { namespace meta {
       = IsOneOf<T, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
 
     template<class T>
+    concept IsCharType = IsOneOf<T, char, wchar_t, char8_t, char16_t, char32_t>;
+
+    template<class T>
     concept IsColorComponent = Is<T, float> or Is<T, std::uint8_t>;
 
     template<class T>
