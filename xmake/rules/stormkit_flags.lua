@@ -36,18 +36,6 @@ rule("stormkit.flags", function()
         else
             target:set("warnings", "allextra", "pedantic", "error")
         end
-        target:set("symbols", "hidden")
-        if is_mode("release") then
-            target:set("optimize", "fastest")
-        elseif is_mode("debug", "releasedbg") then
-            target:set("symbols", "debug", "hidden")
-        end
-        target:set("fpmodels", "fast")
-        target:add("vectorexts", "fma")
-        target:add("vectorexts", "neon")
-        target:add("vectorexts", "avx", "avx2")
-        target:add("vectorexts", "sse", "sse2", "sse3", "ssse3", "sse4.2")
-
         local flags = {
             cl = {
                 cxx = {
@@ -225,18 +213,22 @@ rule("stormkit.flags", function()
             end
             target:set("runtimes", table.unpack(runtimes))
         end
-        target:set("symbols", "hidden")
         if is_mode("release") then
-            target:set("optimize", "fastest")
+            target:set("symbols", "hidden")
+            target:set("optimize", "fast")
         elseif is_mode("debug") then
-            target:set("symbols", "debug", "hidden")
+            target:set("symbols", "debug")
             target:add("cxflags", "-ggdb3", { tools = { "clang", "gcc" } })
             target:add("mxflags", "-ggdb3", { tools = { "clang", "gcc" } })
         elseif is_mode("releasedbg") then
             target:set("optimize", "fast")
             target:set("symbols", "debug", "hidden")
-            target:add("cxflags", "-fno-omit-frame-pointer", { tools = { "clang", "gcc" } })
             target:add("mxflags", "-ggdb3", { tools = { "clang", "gcc" } })
         end
+        target:set("fpmodels", "fast")
+        target:add("vectorexts", "fma")
+        target:add("vectorexts", "neon")
+        target:add("vectorexts", "avx", "avx2")
+        target:add("vectorexts", "sse", "sse2", "sse3", "ssse3", "sse4.2")
     end)
 end)
