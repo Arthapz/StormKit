@@ -265,7 +265,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::confine_mouse(bool confined, u32 id) noexcept -> void {
+    auto Window::confine_mouse(bool confined, u8 id) noexcept -> void {
         expects(id == GLOBAL_MOUSE_ID, "StormKit WSI win32 backend only support one mouse");
         if (is_mouse_locked(GLOBAL_MOUSE_ID)) return;
 
@@ -281,7 +281,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_confined(u32 id) const noexcept -> bool {
+    auto Window::is_mouse_confined(u8 id) const noexcept -> bool {
         expects(id == GLOBAL_MOUSE_ID, "StormKit WSI win32 backend only support one mouse");
         auto& state = m_mouse_states[GLOBAL_MOUSE_ID];
         return state.confined;
@@ -289,7 +289,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::lock_mouse(bool locked, u32 id) noexcept -> void {
+    auto Window::lock_mouse(bool locked, u8 id) noexcept -> void {
         expects(id == GLOBAL_MOUSE_ID, "StormKit WSI win32 backend only support one mouse");
         auto& state = m_mouse_states[GLOBAL_MOUSE_ID];
 
@@ -325,7 +325,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_locked(u32 id) const noexcept -> bool {
+    auto Window::is_mouse_locked(u8 id) const noexcept -> bool {
         expects(id == GLOBAL_MOUSE_ID, "StormKit WSI win32 backend only support one mouse");
         auto& state = m_mouse_states[GLOBAL_MOUSE_ID];
         return state.locked;
@@ -333,7 +333,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::hide_mouse(bool hidden, u32 id) noexcept -> void {
+    auto Window::hide_mouse(bool hidden, u8 id) noexcept -> void {
         expects(id == GLOBAL_MOUSE_ID, "StormKit WSI win32 backend only support one mouse");
         if (hidden)
             while (ShowCursor(FALSE) >= 0);
@@ -346,7 +346,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_hidden(u32 id) const noexcept -> bool {
+    auto Window::is_mouse_hidden(u8 id) const noexcept -> bool {
         expects(id == GLOBAL_MOUSE_ID, "StormKit WSI win32 backend only support one mouse");
         auto& state = m_mouse_states[GLOBAL_MOUSE_ID];
         return state.hidden;
@@ -354,7 +354,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_relative_mouse(bool enabled, u32 id) noexcept -> void {
+    auto Window::set_relative_mouse(bool enabled, u8 id) noexcept -> void {
         expects(id == GLOBAL_MOUSE_ID, "StormKit WSI win32 backend only support one mouse");
         auto& state = m_mouse_states[GLOBAL_MOUSE_ID];
 
@@ -384,7 +384,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_relative(u32 id) const noexcept -> bool {
+    auto Window::is_mouse_relative(u8 id) const noexcept -> bool {
         expects(id == GLOBAL_MOUSE_ID, "StormKit WSI win32 backend only support one mouse");
         auto& state = m_mouse_states[GLOBAL_MOUSE_ID];
         return state.relative;
@@ -392,7 +392,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_key_repeat(bool enabled, u32 id) noexcept -> void {
+    auto Window::set_key_repeat(bool enabled, u8 id) noexcept -> void {
         expects(id == GLOBAL_KEYBOARD_ID, "StormKit WSI win32 backend only support one keyboard");
         auto& state      = m_keyboard_states[GLOBAL_KEYBOARD_ID];
         state.key_repeat = enabled;
@@ -400,7 +400,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_key_repeat_enabled(u32 id) const noexcept -> bool {
+    auto Window::is_key_repeat_enabled(u8 id) const noexcept -> bool {
         expects(id == GLOBAL_KEYBOARD_ID, "StormKit WSI win32 backend only support one keyboard");
         auto& state = m_keyboard_states[GLOBAL_KEYBOARD_ID];
         return state.key_repeat;
@@ -421,7 +421,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::vec2i& position, u32 id) noexcept -> void {
+    auto Window::set_mouse_position(const math::vec2i& position, u8 id) noexcept -> void {
         expects(id == GLOBAL_MOUSE_ID, "StormKit WSI win32 backend only support one mouse");
         auto mouse_position = POINT { as<long>(position.x), as<long>(position.y) };
         ClientToScreen(m_window_handle, &mouse_position);
@@ -537,14 +537,14 @@ namespace stormkit::wsi::win32 {
                 case WM_CREATE: window.WindowBase::set_open(true); break;
                 case WM_NCDESTROY: window.WindowBase::set_open(false); break;
                 case WM_MOUSEACTIVATE: {
-                    return MA_ACTIVATEANDEAT
+                    return MA_ACTIVATEANDEAT;
                 }
                 case WM_ACTIVATE: {
                     if (LOWORD(w_param) == WA_INACTIVE) {
-                        m_state.active = false;
+                        window.state().active = false;
                         window.deactivate_event();
                     } else {
-                        m_state.active = true;
+                        window.state().active = true;
                         window.activate_event();
                     }
                 } break;
@@ -628,7 +628,7 @@ namespace stormkit::wsi::win32 {
                                  WPARAM  w_param,
                                  LPARAM  l_param) noexcept -> void {
             const auto window_handle = std::bit_cast<HWND>(window.native_handle());
-            if (not m_state.active) return;
+            if (not window.state().active) return;
 
             switch (message) {
                 case WM_LBUTTONDOWN: [[fallthrough]];
