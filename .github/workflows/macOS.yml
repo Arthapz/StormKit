@@ -79,7 +79,7 @@ jobs:
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: Arthapz/xmake#branch@improve-xcode-toolchain
+          xmake-version: Arthapz/xmake#branch@dev2
           actions-cache-folder: .xmake-cache
 
       - name: Cache XMake

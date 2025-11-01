@@ -7,7 +7,7 @@ rule("stormkit.flags", function()
         end
         target:set("utf-8", true)
 
-        if get_config("sanitizers") and is_mode("release") then
+        if get_config("sanitizers") and is_mode("release", "releasedbg") and target:is_binary() then
             target:set("policy", "build.sanitizer.address", true)
             target:set("policy", "build.sanitizer.undefined", true)
         end
@@ -21,7 +21,7 @@ rule("stormkit.flags", function()
             target:add("shflags", "-fuse-ld=radlink", { force = true })
         end
 
-        if get_config("sanitizers") and is_mode("release") then
+        if get_config("sanitizers") and is_mode("release", "releasedbg") and target:is_binary() then
             if get_config("toolchain") == "llvm" or get_config("toolchain") == "clang" then
                 if get_config("runtimes") == "c++_shared" or get_config("runtimes") == "c++_static" then
                     target:set("policy", "build.sanitizer.address", true)

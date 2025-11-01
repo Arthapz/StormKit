@@ -82,7 +82,7 @@ jobs:
         if: ${{ !steps.restore-xmakecache.outputs.cache-hit }}
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: branch@dev
+          xmake-version: Arthapz/xmake#branch@dev2
           actions-cache-folder: ".xmake-cache"
 
       - name: Cache XMake
@@ -146,8 +146,8 @@ jobs:
            --engine=n `
            --on_ci=y `
            --toolchain=llvm `
-           --sanitizers=yes `
-           --sdk="${{ github.workspace }}/llvm/" `
+           --sanitizers=n `
+           --sdk="${{ github.workspace }}/llvm/llvm" `
            --runtimes="c++_shared" `
            --policies="platform.longpaths"
 
@@ -165,8 +165,7 @@ jobs:
            --engine=n `
            --on_ci=y `
            --toolchain=llvm `
-           --sanitizers=yes `
-           --sdk="${{ github.workspace }}/llvm/" `
+           --sdk="${{ github.workspace }}/llvm/llvm" `
            --policies="platform.longpaths"
 
       - name: Configure & Install dependencies
@@ -182,7 +181,6 @@ jobs:
            --tests=y `
            --gpu=y `
            --engine=n `
-           --sanitizers=yes `
            --on_ci=y `
            --policies="platform.longpaths"
 
@@ -201,8 +199,8 @@ jobs:
       - name: Run unit tests
         if: ${{ matrix.compiler == 'LLVM-libc++' }}
         run: |
-          cp "${{ github.workspace }}/llvm/bin/c++.dll" "${{ github.workspace }}/build/windows/${{ matrix.arch }}/${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }}/"
-          cp "${{ github.workspace }}/llvm/lib/clang/21/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/build/windows/${{ matrix.arch }}/${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }}/"
+          # cp "${{ github.workspace }}/llvm/llvm/bin/c++.dll" "${{ github.workspace }}/build/windows/${{ matrix.arch }}/${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }}/"
+          # cp "${{ github.workspace }}/llvm/llvm/lib/clang/22/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/build/windows/${{ matrix.arch }}/${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }}/"
           xmake test -vD
 
       - name: Run unit tests
@@ -216,8 +214,8 @@ jobs:
       - name: Add libc++ dll
         if: ${{ matrix.compiler == 'LLVM-libc++' }}
         run: |
-          cp "${{ github.workspace }}/llvm/bin/c++.dll" "${{ github.workspace }}/output/bin/"
-          cp "${{ github.workspace }}/llvm/lib/clang/21/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/output/bin/"
+          cp "${{ github.workspace }}/llvm/llvm/bin/c++.dll" "${{ github.workspace }}/output/bin/"
+          cp "${{ github.workspace }}/llvm/llvm/lib/clang/22/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/output/bin/"
 
       - name: Upload artifacts
         id: upload
