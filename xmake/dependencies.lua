@@ -17,6 +17,15 @@ add_requireconfs("nzsl.fmt", { version = "master", override = true, system = fal
 if not is_plat("windows") then add_requires("libdwarf") end
 
 local package_configs = {
+    ["libjpeg-turbo"] = {
+        windows = {
+            system = false,
+            configs = {
+                runtimes = "MD",
+                shared = true,
+            },
+        },
+    },
     libktx = {
         llvm = {
             configs = {

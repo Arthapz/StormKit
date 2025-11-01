@@ -16,25 +16,11 @@ import :meta;
 import :typesafe.integer;
 import :typesafe.floating_point;
 
+import :math.arithmetic;
+
 import :utils.contract;
 
 namespace stormkit { inline namespace core {
-    template<meta::IsArithmetic T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_positive(T value) noexcept -> bool {
-        if constexpr (meta::IsUnsigned<T>) return true;
-        else
-            return value >= 0;
-    }
-
-    template<meta::IsArithmetic T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_negative(T value) noexcept -> bool {
-        if constexpr (meta::IsSigned<T>) return value < 0;
-        else
-            return false;
-    }
-
     struct PositiveTag;
     struct NegativeTag;
 
@@ -132,10 +118,10 @@ export namespace stormkit { inline namespace core {
     }
 
     template<meta::IsArithmetic T>
-    using Positive = CheckedValue<T, PositiveTag, is_positive<T>>;
+    using Positive = CheckedValue<T, PositiveTag, math::is_positive<T>>;
 
     template<meta::IsArithmetic T>
-    using Negative = CheckedValue<T, NegativeTag, is_negative<T>>;
+    using Negative = CheckedValue<T, NegativeTag, math::is_negative<T>>;
 
     template<meta::IsCheckedValue T>
         requires(meta::IsCheckedValueArithmetic<T>)
@@ -426,24 +412,27 @@ namespace stormkit { inline namespace core {
         return std::format_to(out, "{}", val.value);
     }
 
-#define CHECKED_VALUE_INSTANCIATE(t)                              \
-    template auto is_positive<t>(t) noexcept -> bool;             \
-    template auto is_negative<t>(t) noexcept -> bool;             \
-    template struct CheckedValue<t, PositiveTag, is_positive<t>>; \
-    template struct CheckedValue<t, NegativeTag, is_positive<t>>
+#ifndef STORMKIT_OS_WINDOWS
+    #undef STORMKIT_API
+    #define STORMKIT_API
+#endif
 
-    CHECKED_VALUE_INSTANCIATE(u8);
-    CHECKED_VALUE_INSTANCIATE(i8);
-    CHECKED_VALUE_INSTANCIATE(u16);
-    CHECKED_VALUE_INSTANCIATE(i16);
-    CHECKED_VALUE_INSTANCIATE(u32);
-    CHECKED_VALUE_INSTANCIATE(i32);
-    CHECKED_VALUE_INSTANCIATE(u64);
-    CHECKED_VALUE_INSTANCIATE(i64);
-    CHECKED_VALUE_INSTANCIATE(u128);
-    CHECKED_VALUE_INSTANCIATE(i128);
-    CHECKED_VALUE_INSTANCIATE(f32);
-    CHECKED_VALUE_INSTANCIATE(f64);
+#define INSTANCIATE(t)                                                               \
+    template struct STORMKIT_API CheckedValue<t, PositiveTag, math::is_positive<t>>; \
+    template struct STORMKIT_API CheckedValue<t, NegativeTag, math::is_positive<t>>
 
-#undef CHECKED_VALUE_INSTANCIATE
+    INSTANCIATE(u8);
+    INSTANCIATE(i8);
+    INSTANCIATE(u16);
+    INSTANCIATE(i16);
+    INSTANCIATE(u32);
+    INSTANCIATE(i32);
+    INSTANCIATE(u64);
+    INSTANCIATE(i64);
+    INSTANCIATE(u128);
+    INSTANCIATE(i128);
+    INSTANCIATE(f32);
+    INSTANCIATE(f64);
+
+#undef INSTANCIATE
 }} // namespace stormkit::core
