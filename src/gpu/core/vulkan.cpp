@@ -1,10 +1,7 @@
 #include <stormkit/core/platform_macro.hpp>
 
-#define VK_NO_PROTOTYPES
-#include <vulkan/vulkan.h>
-
 #define VOLK_IMPLEMENTATION
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 #include "assert.hpp"
 

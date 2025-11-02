@@ -9,7 +9,7 @@ module;
 #include <stormkit/core/hash_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.core:structs;
 
@@ -226,13 +226,13 @@ export {
         };
 
         struct Viewport {
-            math::vec2f     position;
+            math::vec2f        position;
             math::Extent2<f32> extent;
-            math::vec2f     depth;
+            math::vec2f        depth;
         };
 
         struct Scissor {
-            math::vec2i     offset;
+            math::vec2i        offset;
             math::Extent2<u32> extent;
         };
 
@@ -254,7 +254,7 @@ export {
 
             ImageSubresourceLayers subresource_layers;
 
-            math::vec3i     offset;
+            math::vec3i        offset;
             math::Extent3<u32> extent;
         };
 

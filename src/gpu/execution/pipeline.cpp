@@ -4,7 +4,7 @@
 
 module;
 
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.execution;
 
@@ -26,17 +26,18 @@ namespace stormkit::gpu {
       -> Expected<void> {
         const auto& state = as<RasterPipelineState>(m_state);
 
-        const auto binding_descriptions
-          = state.vertex_input_state.binding_descriptions
-            | stdv::transform([](auto&& binding_description) static noexcept {
-                  return VkVertexInputBindingDescription {
-                      .binding   = binding_description.binding,
-                      .stride    = binding_description.stride,
-                      .inputRate = to_vk<VkVertexInputRate>(binding_description.input_rate)
+        const auto
+          binding_descriptions = state.vertex_input_state.binding_descriptions
+                                 | stdv::transform([](auto&& binding_description) static noexcept {
+                                       return VkVertexInputBindingDescription {
+                                           .binding   = binding_description.binding,
+                                           .stride    = binding_description.stride,
+                                           .inputRate = to_vk<VkVertexInputRate>(binding_description
+                                                                                   .input_rate)
 
-                  };
-              })
-            | stdr::to<std::vector>();
+                                       };
+                                   })
+                                 | stdr::to<std::vector>();
 
         const auto attribute_descriptions
           = state.vertex_input_state.input_attribute_descriptions
@@ -107,7 +108,7 @@ namespace stormkit::gpu {
             .pNext                 = nullptr,
             .flags                 = 0,
             .rasterizationSamples  = to_vk<VkSampleCountFlagBits>(state.multisample_state
-                                                                   .rasterization_samples),
+                                                                    .rasterization_samples),
             .sampleShadingEnable   = state.multisample_state.sample_shading_enable,
             .minSampleShading      = state.multisample_state.min_sample_shading,
             .pSampleMask           = nullptr,

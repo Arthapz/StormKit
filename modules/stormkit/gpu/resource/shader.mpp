@@ -4,11 +4,10 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <stormkit/core/contract_macro.hpp>
-
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.resource:shader;
 

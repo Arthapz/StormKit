@@ -4,13 +4,11 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/hash_macro.hpp>
-
 #include <stormkit/core/platform_macro.hpp>
 
-#include <stormkit/core/contract_macro.hpp>
-
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.execution:descriptors;
 
@@ -260,8 +258,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline DescriptorSet::DescriptorSet(DescriptorSet&&) noexcept
-      = default;
+    inline DescriptorSet::DescriptorSet(DescriptorSet&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -393,14 +390,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline DescriptorSetLayout::~DescriptorSetLayout() noexcept
-      = default;
+    inline DescriptorSetLayout::~DescriptorSetLayout() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept
-      = default;
+    inline DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -506,14 +501,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline DescriptorPool::~DescriptorPool() noexcept
-      = default;
+    inline DescriptorPool::~DescriptorPool() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline DescriptorPool::DescriptorPool(DescriptorPool&& other) noexcept
-      = default;
+    inline DescriptorPool::DescriptorPool(DescriptorPool&& other) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

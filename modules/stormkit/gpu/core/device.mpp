@@ -4,11 +4,10 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <stormkit/core/contract_macro.hpp>
-
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.core:device;
 
@@ -64,11 +63,13 @@ export {
 
             auto wait_for_fences(std::span<const Ref<const Fence>> fences,
                                  bool                              wait_all = true,
-                                 const std::chrono::milliseconds&  timeout  = std::chrono::
-                                   milliseconds::max()) const noexcept -> Expected<Result>;
-            auto wait_for_fence(const Fence&                     fence,
-                                const std::chrono::milliseconds& timeout = std::chrono::
-                                  milliseconds::max()) const noexcept -> Expected<Result>;
+                                 const std::chrono::milliseconds&
+                                   timeout = std::chrono::milliseconds::max()) const noexcept
+              -> Expected<Result>;
+            auto wait_for_fence(const Fence& fence,
+                                const std::chrono::milliseconds&
+                                  timeout = std::chrono::milliseconds::max()) const noexcept
+              -> Expected<Result>;
 
             auto reset_fences(std::span<const Ref<const Fence>> fences) const noexcept
               -> Expected<void>;

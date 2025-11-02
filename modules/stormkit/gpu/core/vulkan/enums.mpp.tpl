@@ -7,7 +7,7 @@ module;
 #include <stormkit/core/platform_macro.hpp>
 #include <stormkit/core/flags_macro.hpp>
 
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.core:vulkan.enums;
 

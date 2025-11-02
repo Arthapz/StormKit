@@ -4,11 +4,10 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <stormkit/core/contract_macro.hpp>
-
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.resource:image;
 
@@ -276,14 +275,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Sampler::~Sampler()
-      = default;
+    inline Sampler::~Sampler() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Sampler::Sampler(Sampler&&) noexcept
-      = default;
+    inline Sampler::Sampler(Sampler&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -376,14 +373,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ImageView::~ImageView()
-      = default;
+    inline ImageView::~ImageView() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ImageView::ImageView(ImageView&&) noexcept
-      = default;
+    inline ImageView::ImageView(ImageView&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -458,14 +453,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Image::~Image()
-      = default;
+    inline Image::~Image() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Image::Image(Image&&) noexcept
-      = default;
+    inline Image::Image(Image&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

@@ -6,7 +6,7 @@ module;
 
 #include <stormkit/core/contract_macro.hpp>
 
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.execution;
 

@@ -4,11 +4,10 @@
 
 module;
 
-#include <volk.h>
-
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <stormkit/core/contract_macro.hpp>
+#include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.execution;
 

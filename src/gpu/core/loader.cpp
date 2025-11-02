@@ -1,6 +1,6 @@
 module;
 
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.core;
 

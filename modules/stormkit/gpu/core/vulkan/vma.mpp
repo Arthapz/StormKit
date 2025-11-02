@@ -3,7 +3,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 #define VMA_CALL_PRE STORMKIT_API
 #include <vk_mem_alloc.h>

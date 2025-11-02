@@ -4,11 +4,10 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <stormkit/core/contract_macro.hpp>
-
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.core:instance;
 
@@ -249,14 +248,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Instance::~Instance()
-      = default;
+    inline Instance::~Instance() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Instance::Instance(Instance&&) noexcept
-      = default;
+    inline Instance::Instance(Instance&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -339,14 +336,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Surface::~Surface()
-      = default;
+    inline Surface::~Surface() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Surface::Surface(Surface&&) noexcept
-      = default;
+    inline Surface::Surface(Surface&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

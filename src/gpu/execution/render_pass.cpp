@@ -4,7 +4,7 @@
 
 module;
 
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.execution;
 
@@ -32,22 +32,25 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto RenderPass::do_init() noexcept -> Expected<void> {
-        const auto attachments
-          = m_description.attachments
-            | stdv::transform([](auto&& attachment) static noexcept {
-                  return VkAttachmentDescription {
-                      .flags          = 0,
-                      .format         = to_vk<VkFormat>(attachment.format),
-                      .samples        = to_vk<VkSampleCountFlagBits>(attachment.samples),
-                      .loadOp         = to_vk<VkAttachmentLoadOp>(attachment.load_op),
-                      .storeOp        = to_vk<VkAttachmentStoreOp>(attachment.store_op),
-                      .stencilLoadOp  = to_vk<VkAttachmentLoadOp>(attachment.stencil_load_op),
-                      .stencilStoreOp = to_vk<VkAttachmentStoreOp>(attachment.stencil_store_op),
-                      .initialLayout  = to_vk<VkImageLayout>(attachment.source_layout),
-                      .finalLayout    = to_vk<VkImageLayout>(attachment.destination_layout),
-                  };
-              })
-            | stdr::to<std::vector>();
+        const auto
+          attachments = m_description.attachments
+                        | stdv::transform([](auto&& attachment) static noexcept {
+                              return VkAttachmentDescription {
+                                  .flags         = 0,
+                                  .format        = to_vk<VkFormat>(attachment.format),
+                                  .samples       = to_vk<VkSampleCountFlagBits>(attachment.samples),
+                                  .loadOp        = to_vk<VkAttachmentLoadOp>(attachment.load_op),
+                                  .storeOp       = to_vk<VkAttachmentStoreOp>(attachment.store_op),
+                                  .stencilLoadOp = to_vk<VkAttachmentLoadOp>(attachment
+                                                                               .stencil_load_op),
+                                  .stencilStoreOp = to_vk<VkAttachmentStoreOp>(attachment
+                                                                                 .stencil_store_op),
+                                  .initialLayout  = to_vk<VkImageLayout>(attachment.source_layout),
+                                  .finalLayout    = to_vk<VkImageLayout>(attachment
+                                                                           .destination_layout),
+                              };
+                          })
+                        | stdr::to<std::vector>();
 
         auto color_attachment_refs   = std::vector<std::vector<VkAttachmentReference>> {};
         auto depth_attachment_ref    = std::optional<VkAttachmentReference> {};
@@ -132,10 +135,9 @@ namespace stormkit::gpu {
 
             if (subpass_1.bind_point != subpass_2.bind_point) return false;
 
-            const auto color_attachment_refs_count = std::min(stdr::size(subpass_1
-                                                                           .color_attachment_refs),
-                                                              stdr::size(subpass_2
-                                                                           .color_attachment_refs));
+            const auto
+              color_attachment_refs_count = std::min(stdr::size(subpass_1.color_attachment_refs),
+                                                     stdr::size(subpass_2.color_attachment_refs));
 
             for (auto j = 0u; j < color_attachment_refs_count; ++j) {
                 const auto& attachment_ref_1 = subpass_1.color_attachment_refs[j];

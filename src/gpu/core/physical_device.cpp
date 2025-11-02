@@ -4,7 +4,7 @@
 
 module;
 
-#include <volk.h>
+#include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.core;
 
@@ -266,8 +266,8 @@ namespace stormkit::gpu {
         m_capabilities.limits.sampled_image_stencil_sample_counts = narrow<
           SampleCountFlag>(properties.limits.sampledImageStencilSampleCounts);
         m_capabilities.limits
-          .storage_image_sample_counts              = narrow<SampleCountFlag>(properties.limits
-                                                                                .storageImageSampleCounts);
+          .storage_image_sample_counts = narrow<SampleCountFlag>(properties.limits
+                                                                   .storageImageSampleCounts);
         m_capabilities.limits.max_sample_mask_words = properties.limits.maxSampleMaskWords;
         m_capabilities.limits
           .timestamp_compute_and_engine          = properties.limits.timestampComputeAndGraphics;
