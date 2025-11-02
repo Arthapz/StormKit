@@ -142,8 +142,6 @@ jobs:
            -k ${{ matrix.kind }} `
            --examples=y `
            --tests=y `
-           --gpu=y `
-           --engine=n `
            --on_ci=y `
            --toolchain=llvm `
            --sanitizers=n `
@@ -161,8 +159,6 @@ jobs:
            -k ${{ matrix.kind }} `
            --examples=y `
            --tests=y `
-           --gpu=y `
-           --engine=n `
            --on_ci=y `
            --toolchain=llvm `
            --sdk="${{ github.workspace }}/llvm/llvm" `
@@ -179,8 +175,6 @@ jobs:
            -k ${{ matrix.kind }} `
            --examples=y `
            --tests=y `
-           --gpu=y `
-           --engine=n `
            --on_ci=y `
            --policies="platform.longpaths"
 
@@ -199,8 +193,6 @@ jobs:
       - name: Run unit tests
         if: ${{ matrix.compiler == 'LLVM-libc++' }}
         run: |
-          # cp "${{ github.workspace }}/llvm/llvm/bin/c++.dll" "${{ github.workspace }}/build/windows/${{ matrix.arch }}/${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }}/"
-          # cp "${{ github.workspace }}/llvm/llvm/lib/clang/22/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/build/windows/${{ matrix.arch }}/${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }}/"
           xmake test -vD
 
       - name: Run unit tests

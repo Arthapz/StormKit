@@ -35,4 +35,3 @@ You can customize your build (with --option=value) with the following parameters
 | enable_image          | Build stormkit image library    | yes                                                                                   |
 | enable_wsi            | Build stormkit wsi library      | yes                                                                                   |
 | enable_gpu            | Build stormkit gpu    library   | yes                                                                                   |
-| enable_engine         | Build stormkit engine library   | yes                                                                                   |
