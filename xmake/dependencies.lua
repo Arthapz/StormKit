@@ -1,5 +1,3 @@
-includes("ktx.lua")
-
 local global_package_configs = {
     configs = {
         shared = get_config("shared_deps"),
