@@ -3,10 +3,6 @@ modules = {
         public_packages = { "frozen", "unordered_dense", "tl_function_ref" },
         modulename = "core",
         has_headers = true,
-        public_defines = {
-            "FROZEN_STD_MODULE",
-            "UNORDERED_DENSE_STD_MODULE=1",
-        },
         custom = function()
             if is_plat("windows") then add_packages("wil") end
 
@@ -161,8 +157,6 @@ modules = {
             "wayland",
         } or nil,
         public_defines = {
-            "VMA_DYNAMIC_VULKAN_FUNCTIONS=0",
-            "VMA_STATIC_VULKAN_FUNCTIONS=0",
             "STORMKIT_GPU_VULKAN",
         },
         custom = function() add_cxflags("clang::-Wno-missing-declarations") end,

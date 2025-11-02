@@ -5,7 +5,9 @@ module;
 
 #include <stormkit/gpu/vulkan.hpp>
 
-#define VMA_CALL_PRE STORMKIT_API
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
+#define VMA_STATIC_VULKAN_FUNCTIONS  0
+#define VMA_CALL_PRE                 STORMKIT_API
 #include <vk_mem_alloc.h>
 
 export module stormkit.gpu.core:vulkan.vma;
