@@ -47,6 +47,8 @@ set_allowedmodes(allowed_modes)
 set_allowedplats("windows", "mingw", "linux", "macosx", "wasm")
 set_allowedarchs("windows|x64", "windows|arm64", "linux|x86_64", "linux|aarch64", "macosx|x86_64", "macosx|arm64")
 
+add_defines("ANKERL_UNORDERED_DENSE_STD_MODULE=1", "FROZEN_STD_MODULE=1")
+
 includes("xmake/dependencies.lua")
 includes("xmake/targets.lua")
 
