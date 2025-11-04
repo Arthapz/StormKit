@@ -50,7 +50,7 @@ jobs:
       - name: Install build tools
         uses: tecolicom/actions-use-homebrew-tools@v1
         with:
-          tools: llvm ninja meson mold nasm pkgconf
+          tools: llvm ninja meson cmake mold nasm pkgconf
           verbose: true
 
       - name: Checkout
