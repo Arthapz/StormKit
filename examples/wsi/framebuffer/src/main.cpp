@@ -78,7 +78,6 @@ auto main(std::span<const std::string_view> args) -> int {
     window
       .on(wsi::ResizedEventFunc { [&](const math::Extent2<u32>& extent) mutable noexcept {
               update_pixels(pool, pixels, extent);
-              std::println("{}", extent);
               window.fill_framebuffer(pixels);
           } },
           wsi::RestoredEventFunc { [&active] mutable noexcept { active = true; } },
