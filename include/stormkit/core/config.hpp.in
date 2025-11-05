@@ -9,6 +9,13 @@
 #define _STORMKIT_EXPORT
 #endif
 
+${define STORMKIT_LIB_LOG_ENABLED}
+${define STORMKIT_LIB_ENTITIES_ENABLED}
+${define STORMKIT_LIB_IMAGE_ENABLED}
+${define STORMKIT_LIB_WSI_ENABLED}
+${define STORMKIT_LIB_GPU_ENABLED}
+
+#ifndef NO_CONSTANTS
 _STORMKIT_EXPORT namespace stormkit { inline namespace core {
     // clang-format off
     inline constexpr auto STORMKIT_MAJOR_VERSION   = ${VERSION_MAJOR};
@@ -21,6 +28,7 @@ _STORMKIT_EXPORT namespace stormkit { inline namespace core {
     inline constexpr auto STORMKIT_GIT_BRANCH      = std::string_view { "${STORMKIT_GIT_BRANCH}" };
     // clang-format on
 }} // namespace stormkit::core
+#endif
 
 #undef _STORMKIT_EXPORT
 

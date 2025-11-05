@@ -2,11 +2,30 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+module;
+
+import std;
+
+#define NO_CONSTANTS
+#include <stormkit/core/config.hpp>
+
 export module stormkit;
 
 export import stormkit.core;
-export import stormkit.Main;
+export import stormkit.main;
+
+#ifdef STORMKIT_LIB_LOG_ENABLED
 export import stormkit.log;
+#endif
+#ifdef STORMKIT_LIB_ENTITIES_ENABLED
 export import stormkit.entities;
+#endif
+#ifdef STORMKIT_LIB_IMAGE_ENABLED
+export import stormkit.image;
+#endif
+#ifdef STORMKIT_LIB_WSI_ENABLED
+export import stormkit.wsi;
+#endif
+#ifdef STORMKIT_LIB_GPU_ENABLED
 export import stormkit.gpu;
-export import stormkit.Engine;
+#endif
