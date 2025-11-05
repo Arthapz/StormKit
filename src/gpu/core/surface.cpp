@@ -14,6 +14,7 @@ module;
     #include <stormkit/core/platform/windows.hpp>
 #endif
 
+#define STORMKIT_DEFINE_VK_PLATFORM
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.core;

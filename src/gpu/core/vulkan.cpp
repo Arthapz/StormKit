@@ -1,5 +1,6 @@
 #include <stormkit/core/platform_macro.hpp>
 
+#define STORMKIT_DEFINE_VK_PLATFORM
 #define VOLK_IMPLEMENTATION
 #include <stormkit/gpu/vulkan.hpp>
 

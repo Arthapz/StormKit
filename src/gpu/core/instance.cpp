@@ -8,6 +8,7 @@ module;
 #include <stormkit/core/platform_macro.hpp>
 #include <stormkit/log/log_macro.hpp>
 
+#define STORMKIT_DEFINE_VK_PLATFORM
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.core;

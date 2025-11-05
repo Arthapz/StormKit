@@ -4,17 +4,19 @@
 
 #include <stormkit/core/platform_macro.hpp>
 
-#ifdef STORMKIT_OS_LINUX
-    #define VK_USE_PLATFORM_XCB_KHR
-    #define VK_USE_PLATFORM_WAYLAND_KHR
-#elifdef STORMKIT_OS_WINDOWS
-    #define VK_USE_PLATFORM_WIN32_KHR
-    #include <stormkit/core/platform/windows.hpp>
-    #undef OPAQUE
-#elifdef STORMKIT_OS_MACOS
-    #define VK_USE_PLATFORM_MACOS_MVK
-#elifdef STORMKIT_OS_IOS
-    #define VK_USE_PLATFORM_IOS_MVK
+#ifdef STORMKIT_DEFINE_VK_PLATFORM
+    #ifdef STORMKIT_OS_LINUX
+        #define VK_USE_PLATFORM_XCB_KHR
+        #define VK_USE_PLATFORM_WAYLAND_KHR
+    #elifdef STORMKIT_OS_WINDOWS
+        #define VK_USE_PLATFORM_WIN32_KHR
+        #include <stormkit/core/platform/windows.hpp>
+        #undef OPAQUE
+    #elifdef STORMKIT_OS_MACOS
+        #define VK_USE_PLATFORM_MACOS_MVK
+    #elifdef STORMKIT_OS_IOS
+        #define VK_USE_PLATFORM_IOS_MVK
+    #endif
 #endif
 
 #define VK_NO_PROTOTYPES
