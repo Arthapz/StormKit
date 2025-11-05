@@ -121,23 +121,6 @@ modules = {
             end
         end,
     },
-    engine = {
-        modulename = "engine",
-        has_headers = true,
-        public_deps = {
-            "core",
-            "log",
-            "wsi",
-            "image",
-            "entities",
-            "gpu",
-        },
-        packages = { "nzsl" },
-        custom = function()
-            add_rules("compile.shaders")
-            add_files("shaders/engine/**.nzsl")
-        end,
-    },
     gpu = {
         modulename = "gpu",
         has_headers = true,
