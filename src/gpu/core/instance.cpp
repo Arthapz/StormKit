@@ -34,11 +34,10 @@ namespace stormkit::gpu {
         };
 
         [[maybe_unused]]
-        constexpr auto VALIDATION_FEATURES
-          = std::array {
-                VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-                VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
-            };
+        constexpr auto VALIDATION_FEATURES = std::array {
+            VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+            VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+        };
 
         constexpr auto STORMKIT_VK_VERSION = vk_make_version<i32>(STORMKIT_MAJOR_VERSION,
                                                                   STORMKIT_MINOR_VERSION,
@@ -188,7 +187,7 @@ namespace stormkit::gpu {
 #ifdef STORMKIT_OS_APPLE
                   .flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
 #else
-.flags = 0
+                  .flags = 0,
 #endif
                   .pApplicationInfo        = &app_info,
                   .enabledLayerCount       = as<u32>(stdr::size(validation_layers)),
