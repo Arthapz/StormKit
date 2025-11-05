@@ -17,14 +17,16 @@ package("libktx", function()
     add_configs("opengl", { description = "Enable OpenGL texture upload.", default = true, type = "boolean" })
 
     on_install("macosx", "android", "linux", "windows", "mingw", "cross", function(package)
-        local configs = {}
-        table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:is_debug() and "Debug" or "Release"))
-        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
-        table.insert(configs, "-DKTX_FEATURE_STATIC_LIBRARY=" .. (package:config("shared") and "OFF" or "ON"))
-        table.insert(configs, "-DKTX_FEATURE_VK_UPLOAD=" .. (package:config("vulkan") and "ON" or "OFF"))
-        table.insert(configs, "-DKTX_FEATURE_GL_UPLOAD=" .. (package:config("opengl") and "ON" or "OFF"))
-        table.insert(configs, "-DKTX_FEATURE_TESTS=OFF")
-        table.insert(configs, "-DKTX_FEATURE_TOOLS=OFF")
+        local configs = {
+            "-DCMAKE_BUILD_TYPE=" .. (package:is_debug() and "Debug" or "Release"),
+            "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"),
+            "-DKTX_FEATURE_STATIC_LIBRARY=" .. (package:config("shared") and "OFF" or "ON"),
+            "-DKTX_FEATURE_VK_UPLOAD=" .. (package:config("vulkan") and "ON" or "OFF"),
+            "-DKTX_FEATURE_GL_UPLOAD=" .. (package:config("opengl") and "ON" or "OFF"),
+            "-DKTX_FEATURE_TESTS=OFF",
+            "-DKTX_FEATURE_TOOLS=OFF",
+        }
+
         import("package.tools.cmake").install(package, configs)
     end)
 

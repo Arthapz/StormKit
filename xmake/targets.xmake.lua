@@ -7,12 +7,8 @@ modules = {
             if is_plat("windows") then add_packages("wil") end
 
             set_configdir("$(builddir)/.gens/include/")
-            add_configfiles("include/(stormkit/core/**.hpp.in)")
-            add_headerfiles("$(builddir)/.gens/include/(stormkit/core/**.hpp)")
-
-            add_files("modules/stormkit/core.mpp")
-            add_includedirs("$(builddir)/.gens/include", { public = true })
-            add_cxflags("clang::-Wno-language-extension-token")
+            add_configfiles("include/(stormkit/core/config.hpp.in)")
+            -- add_cxflags("clang::-Wno-language-extension-token")
 
             on_config(function(target)
                 local output, errors = os.iorunv("git", { "rev-parse", "--abbrev-ref", "HEAD" })
@@ -33,27 +29,27 @@ modules = {
     },
     test = {
         modulename = "test",
-        public_deps = { "stormkit-core" },
+        public_deps = { "core" },
         has_headers = true,
     },
     log = {
         modulename = "log",
-        public_deps = { "stormkit-core" },
+        public_deps = { "core" },
         has_headers = true,
     },
     entities = {
         modulename = "entities",
-        public_deps = { "stormkit-core" },
+        public_deps = { "core" },
     },
     image = {
         packages = { "libktx", "libpng", "libjpeg-turbo" },
         modulename = "image",
-        public_deps = { "stormkit-core" },
+        public_deps = { "core" },
     },
     main = {
         modulename = "main",
         has_headers = true,
-        deps = { "stormkit-core" },
+        deps = { "core" },
         custom = function()
             add_cxflags("-Wno-main")
             set_strip("debug")
@@ -62,8 +58,8 @@ modules = {
     },
     wsi = {
         modulename = "wsi",
-        public_deps = { "stormkit-core" },
-        deps = { "stormkit-log" },
+        public_deps = { "core" },
+        deps = { "log" },
         packages = is_plat("linux") and {
             "libxcb",
             "xcb-util-keysyms",
@@ -129,12 +125,12 @@ modules = {
         modulename = "engine",
         has_headers = true,
         public_deps = {
-            "stormkit-core",
-            "stormkit-log",
-            "stormkit-wsi",
-            "stormkit-image",
-            "stormkit-entities",
-            "stormkit-gpu",
+            "core",
+            "log",
+            "wsi",
+            "image",
+            "entities",
+            "gpu",
         },
         packages = { "nzsl" },
         custom = function()
@@ -151,7 +147,7 @@ modules = {
             "vulkan-headers",
             "vulkan-memory-allocator",
         },
-        public_deps = { "stormkit-core", "stormkit-log", "stormkit-wsi", "stormkit-image" },
+        public_deps = { "core", "log", "wsi", "image" },
         packages = is_plat("linux") and {
             "libxcb",
             "wayland",
