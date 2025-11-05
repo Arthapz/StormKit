@@ -592,3 +592,5 @@ healthchecksdb
 
 builddir-release
 migrate.nu
+imgui.ini
+.xmake_run_target
