@@ -18,7 +18,7 @@ target("triangle", function()
     add_rules("platform.windows.subsystem.console")
 
     add_rules("compile.shaders")
-    add_deps("stormkit-core", "stormkit-main", "stormkit-log", "stormkit-wsi", "stormkit-gpu")
+    add_deps("core", "main", "log", "wsi", "gpu", "stormkit")
 
     if is_mode("debug") then
         add_defines("STORMKIT_BUILD_DEBUG")
@@ -28,6 +28,7 @@ target("triangle", function()
         add_defines("STORMKIT_ASSERT=0")
     end
 
+    add_files("../common/app.mpp")
     add_files("src/*.cpp")
     add_files("shaders/*.nzsl")
     if is_plat("windows") then add_files("win32/*.manifest") end

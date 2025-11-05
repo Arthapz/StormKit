@@ -5,7 +5,7 @@ if has_config("enable_gpu") and has_config("enable_wsi") and has_config("enable-
         set_languages("cxxlatest", "clatest")
 
         add_packages("nzsl")
-        add_deps("stormkit-core", "stormkit-main", "stormkit-log", "stormkit-wsi", "stormkit-gpu", "stormkit-image")
+        add_deps("core", "main", "log", "wsi", "gpu", "image")
 
         add_rules("stormkit.utils.nzsl2spv")
 

@@ -6,7 +6,7 @@ do
     add_rules("stormkit.flags")
     add_rules("platform.windows.subsystem.console")
 
-    add_deps("stormkit-core", "stormkit-main", "stormkit-log")
+    add_deps("core", "main", "log")
 
     if is_mode("debug") then
         add_defines("STORMKIT_BUILD_DEBUG")

@@ -5,7 +5,7 @@ target("framebuffer", function()
     add_rules("stormkit.flags")
     add_rules("platform.windows.subsystem.console")
 
-    add_deps("stormkit-core", "stormkit-main", "stormkit-log", "stormkit-wsi")
+    add_deps("core", "main", "log", "wsi")
 
     if is_mode("debug") then
         add_defines("STORMKIT_BUILD_DEBUG")
