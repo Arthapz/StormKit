@@ -1,0 +1,5 @@
+{
+  "workspace": {
+    "ignoreGlobs": ["xmake.lua", "*.xmake.lua"]
+  }
+}
