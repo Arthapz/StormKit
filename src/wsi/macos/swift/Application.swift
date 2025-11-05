@@ -2,12 +2,10 @@ import AppKit
 
 final class AppDelegate: NSResponder, NSApplicationDelegate {
   override init() {
-    debugPrint("Swift: AppDelegate.init()")
     super.init()
   }
 
   deinit {
-    debugPrint("Swift: AppDelegate.deinit")
   }
 
   required init?(coder aCoder: NSCoder) {
@@ -15,7 +13,6 @@ final class AppDelegate: NSResponder, NSApplicationDelegate {
   }
 
   func applicationDidFinishLaunching(_ notification: Notification) {
-    debugPrint("Swift: applicationDidFinishLaunching(_)")
   }
 
   func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
@@ -39,7 +36,6 @@ public func processEvents() {
 }
 
 public func initCocoaProcess() {
-  debugPrint("Swift: initCocoaProcess()")
   let app = NSApplication.shared
 
   if app.delegate == nil {
