@@ -171,8 +171,10 @@ namespace stormkit::wsi::linux::wayland {
             wp_viewport_set_destination(m_viewport, _extent.width, _extent.height);
         }
 
-        reallocate_pixel_buffer();
-        clear(colors::BLACK<u8>);
+        if (not check_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
+
+        wl_surface_commit(m_surface);
+        wl_display_roundtrip(globals.display);
     }
 
     /////////////////////////////////////
@@ -496,7 +498,9 @@ namespace stormkit::wsi::linux::wayland {
         if (m_pending_state.resizing) {
             m_state.extent = m_pending_state.resizing.value();
 
-            reallocate_pixel_buffer();
+            if (not check_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT))
+                reallocate_pixel_buffer();
+
             if (m_viewport) {
                 const auto _extent = m_state.extent.to<i32>();
                 wp_viewport_set_destination(m_viewport, _extent.width, _extent.height);
@@ -564,7 +568,8 @@ namespace stormkit::wsi::linux::wayland {
         const auto& monitor = wl::get_monitor(wl::get_globals(), output);
         if (as<f32>(monitor.scale_factor) != m_state.dpi) {
             m_state.dpi = as<f32>(monitor.scale_factor);
-            reallocate_pixel_buffer();
+            if (not check_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT))
+                reallocate_pixel_buffer();
         }
     }
 
