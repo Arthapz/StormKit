@@ -123,6 +123,9 @@ export {
                 vmaDestroyAllocator(handle);
             } };
         };
+
+        STORMKIT_API
+        auto imgui_vk_loader(const char* func_name, void*) noexcept -> PFN_vkVoidFunction;
     } // namespace stormkit::gpu
 
     template<class CharT>

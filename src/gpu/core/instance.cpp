@@ -26,7 +26,7 @@ namespace stormkit::gpu {
     namespace {
         constexpr auto VALIDATION_LAYERS = std::array {
             "VK_LAYER_KHRONOS_validation",
-            // "VK_LAYER_LUNARG_api_dup",
+            // "VK_LAYER_LUNARG_api_dump",
             "VK_LAYER_LUNARG_monitor",
         };
         constexpr auto OPTIONAL_VALIDATION_LAYERS = std::array<CZString, 0> {

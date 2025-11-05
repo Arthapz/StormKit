@@ -464,4 +464,175 @@ namespace stormkit::gpu {
         return vk_call(vkSetDebugUtilsObjectNameEXT, m_vk_handle, &info)
           .transform_error(monadic::from_vk<Result>());
     }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto imgui_vk_loader(const char* _func_name, void* user_data) noexcept -> PFN_vkVoidFunction {
+        const auto  func_name = std::string_view { _func_name };
+        const auto& device    = *std::bit_cast<const Device*>(user_data);
+
+        if (func_name == "vkAllocateCommandBuffers")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
+                                                       .vkAllocateCommandBuffers);
+        else if (func_name == "vkAllocateDescriptorSets")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
+                                                       .vkAllocateDescriptorSets);
+        else if (func_name == "vkAllocateMemory")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkAllocateMemory);
+        else if (func_name == "vkBeginCommandBuffer")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkBeginCommandBuffer);
+        else if (func_name == "vkBindBufferMemory")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkBindBufferMemory);
+        else if (func_name == "vkBindImageMemory")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkBindImageMemory);
+        else if (func_name == "vkCmdBindDescriptorSets")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdBindDescriptorSets);
+        else if (func_name == "vkCmdBindIndexBuffer")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdBindIndexBuffer);
+        else if (func_name == "vkCmdBindPipeline")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdBindPipeline);
+        else if (func_name == "vkCmdBindVertexBuffers")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdBindVertexBuffers);
+        else if (func_name == "vkCmdCopyBufferToImage")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdCopyBufferToImage);
+        else if (func_name == "vkCmdDrawIndexed")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdDrawIndexed);
+        else if (func_name == "vkCmdPipelineBarrier")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdPipelineBarrier);
+        else if (func_name == "vkCmdPushConstants")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdPushConstants);
+        else if (func_name == "vkCmdSetScissor")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdSetScissor);
+        else if (func_name == "vkCmdSetViewport")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdSetViewport);
+        else if (func_name == "vkCreateBuffer")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateBuffer);
+        else if (func_name == "vkCreateCommandPool")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateCommandPool);
+        else if (func_name == "vkCreateDescriptorPool")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateDescriptorPool);
+        else if (func_name == "vkCreateDescriptorSetLayout")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
+                                                       .vkCreateDescriptorSetLayout);
+        else if (func_name == "vkCreateFence")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateFence);
+        else if (func_name == "vkCreateFramebuffer")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateFramebuffer);
+        else if (func_name == "vkCreateGraphicsPipelines")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
+                                                       .vkCreateGraphicsPipelines);
+        else if (func_name == "vkCreateImage")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateImage);
+        else if (func_name == "vkCreateImageView")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateImageView);
+        else if (func_name == "vkCreatePipelineLayout")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreatePipelineLayout);
+        else if (func_name == "vkCreateRenderPass")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateRenderPass);
+        else if (func_name == "vkCreateSampler")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateSampler);
+        else if (func_name == "vkCreateSemaphore")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateSemaphore);
+        else if (func_name == "vkCreateShaderModule")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateShaderModule);
+        else if (func_name == "vkCreateSwapchainKHR")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateSwapchainKHR);
+        else if (func_name == "vkDestroyBuffer")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyBuffer);
+        else if (func_name == "vkDestroyCommandPool")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyCommandPool);
+        else if (func_name == "vkDestroyDescriptorPool")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyDescriptorPool);
+        else if (func_name == "vkDestroyDescriptorSetLayout")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
+                                                       .vkDestroyDescriptorSetLayout);
+        else if (func_name == "vkDestroyFence")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyFence);
+        else if (func_name == "vkDestroyFramebuffer")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyFramebuffer);
+        else if (func_name == "vkDestroyImage")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyImage);
+        else if (func_name == "vkDestroyImageView")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyImageView);
+        else if (func_name == "vkDestroyPipeline")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyPipeline);
+        else if (func_name == "vkDestroyPipelineLayout")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyPipelineLayout);
+        else if (func_name == "vkDestroyRenderPass")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyRenderPass);
+        else if (func_name == "vkDestroySampler")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroySampler);
+        else if (func_name == "vkDestroySemaphore")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroySemaphore);
+        else if (func_name == "vkDestroyShaderModule")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyShaderModule);
+        else if (func_name == "vkDestroySurfaceKHR")
+            return std::bit_cast<PFN_vkVoidFunction>(vkDestroySurfaceKHR);
+        else if (func_name == "vkDestroySwapchainKHR")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroySwapchainKHR);
+        else if (func_name == "vkDeviceWaitIdle")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDeviceWaitIdle);
+        else if (func_name == "vkEnumeratePhysicalDevices")
+            return std::bit_cast<PFN_vkVoidFunction>(vkEnumeratePhysicalDevices);
+        else if (func_name == "vkEndCommandBuffer")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkEndCommandBuffer);
+        else if (func_name == "vkFlushMappedMemoryRanges")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
+                                                       .vkFlushMappedMemoryRanges);
+        else if (func_name == "vkFreeCommandBuffers")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkFreeCommandBuffers);
+        else if (func_name == "vkFreeDescriptorSets")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkFreeDescriptorSets);
+        else if (func_name == "vkFreeMemory")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkFreeMemory);
+        else if (func_name == "vkGetBufferMemoryRequirements")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
+                                                       .vkGetBufferMemoryRequirements);
+        else if (func_name == "vkGetDeviceQueue")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkGetDeviceQueue);
+        else if (func_name == "vkGetImageMemoryRequirements")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
+                                                       .vkGetImageMemoryRequirements);
+        else if (func_name == "vkGetPhysicalDeviceProperties")
+            return std::bit_cast<PFN_vkVoidFunction>(vkGetPhysicalDeviceProperties);
+        else if (func_name == "vkGetPhysicalDeviceMemoryProperties")
+            return std::bit_cast<PFN_vkVoidFunction>(vkGetPhysicalDeviceMemoryProperties);
+        else if (func_name == "vkGetPhysicalDeviceQueueFamilyProperties")
+            return std::bit_cast<PFN_vkVoidFunction>(vkGetPhysicalDeviceQueueFamilyProperties);
+        else if (func_name == "vkGetPhysicalDeviceSurfaceCapabilitiesKHR")
+            return std::bit_cast<PFN_vkVoidFunction>(vkGetPhysicalDeviceSurfaceCapabilitiesKHR);
+        else if (func_name == "vkGetPhysicalDeviceSurfaceFormatsKHR")
+            return std::bit_cast<PFN_vkVoidFunction>(vkGetPhysicalDeviceSurfaceFormatsKHR);
+        else if (func_name == "vkGetPhysicalDeviceSurfacePresentModesKHR")
+            return std::bit_cast<PFN_vkVoidFunction>(vkGetPhysicalDeviceSurfacePresentModesKHR);
+        else if (func_name == "vkGetSwapchainImagesKHR")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkGetSwapchainImagesKHR);
+        else if (func_name == "vkMapMemory")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkMapMemory);
+        else if (func_name == "vkQueueSubmit")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkQueueSubmit);
+        else if (func_name == "vkQueueWaitIdle")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkQueueWaitIdle);
+        else if (func_name == "vkResetCommandPool")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkResetCommandPool);
+        else if (func_name == "vkResetFences")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkResetFences);
+        else if (func_name == "vkUnmapMemory")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkUnmapMemory);
+        else if (func_name == "vkUpdateDescriptorSets")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkUpdateDescriptorSets);
+        else if (func_name == "vkWaitForFences")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkWaitForFences);
+        else if (func_name == "vkCmdBeginRendering")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdBeginRendering);
+        else if (func_name == "vkCmdEndRendering")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdEndRendering);
+        else if (func_name == "vkCmdBeginRenderingKHR")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdBeginRenderingKHR);
+        else if (func_name == "vkCmdEndRenderingKHR")
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCmdEndRenderingKHR);
+
+        ensures(false, std::format("Unhandled vk func {}", func_name));
+        std::unreachable();
+    }
 } // namespace stormkit::gpu
