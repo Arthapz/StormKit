@@ -13,8 +13,8 @@ module;
 #pragma clang diagnostic ignored "-Wnullability-extension"
 #pragma clang diagnostic ignored "-Wc11-extensions"
 #pragma clang diagnostic ignored "-Wsign-conversion"
-#if __has_include(<stormkit-wsi-Swift.h>)
-    #include <stormkit-wsi-Swift.h>
+#if __has_include(<wsi-Swift.h>)
+    #include <wsi-Swift.h>
 #endif
 #pragma clang diagnostic pop
 
