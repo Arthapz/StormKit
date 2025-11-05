@@ -34,10 +34,11 @@ namespace stormkit::gpu {
         };
 
         [[maybe_unused]]
-        constexpr auto VALIDATION_FEATURES = std::array {
-            VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-            VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
-        };
+        constexpr auto VALIDATION_FEATURES
+          = std::array {
+                VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+                VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+            };
 
         constexpr auto STORMKIT_VK_VERSION = vk_make_version<i32>(STORMKIT_MAJOR_VERSION,
                                                                   STORMKIT_MINOR_VERSION,
@@ -45,6 +46,9 @@ namespace stormkit::gpu {
 
         constexpr auto BASE_EXTENSIONS = std::array {
             VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
+#ifdef STORMKIT_OS_APPLE
+            VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+#endif
         };
 
         constexpr auto SURFACE_EXTENSIONS = std::array {
@@ -179,9 +183,13 @@ namespace stormkit::gpu {
               };
 
               const auto create_info = VkInstanceCreateInfo {
-                  .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-                  .pNext                   = nullptr,
-                  .flags                   = 0,
+                  .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+                  .pNext = nullptr,
+#ifdef STORMKIT_OS_APPLE
+                  .flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
+#else
+.flags = 0
+#endif
                   .pApplicationInfo        = &app_info,
                   .enabledLayerCount       = as<u32>(stdr::size(validation_layers)),
                   .ppEnabledLayerNames     = stdr::data(validation_layers),
