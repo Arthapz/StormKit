@@ -140,6 +140,9 @@ export {
               -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType,
                                                  typename Ref<U, OptionalU>::PointerType>;
 
+            [[nodiscard]]
+            constexpr operator std::reference_wrapper<T>() const noexcept;
+
           private:
             constexpr Ref(ReferenceType value STORMKIT_LIFETIMEBOUND) noexcept;
             constexpr Ref(PointerType value STORMKIT_LIFETIMEBOUND) noexcept;
@@ -551,7 +554,16 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    // template<typename T>
+    template<typename T, bool Optional>
+    STORMKIT_FORCE_INLINE
+    constexpr Ref<T, Optional>::operator std::reference_wrapper<T>() const noexcept {
+        if constexpr (meta::IsConst<T>) return std::cref(*m_value);
+        else
+            return std::ref(*m_value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<meta::IsRawPointerOrLValueReference T>
     STORMKIT_FORCE_INLINE
     constexpr auto as_ref(T&& value) noexcept -> decltype(auto) {
