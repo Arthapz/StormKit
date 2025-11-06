@@ -61,42 +61,12 @@ class Application: public base::Application {
           = gpu::RenderPass::
               create(m_device,
                      { .attachments = { { .format = m_swapchain->pixel_format() } },
-                       .subpasses   = { { .bind_point            = gpu::PipelineBindPoint::GRAPHICS,
-                                          .color_attachment_refs = { { .attachment_id = 0u } } } } })
+                       .subpasses = { { .bind_point            = gpu::PipelineBindPoint::GRAPHICS,
+                                        .color_attachment_refs = { { .attachment_id = 0u } } } } })
                 .transform_error(monadic::assert("Failed to create render pass"))
                 .value();
 
         const auto window_extent = m_window->extent();
-
-        // initialize render pipeline
-        // const auto window_viewport = gpu::Viewport {
-        //     .position = { 0.f, 0.f },
-        //     .extent   = window_extent.to<f32>(),
-        //     .depth    = { 0.f, 1.f },
-        // };
-        // const auto scissor = gpu::Scissor {
-        //     .offset = { 0, 0 },
-        //     .extent = window_extent,
-        // };
-
-        //    const auto state = gpu::RasterPipelineState {
-        //    .input_assembly_state = { .topology = gpu::PrimitiveTopology::TRIANGLE_LIST, },
-        //    .viewport_state       = { .viewports = { window_viewport },
-        //                             .scissors  = { scissor }, },
-        //    .color_blend_state
-        //    = { .attachments = { { .blend_enable           = true,
-        //                           .src_color_blend_factor = gpu::BlendFactor::SRC_ALPHA,
-        //                           .dst_color_blend_factor =
-        //                           gpu::BlendFactor::ONE_MINUS_SRC_ALPHA, .src_alpha_blend_factor
-        //                           = gpu::BlendFactor::SRC_ALPHA, .dst_alpha_blend_factor =
-        //                           gpu::BlendFactor::ONE_MINUS_SRC_ALPHA, .alpha_blend_operation
-        //                           = gpu::BlendOperation::ADD, }, }, },
-        //    .shader_state  = to_refs(*m_vertex_shader, *m_fragment_shader),
-        // };
-
-        //    m_pipeline = gpu::Pipeline::create(m_device, state, m_pipeline_layout, m_render_pass)
-        //                   .transform_error(monadic::assert("Failed to create raster pipeline"))
-        //                   .value();
 
         // create present engine resources
         m_submission_resources = init_by<std::vector<SubmissionResource>>([&](auto& out) noexcept {
@@ -124,12 +94,10 @@ class Application: public base::Application {
         const auto& images = m_swapchain->images();
 
         const auto image_count = stdr::size(images);
-        // auto&& [transition_cmbs, image_resources]
-        auto transition_cmbs
+        auto       transition_cmbs
           = m_command_pool->create_command_buffers(image_count)
               .transform_error(monadic::assert("Failed to create transition command buffers"))
               .value();
-        // .transform([&](auto&& cmbs) noexcept {
         m_image_resources.reserve(stdr::size(images));
 
         auto image_index = 0u;
@@ -171,12 +139,6 @@ class Application: public base::Application {
 
             ++image_index;
         }
-        //    return std::pair<std::vector<gpu::CommandBuffer>,
-        //                     std::vector<SwapchainImageResource>> { std::move(cmbs),
-        //                                                            std::move(image_resources) };
-        // })
-        // .value();
-
         const auto fence = gpu::Fence::create(m_device)
                              .transform_error(monadic::assert("Failed to create transition fence"))
                              .value();
@@ -287,13 +249,14 @@ class Application: public base::Application {
             return _image_index;
         };
 
-        const auto image_index
-          = in_flight.wait()
-              .transform([&in_flight](auto&&) mutable noexcept { in_flight.reset(); })
-              .and_then(acquire_next_image)
-              .transform(extract_index)
-              .transform_error(monadic::assert("Failed to acquire next swapchain image"))
-              .value();
+        const auto
+          image_index = in_flight.wait()
+                          .transform([&in_flight](auto&&) mutable noexcept { in_flight.reset(); })
+                          .and_then(acquire_next_image)
+                          .transform(extract_index)
+                          .transform_error(monadic::
+                                             assert("Failed to acquire next swapchain image"))
+                          .value();
 
         const auto& swapchain_image_resource = m_image_resources[image_index];
         const auto& framebuffer              = swapchain_image_resource.framebuffer;

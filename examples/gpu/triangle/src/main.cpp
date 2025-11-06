@@ -124,12 +124,10 @@ class Application: public base::Application {
         const auto& images = m_swapchain->images();
 
         const auto image_count = stdr::size(images);
-        // auto&& [transition_cmbs, image_resources]
-        auto transition_cmbs
+        auto       transition_cmbs
           = m_command_pool->create_command_buffers(image_count)
               .transform_error(monadic::assert("Failed to create transition command buffers"))
               .value();
-        // .transform([&](auto&& cmbs) noexcept {
         m_image_resources.reserve(stdr::size(images));
 
         auto image_index = 0u;
@@ -171,11 +169,6 @@ class Application: public base::Application {
 
             ++image_index;
         }
-        //    return std::pair<std::vector<gpu::CommandBuffer>,
-        //                     std::vector<SwapchainImageResource>> { std::move(cmbs),
-        //                                                            std::move(image_resources) };
-        // })
-        // .value();
 
         const auto fence = gpu::Fence::create(m_device)
                              .transform_error(monadic::assert("Failed to create transition fence"))
