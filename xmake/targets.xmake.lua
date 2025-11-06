@@ -8,6 +8,7 @@ modules = {
 
             set_configdir("$(builddir)/.gens/include/")
             add_configfiles("include/(stormkit/core/config.hpp.in)")
+            add_headerfiles("$(builddir)/.gens/include/(stormkit/core/*.hpp)")
             -- add_cxflags("clang::-Wno-language-extension-token")
 
             on_config(function(target)
