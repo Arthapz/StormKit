@@ -44,7 +44,7 @@ local package_configs = {
     },
     ["vulkan-memory-allocator"] = {
         global = {
-            version = "v3.2.1",
+            version = "v3.3.0",
             system = false,
         },
     },
