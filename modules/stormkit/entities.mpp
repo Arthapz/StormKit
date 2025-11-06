@@ -43,7 +43,7 @@ export namespace stormkit::entities {
 
     namespace meta {
         template<typename T>
-        concept IsComponentType = core::meta::Is<Component, T> and requires(T&& component) {
+        concept IsComponentType = core::meta::Is<T, Component> and requires(T&& component) {
             T::TYPE;
         };
 
@@ -305,7 +305,6 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<meta::IsComponentType T, typename... Args>
     auto EntityManager::add_component(Entity entity, Args&&... args) -> T& {
-        static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
 
         EXPECTS(has_entity(entity));
@@ -326,7 +325,6 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<meta::IsComponentType T>
     auto EntityManager::destroy_component(Entity entity) -> void {
-        static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
 
         EXPECTS(has_entity(entity));
@@ -343,7 +341,6 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<meta::IsComponentType T>
     auto EntityManager::has_component(Entity entity) const -> bool {
-        static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
 
         return has_component(entity, T::TYPE);
