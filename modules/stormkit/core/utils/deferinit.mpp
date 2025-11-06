@@ -21,12 +21,12 @@ export namespace stormkit { inline namespace core {
     template<typename T, typename Storage = DeferInitDefaultStorage<T>>
     class [[nodiscard]] DeferInit {
       public:
-        using ElementType   = T;
-        using PointerType   = ElementType*;
-        using ReferenceType = ElementType&;
+        using ValueType     = T;
+        using PointerType   = ValueType*;
+        using ReferenceType = ValueType&;
 
         // STL compatible
-        using element_type   = ElementType;
+        using value_type     = ValueType;
         using pointer_type   = PointerType;
         using reference_type = ReferenceType;
 
@@ -232,3 +232,5 @@ namespace stormkit { inline namespace core {
         return get();
     }
 }} // namespace stormkit::core
+
+static_assert(stormkit::meta::IsContainedSemantics<stormkit::DeferInit<int>>);
