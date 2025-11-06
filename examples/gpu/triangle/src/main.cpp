@@ -91,7 +91,7 @@ class Application: public base::Application {
                                .src_alpha_blend_factor = gpu::BlendFactor::SRC_ALPHA,
                                .dst_alpha_blend_factor = gpu::BlendFactor::ONE_MINUS_SRC_ALPHA,
                                .alpha_blend_operation  = gpu::BlendOperation::ADD, }, }, },
-        .shader_state  = to_refs(*m_vertex_shader, *m_fragment_shader),
+        .shader_state  = to_refs(m_vertex_shader, m_fragment_shader),
     };
 
         m_pipeline = gpu::Pipeline::create(m_device, state, m_pipeline_layout, m_render_pass)
@@ -248,7 +248,7 @@ class Application: public base::Application {
             if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
         };
 
-        m_raster_queue->present(as_refs(*m_swapchain), as_refs(signal), as_view(image_index))
+        m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index))
           .transform(update_current_frame)
           .transform_error(monadic::assert("Failed to present swapchain image"));
     }

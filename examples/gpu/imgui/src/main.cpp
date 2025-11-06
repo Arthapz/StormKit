@@ -296,7 +296,7 @@ class Application: public base::Application {
             if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
         };
 
-        m_raster_queue->present(as_refs(*m_swapchain), as_refs(signal), as_view(image_index))
+        m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index))
           .transform(update_current_frame)
           .transform_error(monadic::assert("Failed to present swapchain image"));
     }

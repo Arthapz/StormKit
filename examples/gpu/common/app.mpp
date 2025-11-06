@@ -100,7 +100,7 @@ export namespace base {
 
             // create swapchain
             const auto window_extent = m_window->extent();
-            m_swapchain = gpu::SwapChain::create(m_device, m_surface, window_extent.to<3>())
+            m_swapchain = gpu::SwapChain::create(m_device, m_surface, window_extent)
                             .transform_error(monadic::assert("Failed to create swapchain"))
                             .value();
 

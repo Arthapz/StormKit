@@ -171,7 +171,7 @@ class Application: public base::Application {
                 .value();
         m_pipeline_layout = gpu::PipelineLayout::create(
                               m_device,
-                              { .descriptor_set_layouts = to_refs(*m_descriptor_set_layout) })
+                              { .descriptor_set_layouts = to_refs(m_descriptor_set_layout) })
                               .transform_error(monadic::assert("Failed to create pipeline layout"))
                               .value();
         // initialize render pass
@@ -244,7 +244,7 @@ class Application: public base::Application {
                                .src_alpha_blend_factor = gpu::BlendFactor::SRC_ALPHA,
                                .dst_alpha_blend_factor = gpu::BlendFactor::ONE_MINUS_SRC_ALPHA,
                                .alpha_blend_operation  = gpu::BlendOperation::ADD, }, }, },
-        .shader_state  = to_refs(*m_vertex_shader, *m_fragment_shader),
+        .shader_state  = to_refs(m_vertex_shader, m_fragment_shader),
         .vertex_input_state = {
             .binding_descriptions = into_dyn_array(Vertex::binding_description()),
             .input_attribute_descriptions = to_dyn_array(Vertex::attribute_descriptions()),
@@ -381,8 +381,8 @@ class Application: public base::Application {
                 gpu::ImageDescriptor {
                                        .binding    = 1,
                                        .layout     = gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
-                                       .image_view = as_ref(*m_texture_view),
-                                       .sampler    = as_ref(*m_sampler),
+                                       .image_view = as_ref(m_texture_view),
+                                       .sampler    = as_ref(m_sampler),
                                        }
             };
             res.descriptor_set.update(sets);
@@ -607,7 +607,7 @@ class Application: public base::Application {
           ->begin_debug_region("Render textured cube")
           .begin_render_pass(m_render_pass, framebuffer, CLEAR_VALUES)
           .bind_pipeline(m_pipeline)
-          .bind_vertex_buffers(to_refs(*m_vertex_buffer), OFFSETS)
+          .bind_vertex_buffers(to_refs(m_vertex_buffer), OFFSETS)
           .bind_descriptor_sets(m_pipeline, m_pipeline_layout, as_refs(descriptor_set), {})
           .draw(stdr::size(VERTICES))
           .end_render_pass()
@@ -628,7 +628,7 @@ class Application: public base::Application {
             if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
         };
 
-        m_raster_queue->present(as_refs(*m_swapchain), as_refs(signal), as_view(image_index))
+        m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index))
           .transform(update_current_frame)
           .transform_error(monadic::assert("Failed to present swapchain image"));
 
