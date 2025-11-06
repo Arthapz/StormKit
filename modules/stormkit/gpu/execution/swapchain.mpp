@@ -32,12 +32,12 @@ export namespace stormkit::gpu {
 
         static auto create(const Device&             device,
                            const Surface&            surface,
-                           const math::Extent3<u32>& extent,
+                           const math::Extent2<u32>& extent,
                            OptionalRef<SwapChain>    old_swapchain = std::nullopt) noexcept
           -> Expected<SwapChain>;
         static auto allocate(const Device&             device,
                              const Surface&            surface,
-                             const math::Extent3<u32>& extent,
+                             const math::Extent2<u32>& extent,
                              OptionalRef<SwapChain>    old_swapchain = std::nullopt) noexcept
           -> Expected<Heap<SwapChain>>;
         ~SwapChain();
@@ -64,10 +64,10 @@ export namespace stormkit::gpu {
       private:
         auto do_init(const Device&,
                      const Surface&,
-                     const math::Extent3<u32>&,
+                     const math::Extent2<u32>&,
                      VkSwapchainKHR) noexcept -> Expected<void>;
 
-        math::Extent3<u32> m_extent;
+        math::Extent2<u32> m_extent;
         PixelFormat        m_pixel_format;
         u32                m_image_count;
 
@@ -113,7 +113,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto SwapChain::create(const Device&             device,
                                   const Surface&            surface,
-                                  const math::Extent3<u32>& extent,
+                                  const math::Extent2<u32>& extent,
                                   OptionalRef<SwapChain>    old_swapchain) noexcept
       -> Expected<SwapChain> {
         auto swapchain = SwapChain { device, PrivateFuncTag {} };
@@ -130,7 +130,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto SwapChain::allocate(const Device&             device,
                                     const Surface&            surface,
-                                    const math::Extent3<u32>& extent,
+                                    const math::Extent2<u32>& extent,
                                     OptionalRef<SwapChain>    old_swapchain) noexcept
       -> Expected<Heap<SwapChain>> {
         auto swapchain = std::make_unique<SwapChain>(device, PrivateFuncTag {});

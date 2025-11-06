@@ -55,8 +55,8 @@ namespace stormkit::gpu {
 
             auto actual_extent = to_vk(extent);
             actual_extent
-              .width             = std::max(capabilities.minImageExtent.width,
-                                            std::min(capabilities.maxImageExtent.width, actual_extent.width));
+              .width = std::max(capabilities.minImageExtent.width,
+                                std::min(capabilities.maxImageExtent.width, actual_extent.width));
             actual_extent.height = std::max(capabilities.minImageExtent.height,
                                             std::min(capabilities.maxImageExtent.height,
                                                      actual_extent.height));
@@ -80,7 +80,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     auto SwapChain::do_init(const Device&             device,
                             const Surface&            surface,
-                            const math::Extent3<u32>& extent,
+                            const math::Extent2<u32>& extent,
                             VkSwapchainKHR            old_swapchain) noexcept -> Expected<void> {
         const auto& physical_device = device.physical_device();
 
@@ -115,7 +115,7 @@ namespace stormkit::gpu {
               const auto image_usage        = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
                                        | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-              m_extent       = extent.to<u32>();
+              m_extent       = extent;
               m_pixel_format = from_vk<PixelFormat>(format.format);
 
               const auto create_info = VkSwapchainCreateInfoKHR {
@@ -158,7 +158,7 @@ namespace stormkit::gpu {
               m_images      = vk_images
                          | std::views::transform([this, &device](auto&& image) noexcept {
                                const auto create_info = Image::CreateInfo {
-                                   .extent = m_extent,
+                                   .extent = { m_extent.width, m_extent.height, 1_u32 },
                                    .format = m_pixel_format
                                };
                                return Image::create(device, create_info, std::move(image));
