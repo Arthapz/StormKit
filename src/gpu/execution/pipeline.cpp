@@ -22,39 +22,35 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     auto Pipeline::do_init(const PipelineLayout&            layout,
                            const RenderPass&                render_pass,
-                           OptionalRef<const PipelineCache> pipeline_cache) noexcept
-      -> Expected<void> {
+                           OptionalRef<const PipelineCache> pipeline_cache) noexcept -> Expected<void> {
         const auto& state = as<RasterPipelineState>(m_state);
 
-        const auto
-          binding_descriptions = state.vertex_input_state.binding_descriptions
-                                 | stdv::transform([](auto&& binding_description) static noexcept {
-                                       return VkVertexInputBindingDescription {
-                                           .binding   = binding_description.binding,
-                                           .stride    = binding_description.stride,
-                                           .inputRate = to_vk<VkVertexInputRate>(binding_description
-                                                                                   .input_rate)
+        const auto binding_descriptions = state.vertex_input_state.binding_descriptions
+                                          | stdv::transform([](auto&& binding_description) static noexcept {
+                                                return VkVertexInputBindingDescription {
+                                                    .binding   = binding_description.binding,
+                                                    .stride    = binding_description.stride,
+                                                    .inputRate = to_vk<VkVertexInputRate>(binding_description.input_rate)
 
-                                       };
-                                   })
-                                 | stdr::to<std::vector>();
+                                                };
+                                            })
+                                          | stdr::to<std::vector>();
 
-        const auto attribute_descriptions
-          = state.vertex_input_state.input_attribute_descriptions
-            | stdv::transform([](auto&& input_attribute_description) static noexcept {
-                  return VkVertexInputAttributeDescription {
-                      .location = input_attribute_description.location,
-                      .binding  = input_attribute_description.binding,
-                      .format   = to_vk<VkFormat>(input_attribute_description.format),
-                      .offset   = input_attribute_description.offset
-                  };
-              })
-            | stdr::to<std::vector>();
+        const auto attribute_descriptions = state.vertex_input_state.input_attribute_descriptions
+                                            | stdv::transform([](auto&& input_attribute_description) static noexcept {
+                                                  return VkVertexInputAttributeDescription {
+                                                      .location = input_attribute_description.location,
+                                                      .binding  = input_attribute_description.binding,
+                                                      .format   = to_vk<VkFormat>(input_attribute_description.format),
+                                                      .offset   = input_attribute_description.offset
+                                                  };
+                                              })
+                                            | stdr::to<std::vector>();
 
         const auto vertex_input_info = VkPipelineVertexInputStateCreateInfo {
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = 0,
+            .sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+            .pNext                           = nullptr,
+            .flags                           = 0,
             .vertexBindingDescriptionCount   = as<u32>(stdr::size(binding_descriptions)),
             .pVertexBindingDescriptions      = std::data(binding_descriptions),
             .vertexAttributeDescriptionCount = as<u32>(stdr::size(attribute_descriptions)),
@@ -62,20 +58,16 @@ namespace stormkit::gpu {
         };
 
         const auto input_assembly = VkPipelineInputAssemblyStateCreateInfo {
-            .sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-            .pNext    = nullptr,
-            .flags    = 0,
-            .topology = to_vk<VkPrimitiveTopology>(state.input_assembly_state.topology),
+            .sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+            .pNext                  = nullptr,
+            .flags                  = 0,
+            .topology               = to_vk<VkPrimitiveTopology>(state.input_assembly_state.topology),
             .primitiveRestartEnable = state.input_assembly_state.primitive_restart_enable
         };
 
-        const auto viewports = state.viewport_state.viewports
-                               | stdv::transform(monadic::to_vk())
-                               | stdr::to<std::vector>();
+        const auto viewports = state.viewport_state.viewports | stdv::transform(monadic::to_vk()) | stdr::to<std::vector>();
 
-        const auto scissors = state.viewport_state.scissors
-                              | stdv::transform(monadic::to_vk())
-                              | stdr::to<std::vector>();
+        const auto scissors = state.viewport_state.scissors | stdv::transform(monadic::to_vk()) | stdr::to<std::vector>();
 
         const auto viewport_state = VkPipelineViewportStateCreateInfo {
             .sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
@@ -107,8 +99,7 @@ namespace stormkit::gpu {
             .sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
             .pNext                 = nullptr,
             .flags                 = 0,
-            .rasterizationSamples  = to_vk<VkSampleCountFlagBits>(state.multisample_state
-                                                                    .rasterization_samples),
+            .rasterizationSamples  = to_vk<VkSampleCountFlagBits>(state.multisample_state.rasterization_samples),
             .sampleShadingEnable   = state.multisample_state.sample_shading_enable,
             .minSampleShading      = state.multisample_state.min_sample_shading,
             .pSampleMask           = nullptr,
@@ -116,25 +107,20 @@ namespace stormkit::gpu {
             .alphaToOneEnable      = false,
         };
 
-        const auto blend_attachments
-          = state.color_blend_state.attachments
-            | stdv::transform([](auto&& attachment) static noexcept {
-                  return VkPipelineColorBlendAttachmentState {
-                      .blendEnable         = attachment.blend_enable,
-                      .srcColorBlendFactor = to_vk<VkBlendFactor>(attachment
-                                                                    .src_color_blend_factor),
-                      .dstColorBlendFactor = to_vk<VkBlendFactor>(attachment
-                                                                    .dst_color_blend_factor),
-                      .colorBlendOp        = to_vk<VkBlendOp>(attachment.color_blend_operation),
-                      .srcAlphaBlendFactor = to_vk<VkBlendFactor>(attachment
-                                                                    .src_alpha_blend_factor),
-                      .dstAlphaBlendFactor = to_vk<VkBlendFactor>(attachment
-                                                                    .dst_alpha_blend_factor),
-                      .alphaBlendOp        = to_vk<VkBlendOp>(attachment.alpha_blend_operation),
-                      .colorWriteMask = to_vk<VkColorComponentFlags>(attachment.color_write_mask)
-                  };
-              })
-            | stdr::to<std::vector>();
+        const auto blend_attachments = state.color_blend_state.attachments
+                                       | stdv::transform([](auto&& attachment) static noexcept {
+                                             return VkPipelineColorBlendAttachmentState {
+                                                 .blendEnable         = attachment.blend_enable,
+                                                 .srcColorBlendFactor = to_vk<VkBlendFactor>(attachment.src_color_blend_factor),
+                                                 .dstColorBlendFactor = to_vk<VkBlendFactor>(attachment.dst_color_blend_factor),
+                                                 .colorBlendOp        = to_vk<VkBlendOp>(attachment.color_blend_operation),
+                                                 .srcAlphaBlendFactor = to_vk<VkBlendFactor>(attachment.src_alpha_blend_factor),
+                                                 .dstAlphaBlendFactor = to_vk<VkBlendFactor>(attachment.dst_alpha_blend_factor),
+                                                 .alphaBlendOp        = to_vk<VkBlendOp>(attachment.alpha_blend_operation),
+                                                 .colorWriteMask      = to_vk<VkColorComponentFlags>(attachment.color_write_mask)
+                                             };
+                                         })
+                                       | stdr::to<std::vector>();
 
         const auto color_blending = VkPipelineColorBlendStateCreateInfo {
             .sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
@@ -150,9 +136,7 @@ namespace stormkit::gpu {
                                 state.color_blend_state.blend_constants[3] },
         };
 
-        const auto states = state.dynamic_state
-                            | stdv::transform(monadic::to_vk<VkDynamicState>())
-                            | stdr::to<std::vector>();
+        const auto states = state.dynamic_state | stdv::transform(monadic::to_vk<VkDynamicState>()) | stdr::to<std::vector>();
 
         const auto dynamic_state = VkPipelineDynamicStateCreateInfo {
             .sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
@@ -167,10 +151,10 @@ namespace stormkit::gpu {
                              | stdv::transform([](auto&& shader) static noexcept {
                                    static constexpr auto NAME = "main";
                                    return VkPipelineShaderStageCreateInfo {
-                                       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-                                       .pNext = nullptr,
-                                       .flags = 0,
-                                       .stage = to_vk<VkShaderStageFlagBits>(shader.type()),
+                                       .sType               = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+                                       .pNext               = nullptr,
+                                       .flags               = 0,
+                                       .stage               = to_vk<VkShaderStageFlagBits>(shader.type()),
                                        .module              = to_vk(shader),
                                        .pName               = NAME,
                                        .pSpecializationInfo = nullptr,
@@ -216,9 +200,7 @@ namespace stormkit::gpu {
         };
 
         using namespace core::monadic;
-        const auto vk_pipeline_cache = core::either(pipeline_cache,
-                                                    monadic::to_vk(),
-                                                    init<VkPipelineCache>(nullptr));
+        const auto vk_pipeline_cache = core::either(pipeline_cache, monadic::to_vk(), init<VkPipelineCache>(nullptr));
 
         return vk_call<VkPipeline>(m_vk_device_table->vkCreateGraphicsPipelines,
                                    m_vk_device,

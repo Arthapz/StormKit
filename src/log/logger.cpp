@@ -28,8 +28,7 @@ namespace stormkit::log {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Logger::Logger(LogClock::time_point start_time) noexcept
-        : Logger { std::move(start_time), DEFAULT_SEVERITY } {
+    Logger::Logger(LogClock::time_point start_time) noexcept : Logger { std::move(start_time), DEFAULT_SEVERITY } {
         EXPECTS(not logger);
 
         logger = this;

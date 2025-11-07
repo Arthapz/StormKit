@@ -32,25 +32,21 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto RenderPass::do_init() noexcept -> Expected<void> {
-        const auto
-          attachments = m_description.attachments
-                        | stdv::transform([](auto&& attachment) static noexcept {
-                              return VkAttachmentDescription {
-                                  .flags         = 0,
-                                  .format        = to_vk<VkFormat>(attachment.format),
-                                  .samples       = to_vk<VkSampleCountFlagBits>(attachment.samples),
-                                  .loadOp        = to_vk<VkAttachmentLoadOp>(attachment.load_op),
-                                  .storeOp       = to_vk<VkAttachmentStoreOp>(attachment.store_op),
-                                  .stencilLoadOp = to_vk<VkAttachmentLoadOp>(attachment
-                                                                               .stencil_load_op),
-                                  .stencilStoreOp = to_vk<VkAttachmentStoreOp>(attachment
-                                                                                 .stencil_store_op),
-                                  .initialLayout  = to_vk<VkImageLayout>(attachment.source_layout),
-                                  .finalLayout    = to_vk<VkImageLayout>(attachment
-                                                                           .destination_layout),
-                              };
-                          })
-                        | stdr::to<std::vector>();
+        const auto attachments = m_description.attachments
+                                 | stdv::transform([](auto&& attachment) static noexcept {
+                                       return VkAttachmentDescription {
+                                           .flags          = 0,
+                                           .format         = to_vk<VkFormat>(attachment.format),
+                                           .samples        = to_vk<VkSampleCountFlagBits>(attachment.samples),
+                                           .loadOp         = to_vk<VkAttachmentLoadOp>(attachment.load_op),
+                                           .storeOp        = to_vk<VkAttachmentStoreOp>(attachment.store_op),
+                                           .stencilLoadOp  = to_vk<VkAttachmentLoadOp>(attachment.stencil_load_op),
+                                           .stencilStoreOp = to_vk<VkAttachmentStoreOp>(attachment.stencil_store_op),
+                                           .initialLayout  = to_vk<VkImageLayout>(attachment.source_layout),
+                                           .finalLayout    = to_vk<VkImageLayout>(attachment.destination_layout),
+                                       };
+                                   })
+                                 | stdr::to<std::vector>();
 
         auto color_attachment_refs   = std::vector<std::vector<VkAttachmentReference>> {};
         auto depth_attachment_ref    = std::optional<VkAttachmentReference> {};
@@ -64,16 +60,13 @@ namespace stormkit::gpu {
         subpasses_deps.reserve(stdr::size(m_description.subpasses));
 
         for (const auto& subpass : m_description.subpasses) {
-            auto& color_attachment_ref = color_attachment_refs
-                                           .emplace_back(subpass.color_attachment_refs
-                                                         | stdv::transform(monadic::vk_ref())
-                                                         | stdr::to<std::vector>());
-            auto& resolve_attachment_ref = resolve_attachment_refs
-                                             .emplace_back(subpass.resolve_attachment_refs
-                                                           | stdv::transform(monadic::vk_ref())
-                                                           | stdr::to<std::vector>());
-            if (subpass.depth_attachment_ref)
-                depth_attachment_ref = monadic::vk_ref()(*subpass.depth_attachment_ref);
+            auto& color_attachment_ref   = color_attachment_refs.emplace_back(subpass.color_attachment_refs
+                                                                            | stdv::transform(monadic::vk_ref())
+                                                                            | stdr::to<std::vector>());
+            auto& resolve_attachment_ref = resolve_attachment_refs.emplace_back(subpass.resolve_attachment_refs
+                                                                                | stdv::transform(monadic::vk_ref())
+                                                                                | stdr::to<std::vector>());
+            if (subpass.depth_attachment_ref) depth_attachment_ref = monadic::vk_ref()(*subpass.depth_attachment_ref);
 
             subpasses.emplace_back(VkSubpassDescription {
               .flags                   = 0,
@@ -83,21 +76,18 @@ namespace stormkit::gpu {
               .colorAttachmentCount    = as<u32>(stdr::size(color_attachment_ref)),
               .pColorAttachments       = stdr::data(color_attachment_ref),
               .pResolveAttachments     = stdr::data(resolve_attachment_ref),
-              .pDepthStencilAttachment = depth_attachment_ref.has_value()
-                                           ? &depth_attachment_ref.value()
-                                           : nullptr,
+              .pDepthStencilAttachment = depth_attachment_ref.has_value() ? &depth_attachment_ref.value() : nullptr,
               .preserveAttachmentCount = 0,
               .pPreserveAttachments    = nullptr,
             });
 
             subpasses_deps.emplace_back(VkSubpassDependency {
-              .srcSubpass    = VK_SUBPASS_EXTERNAL,
-              .dstSubpass    = 0,
-              .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-              .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-              .srcAccessMask = VkAccessFlagBits {},
-              .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
-                               | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+              .srcSubpass      = VK_SUBPASS_EXTERNAL,
+              .dstSubpass      = 0,
+              .srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+              .dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+              .srcAccessMask   = VkAccessFlagBits {},
+              .dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
               .dependencyFlags = 0,
             });
         }
@@ -114,10 +104,7 @@ namespace stormkit::gpu {
             .pDependencies   = stdr::data(subpasses_deps),
         };
 
-        return vk_call<VkRenderPass>(m_vk_device_table->vkCreateRenderPass,
-                                     m_vk_device,
-                                     &create_info,
-                                     nullptr)
+        return vk_call<VkRenderPass>(m_vk_device_table->vkCreateRenderPass, m_vk_device, &create_info, nullptr)
           .transform(core::monadic::set(m_vk_handle))
           .transform_error(monadic::from_vk<Result>());
     }
@@ -125,8 +112,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     // TODO finish this
-    auto RenderPassDescription::is_compatible(const RenderPassDescription& description)
-      const noexcept -> bool {
+    auto RenderPassDescription::is_compatible(const RenderPassDescription& description) const noexcept -> bool {
         if (stdr::size(subpasses) == stdr::size(description.subpasses)) return false;
 
         for (auto i : range(stdr::size(subpasses))) {
@@ -135,9 +121,8 @@ namespace stormkit::gpu {
 
             if (subpass_1.bind_point != subpass_2.bind_point) return false;
 
-            const auto
-              color_attachment_refs_count = std::min(stdr::size(subpass_1.color_attachment_refs),
-                                                     stdr::size(subpass_2.color_attachment_refs));
+            const auto color_attachment_refs_count = std::min(stdr::size(subpass_1.color_attachment_refs),
+                                                              stdr::size(subpass_2.color_attachment_refs));
 
             for (auto j = 0u; j < color_attachment_refs_count; ++j) {
                 const auto& attachment_ref_1 = subpass_1.color_attachment_refs[j];

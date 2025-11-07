@@ -38,12 +38,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     auto keyboard_repeat_info_handler(void*, wl_keyboard*, i32, i32) noexcept -> void;
     auto update_keymap(KeyboardState&, std::string_view) noexcept -> void;
 
-    auto pointer_enter_handler(void*,
-                               wl_pointer*,
-                               u32,
-                               wl_surface*,
-                               wl_fixed_t,
-                               wl_fixed_t) noexcept -> void;
+    auto pointer_enter_handler(void*, wl_pointer*, u32, wl_surface*, wl_fixed_t, wl_fixed_t) noexcept -> void;
     auto pointer_leave_handler(void*, wl_pointer*, u32, wl_surface*) noexcept -> void;
     auto pointer_motion_handler(void*, wl_pointer*, u32, wl_fixed_t, wl_fixed_t) noexcept -> void;
     auto pointer_button_handler(void*, wl_pointer*, u32, u32, u32, u32) noexcept -> void;
@@ -84,22 +79,17 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals       = *std::bit_cast<Globals*>(data);
         auto  _capabilities = narrow<wl_seat_capability>(capabilities);
         if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_KEYBOARD)) {
-            auto& [keyboard, state] = globals.keyboards
-                                        .emplace_back(wl::Keyboard::create(seat), KeyboardState {});
+            auto& [keyboard, state] = globals.keyboards.emplace_back(wl::Keyboard::create(seat), KeyboardState {});
             wl_keyboard_add_listener(keyboard, &g_keyboard_listener, &state);
 
-            state.repeat.timer_fd = common::FD::take(timerfd_create(CLOCK_MONOTONIC,
-                                                                    TFD_CLOEXEC | TFD_NONBLOCK));
+            state.repeat.timer_fd = common::FD::take(timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK));
         }
         if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_POINTER)) {
-            auto& [pointer, state] = globals.pointers
-                                       .emplace_back(wl::Pointer::create(seat), PointerState {});
+            auto& [pointer, state] = globals.pointers.emplace_back(wl::Pointer::create(seat), PointerState {});
             wl_pointer_add_listener(pointer, &g_pointer_listener, &state);
             state.cursor.surface = wl::Surface::create(globals.compositor);
             if (globals.cursor_shape_manager)
-                state.cursor
-                  .shape_device = wl::CursorShapeDevice::create(globals.cursor_shape_manager,
-                                                                pointer);
+                state.cursor.shape_device = wl::CursorShapeDevice::create(globals.cursor_shape_manager, pointer);
         }
         if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_TOUCH)) {
             auto& _ = globals.touchs.emplace_back(wl::Touch::create(seat), TouchState {});
@@ -115,11 +105,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto keyboard_enter_handler(void* data,
-                                wl_keyboard*,
-                                u32,
-                                wl_surface* surface,
-                                wl_array*) noexcept -> void {
+    auto keyboard_enter_handler(void* data, wl_keyboard*, u32, wl_surface* surface, wl_array*) noexcept -> void {
         if (data == nullptr) return;
         auto& globals = get_globals();
 
@@ -145,12 +131,10 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto keyboard_keymap_handler(void* data, wl_keyboard*, u32 format, i32 fd, u32 size) noexcept
-      -> void {
+    auto keyboard_keymap_handler(void* data, wl_keyboard*, u32 format, i32 fd, u32 size) noexcept -> void {
         if (data == nullptr) return;
         auto& globals = get_globals();
-        if (not globals.xkb_context)
-            globals.xkb_context = common::xkb::Context::create(XKB_CONTEXT_NO_FLAGS);
+        if (not globals.xkb_context) globals.xkb_context = common::xkb::Context::create(XKB_CONTEXT_NO_FLAGS);
 
         auto& state = *std::bit_cast<KeyboardState*>(data);
         if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
@@ -165,8 +149,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto keyboard_key_handler(void* data, wl_keyboard*, u32, u32, u32 key, u32 kstate) noexcept
-      -> void {
+    auto keyboard_key_handler(void* data, wl_keyboard*, u32, u32, u32 key, u32 kstate) noexcept -> void {
         if (data == nullptr) return;
         auto& state = *std::bit_cast<KeyboardState*>(data);
         if (not state.focused_window or not state.xkb_state) return;
@@ -177,10 +160,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         const auto keycode = key + 8;
 
         const auto symbol = xkb_state_key_get_one_sym(state.xkb_state, keycode);
-        const auto count  = xkb_state_key_get_utf8(state.xkb_state,
-                                                   keycode,
-                                                   stdr::data(characters),
-                                                   stdr::size(characters));
+        const auto count  = xkb_state_key_get_utf8(state.xkb_state, keycode, stdr::data(characters), stdr::size(characters));
 
         const auto character = (count > 0 and is_text(characters[0])) ? characters[0] : '?';
 
@@ -194,8 +174,7 @@ namespace stormkit::wsi::linux::wayland::wl {
                 state.repeat.c   = character;
                 state.repeat.key = skey;
 
-                if (state.repeat.rate > 1)
-                    timer.it_interval.tv_nsec = 1'000'000'000 / state.repeat.rate;
+                if (state.repeat.rate > 1) timer.it_interval.tv_nsec = 1'000'000'000 / state.repeat.rate;
                 else
                     timer.it_interval.tv_sec = 1;
 
@@ -223,19 +202,12 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& state = *std::bit_cast<KeyboardState*>(data);
         if (not state.xkb_state) return;
 
-        xkb_state_update_mask(state.xkb_state,
-                              mods_depressed,
-                              mods_latched,
-                              mods_locked,
-                              0,
-                              0,
-                              group);
+        xkb_state_update_mask(state.xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto keyboard_repeat_info_handler(void* data, wl_keyboard*, i32 rate, i32 delay) noexcept
-      -> void {
+    auto keyboard_repeat_info_handler(void* data, wl_keyboard*, i32 rate, i32 delay) noexcept -> void {
         if (data == nullptr) return;
 
         auto& state = *std::bit_cast<KeyboardState*>(data);
@@ -318,17 +290,11 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto pointer_motion_handler(void* data,
-                                wl_pointer*,
-                                u32,
-                                wl_fixed_t surface_x,
-                                wl_fixed_t surface_y) noexcept -> void {
+    auto pointer_motion_handler(void* data, wl_pointer*, u32, wl_fixed_t surface_x, wl_fixed_t surface_y) noexcept -> void {
         if (data == nullptr) return;
 
         auto& state = *std::bit_cast<PointerState*>(data);
-        if (not state.focused_window
-            or (state.relative_pointer
-                and check_flag_bit(state.flags, PointerState::Flag::RELATIVE)))
+        if (not state.focused_window or (state.relative_pointer and check_flag_bit(state.flags, PointerState::Flag::RELATIVE)))
             return;
 
         state.x = surface_x;
@@ -339,8 +305,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto pointer_button_handler(void* data, wl_pointer*, u32, u32, u32 button, u32 sstate) noexcept
-      -> void {
+    auto pointer_button_handler(void* data, wl_pointer*, u32, u32, u32 button, u32 sstate) noexcept -> void {
         if (data == nullptr) return;
 
         auto& state = *std::bit_cast<PointerState*>(data);

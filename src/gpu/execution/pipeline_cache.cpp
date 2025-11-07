@@ -44,8 +44,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineCache::create_new_pipeline_cache(const Device& device) noexcept
-      -> LoadSaveExpected<void> {
+    auto PipelineCache::create_new_pipeline_cache(const Device& device) noexcept -> LoadSaveExpected<void> {
         const auto physical_device_infos = device.physical_device().info();
 
         m_serialized.guard.magic     = MAGIC;
@@ -66,10 +65,7 @@ namespace stormkit::gpu {
             .pInitialData    = nullptr,
         };
 
-        m_vk_handle = Try(vk_call<VkPipelineCache>(m_vk_device_table->vkCreatePipelineCache,
-                                                   m_vk_device,
-                                                   &create_info,
-                                                   nullptr)
+        m_vk_handle = Try(vk_call<VkPipelineCache>(m_vk_device_table->vkCreatePipelineCache, m_vk_device, &create_info, nullptr)
                             .transform_error(monadic::from_vk<Result>())
                             .transform_error(result_to_load_error));
 
@@ -78,30 +74,24 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineCache::read_pipeline_cache(const Device& device) noexcept
-      -> LoadSaveExpected<void> {
+    auto PipelineCache::read_pipeline_cache(const Device& device) noexcept -> LoadSaveExpected<void> {
         if (not std::filesystem::exists(m_path)) Ret(create_new_pipeline_cache(device));
 
         const auto physical_device_infos = device.physical_device().info();
 
-        auto file = Try(io::File::open(m_path, io::Access::READ)
-                          .transform_error(sys_to_load_error));
+        auto file = Try(io::File::open(m_path, io::Access::READ).transform_error(sys_to_load_error));
         Try(file.read_to(as_bytes(m_serialized.guard)).transform_error(sys_to_load_error));
         Try(file.read_to(as_bytes(m_serialized.infos)).transform_error(sys_to_load_error));
         Try(file.read_to(as_bytes(m_serialized.uuid.value)).transform_error(sys_to_load_error));
 
         if (m_serialized.guard.magic != MAGIC) {
-            elog("Invalid pipeline cache magic number, have {}, expected: {}",
-                 m_serialized.guard.magic,
-                 MAGIC);
+            elog("Invalid pipeline cache magic number, have {}, expected: {}", m_serialized.guard.magic, MAGIC);
 
             Ret(create_new_pipeline_cache(device));
         }
 
         if (m_serialized.infos.version != VERSION) {
-            elog("Mismatch pipeline cache version, have {}, expected: {}",
-                 m_serialized.infos.version,
-                 VERSION);
+            elog("Mismatch pipeline cache version, have {}, expected: {}", m_serialized.infos.version, VERSION);
 
             Ret(create_new_pipeline_cache(device));
         }
@@ -139,10 +129,7 @@ namespace stormkit::gpu {
             .pInitialData    = stdr::data(data),
         };
 
-        m_vk_handle = Try(vk_call<VkPipelineCache>(m_vk_device_table->vkCreatePipelineCache,
-                                                   m_vk_device,
-                                                   &create_info,
-                                                   nullptr)
+        m_vk_handle = Try(vk_call<VkPipelineCache>(m_vk_device_table->vkCreatePipelineCache, m_vk_device, &create_info, nullptr)
                             .transform_error(monadic::from_vk<Result>())
                             .transform_error(result_to_load_error));
 
@@ -152,9 +139,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto PipelineCache::save_cache() noexcept -> LoadSaveExpected<void> {
-        auto data = Try((vk_enumerate<Byte, usize>(m_vk_device_table->vkGetPipelineCacheData,
-                                                   m_vk_device,
-                                                   m_vk_handle)
+        auto data = Try((vk_enumerate<Byte, usize>(m_vk_device_table->vkGetPipelineCacheData, m_vk_device, m_vk_handle)
                            .transform_error(monadic::from_vk<Result>())
                            .transform_error(result_to_load_error)));
         m_serialized.guard.data_size = stdr::size(data);
@@ -162,8 +147,7 @@ namespace stormkit::gpu {
 
         hash_combine(m_serialized.guard.data_hash, data);
 
-        auto file = Try(io::File::open(m_path, io::Access::WRITE)
-                          .transform_error(sys_to_load_error));
+        auto file = Try(io::File::open(m_path, io::Access::WRITE).transform_error(sys_to_load_error));
 
         Try(file.write(as_bytes(m_serialized.infos)).transform_error(sys_to_load_error));
         Try(file.write(as_bytes(m_serialized.uuid.value)).transform_error(sys_to_load_error));

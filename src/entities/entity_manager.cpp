@@ -77,8 +77,7 @@ namespace stormkit::entities {
     auto EntityManager::has_entity(Entity entity) const -> bool {
         EXPECTS(entity != INVALID_ENTITY);
 
-        return stdr::any_of(entities(), monadic::is_equal(entity))
-               or stdr::any_of(m_added_entities, monadic::is_equal(entity));
+        return stdr::any_of(entities(), monadic::is_equal(entity)) or stdr::any_of(m_added_entities, monadic::is_equal(entity));
     }
 
     /////////////////////////////////////
@@ -86,8 +85,7 @@ namespace stormkit::entities {
     auto EntityManager::has_component(Entity entity, Component::Type type) const -> bool {
         EXPECTS(entity != INVALID_ENTITY and type != Component::INVALID_TYPE);
 
-        return stdr::any_of(m_registered_components_for_entities.at(entity),
-                            monadic::is_equal(type));
+        return stdr::any_of(m_registered_components_for_entities.at(entity), monadic::is_equal(type));
     }
 
     /////////////////////////////////////
@@ -98,17 +96,14 @@ namespace stormkit::entities {
             // a this point, all entities should be valid
             ensures(it != stdr::cend(m_registered_components_for_entities));
 
-            for (auto&& key : it->second | stdv::transform([entity](auto&& type) {
-                                  return component_key_for(entity, type);
-                              }))
+            for (auto&& key : it->second | stdv::transform([entity](auto&& type) { return component_key_for(entity, type); }))
                 m_components.erase(key);
 
             m_entities.erase(entity);
 
             remove_from_systems(entity);
 
-            if (not stdr::any_of(m_added_entities, monadic::is_equal(entity)))
-                m_free_entities.push(entity);
+            if (not stdr::any_of(m_added_entities, monadic::is_equal(entity))) m_free_entities.push(entity);
         }
         m_removed_entities.clear();
 
@@ -140,8 +135,7 @@ namespace stormkit::entities {
             return true;
         };
 
-        stdr::for_each(systems() | stdv::filter(reliable_system_filter),
-                       [e](auto&& system) { system->add_entity(e); });
+        stdr::for_each(systems() | stdv::filter(reliable_system_filter), [e](auto&& system) { system->add_entity(e); });
     }
 
     /////////////////////////////////////
@@ -162,7 +156,6 @@ namespace stormkit::entities {
             return true;
         };
 
-        stdr::for_each(entities() | stdv::filter(reliable_entity_filter),
-                       [&system](auto&& e) { system.add_entity(e); });
+        stdr::for_each(entities() | stdv::filter(reliable_entity_filter), [&system](auto&& e) { system.add_entity(e); });
     }
 } // namespace stormkit::entities

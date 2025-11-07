@@ -35,16 +35,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     auto registry_handler(void*, wl_registry*, u32, const char*, u32) noexcept -> void;
     auto registry_remove_handler(void*, wl_registry*, u32) noexcept -> void;
 
-    auto output_geometry_handler(void*,
-                                 wl_output*,
-                                 i32,
-                                 i32,
-                                 i32,
-                                 i32,
-                                 i32,
-                                 const char*,
-                                 const char*,
-                                 i32) noexcept -> void;
+    auto output_geometry_handler(void*, wl_output*, i32, i32, i32, i32, i32, const char*, const char*, i32) noexcept -> void;
     auto output_mode_handler(void*, wl_output*, u32, i32, i32, i32) noexcept -> void;
     auto output_done_handler(void*, wl_output*) noexcept -> void;
     auto output_scale_handler(void*, wl_output*, i32) noexcept -> void;
@@ -57,13 +48,9 @@ namespace stormkit::wsi::linux::wayland::wl {
     /////////////////////////////////////
     auto get_monitor(Globals& _globals, void* output) noexcept -> Monitor& {
         const auto output_id = std::bit_cast<uptr>(output);
-        const auto is_output = [&output_id](const auto& pair) noexcept {
-            return pair.id == output_id;
-        };
+        const auto is_output = [&output_id](const auto& pair) noexcept { return pair.id == output_id; };
 
-        if (auto it = stdr::find_if(_globals.monitors, is_output);
-            it != stdr::end(_globals.monitors))
-            return it->monitor;
+        if (auto it = stdr::find_if(_globals.monitors, is_output); it != stdr::end(_globals.monitors)) return it->monitor;
 
         _globals.monitors.push_back(WaylandMonitor { .id = output_id, .monitor = {} });
         return _globals.monitors.back().monitor;
@@ -132,9 +119,7 @@ namespace stormkit::wsi::linux::wayland::wl {
               make_binder_to_array<&Globals::outputs>(),
               4,
               [](Globals& _globals, void* output) static noexcept {
-                  wl_output_add_listener(std::bit_cast<wl_output*>(output),
-                                         &g_output_listener,
-                                         &_globals);
+                  wl_output_add_listener(std::bit_cast<wl_output*>(output), &g_output_listener, &_globals);
               } },
            },
           {
@@ -143,50 +128,33 @@ namespace stormkit::wsi::linux::wayland::wl {
               make_binder<&Globals::xdg_wm_base>(),
               3,
               [](Globals& _globals, void* output) static noexcept {
-                  xdg_wm_base_add_listener(std::bit_cast<xdg_wm_base*>(output),
-                                           &g_wm_base_listener,
-                                           &_globals);
+                  xdg_wm_base_add_listener(std::bit_cast<xdg_wm_base*>(output), &g_wm_base_listener, &_globals);
               } },
            },
-          { frozen::string { wl_shm_interface.name },
-           { &wl_shm_interface, make_binder<&Globals::shm>(), 1 } },
+          { frozen::string { wl_shm_interface.name }, { &wl_shm_interface, make_binder<&Globals::shm>(), 1 } },
           { frozen::string { zxdg_decoration_manager_v1_interface.name },
-           { &zxdg_decoration_manager_v1_interface,
-              make_binder<&Globals::decoration_manager>(),
-              1 } },
+           { &zxdg_decoration_manager_v1_interface, make_binder<&Globals::decoration_manager>(), 1 } },
           { frozen::string { wl_seat_interface.name },
            { &wl_seat_interface,
               make_binder<&Globals::seat>(),
               8,
               [](Globals& _globals, void* output) static noexcept {
-                  wl_seat_add_listener(std::bit_cast<wl_seat*>(output),
-                                       &g_seat_listener,
-                                       &_globals);
+                  wl_seat_add_listener(std::bit_cast<wl_seat*>(output), &g_seat_listener, &_globals);
               } } },
           { frozen::string { wp_pointer_warp_v1_interface.name },
            { &wp_pointer_warp_v1_interface, make_binder<&Globals::pointer_warp>(), 1 } },
           { frozen::string { zwp_pointer_constraints_v1_interface.name },
-           { &zwp_pointer_constraints_v1_interface,
-              make_binder<&Globals::pointer_constraints>(),
-              1 } },
+           { &zwp_pointer_constraints_v1_interface, make_binder<&Globals::pointer_constraints>(), 1 } },
           { frozen::string { wp_cursor_shape_manager_v1_interface.name },
-           { &wp_cursor_shape_manager_v1_interface,
-              make_binder<&Globals::cursor_shape_manager>(),
-              1 } },
+           { &wp_cursor_shape_manager_v1_interface, make_binder<&Globals::cursor_shape_manager>(), 1 } },
           { frozen::string { zwp_relative_pointer_manager_v1_interface.name },
-           { &zwp_relative_pointer_manager_v1_interface,
-              make_binder<&Globals::relative_pointer_manager>(),
-              1 } },
+           { &zwp_relative_pointer_manager_v1_interface, make_binder<&Globals::relative_pointer_manager>(), 1 } },
           { frozen::string { wp_single_pixel_buffer_manager_v1_interface.name },
-           { &wp_single_pixel_buffer_manager_v1_interface,
-              make_binder<&Globals::single_pixel_buffer_manager>(),
-              1 } },
+           { &wp_single_pixel_buffer_manager_v1_interface, make_binder<&Globals::single_pixel_buffer_manager>(), 1 } },
           { frozen::string { wp_viewporter_interface.name },
            { &wp_viewporter_interface, make_binder<&Globals::viewporter>(), 1 } },
           { frozen::string { wp_content_type_manager_v1_interface.name },
-           { &wp_content_type_manager_v1_interface,
-              make_binder<&Globals::content_type_manager>(),
-              1 } },
+           { &wp_content_type_manager_v1_interface, make_binder<&Globals::content_type_manager>(), 1 } },
         });
     } // namespace
 
@@ -233,10 +201,8 @@ namespace stormkit::wsi::linux::wayland::wl {
 
             const auto theme = std::getenv("XCURSOR_THEME");
 
-            _globals.cursor_theme = wl::CursorTheme::create(theme, cursor_size, _globals.shm);
-            _globals.cursor_theme_high_dpi = wl::CursorTheme::create(theme,
-                                                                     cursor_size * 2,
-                                                                     _globals.shm);
+            _globals.cursor_theme          = wl::CursorTheme::create(theme, cursor_size, _globals.shm);
+            _globals.cursor_theme_high_dpi = wl::CursorTheme::create(theme, cursor_size * 2, _globals.shm);
         }
 
         _globals.initialized = true;
@@ -254,27 +220,19 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto registry_handler(void*        data,
-                          wl_registry* registry,
-                          u32          id,
-                          const char*  interface,
-                          u32          version) noexcept -> void {
+    auto registry_handler(void* data, wl_registry* registry, u32 id, const char* interface, u32 version) noexcept -> void {
         dlog("Registry found interface {} (id: {}, version: {})", interface, id, version);
 
         auto& _globals = *std::bit_cast<Globals*>(data);
 
-        const auto interface_name = std::string_view { interface,
-                                                       std::char_traits<char>::length(interface) };
+        const auto interface_name = std::string_view { interface, std::char_traits<char>::length(interface) };
 
         const auto it = INTERFACE_MAP.find(interface_name);
         if (it == stdr::cend(INTERFACE_MAP)) return;
 
         const auto& [_, binder] = *it;
         if (version < binder.version) {
-            elog("Requested version {} for interface {} is not supported (found {})",
-                 binder.version,
-                 interface_name,
-                 version);
+            elog("Requested version {} for interface {} is not supported (found {})", binder.version, interface_name, version);
             return;
         }
 
@@ -291,28 +249,15 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto output_geometry_handler(void*      data,
-                                 wl_output* output,
-                                 i32,
-                                 i32,
-                                 i32,
-                                 i32,
-                                 i32,
-                                 const char*,
-                                 const char*,
-                                 i32) noexcept -> void {
+    auto output_geometry_handler(void* data, wl_output* output, i32, i32, i32, i32, i32, const char*, const char*, i32) noexcept
+      -> void {
         auto&       _globals = *std::bit_cast<Globals*>(data);
         const auto& _        = get_monitor(_globals, output);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto output_mode_handler(void*      data,
-                             wl_output* output,
-                             u32,
-                             i32 width,
-                             i32 height,
-                             i32) noexcept -> void {
+    auto output_mode_handler(void* data, wl_output* output, u32, i32 width, i32 height, i32) noexcept -> void {
         auto& _globals = *std::bit_cast<Globals*>(data);
         auto& monitor  = get_monitor(_globals, output);
 
@@ -346,8 +291,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto output_description_handler(void* data, wl_output* output, const char* description) noexcept
-      -> void {
+    auto output_description_handler(void* data, wl_output* output, const char* description) noexcept -> void {
         auto& _globals = *std::bit_cast<Globals*>(data);
         auto& monitor  = get_monitor(_globals, output);
         monitor.name   = std::format("{} ({})", monitor.name, description);

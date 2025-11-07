@@ -35,8 +35,7 @@
         LOG_MODULE.flog(std::forward<Args>(args)...);                         \
     }
 
-#define IN_MODULE_NAMED_LOGGER(NAME, module_chars) \
-    inline constexpr auto NAME = stormkit::log::Module { module_chars };
+#define IN_MODULE_NAMED_LOGGER(NAME, module_chars) inline constexpr auto NAME = stormkit::log::Module { module_chars };
 
 #define IN_MODULE_LOGGER(module)                                              \
     IN_MODULE_NAMED_LOGGER(LOG_MODULE, module)                                \

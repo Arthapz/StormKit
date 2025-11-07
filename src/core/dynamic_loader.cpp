@@ -42,14 +42,12 @@ namespace stormkit {
         m_library_handle = ::LoadLibraryExW(std::data(wfilepath), nullptr, 0);
 
         if (not m_library_handle) [[unlikely]]
-            return std::unexpected(std::error_code { as<i32>(GetLastError()),
-                                                     std::system_category() });
+            return std::unexpected(std::error_code { as<i32>(GetLastError()), std::system_category() });
 #else
         m_library_handle = ::dlopen(filepath.c_str(), RTLD_LAZY | RTLD_LOCAL);
 
         if (not m_library_handle) [[unlikely]]
-            return std::unexpected(std::error_code { static_cast<i32>(errno),
-                                                     std::system_category() });
+            return std::unexpected(std::error_code { static_cast<i32>(errno), std::system_category() });
 #endif
 
         m_filepath = std::move(filepath);
@@ -65,14 +63,12 @@ namespace stormkit {
         auto func = ::GetProcAddress(std::bit_cast<HMODULE>(m_library_handle), std::data(name));
 
         if (not func) [[unlikely]]
-            return std::unexpected(std::error_code { as<i32>(::GetLastError()),
-                                                     std::system_category() });
+            return std::unexpected(std::error_code { as<i32>(::GetLastError()), std::system_category() });
 #else
         auto func = ::dlsym(m_library_handle, std::data(name));
 
         if (not func) [[unlikely]]
-            return std::unexpected(std::error_code { static_cast<i32>(errno),
-                                                     std::system_category() });
+            return std::unexpected(std::error_code { static_cast<i32>(errno), std::system_category() });
 #endif
 
         return { func };

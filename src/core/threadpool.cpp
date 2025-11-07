@@ -49,8 +49,7 @@ namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
     auto ThreadPool::join_all() -> void {
-        for (const auto _ : range(m_worker_count))
-            post_task<void>(Task::Type::Terminate, [] {}, ThreadPool::NoFuture);
+        for (const auto _ : range(m_worker_count)) post_task<void>(Task::Type::Terminate, [] {}, ThreadPool::NoFuture);
 
         for (auto& thread : m_workers)
             if (thread.joinable()) thread.join();
@@ -64,8 +63,7 @@ namespace stormkit {
 
             {
                 auto lock = std::unique_lock { m_mutex };
-                if (std::empty(m_tasks))
-                    m_work_signal.wait(lock, [this] { return not std::empty(m_tasks); });
+                if (std::empty(m_tasks)) m_work_signal.wait(lock, [this] { return not std::empty(m_tasks); });
 
                 task = std::move(m_tasks.front());
                 m_tasks.pop();

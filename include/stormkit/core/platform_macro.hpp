@@ -146,14 +146,8 @@
     #define STORMKIT_PUSH_WARNINGS  _Pragma("clang diagnostic push")
     #define STORMKIT_POP_WARNINGS   _Pragma("clang diagnostic pop")
 #elif defined(__GNUC__) or defined(__GNUG__)
-    #define STORMKIT_COMPILER_GCC          \
-        "GCC "                             \
-          + std::to_string(__GNUC__)       \
-          + "."                            \
-          + std::to_string(__GNUC_MINOR__) \
-          + "."                            \
-          + "."                            \
-          + std::to_string(__GNUC_PATCHLEVEL__)
+    #define STORMKIT_COMPILER_GCC \
+        "GCC " + std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + "." + std::to_string(__GNUC_PATCHLEVEL__)
     #define STORMKIT_COMPILER      STORMKIT_COMPILER_GCC
     #define STORMKIT_PUSH_WARNINGS _Pragma("GCC diagnostic push")
     #define STORMKIT_POP_WARNINGS  _Pragma("GCC diagnostic pop")

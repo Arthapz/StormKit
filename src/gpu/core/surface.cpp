@@ -37,8 +37,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Surface::do_init_from_window(const Instance& instance, const wsi::Window& window) noexcept
-      -> Expected<void> {
+    auto Surface::do_init_from_window(const Instance& instance, const wsi::Window& window) noexcept -> Expected<void> {
         EXPECTS(window.is_open());
         m_vk_instance = instance.native_handle();
 #if defined(STORMKIT_OS_WINDOWS)
@@ -50,10 +49,7 @@ namespace stormkit::gpu {
                 .hinstance = GetModuleHandleW(nullptr),
                 .hwnd      = std::bit_cast<HWND>(window.native_handle())
             };
-            return vk_call<VkSurfaceKHR>(vkCreateWin32SurfaceKHR,
-                                         instance.native_handle(),
-                                         &create_info,
-                                         nullptr);
+            return vk_call<VkSurfaceKHR>(vkCreateWin32SurfaceKHR, instance.native_handle(), &create_info, nullptr);
         };
 #elif defined(STORMKIT_OS_MACOS)
         const auto create_surface = [&window, &instance] {
@@ -64,10 +60,7 @@ namespace stormkit::gpu {
                 .pView = window.native_handle()
             };
             std::println("{}", window.native_handle());
-            return vk_call<VkSurfaceKHR>(vkCreateMacOSSurfaceMVK,
-                                         instance.native_handle(),
-                                         &create_info,
-                                         nullptr);
+            return vk_call<VkSurfaceKHR>(vkCreateMacOSSurfaceMVK, instance.native_handle(), &create_info, nullptr);
         };
 #elif defined(STORMKIT_OS_LINUX)
         const auto make_wayland_surface = [&window, &instance] {
@@ -83,10 +76,7 @@ namespace stormkit::gpu {
                 .display = handles->display,
                 .surface = handles->surface
             };
-            return vk_call<VkSurfaceKHR>(vkCreateWaylandSurfaceKHR,
-                                         instance.native_handle(),
-                                         &create_info,
-                                         nullptr);
+            return vk_call<VkSurfaceKHR>(vkCreateWaylandSurfaceKHR, instance.native_handle(), &create_info, nullptr);
         };
         const auto make_xcb_surface = [&window, &instance] {
             struct Handles {
@@ -103,14 +93,11 @@ namespace stormkit::gpu {
                 .connection = handles->connection,
                 .window     = handles->window
             };
-            return vk_call<VkSurfaceKHR>(vkCreateXcbSurfaceKHR,
-                                         instance.native_handle(),
-                                         &create_info,
-                                         nullptr);
+            return vk_call<VkSurfaceKHR>(vkCreateXcbSurfaceKHR, instance.native_handle(), &create_info, nullptr);
         };
 
-        const auto create_surface = [&window, &make_wayland_surface, &make_xcb_surface] noexcept
-          -> FunctionRef<VulkanExpected<VkSurfaceKHR>()> {
+        const auto create_surface =
+          [&window, &make_wayland_surface, &make_xcb_surface] noexcept -> FunctionRef<VulkanExpected<VkSurfaceKHR>()> {
             const auto is_wayland = window.wm() == wsi::WM::WAYLAND;
 
             if (is_wayland) return make_wayland_surface;
@@ -135,8 +122,6 @@ namespace stormkit::gpu {
         m_vk_handle = { [vk_instance = m_vk_instance](auto handle) noexcept {
             vkDestroySurfaceKHR(vk_instance, handle, nullptr);
         } };
-        return create_surface()
-          .transform(core::monadic::set(m_vk_handle))
-          .transform_error(core::monadic::narrow<Result>());
+        return create_surface().transform(core::monadic::set(m_vk_handle)).transform_error(core::monadic::narrow<Result>());
     }
 } // namespace stormkit::gpu

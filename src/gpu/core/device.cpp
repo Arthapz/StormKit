@@ -43,8 +43,7 @@ namespace {
 
     auto vma_import_functions_from_volk(const VmaAllocatorCreateInfo* pAllocatorCreateInfo,
                                         VolkDeviceTable*              device_table,
-                                        VmaVulkanFunctions*           pDstVulkanFunctions) noexcept
-      -> VkResult {
+                                        VmaVulkanFunctions*           pDstVulkanFunctions) noexcept -> VkResult {
         using std::memset;
         EXPECTS(pAllocatorCreateInfo != nullptr);
         EXPECTS(pAllocatorCreateInfo->instance != nullptr);
@@ -66,8 +65,7 @@ namespace {
 
         COPY_GLOBAL_TO_VMA_FUNC(vkGetPhysicalDeviceProperties, vkGetPhysicalDeviceProperties)
 
-        COPY_GLOBAL_TO_VMA_FUNC(vkGetPhysicalDeviceMemoryProperties,
-                                vkGetPhysicalDeviceMemoryProperties)
+        COPY_GLOBAL_TO_VMA_FUNC(vkGetPhysicalDeviceMemoryProperties, vkGetPhysicalDeviceMemoryProperties)
 
         COPY_DEVICE_TO_VMA_FUNC(vkAllocateMemory, vkAllocateMemory)
 
@@ -104,11 +102,9 @@ namespace {
         if (pAllocatorCreateInfo->vulkanApiVersion >= VK_MAKE_VERSION(1, 1, 0))
 
         {
-            COPY_GLOBAL_TO_VMA_FUNC(vkGetPhysicalDeviceMemoryProperties2,
-                                    vkGetPhysicalDeviceMemoryProperties2KHR)
+            COPY_GLOBAL_TO_VMA_FUNC(vkGetPhysicalDeviceMemoryProperties2, vkGetPhysicalDeviceMemoryProperties2KHR)
 
-            COPY_DEVICE_TO_VMA_FUNC(vkGetBufferMemoryRequirements2,
-                                    vkGetBufferMemoryRequirements2KHR)
+            COPY_DEVICE_TO_VMA_FUNC(vkGetBufferMemoryRequirements2, vkGetBufferMemoryRequirements2KHR)
 
             COPY_DEVICE_TO_VMA_FUNC(vkGetImageMemoryRequirements2, vkGetImageMemoryRequirements2KHR)
 
@@ -124,11 +120,9 @@ namespace {
         if (pAllocatorCreateInfo->vulkanApiVersion >= VK_MAKE_VERSION(1, 3, 0))
 
         {
-            COPY_DEVICE_TO_VMA_FUNC(vkGetDeviceBufferMemoryRequirements,
-                                    vkGetDeviceBufferMemoryRequirements)
+            COPY_DEVICE_TO_VMA_FUNC(vkGetDeviceBufferMemoryRequirements, vkGetDeviceBufferMemoryRequirements)
 
-            COPY_DEVICE_TO_VMA_FUNC(vkGetDeviceImageMemoryRequirements,
-                                    vkGetDeviceImageMemoryRequirements)
+            COPY_DEVICE_TO_VMA_FUNC(vkGetDeviceImageMemoryRequirements, vkGetDeviceImageMemoryRequirements)
         }
 
 #endif
@@ -138,11 +132,9 @@ namespace {
         if ((pAllocatorCreateInfo->flags & VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT) != 0)
 
         {
-            COPY_DEVICE_TO_VMA_FUNC(vkGetDeviceBufferMemoryRequirementsKHR,
-                                    vkGetDeviceBufferMemoryRequirements)
+            COPY_DEVICE_TO_VMA_FUNC(vkGetDeviceBufferMemoryRequirementsKHR, vkGetDeviceBufferMemoryRequirements)
 
-            COPY_DEVICE_TO_VMA_FUNC(vkGetDeviceImageMemoryRequirementsKHR,
-                                    vkGetDeviceImageMemoryRequirements)
+            COPY_DEVICE_TO_VMA_FUNC(vkGetDeviceImageMemoryRequirementsKHR, vkGetDeviceImageMemoryRequirements)
         }
 
 #endif
@@ -152,11 +144,9 @@ namespace {
         if ((pAllocatorCreateInfo->flags & VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT) != 0)
 
         {
-            COPY_DEVICE_TO_VMA_FUNC(vkGetBufferMemoryRequirements2KHR,
-                                    vkGetBufferMemoryRequirements2KHR)
+            COPY_DEVICE_TO_VMA_FUNC(vkGetBufferMemoryRequirements2KHR, vkGetBufferMemoryRequirements2KHR)
 
-            COPY_DEVICE_TO_VMA_FUNC(vkGetImageMemoryRequirements2KHR,
-                                    vkGetImageMemoryRequirements2KHR)
+            COPY_DEVICE_TO_VMA_FUNC(vkGetImageMemoryRequirements2KHR, vkGetImageMemoryRequirements2KHR)
         }
 
 #endif
@@ -178,8 +168,7 @@ namespace {
         if ((pAllocatorCreateInfo->flags & VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT) != 0)
 
         {
-            COPY_GLOBAL_TO_VMA_FUNC(vkGetPhysicalDeviceMemoryProperties2KHR,
-                                    vkGetPhysicalDeviceMemoryProperties2KHR)
+            COPY_GLOBAL_TO_VMA_FUNC(vkGetPhysicalDeviceMemoryProperties2KHR, vkGetPhysicalDeviceMemoryProperties2KHR)
         }
 
 #endif
@@ -208,8 +197,7 @@ namespace stormkit::gpu {
     template<QueueFlag flag, QueueFlag... no_flag>
     constexpr auto find_queue() {
         return [](const auto& family) static noexcept {
-            return core::check_flag_bit(family.flags, flag)
-                   and (not core::check_flag_bit(family.flags, no_flag) and ...);
+            return core::check_flag_bit(family.flags, flag) and (not core::check_flag_bit(family.flags, no_flag) and ...);
         };
     }
 
@@ -237,24 +225,18 @@ namespace stormkit::gpu {
         }();
 
         const auto compute_queue = [&queue_families]() -> Queue_ {
-            const auto it = stdr::find_if(queue_families,
-                                          find_queue<QueueFlag::TRANSFER, QueueFlag::GRAPHICS>());
+            const auto it = stdr::find_if(queue_families, find_queue<QueueFlag::TRANSFER, QueueFlag::GRAPHICS>());
             if (it == stdr::cend(queue_families)) return {};
 
-            return { .id    = as<u32>(std::distance(stdr::cbegin(queue_families), it)),
-                     .count = it->count,
-                     .flags = it->flags };
+            return { .id = as<u32>(std::distance(stdr::cbegin(queue_families), it)), .count = it->count, .flags = it->flags };
         }();
 
         const auto transfert_queue = [&queue_families]() -> Queue_ {
-            const auto it = stdr::
-              find_if(queue_families,
-                      find_queue<QueueFlag::COMPUTE, QueueFlag::GRAPHICS, QueueFlag::TRANSFER>());
+            const auto it = stdr::find_if(queue_families,
+                                          find_queue<QueueFlag::COMPUTE, QueueFlag::GRAPHICS, QueueFlag::TRANSFER>());
             if (it == stdr::cend(queue_families)) return {};
 
-            return { .id    = as<u32>(std::distance(stdr::cbegin(queue_families), it)),
-                     .count = it->count,
-                     .flags = it->flags };
+            return { .id = as<u32>(std::distance(stdr::cbegin(queue_families), it)), .count = it->count, .flags = it->flags };
         }();
 
         const auto queues = [&] {
@@ -320,10 +302,8 @@ namespace stormkit::gpu {
             constexpr auto as_czstring = [](const auto& v) { return v; };
 
             auto e = transform(BASE_EXTENSIONS, as_czstring);
-            if (swapchain_available and info.enable_swapchain)
-                merge(e, transform(SWAPCHAIN_EXTENSIONS, as_czstring));
-            if (raytracing_available and info.enable_raytracing)
-                merge(e, transform(RAYTRACING_EXTENSIONS, as_czstring));
+            if (swapchain_available and info.enable_swapchain) merge(e, transform(SWAPCHAIN_EXTENSIONS, as_czstring));
+            if (raytracing_available and info.enable_raytracing) merge(e, transform(RAYTRACING_EXTENSIONS, as_czstring));
 
             return e;
         }();
@@ -343,8 +323,7 @@ namespace stormkit::gpu {
         };
 
         const auto next = [&]() -> void* {
-            if (raytracing_available and info.enable_raytracing)
-                return std::bit_cast<void*>(&rt_pipeline_feature);
+            if (raytracing_available and info.enable_raytracing) return std::bit_cast<void*>(&rt_pipeline_feature);
             return nullptr;
         }();
 
@@ -375,10 +354,7 @@ namespace stormkit::gpu {
             .pTypeExternalMemoryHandleTypes = nullptr,
         };
 
-        return vk_call<VkDevice>(vkCreateDevice,
-                                 m_physical_device->native_handle(),
-                                 &create_info,
-                                 nullptr)
+        return vk_call<VkDevice>(vkCreateDevice, m_physical_device->native_handle(), &create_info, nullptr)
           .transform(core::monadic::set(m_vk_handle))
           .and_then([this, &allocator_create_info] mutable noexcept {
               allocator_create_info.device = m_vk_handle;
@@ -388,9 +364,7 @@ namespace stormkit::gpu {
                   vk_device_table.vkDestroyDevice(handle, nullptr);
               } };
               m_vk_handle = std::move(raw);
-              return vk_call<VmaVulkanFunctions>(vma_import_functions_from_volk,
-                                                 &allocator_create_info,
-                                                 &m_vk_device_table);
+              return vk_call<VmaVulkanFunctions>(vma_import_functions_from_volk, &allocator_create_info, &m_vk_device_table);
           })
           .transform(core::monadic::set(m_vma_function_table))
           .and_then([this, &allocator_create_info] mutable noexcept {
@@ -406,9 +380,7 @@ namespace stormkit::gpu {
                                                 .count = raster_queue.count,
                                                 .flags = raster_queue.flags };
 
-              return set_object_name(*this,
-                                     std::format("StormKit:Device ({})",
-                                                 m_physical_device->info().device_name));
+              return set_object_name(*this, std::format("StormKit:Device ({})", m_physical_device->info().device_name));
           });
     }
 
@@ -416,8 +388,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     auto Device::wait_for_fences(std::span<const Ref<const Fence>> fences,
                                  bool                              wait_all,
-                                 const std::chrono::milliseconds&  timeout) const noexcept
-      -> Expected<Result> {
+                                 const std::chrono::milliseconds&  timeout) const noexcept -> Expected<Result> {
         static constexpr auto POSSIBLE_RESULTS = std::array { VK_SUCCESS, VK_NOT_READY };
 
         const auto vk_fences = fences | stdv::transform(monadic::to_vk()) | stdr::to<std::vector>();
@@ -428,29 +399,23 @@ namespace stormkit::gpu {
                                  stdr::size(vk_fences),
                                  stdr::data(vk_fences),
                                  wait_all,
-                                 std::chrono::duration_cast<std::chrono::nanoseconds>(timeout)
-                                   .count())
+                                 std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count())
           .transform(core::monadic::narrow<Result>())
           .transform_error(core::monadic::narrow<Result>());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Device::reset_fences(std::span<const Ref<const Fence>> fences) const noexcept
-      -> Expected<void> {
+    auto Device::reset_fences(std::span<const Ref<const Fence>> fences) const noexcept -> Expected<void> {
         const auto vk_fences = fences | stdv::transform(monadic::to_vk()) | stdr::to<std::vector>();
 
-        return vk_call(m_vk_device_table.vkResetFences,
-                       m_vk_handle,
-                       std ::ranges::size(vk_fences),
-                       stdr::data(vk_fences))
+        return vk_call(m_vk_device_table.vkResetFences, m_vk_handle, std ::ranges::size(vk_fences), stdr::data(vk_fences))
           .transform_error(core::monadic::narrow<Result>());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Device::set_object_name(u64 object, DebugObjectType type, std::string_view name) const
-      -> Expected<void> {
+    auto Device::set_object_name(u64 object, DebugObjectType type, std::string_view name) const -> Expected<void> {
         if (not vkSetDebugUtilsObjectNameEXT) return {};
 
         const auto info = VkDebugUtilsObjectNameInfoEXT {
@@ -461,8 +426,7 @@ namespace stormkit::gpu {
             .pObjectName  = std::data(name),
         };
 
-        return vk_call(vkSetDebugUtilsObjectNameEXT, m_vk_handle, &info)
-          .transform_error(monadic::from_vk<Result>());
+        return vk_call(vkSetDebugUtilsObjectNameEXT, m_vk_handle, &info).transform_error(monadic::from_vk<Result>());
     }
 
     /////////////////////////////////////
@@ -472,11 +436,9 @@ namespace stormkit::gpu {
         const auto& device    = *std::bit_cast<const Device*>(user_data);
 
         if (func_name == "vkAllocateCommandBuffers")
-            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
-                                                       .vkAllocateCommandBuffers);
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkAllocateCommandBuffers);
         else if (func_name == "vkAllocateDescriptorSets")
-            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
-                                                       .vkAllocateDescriptorSets);
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkAllocateDescriptorSets);
         else if (func_name == "vkAllocateMemory")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkAllocateMemory);
         else if (func_name == "vkBeginCommandBuffer")
@@ -512,15 +474,13 @@ namespace stormkit::gpu {
         else if (func_name == "vkCreateDescriptorPool")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateDescriptorPool);
         else if (func_name == "vkCreateDescriptorSetLayout")
-            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
-                                                       .vkCreateDescriptorSetLayout);
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateDescriptorSetLayout);
         else if (func_name == "vkCreateFence")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateFence);
         else if (func_name == "vkCreateFramebuffer")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateFramebuffer);
         else if (func_name == "vkCreateGraphicsPipelines")
-            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
-                                                       .vkCreateGraphicsPipelines);
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateGraphicsPipelines);
         else if (func_name == "vkCreateImage")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkCreateImage);
         else if (func_name == "vkCreateImageView")
@@ -544,8 +504,7 @@ namespace stormkit::gpu {
         else if (func_name == "vkDestroyDescriptorPool")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyDescriptorPool);
         else if (func_name == "vkDestroyDescriptorSetLayout")
-            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
-                                                       .vkDestroyDescriptorSetLayout);
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyDescriptorSetLayout);
         else if (func_name == "vkDestroyFence")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkDestroyFence);
         else if (func_name == "vkDestroyFramebuffer")
@@ -577,8 +536,7 @@ namespace stormkit::gpu {
         else if (func_name == "vkEndCommandBuffer")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkEndCommandBuffer);
         else if (func_name == "vkFlushMappedMemoryRanges")
-            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
-                                                       .vkFlushMappedMemoryRanges);
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkFlushMappedMemoryRanges);
         else if (func_name == "vkFreeCommandBuffers")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkFreeCommandBuffers);
         else if (func_name == "vkFreeDescriptorSets")
@@ -586,13 +544,11 @@ namespace stormkit::gpu {
         else if (func_name == "vkFreeMemory")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkFreeMemory);
         else if (func_name == "vkGetBufferMemoryRequirements")
-            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
-                                                       .vkGetBufferMemoryRequirements);
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkGetBufferMemoryRequirements);
         else if (func_name == "vkGetDeviceQueue")
             return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkGetDeviceQueue);
         else if (func_name == "vkGetImageMemoryRequirements")
-            return std::bit_cast<PFN_vkVoidFunction>(device.device_table()
-                                                       .vkGetImageMemoryRequirements);
+            return std::bit_cast<PFN_vkVoidFunction>(device.device_table().vkGetImageMemoryRequirements);
         else if (func_name == "vkGetPhysicalDeviceProperties")
             return std::bit_cast<PFN_vkVoidFunction>(vkGetPhysicalDeviceProperties);
         else if (func_name == "vkGetPhysicalDeviceMemoryProperties")

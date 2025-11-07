@@ -19,8 +19,7 @@ namespace stormkit { inline namespace core {
         auto get_thread_name(pthread_t id) noexcept -> std::string {
             auto name = std::array<char, 256> {};
             pthread_getname_np(id, std::data(name), std::size(name));
-            return std::string { std::begin(name),
-                                 std::begin(name) + std::strlen(std::data(name)) };
+            return std::string { std::begin(name), std::begin(name) + std::strlen(std::data(name)) };
         }
     } // namespace details
 

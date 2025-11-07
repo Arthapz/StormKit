@@ -63,8 +63,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
-      -> Window {
+    auto Window::open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept -> Window {
         auto window = Window {};
         window.m_impl->open(std::move(title), size, flags);
         return window;

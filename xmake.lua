@@ -138,7 +138,7 @@ namespace("stormkit", function()
                 end
 
                 if is_plat("windows") or is_plat("mingw") then
-                    for _, plat in ipairs({ "posix", "linux", "darwin", "macosx", "ios", "bsd", "android" }) do
+                    for _, plat in ipairs({ "posix", "linux", "darwin", "macos", "ios", "bsd", "android" }) do
                         remove_files(path.join(src_path, plat, "**"))
                         remove_headerfiles(path.join(src_path, plat, "**"))
                     end
@@ -148,17 +148,17 @@ namespace("stormkit", function()
                         remove_headerfiles(path.join(src_path, plat, "**"))
                     end
                 elseif is_plat("ios") then
-                    for _, plat in ipairs({ "linux", "macosx", "win32", "bsd", "android" }) do
+                    for _, plat in ipairs({ "linux", "macos", "win32", "bsd", "android" }) do
                         remove_files(path.join(src_path, plat, "**"))
                         remove_headerfiles(path.join(src_path, plat, "**"))
                     end
                 elseif is_plat("android") then
-                    for _, plat in ipairs({ "linux", "darwin", "macosx", "ios", "bsd", "win32" }) do
+                    for _, plat in ipairs({ "linux", "darwin", "macos", "ios", "bsd", "win32" }) do
                         remove_files(path.join(src_path, plat, "**"))
                         remove_headerfiles(path.join(src_path, plat, "**"))
                     end
                 elseif is_plat("linux") then
-                    for _, plat in ipairs({ "win32", "darwin", "macosx", "ios", "bsd", "android" }) do
+                    for _, plat in ipairs({ "win32", "darwin", "macos", "ios", "bsd", "android" }) do
                         remove_files(path.join(src_path, plat, "**"))
                         remove_headerfiles(path.join(src_path, plat, "**"))
                     end

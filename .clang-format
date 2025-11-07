@@ -78,9 +78,9 @@ BreakBeforeBraces: Attach
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
 BreakStringLiterals: 'true'
-ColumnLimit: '100'
+ColumnLimit: '130'
 CompactNamespaces: 'true'
-ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
+ConstructorInitializerAllOnOneLineOrOnePerLine: 'true'
 ConstructorInitializerIndentWidth: '4'
 IncludeBlocks: Preserve
 IndentCaseLabels: 'true'
@@ -136,7 +136,7 @@ BreakBinaryOperations: OnePerLine
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
 BreakStringLiterals: 'true'
-ColumnLimit: '100'
+ColumnLimit: '130'
 CompactNamespaces: 'true'
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
 ConstructorInitializerIndentWidth: '4'

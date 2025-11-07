@@ -80,12 +80,8 @@ namespace stormkit::gpu {
         // }
     } // namespace
 
-    auto Image::do_init(const VkImageCreateInfo& create_info,
-                        MemoryPropertyFlag       memory_properties) noexcept -> Expected<void> {
-        return vk_call<VkImage>(m_vk_device_table->vkCreateImage,
-                                m_vk_device,
-                                &create_info,
-                                nullptr)
+    auto Image::do_init(const VkImageCreateInfo& create_info, MemoryPropertyFlag memory_properties) noexcept -> Expected<void> {
+        return vk_call<VkImage>(m_vk_device_table->vkCreateImage, m_vk_device, &create_info, nullptr)
           .transform(core::monadic::set(m_vk_handle))
           .and_then([this, memory_properties] noexcept -> VulkanExpected<VmaAllocation> {
               const auto create_info = VmaAllocationCreateInfo {
@@ -100,11 +96,7 @@ namespace stormkit::gpu {
               };
 
               auto out    = VulkanExpected<VmaAllocation> { std::in_place, nullptr };
-              auto result = vmaAllocateMemoryForImage(m_vma_allocator,
-                                                      m_vk_handle,
-                                                      &create_info,
-                                                      &*out,
-                                                      nullptr);
+              auto result = vmaAllocateMemoryForImage(m_vma_allocator, m_vk_handle, &create_info, &*out, nullptr);
               if (result != VK_SUCCESS) out = std::unexpected { result };
               else {
                   m_vma_allocation = { [vma_allocator = m_vma_allocator](auto handle) noexcept {
@@ -114,9 +106,7 @@ namespace stormkit::gpu {
               return out;
           })
           .transform(core::monadic::set(m_vma_allocation))
-          .and_then([this] noexcept {
-              return vk_call(vmaBindImageMemory, m_vma_allocator, m_vma_allocation, m_vk_handle);
-          })
+          .and_then([this] noexcept { return vk_call(vmaBindImageMemory, m_vma_allocator, m_vma_allocation, m_vk_handle); })
           .transform_error(monadic::from_vk<Result>());
     }
 } // namespace stormkit::gpu

@@ -23,11 +23,9 @@ import :tga;
 namespace stormkit::image {
     namespace details {
         using namespace stormkit::literals;
-        inline constexpr auto KTX_HEADER
-          = into_bytes({ 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A });
+        inline constexpr auto KTX_HEADER = into_bytes({ 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A });
 
-        inline constexpr auto
-          PNG_HEADER = into_bytes({ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
+        inline constexpr auto PNG_HEADER = into_bytes({ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
 
         inline constexpr auto QOI_HEADER = into_bytes({ 0x71, 0x6f, 0x69, 0x66 });
 
@@ -61,27 +59,19 @@ namespace stormkit::image {
         auto header_to_codec(std::span<const Byte> data) noexcept -> Image::Codec {
             EXPECTS(std::size(data) >= 12);
 
-            if (std::memcmp(std::data(data), std::data(KTX_HEADER), std::size(KTX_HEADER)) == 0)
-                return Image::Codec::KTX;
-            else if (std::memcmp(std::data(data), std::data(PNG_HEADER), std::size(PNG_HEADER))
-                     == 0)
+            if (std::memcmp(std::data(data), std::data(KTX_HEADER), std::size(KTX_HEADER)) == 0) return Image::Codec::KTX;
+            else if (std::memcmp(std::data(data), std::data(PNG_HEADER), std::size(PNG_HEADER)) == 0)
                 return Image::Codec::PNG;
-            else if (std::memcmp(std::data(data), std::data(JPEG_HEADER), std::size(JPEG_HEADER))
-                     == 0)
+            else if (std::memcmp(std::data(data), std::data(JPEG_HEADER), std::size(JPEG_HEADER)) == 0)
                 return Image::Codec::JPEG;
-            else if (std::memcmp(std::data(data), std::data(QOI_HEADER), std::size(QOI_HEADER))
-                     == 0)
+            else if (std::memcmp(std::data(data), std::data(QOI_HEADER), std::size(QOI_HEADER)) == 0)
                 return Image::Codec::QOI;
 
             return Image::Codec::UNKNOWN;
         }
 
-        auto map(std::span<const Byte> bytes, u32 source_count, u32 destination_count) noexcept
-          -> std::vector<Byte> {
-            EXPECTS(source_count <= 4u
-                    and source_count > 0u
-                    and destination_count <= 4u
-                    and destination_count > 0u);
+        auto map(std::span<const Byte> bytes, u32 source_count, u32 destination_count) noexcept -> std::vector<Byte> {
+            EXPECTS(source_count <= 4u and source_count > 0u and destination_count <= 4u and destination_count > 0u);
 
             static constexpr auto BYTE_1_MIN = std::numeric_limits<u8>::min();
             static constexpr auto BYTE_1_MAX = std::numeric_limits<u8>::max();
@@ -98,61 +88,37 @@ namespace stormkit::image {
                 auto       output_it = std::bit_cast<u16*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<u16>(input_it[i],
-                                                    BYTE_1_MIN,
-                                                    BYTE_1_MAX,
-                                                    BYTE_2_MIN,
-                                                    BYTE_2_MAX);
+                    output_it[i] = math::scale<u16>(input_it[i], BYTE_1_MIN, BYTE_1_MAX, BYTE_2_MIN, BYTE_2_MAX);
             } else if (source_count == 1u and destination_count == 4u) {
                 const auto input_it  = std::bit_cast<const u8*>(std::data(data));
                 auto       output_it = std::bit_cast<u32*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<u32>(input_it[i],
-                                                    BYTE_1_MIN,
-                                                    BYTE_1_MAX,
-                                                    BYTE_4_MIN,
-                                                    BYTE_4_MAX);
+                    output_it[i] = math::scale<u32>(input_it[i], BYTE_1_MIN, BYTE_1_MAX, BYTE_4_MIN, BYTE_4_MAX);
             } else if (source_count == 2u and destination_count == 1u) {
                 const auto input_it  = std::bit_cast<const u16*>(std::data(data));
                 auto       output_it = std::bit_cast<u8*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<u8>(input_it[i],
-                                                   BYTE_2_MIN,
-                                                   BYTE_2_MAX,
-                                                   BYTE_1_MIN,
-                                                   BYTE_1_MAX);
+                    output_it[i] = math::scale<u8>(input_it[i], BYTE_2_MIN, BYTE_2_MAX, BYTE_1_MIN, BYTE_1_MAX);
             } else if (source_count == 2u and destination_count == 4u) {
                 const auto input_it  = std::bit_cast<const u16*>(std::data(data));
                 auto       output_it = std::bit_cast<u32*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<u32>(input_it[i],
-                                                    BYTE_2_MIN,
-                                                    BYTE_2_MAX,
-                                                    BYTE_4_MIN,
-                                                    BYTE_4_MAX);
+                    output_it[i] = math::scale<u32>(input_it[i], BYTE_2_MIN, BYTE_2_MAX, BYTE_4_MIN, BYTE_4_MAX);
             } else if (source_count == 4u and destination_count == 1u) {
                 const auto input_it  = std::bit_cast<const u32*>(std::data(data));
                 auto       output_it = std::bit_cast<u8*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<u8>(input_it[i],
-                                                   BYTE_4_MIN,
-                                                   BYTE_4_MAX,
-                                                   BYTE_1_MIN,
-                                                   BYTE_1_MAX);
+                    output_it[i] = math::scale<u8>(input_it[i], BYTE_4_MIN, BYTE_4_MAX, BYTE_1_MIN, BYTE_1_MAX);
             } else if (source_count == 4u and destination_count == 2u) {
                 const auto input_it  = std::bit_cast<const u32*>(std::data(data));
                 auto       output_it = std::bit_cast<u16*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<u16>(input_it[i],
-                                                    BYTE_4_MIN,
-                                                    BYTE_4_MAX,
-                                                    BYTE_2_MIN,
-                                                    BYTE_2_MAX);
+                    output_it[i] = math::scale<u16>(input_it[i], BYTE_4_MIN, BYTE_4_MAX, BYTE_2_MIN, BYTE_2_MAX);
             } else
                 data = { std::ranges::begin(bytes), std::ranges::end(bytes) };
 
@@ -208,44 +174,37 @@ namespace stormkit::image {
     ////////////////////////////////////////
     Image::~Image() noexcept = default;
 
-#define CASE_DO(_E, _Func)                                                                  \
-    case Image::Codec::_E: {                                                                \
-        auto result = details::_Func(data);                                                 \
-        if (!result) {                                                                      \
-            return std::unexpected<Error> { std::in_place,                                  \
-                                            result.error().reason,                          \
-                                            std::format("Failed to load file {}\n    > {}", \
-                                                        filepath.string(),                  \
-                                                        result.error().str_error) };        \
-        }                                                                                   \
-        *this = std::move(*result);                                                         \
-        return {};                                                                          \
+#define CASE_DO(_E, _Func)                                                                                   \
+    case Image::Codec::_E: {                                                                                 \
+        auto result = details::_Func(data);                                                                  \
+        if (!result) {                                                                                       \
+            return std::unexpected<Error> {                                                                  \
+                std::in_place,                                                                               \
+                result.error().reason,                                                                       \
+                std::format("Failed to load file {}\n    > {}", filepath.string(), result.error().str_error) \
+            };                                                                                               \
+        }                                                                                                    \
+        *this = std::move(*result);                                                                          \
+        return {};                                                                                           \
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::load_from_file(std::filesystem::path filepath, Image::Codec codec) noexcept
-      -> std::expected<void, Error> {
+    auto Image::load_from_file(std::filesystem::path filepath, Image::Codec codec) noexcept -> std::expected<void, Error> {
         filepath = std::filesystem::canonical(filepath);
 
         EXPECTS(codec != Image::Codec::UNKNOWN);
         EXPECTS(!std::empty(filepath));
 
         if (!std::filesystem::exists(filepath)) {
-            return std::unexpected<Error> {
-                std::in_place,
-                Error::Reason::FILE_NOT_FOUND,
-                std::format("Failed to open file {}\n    > Incorrect path", filepath.string())
-            };
+            return std::unexpected<Error> { std::in_place,
+                                            Error::Reason::FILE_NOT_FOUND,
+                                            std::format("Failed to open file {}\n    > Incorrect path", filepath.string()) };
         }
 
         return io::read(filepath)
-          .transform_error([](auto&&) static noexcept -> Error {
-              return { Error::Reason::UNKNOWN, "" };
-          })
-          .and_then([this,
-                     &filepath,
-                     codec](auto&& data) mutable noexcept -> std::expected<void, Error> {
+          .transform_error([](auto&&) static noexcept -> Error { return { Error::Reason::UNKNOWN, "" }; })
+          .and_then([this, &filepath, codec](auto&& data) mutable noexcept -> std::expected<void, Error> {
               if (codec == Image::Codec::AUTODETECT) codec = details::filename_to_codec(filepath);
               switch (codec) {
                   CASE_DO (JPEG, load_jpg)
@@ -268,32 +227,29 @@ namespace stormkit::image {
               return std::unexpected<Error> {
                   std::in_place,
                   Error::Reason::INVALID_FORMAT,
-                  std::format("Failed to open image from {}\n    > Invalid format",
-                              filepath.string())
+                  std::format("Failed to open image from {}\n    > Invalid format", filepath.string())
               };
           });
     }
 
 #undef CASE_DO
-#define CASE_DO(_E, _Func, _Name)                                                 \
-    case Image::Codec::_E: {                                                      \
-        auto result = details::_Func(data);                                       \
-        if (!result) {                                                            \
-            return std::unexpected<Error> {                                       \
-                std::in_place,                                                    \
-                result.error().reason,                                            \
-                std::format("Failed to load " _Name " image from data\n    > {}", \
-                            result.error().str_error)                             \
-            };                                                                    \
-        }                                                                         \
-        *this = std::move(*result);                                               \
-        return {};                                                                \
+#define CASE_DO(_E, _Func, _Name)                                                                           \
+    case Image::Codec::_E: {                                                                                \
+        auto result = details::_Func(data);                                                                 \
+        if (!result) {                                                                                      \
+            return std::unexpected<Error> {                                                                 \
+                std::in_place,                                                                              \
+                result.error().reason,                                                                      \
+                std::format("Failed to load " _Name " image from data\n    > {}", result.error().str_error) \
+            };                                                                                              \
+        }                                                                                                   \
+        *this = std::move(*result);                                                                         \
+        return {};                                                                                          \
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::load_from_memory(std::span<const Byte> data, Image::Codec codec) noexcept
-      -> std::expected<void, Error> {
+    auto Image::load_from_memory(std::span<const Byte> data, Image::Codec codec) noexcept -> std::expected<void, Error> {
         EXPECTS(codec != Image::Codec::UNKNOWN);
         EXPECTS(!std::empty(data));
 
@@ -322,36 +278,35 @@ namespace stormkit::image {
     }
 
 #undef CASE_DO
-#define CASE_DO(_E, _Func)                                                                     \
-    case Image::Codec::_E: {                                                                   \
-        auto result = details::_Func(*this, filepath);                                         \
-        if (!result) {                                                                         \
-            return std::unexpected<Error> { std::in_place,                                     \
-                                            result.error().reason,                             \
-                                            std::format("Failed to save to file {}\n    > {}", \
-                                                        filepath.string(),                     \
-                                                        result.error().str_error) };           \
-        }                                                                                      \
-        return {};                                                                             \
+#define CASE_DO(_E, _Func)                                                                                      \
+    case Image::Codec::_E: {                                                                                    \
+        auto result = details::_Func(*this, filepath);                                                          \
+        if (!result) {                                                                                          \
+            return std::unexpected<Error> {                                                                     \
+                std::in_place,                                                                                  \
+                result.error().reason,                                                                          \
+                std::format("Failed to save to file {}\n    > {}", filepath.string(), result.error().str_error) \
+            };                                                                                                  \
+        }                                                                                                       \
+        return {};                                                                                              \
     }
-#define CASE_ARGS_DO(_E, _Func)                                                                \
-    case Image::Codec::_E: {                                                                   \
-        auto result = details::_Func(*this, std::move(args), filepath);                        \
-        if (!result) {                                                                         \
-            return std::unexpected<Error> { std::in_place,                                     \
-                                            result.error().reason,                             \
-                                            std::format("Failed to save to file {}\n    > {}", \
-                                                        filepath.string(),                     \
-                                                        result.error().str_error) };           \
-        }                                                                                      \
-        return {};                                                                             \
+#define CASE_ARGS_DO(_E, _Func)                                                                                 \
+    case Image::Codec::_E: {                                                                                    \
+        auto result = details::_Func(*this, std::move(args), filepath);                                         \
+        if (!result) {                                                                                          \
+            return std::unexpected<Error> {                                                                     \
+                std::in_place,                                                                                  \
+                result.error().reason,                                                                          \
+                std::format("Failed to save to file {}\n    > {}", filepath.string(), result.error().str_error) \
+            };                                                                                                  \
+        }                                                                                                       \
+        return {};                                                                                              \
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::save_to_file(std::filesystem::path filepath,
-                             Codec                 codec,
-                             CodecArgs args) const noexcept -> std::expected<void, Error> {
+    auto Image::save_to_file(std::filesystem::path filepath, Codec codec, CodecArgs args) const noexcept
+      -> std::expected<void, Error> {
         filepath = std::filesystem::canonical(filepath.parent_path()) / filepath.filename();
 
         EXPECTS(codec != Image::Codec::UNKNOWN);
@@ -378,46 +333,41 @@ namespace stormkit::image {
             default: break;
         }
 
-        return std::unexpected<Error> {
-            std::in_place,
-            Error::Reason::INVALID_FORMAT,
-            std::format("Failed to save image to {}\n    > Invalid format", filepath.string())
-        };
+        return std::unexpected<Error> { std::in_place,
+                                        Error::Reason::INVALID_FORMAT,
+                                        std::format("Failed to save image to {}\n    > Invalid format", filepath.string()) };
     }
 
 #undef CASE_DO
 #undef CASE_ARGS_DO
-#define CASE_DO(_E, _Func, _Name)                                                             \
-    case Image::Codec::_E: {                                                                  \
-        auto result = details::_Func(*this);                                                  \
-        if (!result) {                                                                        \
-            return std::unexpected<Error> {                                                   \
-                std::in_place,                                                                \
-                result.error().reason,                                                        \
-                std::format("Failed to load " _Name " image from data\n    > {}",             \
-                            result.error().str_error)                                         \
-            };                                                                                \
-        }                                                                                     \
-        return std::expected<std::vector<Byte>, Error> { std::in_place, std::move(*result) }; \
+#define CASE_DO(_E, _Func, _Name)                                                                           \
+    case Image::Codec::_E: {                                                                                \
+        auto result = details::_Func(*this);                                                                \
+        if (!result) {                                                                                      \
+            return std::unexpected<Error> {                                                                 \
+                std::in_place,                                                                              \
+                result.error().reason,                                                                      \
+                std::format("Failed to load " _Name " image from data\n    > {}", result.error().str_error) \
+            };                                                                                              \
+        }                                                                                                   \
+        return std::expected<std::vector<Byte>, Error> { std::in_place, std::move(*result) };               \
     }
-#define CASE_ARGS_DO(_E, _Func, _Name)                                                        \
-    case Image::Codec::_E: {                                                                  \
-        auto result = details::_Func(*this, std::move(args));                                 \
-        if (!result) {                                                                        \
-            return std::unexpected<Error> {                                                   \
-                std::in_place,                                                                \
-                result.error().reason,                                                        \
-                std::format("Failed to load " _Name " image from data\n    > {}",             \
-                            result.error().str_error)                                         \
-            };                                                                                \
-        }                                                                                     \
-        return std::expected<std::vector<Byte>, Error> { std::in_place, std::move(*result) }; \
+#define CASE_ARGS_DO(_E, _Func, _Name)                                                                      \
+    case Image::Codec::_E: {                                                                                \
+        auto result = details::_Func(*this, std::move(args));                                               \
+        if (!result) {                                                                                      \
+            return std::unexpected<Error> {                                                                 \
+                std::in_place,                                                                              \
+                result.error().reason,                                                                      \
+                std::format("Failed to load " _Name " image from data\n    > {}", result.error().str_error) \
+            };                                                                                              \
+        }                                                                                                   \
+        return std::expected<std::vector<Byte>, Error> { std::in_place, std::move(*result) };               \
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::save_to_memory(Codec codec, CodecArgs args) const noexcept
-      -> std::expected<std::vector<Byte>, Error> {
+    auto Image::save_to_memory(Codec codec, CodecArgs args) const noexcept -> std::expected<std::vector<Byte>, Error> {
         EXPECTS(codec != Image::Codec::UNKNOWN);
         EXPECTS(codec != Image::Codec::AUTODETECT);
         EXPECTS(!std::empty(m_data.data));
@@ -453,10 +403,7 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::create(math::Extent3<u32> extent, Format format) noexcept -> void {
-        EXPECTS(extent.width > 0u
-                and extent.height > 0u
-                and extent.depth > 0u
-                and format != Format::UNDEFINED);
+        EXPECTS(extent.width > 0u and extent.height > 0u and extent.depth > 0u and format != Format::UNDEFINED);
         m_data.data.clear();
 
         m_data.extent            = extent;
@@ -502,14 +449,11 @@ namespace stormkit::image {
                                                   static_cast<i8>(m_data.channel_count)));*/
         const auto pixel_count = m_data.extent.width * m_data.extent.height * m_data.extent.depth;
 
-        image_data.data
-          .resize(pixel_count * image_data.channel_count * image_data.bytes_per_channel,
-                  Byte { 255u });
+        image_data.data.resize(pixel_count * image_data.channel_count * image_data.bytes_per_channel, Byte { 255u });
 
         auto image = Image { std::move(image_data) };
 
-        for (auto [layer, face, level, i] :
-             multi_range(image.layers(), image.faces(), image.layers(), pixel_count)) {
+        for (auto [layer, face, level, i] : multi_range(image.layers(), image.faces(), image.layers(), pixel_count)) {
             const auto from_image = details::map(pixel(as<usize>(i), layer, face, level),
                                                  m_data.bytes_per_channel,
                                                  image.bytesPerChannel());
