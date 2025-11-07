@@ -61,8 +61,8 @@ class Application: public base::Application {
           = gpu::RenderPass::
               create(m_device,
                      { .attachments = { { .format = m_swapchain->pixel_format() } },
-                       .subpasses = { { .bind_point            = gpu::PipelineBindPoint::GRAPHICS,
-                                        .color_attachment_refs = { { .attachment_id = 0u } } } } })
+                       .subpasses   = { { .bind_point            = gpu::PipelineBindPoint::GRAPHICS,
+                                          .color_attachment_refs = { { .attachment_id = 0u } } } } })
                 .transform_error(monadic::assert("Failed to create render pass"))
                 .value();
 
@@ -249,14 +249,13 @@ class Application: public base::Application {
             return _image_index;
         };
 
-        const auto
-          image_index = in_flight.wait()
-                          .transform([&in_flight](auto&&) mutable noexcept { in_flight.reset(); })
-                          .and_then(acquire_next_image)
-                          .transform(extract_index)
-                          .transform_error(monadic::
-                                             assert("Failed to acquire next swapchain image"))
-                          .value();
+        const auto image_index
+          = in_flight.wait()
+              .transform([&in_flight](auto&&) mutable noexcept { in_flight.reset(); })
+              .and_then(acquire_next_image)
+              .transform(extract_index)
+              .transform_error(monadic::assert("Failed to acquire next swapchain image"))
+              .value();
 
         const auto& swapchain_image_resource = m_image_resources[image_index];
         const auto& framebuffer              = swapchain_image_resource.framebuffer;

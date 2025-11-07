@@ -113,8 +113,9 @@ jobs:
            -k ${{ matrix.kind }} \
            --examples=y \
            --tests=y \
-           --mold=y \
+           --mold=n \
            --on_ci=y \
+           --sanitizers=n \
            --toolchain=llvm \
            --sdk="$(brew --prefix llvm)" \
            --sc="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend" \

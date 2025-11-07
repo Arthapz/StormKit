@@ -158,6 +158,7 @@ jobs:
            -k ${{ matrix.kind }} \
            --examples=y \
            --tests=y \
+           --sanitizers=n \
            --mold=y \
            --on_ci=y \
            ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm$LLVM_VERSION/" --runtimes="c++_shared"' || '' }} \

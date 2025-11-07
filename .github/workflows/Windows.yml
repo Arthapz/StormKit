@@ -144,7 +144,7 @@ jobs:
            --tests=y `
            --on_ci=y `
            --toolchain=llvm `
-           --sanitizers=n `
+           --sanitizers=y `
            --sdk="${{ github.workspace }}/llvm/llvm" `
            --runtimes="c++_shared" `
            --policies="platform.longpaths"

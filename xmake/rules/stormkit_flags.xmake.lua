@@ -1,9 +1,11 @@
 rule("stormkit.flags", function()
-    on_load("linux", "mingw", "macos", "ios", "android", function(target)
+    on_load("linux", "mingw", "macosx", "ios", "android", function(target)
         if get_config("lto") then target:set("policy", "build.optimization.lto", true) end
         if get_config("mold") and not is_subhost("windows") then
-            target:add("ldflags", "-fuse-ld=mold", { force = true })
-            target:add("shflags", "-fuse-ld=mold", { force = true })
+            local arg = "-fuse-ld=mold"
+            if type(get_config("mold")) == "string" then arg = "-fuse-ld=" .. get_config("mold") end
+            target:add("ldflags", arg, { force = true })
+            target:add("shflags", arg, { force = true })
         end
         target:set("utf-8", true)
 
@@ -145,7 +147,7 @@ rule("stormkit.flags", function()
             target:add("ldflags", flags.clang.ld or {}, { tools = { "clang", "clangxx", "lld" }, force = true })
             target:add("shflags", flags.clang.sh or {}, { tools = { "clang", "clangxx", "lld" }, force = true })
             target:add("arflags", flags.clang.ar or {}, { tools = { "clang", "clangxx", "llvm-ar" }, force = true })
-            if (is_plat("linux") or is_plat("mingw")) and not target:has_runtime("c++_shared", "c++_static") then
+            if (is_plat("linux", "mingw")) and not target:has_runtime("c++_shared", "c++_static") then
                 target:add("syslinks", "stdc++exp", "stdc++fs")
             end
         end
