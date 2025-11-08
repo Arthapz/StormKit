@@ -4,11 +4,9 @@
 
 module;
 
-#include <stormkit/core/flags_macro.hpp>
-
-#include <stormkit/core/platform_macro.hpp>
-
 #include <stormkit/core/contract_macro.hpp>
+#include <stormkit/core/flags_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.log;
 
@@ -41,9 +39,8 @@ export {
             Logger(LogClock::time_point start, Severity log_level) noexcept;
             virtual ~Logger() noexcept;
 
-            virtual auto write(Severity severity, const Module& module, CZString string) noexcept
-              -> void                             = 0;
-            virtual auto flush() noexcept -> void = 0;
+            virtual auto write(Severity severity, const Module& module, CZString string) noexcept -> void = 0;
+            virtual auto flush() noexcept -> void                                                         = 0;
 
             auto set_log_level(Severity log_level) noexcept -> void;
 
@@ -67,9 +64,7 @@ export {
                             Args&&... param_args) noexcept -> void;
 
             template<class... Args>
-            static auto log(Severity         severity,
-                            std::string_view format_string,
-                            Args&&... param_args) noexcept -> void;
+            static auto log(Severity severity, std::string_view format_string, Args&&... param_args) noexcept -> void;
 
             template<class... Args>
             static auto dlog(Args&&... param_args) noexcept -> void;
@@ -124,9 +119,7 @@ export {
         class STORMKIT_API FileLogger final: public Logger {
           public:
             FileLogger(LogClock::time_point start, std::filesystem::path path) noexcept;
-            FileLogger(LogClock::time_point  start,
-                       std::filesystem::path path,
-                       Severity              log_level) noexcept;
+            FileLogger(LogClock::time_point start, std::filesystem::path path, Severity log_level) noexcept;
             ~FileLogger() noexcept override;
 
             FileLogger(const FileLogger&) noexcept                    = delete;
@@ -135,8 +128,7 @@ export {
             FileLogger(FileLogger&&) noexcept;
             auto operator=(FileLogger&&) noexcept -> FileLogger&;
 
-            auto write(Severity severity, const Module& module, CZString string) noexcept
-              -> void override;
+            auto write(Severity severity, const Module& module, CZString string) noexcept -> void override;
             auto flush() noexcept -> void override;
 
           private:
@@ -158,8 +150,7 @@ export {
 
             ~ConsoleLogger() noexcept override;
 
-            auto write(Severity severity, const Module& module, CZString string) noexcept
-              -> void override;
+            auto write(Severity severity, const Module& module, CZString string) noexcept -> void override;
             auto flush() noexcept -> void override;
         };
     } // namespace stormkit::log
@@ -248,18 +239,13 @@ namespace stormkit::log {
     ////////////////////////////////////////
     template<class... Args>
     STORMKIT_FORCE_INLINE
-    auto Logger::log(Severity         severity,
-                     const Module&    m,
-                     std::string_view format_string,
-                     Args&&... param_args) noexcept -> void {
+    auto Logger::log(Severity severity, const Module& m, std::string_view format_string, Args&&... param_args) noexcept -> void {
         EXPECTS(has_logger());
 
         const auto format        = format_string;
         auto       memory_buffer = std::string {};
         memory_buffer.reserve(std::size(format_string));
-        std::vformat_to(std::back_inserter(memory_buffer),
-                        format,
-                        std::make_format_args(param_args...));
+        std::vformat_to(std::back_inserter(memory_buffer), format, std::make_format_args(param_args...));
 
         instance().write(severity, m, std::data(memory_buffer));
     }
@@ -308,9 +294,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     template<class... Args>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::log(Severity         severity,
-                            std::string_view format_string,
-                            Args&&... param_args) noexcept -> void {
+    inline auto Logger::log(Severity severity, std::string_view format_string, Args&&... param_args) noexcept -> void {
         log(severity, Module {}, format_string, std::forward<Args>(param_args)...);
     }
 
