@@ -21,7 +21,17 @@ import :utils.tags;
 
 namespace stdr = std::ranges;
 
+template<typename T, stormkit::usize EXTENT>
+consteval auto get_byte_extent_value_of() {
+    if constexpr (EXTENT == std::dynamic_extent) return EXTENT;
+    else if constexpr (stormkit::meta::Is<stormkit::meta::RemoveConst<T>, void>)
+        return EXTENT;
+    else
+        return EXTENT * sizeof(T);
+}
+
 export namespace stormkit { inline namespace core {
+    using std::byte;
     using Byte     = std::byte;
     using ByteView = std::span<const std::byte>;
     template<usize N>
@@ -39,33 +49,38 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto byte_swap(const T& value) noexcept -> T;
 
-    template<stdr::range T>
-    [[nodiscard]]
-    constexpr auto as_bytes(T& container) noexcept -> std::span<meta::ForwardConst<T, Byte>>;
+    // std::span
+    using std::as_bytes;
 
-    template<meta::IsPointer T>
+    template<typename T>
     [[nodiscard]]
-    constexpr auto as_bytes(T ptr, usize size = 1) noexcept
-      -> std::span<meta::ForwardConst<meta::RemoveIndirectionsType<T>, Byte>>;
+    constexpr auto as_bytes(const T* const ptr, usize size = 1) noexcept -> std::span<const byte>;
 
     template<class T>
     [[nodiscard]]
-    constexpr auto as_bytes(T& value) noexcept -> std::span<meta::ForwardConst<T, Byte>>;
+    constexpr auto as_bytes(const T& value) noexcept -> std::span<const byte, sizeof(T)>;
+
+    // std::span
+    template<typename T, usize EXTENT>
+    [[nodiscard]]
+    constexpr auto as_bytes_mut(std::span<T, EXTENT> container) noexcept
+      -> std::span<byte, get_byte_extent_value_of<T, EXTENT>()>;
+
+    template<typename T>
+    [[nodiscard]]
+    constexpr auto as_bytes_mut(T* const ptr, usize size = 1) noexcept -> std::span<byte>;
 
     template<class T>
     [[nodiscard]]
-    constexpr auto as_bytes(T& value, Force) noexcept -> std::span<meta::ForwardConst<T, Byte>>;
+    constexpr auto as_bytes_mut(T& value) noexcept -> std::span<byte, sizeof(T)>;
 
-    template<class T, class Bytes>
-        requires(stdr::range<T> and meta::IsOneOf<Bytes, ByteView, MutableByteView>)
+    template<class T, usize EXTENT>
     [[nodiscard]]
-    constexpr auto bytes_as(Bytes& bytes) noexcept -> T;
+    constexpr auto bytes_as(std::span<const byte, EXTENT> bytes) noexcept -> const T&;
 
-    template<class T, class Bytes>
-        requires(meta::IsOneOf<Bytes, ByteView, MutableByteView>)
+    template<class T, usize EXTENT>
     [[nodiscard]]
-    constexpr auto bytes_as(Bytes& bytes) noexcept
-      -> meta::ForwardConst<typename Bytes::element_type, T&>;
+    constexpr auto bytes_mut_as(std::span<const byte, EXTENT> bytes) noexcept -> T&;
 
     template<typename T, usize N>
     [[nodiscard]]
@@ -73,7 +88,7 @@ export namespace stormkit { inline namespace core {
 
     namespace literals {
         [[nodiscard]]
-        constexpr auto operator""_b(unsigned long long value) noexcept -> Byte;
+        constexpr auto operator""_b(unsigned long long value) noexcept -> byte;
 
         [[nodiscard]]
         constexpr auto operator""_kb(unsigned long long x) noexcept -> u64;
@@ -105,15 +120,14 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline constexpr auto zero_bytes(T& value) noexcept -> void {
-        auto bytes = as_bytes(value);
-
-        std::memset(&bytes[0], 0, stdr::size(bytes));
+    constexpr auto zero_bytes(T& value) noexcept -> void {
+        auto bytes = as_bytes_mut(value);
+        stdr::fill(bytes, byte { 0 });
     }
 
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline constexpr auto zeroed() noexcept -> T {
+    constexpr auto zeroed() noexcept -> T {
         auto data = T {};
         zero_bytes(data);
         return data;
@@ -122,149 +136,136 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    STORMKIT_CONST
     STORMKIT_FORCE_INLINE
-    inline constexpr auto byte_swap(const T& value) noexcept -> T {
-        auto repr = std::bit_cast<std::array<Byte, sizeof(value)>>(value);
+    constexpr auto byte_swap(const T& value) noexcept -> T {
+        if constexpr (meta::IsIntegral<T>) return std::byteswap(value);
+        else {
+            auto repr = std::bit_cast<std::array<byte, sizeof(value)>>(value);
 
-        stdr::reverse(repr);
+            stdr::reverse(repr);
 
-        return std::bit_cast<T>(repr);
+            return std::bit_cast<T>(repr);
+        }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stdr::range T>
+    template<typename T>
     STORMKIT_FORCE_INLINE
-    STORMKIT_PURE
-    inline constexpr auto as_bytes(T& container) noexcept
-      -> std::span<meta::ForwardConst<T, Byte>> {
-        return as_bytes(stdr::data(container), stdr::size(container));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsPointer T>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_PURE
-    inline constexpr auto as_bytes(T ptr, usize size) noexcept
-      -> std::span<meta::ForwardConst<meta::RemoveIndirectionsType<T>, Byte>> {
-        auto raw_ptr = std::to_address(ptr);
-
-        using PtrType     = decltype(raw_ptr);
-        using ElementType = meta::ElementType<PtrType>;
-        using ByteType    = meta::ForwardConst<ElementType, Byte>;
-
-        constexpr auto byte_count = []() {
-            if constexpr (meta::Is<ElementType, void>) return 1;
-            else
-                return sizeof(ElementType);
-        }();
-
-        return std::span<ByteType> { std::bit_cast<ByteType*>(raw_ptr), size * byte_count };
+    constexpr auto as_bytes(const T* const ptr, usize size) noexcept -> std::span<const byte> {
+        return std::as_bytes(std::span<const T> { ptr, size });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
     STORMKIT_FORCE_INLINE
-    STORMKIT_PURE
-    inline constexpr auto as_bytes(T& value) noexcept -> std::span<meta::ForwardConst<T, Byte>> {
-        return as_bytes(&value, 1);
+    constexpr auto as_bytes(const T& value) noexcept -> std::span<const byte, sizeof(T)> {
+        return std::as_bytes<const T, 1>(std::span<const T, 1> { &value, 1 });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, usize EXTENT>
+    constexpr auto as_bytes_mut(std::span<T, EXTENT> container) noexcept
+      -> std::span<byte, get_byte_extent_value_of<T, EXTENT>()> {
+        return std::as_writable_bytes<T, EXTENT>(container);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_bytes_mut(T* const ptr, usize size) noexcept -> std::span<byte> {
+        return std::as_writable_bytes(std::span<T> { ptr, size });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
     STORMKIT_FORCE_INLINE
-    STORMKIT_PURE
-    inline constexpr auto as_bytes(T& value, Force) noexcept
-      -> std::span<meta::ForwardConst<T, Byte>> {
-        return as_bytes(&value, 1);
+    constexpr auto as_bytes_mut(T& value) noexcept -> std::span<byte, sizeof(T)> {
+        return std::as_writable_bytes<T, 1>(std::span<T, 1> { &value, 1 });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, class Bytes>
-        requires(meta::IsOneOf<Bytes, ByteView, MutableByteView>)
+    template<class T, usize EXTENT>
     STORMKIT_FORCE_INLINE
-    STORMKIT_PURE
-    inline constexpr auto bytes_as(Bytes& bytes) noexcept
-      -> meta::ForwardConst<typename Bytes::element_type, T&> {
-        return *std::bit_cast<
-          meta::ForwardConst<typename Bytes::element_type, T>*>(stdr::data(bytes));
+    constexpr auto bytes_mut_as(std::span<const byte, EXTENT> bytes) noexcept -> const T& {
+        if constexpr (EXTENT != std::dynamic_extent) EXPECTS(EXTENT == sizeof(T));
+        EXPECTS(stdr::size(bytes) == sizeof(T));
+        return *std::bit_cast<const T* const>(stdr::data(bytes));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, class Bytes>
-        requires(stdr::range<T> and meta::IsOneOf<Bytes, ByteView, MutableByteView>)
+    template<class T, usize EXTENT>
     STORMKIT_FORCE_INLINE
-    STORMKIT_PURE
-    inline constexpr auto bytes_as(Bytes& bytes) noexcept -> T {
-        using ElementType = typename T::element_type;
-        return T { std::bit_cast<ElementType*>(stdr::data(bytes)),
-                   stdr::size(bytes) * sizeof(ElementType) };
+    constexpr auto bytes_mut_as(std::span<const byte, EXTENT> bytes) noexcept -> T& {
+        if constexpr (EXTENT != std::dynamic_extent) EXPECTS(EXTENT == sizeof(T));
+        EXPECTS(stdr::size(bytes) == sizeof(T));
+        return *std::bit_cast<T* const>(stdr::data(bytes));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, usize N>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> ByteArray<N> {
-        EXPECTS(static_cast<T>(static_cast<Byte>(bytes[0])) == bytes[0]);
+    constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> ByteArray<N> {
+        EXPECTS(static_cast<T>(static_cast<byte>(bytes[0])) == bytes[0]);
         auto out = ByteArray<N> {};
-        auto i   = 0uz;
-        for (auto&& byte : bytes) out[i++] = static_cast<Byte>(byte);
+        auto i   = 0_usize;
+        for (auto&& byte : bytes) out[i++] = static_cast<enum byte>(byte);
         return out;
     }
 
     namespace literals {
         /////////////////////////////////////
         /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_PURE STORMKIT_INTRINSIC
-        inline constexpr auto operator""_b(unsigned long long value) noexcept -> Byte {
-            return static_cast<Byte>(value);
+        STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+        inline constexpr auto operator""_b(unsigned long long value) noexcept -> byte {
+            return static_cast<byte>(value);
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
         inline constexpr auto operator""_kb(unsigned long long x) noexcept -> u64 {
             return x * 1000ULL;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
         inline constexpr auto operator""_mb(unsigned long long x) noexcept -> u64 {
             return x * 1000_kb;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
         inline constexpr auto operator""_gb(unsigned long long x) noexcept -> u64 {
             return x * 1000_mb;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
         inline constexpr auto operator""_kib(unsigned long long x) noexcept -> u64 {
             return x * 1024;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
         inline constexpr auto operator""_mib(unsigned long long x) noexcept -> u64 {
             return x * 1024_kib;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
         inline constexpr auto operator""_gib(unsigned long long x) noexcept -> u64 {
             return x * 1024_mib;
         }

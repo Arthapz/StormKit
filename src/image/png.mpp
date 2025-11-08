@@ -18,17 +18,17 @@ import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_png(std::span<const Byte> data) noexcept
-      -> std::expected<image::Image, image::Image::Error>;
+    auto load_png(std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_png(const image::Image& image, const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto save_png(const image::Image& image) noexcept
-      -> std::expected<std::vector<Byte>, image::Image::Error>;
+    auto save_png(const image::Image& image) noexcept -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
+
+namespace stdr = std::ranges;
 
 namespace stormkit::image::details {
     template<class E>
@@ -50,12 +50,12 @@ namespace stormkit::image::details {
         /////////////////////////////////////
         /////////////////////////////////////
         static auto read_func(png_struct* ps, png_byte* d, png_size_t length) noexcept -> void {
-            auto& param = *reinterpret_cast<ReadParam*>(png_get_io_ptr(ps));
+            auto& param = *std::bit_cast<ReadParam*>(png_get_io_ptr(ps));
 
-            auto _d   = as_bytes(d, length);
+            auto _d   = as_bytes_mut(d, length);
             auto data = param.data.subspan(param.readed, length);
 
-            std::ranges::copy(data, std::ranges::begin(_d));
+            stdr::copy(data, stdr::begin(_d));
 
             param.readed += length;
         }
@@ -63,43 +63,39 @@ namespace stormkit::image::details {
         /////////////////////////////////////
         /////////////////////////////////////
         static auto write_func(png_struct* ps, png_byte* d, png_size_t length) -> void {
-            auto& param = *reinterpret_cast<WriteParam*>(png_get_io_ptr(ps));
+            auto& param = *std::bit_cast<WriteParam*>(png_get_io_ptr(ps));
 
             auto _d = as_bytes(d, length);
             param.data.reserve(std::size(param.data) + length);
 
-            std::ranges::copy(_d, std::back_inserter(param.data));
+            stdr::copy(_d, std::back_inserter(param.data));
         }
     } // namespace png
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_png(std::span<const Byte> data) noexcept
-      -> std::expected<image::Image, image::Image::Error> {
+    auto load_png(std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error> {
         auto image_memory = std::vector<Byte> {};
         auto format       = Format {};
         auto extent       = math::Extent3<u32> {};
 
         auto read_param = png::ReadParam { 8u, data };
 
-        auto sig = reinterpret_cast<png_const_bytep>(std::data(data));
+        auto sig = std::bit_cast<png_const_bytep>(std::data(data));
         if (!png_check_sig(sig, 8u))
-            return std::unexpected(Error {
-              .reason    = Reason::FAILED_TO_PARSE,
-              .str_error = "[libpng] Failed to validate PNG signature" });
+            return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
+                                           .str_error = "[libpng] Failed to validate PNG signature" });
 
         auto png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         if (!png_ptr)
-            return std::unexpected(Error {
-              .reason    = Reason::FAILED_TO_PARSE,
-              .str_error = "[libpng] Failed to init (png_create_read_struct)" });
+            return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
+                                           .str_error = "[libpng] Failed to init (png_create_read_struct)" });
 
         auto info_ptr = png_create_info_struct(png_ptr);
         if (!info_ptr) {
             png_destroy_read_struct(&png_ptr, nullptr, nullptr);
-            return std::unexpected(Error {
-              .reason    = Reason::FAILED_TO_PARSE,
-              .str_error = "[libpng] Failed to init (png_create_info_struct)" });
+            return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
+                                           .str_error = "[libpng] Failed to init (png_create_info_struct)" });
         }
 
         png_set_read_fn(png_ptr, &read_param, png::read_func);
@@ -109,15 +105,7 @@ namespace stormkit::image::details {
         auto bit_depth  = 0;
         auto color_type = 0;
 
-        png_get_IHDR(png_ptr,
-                     info_ptr,
-                     &extent.width,
-                     &extent.height,
-                     &bit_depth,
-                     &color_type,
-                     nullptr,
-                     nullptr,
-                     nullptr);
+        png_get_IHDR(png_ptr, info_ptr, &extent.width, &extent.height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
 
         if (color_type == PNG_COLOR_TYPE_GRAY) png_set_expand_gray_1_2_4_to_8(png_ptr);
         else if (color_type == PNG_COLOR_TYPE_PALETTE) {
@@ -127,15 +115,7 @@ namespace stormkit::image::details {
         if (bit_depth < 8) png_set_packing(png_ptr);
         if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
 
-        png_get_IHDR(png_ptr,
-                     info_ptr,
-                     &extent.width,
-                     &extent.height,
-                     &bit_depth,
-                     &color_type,
-                     nullptr,
-                     nullptr,
-                     nullptr);
+        png_get_IHDR(png_ptr, info_ptr, &extent.width, &extent.height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
 
         switch (color_type) {
             case PNG_COLOR_TYPE_GRAY: {
@@ -188,7 +168,7 @@ namespace stormkit::image::details {
 
         for (auto i : range(extent.height)) row_pointers[i] = &buff_pos[row_bytes * i];
 
-        png_read_image(png_ptr, reinterpret_cast<png_bytepp>(std::data(row_pointers)));
+        png_read_image(png_ptr, std::bit_cast<png_bytepp>(std::data(row_pointers)));
         png_read_end(png_ptr, info_ptr);
 
         png_destroy_info_struct(png_ptr, &info_ptr);
@@ -210,40 +190,35 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_png(const image::Image&, const std::filesystem::path&) noexcept
-      -> std::expected<void, image::Image::Error> {
+    auto save_png(const image::Image&, const std::filesystem::path&) noexcept -> std::expected<void, image::Image::Error> {
         assert(false, "Not implemented yet !");
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_png(const image::Image& image) noexcept
-      -> std::expected<std::vector<Byte>, image::Image::Error> {
+    auto save_png(const image::Image& image) noexcept -> std::expected<std::vector<Byte>, image::Image::Error> {
         auto output = std::vector<Byte> {};
 
         auto write_param = png::WriteParam { output };
 
         auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         if (!png_ptr)
-            return std::unexpected(Error {
-              .reason    = Reason::FAILED_TO_PARSE,
-              .str_error = "[libpng] Failed to init (png_create_write_struct)" });
+            return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
+                                           .str_error = "[libpng] Failed to init (png_create_write_struct)" });
 
         auto info_ptr = png_create_info_struct(png_ptr);
         if (!info_ptr) {
             png_destroy_write_struct(&png_ptr, nullptr);
-            return std::unexpected(Error {
-              .reason    = Reason::FAILED_TO_PARSE,
-              .str_error = "[libpng] Failed to init (png_create_info_struct)" });
+            return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
+                                           .str_error = "[libpng] Failed to init (png_create_info_struct)" });
         }
 
         if (setjmp(png_jmpbuf(png_ptr))) {
             png_destroy_info_struct(png_ptr, &info_ptr);
             png_destroy_write_struct(&png_ptr, nullptr);
-            return std::unexpected(Error {
-              .reason    = Reason::FAILED_TO_PARSE,
-              .str_error = "[libpng] Unkown error during png creation" });
+            return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
+                                           .str_error = "[libpng] Unkown error during png creation" });
         }
 
         png_set_write_fn(png_ptr, &write_param, png::write_func, nullptr);
@@ -263,12 +238,10 @@ namespace stormkit::image::details {
 
         auto rows = std::vector<Byte*> { data.extent.height, nullptr };
         for (auto i : range(data.extent.height))
-            rows[i] = const_cast<Byte*>(&data.data[i
-                                                   * data.extent.width
-                                                   * data.channel_count
-                                                   * data.bytes_per_channel]); // TODO Fix this shit
+            rows[i] = const_cast<
+              Byte*>(&data.data[i * data.extent.width * data.channel_count * data.bytes_per_channel]); // TODO Fix this shit
 
-        png_set_rows(png_ptr, info_ptr, reinterpret_cast<png_bytepp>(std::data(rows)));
+        png_set_rows(png_ptr, info_ptr, std::bit_cast<png_bytepp>(std::data(rows)));
         png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, nullptr);
         png_write_end(png_ptr, info_ptr);
 

@@ -26,8 +26,7 @@ export namespace stormkit::gpu {
         struct CreateInfo {
             BufferUsageFlag    usages;
             usize              size;
-            MemoryPropertyFlag property = MemoryPropertyFlag::HOST_VISIBLE
-                                          | MemoryPropertyFlag::HOST_COHERENT;
+            MemoryPropertyFlag property = MemoryPropertyFlag::HOST_VISIBLE | MemoryPropertyFlag::HOST_COHERENT;
         };
 
         static constexpr auto DEBUG_TYPE = DebugObjectType::BUFFER;
@@ -40,12 +39,10 @@ export namespace stormkit::gpu {
         Buffer(Buffer&&) noexcept;
         auto operator=(Buffer&&) noexcept -> Buffer&;
 
-        static auto create(const Device&     device,
-                           const CreateInfo& info,
-                           bool persistently_mapped = false) noexcept -> Expected<Buffer>;
-        static auto allocate(const Device&     device,
-                             const CreateInfo& info,
-                             bool persistently_mapped = false) noexcept -> Expected<Heap<Buffer>>;
+        static auto create(const Device& device, const CreateInfo& info, bool persistently_mapped = false) noexcept
+          -> Expected<Buffer>;
+        static auto allocate(const Device& device, const CreateInfo& info, bool persistently_mapped = false) noexcept
+          -> Expected<Heap<Buffer>>;
 
         [[nodiscard]]
         auto usages() const noexcept -> BufferUsageFlag;
@@ -65,8 +62,7 @@ export namespace stormkit::gpu {
         auto data(this Self& self) noexcept -> core::meta::ForwardConst<Self, Byte>*;
         template<typename Self>
         [[nodiscard]]
-        auto data(this Self& self, usize size) noexcept
-          -> core::meta::If<core::meta::IsConst<Self>, ByteView, MutableByteView>;
+        auto data(this Self& self, usize size) noexcept -> core::meta::If<core::meta::IsConst<Self>, ByteView, MutableByteView>;
 
         template<typename T>
         [[nodiscard]]
@@ -86,10 +82,7 @@ export namespace stormkit::gpu {
         [[nodiscard]]
         auto native_handle() const noexcept -> VkBuffer;
 
-        Buffer(const Device&     device,
-               const CreateInfo& info,
-               bool              persistently_mapping,
-               PrivateFuncTag) noexcept;
+        Buffer(const Device& device, const CreateInfo& info, bool persistently_mapping, PrivateFuncTag) noexcept;
 
       private:
         static auto find_memory_type(u32,
@@ -133,16 +126,15 @@ export namespace stormkit::gpu {
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline Buffer::Buffer(const Device&     device,
-                          const CreateInfo& info,
-                          bool              persistently_mapped,
-                          PrivateFuncTag) noexcept
-        : m_usages { info.usages }, m_size { info.size }, m_memory_property { info.property },
-          m_is_persistently_mapped { persistently_mapped }, m_vk_device { device.native_handle() },
+    inline Buffer::Buffer(const Device& device, const CreateInfo& info, bool persistently_mapped, PrivateFuncTag) noexcept
+        : m_usages { info.usages },
+          m_size { info.size },
+          m_memory_property { info.property },
+          m_is_persistently_mapped { persistently_mapped },
+          m_vk_device { device.native_handle() },
           m_vk_device_table { as_ref(device.device_table()) },
           m_vma_allocator { device.allocator() },
-          m_vk_handle { [vk_device_table = *m_vk_device_table,
-                         vk_device       = m_vk_device](auto handle) noexcept {
+          m_vk_handle { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto handle) noexcept {
               vk_device_table.vkDestroyBuffer(vk_device, handle, nullptr);
           } } {
     }
@@ -171,9 +163,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Buffer::create(const Device&     device,
-                               const CreateInfo& info,
-                               bool              persistently_mapped) noexcept -> Expected<Buffer> {
+    inline auto Buffer::create(const Device& device, const CreateInfo& info, bool persistently_mapped) noexcept
+      -> Expected<Buffer> {
         auto buffer = Buffer { device, info, persistently_mapped, PrivateFuncTag {} };
         return buffer.do_init(info.property).transform(core::monadic::consume(buffer));
     }
@@ -181,11 +172,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Buffer::allocate(const Device&     device,
-                                 const CreateInfo& info,
-                                 bool persistently_mapped) noexcept -> Expected<Heap<Buffer>> {
-        auto
-          buffer = std::make_unique<Buffer>(device, info, persistently_mapped, PrivateFuncTag {});
+    inline auto Buffer::allocate(const Device& device, const CreateInfo& info, bool persistently_mapped) noexcept
+      -> Expected<Heap<Buffer>> {
+        auto buffer = std::make_unique<Buffer>(device, info, persistently_mapped, PrivateFuncTag {});
         return buffer->do_init(info.property).transform(core::monadic::consume(buffer));
     }
 
@@ -226,7 +215,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto Buffer::map(ioffset offset, usize size) noexcept -> Expected<MutableByteView> {
         EXPECTS(m_vma_allocation and m_vk_handle);
-        return map(offset).transform([&size](auto&& ptr) noexcept { return as_bytes(ptr, size); });
+        return map(offset).transform([&size](auto&& ptr) noexcept { return as_bytes_mut(ptr, size); });
     }
 
     /////////////////////////////////////
@@ -305,8 +294,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Buffer::upload(std::span<const Byte> data, ioffset offset) noexcept
-      -> Expected<void> {
+    inline auto Buffer::upload(std::span<const Byte> data, ioffset offset) noexcept -> Expected<void> {
         EXPECTS(stdr::size(data) <= m_size);
 
         if (m_is_persistently_mapped) {
