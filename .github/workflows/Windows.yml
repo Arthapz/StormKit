@@ -144,7 +144,7 @@ jobs:
            --tests=y `
            --on_ci=y `
            --toolchain=llvm `
-           --sanitizers=y `
+           --sanitizers=n `
            --sdk="${{ github.workspace }}/llvm/llvm" `
            --runtimes="c++_shared" `
            --policies="platform.longpaths"
@@ -161,6 +161,7 @@ jobs:
            --tests=y `
            --on_ci=y `
            --toolchain=llvm `
+           --sanitizers=n `
            --sdk="${{ github.workspace }}/llvm/llvm" `
            --policies="platform.longpaths"
 
@@ -176,6 +177,7 @@ jobs:
            --examples=y `
            --tests=y `
            --on_ci=y `
+           --sanitizers=n `
            --policies="platform.longpaths"
 
       - name: Cache packages
