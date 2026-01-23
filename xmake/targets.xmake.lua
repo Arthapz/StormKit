@@ -57,6 +57,12 @@ modules = {
         end,
         frameworks = is_plat("macosx") and { "CoreFoundation" } or nil,
     },
+    luau = get_config("luau") and {
+        modulename = "luau",
+        public_deps = { "core" },
+        public_packages = { "luau", "luabridge3" },
+        public_defines = { 'LUA_API=extern __attribute__((visibility("default")))' },
+    } or nil,
     wsi = {
         modulename = "wsi",
         public_deps = { "core" },
@@ -71,7 +77,7 @@ modules = {
             "wayland",
             "wayland-protocols",
             "libxkbcommon",
-        } or nil,
+        } or {},
         -- frameworks = is_plat("macosx") and { "CoreFoundation", "Foundation", "AppKit", "Metal", "IOKit", "QuartzCore" }
         -- or nil,
         custom = function()

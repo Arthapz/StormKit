@@ -51,6 +51,7 @@ option("entities", { default = true, category = "root menu/modules" })
 option("image", { default = true, category = "root menu/modules", deps = { "log" } })
 option("wsi", { default = true, category = "root menu/modules", deps = { "log" } })
 option("gpu", { default = true, category = "root menu/modules", deps = { "log", "image", "wsi" } })
+option("luau", { default = false, category = "root menu/modules" })
 
 option("compile_commands", { default = false, category = "root menu/support" })
 option("vsxmake", { default = false, category = "root menu/support" })

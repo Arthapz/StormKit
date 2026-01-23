@@ -6,6 +6,8 @@ local allowed_modes = {
     "profile",
 }
 
+-- add_repositories("nazara-repo https://github.com/arthapz/xmake-repo-nazara")
+add_repositories("nazara-repo https://github.com/NazaraEngine/xmake-repo")
 add_repositories("tapzcrew-repo https://github.com/Tapzcrew/xmake-repo main")
 
 set_xmakever("3.0.0")
@@ -70,136 +72,138 @@ end
 
 ---------------------------- targets ----------------------------
 namespace("stormkit", function()
-    for _, name in ipairs({ "log", "entities", "image", "wsi", "gpu" }) do
+    for _, name in ipairs({ "log", "entities", "image", "wsi", "gpu", "luau" }) do
         if get_config(name) then set_configvar("STORMKIT_LIB_" .. string.upper(name) .. "_ENABLED", "true") end
     end
 
     for name, module in pairs(modules) do
-        local modulename = module.modulename
+        if module then
+            local modulename = module.modulename
 
-        if name == "core" or name == "main" or name == "test" or get_config(name) then
-            target(name, function()
-                set_group("libraries")
+            if name == "core" or name == "main" or name == "test" or get_config(name) then
+                target(name, function()
+                    set_group("libraries")
 
-                if module.custom then module.custom() end
+                    if module.custom then module.custom() end
 
-                if name == "main" or name == "test" then
-                    set_kind("static")
-                else
-                    set_kind("$(kind)")
-                end
-
-                set_languages("cxxlatest", "clatest")
-
-                add_rules("stormkit.flags")
-                add_defines("STORMKIT_BUILD")
-                if is_mode("debug") then
-                    add_defines("STORMKIT_BUILD_DEBUG")
-                    set_suffixname("-d")
-                end
-
-                if is_kind("static") then add_defines("STORMKIT_STATIC", { public = true }) end
-
-                local src_path = path.join("src", modulename)
-                local module_path = path.join("modules", "stormkit", modulename)
-                local include_path = path.join("include", "(stormkit", modulename)
-
-                for _, file in ipairs(os.files(path.join(src_path, "**.mpp"))) do
-                    add_files(file)
-                end
-                for _, file in ipairs(os.files(path.join(src_path, "**.cpp"))) do
-                    add_files(file)
-                end
-                for _, file in ipairs(os.files(path.join(src_path, "**.mm"))) do
-                    add_files(file, { mxxflags = "-std=c++23" })
-                end
-                for _, file in ipairs(os.files(path.join(src_path, "**.m"))) do
-                    add_files(file)
-                end
-                for _, file in ipairs(os.files(path.join(src_path, "**.inl"))) do
-                    add_files(file)
-                end
-
-                if os.exists(module_path .. ".mpp") then add_files(module_path .. ".mpp", { public = true }) end
-
-                if os.files(module_path) then
-                    for _, file in ipairs(os.files(path.join(module_path, "**.mpp"))) do
-                        add_files(file, { public = true })
-                    end
-                    for _, file in ipairs(os.files(path.join(module_path, "**.inl"))) do
-                        add_headerfiles(file)
-                    end
-                end
-
-                local _include_path = include_path:gsub("%(", "")
-                if os.exists(_include_path) then
-                    add_headerfiles(path.join(include_path, "**.inl)"))
-                    add_headerfiles(path.join(include_path, "**.hpp)"))
-                end
-
-                if is_plat("windows") or is_plat("mingw") then
-                    for _, plat in ipairs({ "posix", "linux", "darwin", "macos", "ios", "bsd", "android" }) do
-                        remove_files(path.join(src_path, plat, "**"))
-                        remove_headerfiles(path.join(src_path, plat, "**"))
-                    end
-                elseif is_plat("macosx") then
-                    for _, plat in ipairs({ "linux", "win32", "ios", "bsd", "android" }) do
-                        remove_files(path.join(src_path, plat, "**"))
-                        remove_headerfiles(path.join(src_path, plat, "**"))
-                    end
-                elseif is_plat("ios") then
-                    for _, plat in ipairs({ "linux", "macos", "win32", "bsd", "android" }) do
-                        remove_files(path.join(src_path, plat, "**"))
-                        remove_headerfiles(path.join(src_path, plat, "**"))
-                    end
-                elseif is_plat("android") then
-                    for _, plat in ipairs({ "linux", "darwin", "macos", "ios", "bsd", "win32" }) do
-                        remove_files(path.join(src_path, plat, "**"))
-                        remove_headerfiles(path.join(src_path, plat, "**"))
-                    end
-                elseif is_plat("linux") then
-                    for _, plat in ipairs({ "win32", "darwin", "macos", "ios", "bsd", "android" }) do
-                        remove_files(path.join(src_path, plat, "**"))
-                        remove_headerfiles(path.join(src_path, plat, "**"))
-                    end
-                end
-
-                add_includedirs("$(projectdir)/include", { public = true })
-
-                if module.defines then add_defines(module.defines) end
-
-                if module.public_defines then add_defines(module.public_defines, { public = true }) end
-
-                if module.cxxflags then
-                    add_cxxflags(module.cxxflags)
-                    add_mxxflags(module.cxxflags)
-                end
-
-                if module.deps then add_deps(module.deps) end
-
-                if module.public_deps then add_deps(module.public_deps, { public = true }) end
-
-                if module.packages then
-                    local packages = {}
-                    for _, package in ipairs(module.packages) do
-                        table.insert(packages, package:split(" ")[1])
+                    if name == "main" or name == "test" then
+                        set_kind("static")
+                    else
+                        set_kind("$(kind)")
                     end
 
-                    add_packages(packages, { public = is_kind("static") })
-                end
+                    set_languages("cxxlatest", "clatest")
 
-                if module.public_packages then
-                    local packages = {}
-                    for _, package in ipairs(module.public_packages) do
-                        table.insert(packages, package:split(" ")[1])
+                    add_rules("stormkit.flags")
+                    add_defines("STORMKIT_BUILD")
+                    if is_mode("debug") then
+                        add_defines("STORMKIT_BUILD_DEBUG")
+                        set_suffixname("-d")
                     end
-                    add_packages(packages, { public = true })
-                end
 
-                if module.frameworks then add_frameworks(module.frameworks, { public = is_kind("static") }) end
+                    if is_kind("static") then add_defines("STORMKIT_STATIC", { public = true }) end
 
-                add_options("sanitizers")
-            end)
+                    local src_path = path.join("src", modulename)
+                    local module_path = path.join("modules", "stormkit", modulename)
+                    local include_path = path.join("include", "(stormkit", modulename)
+
+                    for _, file in ipairs(os.files(path.join(src_path, "**.mpp"))) do
+                        add_files(file)
+                    end
+                    for _, file in ipairs(os.files(path.join(src_path, "**.cpp"))) do
+                        add_files(file)
+                    end
+                    for _, file in ipairs(os.files(path.join(src_path, "**.mm"))) do
+                        add_files(file, { mxxflags = "-std=c++23" })
+                    end
+                    for _, file in ipairs(os.files(path.join(src_path, "**.m"))) do
+                        add_files(file)
+                    end
+                    for _, file in ipairs(os.files(path.join(src_path, "**.inl"))) do
+                        add_files(file)
+                    end
+
+                    if os.exists(module_path .. ".mpp") then add_files(module_path .. ".mpp", { public = true }) end
+
+                    if os.files(module_path) then
+                        for _, file in ipairs(os.files(path.join(module_path, "**.mpp"))) do
+                            add_files(file, { public = true })
+                        end
+                        for _, file in ipairs(os.files(path.join(module_path, "**.inl"))) do
+                            add_headerfiles(file)
+                        end
+                    end
+
+                    local _include_path = include_path:gsub("%(", "")
+                    if os.exists(_include_path) then
+                        add_headerfiles(path.join(include_path, "**.inl)"))
+                        add_headerfiles(path.join(include_path, "**.hpp)"))
+                    end
+
+                    if is_plat("windows") or is_plat("mingw") then
+                        for _, plat in ipairs({ "posix", "linux", "darwin", "macos", "ios", "bsd", "android" }) do
+                            remove_files(path.join(src_path, plat, "**"))
+                            remove_headerfiles(path.join(src_path, plat, "**"))
+                        end
+                    elseif is_plat("macosx") then
+                        for _, plat in ipairs({ "linux", "win32", "ios", "bsd", "android" }) do
+                            remove_files(path.join(src_path, plat, "**"))
+                            remove_headerfiles(path.join(src_path, plat, "**"))
+                        end
+                    elseif is_plat("ios") then
+                        for _, plat in ipairs({ "linux", "macos", "win32", "bsd", "android" }) do
+                            remove_files(path.join(src_path, plat, "**"))
+                            remove_headerfiles(path.join(src_path, plat, "**"))
+                        end
+                    elseif is_plat("android") then
+                        for _, plat in ipairs({ "linux", "darwin", "macos", "ios", "bsd", "win32" }) do
+                            remove_files(path.join(src_path, plat, "**"))
+                            remove_headerfiles(path.join(src_path, plat, "**"))
+                        end
+                    elseif is_plat("linux") then
+                        for _, plat in ipairs({ "win32", "darwin", "macos", "ios", "bsd", "android" }) do
+                            remove_files(path.join(src_path, plat, "**"))
+                            remove_headerfiles(path.join(src_path, plat, "**"))
+                        end
+                    end
+
+                    add_includedirs("$(projectdir)/include", { public = true })
+
+                    if module.defines then add_defines(module.defines) end
+
+                    if module.public_defines then add_defines(module.public_defines, { public = true }) end
+
+                    if module.cxxflags then
+                        add_cxxflags(module.cxxflags)
+                        add_mxxflags(module.cxxflags)
+                    end
+
+                    if module.deps then add_deps(module.deps) end
+
+                    if module.public_deps then add_deps(module.public_deps, { public = true }) end
+
+                    if module.packages then
+                        local packages = {}
+                        for _, package in ipairs(module.packages) do
+                            table.insert(packages, package:split(" ")[1])
+                        end
+
+                        add_packages(packages, { public = is_kind("static") })
+                    end
+
+                    if module.public_packages then
+                        local packages = {}
+                        for _, package in ipairs(module.public_packages) do
+                            table.insert(packages, package:split(" ")[1])
+                        end
+                        add_packages(packages, { public = true })
+                    end
+
+                    if module.frameworks then add_frameworks(module.frameworks, { public = is_kind("static") }) end
+
+                    add_options("sanitizers")
+                end)
+            end
         end
     end
 
@@ -213,7 +217,7 @@ namespace("stormkit", function()
         add_files("modules/stormkit.mpp")
 
         add_deps("core", "main")
-        for _, name in ipairs({ "log", "entities", "image", "wsi", "gpu" }) do
+        for _, name in ipairs({ "log", "entities", "image", "wsi", "gpu", "luau" }) do
             if get_config(name) then
                 add_deps(name)
                 set_configvar("STORMKIT_LIB_" .. string.upper(name) .. "_ENABLED", "true")
