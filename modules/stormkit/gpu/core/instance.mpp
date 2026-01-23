@@ -31,12 +31,10 @@ export {
             static constexpr auto DEBUG_TYPE = DebugObjectType::INSTANCE;
 
             [[nodiscard]]
-            static auto create(std::string app_name = "",
-                               bool        verbose  = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
+            static auto create(std::string app_name = "", bool verbose = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
               -> Expected<Instance>;
             [[nodiscard]]
-            static auto allocate(std::string app_name = "",
-                                 bool        verbose  = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
+            static auto allocate(std::string app_name = "", bool verbose = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
               -> Expected<Heap<Instance>>;
             ~Instance();
 
@@ -66,12 +64,8 @@ export {
             std::vector<std::string>    m_extensions;
             std::vector<PhysicalDevice> m_physical_devices;
 
-            VkRAIIHandle<VkInstance> m_vk_handle = { [](auto handle) static noexcept {
-                vkDestroyInstance(handle, nullptr);
-            } };
-            VkRAIIHandle<VkDebugUtilsMessengerEXT> m_vk_debug_utils_handle = {
-                [](auto) static noexcept {}
-            };
+            VkRAIIHandle<VkInstance> m_vk_handle = { [](auto handle) static noexcept { vkDestroyInstance(handle, nullptr); } };
+            VkRAIIHandle<VkDebugUtilsMessengerEXT> m_vk_debug_utils_handle = { [](auto) static noexcept {} };
         };
 
         [[nodiscard]]
@@ -93,11 +87,9 @@ export {
             [[nodiscard]]
             auto check_extension_support(std::string_view extension) const noexcept -> bool;
             [[nodiscard]]
-            auto check_extension_support(std::span<const std::string_view> extensions)
-              const noexcept -> bool;
+            auto check_extension_support(std::span<const std::string_view> extensions) const noexcept -> bool;
             [[nodiscard]]
-            auto check_extension_support(std::span<const CZString> extensions) const noexcept
-              -> bool;
+            auto check_extension_support(std::span<const CZString> extensions) const noexcept -> bool;
 
             [[nodiscard]]
             auto info() const noexcept -> const PhysicalDeviceInfo&;
@@ -113,8 +105,7 @@ export {
             auto extensions() const noexcept -> const std::vector<std::string>&;
 
             [[nodiscard]]
-            auto formats_properties() const noexcept
-              -> const std::vector<std::pair<PixelFormat, FormatProperties>>&;
+            auto formats_properties() const noexcept -> const std::vector<std::pair<PixelFormat, FormatProperties>>&;
 
             [[nodiscard]]
             auto native_handle() const noexcept -> VkPhysicalDevice;
@@ -157,11 +148,9 @@ export {
 #endif
 
             [[nodiscard]]
-            static auto create_from_window(const Instance&    instance,
-                                           const wsi::Window& window) noexcept -> Expected<Surface>;
+            static auto create_from_window(const Instance& instance, const wsi::Window& window) noexcept -> Expected<Surface>;
             [[nodiscard]]
-            static auto allocate_from_window(const Instance&    instance,
-                                             const wsi::Window& window) noexcept
+            static auto allocate_from_window(const Instance& instance, const wsi::Window& window) noexcept
               -> Expected<Heap<Surface>>;
 
             [[nodiscard]]
@@ -171,8 +160,7 @@ export {
 
           private:
             auto do_init_offscreen(const Instance&) noexcept -> Expected<void>;
-            auto do_init_from_window(const Instance&, const wsi::Window&) noexcept
-              -> Expected<void>;
+            auto do_init_from_window(const Instance&, const wsi::Window&) noexcept -> Expected<void>;
 
             VkInstance                 m_vk_instance = nullptr;
             VkRAIIHandle<VkSurfaceKHR> m_vk_handle   = { [](auto) static noexcept {} };
@@ -190,8 +178,7 @@ export {
 
             template<class FormatContext>
             STORMKIT_FORCE_INLINE
-            auto format(const stormkit::gpu::PhysicalDevice& device, FormatContext& ctx) const
-              -> decltype(auto) {
+            auto format(const stormkit::gpu::PhysicalDevice& device, FormatContext& ctx) const -> decltype(auto) {
                 auto&&      out  = ctx.out();
                 const auto& info = device.info();
                 return format_to(out,
@@ -219,17 +206,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr Instance::Instance(std::string app_name,
-                                 bool        enable_validation,
-                                 PrivateFuncTag) noexcept
+    constexpr Instance::Instance(std::string app_name, bool enable_validation, PrivateFuncTag) noexcept
         : m_app_name { std::move(app_name) }, m_validation_layers_enabled { enable_validation } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Instance::create(std::string app_name, bool enable_validation) noexcept
-      -> Expected<Instance> {
+    inline auto Instance::create(std::string app_name, bool enable_validation) noexcept -> Expected<Instance> {
         auto instance = Instance { std::move(app_name), enable_validation, PrivateFuncTag {} };
         return instance.do_init().transform(core::monadic::consume(instance));
     }
@@ -237,23 +221,22 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Instance::allocate(std::string app_name, bool enable_validation) noexcept
-      -> Expected<Heap<Instance>> {
-        auto instance = core::allocate_unsafe<Instance>(std::move(app_name),
-                                                        enable_validation,
-                                                        PrivateFuncTag {});
+    inline auto Instance::allocate(std::string app_name, bool enable_validation) noexcept -> Expected<Heap<Instance>> {
+        auto instance = core::allocate_unsafe<Instance>(std::move(app_name), enable_validation, PrivateFuncTag {});
         return instance->do_init().transform(core::monadic::consume(instance));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Instance::~Instance() = default;
+    inline Instance::~Instance()
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Instance::Instance(Instance&&) noexcept = default;
+    inline Instance::Instance(Instance&&) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -292,8 +275,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto PhysicalDevice::memory_types() const noexcept
-      -> const std::vector<MemoryPropertyFlag>& {
+    inline auto PhysicalDevice::memory_types() const noexcept -> const std::vector<MemoryPropertyFlag>& {
         return m_memory_types;
     }
 
@@ -336,12 +318,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Surface::~Surface() = default;
+    inline Surface::~Surface()
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Surface::Surface(Surface&&) noexcept = default;
+    inline Surface::Surface(Surface&&) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -369,23 +353,18 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Surface::create_from_window(const Instance&    instance,
-                                            const wsi::Window& window) noexcept
-      -> Expected<Surface> {
+    inline auto Surface::create_from_window(const Instance& instance, const wsi::Window& window) noexcept -> Expected<Surface> {
         auto surface = Surface { PrivateFuncTag {} };
-        return surface.do_init_from_window(instance, window)
-          .transform(core::monadic::consume(surface));
+        return surface.do_init_from_window(instance, window).transform(core::monadic::consume(surface));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Surface::allocate_from_window(const Instance&    instance,
-                                              const wsi::Window& window) noexcept
+    inline auto Surface::allocate_from_window(const Instance& instance, const wsi::Window& window) noexcept
       -> Expected<Heap<Surface>> {
         auto surface = core::allocate_unsafe<Surface>(PrivateFuncTag {});
-        return surface->do_init_from_window(instance, window)
-          .transform(core::monadic::consume(surface));
+        return surface->do_init_from_window(instance, window).transform(core::monadic::consume(surface));
     }
 
     /////////////////////////////////////

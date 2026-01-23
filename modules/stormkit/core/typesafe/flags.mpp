@@ -33,8 +33,7 @@ export {
 
         namespace meta {
             template<class T>
-            concept IsFlag = (IsScopedEnumeration<meta::CanonicalType<T>>
-                              and core::details::BITMASK_OPERATORS_ENABLED<T>)
+            concept IsFlag = (IsScopedEnumeration<meta::CanonicalType<T>> and core::details::BITMASK_OPERATORS_ENABLED<T>)
                              or IsPlainEnumeration<meta::CanonicalType<T>>;
         }
 
@@ -52,20 +51,14 @@ export {
         constexpr auto next_value(const T& value) noexcept -> T;
 
         template<meta::IsEnumeration T, usize N, T DEFAULT_VALUE, usize BUF_LEN = 50>
-        consteval auto generate_substitutions_as_string_for(std::string_view prefix,
-                                                            const std::array<
-                                                              std::pair<T, std::string_view>,
-                                                              N>& mapping,
-                                                            char  separator = '|') noexcept
-          -> decltype(auto);
+        consteval auto generate_substitutions_as_string_for(std::string_view                                     prefix,
+                                                            const std::array<std::pair<T, std::string_view>, N>& mapping,
+                                                            char separator = '|') noexcept -> decltype(auto);
 
         template<meta::IsEnumeration T, usize N, usize BUF_LEN = 50>
-        consteval auto generate_substitutions_as_string_for(std::string_view prefix,
-                                                            const std::array<
-                                                              std::pair<T, std::string_view>,
-                                                              N>& mapping,
-                                                            char  separator = '|') noexcept
-          -> decltype(auto);
+        consteval auto generate_substitutions_as_string_for(std::string_view                                     prefix,
+                                                            const std::array<std::pair<T, std::string_view>, N>& mapping,
+                                                            char separator = '|') noexcept -> decltype(auto);
     }} // namespace stormkit::core
 
     template<stormkit::meta::IsFlag T>
@@ -119,10 +112,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsEnumeration T, usize N, T DEFAULT_VALUE, usize BUF_LEN>
-    consteval auto generate_substitutions_as_string_for(std::string_view prefix,
-                                                        const std::array<
-                                                          std::pair<T, std::string_view>,
-                                                          N>& mapping,
+    consteval auto generate_substitutions_as_string_for(std::string_view                                     prefix,
+                                                        const std::array<std::pair<T, std::string_view>, N>& mapping,
                                                         char separator) noexcept -> decltype(auto) {
         constexpr auto OUT_SIZE = [] {
             auto res = 0uz;
@@ -130,11 +121,9 @@ namespace stormkit { inline namespace core {
             constexpr auto n_fact = math::factoriel(N);
 
             if constexpr (static_cast<int>(DEFAULT_VALUE) == 0)
-                for (auto R = 0uz; R < (N - 1); ++R)
-                    res += n_fact / (math::factoriel(N - R) * math::factoriel(R));
+                for (auto R = 0uz; R < (N - 1); ++R) res += n_fact / (math::factoriel(N - R) * math::factoriel(R));
             else
-                for (auto R = 0uz; R < N; ++R)
-                    res += n_fact / (math::factoriel(N - R) * math::factoriel(R));
+                for (auto R = 0uz; R < N; ++R) res += n_fact / (math::factoriel(N - R) * math::factoriel(R));
 
             return res + 1;
         }();
@@ -165,8 +154,7 @@ namespace stormkit { inline namespace core {
             }
             if (key != DEFAULT_VALUE) {
                 for (const auto& [k, v] : mapping) {
-                    const auto has_key = stdr::any_of(queue,
-                                                      ([_k = k | key](auto&& tuple) noexcept {
+                    const auto has_key = stdr::any_of(queue, ([_k = k | key](auto&& tuple) noexcept {
                                                           const auto& [_key, _, _] = tuple;
                                                           return _key == _k;
                                                       }));
@@ -191,17 +179,14 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsEnumeration T, usize N, usize BUF_LEN>
-    consteval auto generate_substitutions_as_string_for(std::string_view prefix,
-                                                        const std::array<
-                                                          std::pair<T, std::string_view>,
-                                                          N>& mapping,
+    consteval auto generate_substitutions_as_string_for(std::string_view                                     prefix,
+                                                        const std::array<std::pair<T, std::string_view>, N>& mapping,
                                                         char separator) noexcept -> decltype(auto) {
         constexpr auto OUT_SIZE = [] {
             auto res = 0uz;
 
             constexpr auto n_fact = math::factoriel(N);
-            for (auto R = 0uz; R < N; ++R)
-                res += n_fact / (math::factoriel(N - R) * math::factoriel(R));
+            for (auto R = 0uz; R < N; ++R) res += n_fact / (math::factoriel(N - R) * math::factoriel(R));
 
             return res;
         }();
@@ -236,11 +221,7 @@ namespace stormkit { inline namespace core {
                     return _key == _k;
                 });
 
-                if (not has_key)
-                    queue.emplace(stdr::begin(queue),
-                                  key | k,
-                                  string + " " + separator + " " + v,
-                                  false);
+                if (not has_key) queue.emplace(stdr::begin(queue), key | k, string + " " + separator + " " + v, false);
             }
             queue.pop_back();
         }

@@ -19,61 +19,49 @@ export {
             using Type = meta::UnderlyingType<meta::ToPlainType<T>>;
 
             template<typename Self>
-            constexpr auto operator+(this Self&&                      self,
-                                     meta::PlainIs<Type<Self>> auto&& other) noexcept
+            constexpr auto operator+(this Self&& self, meta::PlainIs<Type<Self>> auto&& other) noexcept
               -> meta::ToPlainType<Self> {
-                return meta::ToPlainType<Self> { std::forward<Self>(self).get()
-                                                 + std::forward<decltype(other)>(other) };
+                return meta::ToPlainType<Self> { std::forward<Self>(self).get() + std::forward<decltype(other)>(other) };
             }
 
             template<typename Self>
-            constexpr auto operator+=(this Self&                       self,
-                                      meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
+            constexpr auto operator+=(this Self& self, meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
                 self.get() += std::forward<decltype(other)>(other);
                 return self;
             }
 
             template<typename Self>
-            constexpr auto operator-(this Self&&                      self,
-                                     meta::PlainIs<Type<Self>> auto&& other) noexcept
+            constexpr auto operator-(this Self&& self, meta::PlainIs<Type<Self>> auto&& other) noexcept
               -> meta::ToPlainType<Self> {
-                return meta::ToPlainType<Self> { std::forward<Self>(self).get()
-                                                 - std::forward<decltype(other)>(other) };
+                return meta::ToPlainType<Self> { std::forward<Self>(self).get() - std::forward<decltype(other)>(other) };
             }
 
             template<typename Self>
-            constexpr auto operator-=(this Self&                       self,
-                                      meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
+            constexpr auto operator-=(this Self& self, meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
                 self.get() -= std::forward<decltype(other)>(other);
                 return self;
             }
 
             template<typename Self>
-            constexpr auto operator*(this Self&&                      self,
-                                     meta::PlainIs<Type<Self>> auto&& other) noexcept
+            constexpr auto operator*(this Self&& self, meta::PlainIs<Type<Self>> auto&& other) noexcept
               -> meta::ToPlainType<Self> {
-                return meta::ToPlainType<Self> { std::forward<Self>(self).get()
-                                                 * std::forward<decltype(other)>(other) };
+                return meta::ToPlainType<Self> { std::forward<Self>(self).get() * std::forward<decltype(other)>(other) };
             }
 
             template<typename Self>
-            constexpr auto operator*=(this Self&                       self,
-                                      meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
+            constexpr auto operator*=(this Self& self, meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
                 self.get() *= std::forward<decltype(other)>(other);
                 return self;
             }
 
             template<typename Self>
-            constexpr auto operator/(this Self&&                      self,
-                                     meta::PlainIs<Type<Self>> auto&& other) noexcept
+            constexpr auto operator/(this Self&& self, meta::PlainIs<Type<Self>> auto&& other) noexcept
               -> meta::ToPlainType<Self> {
-                return meta::ToPlainType<Self> { std::forward<Self>(self).get()
-                                                 / std::forward<decltype(other)>(other) };
+                return meta::ToPlainType<Self> { std::forward<Self>(self).get() / std::forward<decltype(other)>(other) };
             }
 
             template<typename Self>
-            constexpr auto operator/=(this Self&                       self,
-                                      meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
+            constexpr auto operator/=(this Self& self, meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
                 self.get() /= std::forward<decltype(other)>(other);
                 return self;
             }
@@ -100,34 +88,30 @@ export {
 
         template<typename T>
             requires(meta::IsStrongType<meta::ToPlainType<T>>)
-        constexpr auto operator+(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first,
-                                 T&& second) noexcept -> meta::ToPlainType<T> {
-            return meta::ToPlainType<T> { std::forward<T>(second).get()
-                                          + std::forward<decltype(first)>(first) };
+        constexpr auto operator+(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first, T&& second) noexcept
+          -> meta::ToPlainType<T> {
+            return meta::ToPlainType<T> { std::forward<T>(second).get() + std::forward<decltype(first)>(first) };
         }
 
         template<typename T>
             requires(meta::IsStrongType<meta::ToPlainType<T>>)
-        constexpr auto operator-(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first,
-                                 T&& second) noexcept -> meta::ToPlainType<T> {
-            return meta::ToPlainType<T> { std::forward<T>(second).get()
-                                          - std::forward<decltype(first)>(first) };
+        constexpr auto operator-(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first, T&& second) noexcept
+          -> meta::ToPlainType<T> {
+            return meta::ToPlainType<T> { std::forward<T>(second).get() - std::forward<decltype(first)>(first) };
         }
 
         template<typename T>
             requires(meta::IsStrongType<meta::ToPlainType<T>>)
-        constexpr auto operator*(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first,
-                                 T&& second) noexcept -> meta::ToPlainType<T> {
-            return meta::ToPlainType<T> { std::forward<T>(second).get()
-                                          * std::forward<decltype(first)>(first) };
+        constexpr auto operator*(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first, T&& second) noexcept
+          -> meta::ToPlainType<T> {
+            return meta::ToPlainType<T> { std::forward<T>(second).get() * std::forward<decltype(first)>(first) };
         }
 
         template<typename T>
             requires(meta::IsStrongType<meta::ToPlainType<T>>)
-        constexpr auto operator/(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first,
-                                 T&& second) noexcept -> meta::ToPlainType<T> {
-            return meta::ToPlainType<T> { std::forward<T>(second).get()
-                                          / std::forward<decltype(first)>(first) };
+        constexpr auto operator/(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first, T&& second) noexcept
+          -> meta::ToPlainType<T> {
+            return meta::ToPlainType<T> { std::forward<T>(second).get() / std::forward<decltype(first)>(first) };
         }
 
         template<meta::IsPlain T, typename Tag, typename... Capabilities>
@@ -135,41 +119,31 @@ export {
           public:
             using ValueType = T;
 
-            constexpr explicit StrongType(ValueType value) noexcept(meta::IsNoexceptConstructible<
-                                                                    ValueType,
-                                                                    ValueType>);
+            constexpr explicit StrongType(ValueType value) noexcept(meta::IsNoexceptConstructible<ValueType, ValueType>);
             template<class... Args>
             constexpr explicit(sizeof...(Args) == 1)
-              StrongType(std::in_place_t,
-                         Args&&... args) noexcept(meta::IsNoexceptConstructible<ValueType, Args...>)
+              StrongType(std::in_place_t, Args&&... args) noexcept(meta::IsNoexceptConstructible<ValueType, Args...>)
                 requires(meta::IsConstructible<ValueType, Args...>);
             constexpr ~StrongType() noexcept(meta::IsNoexceptDestructible<ValueType>);
 
-            constexpr StrongType(const StrongType&) noexcept(meta::IsNoexceptCopyConstructible<
-                                                             ValueType>)
+            constexpr StrongType(const StrongType&) noexcept(meta::IsNoexceptCopyConstructible<ValueType>)
                 requires(meta::IsCopyConstructible<ValueType>);
-            constexpr auto operator=(const StrongType&) noexcept(meta::IsNoexceptCopyAssignable<
-                                                                 ValueType>) -> StrongType&
+            constexpr auto operator=(const StrongType&) noexcept(meta::IsNoexceptCopyAssignable<ValueType>) -> StrongType&
                 requires(meta::IsCopyAssignable<ValueType>);
 
-            constexpr StrongType(StrongType&&) noexcept(meta::IsNoexceptMoveConstructible<
-                                                        ValueType>)
+            constexpr StrongType(StrongType&&) noexcept(meta::IsNoexceptMoveConstructible<ValueType>)
                 requires(meta::IsMoveConstructible<ValueType>);
-            constexpr auto operator=(StrongType&&) noexcept(meta::IsNoexceptMoveAssignable<
-                                                            ValueType>) -> StrongType&
+            constexpr auto operator=(StrongType&&) noexcept(meta::IsNoexceptMoveAssignable<ValueType>) -> StrongType&
                 requires(meta::IsMoveAssignable<ValueType>);
 
             template<typename Self>
             [[nodiscard]]
-            constexpr explicit(not meta::HasImplicitConvertionCapability<
-                               Capabilities...>) operator T(this Self&& self) noexcept;
+            constexpr explicit(not meta::HasImplicitConvertionCapability<Capabilities...>) operator T(this Self&& self) noexcept;
 
             [[nodiscard]]
-            constexpr explicit(not meta::HasImplicitConvertionCapability<
-                               Capabilities...>) operator T&() & noexcept;
+            constexpr explicit(not meta::HasImplicitConvertionCapability<Capabilities...>) operator T&() & noexcept;
             [[nodiscard]]
-            constexpr explicit(not meta::HasImplicitConvertionCapability<
-                               Capabilities...>) operator const T&() const & noexcept;
+            constexpr explicit(not meta::HasImplicitConvertionCapability<Capabilities...>) operator const T&() const & noexcept;
 
             [[nodiscard]]
             constexpr auto get(this auto&& self) noexcept -> decltype(auto);
@@ -232,8 +206,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Capabilities...>::
-      StrongType(ValueType value) noexcept(meta::IsNoexceptConstructible<ValueType, ValueType>)
+    constexpr StrongType<T, Tag, Capabilities...>::StrongType(ValueType value) noexcept(meta::IsNoexceptConstructible<ValueType,
+                                                                                                                      ValueType>)
         : m_value { value } {
     }
 
@@ -243,8 +217,7 @@ namespace stormkit { inline namespace core {
     template<class... Args>
     STORMKIT_FORCE_INLINE
     constexpr StrongType<T, Tag, Capabilities...>::
-      StrongType(std::in_place_t,
-                 Args&&... args) noexcept(meta::IsNoexceptConstructible<ValueType, Args...>)
+      StrongType(std::in_place_t, Args&&... args) noexcept(meta::IsNoexceptConstructible<ValueType, Args...>)
         requires(meta::IsConstructible<ValueType, Args...>)
         : m_value { std::forward<Args>(args)... } {
     }
@@ -253,15 +226,15 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Capabilities...>::
-      ~StrongType() noexcept(meta::IsNoexceptDestructible<ValueType>) = default;
+    constexpr StrongType<T, Tag, Capabilities...>::~StrongType() noexcept(meta::IsNoexceptDestructible<ValueType>)
+      = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Capabilities...>::
-      StrongType(const StrongType&) noexcept(meta::IsNoexceptCopyConstructible<ValueType>)
+    constexpr StrongType<T, Tag, Capabilities...>::StrongType(const StrongType&) noexcept(meta::IsNoexceptCopyConstructible<
+                                                                                          ValueType>)
         requires(meta::IsCopyConstructible<ValueType>)
     = default;
 
@@ -269,9 +242,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr auto StrongType<T, Tag, Capabilities...>::
-      operator=(const StrongType&) noexcept(meta::IsNoexceptCopyAssignable<ValueType>)
-        -> StrongType&
+    constexpr auto StrongType<T, Tag, Capabilities...>::operator=(const StrongType&) noexcept(meta::IsNoexceptCopyAssignable<
+                                                                                              ValueType>) -> StrongType&
         requires(meta::IsCopyAssignable<ValueType>)
     = default;
 
@@ -279,8 +251,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Capabilities...>::
-      StrongType(StrongType&&) noexcept(meta::IsNoexceptMoveConstructible<ValueType>)
+    constexpr StrongType<T, Tag, Capabilities...>::StrongType(StrongType&&) noexcept(meta::IsNoexceptMoveConstructible<ValueType>)
         requires(meta::IsMoveConstructible<ValueType>)
     = default;
 
@@ -288,8 +259,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr auto StrongType<T, Tag, Capabilities...>::
-      operator=(StrongType&&) noexcept(meta::IsNoexceptMoveAssignable<ValueType>) -> StrongType&
+    constexpr auto StrongType<T, Tag, Capabilities...>::operator=(StrongType&&) noexcept(meta::IsNoexceptMoveAssignable<
+                                                                                         ValueType>) -> StrongType&
         requires(meta::IsMoveAssignable<ValueType>)
     = default;
 
@@ -322,8 +293,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, typename... Capabilities>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto StrongType<T, Tag, Capabilities...>::get(this auto&& self) noexcept
-      -> decltype(auto) {
+    constexpr auto StrongType<T, Tag, Capabilities...>::get(this auto&& self) noexcept -> decltype(auto) {
         return std::forward_like<decltype(self)>(self.m_value);
     }
 
@@ -353,8 +323,7 @@ inline auto std::hash<T>::operator()(const T& value) const noexcept -> std::uint
 template<meta::IsStrongType T, typename CharT>
 template<class FormatContext>
 STORMKIT_FORCE_INLINE
-auto std::formatter<T, CharT>::format(const T& data, FormatContext& ctx) const noexcept
-  -> decltype(ctx.out()) {
+auto std::formatter<T, CharT>::format(const T& data, FormatContext& ctx) const noexcept -> decltype(ctx.out()) {
     auto&& out = ctx.out();
     return std::format_to(out, "{}", data.get());
 }

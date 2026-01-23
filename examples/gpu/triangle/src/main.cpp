@@ -41,15 +41,11 @@ class Application: public base::Application {
   public:
     auto init_example() {
         // load shaders
-        m_vertex_shader = gpu::Shader::load_from_file(m_device,
-                                                      SHADER_DIR "/triangle.spv",
-                                                      gpu::ShaderStageFlag::VERTEX)
+        m_vertex_shader = gpu::Shader::load_from_file(m_device, SHADER_DIR "/triangle.spv", gpu::ShaderStageFlag::VERTEX)
                             .transform_error(monadic::assert("Failed to load vertex shader"))
                             .value();
 
-        m_fragment_shader = gpu::Shader::load_from_file(m_device,
-                                                        SHADER_DIR "/triangle.spv",
-                                                        gpu::ShaderStageFlag::FRAGMENT)
+        m_fragment_shader = gpu::Shader::load_from_file(m_device, SHADER_DIR "/triangle.spv", gpu::ShaderStageFlag::FRAGMENT)
                               .transform_error(monadic::assert("Failed to load fragment shader"))
                               .value();
 
@@ -58,14 +54,12 @@ class Application: public base::Application {
                               .value();
 
         // initialize render pass
-        m_render_pass
-          = gpu::RenderPass::
-              create(m_device,
-                     { .attachments = { { .format = m_swapchain->pixel_format() } },
-                       .subpasses = { { .bind_point            = gpu::PipelineBindPoint::GRAPHICS,
-                                        .color_attachment_refs = { { .attachment_id = 0u } } } } })
-                .transform_error(monadic::assert("Failed to create render pass"))
-                .value();
+        m_render_pass = gpu::RenderPass::create(m_device,
+                                                { .attachments = { { .format = m_swapchain->pixel_format() } },
+                                                  .subpasses   = { { .bind_point            = gpu::PipelineBindPoint::GRAPHICS,
+                                                                     .color_attachment_refs = { { .attachment_id = 0u } } } } })
+                          .transform_error(monadic::assert("Failed to create render pass"))
+                          .value();
 
         const auto window_extent = m_window->extent();
 
@@ -104,9 +98,8 @@ class Application: public base::Application {
             for (auto _ : range(BUFFERING_COUNT)) {
                 out.push_back({
                   .in_flight = gpu::Fence::create_signaled(m_device)
-                                 .transform_error(monadic::
-                                                    assert("Failed to create swapchain image "
-                                                           "in flight fence"))
+                                 .transform_error(monadic::assert("Failed to create swapchain image "
+                                                                  "in flight fence"))
                                  .value(),
                   .image_available = gpu::Semaphore::create(m_device)
                                        .transform_error(monadic::assert("Failed to create "
@@ -123,24 +116,20 @@ class Application: public base::Application {
         // transition swapchain image to present image
         const auto& images = m_swapchain->images();
 
-        const auto image_count = stdr::size(images);
-        auto       transition_cmbs
-          = m_command_pool->create_command_buffers(image_count)
-              .transform_error(monadic::assert("Failed to create transition command buffers"))
-              .value();
+        const auto image_count     = stdr::size(images);
+        auto       transition_cmbs = m_command_pool->create_command_buffers(image_count)
+                                 .transform_error(monadic::assert("Failed to create transition command buffers"))
+                                 .value();
         m_image_resources.reserve(stdr::size(images));
 
         auto image_index = 0u;
         for (const auto& swap_image : images) {
             auto view = gpu::ImageView::create(m_device, swap_image)
-                          .transform_error(core::monadic::
-                                             assert("Failed to create swapchain image view"))
+                          .transform_error(core::monadic::assert("Failed to create swapchain image view"))
                           .value();
-            auto framebuffer = m_render_pass
-                                 ->create_frame_buffer(m_device, window_extent, to_refs(view))
-                                 .transform_error(core::monadic::assert(
-                                   std::format("Failed to create framebuffer for image {}",
-                                               image_index)))
+            auto framebuffer = m_render_pass->create_frame_buffer(m_device, window_extent, to_refs(view))
+                                 .transform_error(core::monadic::assert(std::format("Failed to create framebuffer for image {}",
+                                                                                    image_index)))
                                  .value();
 
             m_image_resources.push_back({
@@ -155,13 +144,10 @@ class Application: public base::Application {
 
             auto& transition_cmb = transition_cmbs[image_index];
             *transition_cmb.begin(true)
-               .transform_error(monadic::
-                                  assert("Failed to begin texture transition command buffer"))
+               .transform_error(monadic::assert("Failed to begin texture transition command buffer"))
                .value()
                ->begin_debug_region(std::format("transition image {}", image_index))
-               .transition_image_layout(swap_image,
-                                        gpu::ImageLayout::UNDEFINED,
-                                        gpu::ImageLayout::PRESENT_SRC)
+               .transition_image_layout(swap_image, gpu::ImageLayout::UNDEFINED, gpu::ImageLayout::PRESENT_SRC)
                .end_debug_region()
                .end()
                .transform_error(monadic::assert("Failed to begin texture transition command "
@@ -193,31 +179,24 @@ class Application: public base::Application {
         const auto& wait      = submission_resource.image_available;
         auto&       in_flight = submission_resource.in_flight;
 
-        const auto acquire_next_image = bind_front(&gpu::SwapChain::acquire_next_image,
-                                                   &*m_swapchain,
-                                                   100ms,
-                                                   std::cref(wait));
+        const auto acquire_next_image = bind_front(&gpu::SwapChain::acquire_next_image, &*m_swapchain, 100ms, std::cref(wait));
         const auto extract_index      = [](auto&& _result) static noexcept {
             auto&& [result, _image_index] = _result;
             return _image_index;
         };
 
-        const auto
-          image_index = in_flight.wait()
-                          .transform([&in_flight](auto&&) mutable noexcept { in_flight.reset(); })
-                          .and_then(acquire_next_image)
-                          .transform(extract_index)
-                          .transform_error(monadic::
-                                             assert("Failed to acquire next swapchain image"))
-                          .value();
+        const auto image_index = in_flight.wait()
+                                   .transform([&in_flight](auto&&) mutable noexcept { in_flight.reset(); })
+                                   .and_then(acquire_next_image)
+                                   .transform(extract_index)
+                                   .transform_error(monadic::assert("Failed to acquire next swapchain image"))
+                                   .value();
 
         const auto& swapchain_image_resource = m_image_resources[image_index];
         const auto& framebuffer              = swapchain_image_resource.framebuffer;
         const auto& signal                   = swapchain_image_resource.render_finished;
 
-        static constexpr auto PIPELINE_FLAGS = std::array {
-            gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT
-        };
+        static constexpr auto PIPELINE_FLAGS = std::array { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT };
 
         // render in it
         auto& render_cmb = submission_resource.render_cmb;
@@ -236,11 +215,7 @@ class Application: public base::Application {
            .end()
            .transform_error(monadic::assert("Failed to end render command buffer"))
            .value()
-           ->submit(m_raster_queue,
-                    as_refs(wait),
-                    PIPELINE_FLAGS,
-                    as_refs(signal),
-                    as_ref(in_flight))
+           ->submit(m_raster_queue, as_refs(wait), PIPELINE_FLAGS, as_refs(signal), as_ref(in_flight))
            .transform_error(monadic::assert("Failed to submit render command buffer"));
 
         // present it

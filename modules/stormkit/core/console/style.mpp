@@ -84,11 +84,9 @@ export {
 
     namespace std {
         template<typename T, class CharT>
-        struct formatter<stormkit::core::Stylized<T>, CharT>
-            : formatter<stormkit::meta::CanonicalType<T>, CharT> {
+        struct formatter<stormkit::core::Stylized<T>, CharT>: formatter<stormkit::meta::CanonicalType<T>, CharT> {
             template<class FormatContext>
-            auto format(const stormkit::core::Stylized<T>& stylized,
-                        FormatContext& ctx) const noexcept -> decltype(ctx.out());
+            auto format(const stormkit::core::Stylized<T>& stylized, FormatContext& ctx) const noexcept -> decltype(ctx.out());
         };
     } // namespace std
 }
@@ -162,9 +160,7 @@ namespace stormkit { inline namespace core {
         auto       out  = std::string {};
         const auto size = [this] noexcept {
             if constexpr (requires { stdr::size(value); }) return stdr::size(value);
-            else if constexpr (requires {
-                                   std::char_traits<meta::RemoveIndirectionsType<T>>::length(value);
-                               })
+            else if constexpr (requires { std::char_traits<meta::RemoveIndirectionsType<T>>::length(value); })
                 return std::char_traits<meta::RemoveIndirectionsType<T>>::length(value);
             else {
                 (void)this;
@@ -179,8 +175,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    constexpr auto Stylized<T>::render_into(stdr::output_range<char> auto& out) const noexcept
-      -> void {
+    constexpr auto Stylized<T>::render_into(stdr::output_range<char> auto& out) const noexcept -> void {
         if (fg) out.append_range(ecma48::FOREGROUND.at(*fg));
         if (bg) out.append_range(ecma48::BACKGROUND.at(*bg));
         if (check_flag_bit(modifiers, StyleModifier::BOLD)) out.append(ecma48::BOLD);
@@ -202,8 +197,7 @@ namespace std {
     template<typename T, class CharT>
     template<class FormatContext>
     STORMKIT_FORCE_INLINE
-    auto formatter<Stylized<T>, CharT>::format(const Stylized<T>& stylized,
-                                               FormatContext&     ctx) const noexcept
+    auto formatter<Stylized<T>, CharT>::format(const Stylized<T>& stylized, FormatContext& ctx) const noexcept
       -> decltype(ctx.out()) {
         auto&& out = ctx.out();
         return format_to(out, "{}", stylized.render());

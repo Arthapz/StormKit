@@ -51,30 +51,23 @@ export namespace stormkit::gpu {
 
     template<typename T, typename Func, typename... Args>
     [[nodiscard]]
-    auto vk_call(const Func&               func,
-                 std::span<const VkResult> success_result,
-                 Args&&... args) noexcept -> T;
+    auto vk_call(const Func& func, std::span<const VkResult> success_result, Args&&... args) noexcept -> T;
 
     template<typename T, typename Func, typename... Args>
         requires(IsVulkanFuncWithResult<Func, Args..., T*> or IsVulkanFuncWithResult<Func, Args...>)
     [[nodiscard]]
-    auto vk_call(const Func&               func,
-                 std::span<const VkResult> success_result,
-                 Args&&... args) noexcept -> VulkanExpected<T>;
+    auto vk_call(const Func& func, std::span<const VkResult> success_result, Args&&... args) noexcept -> VulkanExpected<T>;
 
     template<typename T, typename Func, typename... Args>
         requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t>)
     [[nodiscard]]
-    auto vk_allocate(usize count, const Func& func, Args&&... args) noexcept
+    auto vk_allocate(usize count, const Func& func, Args&&... args) noexcept -> VulkanExpected<std::vector<T>>;
+
+    template<typename T, typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t>)
+    [[nodiscard]]
+    auto vk_allocate(usize count, const Func& func, std::span<const VkResult> possible_results, Args&&... args) noexcept
       -> VulkanExpected<std::vector<T>>;
-
-    template<typename T, typename Func, typename... Args>
-        requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t>)
-    [[nodiscard]]
-    auto vk_allocate(usize                     count,
-                     const Func&               func,
-                     std::span<const VkResult> possible_results,
-                     Args&&... args) noexcept -> VulkanExpected<std::vector<T>>;
 
     template<typename T, typename Size = u32, typename Func, typename... Args>
     [[nodiscard]]
@@ -83,9 +76,8 @@ export namespace stormkit::gpu {
     template<typename T, typename Size = u32, typename Func, typename... Args>
         requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t, std::nullptr_t>)
     [[nodiscard]]
-    auto vk_enumerate(const Func&               func,
-                      std::span<const VkResult> possible_results,
-                      Args&&... args) noexcept -> VulkanExpected<std::vector<T>>;
+    auto vk_enumerate(const Func& func, std::span<const VkResult> possible_results, Args&&... args) noexcept
+      -> VulkanExpected<std::vector<T>>;
 
     template<typename T>
     class VkRAIIHandle {
@@ -106,8 +98,7 @@ export namespace stormkit::gpu {
         auto operator=(const VkRAIIHandle&) -> VkRAIIHandle& = delete;
 
         constexpr VkRAIIHandle(VkRAIIHandle&& other) noexcept
-            : m_value { std::exchange(other.m_value, nullptr) },
-              m_deleter { std::move(other.m_deleter) } {}
+            : m_value { std::exchange(other.m_value, nullptr) }, m_deleter { std::move(other.m_deleter) } {}
 
         constexpr auto operator=(VkRAIIHandle&& other) noexcept -> VkRAIIHandle& {
             if (this == &other) [[unlikely]]
@@ -201,9 +192,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto vk_call(const Func& func, Args&&... args) noexcept -> decltype(auto) {
         static constexpr auto POSSIBLE_RESULTS = std::array { VK_SUCCESS };
-        return vk_call<void, Func, Args...>(func,
-                                            as_view(POSSIBLE_RESULTS),
-                                            std::forward<Args>(args)...);
+        return vk_call<void, Func, Args...>(func, as_view(POSSIBLE_RESULTS), std::forward<Args>(args)...);
     }
 
     /////////////////////////////////////
@@ -212,11 +201,8 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto vk_call(const Func& func, Args&&... args) noexcept -> decltype(auto) {
         static constexpr auto POSSIBLE_RESULTS = std::array { VK_SUCCESS };
-        if constexpr (IsVulkanFuncWithResult<Func, Args..., T*>
-                      or IsVulkanFuncWithResult<Func, Args...>)
-            return vk_call<T, Func, Args...>(func,
-                                             as_view(POSSIBLE_RESULTS),
-                                             std::forward<Args>(args)...);
+        if constexpr (IsVulkanFuncWithResult<Func, Args..., T*> or IsVulkanFuncWithResult<Func, Args...>)
+            return vk_call<T, Func, Args...>(func, as_view(POSSIBLE_RESULTS), std::forward<Args>(args)...);
         else if constexpr (not core::meta::Is<T, void>) {
             auto out = T {};
             std::invoke(func, std::forward<Args>(args)..., &out);
@@ -229,15 +215,13 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T, typename Func, typename... Args>
         requires(IsVulkanFuncWithResult<Func, Args..., T*> or IsVulkanFuncWithResult<Func, Args...>)
-    inline auto vk_call(const Func&               func,
-                        std::span<const VkResult> success_result,
-                        Args&&... args) noexcept -> VulkanExpected<T> {
+    inline auto vk_call(const Func& func, std::span<const VkResult> success_result, Args&&... args) noexcept
+      -> VulkanExpected<T> {
         using Out = VulkanExpected<T>;
         auto out  = Out { std::in_place };
 
         const auto result = [&] noexcept {
-            if constexpr (core::meta::IsOneOf<T, void>)
-                return std::invoke(func, std::forward<Args>(args)...);
+            if constexpr (core::meta::IsOneOf<T, void>) return std::invoke(func, std::forward<Args>(args)...);
             else if constexpr (core::meta::Is<T, VkResult>) {
                 const auto _result = std::invoke(func, std::forward<Args>(args)...);
                 out                = _result;
@@ -257,8 +241,7 @@ namespace stormkit::gpu {
     template<typename T, typename Func, typename... Args>
         requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t>)
     STORMKIT_FORCE_INLINE
-    inline auto vk_allocate(usize count, const Func& func, Args&&... args) noexcept
-      -> VulkanExpected<std::vector<T>> {
+    inline auto vk_allocate(usize count, const Func& func, Args&&... args) noexcept -> VulkanExpected<std::vector<T>> {
         static constexpr auto POSSIBLE_RESULTS = std::array { VK_SUCCESS };
         return vk_allocate<T>(count, func, as_view(POSSIBLE_RESULTS), std::forward<Args>(args)...);
     }
@@ -267,10 +250,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T, typename Func, typename... Args>
         requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t>)
-    inline auto vk_allocate(usize                     count,
-                            const Func&               func,
-                            std::span<const VkResult> possible_results,
-                            Args&&... args) noexcept -> VulkanExpected<std::vector<T>> {
+    inline auto vk_allocate(usize count, const Func& func, std::span<const VkResult> possible_results, Args&&... args) noexcept
+      -> VulkanExpected<std::vector<T>> {
         using Out   = VulkanExpected<std::vector<T>>;
         auto out    = Out { std::in_place, count };
         auto result = std::invoke(func, std::forward<Args>(args)..., stdr::data(*out));
@@ -287,9 +268,7 @@ namespace stormkit::gpu {
     inline auto vk_enumerate(const Func& func, Args&&... args) noexcept -> decltype(auto) {
         static constexpr auto POSSIBLE_RESULTS = std::array { VK_SUCCESS };
         if constexpr (IsVulkanFuncWithResult<Func, Args..., std::nullptr_t, std::nullptr_t>)
-            return vk_enumerate<T, Size, Func, Args...>(func,
-                                                        as_view(POSSIBLE_RESULTS),
-                                                        std::forward<Args>(args)...);
+            return vk_enumerate<T, Size, Func, Args...>(func, as_view(POSSIBLE_RESULTS), std::forward<Args>(args)...);
         else {
             auto out = std::vector<T> {};
 
@@ -306,9 +285,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T, typename Size = u32, typename Func, typename... Args>
         requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t, std::nullptr_t>)
-    inline auto vk_enumerate(const Func&               func,
-                             std::span<const VkResult> possible_results,
-                             Args&&... args) noexcept -> VulkanExpected<std::vector<T>> {
+    inline auto vk_enumerate(const Func& func, std::span<const VkResult> possible_results, Args&&... args) noexcept
+      -> VulkanExpected<std::vector<T>> {
         using Out = VulkanExpected<std::vector<T>>;
         auto out  = Out {};
 
@@ -342,9 +320,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
         constexpr auto to_vk() noexcept -> decltype(auto) {
-            return []<typename T>(const T& value) static noexcept -> decltype(auto) {
-                return gpu::to_vk(value);
-            };
+            return []<typename T>(const T& value) static noexcept -> decltype(auto) { return gpu::to_vk(value); };
         }
 
         /////////////////////////////////////

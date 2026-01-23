@@ -35,19 +35,14 @@ export namespace stormkit { inline namespace core {
       map<std::remove_cvref_t<Key>, std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
 
     template<class Value, std::size_t Size, class Key = std::string>
-    using FrozenStringHashMap = frozen::unordered_map<std::remove_cvref_t<Key>,
-                                                      std::remove_cvref_t<Value>,
-                                                      Size,
-                                                      StringHash,
-                                                      std::equal_to<>>;
+    using FrozenStringHashMap = frozen::
+      unordered_map<std::remove_cvref_t<Key>, std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
 
     template<class Value = std::string>
-    using StringHashSet = ankerl::unordered_dense::
-      set<std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
+    using StringHashSet = ankerl::unordered_dense::set<std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
 
     template<std::size_t Size, class Value = std::string>
-    using FrozenStringHashSet = frozen::
-      unordered_set<std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
+    using FrozenStringHashSet = frozen::unordered_set<std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -68,10 +63,7 @@ namespace stormkit { inline namespace core {
 
         STORMKIT_FORCE_INLINE
         constexpr auto bytes_4(std::span<const std::byte, 4> bytes) noexcept -> void {
-            const auto val = u64(bytes[0]) << 0
-                             | u64(bytes[1]) << 8
-                             | u64(bytes[2]) << 16
-                             | u64(bytes[3]) << 24;
+            const auto val = u64(bytes[0]) << 0 | u64(bytes[1]) << 8 | u64(bytes[2]) << 16 | u64(bytes[3]) << 24;
             dword(val);
         }
 
@@ -101,10 +93,7 @@ namespace stormkit { inline namespace core {
 
     template<class Hasher>
     STORMKIT_FORCE_INLINE
-    constexpr auto hash_selected_characters(u8       mask,
-                                            Hasher&  hasher,
-                                            CZString s,
-                                            usize    size) noexcept -> void {
+    constexpr auto hash_selected_characters(u8 mask, Hasher& hasher, CZString s, usize size) noexcept -> void {
         if (std::popcount(mask) == 4) {
             auto dword = u64 { 0 };
             auto i     = i32 { 0 };

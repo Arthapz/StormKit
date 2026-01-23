@@ -1,0 +1,151 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+#include <stormkit/core/try_expected.hpp>
+
+#include <stormkit/luau/lua.hpp>
+
+export module stormkit.luau;
+
+import std;
+
+import stormkit.core;
+
+namespace stdfs = std::filesystem;
+namespace stdr  = std::ranges;
+
+namespace lb = luabridge;
+
+export namespace stormkit::luau {
+    class STORMKIT_API Engine {
+      public:
+        Engine(const Engine&)                    = delete;
+        auto operator=(const Engine&) -> Engine& = delete;
+
+        Engine(Engine&& other) noexcept
+            : m_global_state { std::exchange(other.m_global_state, nullptr) },
+              m_main_thread { std::exchange(other.m_main_thread, nullptr) } {}
+
+        auto operator=(Engine&& other) noexcept -> Engine& {
+            if (&other == this) [[unlikely]]
+                return *this;
+            m_global_state = std::exchange(other.m_global_state, nullptr);
+            m_main_thread  = std::exchange(other.m_main_thread, nullptr);
+
+            return *this;
+        };
+
+        ~Engine() noexcept {
+            if (m_main_thread) m_main_thread = nullptr;
+
+            if (m_global_state) {
+                lua_close(m_global_state);
+                m_global_state = nullptr;
+            }
+        }
+
+        auto load(const stdfs::path& file) noexcept {
+            expects(not stdr::empty(file));
+            auto data = *io::read_text(file).transform_error(monadic::assert(std::format("Failed to load {}", file.string())));
+
+            auto bytecode_size = 0_usize;
+            auto bytecode      = luau_compile(stdr::data(data), stdr::size(data), nullptr, &bytecode_size);
+            auto result        = luau_load(m_global_state, "main", bytecode, bytecode_size, 0);
+            std::free(bytecode);
+
+            if (result != 0) {
+                auto len = usize { 0 };
+                auto msg = lua_tolstring(m_global_state, -1, &len);
+
+                ensures(result == 0,
+                        std::format("Lua compilation error!\n-------------------------------\n{}",
+                                    std::string_view { msg, len }));
+            }
+
+            m_main_thread = lua_newthread(m_global_state);
+            ensures(m_main_thread);
+
+            lua_pushvalue(m_global_state, -2);
+            lua_remove(m_global_state, -3);
+            lua_xmove(m_global_state, m_main_thread, 1);
+        }
+
+        auto lua_main() noexcept -> std::expected<void, std::string> {
+            expects(m_main_thread);
+
+            auto out = std::expected<void, std::string> {};
+
+            luaL_sandbox(m_global_state);
+            luaL_sandboxthread(m_global_state);
+
+            auto status = lua_resume(m_main_thread, nullptr, 0);
+            if (status == 0) {
+                if (const auto n = lua_gettop(m_main_thread); n) {
+                    luaL_checkstack(m_main_thread, LUA_MINSTACK, "too many results to print");
+                    lua_getglobal(m_main_thread, "print");
+                    lua_insert(m_main_thread, 1);
+                    lua_pcall(m_main_thread, n, 0, 0);
+                }
+
+                lua_pop(m_global_state, 1);
+            } else {
+                auto error = std::string {};
+                error.reserve(150);
+
+                luaL_traceback(m_global_state, m_global_state, nullptr, 1);
+
+                error += lua_tostring(m_global_state, -1);
+
+                lua_pop(m_global_state, 1);
+                out = std::unexpected { std::move(error) };
+            }
+
+            return out;
+        }
+
+        // template<typename T = void>
+        // struct Binder {
+        //     lb::Namespace _namespace;
+        //     lb::Namespace::Class<void> class;
+
+        //    auto bind_function(std::string_view name, auto&& function) noexcept -> Binder {
+        //        _namespace.addFunction(stdr::data(name), std::forward<decltype(function)>(function));
+        //        return Binder { _namespace };
+        //    }
+
+        //    auto begin_namespace(std::string_view name) noexcept -> Binder {
+        //        return Binder { _namespace.beginNamespace(stdr::data(name)) };
+        //    }
+
+        //    auto end_namespace() noexcept -> Binder { return Binder { _namespace.endNamespace() }; }
+
+        //    template<typename T>
+        //    auto begin_class(std::string_view name) noexcept -> Binder {
+        //        return Binder<T> { _namespace, _namespace.beginClass<T>(stdr::data(name)) };
+        //    }
+
+        //    auto end_class(std::string_view name) noexcept -> Binder { return Binder { class.endClass() }; }
+        // };
+
+        auto global_namespace() noexcept { return lb::getGlobalNamespace(m_global_state); }
+
+        static auto create(const stdfs::path& file) noexcept -> Engine {
+            auto engine = Engine {};
+            engine.load(file);
+            return engine;
+        }
+
+      private:
+        Engine() noexcept {
+            m_global_state = luaL_newstate();
+            luaL_openlibs(m_global_state);
+        }
+
+        lua_State* m_global_state = nullptr;
+        lua_State* m_main_thread  = nullptr;
+    };
+} // namespace stormkit::luau

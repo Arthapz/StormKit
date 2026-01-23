@@ -26,21 +26,17 @@ export {
             inline constexpr auto DISABLE_DEFAULT_FORMATTER_FOR_ENUM = false;
 
             template<typename T>
-            concept IsDefaultFormattedEnumeration = IsEnumeration<T>
-                                                    and not DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>;
+            concept IsDefaultFormattedEnumeration = IsEnumeration<T> and not DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>;
 
             template<typename T>
             concept HasFormatAs = requires(const T& val) {
-                {
-                    format_as(val, std::declval<std::format_context&>())
-                } -> Is<std::format_context::iterator>;
+                { format_as(val, std::declval<std::format_context&>()) } -> Is<std::format_context::iterator>;
             };
         } // namespace meta
 
         inline constexpr struct {
             template<meta::HasFormatAs T, typename FormatContext>
-            static constexpr auto operator()(const T& value, FormatContext& ctx) noexcept
-              -> FormatContext::iterator {
+            static constexpr auto operator()(const T& value, FormatContext& ctx) noexcept -> FormatContext::iterator {
                 return format_as(value, ctx);
             }
         } format_fn = {};
@@ -82,8 +78,7 @@ export {
     };
 
     template<typename CharT>
-    struct std::formatter<std::error_code, CharT>
-        : public formatter<basic_string_view<CharT>, CharT> {
+    struct std::formatter<std::error_code, CharT>: public formatter<basic_string_view<CharT>, CharT> {
         template<class FormatContext>
         [[nodiscard]]
         auto format(const std::error_code&, FormatContext&) const -> FormatContext::iterator;
@@ -127,8 +122,7 @@ using namespace stormkit;
 /////////////////////////////////////
 template<meta::HasFormatAs T, typename CharT>
 template<class ParseContext>
-constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept
-  -> ParseContext::iterator {
+constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept -> ParseContext::iterator {
     return ctx.begin();
 }
 
@@ -136,8 +130,7 @@ constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept
 /////////////////////////////////////
 template<meta::HasFormatAs T, typename CharT>
 template<class FormatContext>
-auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const noexcept
-  -> FormatContext::iterator {
+auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const noexcept -> FormatContext::iterator {
     return core::format_fn(value, ctx);
 }
 
@@ -145,8 +138,7 @@ auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const 
 /////////////////////////////////////
 template<meta::IsDefaultFormattedEnumeration T, typename CharT>
 template<class ParseContext>
-constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept
-  -> ParseContext::iterator {
+constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept -> ParseContext::iterator {
     return ctx.begin();
 }
 
@@ -154,8 +146,7 @@ constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept
 /////////////////////////////////////
 template<meta::IsDefaultFormattedEnumeration T, typename CharT>
 template<class FormatContext>
-auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const
-  -> FormatContext::iterator {
+auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const -> FormatContext::iterator {
     auto&& out = ctx.out();
     if constexpr (requires {
                       { as_string(value) } -> meta::Is<std::string_view>;
@@ -170,8 +161,7 @@ auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const
 /////////////////////////////////////
 template<meta::IsPointer T, typename CharT>
 template<class FormatContext>
-auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const
-  -> FormatContext::iterator {
+auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const -> FormatContext::iterator {
     auto&& out = ctx.out();
     return format_to(out, "{:#0x}", std::bit_cast<std::uintptr_t>(std::to_address(value)));
 }
@@ -180,8 +170,7 @@ auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const
 /////////////////////////////////////
 template<typename CharT>
 template<class FormatContext>
-auto std::formatter<std::error_code, CharT>::format(const std::error_code& code,
-                                                    FormatContext&         ctx) const
+auto std::formatter<std::error_code, CharT>::format(const std::error_code& code, FormatContext& ctx) const
   -> FormatContext::iterator {
     auto&&     out     = ctx.out();
     const auto message = code.message();
@@ -192,8 +181,7 @@ auto std::formatter<std::error_code, CharT>::format(const std::error_code& code,
 /////////////////////////////////////
 template<typename CharT>
 template<class FormatContext>
-auto std::formatter<std::errc, CharT>::format(const std::errc& code, FormatContext& ctx) const
-  -> FormatContext::iterator {
+auto std::formatter<std::errc, CharT>::format(const std::errc& code, FormatContext& ctx) const -> FormatContext::iterator {
     auto&&     out     = ctx.out();
     const auto message = make_error_code(code).message();
     return format_to(out, "{}", message);

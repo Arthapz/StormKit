@@ -78,9 +78,7 @@ namespace stormkit { inline namespace core { namespace meta {
         using UnderlyingType = details::UnderlyingType<T>::Type;
 
         template<IsArithmetic T>
-        using ArithmeticOrderingType = Select<IsIntegral<T>,
-                                              std::strong_ordering,
-                                              std::weak_ordering>;
+        using ArithmeticOrderingType = Select<IsIntegral<T>, std::strong_ordering, std::weak_ordering>;
 
         template<IsEnumeration>
         constexpr auto enumerate() noexcept -> decltype(auto) = delete;
@@ -101,8 +99,7 @@ namespace stormkit { inline namespace core { namespace meta {
     constexpr auto is_greater() noexcept {
         using Type = decltype(T {} + V {});
 
-        return static_cast<Type>(std::numeric_limits<T>::max())
-               > static_cast<Type>(std::numeric_limits<V>::max());
+        return static_cast<Type>(std::numeric_limits<T>::max()) > static_cast<Type>(std::numeric_limits<V>::max());
     }
 
     ////////////////////////////////////////
@@ -132,10 +129,9 @@ namespace stormkit { inline namespace core { namespace meta {
         static_assert(start < end);
 
         constexpr auto        name = function.substr(start, (end - start));
-        static constexpr auto res =
-          []<std::size_t... Idxs>(std::string_view str, std::index_sequence<Idxs...>) {
-              return std::array { str[Idxs]... };
-          }(name, std::make_index_sequence<name.size()> {});
+        static constexpr auto res  = []<std::size_t... Idxs>(std::string_view str, std::index_sequence<Idxs...>) {
+            return std::array { str[Idxs]... };
+        }(name, std::make_index_sequence<name.size()> {});
 
         return std::string_view { res.data(), res.size() };
     }

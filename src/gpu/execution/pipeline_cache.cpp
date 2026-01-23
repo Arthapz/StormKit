@@ -80,9 +80,9 @@ namespace stormkit::gpu {
         const auto physical_device_infos = device.physical_device().info();
 
         auto file = Try(io::File::open(m_path, io::Access::READ).transform_error(sys_to_load_error));
-        Try(file.read_to(as_bytes(m_serialized.guard)).transform_error(sys_to_load_error));
-        Try(file.read_to(as_bytes(m_serialized.infos)).transform_error(sys_to_load_error));
-        Try(file.read_to(as_bytes(m_serialized.uuid.value)).transform_error(sys_to_load_error));
+        Try(file.read_to(as_bytes_mut(m_serialized.guard)).transform_error(sys_to_load_error));
+        Try(file.read_to(as_bytes_mut(m_serialized.infos)).transform_error(sys_to_load_error));
+        Try(file.read_to(as_bytes_mut(m_serialized.uuid.value)).transform_error(sys_to_load_error));
 
         if (m_serialized.guard.magic != MAGIC) {
             elog("Invalid pipeline cache magic number, have {}, expected: {}", m_serialized.guard.magic, MAGIC);

@@ -128,9 +128,7 @@ export {
             Window(Window&&) noexcept;
             auto operator=(Window&&) noexcept -> Window&;
 
-            static auto open(std::string               title,
-                             const math::Extent2<u32>& size,
-                             WindowFlag                flags) noexcept -> Window;
+            static auto open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept -> Window;
 
             auto close() noexcept -> void;
             [[nodiscard]]
@@ -170,8 +168,7 @@ export {
             [[nodiscard]]
             auto fullscreen() const noexcept -> bool;
 
-            auto confine_mouse(bool confined = true, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept
-              -> void;
+            auto confine_mouse(bool confined = true, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
             auto unconfine_mouse(u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
             auto toggle_confined_mouse(u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
             [[nodiscard]]
@@ -189,14 +186,12 @@ export {
             [[nodiscard]]
             auto is_mouse_hidden(u8 mouse_id = GLOBAL_MOUSE_ID) const noexcept -> bool;
 
-            auto set_relative_mouse(bool enabled = true, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept
-              -> void;
+            auto set_relative_mouse(bool enabled = true, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
             auto toggle_relative_mouse(u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
             [[nodiscard]]
             auto is_mouse_relative(u8 mouse_id = GLOBAL_MOUSE_ID) const noexcept -> bool;
 
-            auto set_key_repeat(bool enabled = true, u8 keyboard_id = GLOBAL_KEYBOARD_ID) noexcept
-              -> void;
+            auto set_key_repeat(bool enabled = true, u8 keyboard_id = GLOBAL_KEYBOARD_ID) noexcept -> void;
             auto disable_key_repeat(u8 keyboard_id = GLOBAL_KEYBOARD_ID) noexcept -> void;
             auto toggle_key_repeat(u8 keyboard_id = GLOBAL_KEYBOARD_ID) noexcept -> void;
             [[nodiscard]]
@@ -208,8 +203,7 @@ export {
             [[nodiscard]]
             auto is_virtual_keyboard_visible() const noexcept -> bool;
 
-            auto set_mouse_position(const math::vec2i& position,
-                                    u8                 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
+            auto set_mouse_position(const math::vec2i& position, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
 
             [[nodiscard]]
             auto native_handle() const noexcept -> NativeHandle;
@@ -257,16 +251,13 @@ namespace stormkit::wsi {
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_string(WindowFlag flag) noexcept -> std::string_view {
         using Pair                    = std::pair<WindowFlag, std::string_view>;
-        static constexpr auto MAPPING = core::generate_substitutions_as_string_for<
-          WindowFlag,
-          4,
-          WindowFlag::DEFAULT,
-          67>("WindowFlag::",
-              {
-                Pair { WindowFlag::DEFAULT,          "DEFAULT"sv          },
-                Pair { WindowFlag::BORDERLESS,       "BORDERLESS"sv       },
-                Pair { WindowFlag::RESIZEABLE,       "RESIZEABLE"sv       },
-                Pair { WindowFlag::EXTERNAL_CONTEXT, "EXTERNAL_CONTEXT"sv },
+        static constexpr auto MAPPING = core::generate_substitutions_as_string_for<WindowFlag, 4, WindowFlag::DEFAULT, 67>(
+          "WindowFlag::",
+          {
+            Pair { WindowFlag::DEFAULT,          "DEFAULT"sv          },
+            Pair { WindowFlag::BORDERLESS,       "BORDERLESS"sv       },
+            Pair { WindowFlag::RESIZEABLE,       "RESIZEABLE"sv       },
+            Pair { WindowFlag::EXTERNAL_CONTEXT, "EXTERNAL_CONTEXT"sv },
         });
 
         const auto it = stdr::find_if(MAPPING, [&flag](auto&& pair) { return pair.first == flag; });

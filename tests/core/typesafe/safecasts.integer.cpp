@@ -33,54 +33,74 @@ namespace bar {
 
 namespace {
     [[maybe_unused]]
-    const auto i8_1 = i8 { 1 };
+    const auto i8_1
+      = i8 { 1 };
     [[maybe_unused]]
-    const auto i8_2 = i8 { 2 };
+    const auto i8_2
+      = i8 { 2 };
 
     [[maybe_unused]]
-    const auto u8_1 = u8 { 1 };
+    const auto u8_1
+      = u8 { 1 };
     [[maybe_unused]]
-    const auto u8_2 = u8 { 2 };
+    const auto u8_2
+      = u8 { 2 };
 
     [[maybe_unused]]
-    const auto i16_1 = i16 { 1 };
+    const auto i16_1
+      = i16 { 1 };
     [[maybe_unused]]
-    const auto i16_2 = i16 { 2 };
+    const auto i16_2
+      = i16 { 2 };
 
     [[maybe_unused]]
-    const auto u16_1 = u16 { 1 };
+    const auto u16_1
+      = u16 { 1 };
     [[maybe_unused]]
-    const auto u16_2 = u16 { 2 };
+    const auto u16_2
+      = u16 { 2 };
 
     [[maybe_unused]]
-    const auto i32_1 = i32 { 1 };
+    const auto i32_1
+      = i32 { 1 };
     [[maybe_unused]]
-    const auto i32_2 = i32 { 2 };
+    const auto i32_2
+      = i32 { 2 };
 
     [[maybe_unused]]
-    const auto u32_1 = u32 { 1 };
+    const auto u32_1
+      = u32 { 1 };
     [[maybe_unused]]
-    const auto u32_2 = u32 { 2 };
+    const auto u32_2
+      = u32 { 2 };
 
     [[maybe_unused]]
-    const auto i64_1 = i64 { 1 };
+    const auto i64_1
+      = i64 { 1 };
     [[maybe_unused]]
-    const auto i64_2 = i64 { 2 };
+    const auto i64_2
+      = i64 { 2 };
 
     [[maybe_unused]]
-    const auto u64_1 = u64 { 1 };
+    const auto u64_1
+      = u64 { 1 };
     [[maybe_unused]]
-    const auto u64_2 = u64 { 2 };
+    const auto u64_2
+      = u64 { 2 };
 
     [[maybe_unused]]
-    const auto i128_1 = i128 { 1 };
+    const auto i128_1
+      = i128 { 1 };
     [[maybe_unused]]
-    const auto i128_2 = i128 { 2 };
+    const auto i128_2
+      = i128 { 2 };
 
     [[maybe_unused]]
-    const auto u128_1 = u128 { 1 };
+    const auto u128_1
+      = u128 { 1 };
     [[maybe_unused]]
-    const auto u128_2 = u128 { 2 };
+    const auto u128_2
+      = u128 { 2 };
 
     auto _ = test::TestSuite {
         "Core.typesafe.safecasts",

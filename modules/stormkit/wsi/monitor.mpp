@@ -58,8 +58,7 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_PURE
-    constexpr auto Monitor::operator<=>(const Monitor& other) const noexcept
-      -> std::strong_ordering {
+    constexpr auto Monitor::operator<=>(const Monitor& other) const noexcept -> std::strong_ordering {
         if (auto ret = flags <=> other.flags; ret != 0) return ret;
 
 #ifdef STORMKIT_COMPILER_CLANG
@@ -99,15 +98,13 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     template<typename FormatContext>
     STORMKIT_FORCE_INLINE
-    inline auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept
-      -> FormatContext::iterator {
+    inline auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept -> FormatContext::iterator {
         auto&& out = ctx.out();
-        return format_to(
-          out,
-          "{{ Monitor: .name = {}, .flags = {}, .extents = {}, .scale_factor = {} }}",
-          monitor.name,
-          monitor.flags,
-          monitor.extents,
-          monitor.scale_factor);
+        return format_to(out,
+                         "{{ Monitor: .name = {}, .flags = {}, .extents = {}, .scale_factor = {} }}",
+                         monitor.name,
+                         monitor.flags,
+                         monitor.extents,
+                         monitor.scale_factor);
     }
 } // namespace stormkit::wsi

@@ -49,19 +49,15 @@ export namespace base {
         auto init_window(std::string_view example_name) noexcept -> void {
             m_window = wsi::Window::open(std::format("Stormkit GPU {} example", example_name),
                                          { 800_u32, 600_u32 },
-                                         wsi::WindowFlag::DEFAULT
-                                           | wsi::WindowFlag::EXTERNAL_CONTEXT);
-            m_window->on<wsi::EventType::KEY_DOWN>([this](u8 /*id*/,
-                                                          wsi::Key key,
-                                                          char /*c*/) mutable noexcept {
+                                         wsi::WindowFlag::DEFAULT | wsi::WindowFlag::EXTERNAL_CONTEXT);
+            m_window->on<wsi::EventType::KEY_DOWN>([this](u8 /*id*/, wsi::Key key, char /*c*/) mutable noexcept {
                 if (key == wsi::Key::ESCAPE) m_window->close();
             });
         }
 
         auto init_gpu(std::string_view example_name) noexcept -> void {
             // initialize gpu backend (vulkan or webgpu depending the platform)
-            *gpu::initialize_backend()
-               .transform_error(monadic::assert("Failed to initialize gpu backend"));
+            *gpu::initialize_backend().transform_error(monadic::assert("Failed to initialize gpu backend"));
 
             // create gpu instance and attach surface to window
             m_instance = gpu::Instance::create(std::string { example_name })
@@ -69,8 +65,7 @@ export namespace base {
                            .value();
 
             m_surface = gpu::Surface::create_from_window(m_instance, m_window)
-                          .transform_error(monadic::
-                                             assert("Failed to initialize window gpu surface"))
+                          .transform_error(monadic::assert("Failed to initialize window gpu surface"))
                           .value();
             // pick the best physical device
             const auto& physical_devices = m_instance->physical_devices();
@@ -100,7 +95,7 @@ export namespace base {
 
             // create swapchain
             const auto window_extent = m_window->extent();
-            m_swapchain = gpu::SwapChain::create(m_device, m_surface, window_extent)
+            m_swapchain              = gpu::SwapChain::create(m_device, m_surface, window_extent)
                             .transform_error(monadic::assert("Failed to create swapchain"))
                             .value();
 

@@ -91,8 +91,7 @@ export namespace stormkit::wsi::common {
         auto mouse_state(this T& self, u8 id) noexcept -> core::meta::ForwardConst<T, MouseState>&;
 
         template<typename T>
-        auto keyboard_state(this T& self, u8 id) noexcept
-          -> core::meta::ForwardConst<T, KeyboardState>&;
+        auto keyboard_state(this T& self, u8 id) noexcept -> core::meta::ForwardConst<T, KeyboardState>&;
 
       protected:
         struct {
@@ -216,8 +215,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::set_monitor_changed_event(MonitorChangedEventFunc&& func) noexcept
-      -> void {
+    inline auto WindowBase::set_monitor_changed_event(MonitorChangedEventFunc&& func) noexcept -> void {
         monitor_changed_event = std::move(func);
     }
 
@@ -259,16 +257,14 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::set_mouse_button_down_event(MouseButtonDownEventFunc&& func) noexcept
-      -> void {
+    inline auto WindowBase::set_mouse_button_down_event(MouseButtonDownEventFunc&& func) noexcept -> void {
         mouse_button_down_event = std::move(func);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::set_mouse_button_up_event(MouseButtonUpEventFunc&& func) noexcept
-      -> void {
+    inline auto WindowBase::set_mouse_button_up_event(MouseButtonUpEventFunc&& func) noexcept -> void {
         mouse_button_up_event = std::move(func);
     }
 
@@ -297,8 +293,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::mouse_state(this T& self, u8 id) noexcept
-      -> core::meta::ForwardConst<T, MouseState>& {
+    inline auto WindowBase::mouse_state(this T& self, u8 id) noexcept -> core::meta::ForwardConst<T, MouseState>& {
         expects(id < stdr::size(self.m_mouse_states));
         return self.m_mouse_states[id];
     }
@@ -307,8 +302,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::keyboard_state(this T& self, u8 id) noexcept
-      -> core::meta::ForwardConst<T, KeyboardState>& {
+    inline auto WindowBase::keyboard_state(this T& self, u8 id) noexcept -> core::meta::ForwardConst<T, KeyboardState>& {
         expects(id < stdr::size(self.m_keyboard_states));
         return self.m_keyboard_states[id];
     }

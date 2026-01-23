@@ -53,8 +53,7 @@ namespace stormkit::wsi::linux::x11 {
     inline auto screen_of_display(xcb_connection_t* c, int screen) noexcept -> xcb_screen_t* {
         auto iter = xcb_screen_iterator_t {};
 
-        for (iter = xcb_setup_roots_iterator(xcb_get_setup(c)); iter.rem; --screen,
-            xcb_screen_next(&iter))
+        for (iter = xcb_setup_roots_iterator(xcb_get_setup(c)); iter.rem; --screen, xcb_screen_next(&iter))
             if (screen == 0) return iter.data;
 
         return iter.data;
@@ -63,8 +62,7 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto default_root_window(xcb_connection_t* connection, int32_t screen_id) noexcept
-      -> xcb_window_t {
+    inline auto default_root_window(xcb_connection_t* connection, int32_t screen_id) noexcept -> xcb_window_t {
         auto screen = screen_of_display(connection, screen_id);
 
         return screen->root;

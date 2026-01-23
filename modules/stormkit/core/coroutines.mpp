@@ -9,14 +9,11 @@ export module stormkit.core:coroutines;
 
 export import std;
 
-#if not defined(__cpp_lib_generator) \
-  or (defined(__cpp_lib_generator) and (__cpp_lib_generator < 202207L))
+#if not defined(__cpp_lib_generator) or (defined(__cpp_lib_generator) and (__cpp_lib_generator < 202207L))
 export namespace std {
     struct use_allocator_arg {};
 
-    template<class _Ref,
-             typename _Value     = std::remove_cvref_t<_Ref>,
-             typename _Allocator = use_allocator_arg>
+    template<class _Ref, typename _Value = std::remove_cvref_t<_Ref>, typename _Allocator = use_allocator_arg>
     class generator;
 
     namespace ranges {
@@ -131,10 +128,8 @@ namespace std {
     } // namespace ranges
 
     template<class _Alloc>
-    static constexpr bool __allocator_needs_to_be_stored = !std::allocator_traits<
-                                                             _Alloc>::is_always_equal::value
-                                                           || !std::is_default_constructible_v<
-                                                             _Alloc>;
+    static constexpr bool __allocator_needs_to_be_stored = !std::allocator_traits<_Alloc>::is_always_equal::value
+                                                           || !std::is_default_constructible_v<_Alloc>;
 
     // Round s up to next multiple of a.
     constexpr size_t __aligned_allocation_size(size_t s, size_t a) {
@@ -152,44 +147,32 @@ namespace std {
         }
 
         static _Alloc& __get_allocator(void* __frame, std::size_t __frameSize) noexcept {
-            return *reinterpret_cast<_Alloc*>(static_cast<char*>(__frame)
-                                              + __offset_of_allocator(__frameSize));
+            return *reinterpret_cast<_Alloc*>(static_cast<char*>(__frame) + __offset_of_allocator(__frameSize));
         }
 
       public:
         template<class... _Args>
-        static void* operator new(std::size_t __frameSize,
-                                  std::allocator_arg_t,
-                                  _Alloc __alloc,
-                                  _Args&...) {
+        static void* operator new(std::size_t __frameSize, std::allocator_arg_t, _Alloc __alloc, _Args&...) {
             void* __frame = __alloc.allocate(__padded_frame_size(__frameSize));
 
             // Store allocator at end of the coroutine frame.
             // Assuming the allocator's move constructor is non-throwing (a requirement for
             // allocators)
-            ::new (static_cast<void*>(std::addressof(__get_allocator(__frame, __frameSize))))
-              _Alloc(std::move(__alloc));
+            ::new (static_cast<void*>(std::addressof(__get_allocator(__frame, __frameSize)))) _Alloc(std::move(__alloc));
 
             return __frame;
         }
 
         template<class _This, typename... _Args>
-        static void* operator new(std::size_t __frameSize,
-                                  _This&,
-                                  std::allocator_arg_t,
-                                  _Alloc __alloc,
-                                  _Args&...) {
-            return __promise_base_alloc::operator new(__frameSize,
-                                                      std::allocator_arg,
-                                                      std::move(__alloc));
+        static void* operator new(std::size_t __frameSize, _This&, std::allocator_arg_t, _Alloc __alloc, _Args&...) {
+            return __promise_base_alloc::operator new(__frameSize, std::allocator_arg, std::move(__alloc));
         }
 
         static void operator delete(void* __ptr, std::size_t __frameSize) noexcept {
             _Alloc& __alloc = __get_allocator(__ptr, __frameSize);
             _Alloc  __localAlloc(std::move(__alloc));
             __alloc.~Alloc();
-            __localAlloc
-              .deallocate(static_cast<std::byte*>(__ptr), __padded_frame_size(__frameSize));
+            __localAlloc.deallocate(static_cast<std::byte*>(__ptr), __padded_frame_size(__frameSize));
         }
     };
 
@@ -223,8 +206,7 @@ namespace std {
         __manual_lifetime<std::exception_ptr> __exception_;
         __manual_lifetime<_Ref>               __value_;
 
-        explicit __generator_promise_base(std::coroutine_handle<> thisCoro) noexcept
-            : __root_(this), __parentOrLeaf_(thisCoro) {}
+        explicit __generator_promise_base(std::coroutine_handle<> thisCoro) noexcept : __root_(this), __parentOrLeaf_(thisCoro) {}
 
         ~__generator_promise_base() {
             if (__root_ != this) {
@@ -268,16 +250,14 @@ namespace std {
 
         __final_awaiter final_suspend() noexcept { return {}; }
 
-        std::suspend_always yield_value(_Ref&& __x) noexcept(std::is_nothrow_move_constructible_v<
-                                                             _Ref>) {
+        std::suspend_always yield_value(_Ref&& __x) noexcept(std::is_nothrow_move_constructible_v<_Ref>) {
             __root_->__value_.construct((_Ref&&)__x);
             return {};
         }
 
         template<class _T>
             requires(!std::is_reference_v<_Ref>) && std::is_convertible_v<_T, _Ref>
-        std::suspend_always yield_value(_T&&
-                                          __x) noexcept(std::is_nothrow_constructible_v<_Ref, _T>) {
+        std::suspend_always yield_value(_T&& __x) noexcept(std::is_nothrow_constructible_v<_Ref, _T>) {
             __root_->__value_.construct((_T&&)__x);
             return {};
         }
@@ -316,21 +296,20 @@ namespace std {
 
             void await_resume() {
                 __generator_promise_base& __nestedPromise = *__gen_.__get_promise();
-                if (__nestedPromise.__exception_.get()) {
-                    std::rethrow_exception(std::move(__nestedPromise.__exception_.get()));
-                }
+                if (__nestedPromise.__exception_.get()) { std::rethrow_exception(std::move(__nestedPromise.__exception_.get())); }
             }
         };
 
         template<class _OValue, typename _OAlloc>
-        __yield_sequence_awaiter<generator<_Ref, _OValue, _OAlloc>>
-          yield_value(std::ranges::elements_of<generator<_Ref, _OValue, _OAlloc>> __g) noexcept {
+        __yield_sequence_awaiter<generator<_Ref, _OValue, _OAlloc>> yield_value(std::ranges::elements_of<
+                                                                                generator<_Ref, _OValue, _OAlloc>> __g) noexcept {
             return std::move(__g).get();
         }
 
         template<std::ranges::range _Rng, typename _Allocator>
-        __yield_sequence_awaiter<generator<_Ref, std::remove_cvref_t<_Ref>, _Allocator>>
-          yield_value(std::ranges::elements_of<_Rng, _Allocator>&& __x) {
+        __yield_sequence_awaiter<generator<_Ref, std::remove_cvref_t<_Ref>, _Allocator>> yield_value(std::ranges::elements_of<
+                                                                                                     _Rng,
+                                                                                                     _Allocator>&& __x) {
             return [](allocator_arg_t,
                       [[maybe_unused]]
                       _Allocator alloc,
@@ -348,28 +327,21 @@ namespace std {
     template<class _Generator, typename _ByteAllocator, bool _ExplicitAllocator = false>
     struct __generator_promise;
 
-    template<class _Ref,
-             typename _Value,
-             typename _Alloc,
-             typename _ByteAllocator,
-             bool _ExplicitAllocator>
-    struct __generator_promise<generator<_Ref, _Value, _Alloc>, _ByteAllocator, _ExplicitAllocator>
-      final: public __generator_promise_base<_Ref>, public __promise_base_alloc<_ByteAllocator> {
+    template<class _Ref, typename _Value, typename _Alloc, typename _ByteAllocator, bool _ExplicitAllocator>
+    struct __generator_promise<generator<_Ref, _Value, _Alloc>, _ByteAllocator, _ExplicitAllocator> final
+        : public __generator_promise_base<_Ref>,
+          public __promise_base_alloc<_ByteAllocator> {
         __generator_promise() noexcept
-            : __generator_promise_base<
-                _Ref>(std::coroutine_handle<__generator_promise>::from_promise(*this)) {}
+            : __generator_promise_base<_Ref>(std::coroutine_handle<__generator_promise>::from_promise(*this)) {}
 
         generator<_Ref, _Value, _Alloc> get_return_object() noexcept {
-            return generator<_Ref, _Value, _Alloc> {
-                std::coroutine_handle<__generator_promise>::from_promise(*this)
-            };
+            return generator<_Ref, _Value, _Alloc> { std::coroutine_handle<__generator_promise>::from_promise(*this) };
         }
 
         using __generator_promise_base<_Ref>::yield_value;
 
         template<std::ranges::range _Rng>
-        typename __generator_promise_base<_Ref>::template __yield_sequence_awaiter<
-          generator<_Ref, _Value, _Alloc>>
+        typename __generator_promise_base<_Ref>::template __yield_sequence_awaiter<generator<_Ref, _Value, _Alloc>>
           yield_value(std::ranges::elements_of<_Rng>&& __x) {
             static_assert(!_ExplicitAllocator,
                           "This coroutine has an explicit allocator specified with "
@@ -382,14 +354,12 @@ namespace std {
     };
 
     template<class _Alloc>
-    using __byte_allocator_t = typename std::allocator_traits<
-      std::remove_cvref_t<_Alloc>>::template rebind_alloc<std::byte>;
+    using __byte_allocator_t = typename std::allocator_traits<std::remove_cvref_t<_Alloc>>::template rebind_alloc<std::byte>;
 
     // Type-erased allocator with default allocator behaviour.
     template<class _Ref, typename _Value, typename... _Args>
     struct coroutine_traits<generator<_Ref, _Value>, _Args...> {
-        using promise_type = __generator_promise<generator<_Ref, _Value>,
-                                                 std::allocator<std::byte>>;
+        using promise_type = __generator_promise<generator<_Ref, _Value>, std::allocator<std::byte>>;
     };
 
     // Type-erased allocator with std::allocator_arg parameter
@@ -399,9 +369,7 @@ namespace std {
         using __byte_allocator = __byte_allocator_t<_Alloc>;
 
       public:
-        using promise_type = __generator_promise<generator<_Ref, _Value>,
-                                                 __byte_allocator,
-                                                 true /*explicit Allocator*/>;
+        using promise_type = __generator_promise<generator<_Ref, _Value>, __byte_allocator, true /*explicit Allocator*/>;
     };
 
     // Type-erased allocator with std::allocator_arg parameter (non-static member functions)
@@ -411,9 +379,7 @@ namespace std {
         using __byte_allocator = __byte_allocator_t<_Alloc>;
 
       public:
-        using promise_type = __generator_promise<generator<_Ref, _Value>,
-                                                 __byte_allocator,
-                                                 true /*explicit Allocator*/>;
+        using promise_type = __generator_promise<generator<_Ref, _Value>, __byte_allocator, true /*explicit Allocator*/>;
     };
 
     // Generator with specified allocator type
@@ -441,8 +407,7 @@ namespace std {
         generator() noexcept = default;
 
         generator(generator&& __other) noexcept
-            : __coro_(std::exchange(__other.__coro_, {})),
-              __started_(std::exchange(__other.__started_, false)) {}
+            : __coro_(std::exchange(__other.__coro_, {})), __started_(std::exchange(__other.__started_, false)) {}
 
         ~generator() noexcept {
             if (__coro_) {
@@ -483,9 +448,7 @@ namespace std {
 
             ~iterator() {}
 
-            friend bool operator==(const iterator& it, sentinel) noexcept {
-                return it.__coro_.done();
-            }
+            friend bool operator==(const iterator& it, sentinel) noexcept { return it.__coro_.done(); }
 
             iterator& operator++() {
                 __coro_.promise().__value_.destruct();
@@ -495,9 +458,7 @@ namespace std {
 
             void operator++(int) { (void)operator++(); }
 
-            reference operator*() const noexcept {
-                return static_cast<reference>(__coro_.promise().__value_.get());
-            }
+            reference operator*() const noexcept { return static_cast<reference>(__coro_.promise().__value_.get()); }
 
           private:
             friend generator;
@@ -575,8 +536,7 @@ namespace std {
             iterator(const iterator&) = delete;
 
             iterator(iterator&& __other) noexcept
-                : __promise_(std::exchange(__other.__promise_, nullptr)),
-                  __coro_(std::exchange(__other.__coro_, {})) {}
+                : __promise_(std::exchange(__other.__promise_, nullptr)), __coro_(std::exchange(__other.__coro_, {})) {}
 
             iterator& operator=(iterator&& __other) {
                 __promise_ = std::exchange(__other.__promise_, nullptr);
@@ -586,9 +546,7 @@ namespace std {
 
             ~iterator() = default;
 
-            friend bool operator==(const iterator& it, sentinel) noexcept {
-                return it.__coro_.done();
-            }
+            friend bool operator==(const iterator& it, sentinel) noexcept { return it.__coro_.done(); }
 
             iterator& operator++() {
                 __promise_->__value_.destruct();
@@ -598,9 +556,7 @@ namespace std {
 
             void operator++(int) { (void)operator++(); }
 
-            reference operator*() const noexcept {
-                return static_cast<reference>(__promise_->__value_.get());
-            }
+            reference operator*() const noexcept { return static_cast<reference>(__promise_->__value_.get()); }
 
           private:
             friend generator;

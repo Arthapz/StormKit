@@ -177,7 +177,8 @@ namespace stormkit { inline namespace core { namespace io {
         const auto
           // err = _sopen_s(&ret, stdr::data(p), posix_access | text_mode, _SH_DENYNO,
           // win32_access);
-          err = _sopen_s(&ret, stdr::data(p), posix_access | text_mode, _SH_SECURE, win32_access);
+          err
+          = _sopen_s(&ret, stdr::data(p), posix_access | text_mode, _SH_SECURE, win32_access);
         if (err != 0) return std::unexpected { SystemError::from_errno() };
 #else
         const auto ret = ::open(stdr::data(p), posix_access);

@@ -31,13 +31,11 @@ export {
             static auto create(const Device&                     device,
                                const RenderPass&                 render_pass,
                                const math::Extent2<u32>&         extent,
-                               std::vector<Ref<const ImageView>> attachments) noexcept
-              -> Expected<FrameBuffer>;
+                               std::vector<Ref<const ImageView>> attachments) noexcept -> Expected<FrameBuffer>;
             static auto allocate(const Device&                     device,
                                  const RenderPass&                 render_pass,
                                  const math::Extent2<u32>&         extent,
-                                 std::vector<Ref<const ImageView>> attachments) noexcept
-              -> Expected<Heap<FrameBuffer>>;
+                                 std::vector<Ref<const ImageView>> attachments) noexcept -> Expected<Heap<FrameBuffer>>;
             ~FrameBuffer() noexcept;
 
             FrameBuffer(const FrameBuffer&)                    = delete;
@@ -54,10 +52,7 @@ export {
             [[nodiscard]]
             auto native_handle() const noexcept -> VkFramebuffer;
 
-            FrameBuffer(const Device&,
-                        const math::Extent2<u32>&,
-                        std::vector<Ref<const ImageView>>,
-                        PrivateFuncTag) noexcept;
+            FrameBuffer(const Device&, const math::Extent2<u32>&, std::vector<Ref<const ImageView>>, PrivateFuncTag) noexcept;
 
           private:
             auto do_init(const RenderPass&) noexcept -> Expected<void>;
@@ -116,11 +111,8 @@ export {
           public:
             static constexpr auto DEBUG_TYPE = DebugObjectType::RENDER_PASS;
 
-            static auto create(const Device&                device,
-                               const RenderPassDescription& description) noexcept
-              -> Expected<RenderPass>;
-            static auto allocate(const Device&                device,
-                                 const RenderPassDescription& description) noexcept
+            static auto create(const Device& device, const RenderPassDescription& description) noexcept -> Expected<RenderPass>;
+            static auto allocate(const Device& device, const RenderPassDescription& description) noexcept
               -> Expected<Heap<RenderPass>>;
             ~RenderPass() noexcept;
 
@@ -132,8 +124,7 @@ export {
 
             auto create_frame_buffer(const Device&                     device,
                                      const math::Extent2<u32>&         extent,
-                                     std::vector<Ref<const ImageView>> attachments) const noexcept
-              -> Expected<FrameBuffer>;
+                                     std::vector<Ref<const ImageView>> attachments) const noexcept -> Expected<FrameBuffer>;
             auto allocate_frame_buffer(const Device&                     device,
                                        const math::Extent2<u32>&         extent,
                                        std::vector<Ref<const ImageView>> attachments) const noexcept
@@ -150,9 +141,7 @@ export {
             [[nodiscard]]
             auto native_handle() const noexcept -> VkRenderPass;
 
-            RenderPass(const Device&                device,
-                       const RenderPassDescription& description,
-                       PrivateFuncTag) noexcept;
+            RenderPass(const Device& device, const RenderPassDescription& description, PrivateFuncTag) noexcept;
 
           private:
             auto do_init() noexcept -> Expected<void>;
@@ -169,29 +158,25 @@ export {
         template<>
         struct hash<stormkit::gpu::AttachmentDescription> {
             [[nodiscard]]
-            constexpr auto operator()(const stormkit::gpu::AttachmentDescription&) const noexcept
-              -> stormkit::hash64;
+            constexpr auto operator()(const stormkit::gpu::AttachmentDescription&) const noexcept -> stormkit::hash64;
         };
 
         template<>
         struct hash<stormkit::gpu::Subpass::Ref> {
             [[nodiscard]]
-            constexpr auto operator()(const stormkit::gpu::Subpass::Ref&) const noexcept
-              -> stormkit::hash64;
+            constexpr auto operator()(const stormkit::gpu::Subpass::Ref&) const noexcept -> stormkit::hash64;
         };
 
         template<>
         struct hash<stormkit::gpu::Subpass> {
             [[nodiscard]]
-            constexpr auto operator()(const stormkit::gpu::Subpass&) const noexcept
-              -> stormkit::hash64;
+            constexpr auto operator()(const stormkit::gpu::Subpass&) const noexcept -> stormkit::hash64;
         };
 
         template<>
         struct hash<stormkit::gpu::RenderPassDescription> {
             [[nodiscard]]
-            constexpr auto operator()(const stormkit::gpu::RenderPassDescription&) const noexcept
-              -> stormkit::hash64;
+            constexpr auto operator()(const stormkit::gpu::RenderPassDescription&) const noexcept -> stormkit::hash64;
         };
     } // namespace std
 }
@@ -208,11 +193,11 @@ namespace stormkit::gpu {
                                     const math::Extent2<u32>&         extent,
                                     std::vector<Ref<const ImageView>> attachments,
                                     PrivateFuncTag) noexcept
-        : m_extent { extent }, m_attachments { std::move(attachments) },
+        : m_extent { extent },
+          m_attachments { std::move(attachments) },
           m_vk_device { device.native_handle() },
           m_vk_device_table { as_ref(device.device_table()) },
-          m_vk_handle { { [vk_device_table = *m_vk_device_table,
-                           vk_device       = m_vk_device](auto handle) noexcept {
+          m_vk_handle { { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto handle) noexcept {
               vk_device_table.vkDestroyFramebuffer(vk_device, handle, nullptr);
           } } } {
     }
@@ -223,10 +208,8 @@ namespace stormkit::gpu {
     inline auto FrameBuffer::create(const Device&                     device,
                                     const RenderPass&                 render_pass,
                                     const math::Extent2<u32>&         extent,
-                                    std::vector<Ref<const ImageView>> attachments) noexcept
-      -> Expected<FrameBuffer> {
-        auto
-          frame_buffer = FrameBuffer { device, extent, std::move(attachments), PrivateFuncTag {} };
+                                    std::vector<Ref<const ImageView>> attachments) noexcept -> Expected<FrameBuffer> {
+        auto frame_buffer = FrameBuffer { device, extent, std::move(attachments), PrivateFuncTag {} };
         return frame_buffer.do_init(render_pass).transform(core::monadic::consume(frame_buffer));
     }
 
@@ -236,24 +219,22 @@ namespace stormkit::gpu {
     inline auto FrameBuffer::allocate(const Device&                     device,
                                       const RenderPass&                 render_pass,
                                       const math::Extent2<u32>&         extent,
-                                      std::vector<Ref<const ImageView>> attachments) noexcept
-      -> Expected<Heap<FrameBuffer>> {
-        auto frame_buffer = allocate_unsafe<FrameBuffer>(device,
-                                                         extent,
-                                                         std::move(attachments),
-                                                         PrivateFuncTag {});
+                                      std::vector<Ref<const ImageView>> attachments) noexcept -> Expected<Heap<FrameBuffer>> {
+        auto frame_buffer = allocate_unsafe<FrameBuffer>(device, extent, std::move(attachments), PrivateFuncTag {});
         return frame_buffer->do_init(render_pass).transform(core::monadic::consume(frame_buffer));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline FrameBuffer::~FrameBuffer() noexcept = default;
+    inline FrameBuffer::~FrameBuffer() noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept = default;
+    inline FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -270,8 +251,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto FrameBuffer::attachments() const noexcept
-      -> const std::vector<Ref<const ImageView>>& {
+    inline auto FrameBuffer::attachments() const noexcept -> const std::vector<Ref<const ImageView>>& {
         return m_attachments;
     }
 
@@ -302,10 +282,7 @@ namespace stormkit::gpu {
             .layers          = 1,
         };
 
-        return vk_call<VkFramebuffer>(m_vk_device_table->vkCreateFramebuffer,
-                                      m_vk_device,
-                                      &create_info,
-                                      nullptr)
+        return vk_call<VkFramebuffer>(m_vk_device_table->vkCreateFramebuffer, m_vk_device, &create_info, nullptr)
           .transform(core::monadic::set(m_vk_handle))
           .transform_error(monadic::from_vk<Result>());
     }
@@ -313,13 +290,11 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline RenderPass::RenderPass(const Device&                device,
-                                  const RenderPassDescription& description,
-                                  PrivateFuncTag) noexcept
-        : m_description { description }, m_vk_device { device.native_handle() },
+    inline RenderPass::RenderPass(const Device& device, const RenderPassDescription& description, PrivateFuncTag) noexcept
+        : m_description { description },
+          m_vk_device { device.native_handle() },
           m_vk_device_table { as_ref(device.device_table()) },
-          m_vk_handle { { [vk_device_table = *m_vk_device_table,
-                           vk_device       = m_vk_device](auto handle) noexcept {
+          m_vk_handle { { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto handle) noexcept {
               vk_device_table.vkDestroyRenderPass(vk_device, handle, nullptr);
           } } } {
     }
@@ -327,8 +302,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    auto RenderPass::create(const Device& device, const RenderPassDescription& description) noexcept
-      -> Expected<RenderPass> {
+    auto RenderPass::create(const Device& device, const RenderPassDescription& description) noexcept -> Expected<RenderPass> {
         auto render_pass = RenderPass { device, description, PrivateFuncTag {} };
         return render_pass.do_init().transform(core::monadic::consume(render_pass));
     }
@@ -336,8 +310,7 @@ namespace stormkit::gpu {
     ////////////////////////////////////p/
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto RenderPass::allocate(const Device&                device,
-                                     const RenderPassDescription& description) noexcept
+    inline auto RenderPass::allocate(const Device& device, const RenderPassDescription& description) noexcept
       -> Expected<Heap<RenderPass>> {
         auto render_pass = allocate_unsafe<RenderPass>(device, description, PrivateFuncTag {});
         return render_pass->do_init().transform(core::monadic::consume(render_pass));
@@ -346,12 +319,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline RenderPass::~RenderPass() noexcept = default;
+    inline RenderPass::~RenderPass() noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline RenderPass::RenderPass(RenderPass&& other) noexcept = default;
+    inline RenderPass::RenderPass(RenderPass&& other) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -363,8 +338,8 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto RenderPass::create_frame_buffer(const Device&                     device,
                                                 const math::Extent2<u32>&         extent,
-                                                std::vector<Ref<const ImageView>> attachments)
-      const noexcept -> Expected<FrameBuffer> {
+                                                std::vector<Ref<const ImageView>> attachments) const noexcept
+      -> Expected<FrameBuffer> {
         return FrameBuffer::create(device, *this, extent, std::move(attachments));
     }
 
@@ -373,8 +348,8 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto RenderPass::allocate_frame_buffer(const Device&                     device,
                                                   const math::Extent2<u32>&         extent,
-                                                  std::vector<Ref<const ImageView>> attachments)
-      const noexcept -> Expected<Heap<FrameBuffer>> {
+                                                  std::vector<Ref<const ImageView>> attachments) const noexcept
+      -> Expected<Heap<FrameBuffer>> {
         return FrameBuffer::allocate(device, *this, extent, std::move(attachments));
     }
 
@@ -403,8 +378,8 @@ namespace stormkit::gpu {
     }
 } // namespace stormkit::gpu
 
-constexpr auto std::hash<stormkit::gpu::AttachmentDescription>::
-  operator()(const stormkit::gpu::AttachmentDescription& value) const noexcept -> stormkit::hash64 {
+constexpr auto std::hash<stormkit::gpu::AttachmentDescription>::operator()(const stormkit::gpu::AttachmentDescription& value)
+  const noexcept -> stormkit::hash64 {
     auto hash = stormkit::hash64 { 0 };
     stormkit::hash_combine(hash,
                            value.format,
@@ -419,16 +394,15 @@ constexpr auto std::hash<stormkit::gpu::AttachmentDescription>::
     return hash;
 }
 
-constexpr auto std::hash<stormkit::gpu::Subpass::Ref>::operator()(const stormkit::gpu::Subpass::Ref&
-                                                                    value) const noexcept
+constexpr auto std::hash<stormkit::gpu::Subpass::Ref>::operator()(const stormkit::gpu::Subpass::Ref& value) const noexcept
   -> stormkit::hash64 {
     auto hash = stormkit::hash64 { 0 };
     stormkit::hash_combine(hash, value.attachment_id, value.layout);
     return hash;
 }
 
-constexpr auto std::hash<stormkit::gpu::Subpass>::operator()(const stormkit::gpu::Subpass& value)
-  const noexcept -> stormkit::hash64 {
+constexpr auto std::hash<stormkit::gpu::Subpass>::operator()(const stormkit::gpu::Subpass& value) const noexcept
+  -> stormkit::hash64 {
     auto hash = stormkit::hash64 { 0 };
     stormkit::hash_combine(hash,
                            value.bind_point,
@@ -438,8 +412,8 @@ constexpr auto std::hash<stormkit::gpu::Subpass>::operator()(const stormkit::gpu
     return hash;
 }
 
-constexpr auto std::hash<stormkit::gpu::RenderPassDescription>::
-  operator()(const stormkit::gpu::RenderPassDescription& value) const noexcept -> stormkit::hash64 {
+constexpr auto std::hash<stormkit::gpu::RenderPassDescription>::operator()(const stormkit::gpu::RenderPassDescription& value)
+  const noexcept -> stormkit::hash64 {
     auto hash = stormkit::hash64 { 0 };
     stormkit::hash_combine(hash, value.attachments, value.subpasses);
     return hash;

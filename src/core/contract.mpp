@@ -21,10 +21,8 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto assert_base(bool                        cond,
-                     AssertType                  type,
-                     std::string_view            message,
-                     const std::source_location& location) noexcept -> void {
+    auto assert_base(bool cond, AssertType type, std::string_view message, const std::source_location& location) noexcept
+      -> void {
         if constexpr (STORMKIT_ASSERT == 1) {
             constexpr auto ASSERTION_PREFIX = ConsoleStyle {
                 .fg        = ConsoleColor::BRIGHT_RED,
@@ -43,9 +41,7 @@ namespace stormkit { inline namespace core {
                              ConsoleStyle { .fg = ConsoleColor::BLUE } | location.line(),
                              ConsoleStyle { .fg = ConsoleColor::BLUE } | location.column(),
                              ConsoleStyle { .fg = ConsoleColor::YELLOW } | location.function_name(),
-                             ConsoleStyle { .fg        = ConsoleColor::RED,
-                                            .modifiers = StyleModifier::BOLD }
-                               | message);
+                             ConsoleStyle { .fg = ConsoleColor::RED, .modifiers = StyleModifier::BOLD } | message);
                 std::fflush(get_stderr());
 
                 std::terminate();

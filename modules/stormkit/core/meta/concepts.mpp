@@ -16,20 +16,17 @@ namespace stormkit { inline namespace core { namespace meta::details {
     }
 
     template<template<typename, auto...> class T, typename T2, auto... Args>
-    constexpr auto is_specialization_of_with_nttp_helper(const T<T2, Args...>&) noexcept
-      -> std::true_type {
+    constexpr auto is_specialization_of_with_nttp_helper(const T<T2, Args...>&) noexcept -> std::true_type {
         return {};
     }
 
     template<template<typename, auto...> class T, typename T1, auto... Args>
-    constexpr auto is_specialization_of_helper_nttp_tv(const T<T1, Args...>&) noexcept
-      -> std::true_type {
+    constexpr auto is_specialization_of_helper_nttp_tv(const T<T1, Args...>&) noexcept -> std::true_type {
         return {};
     }
 
     template<template<class, class, auto...> typename T, typename T1, typename T2, auto... Args>
-    constexpr auto is_specialization_of_helper_nttp_ttv(const T<T1, T2, Args...>&) noexcept
-      -> std::true_type {
+    constexpr auto is_specialization_of_helper_nttp_ttv(const T<T1, T2, Args...>&) noexcept -> std::true_type {
         return {};
     }
 }}} // namespace stormkit::core::meta::details
@@ -69,9 +66,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsConvertibleTo = std::convertible_to<From, To>;
 
     template<class T>
-    concept IsHashable = requires(std::remove_cvref_t<T>& a) {
-        std::hash<std::remove_cvref_t<T>> {}(a);
-    };
+    concept IsHashable = requires(std::remove_cvref_t<T>& a) { std::hash<std::remove_cvref_t<T>> {}(a); };
 
     template<class T, class U>
     concept IsCanonical = IsStrict<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
@@ -148,8 +143,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsMovedOwningPointer = IsOwningPointer<T> and IsRValueReference<T>;
 
     template<class T>
-    concept IsViewPointer = (IsOwningPointer<std::remove_cvref_t<T>>
-                             and not IsMovedOwningPointer<T>)
+    concept IsViewPointer = (IsOwningPointer<std::remove_cvref_t<T>> and not IsMovedOwningPointer<T>)
                             or IsNonOwningPointer<std::remove_cvref_t<T>>;
 
     template<typename T>
@@ -165,8 +159,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsPolymorphic = std::is_polymorphic_v<T>;
 
     template<class T>
-    concept IsPolymorphicPointer = IsPointer<T>
-                                   and IsPolymorphic<typename std::pointer_traits<T>::element_type>;
+    concept IsPolymorphicPointer = IsPointer<T> and IsPolymorphic<typename std::pointer_traits<T>::element_type>;
 
     template<class T>
     concept IsPolymorphicReference = IsReference<T> and IsPolymorphic<std::remove_reference_t<T>>;
@@ -193,18 +186,15 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsEnumeration = std::is_enum_v<T> and IsNotByte<T>;
 
     template<typename T>
-    concept IsIntegral
-      = (std::integral<T> and not IsStrict<T, bool> and not IsByte<T>)
-        or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
-        or Is<T,
-              std::ranges::range_difference_t<
-                std::ranges::iota_view<unsigned long long, unsigned long long>>>
+    concept IsIntegral = (std::integral<T> and not IsStrict<T, bool> and not IsByte<T>)
+                         or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
+                         or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<unsigned long long, unsigned long long>>>
 #if defined(STORMKIT_COMPILER_MSVC)
-        or Is<T, std::_Unsigned128>
-        or Is<T, std::__Signed128>;
+                         or Is<T, std::_Unsigned128>
+                         or Is<T, std::__Signed128>;
 #else
-        or Is<T, __int128>
-        or Is<T, unsigned __int128>;
+                         or Is<T, __int128>
+                         or Is<T, unsigned __int128>;
 #endif
 
     template<typename T>
@@ -214,9 +204,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsFloatingPoint = std::floating_point<T>;
 
     template<class T>
-    concept IsArithmetic = (IsIntegral<T> or IsFloatingPoint<T>)
-                           and not IsPointer<T>
-                           and not IsEnumeration<T>;
+    concept IsArithmetic = (IsIntegral<T> or IsFloatingPoint<T>) and not IsPointer<T> and not IsEnumeration<T>;
 
     template<class T>
     concept IsScalar = IsArithmetic<T> or IsPointer<T> or IsEnumeration<T>;
@@ -242,23 +230,17 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename S, template<class, auto...> typename T>
     concept IsSpecializationOfNTTP_TV = requires(S&& s) {
-        {
-            details::is_specialization_of_helper_nttp_tv<T>(std::forward<S>(s))
-        } -> IsStrict<std::true_type>;
+        { details::is_specialization_of_helper_nttp_tv<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
     };
 
     template<typename S, template<class, class, auto> typename T>
     concept IsSpecializationOfNTTP_TTV = requires(S&& s) {
-        {
-            details::is_specialization_of_helper_nttp_ttv<T>(std::forward<S>(s))
-        } -> IsStrict<std::true_type>;
+        { details::is_specialization_of_helper_nttp_ttv<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
     };
 
     template<typename S, template<typename, auto...> class T>
     concept IsSpecializationWithNTTPOf = requires(S&& s) {
-        {
-            details::is_specialization_of_with_nttp_helper<T>(std::forward<S>(s))
-        } -> IsStrict<std::true_type>;
+        { details::is_specialization_of_with_nttp_helper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
     };
 
     template<class T>
@@ -286,8 +268,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsBinaryPredicate = IsPredicate<T, const U&, const U&>;
 
     template<class T, class U>
-    concept IsHashFunc = std::regular_invocable<T, U>
-                         and std::convertible_to<std::invoke_result_t<T, U>, std::uint64_t>;
+    concept IsHashFunc = std::regular_invocable<T, U> and std::convertible_to<std::invoke_result_t<T, U>, std::uint64_t>;
 
     // doesn't work atm
     template<class T, class CharT = char>
@@ -295,8 +276,7 @@ export namespace stormkit { inline namespace core { namespace meta {
                                   // val); };
 
     template<class T>
-    concept IsCharacter
-      = IsOneOf<T, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
+    concept IsCharacter = IsOneOf<T, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
 
     template<class T>
     concept IsCharType = IsOneOf<T, char, wchar_t, char8_t, char16_t, char32_t>;
@@ -344,38 +324,27 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsSameSigneness = (IsSigned<T> and IsSigned<U>) or (IsUnsigned<T> and IsUnsigned<U>);
 
     template<typename To, typename From>
-    concept IsSignNarrowing = (IsSigned<From> ? not IsSigned<To>
-                                              : IsSigned<To> and sizeof(From) == sizeof(To));
+    concept IsSignNarrowing = (IsSigned<From> ? not IsSigned<To> : IsSigned<To> and sizeof(From) == sizeof(To));
 
     template<typename To, typename From>
-    concept IsByteNarrowing = ((IsArithmetic<To> and IsByte<From>)
-                               or (IsByte<To> and IsArithmetic<From>))
+    concept IsByteNarrowing = ((IsArithmetic<To> and IsByte<From>) or (IsByte<To> and IsArithmetic<From>))
                               and (IsByte<To> and sizeof(To) != sizeof(From));
 
     template<typename To, typename From>
     concept IsNarrowing = (IsFloatingPoint<From> and IsIntegral<To>)
-                          or (IsFloatingPoint<From>
-                              and IsFloatingPoint<To>
-                              and sizeof(From) > sizeof(To))
+                          or (IsFloatingPoint<From> and IsFloatingPoint<To> and sizeof(From) > sizeof(To))
                           or (IsIntegralOrEnumeration<From> and IsFloatingPoint<To>)
-                          or (IsIntegral<From>
-                              and IsIntegral<To>
-                              and (sizeof(From) > sizeof(To) or IsSignNarrowing<To, From>))
+                          or (IsIntegral<From> and IsIntegral<To> and (sizeof(From) > sizeof(To) or IsSignNarrowing<To, From>))
                           or (IsEnumeration<From>
                               and IsIntegral<To>
-                              and (sizeof(From) > sizeof(To)
-                                   or IsSignNarrowing<std::underlying_type_t<From>, From>))
+                              and (sizeof(From) > sizeof(To) or IsSignNarrowing<std::underlying_type_t<From>, From>))
                           or (IsPointer<From> and Is<To, bool>);
 
     template<typename To, typename From>
-    concept IsUnsafePointerConvertion = IsPointer<To>
-                                        and IsPointer<From>
-                                        and not requires(To to, From from) { to = from; };
+    concept IsUnsafePointerConvertion = IsPointer<To> and IsPointer<From> and not requires(To to, From from) { to = from; };
 
     template<typename To, auto from>
-    concept IsSafeNarrowing = IsArithmetic<To>
-                              and IsArithmetic<decltype(from)>
-                              and not is_safe_narrowing<To>(from);
+    concept IsSafeNarrowing = IsArithmetic<To> and IsArithmetic<decltype(from)> and not is_safe_narrowing<To>(from);
 
     template<typename T1, typename T2>
     concept HasEqualityOperator = requires(const T1& first, const T2& second) {
@@ -385,9 +354,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     static_assert(HasEqualityOperator<char*, std::string>);
 
     template<typename T, typename... Args>
-    concept EnableCtor = sizeof...(Args) != 1
-                         || (sizeof...(Args) == 1
-                             && !Is<T, typename std::remove_cvref<Args...>::type>);
+    concept EnableCtor = sizeof...(Args) != 1 || (sizeof...(Args) == 1 && !Is<T, typename std::remove_cvref<Args...>::type>);
 
     template<typename T>
     concept IsNoexceptDefaultConstructible = std::is_nothrow_default_constructible_v<T>;

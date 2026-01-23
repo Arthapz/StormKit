@@ -49,22 +49,19 @@ class Application: public base::Application {
     auto init_resources() -> void {
         // initialilze descriptor pool
         static constexpr auto POOL_SIZES = std::array {
-            gpu::DescriptorPool::Size { .type = gpu::DescriptorType::COMBINED_IMAGE_SAMPLER,
-                                       .descriptor_count = BUFFERING_COUNT }
+            gpu::DescriptorPool::Size { .type = gpu::DescriptorType::COMBINED_IMAGE_SAMPLER, .descriptor_count = BUFFERING_COUNT }
         };
         m_descriptor_pool = gpu::DescriptorPool::create(m_device, POOL_SIZES, BUFFERING_COUNT)
                               .transform_error(monadic::assert("Failed to create descriptor pool"))
                               .value();
 
         // initialize render pass
-        m_render_pass
-          = gpu::RenderPass::
-              create(m_device,
-                     { .attachments = { { .format = m_swapchain->pixel_format() } },
-                       .subpasses   = { { .bind_point            = gpu::PipelineBindPoint::GRAPHICS,
-                                          .color_attachment_refs = { { .attachment_id = 0u } } } } })
-                .transform_error(monadic::assert("Failed to create render pass"))
-                .value();
+        m_render_pass = gpu::RenderPass::create(m_device,
+                                                { .attachments = { { .format = m_swapchain->pixel_format() } },
+                                                  .subpasses   = { { .bind_point            = gpu::PipelineBindPoint::GRAPHICS,
+                                                                     .color_attachment_refs = { { .attachment_id = 0u } } } } })
+                          .transform_error(monadic::assert("Failed to create render pass"))
+                          .value();
 
         const auto window_extent = m_window->extent();
 
@@ -74,9 +71,8 @@ class Application: public base::Application {
             for (auto _ : range(BUFFERING_COUNT)) {
                 out.push_back({
                   .in_flight = gpu::Fence::create_signaled(m_device)
-                                 .transform_error(monadic::
-                                                    assert("Failed to create swapchain image "
-                                                           "in flight fence"))
+                                 .transform_error(monadic::assert("Failed to create swapchain image "
+                                                                  "in flight fence"))
                                  .value(),
                   .image_available = gpu::Semaphore::create(m_device)
                                        .transform_error(monadic::assert("Failed to create "
@@ -93,24 +89,20 @@ class Application: public base::Application {
         // transition swapchain image to present image
         const auto& images = m_swapchain->images();
 
-        const auto image_count = stdr::size(images);
-        auto       transition_cmbs
-          = m_command_pool->create_command_buffers(image_count)
-              .transform_error(monadic::assert("Failed to create transition command buffers"))
-              .value();
+        const auto image_count     = stdr::size(images);
+        auto       transition_cmbs = m_command_pool->create_command_buffers(image_count)
+                                 .transform_error(monadic::assert("Failed to create transition command buffers"))
+                                 .value();
         m_image_resources.reserve(stdr::size(images));
 
         auto image_index = 0u;
         for (const auto& swap_image : images) {
             auto view = gpu::ImageView::create(m_device, swap_image)
-                          .transform_error(core::monadic::
-                                             assert("Failed to create swapchain image view"))
+                          .transform_error(core::monadic::assert("Failed to create swapchain image view"))
                           .value();
-            auto framebuffer = m_render_pass
-                                 ->create_frame_buffer(m_device, window_extent, to_refs(view))
-                                 .transform_error(core::monadic::assert(
-                                   std::format("Failed to create framebuffer for image {}",
-                                               image_index)))
+            auto framebuffer = m_render_pass->create_frame_buffer(m_device, window_extent, to_refs(view))
+                                 .transform_error(core::monadic::assert(std::format("Failed to create framebuffer for image {}",
+                                                                                    image_index)))
                                  .value();
 
             m_image_resources.push_back({
@@ -125,13 +117,10 @@ class Application: public base::Application {
 
             auto& transition_cmb = transition_cmbs[image_index];
             *transition_cmb.begin(true)
-               .transform_error(monadic::
-                                  assert("Failed to begin texture transition command buffer"))
+               .transform_error(monadic::assert("Failed to begin texture transition command buffer"))
                .value()
                ->begin_debug_region(std::format("transition image {}", image_index))
-               .transition_image_layout(swap_image,
-                                        gpu::ImageLayout::UNDEFINED,
-                                        gpu::ImageLayout::PRESENT_SRC)
+               .transition_image_layout(swap_image, gpu::ImageLayout::UNDEFINED, gpu::ImageLayout::PRESENT_SRC)
                .end_debug_region()
                .end()
                .transform_error(monadic::assert("Failed to begin texture transition command "
@@ -168,15 +157,17 @@ class Application: public base::Application {
             .QueueFamily                 = 0,
             .Queue                       = m_raster_queue->native_handle(),
             .DescriptorPool              = m_descriptor_pool->native_handle(),
-            .RenderPass                  = m_render_pass->native_handle(),
             .MinImageCount               = BUFFERING_COUNT,
             .ImageCount                  = BUFFERING_COUNT,
-            .MSAASamples                 = VK_SAMPLE_COUNT_1_BIT,
             .PipelineCache               = nullptr,
-            .Subpass                     = 0,
             .DescriptorPoolSize          = 0,
-            .UseDynamicRendering         = false,
+            .PipelineInfoMain = {
+            .RenderPass                  = m_render_pass->native_handle(),
+            .Subpass                     = 0,
+            .MSAASamples                 = VK_SAMPLE_COUNT_1_BIT,
             .PipelineRenderingCreateInfo = {},
+          },
+            .UseDynamicRendering         = false,
             .Allocator                   = nullptr,
             .CheckVkResultFn =
               [](auto result) static noexcept {
@@ -188,42 +179,38 @@ class Application: public base::Application {
         ImGui_ImplVulkan_Init(&init_info);
 
         m_window
-          ->on(wsi::KeyDownEventFunc { [this,
-                                        &io](u8 /*id*/, wsi::Key key, char c) mutable noexcept {
+          ->on(wsi::KeyDownEventFunc { [this, &io](u8 /*id*/, wsi::Key key, char c) mutable noexcept {
                    if (key == wsi::Key::ESCAPE) m_window->close();
                    io.AddInputCharactersUTF8(&c);
                } },
-               wsi::MouseMovedEventFunc {
-                 [&io](u8 /*id*/, const math::vec2i& position) mutable noexcept {
-                     const auto _position = position.to<f32>();
+               wsi::MouseMovedEventFunc { [&io](u8 /*id*/, const math::vec2i& position) mutable noexcept {
+                   const auto _position = position.to<f32>();
 
-                     io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-                     io.AddMousePosEvent(_position.x, _position.y);
-                 } },
-               wsi::MouseButtonDownEventFunc {
-                 [&io](u8 /*id*/, wsi::MouseButton button, const math::vec2i&) mutable noexcept {
-                     auto mouse_button = -1;
-                     if (button == wsi::MouseButton::LEFT) mouse_button = 0;
-                     if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
-                     if (button == wsi::MouseButton::MIDDLE) mouse_button = 2;
-                     if (button == wsi::MouseButton::BUTTON_1) mouse_button = 3;
-                     if (button == wsi::MouseButton::BUTTON_2) mouse_button = 4;
-                     if (mouse_button == -1) return;
-                     io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-                     io.AddMouseButtonEvent(mouse_button, true);
-                 } },
-               wsi::MouseButtonUpEventFunc {
-                 [&io](u8 /*id*/, wsi::MouseButton button, const math::vec2i&) mutable noexcept {
-                     auto mouse_button = -1;
-                     if (button == wsi::MouseButton::LEFT) mouse_button = 0;
-                     if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
-                     if (button == wsi::MouseButton::MIDDLE) mouse_button = 2;
-                     if (button == wsi::MouseButton::BUTTON_1) mouse_button = 3;
-                     if (button == wsi::MouseButton::BUTTON_2) mouse_button = 4;
-                     if (mouse_button == -1) return;
-                     io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-                     io.AddMouseButtonEvent(mouse_button, false);
-                 } });
+                   io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+                   io.AddMousePosEvent(_position.x, _position.y);
+               } },
+               wsi::MouseButtonDownEventFunc { [&io](u8 /*id*/, wsi::MouseButton button, const math::vec2i&) mutable noexcept {
+                   auto mouse_button = -1;
+                   if (button == wsi::MouseButton::LEFT) mouse_button = 0;
+                   if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
+                   if (button == wsi::MouseButton::MIDDLE) mouse_button = 2;
+                   if (button == wsi::MouseButton::BUTTON_1) mouse_button = 3;
+                   if (button == wsi::MouseButton::BUTTON_2) mouse_button = 4;
+                   if (mouse_button == -1) return;
+                   io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+                   io.AddMouseButtonEvent(mouse_button, true);
+               } },
+               wsi::MouseButtonUpEventFunc { [&io](u8 /*id*/, wsi::MouseButton button, const math::vec2i&) mutable noexcept {
+                   auto mouse_button = -1;
+                   if (button == wsi::MouseButton::LEFT) mouse_button = 0;
+                   if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
+                   if (button == wsi::MouseButton::MIDDLE) mouse_button = 2;
+                   if (button == wsi::MouseButton::BUTTON_1) mouse_button = 3;
+                   if (button == wsi::MouseButton::BUTTON_2) mouse_button = 4;
+                   if (mouse_button == -1) return;
+                   io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+                   io.AddMouseButtonEvent(mouse_button, false);
+               } });
     }
 
     auto run_example() {
@@ -240,30 +227,24 @@ class Application: public base::Application {
         const auto& wait      = submission_resource.image_available;
         auto&       in_flight = submission_resource.in_flight;
 
-        const auto acquire_next_image = bind_front(&gpu::SwapChain::acquire_next_image,
-                                                   &*m_swapchain,
-                                                   100ms,
-                                                   std::cref(wait));
+        const auto acquire_next_image = bind_front(&gpu::SwapChain::acquire_next_image, &*m_swapchain, 100ms, std::cref(wait));
         const auto extract_index      = [](auto&& _result) static noexcept {
             auto&& [result, _image_index] = _result;
             return _image_index;
         };
 
-        const auto image_index
-          = in_flight.wait()
-              .transform([&in_flight](auto&&) mutable noexcept { in_flight.reset(); })
-              .and_then(acquire_next_image)
-              .transform(extract_index)
-              .transform_error(monadic::assert("Failed to acquire next swapchain image"))
-              .value();
+        const auto image_index = in_flight.wait()
+                                   .transform([&in_flight](auto&&) mutable noexcept { in_flight.reset(); })
+                                   .and_then(acquire_next_image)
+                                   .transform(extract_index)
+                                   .transform_error(monadic::assert("Failed to acquire next swapchain image"))
+                                   .value();
 
         const auto& swapchain_image_resource = m_image_resources[image_index];
         const auto& framebuffer              = swapchain_image_resource.framebuffer;
         const auto& signal                   = swapchain_image_resource.render_finished;
 
-        static constexpr auto PIPELINE_FLAGS = std::array {
-            gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT
-        };
+        static constexpr auto PIPELINE_FLAGS = std::array { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT };
 
         // render in it
         auto& render_cmb = submission_resource.render_cmb;
@@ -283,11 +264,7 @@ class Application: public base::Application {
            .end()
            .transform_error(monadic::assert("Failed to end render command buffer"))
            .value()
-           ->submit(m_raster_queue,
-                    as_refs(wait),
-                    PIPELINE_FLAGS,
-                    as_refs(signal),
-                    as_ref(in_flight))
+           ->submit(m_raster_queue, as_refs(wait), PIPELINE_FLAGS, as_refs(signal), as_ref(in_flight))
            .transform_error(monadic::assert("Failed to submit render command buffer"));
 
         // present it

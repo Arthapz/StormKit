@@ -305,9 +305,7 @@ export {
         [[nodiscard]]
         constexpr auto compute_mip_level(const math::Extent2<u32>& extent) noexcept -> u32;
         [[nodiscard]]
-        constexpr auto compute_uniform_buffer_offset_align(usize size,
-                                                           const RenderCapabilities&
-                                                             capabilities) noexcept -> usize;
+        constexpr auto compute_uniform_buffer_offset_align(usize size, const RenderCapabilities& capabilities) noexcept -> usize;
 
         [[nodiscard]]
         auto to_string(const PhysicalDeviceInfo& data) noexcept;
@@ -333,9 +331,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto compute_uniform_buffer_offset_align(usize size,
-                                                       const RenderCapabilities&
-                                                         capabilities) noexcept -> usize {
+    constexpr auto compute_uniform_buffer_offset_align(usize size, const RenderCapabilities& capabilities) noexcept -> usize {
         const auto min_ubo_align = capabilities.limits.min_uniform_buffer_offset_alignment;
         if (min_ubo_align > 0) size = (size + min_ubo_align - 1) & ~(min_ubo_align - 1);
 

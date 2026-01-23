@@ -48,14 +48,10 @@ export namespace stormkit { inline namespace core {
     struct color;
 
     template<ColorLayout LAYOUT, ColorLayout LAYOUT_T, meta::ColorComponentStorageType T>
-    constexpr auto to_layout(const color<LAYOUT_T, T>& color) noexcept
-      -> stormkit::color<LAYOUT, T>;
+    constexpr auto to_layout(const color<LAYOUT_T, T>& color) noexcept -> stormkit::color<LAYOUT, T>;
 
-    template<meta::ColorComponentStorageType U,
-             ColorLayout                     LAYOUT_T,
-             meta::ColorComponentStorageType T>
-    constexpr auto to_storage(const color<LAYOUT_T, T>& color) noexcept
-      -> stormkit::color<LAYOUT_T, U>;
+    template<meta::ColorComponentStorageType U, ColorLayout LAYOUT_T, meta::ColorComponentStorageType T>
+    constexpr auto to_storage(const color<LAYOUT_T, T>& color) noexcept -> stormkit::color<LAYOUT_T, U>;
 
     template<meta::ColorComponentStorageType T>
     struct color<ColorLayout::R, T> {
@@ -255,17 +251,13 @@ export namespace stormkit { inline namespace core {
 
         template<meta::ColorComponentStorageType T>
         inline constexpr auto YELLOW = details::ImplicitConverter<ColorLayout::RGBA, T> {
-            .c = { .r = ColorComponent<T>::max(),
-                  .g = ColorComponent<T>::max(),
-                  .b = 0,
-                  .a = ColorComponent<T>::max() }
+            .c = { .r = ColorComponent<T>::max(), .g = ColorComponent<T>::max(), .b = 0, .a = ColorComponent<T>::max() }
         };
     } // namespace colors
 
     namespace RGBColorDef {
         template<meta::IsColorComponent T>
-        inline constexpr auto
-          BLACK = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, max_color_component_value<T>() };
+        inline constexpr auto BLACK = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, max_color_component_value<T>() };
 
         template<meta::IsColorComponent T>
         inline constexpr auto Gray = RGBColor<T> { max_color_component_value<T>() / T { 2 },
@@ -377,18 +369,11 @@ export namespace stormkit { inline namespace core {
     } // namespace RGBColorDef
 
     template<typename T, typename FormatContext>
-    constexpr auto format_as(const RGBColor<T>&, FormatContext& ctx) noexcept
-      -> decltype(ctx.out());
+    constexpr auto format_as(const RGBColor<T>&, FormatContext& ctx) noexcept -> decltype(ctx.out());
 }} // namespace stormkit::core
 
 export {
-    TEMPLATED_HASH_EQUAL_FUNC(stormkit::core::RGBColor,
-                              stormkit::meta::IsColorComponent,
-                              T,
-                              value.r,
-                              value.g,
-                              value.b,
-                              value.a)
+    TEMPLATED_HASH_EQUAL_FUNC(stormkit::core::RGBColor, stormkit::meta::IsColorComponent, T, value.r, value.g, value.b, value.a)
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -411,8 +396,7 @@ namespace stormkit { inline namespace core {
                 out.g = in.g;
                 if constexpr (OutColor::COMPONENTS_COUNT > 2 and InColor::COMPONENTS_COUNT > 2) {
                     out.b = in.b;
-                    if constexpr (OutColor::COMPONENTS_COUNT > 3 and InColor::COMPONENTS_COUNT > 3)
-                        out.a = in.a;
+                    if constexpr (OutColor::COMPONENTS_COUNT > 3 and InColor::COMPONENTS_COUNT > 3) out.a = in.a;
                 }
             }
 
@@ -422,11 +406,8 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::ColorComponentStorageType U,
-             ColorLayout                     LAYOUT_T,
-             meta::ColorComponentStorageType T>
-    constexpr auto to_storage(const color<LAYOUT_T, T>& in) noexcept
-      -> stormkit::color<LAYOUT_T, U> {
+    template<meta::ColorComponentStorageType U, ColorLayout LAYOUT_T, meta::ColorComponentStorageType T>
+    constexpr auto to_storage(const color<LAYOUT_T, T>& in) noexcept -> stormkit::color<LAYOUT_T, U> {
         if constexpr (meta::IsStrict<T, U>) return in;
         else {
             using OutColor = color<LAYOUT_T, U>;
@@ -480,8 +461,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::ColorComponentStorageType To, meta::ColorComponentStorageType From>
     constexpr auto as_impl(ColorComponent<From> component) noexcept -> ColorComponent<To> {
-        if constexpr (meta::IsStrict<To, f32>)
-            return ColorComponent<To> { as<f32>(component.value) / 255.f };
+        if constexpr (meta::IsStrict<To, f32>) return ColorComponent<To> { as<f32>(component.value) / 255.f };
         else
             return ColorComponent<To> { as<u8>(component.value) * 255.f };
     }
@@ -497,10 +477,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
-    constexpr RGBColor<T>::RGBColor(ValueType _red,
-                                    ValueType _green,
-                                    ValueType _blue,
-                                    ValueType _alpha) noexcept
+    constexpr RGBColor<T>::RGBColor(ValueType _red, ValueType _green, ValueType _blue, ValueType _alpha) noexcept
         : red { _red }, green { _green }, blue { _blue }, alpha { _alpha } {
     }
 
@@ -508,8 +485,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsColorComponent T>
     constexpr RGBColor<T>::RGBColor(const math::vec3<ValueType>& vector) noexcept
-        : red { vector.r }, green { vector.g }, blue { vector.b },
-          alpha(max_color_component_value<T>()) {
+        : red { vector.r }, green { vector.g }, blue { vector.b }, alpha(max_color_component_value<T>()) {
     }
 
     /////////////////////////////////////
@@ -527,8 +503,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
-    constexpr auto RGBColor<T>::operator=(const RGBColor<ValueType>& other) noexcept
-      -> RGBColor& = default;
+    constexpr auto RGBColor<T>::operator=(const RGBColor<ValueType>& other) noexcept -> RGBColor& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -538,16 +513,17 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
-    constexpr auto RGBColor<T>::operator=(RGBColor<ValueType>&& other) noexcept
-      -> RGBColor& = default;
+    constexpr auto RGBColor<T>::operator=(RGBColor<ValueType>&& other) noexcept -> RGBColor& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
     template<meta::IsColorComponent U>
     constexpr RGBColor<T>::RGBColor(const RGBColor<U>& other) noexcept
-        : red { color_component_as(other.red) }, green { color_component_as(other.green) },
-          blue { color_component_as(other.blue) }, alpha { color_component_as(other.alpha) } {
+        : red { color_component_as(other.red) },
+          green { color_component_as(other.green) },
+          blue { color_component_as(other.blue) },
+          alpha { color_component_as(other.alpha) } {
     }
 
     /////////////////////////////////////
@@ -600,8 +576,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, typename FormatContext>
         STORMKIT_FORCE_INLINE
-    constexpr auto format_as(const RGBColor<T>& color, FormatContext& ctx) noexcept
-      -> decltype(ctx.out()) {
+    constexpr auto format_as(const RGBColor<T>& color, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         if constexpr (meta::Is<T, u8>)
             return std::format_to(ctx.out(),
                                   "{{red: {}, green: {}, blue: {}, alpha: {}}}",

@@ -35,8 +35,7 @@ export namespace stormkit::wsi::linux {
         Window(Window&&) noexcept;
         auto operator=(Window&&) noexcept -> Window&;
 
-        auto open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
-          -> void;
+        auto open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept -> void;
         auto close() noexcept -> void;
 
         [[nodiscard]]
@@ -127,12 +126,14 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Window::~Window() noexcept = default;
+    inline Window::~Window() noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Window::Window(Window&&) noexcept = default;
+    inline Window::Window(Window&&) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -142,14 +143,10 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::open(std::string               title,
-                             const math::Extent2<u32>& extent,
-                             WindowFlag                flags) noexcept -> void {
+    inline auto Window::open(std::string title, const math::Extent2<u32>& extent, WindowFlag flags) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).open(std::move(title), extent, flags); break;
-            case WM::WAYLAND:
-                as<wayland::Window>(m_impl).open(std::move(title), extent, flags);
-                break;
+            case WM::WAYLAND: as<wayland::Window>(m_impl).open(std::move(title), extent, flags); break;
 
             default: std::unreachable();
         }
@@ -407,9 +404,7 @@ namespace stormkit::wsi::linux {
     inline auto Window::set_relative_mouse(bool enabled, u8 mouse_id) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).set_relative_mouse(enabled, mouse_id); break;
-            case WM::WAYLAND:
-                as<wayland::Window>(m_impl).set_relative_mouse(enabled, mouse_id);
-                break;
+            case WM::WAYLAND: as<wayland::Window>(m_impl).set_relative_mouse(enabled, mouse_id); break;
 
             default: std::unreachable();
         }
@@ -435,8 +430,7 @@ namespace stormkit::wsi::linux {
     inline auto Window::set_key_repeat(bool enabled, u8 keyboard_id) noexcept -> void {
         switch (m_wm) {
             case WM::X11: return as<x11::Window>(m_impl).set_key_repeat(enabled, keyboard_id);
-            case WM::WAYLAND:
-                return as<wayland::Window>(m_impl).set_key_repeat(enabled, keyboard_id);
+            case WM::WAYLAND: return as<wayland::Window>(m_impl).set_key_repeat(enabled, keyboard_id);
 
             default: break;
         }
@@ -487,13 +481,10 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::set_mouse_position(const math::vec2i& position, u8 mouse_id) noexcept
-      -> void {
+    inline auto Window::set_mouse_position(const math::vec2i& position, u8 mouse_id) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).set_mouse_position(position, mouse_id); break;
-            case WM::WAYLAND:
-                as<wayland::Window>(m_impl).set_mouse_position(position, mouse_id);
-                break;
+            case WM::WAYLAND: as<wayland::Window>(m_impl).set_mouse_position(position, mouse_id); break;
 
             default: std::unreachable();
         }
@@ -529,9 +520,7 @@ namespace stormkit::wsi::linux {
     inline auto Window::set_monitor_changed_event(MonitorChangedEventFunc&& func) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).monitor_changed_event = std::move(func); break;
-            case WM::WAYLAND:
-                as<wayland::Window>(m_impl).monitor_changed_event = std::move(func);
-                break;
+            case WM::WAYLAND: as<wayland::Window>(m_impl).monitor_changed_event = std::move(func); break;
             default: std::unreachable();
         }
     }
@@ -594,13 +583,10 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::set_mouse_button_down_event(MouseButtonDownEventFunc&& func) noexcept
-      -> void {
+    inline auto Window::set_mouse_button_down_event(MouseButtonDownEventFunc&& func) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).mouse_button_down_event = std::move(func); break;
-            case WM::WAYLAND:
-                as<wayland::Window>(m_impl).mouse_button_down_event = std::move(func);
-                break;
+            case WM::WAYLAND: as<wayland::Window>(m_impl).mouse_button_down_event = std::move(func); break;
             default: std::unreachable();
         }
     }
@@ -611,9 +597,7 @@ namespace stormkit::wsi::linux {
     inline auto Window::set_mouse_button_up_event(MouseButtonUpEventFunc&& func) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).mouse_button_up_event = std::move(func); break;
-            case WM::WAYLAND:
-                as<wayland::Window>(m_impl).mouse_button_up_event = std::move(func);
-                break;
+            case WM::WAYLAND: as<wayland::Window>(m_impl).mouse_button_up_event = std::move(func); break;
             default: std::unreachable();
         }
     }
@@ -624,9 +608,7 @@ namespace stormkit::wsi::linux {
     inline auto Window::set_mouse_moved_event(MouseMovedEventFunc&& func) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).mouse_moved_event = std::move(func); break;
-            case WM::WAYLAND:
-                as<wayland::Window>(m_impl).mouse_moved_event = std::move(func);
-                break;
+            case WM::WAYLAND: as<wayland::Window>(m_impl).mouse_moved_event = std::move(func); break;
             default: std::unreachable();
         }
     }

@@ -10,7 +10,8 @@ import std;
 import :utils.stracktrace;
 
 export namespace stormkit { inline namespace core {
-    STORMKIT_API auto setup_signal_handler() noexcept -> void;
+    STORMKIT_API
+    auto setup_signal_handler() noexcept -> void;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////

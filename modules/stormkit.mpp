@@ -29,3 +29,6 @@ export import stormkit.wsi;
 #ifdef STORMKIT_LIB_GPU_ENABLED
 export import stormkit.gpu;
 #endif
+#ifdef STORMKIT_LIB_LUAU_ENABLED
+export import stormkit.luau;
+#endif

@@ -23,8 +23,7 @@ export namespace stormkit { inline namespace core {
     };
 
     template<typename FormatContext>
-    auto format_as(const MemoryAllocationError&, FormatContext&) noexcept
-      -> FormatContext::iterator;
+    auto format_as(const MemoryAllocationError&, FormatContext&) noexcept -> FormatContext::iterator;
 
     template<typename T>
     using Heap = std::unique_ptr<T>;
@@ -36,16 +35,14 @@ export namespace stormkit { inline namespace core {
       -> std::expected<Heap<T>, MemoryAllocationError>;
 
     template<class T, class... Args>
-    auto allocate_unsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
-      -> Heap<T>;
+    auto allocate_unsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...))) -> Heap<T>;
 
     template<class T, class... Args>
     auto allocate_counted(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
       -> std::expected<HeapCounted<T>, MemoryAllocationError>;
 
     template<class T, class... Args>
-    auto allocate_counted_unsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
-      -> HeapCounted<T>;
+    auto allocate_counted_unsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...))) -> HeapCounted<T>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -56,8 +53,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename FormatContext>
-    auto format_as(const MemoryAllocationError& error, FormatContext& ctx) noexcept
-      -> FormatContext::iterator {
+    auto format_as(const MemoryAllocationError& error, FormatContext& ctx) noexcept -> FormatContext::iterator {
         auto&& out = ctx.out();
         return std::format_to(out,
                               "Failed to allocate type {} of {} byte{}",
@@ -74,8 +70,7 @@ namespace stormkit { inline namespace core {
       -> std::expected<Heap<T>, MemoryAllocationError> {
         auto value = Heap<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
         if (not value) [[unlikely]]
-            return std::unexpected(MemoryAllocationError { .type = typeid(T).name(),
-                                                           .size = sizeof(T) });
+            return std::unexpected(MemoryAllocationError { .type = typeid(T).name(), .size = sizeof(T) });
         return std::expected<Heap<T>, MemoryAllocationError> { std::in_place, std::move(value) };
     }
 
@@ -83,8 +78,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T, class... Args>
     STORMKIT_FORCE_INLINE
-    auto allocate_unsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
-      -> Heap<T> {
+    auto allocate_unsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...))) -> Heap<T> {
         return Heap<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
     }
 
@@ -96,18 +90,15 @@ namespace stormkit { inline namespace core {
       -> std::expected<HeapCounted<T>, MemoryAllocationError> {
         auto value = HeapCounted<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
         if (not value) [[unlikely]]
-            return std::unexpected(MemoryAllocationError { .type = typeid(T).name(),
-                                                           .size = sizeof(T) });
-        return std::expected<HeapCounted<T>, MemoryAllocationError> { std::in_place,
-                                                                      std::move(value) };
+            return std::unexpected(MemoryAllocationError { .type = typeid(T).name(), .size = sizeof(T) });
+        return std::expected<HeapCounted<T>, MemoryAllocationError> { std::in_place, std::move(value) };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class... Args>
     STORMKIT_FORCE_INLINE
-    auto allocate_counted_unsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
-      -> HeapCounted<T> {
+    auto allocate_counted_unsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...))) -> HeapCounted<T> {
         return HeapCounted<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
     }
 }} // namespace stormkit::core

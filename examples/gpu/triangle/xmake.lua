@@ -1,13 +1,18 @@
-if is_plat("linux") then
-    add_requires(
-        "nzsl",
-        { configs = { toolchains = "gcc", runtimes = "stdc++_shared", fs_watcher = false, link = {} } }
-    )
-elseif is_plat("windows") then
-    add_requires("nzsl", { configs = { toolchains = "msvc", runtimes = "MD", fs_watcher = false, links = {} } })
-else
-    add_requires("nzsl", { configs = { fs_watcher = false, links = {} } })
+-- if is_plat("windows") then
+--     add_requires("nzsl", { configs = { toolchains = "msvc", runtimes = "MD", fs_watcher = false, links = {} } })
+-- else
+--     add_requires("nzsl", { configs = { fs_watcher = false } })
+-- end
+local runtimes
+local toolchain
+if is_plat("windows") then
+    runtimes = "MD"
+    toolchain = "msvc"
+elseif is_plat("linux") then
+    runtimes = "stdc++_shared"
+    toolchain = "gcc"
 end
+add_requires("nzsl", { configs = { fs_watcher = false, kind = "binary", toolchains = toolchain, runtimes = runtimes } })
 
 target("triangle", function()
     set_kind("binary")

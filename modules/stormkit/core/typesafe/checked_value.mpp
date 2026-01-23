@@ -26,12 +26,10 @@ namespace stormkit { inline namespace core {
 
     namespace meta {
         template<typename T>
-        concept IsCheckedValueArithmetic = meta::IsArithmetic<
-          meta::UnderlyingType<meta::ToPlainType<T>>>;
+        concept IsCheckedValueArithmetic = meta::IsArithmetic<meta::UnderlyingType<meta::ToPlainType<T>>>;
 
         template<typename T, typename U>
-        concept IsCheckedValueValueType = meta::PlainIs<T,
-                                                        meta::UnderlyingType<meta::ToPlainType<U>>>;
+        concept IsCheckedValueValueType = meta::PlainIs<T, meta::UnderlyingType<meta::ToPlainType<U>>>;
     } // namespace meta
 }} // namespace stormkit::core
 
@@ -49,64 +47,52 @@ export namespace stormkit { inline namespace core {
 
         constexpr operator T() noexcept;
 
-        constexpr auto operator+(meta::PlainIs<ValueType> auto&& other) const noexcept
-          -> CheckedValue
+        constexpr auto operator+(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator+(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-          -> CheckedValue
+        constexpr auto operator+(meta::PlainIs<CheckedValue> auto&& other) const noexcept -> CheckedValue
             requires(meta::IsArithmetic<T>);
 
         constexpr auto operator+=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator+=(meta::PlainIs<CheckedValue> auto&& other) noexcept
-          -> CheckedValue&
+        constexpr auto operator+=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator-(meta::PlainIs<ValueType> auto&& other) const noexcept
-          -> CheckedValue
+        constexpr auto operator-(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator-(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-          -> CheckedValue
+        constexpr auto operator-(meta::PlainIs<CheckedValue> auto&& other) const noexcept -> CheckedValue
             requires(meta::IsArithmetic<T>);
 
         constexpr auto operator-=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator-=(meta::PlainIs<CheckedValue> auto&& other) noexcept
-          -> CheckedValue&
+        constexpr auto operator-=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator*(meta::PlainIs<ValueType> auto&& other) const noexcept
-          -> CheckedValue
+        constexpr auto operator*(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator*(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-          -> CheckedValue
+        constexpr auto operator*(meta::PlainIs<CheckedValue> auto&& other) const noexcept -> CheckedValue
             requires(meta::IsArithmetic<T>);
 
         constexpr auto operator*=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator*=(meta::PlainIs<CheckedValue> auto&& other) noexcept
-          -> CheckedValue&
+        constexpr auto operator*=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator/(meta::PlainIs<ValueType> auto&& other) const noexcept
-          -> CheckedValue
+        constexpr auto operator/(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator/(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-          -> CheckedValue
+        constexpr auto operator/(meta::PlainIs<CheckedValue> auto&& other) const noexcept -> CheckedValue
             requires(meta::IsArithmetic<T>);
 
         constexpr auto operator/=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
             requires(meta::IsArithmetic<T>);
 
-        constexpr auto operator/=(meta::PlainIs<CheckedValue> auto&& other) noexcept
-          -> CheckedValue&
+        constexpr auto operator/=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
             requires(meta::IsArithmetic<T>);
 
         T value;
@@ -125,27 +111,22 @@ export namespace stormkit { inline namespace core {
 
     template<meta::IsCheckedValue T>
         requires(meta::IsCheckedValueArithmetic<T>)
-    constexpr auto operator+(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept
-      -> meta::ToPlainType<T>;
+    constexpr auto operator+(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T>;
 
     template<meta::IsCheckedValue T>
         requires(meta::IsCheckedValueArithmetic<T>)
-    constexpr auto operator-(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept
-      -> meta::ToPlainType<T>;
+    constexpr auto operator-(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T>;
 
     template<meta::IsCheckedValue T>
         requires(meta::IsCheckedValueArithmetic<T>)
-    constexpr auto operator*(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept
-      -> meta::ToPlainType<T>;
+    constexpr auto operator*(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T>;
 
     template<meta::IsCheckedValue T>
         requires(meta::IsCheckedValueArithmetic<T>)
-    constexpr auto operator/(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept
-      -> meta::ToPlainType<T>;
+    constexpr auto operator/(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T>;
 
     template<meta::IsFormattable T, meta::IsPlain Tag, auto check_fn, typename FormatContext>
-    constexpr auto format_as(const CheckedValue<T, Tag, check_fn>& val, FormatContext& ctx)
-      -> decltype(ctx.out());
+    constexpr auto format_as(const CheckedValue<T, Tag, check_fn>& val, FormatContext& ctx) -> decltype(ctx.out());
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -186,8 +167,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+(meta::PlainIs<ValueType> auto&& other)
-      const noexcept -> CheckedValue
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator+(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
         requires(meta::IsArithmetic<T>)
     {
         return { value + std::forward<decltype(other)>(other) };
@@ -197,8 +177,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+(meta::PlainIs<CheckedValue> auto&&
-                                                               other) const noexcept -> CheckedValue
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator+(meta::PlainIs<CheckedValue> auto&& other) const noexcept
+      -> CheckedValue
         requires(meta::IsArithmetic<T>)
     {
         return operator+(std::forward_like<decltype(other)>(other.value));
@@ -208,8 +188,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+=(meta::PlainIs<ValueType> auto&&
-                                                                other) noexcept -> CheckedValue&
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator+=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
         requires(meta::IsArithmetic<T>)
     {
         value += std::forward<decltype(other)>(other);
@@ -220,8 +199,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+=(meta::PlainIs<CheckedValue> auto&&
-                                                                other) noexcept -> CheckedValue&
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator+=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
         requires(meta::IsArithmetic<T>)
     {
         return operator+=(std::forward_like<decltype(other)>(other.value));
@@ -231,8 +209,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-(meta::PlainIs<ValueType> auto&& other)
-      const noexcept -> CheckedValue
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator-(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
         requires(meta::IsArithmetic<T>)
     {
         return { value - std::forward<decltype(other)>(other) };
@@ -242,8 +219,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-(meta::PlainIs<CheckedValue> auto&&
-                                                               other) const noexcept -> CheckedValue
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator-(meta::PlainIs<CheckedValue> auto&& other) const noexcept
+      -> CheckedValue
         requires(meta::IsArithmetic<T>)
     {
         return operator-(std::forward_like<decltype(other)>(other.value));
@@ -253,8 +230,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-=(meta::PlainIs<ValueType> auto&&
-                                                                other) noexcept -> CheckedValue&
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator-=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
         requires(meta::IsArithmetic<T>)
     {
         value -= std::forward<decltype(other)>(other);
@@ -265,8 +241,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-=(meta::PlainIs<CheckedValue> auto&&
-                                                                other) noexcept -> CheckedValue&
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator-=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
         requires(meta::IsArithmetic<T>)
     {
         return operator-=(std::forward_like<decltype(other)>(other.value));
@@ -276,8 +251,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*(meta::PlainIs<ValueType> auto&& other)
-      const noexcept -> CheckedValue
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator*(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
         requires(meta::IsArithmetic<T>)
     {
         return { value * std::forward<decltype(other)>(other) };
@@ -287,8 +261,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*(meta::PlainIs<CheckedValue> auto&&
-                                                               other) const noexcept -> CheckedValue
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator*(meta::PlainIs<CheckedValue> auto&& other) const noexcept
+      -> CheckedValue
         requires(meta::IsArithmetic<T>)
     {
         return operator*(std::forward_like<decltype(other)>(other.value));
@@ -298,8 +272,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*=(meta::PlainIs<ValueType> auto&&
-                                                                other) noexcept -> CheckedValue&
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator*=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
         requires(meta::IsArithmetic<T>)
     {
         value *= std::forward<decltype(other)>(other);
@@ -310,8 +283,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*=(meta::PlainIs<CheckedValue> auto&&
-                                                                other) noexcept -> CheckedValue&
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator*=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
         requires(meta::IsArithmetic<T>)
     {
         return operator*=(std::forward_like<decltype(other)>(other.value));
@@ -321,8 +293,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/(meta::PlainIs<ValueType> auto&& other)
-      const noexcept -> CheckedValue
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator/(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
         requires(meta::IsArithmetic<T>)
     {
         return { value / std::forward<decltype(other)>(other) };
@@ -332,8 +303,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/(meta::PlainIs<CheckedValue> auto&&
-                                                               other) const noexcept -> CheckedValue
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator/(meta::PlainIs<CheckedValue> auto&& other) const noexcept
+      -> CheckedValue
         requires(meta::IsArithmetic<T>)
     {
         return operator/(std::forward_like<decltype(other)>(other.value));
@@ -343,8 +314,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/=(meta::PlainIs<ValueType> auto&&
-                                                                other) noexcept -> CheckedValue&
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator/=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
         requires(meta::IsArithmetic<T>)
     {
         value /= std::forward<decltype(other)>(other);
@@ -355,8 +325,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/=(meta::PlainIs<CheckedValue> auto&&
-                                                                other) noexcept -> CheckedValue&
+    constexpr auto CheckedValue<T, Tag, check_fn>::operator/=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
         requires(meta::IsArithmetic<T>)
     {
         return operator/=(std::forward_like<decltype(other)>(other.value));
@@ -367,8 +336,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsCheckedValue T>
         requires(meta::IsCheckedValueArithmetic<T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator+(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept
-      -> meta::ToPlainType<T> {
+    constexpr auto operator+(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T> {
         return std::forward<T>(second).operator+(std::forward<decltype(first)>(first));
     }
 
@@ -377,8 +345,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsCheckedValue T>
         requires(meta::IsCheckedValueArithmetic<T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator-(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept
-      -> meta::ToPlainType<T> {
+    constexpr auto operator-(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T> {
         return std::forward<T>(second).operator-(std::forward<decltype(first)>(first));
     }
 
@@ -387,8 +354,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsCheckedValue T>
         requires(meta::IsCheckedValueArithmetic<T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator*(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept
-      -> meta::ToPlainType<T> {
+    constexpr auto operator*(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T> {
         return std::forward<T>(second).operator*(std::forward<decltype(first)>(first));
     }
 
@@ -397,8 +363,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsCheckedValue T>
         requires(meta::IsCheckedValueArithmetic<T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator/(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept
-      -> meta::ToPlainType<T> {
+    constexpr auto operator/(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T> {
         return std::forward<T>(second).operator/(std::forward<decltype(first)>(first));
     }
 
@@ -406,8 +371,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsFormattable T, meta::IsPlain Tag, auto check_fn, typename FormatContext>
         STORMKIT_FORCE_INLINE
-    constexpr auto format_as(const CheckedValue<T, Tag, check_fn>& val, FormatContext& ctx)
-      -> decltype(ctx.out()) {
+    constexpr auto format_as(const CheckedValue<T, Tag, check_fn>& val, FormatContext& ctx) -> decltype(ctx.out()) {
         auto&& out = ctx.out();
         return std::format_to(out, "{}", val.value);
     }

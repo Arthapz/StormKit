@@ -253,7 +253,8 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ConsoleLogger::ConsoleLogger(const ConsoleLogger&) noexcept = default;
+    inline ConsoleLogger::ConsoleLogger(const ConsoleLogger&) noexcept
+      = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -263,7 +264,8 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ConsoleLogger::ConsoleLogger(ConsoleLogger&&) noexcept = default;
+    inline ConsoleLogger::ConsoleLogger(ConsoleLogger&&) noexcept
+      = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -273,12 +275,14 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ConsoleLogger::~ConsoleLogger() noexcept = default;
+    inline ConsoleLogger::~ConsoleLogger() noexcept
+      = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline FileLogger::FileLogger(FileLogger&&) noexcept = default;
+    inline FileLogger::FileLogger(FileLogger&&) noexcept
+      = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -288,7 +292,8 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline FileLogger::~FileLogger() noexcept = default;
+    inline FileLogger::~FileLogger() noexcept
+      = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////

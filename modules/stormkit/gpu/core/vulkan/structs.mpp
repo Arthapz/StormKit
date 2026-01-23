@@ -17,8 +17,7 @@ import :vulkan.volk;
 export namespace stormkit::gpu {
     template<typename T>
         requires(
-          requires { std::declval<T>().native_handle(); }
-          or requires { std::declval<T>()->native_handle(); })
+          requires { std::declval<T>().native_handle(); } or requires { std::declval<T>()->native_handle(); })
     [[nodiscard]]
     auto to_vk(const T& value) noexcept -> decltype(auto);
 
@@ -76,8 +75,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T>
         requires(
-          requires { std::declval<T>().native_handle(); }
-          or requires { std::declval<T>()->native_handle(); })
+          requires { std::declval<T>().native_handle(); } or requires { std::declval<T>()->native_handle(); })
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
     inline auto to_vk(const T& value) noexcept -> decltype(auto) {
@@ -179,9 +177,7 @@ namespace stormkit::gpu {
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
     constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent3D {
-        return VkExtent3D { .width  = as<u32>(extent.width),
-                            .height = as<u32>(extent.height),
-                            .depth  = as<u32>(extent.depth) };
+        return VkExtent3D { .width = as<u32>(extent.width), .height = as<u32>(extent.height), .depth = as<u32>(extent.depth) };
     }
 
     /////////////////////////////////////

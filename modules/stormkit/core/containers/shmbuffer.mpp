@@ -32,8 +32,7 @@ export namespace stormkit { inline namespace core {
             WRITE = 2,
         };
 
-        static auto create(usize size, std::string name) noexcept
-          -> std::expected<SHMBuffer, std::error_code>;
+        static auto create(usize size, std::string name) noexcept -> std::expected<SHMBuffer, std::error_code>;
 
         static auto create_with_access(usize size, std::string name, Access access) noexcept
           -> std::expected<SHMBuffer, std::error_code>;
@@ -86,8 +85,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    auto SHMBuffer::create(usize size, std::string name) noexcept
-      -> std::expected<SHMBuffer, std::error_code> {
+    auto SHMBuffer::create(usize size, std::string name) noexcept -> std::expected<SHMBuffer, std::error_code> {
         return create_with_access(size, std::move(name), Access::READ | Access::WRITE);
     }
 
@@ -103,10 +101,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr SHMBuffer::SHMBuffer(usize       size,
-                                   std::string name,
-                                   Access      access,
-                                   PrivateFuncTag) noexcept
+    constexpr SHMBuffer::SHMBuffer(usize size, std::string name, Access access, PrivateFuncTag) noexcept
         : m_access { access }, m_size { size }, m_name { std::move(name) } {
     }
 
@@ -114,8 +109,10 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline SHMBuffer::SHMBuffer(SHMBuffer&& other) noexcept
-        : m_access { other.access() }, m_handle { std::exchange(other.m_handle, nullptr) },
-          m_size { std::exchange(other.m_size, 0u) }, m_name { std::exchange(other.m_name, {}) },
+        : m_access { other.access() },
+          m_handle { std::exchange(other.m_handle, nullptr) },
+          m_size { std::exchange(other.m_size, 0u) },
+          m_name { std::exchange(other.m_name, {}) },
           m_data { std::exchange(other.m_data, {}) } {
     }
 
@@ -173,8 +170,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename Self>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    auto SHMBuffer::operator[](this Self& self, usize index) noexcept
-      -> meta::ForwardConst<Self, Byte>& {
+    auto SHMBuffer::operator[](this Self& self, usize index) noexcept -> meta::ForwardConst<Self, Byte>& {
         EXPECTS(self.m_handle);
         EXPECTS(index < self.m_size);
         return std::forward<Self&>(self).m_data[index];

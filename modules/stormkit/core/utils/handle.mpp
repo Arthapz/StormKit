@@ -27,7 +27,7 @@ export {
 
             [[nodiscard]]
             constexpr auto operator<=>(const Handle<T, ID>&) const noexcept -> std::strong_ordering
-                = default;
+              = default;
 
             template<std::derived_from<T> U>
             constexpr operator Handle<U, ID>() const noexcept;
@@ -58,8 +58,7 @@ export {
     template<class T, std::integral _ID>
     struct std::hash<stormkit::core::Handle<T, _ID>> {
         [[nodiscard]]
-        constexpr auto operator()(stormkit::core::Handle<T, _ID> handle) const noexcept
-            -> stormkit::core::hash64;
+        constexpr auto operator()(stormkit::core::Handle<T, _ID> handle) const noexcept -> stormkit::core::hash64;
     };
 }
 
@@ -128,7 +127,7 @@ namespace stormkit { inline namespace core {
 /////////////////////////////////////
 /////////////////////////////////////
 template<class T, std::integral _ID>
-constexpr stormkit::core::hash64 std::hash<stormkit::core::Handle<T, _ID>>::operator()(
-    stormkit::core::Handle<T, _ID> handle) const noexcept {
+constexpr stormkit::core::hash64 std::hash<stormkit::core::Handle<T, _ID>>::operator()(stormkit::core::Handle<T, _ID> handle)
+  const noexcept {
     return stormkit::core::as<stormkit::core::hash64>(handle.id);
 }

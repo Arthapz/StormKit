@@ -43,9 +43,7 @@ export namespace stormkit::entities {
 
     namespace meta {
         template<typename T>
-        concept IsComponentType = core::meta::Is<T, Component> and requires(T&& component) {
-            T::TYPE;
-        };
+        concept IsComponentType = core::meta::Is<T, Component> and requires(T&& component) { T::TYPE; };
 
         template<typename T>
         concept IsSystem = core::meta::Is<T, System>;
@@ -121,12 +119,10 @@ export namespace stormkit::entities {
         struct Predicate {
 #ifdef STORMKIT_COMPILER_MSVC
             [[nodiscard]]
-            auto operator()(const std::unique_ptr<System>& s1,
-                            const std::unique_ptr<System>& s2) const noexcept
+            auto operator()(const std::unique_ptr<System>& s1, const std::unique_ptr<System>& s2) const noexcept
 #else
             [[nodiscard]]
-            static auto operator()(const std::unique_ptr<System>& s1,
-                                   const std::unique_ptr<System>& s2) noexcept
+            static auto operator()(const std::unique_ptr<System>& s1, const std::unique_ptr<System>& s2) noexcept
 #endif
               -> bool {
                 return s1->priority() < s2->priority();
@@ -185,12 +181,10 @@ export namespace stormkit::entities {
         auto getComponent(this Self& self, Entity entity) -> core::meta::ForwardConst<Self, T&>;
 
         template<class Self>
-        auto components(this Self& self, Entity entity)
-          -> std::vector<Ref<core::meta::ForwardConst<Self, Component>>>;
+        auto components(this Self& self, Entity entity) -> std::vector<Ref<core::meta::ForwardConst<Self, Component>>>;
 
         template<meta::IsComponentType T, class Self>
-        auto components_of_type(this Self& self) noexcept
-          -> std::vector<Ref<core::meta::ForwardConst<Self, T>>>;
+        auto components_of_type(this Self& self) noexcept -> std::vector<Ref<core::meta::ForwardConst<Self, T>>>;
 
         template<meta::IsSystem T, typename... Args>
         auto add_system(Args&&... args) -> T&;
@@ -199,8 +193,7 @@ export namespace stormkit::entities {
         auto has_system() const noexcept -> bool;
 
         template<class Self>
-        auto systems(this Self& self) noexcept
-          -> std::vector<Ref<core::meta::ForwardConst<Self, System>>>;
+        auto systems(this Self& self) noexcept -> std::vector<Ref<core::meta::ForwardConst<Self, System>>>;
 
         template<meta::IsSystem T, class Self>
         auto get_system(this Self& self) noexcept -> core::meta::ForwardConst<Self, T&>;
@@ -214,8 +207,7 @@ export namespace stormkit::entities {
       private:
         using ComponentKey = u64;
 
-        static constexpr auto component_key_for(Entity e, Component::Type type) noexcept
-          -> ComponentKey;
+        static constexpr auto component_key_for(Entity e, Component::Type type) noexcept -> ComponentKey;
         static constexpr auto is_key_entity(Entity e, ComponentKey key) noexcept -> bool;
 
         auto purpose_to_systems(Entity e) -> void;
@@ -256,17 +248,14 @@ namespace stormkit::entities {
     constexpr auto component_hash(std::string_view str) noexcept -> Result {
         return std::empty(str)
                  ? 0xcbf29ce484222325UL
-                 : (as<hash64>(str[0]) ^ component_hash<Result>(str.substr(1, std::size(str) - 1)))
-                     * 0x100000001b3UL;
+                 : (as<hash64>(str[0]) ^ component_hash<Result>(str.substr(1, std::size(str) - 1))) * 0x100000001b3UL;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     constexpr auto component_hash(CZString str, usize size) noexcept -> Component::Type {
-        return size == 0
-                 ? 0xcbf29ce484222325UL
-                 : (as<usize>(str[0]) ^ component_hash(std::string_view { str + 1, size - 1 }))
-                     * 0x100000001b3UL;
+        return size == 0 ? 0xcbf29ce484222325UL
+                         : (as<usize>(str[0]) ^ component_hash(std::string_view { str + 1, size - 1 })) * 0x100000001b3UL;
     }
 
     /////////////////////////////////////
@@ -366,8 +355,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsComponentType T, class Self>
-    auto EntityManager::getComponent(this Self& self, Entity entity)
-      -> core::meta::ForwardConst<Self, T&> {
+    auto EntityManager::getComponent(this Self& self, Entity entity) -> core::meta::ForwardConst<Self, T&> {
         EXPECTS(self.template has_component<T>(entity));
         EXPECTS(self.has_entity(entity));
 
@@ -396,8 +384,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsComponentType T, class Self>
-    auto EntityManager::components_of_type(this Self& self) noexcept
-      -> std::vector<Ref<core::meta::ForwardConst<Self, T>>> {
+    auto EntityManager::components_of_type(this Self& self) noexcept -> std::vector<Ref<core::meta::ForwardConst<Self, T>>> {
         // clang-format off
         return self.m_entities 
                | stdv::filter(bind_front(&EntityManager::has_component<T>, &self))
@@ -431,8 +418,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Self>
-    auto EntityManager::systems(this Self& self) noexcept
-      -> std::vector<Ref<core::meta::ForwardConst<Self, System>>> {
+    auto EntityManager::systems(this Self& self) noexcept -> std::vector<Ref<core::meta::ForwardConst<Self, System>>> {
         constexpr auto as_refer = [] {
             if constexpr (core::meta::IsConst<Self>) return monadic::as_ref();
             else
@@ -461,8 +447,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto EntityManager::component_key_for(Entity e, Component::Type type) noexcept
-      -> ComponentKey {
+    constexpr auto EntityManager::component_key_for(Entity e, Component::Type type) noexcept -> ComponentKey {
         return (static_cast<u64>(e) << 32) | static_cast<u64>(type);
     }
 

@@ -35,8 +35,7 @@ export {
             constexpr auto narrow_to() const noexcept -> Extent<U, 2>;
 
             template<core::meta::IsArithmetic U>
-            constexpr auto to(const std::source_location& = std::source_location::current())
-              const noexcept -> Extent<U, 2>;
+            constexpr auto to(const std::source_location& = std::source_location::current()) const noexcept -> Extent<U, 2>;
 
             template<usize NEW_RANK>
             constexpr auto to() const noexcept -> Extent<T, NEW_RANK>;
@@ -61,8 +60,7 @@ export {
             constexpr auto narrow_to() const noexcept -> Extent<U, 3>;
 
             template<core::meta::IsArithmetic U>
-            constexpr auto to(const std::source_location& = std::source_location::current())
-              const noexcept -> Extent<U, 3>;
+            constexpr auto to(const std::source_location& = std::source_location::current()) const noexcept -> Extent<U, 3>;
 
             template<usize NEW_RANK>
             constexpr auto to() const noexcept -> Extent<T, NEW_RANK>;
@@ -107,8 +105,7 @@ export {
         /// @returns true if this extent is equal to `other`, otherwise returns false.
         template<meta::IsExtent Extent>
         [[nodiscard]]
-        constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept ->
-          typename Extent::OrderingType;
+        constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept -> typename Extent::OrderingType;
 
         /// @output_section Publics operators members
         /// @brief ValueType the equality with an other extent.
@@ -140,16 +137,14 @@ export {
         /// @returns A reference to this after the multiplication with `factor`
         template<meta::IsExtent Extent>
         [[nodiscard]]
-        constexpr auto operator*=(Extent& extent, typename Extent::ElementType factor) noexcept
-          -> Extent&;
+        constexpr auto operator*=(Extent& extent, typename Extent::ElementType factor) noexcept -> Extent&;
 
         /// @brief Divide this extent with a factor.
         /// @param factor ElementType factor to divide
         /// @returns A reference to this after the division with `factor`
         template<meta::IsExtent Extent>
         [[nodiscard]]
-        constexpr auto operator/=(Extent& extent, typename Extent::ElementType factor) noexcept
-          -> Extent&;
+        constexpr auto operator/=(Extent& extent, typename Extent::ElementType factor) noexcept -> Extent&;
 
         template<meta::IsExtent2 Extent>
         auto to_string(Extent&& extent) noexcept -> std::string;
@@ -158,15 +153,13 @@ export {
     template<meta::IsArithmetic T>
     struct std::formatter<math::Extent<T, 2>>: std::formatter<T> {
         template<typename FormatContext>
-        auto format(const math::Extent<T, 2>& extent, FormatContext& ctx) const noexcept
-          -> decltype(ctx.out());
+        auto format(const math::Extent<T, 2>& extent, FormatContext& ctx) const noexcept -> decltype(ctx.out());
     };
 
     template<meta::IsArithmetic T>
     struct std::formatter<math::Extent<T, 3>>: std::formatter<T> {
         template<typename FormatContext>
-        auto format(const math::Extent<T, 3>& extent, FormatContext& ctx) const noexcept
-          -> decltype(ctx.out());
+        auto format(const math::Extent<T, 3>& extent, FormatContext& ctx) const noexcept -> decltype(ctx.out());
     };
 
     template<meta::IsArithmetic T>
@@ -199,8 +192,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
     template<core::meta::IsArithmetic U>
     STORMKIT_PURE
-    constexpr auto Extent<T, 2>::to(const std::source_location& location) const noexcept
-      -> Extent<U, 2> {
+    constexpr auto Extent<T, 2>::to(const std::source_location& location) const noexcept -> Extent<U, 2> {
         return { .width = as<U>(width, location), .height = as<U>(height, location) };
     }
 
@@ -233,9 +225,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic U>
     STORMKIT_PURE
     constexpr auto Extent<T, 3>::narrow_to() const noexcept -> Extent<U, 3> {
-        return { .width  = narrow<U>(width),
-                 .height = narrow<U>(height),
-                 .depth  = narrow<U>(depth) };
+        return { .width = narrow<U>(width), .height = narrow<U>(height), .depth = narrow<U>(depth) };
     }
 
     /////////////////////////////////////
@@ -243,11 +233,8 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
     template<core::meta::IsArithmetic U>
     STORMKIT_PURE
-    constexpr auto Extent<T, 3>::to(const std::source_location& location) const noexcept
-      -> Extent<U, 3> {
-        return { .width  = as<U>(width, location),
-                 .height = as<U>(height, location),
-                 .depth  = as<U>(depth, location) };
+    constexpr auto Extent<T, 3>::to(const std::source_location& location) const noexcept -> Extent<U, 3> {
+        return { .width = as<U>(width, location), .height = as<U>(height, location), .depth = as<U>(depth, location) };
     }
 
     /////////////////////////////////////
@@ -277,8 +264,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept ->
-      typename Extent::OrderingType {
+    constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept -> typename Extent::OrderingType {
         using Array                = std::array<typename Extent::ElementType, Extent::RANK>;
         using OrderingType         = typename Extent::OrderingType;
         static constexpr auto RANK = Extent::RANK;
@@ -313,8 +299,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator*(Extent&& event, typename Extent::ElemenType factor) noexcept
-      -> core::meta::CanonicalType<Extent> {
+    constexpr auto operator*(Extent&& event, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalType<Extent> {
         return core::meta::CanonicalType<Extent> { std::forward<Extent>(event) } *= factor;
     }
 
@@ -322,8 +307,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator/(Extent&& event, typename Extent::ElemenType factor) noexcept
-      -> core::meta::CanonicalType<Extent> {
+    constexpr auto operator/(Extent&& event, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalType<Extent> {
         return core::meta::CanonicalType<Extent> { std::forward<Extent>(event) } /= factor;
     }
 
@@ -331,8 +315,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator*=(Extent& extent, typename Extent::ElementType factor) noexcept
-      -> Extent& {
+    constexpr auto operator*=(Extent& extent, typename Extent::ElementType factor) noexcept -> Extent& {
         using ElementType            = typename Extent::ElementType;
         static constexpr auto RANK   = Extent::RANK;
         auto&                 values = *std::bit_cast<std::array<ElementType, RANK>>(&extent);
@@ -344,8 +327,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator/=(Extent& extent, typename Extent::ElementType factor) noexcept
-      -> Extent& {
+    constexpr auto operator/=(Extent& extent, typename Extent::ElementType factor) noexcept -> Extent& {
         using ElementType            = typename Extent::ElementType;
         static constexpr auto RANK   = Extent::RANK;
         auto&                 values = *std::bit_cast<std::array<ElementType, RANK>>(&extent);
@@ -372,8 +354,7 @@ namespace stormkit { inline namespace core { namespace math {
 /////////////////////////////////////
 template<meta::IsArithmetic T>
 template<typename FormatContext>
-auto std::formatter<math::Extent<T, 2>>::format(const math::Extent<T, 2>& extent,
-                                                FormatContext&            ctx) const noexcept
+auto std::formatter<math::Extent<T, 2>>::format(const math::Extent<T, 2>& extent, FormatContext& ctx) const noexcept
   -> decltype(ctx.out()) {
     auto&& out = ctx.out();
     format_to(out, "{{ .width = ");
@@ -387,8 +368,7 @@ auto std::formatter<math::Extent<T, 2>>::format(const math::Extent<T, 2>& extent
 /////////////////////////////////////
 template<meta::IsArithmetic T>
 template<typename FormatContext>
-auto std::formatter<math::Extent<T, 3>>::format(const math::Extent<T, 3>& extent,
-                                                FormatContext&            ctx) const noexcept
+auto std::formatter<math::Extent<T, 3>>::format(const math::Extent<T, 3>& extent, FormatContext& ctx) const noexcept
   -> decltype(ctx.out()) {
     auto&& out = ctx.out();
     format_to(out, "{{ .width = ");
@@ -403,8 +383,7 @@ auto std::formatter<math::Extent<T, 3>>::format(const math::Extent<T, 3>& extent
 /////////////////////////////////////
 /////////////////////////////////////
 template<meta::IsArithmetic T>
-constexpr auto std::hash<math::Extent<T, 2>>::operator()(const math::Extent<T, 2>&
-                                                           extent) noexcept {
+constexpr auto std::hash<math::Extent<T, 2>>::operator()(const math::Extent<T, 2>& extent) noexcept {
     auto hash = hash64 { 0 };
     hash_combine(hash, extent.width, extent.height);
     return hash;
@@ -413,8 +392,7 @@ constexpr auto std::hash<math::Extent<T, 2>>::operator()(const math::Extent<T, 2
 /////////////////////////////////////
 /////////////////////////////////////
 template<meta::IsArithmetic T>
-constexpr auto std::hash<math::Extent<T, 3>>::operator()(const math::Extent<T, 3>&
-                                                           extent) noexcept {
+constexpr auto std::hash<math::Extent<T, 3>>::operator()(const math::Extent<T, 3>& extent) noexcept {
     auto hash = hash64 { 0 };
     hash_combine(hash, extent.width, extent.height, extent.depth);
     return hash;

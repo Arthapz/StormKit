@@ -49,10 +49,8 @@ export namespace stormkit::gpu {
 
         static constexpr auto DEBUG_TYPE = DebugObjectType::SAMPLER;
 
-        static auto create(const Device& device, const Settings& settings) noexcept
-          -> Expected<Sampler>;
-        static auto allocate(const Device& device, const Settings& settings) noexcept
-          -> Expected<Heap<Sampler>>;
+        static auto create(const Device& device, const Settings& settings) noexcept -> Expected<Sampler>;
+        static auto allocate(const Device& device, const Settings& settings) noexcept -> Expected<Heap<Sampler>>;
         ~Sampler();
 
         Sampler(const Sampler&)                    = delete;
@@ -90,13 +88,11 @@ export namespace stormkit::gpu {
         static auto create(const Device&                device,
                            const Image&                 image,
                            ImageViewType                type              = ImageViewType::T2D,
-                           const ImageSubresourceRange& subresource_range = {}) noexcept
-          -> Expected<ImageView>;
+                           const ImageSubresourceRange& subresource_range = {}) noexcept -> Expected<ImageView>;
         static auto allocate(const Device&                device,
                              const Image&                 image,
                              ImageViewType                type              = ImageViewType::T2D,
-                             const ImageSubresourceRange& subresource_range = {}) noexcept
-          -> Expected<Heap<ImageView>>;
+                             const ImageSubresourceRange& subresource_range = {}) noexcept -> Expected<Heap<ImageView>>;
         ~ImageView();
 
         ImageView(const ImageView&)                    = delete;
@@ -113,10 +109,7 @@ export namespace stormkit::gpu {
         [[nodiscard]]
         auto native_handle() const noexcept -> VkImageView;
 
-        ImageView(const Device&,
-                  ImageViewType,
-                  const ImageSubresourceRange&,
-                  PrivateFuncTag) noexcept;
+        ImageView(const Device&, ImageViewType, const ImageSubresourceRange&, PrivateFuncTag) noexcept;
 
       private:
         auto do_init(const Image&) noexcept -> Expected<void>;
@@ -141,19 +134,15 @@ export namespace stormkit::gpu {
             ImageType          type       = ImageType::T2D;
             ImageCreateFlag    flags      = ImageCreateFlag::NONE;
             SampleCountFlag    samples    = SampleCountFlag::C1;
-            ImageUsageFlag     usages     = ImageUsageFlag::SAMPLED
-                                    | ImageUsageFlag::TRANSFER_DST
-                                    | ImageUsageFlag::TRANSFER_SRC;
-            ImageTiling        tiling   = ImageTiling::OPTIMAL;
-            MemoryPropertyFlag property = MemoryPropertyFlag::DEVICE_LOCAL;
+            ImageUsageFlag     usages     = ImageUsageFlag::SAMPLED | ImageUsageFlag::TRANSFER_DST | ImageUsageFlag::TRANSFER_SRC;
+            ImageTiling        tiling     = ImageTiling::OPTIMAL;
+            MemoryPropertyFlag property   = MemoryPropertyFlag::DEVICE_LOCAL;
         };
 
         static constexpr auto DEBUG_TYPE = DebugObjectType::IMAGE;
 
-        static auto create(const Device& device, const CreateInfo& info) noexcept
-          -> Expected<Image>;
-        static auto allocate(const Device& device, const CreateInfo& create_info) noexcept
-          -> Expected<Heap<Image>>;
+        static auto create(const Device& device, const CreateInfo& info) noexcept -> Expected<Image>;
+        static auto allocate(const Device& device, const CreateInfo& create_info) noexcept -> Expected<Heap<Image>>;
         ~Image();
 
         Image(const Image&)                    = delete;
@@ -252,10 +241,7 @@ namespace stormkit::gpu {
             .borderColor             = to_vk<VkBorderColor>(m_settings.border_color),
             .unnormalizedCoordinates = m_settings.unnormalized_coordinates
         };
-        return vk_call<VkSampler>(m_vk_device_table->vkCreateSampler,
-                                  m_vk_device,
-                                  &create_info,
-                                  nullptr)
+        return vk_call<VkSampler>(m_vk_device_table->vkCreateSampler, m_vk_device, &create_info, nullptr)
           .transform(core::monadic::set(m_vk_handle))
           .transform_error(monadic::from_vk<Result>());
     }
@@ -264,10 +250,10 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline Sampler::Sampler(const Device& device, const Settings& settings, PrivateFuncTag) noexcept
-        : m_settings { settings }, m_vk_device { device.native_handle() },
+        : m_settings { settings },
+          m_vk_device { device.native_handle() },
           m_vk_device_table { as_ref(device.device_table()) },
-          m_vk_handle { [vk_device_table = *m_vk_device_table,
-                         vk_device       = m_vk_device](auto&& handle) noexcept {
+          m_vk_handle { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto&& handle) noexcept {
               vk_device_table.vkDestroySampler(vk_device, handle, nullptr);
           } } {
     }
@@ -275,12 +261,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Sampler::~Sampler() = default;
+    inline Sampler::~Sampler()
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Sampler::Sampler(Sampler&&) noexcept = default;
+    inline Sampler::Sampler(Sampler&&) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -290,8 +278,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Sampler::create(const Device& device, const Settings& settings) noexcept
-      -> Expected<Sampler> {
+    inline auto Sampler::create(const Device& device, const Settings& settings) noexcept -> Expected<Sampler> {
         auto sampler = Sampler { device, settings, PrivateFuncTag {} };
         return sampler.do_init().transform(core::monadic::consume(sampler));
     }
@@ -299,8 +286,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Sampler::allocate(const Device& device, const Settings& settings) noexcept
-      -> Expected<Heap<Sampler>> {
+    inline auto Sampler::allocate(const Device& device, const Settings& settings) noexcept -> Expected<Heap<Sampler>> {
         auto sampler = std::make_unique<Sampler>(device, settings, PrivateFuncTag {});
         return sampler->do_init().transform(core::monadic::consume(sampler));
     }
@@ -346,10 +332,7 @@ namespace stormkit::gpu {
             .subresourceRange = vk_subresource_range,
         };
 
-        return vk_call<VkImageView>(m_vk_device_table->vkCreateImageView,
-                                    m_vk_device,
-                                    &create_info,
-                                    nullptr)
+        return vk_call<VkImageView>(m_vk_device_table->vkCreateImageView, m_vk_device, &create_info, nullptr)
           .transform(core::monadic::set(m_vk_handle))
           .transform_error(monadic::from_vk<Result>());
     }
@@ -361,11 +344,11 @@ namespace stormkit::gpu {
                                 ImageViewType                type,
                                 const ImageSubresourceRange& subresource_range,
                                 PrivateFuncTag) noexcept
-        : m_type { type }, m_subresource_range { subresource_range },
+        : m_type { type },
+          m_subresource_range { subresource_range },
           m_vk_device { device.native_handle() },
           m_vk_device_table { as_ref(device.device_table()) },
-          m_vk_handle { [vk_device_table = *m_vk_device_table,
-                         vk_device       = m_vk_device](auto&& handle) noexcept {
+          m_vk_handle { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto&& handle) noexcept {
               vk_device_table.vkDestroyImageView(vk_device, handle, nullptr);
           } } {
     }
@@ -373,12 +356,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ImageView::~ImageView() = default;
+    inline ImageView::~ImageView()
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ImageView::ImageView(ImageView&&) noexcept = default;
+    inline ImageView::ImageView(ImageView&&) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -391,8 +376,7 @@ namespace stormkit::gpu {
     inline auto ImageView::create(const Device&                device,
                                   const Image&                 image,
                                   ImageViewType                type,
-                                  const ImageSubresourceRange& subresource_range) noexcept
-      -> Expected<ImageView> {
+                                  const ImageSubresourceRange& subresource_range) noexcept -> Expected<ImageView> {
         auto image_view = ImageView { device, type, subresource_range, PrivateFuncTag {} };
         return image_view.do_init(image).transform(core::monadic::consume(image_view));
     }
@@ -403,12 +387,8 @@ namespace stormkit::gpu {
     inline auto ImageView::allocate(const Device&                device,
                                     const Image&                 image,
                                     ImageViewType                type,
-                                    const ImageSubresourceRange& subresource_range) noexcept
-      -> Expected<Heap<ImageView>> {
-        auto image_view = std::make_unique<ImageView>(device,
-                                                      type,
-                                                      subresource_range,
-                                                      PrivateFuncTag {});
+                                    const ImageSubresourceRange& subresource_range) noexcept -> Expected<Heap<ImageView>> {
+        auto image_view = std::make_unique<ImageView>(device, type, subresource_range, PrivateFuncTag {});
         return image_view->do_init(image).transform(core::monadic::consume(image_view));
     }
 
@@ -438,14 +418,19 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline Image::Image(const Device& device, const CreateInfo& info, PrivateFuncTag) noexcept
-        : m_extent { info.extent }, m_format { info.format }, m_layers { info.layers },
-          m_faces { 1 }, m_mip_levels { info.mip_levels }, m_type { info.type },
-          m_flags { info.flags }, m_samples { info.samples }, m_usages { info.usages },
+        : m_extent { info.extent },
+          m_format { info.format },
+          m_layers { info.layers },
+          m_faces { 1 },
+          m_mip_levels { info.mip_levels },
+          m_type { info.type },
+          m_flags { info.flags },
+          m_samples { info.samples },
+          m_usages { info.usages },
           m_vk_device { device.native_handle() },
           m_vk_device_table { as_ref(device.device_table()) },
           m_vma_allocator { device.allocator() },
-          m_vk_handle { [vk_device_table = *m_vk_device_table,
-                         vk_device       = m_vk_device](auto handle) noexcept {
+          m_vk_handle { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto handle) noexcept {
               vk_device_table.vkDestroyImage(vk_device, handle, nullptr);
           } } {
     }
@@ -453,12 +438,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Image::~Image() = default;
+    inline Image::~Image()
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Image::Image(Image&&) noexcept = default;
+    inline Image::Image(Image&&) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -468,8 +455,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Image::create(const Device& device, const CreateInfo& create_info) noexcept
-      -> Expected<Image> {
+    inline auto Image::create(const Device& device, const CreateInfo& create_info) noexcept -> Expected<Image> {
         auto image = Image { device, create_info, PrivateFuncTag {} };
         return image.do_init(create_info).transform(core::monadic::consume(image));
     }
@@ -477,8 +463,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Image::allocate(const Device& device, const CreateInfo& create_info) noexcept
-      -> Expected<Heap<Image>> {
+    inline auto Image::allocate(const Device& device, const CreateInfo& create_info) noexcept -> Expected<Heap<Image>> {
         auto image = std::make_unique<Image>(device, create_info, PrivateFuncTag {});
         return image->do_init(create_info).transform(core::monadic::consume(image));
     }
@@ -549,9 +534,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::create(const Device&     device,
-                              const CreateInfo& info,
-                              VkImage&&         vk_image) noexcept -> Image {
+    inline auto Image::create(const Device& device, const CreateInfo& info, VkImage&& vk_image) noexcept -> Image {
         auto image             = Image { device, info, PrivateFuncTag {} };
         image.m_vma_allocation = { core::monadic::noop() };
         image.m_vk_handle      = { core::monadic::noop() };

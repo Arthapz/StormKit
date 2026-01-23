@@ -84,9 +84,9 @@ export namespace stormkit::gpu {
 
     struct RasterPipelineColorBlendState {
         bool                                                 logic_operation_enable = false;
-        LogicOperation                                       logic_operation = LogicOperation::COPY;
+        LogicOperation                                       logic_operation        = LogicOperation::COPY;
         std::vector<RasterPipelineColorBlendAttachmentState> attachments;
-        std::array<float, 4> blend_constants = { 0.f, 0.f, 0.f, 0.f };
+        std::array<float, 4>                                 blend_constants = { 0.f, 0.f, 0.f, 0.f };
     };
 
     using RasterPipelineDynamicState = std::vector<DynamicState>;

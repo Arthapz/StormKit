@@ -67,20 +67,17 @@ namespace test {
 
     namespace {
         constexpr auto StyleMap = frozen::make_unordered_map<Status, stormkit::ConsoleStyle>({
-          { Status::Passed,
-           stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK,
-                                     .bg = stormkit::ConsoleColor::GREEN } },
+          { Status::Passed,    stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK, .bg = stormkit::ConsoleColor::GREEN } },
           { Status::NotPassed,
-           stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK,
-                                     .bg = stormkit::ConsoleColor::RED }   },
+           stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK, .bg = stormkit::ConsoleColor::RED }                       },
           { Status::CheckMark,
            stormkit::ConsoleStyle {
               .fg = stormkit::ConsoleColor::GREEN,
-            }                                                              },
+            }                                                                                                                      },
           { Status::CrossMark,
            stormkit::ConsoleStyle {
               .fg = stormkit::ConsoleColor::RED,
-            }                                                              },
+            }                                                                                                                      },
         });
 
         constexpr auto passed     = StyleMap.at(Status::Passed) | "Passed"sv;
@@ -140,17 +137,11 @@ namespace test {
         return failed_tests == 0;
     }
 
-    TestSuite::TestSuite(std::string&&               _name,
-                         std::vector<TestFunc>&&     tests,
-                         const std::source_location& location) noexcept {
-        state.test_suites.emplace_back(std::make_unique<TestSuiteHolder>(std::move(_name),
-                                                                         std::move(tests),
-                                                                         location));
+    TestSuite::TestSuite(std::string&& _name, std::vector<TestFunc>&& tests, const std::source_location& location) noexcept {
+        state.test_suites.emplace_back(std::make_unique<TestSuiteHolder>(std::move(_name), std::move(tests), location));
     }
 
-    auto expects(bool                        cond,
-                 std::string_view            message,
-                 const std::source_location& location) noexcept {
+    auto expects(bool cond, std::string_view message, const std::source_location& location) noexcept {
         if (not cond) [[unlikely]] {
             state.failed = true;
             if (state.verbose) {
@@ -201,9 +192,7 @@ namespace test {
             }
         } else
             for (auto&& suite : state.test_suites) {
-                std::println("Running test suite {} ({} tests)",
-                             suite->name,
-                             std::size(suite->tests));
+                std::println("Running test suite {} ({} tests)", suite->name, std::size(suite->tests));
                 if (not suite->runTests()) return_code = -1;
             }
 

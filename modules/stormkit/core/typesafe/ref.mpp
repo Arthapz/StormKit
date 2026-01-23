@@ -89,10 +89,9 @@ export {
             constexpr auto operator>=(std::nullptr_t) const noexcept -> bool;
             [[nodiscard]]
             constexpr auto operator<=>(std::nullptr_t) const noexcept
-              -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType,
-                                                 typename Ref<T, Optional>::PointerType>
-                requires std::three_way_comparable<typename Ref<T, Optional>::PointerType,
-                                                   typename Ref<T, Optional>::PointerType>;
+              -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
+                requires std::three_way_comparable<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
+            ;
 
             [[nodiscard]]
             constexpr auto operator==(std::nullopt_t) const noexcept -> bool
@@ -111,10 +110,8 @@ export {
                 requires(Optional == true);
             [[nodiscard]]
             constexpr auto operator<=>(std::nullopt_t) const noexcept
-              -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType,
-                                                 typename Ref<T, Optional>::PointerType>
-                requires(std::three_way_comparable<typename Ref<T, Optional>::PointerType,
-                                                   typename Ref<T, Optional>::PointerType>
+              -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
+                requires(std::three_way_comparable<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
                          and Optional == true);
 
             template<typename U, bool OptionalU>
@@ -137,8 +134,7 @@ export {
                                                    typename Ref<U, OptionalU>::PointerType>
             [[nodiscard]]
             constexpr auto operator<=>(const Ref<U>& other) const noexcept
-              -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType,
-                                                 typename Ref<U, OptionalU>::PointerType>;
+              -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<U, OptionalU>::PointerType>;
 
             [[nodiscard]]
             constexpr operator std::reference_wrapper<T>() const noexcept;
@@ -336,7 +332,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::~Ref() noexcept = default;
+    constexpr Ref<T, Optional>::~Ref() noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -363,8 +360,7 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<meta::IsCanonical<T> U, bool OptionalU>
         requires(not(meta::IsConst<U> and not meta::IsConst<T>))
-    constexpr auto Ref<T, Optional>::operator=(Ref<U, OptionalU>&& other) noexcept
-      -> decltype(auto) {
+    constexpr auto Ref<T, Optional>::operator=(Ref<U, OptionalU>&& other) noexcept -> decltype(auto) {
         if constexpr (meta::IsStrict<T, U>)
             if (&other == this) return *this;
 
@@ -477,14 +473,11 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
     constexpr auto Ref<T, Optional>::operator<=>(std::nullptr_t) const noexcept
-      -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType,
-                                         typename Ref<T, Optional>::PointerType>
-        requires std::three_way_comparable<typename Ref<T, Optional>::PointerType,
-                                           typename Ref<T, Optional>::PointerType>
+      -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
+        requires std::three_way_comparable<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
 
     {
-        return std::compare_three_way {}(m_value,
-                                         static_cast<typename Ref<T, Optional>::pointer>(nullptr));
+        return std::compare_three_way {}(m_value, static_cast<typename Ref<T, Optional>::pointer>(nullptr));
     }
 
     /////////////////////////////////////
@@ -492,8 +485,7 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator==(const Ref<U, OptionalU>& other) const noexcept
-      -> bool {
+    constexpr auto Ref<T, Optional>::operator==(const Ref<U, OptionalU>& other) const noexcept -> bool {
         return m_value == other.value();
     }
 
@@ -502,11 +494,9 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<(const Ref<U, OptionalU>& other) const noexcept
-      -> bool {
+    constexpr auto Ref<T, Optional>::operator<(const Ref<U, OptionalU>& other) const noexcept -> bool {
         return std::less<
-          std::common_type_t<Ref<T, Optional>::PointerType,
-                             typename Ref<U, OptionalU>::PointerType>> {}(m_value, other.m_value);
+          std::common_type_t<Ref<T, Optional>::PointerType, typename Ref<U, OptionalU>::PointerType>> {}(m_value, other.m_value);
     }
 
     /////////////////////////////////////
@@ -514,8 +504,7 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<=(const Ref<U, OptionalU>& other) const noexcept
-      -> bool {
+    constexpr auto Ref<T, Optional>::operator<=(const Ref<U, OptionalU>& other) const noexcept -> bool {
         return !(other < *this);
     }
 
@@ -524,8 +513,7 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator>(const Ref<U, OptionalU>& other) const noexcept
-      -> bool {
+    constexpr auto Ref<T, Optional>::operator>(const Ref<U, OptionalU>& other) const noexcept -> bool {
         return other < *this;
     }
 
@@ -534,8 +522,7 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator>=(const Ref<U, OptionalU>& other) const noexcept
-      -> bool {
+    constexpr auto Ref<T, Optional>::operator>=(const Ref<U, OptionalU>& other) const noexcept -> bool {
         return !(*this < other);
     }
 
@@ -543,12 +530,10 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
-        requires std::three_way_comparable<typename Ref<T, Optional>::PointerType,
-                                           typename Ref<U, OptionalU>::PointerType>
+        requires std::three_way_comparable<typename Ref<T, Optional>::PointerType, typename Ref<U, OptionalU>::PointerType>
     STORMKIT_FORCE_INLINE
     constexpr auto Ref<T, Optional>::operator<=>(const Ref<U>& other) const noexcept
-      -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType,
-                                         typename Ref<U, OptionalU>::PointerType> {
+      -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<U, OptionalU>::PointerType> {
         return m_value <=> other.m_value;
     }
 
@@ -693,7 +678,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+    template<template<typename, std::size_t> typename Out, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_refs(Args&&... args) noexcept -> decltype(auto) {
@@ -711,7 +696,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+    template<template<typename, std::size_t> typename Out, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_ref_muts(Args&&... args) noexcept -> decltype(auto) {
@@ -729,7 +714,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out = std::vector, std::ranges::range T>
+    template<template<typename...> class Out, std::ranges::range T>
         requires(std::ranges::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
     constexpr auto to_refs(const T& range) noexcept -> decltype(auto) {
@@ -742,7 +727,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out = std::vector, std::ranges::range T>
+    template<template<typename...> class Out, std::ranges::range T>
         requires(std::ranges::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
     constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto) {
@@ -755,7 +740,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+    template<template<typename, std::size_t> typename Out, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_opt_refs(Args&&... args) noexcept -> decltype(auto) {
@@ -773,7 +758,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+    template<template<typename, std::size_t> typename Out, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_opt_ref_muts(Args&&... args) noexcept -> decltype(auto) {
@@ -791,7 +776,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out = std::vector, std::ranges::range T>
+    template<template<typename...> class Out, std::ranges::range T>
         requires(std::ranges::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
     constexpr auto to_opt_refs(const T& range) noexcept -> decltype(auto) {
@@ -804,7 +789,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out = std::vector, std::ranges::range T>
+    template<template<typename...> class Out, std::ranges::range T>
         requires(std::ranges::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
     constexpr auto to_mut_opt_refs(T& range) noexcept -> decltype(auto) {

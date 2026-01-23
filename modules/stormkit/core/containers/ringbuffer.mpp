@@ -53,8 +53,7 @@ export namespace stormkit { inline namespace core {
         auto push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>) -> void;
 
         template<class... Args>
-        auto emplace(Args&&... values) noexcept(std::is_nothrow_constructible_v<ValueType, Args...>)
-          -> void;
+        auto emplace(Args&&... values) noexcept(std::is_nothrow_constructible_v<ValueType, Args...>) -> void;
 
         auto next() noexcept -> void;
 
@@ -212,8 +211,7 @@ namespace stormkit { inline namespace core {
     template<class T>
     template<typename U>
         requires meta::Is<T, meta::CanonicalType<U>>
-    auto RingBuffer<T>::push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>)
-      -> void {
+    auto RingBuffer<T>::push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>) -> void {
         emplace(std::forward(value));
     }
 
@@ -221,9 +219,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T>
     template<class... Args>
-    auto RingBuffer<
-      T>::emplace(Args&&... values) noexcept(std::is_nothrow_constructible_v<ValueType, Args...>)
-      -> void {
+    auto RingBuffer<T>::emplace(Args&&... values) noexcept(std::is_nothrow_constructible_v<ValueType, Args...>) -> void {
         if (m_count == m_capacity) pop();
 
         new (&m_buffer[m_write * sizeof(ValueType)]) ValueType { std::forward<Args>(values)... };

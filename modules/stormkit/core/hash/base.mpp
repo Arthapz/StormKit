@@ -55,7 +55,7 @@ namespace stormkit { inline namespace core {
     constexpr auto hash_combine(HashValue auto& hash, Args&&... args) noexcept {
 #if defined(__cpp_expansion_statements) and __cpp_expansion_statements >= 202500L
         template for (constexpr auto elem : { std::forward<Args>(args)... })
-          hash_combine(hash, std::forward<Args>(elem));
+          hash_combine(hash, std::forward<decltype(elem)>(elem));
 #else
         (hash_combine(hash, std::forward<Args>(args)), ...);
 #endif

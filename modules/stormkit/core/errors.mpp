@@ -36,9 +36,7 @@ export {
 
                 constexpr auto final_suspend() const noexcept -> std::suspend_never { return {}; }
 
-                constexpr auto get_return_object() noexcept -> Expected {
-                    return Expected { this };
-                }
+                constexpr auto get_return_object() noexcept -> Expected { return Expected { this }; }
 
                 template<typename... Args>
                 constexpr auto return_value(Args&&... args) noexcept {
@@ -61,9 +59,7 @@ export {
                 Expected* expected_ptr = nullptr;
             };
 
-            constexpr Expected(promise_type* promise) noexcept : Expected {} {
-                promise->expected_ptr = this;
-            }
+            constexpr Expected(promise_type* promise) noexcept : Expected {} { promise->expected_ptr = this; }
 
             constexpr auto await_ready() const noexcept -> bool { return this->has_value(); }
 
@@ -112,8 +108,7 @@ export {
         template<class T, class CharT>
         struct formatter<stormkit::core::Error<T>, CharT>: formatter<T, CharT> {
             template<class FormatContext>
-            auto format(const stormkit::core::Error<T>&, FormatContext& ctx) const
-              -> decltype(ctx.out());
+            auto format(const stormkit::core::Error<T>&, FormatContext& ctx) const -> decltype(ctx.out());
         };
 
         template<class T, class CharT>
@@ -122,8 +117,7 @@ export {
             constexpr auto parse(ParseContext& ctx) noexcept -> decltype(ctx.begin());
 
             template<class FormatContext>
-            auto format(const stormkit::core::DecoratedError<T>&, FormatContext& ctx) const
-              -> decltype(ctx.out());
+            auto format(const stormkit::core::DecoratedError<T>&, FormatContext& ctx) const -> decltype(ctx.out());
         };
     } // namespace std
 }
@@ -170,9 +164,8 @@ namespace std {
     template<typename T, class CharT>
     template<class FormatContext>
     STORMKIT_FORCE_INLINE
-    inline auto formatter<stormkit::core::Error<T>,
-                          CharT>::format(const stormkit::core::Error<T>& error,
-                                         FormatContext& ctx) const -> decltype(ctx.out()) {
+    inline auto formatter<stormkit::core::Error<T>, CharT>::format(const stormkit::core::Error<T>& error,
+                                                                   FormatContext& ctx) const -> decltype(ctx.out()) {
         return formatter<T>::format(error.code, ctx);
     }
 
@@ -181,8 +174,8 @@ namespace std {
     template<typename T, class CharT>
     template<class ParseContext>
     STORMKIT_FORCE_INLINE
-    constexpr auto formatter<stormkit::core::DecoratedError<T>,
-                             CharT>::parse(ParseContext& ctx) noexcept -> decltype(ctx.begin()) {
+    constexpr auto formatter<stormkit::core::DecoratedError<T>, CharT>::parse(ParseContext& ctx) noexcept
+      -> decltype(ctx.begin()) {
         return ctx.begin();
     }
 
@@ -191,9 +184,8 @@ namespace std {
     template<typename T, class CharT>
     template<class FormatContext>
     STORMKIT_FORCE_INLINE
-    inline auto formatter<stormkit::core::DecoratedError<T>,
-                          CharT>::format(const stormkit::core::DecoratedError<T>& error,
-                                         FormatContext& ctx) const -> decltype(ctx.out()) {
+    inline auto formatter<stormkit::core::DecoratedError<T>, CharT>::format(const stormkit::core::DecoratedError<T>& error,
+                                                                            FormatContext& ctx) const -> decltype(ctx.out()) {
         auto&& out = ctx.out();
         return format_to("message: {}, code: {}", error.message, error.error.code);
     }

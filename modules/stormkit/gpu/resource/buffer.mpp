@@ -153,7 +153,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Buffer::Buffer(Buffer&& other) noexcept = default;
+    inline Buffer::Buffer(Buffer&& other) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

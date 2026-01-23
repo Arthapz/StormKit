@@ -35,23 +35,22 @@ export namespace stormkit::wsi::linux::wayland {
         };
 
         struct Globals {
-            bool                     initialized = false;
-            wl::Display              display     = wl::Display::empty();
-            wl::Registry             registry    = wl::Registry::empty();
-            wl::Compositor           compositor  = wl::Compositor::empty();
-            std::vector<wl::Output>  outputs;
-            wl::XDGWmBase            xdg_wm_base        = wl::XDGWmBase::empty();
-            wl::Shm                  shm                = wl::Shm::empty();
-            wl::XDGDecorationManager decoration_manager = wl::XDGDecorationManager::empty();
-            wl::Seat                 seat               = wl::Seat::empty();
-            wl::SinglePixelBufferManager
-                           single_pixel_buffer_manager  = wl::SinglePixelBufferManager::empty();
-            wl::Viewporter viewporter                   = wl::Viewporter::empty();
-            wl::CursorShapeManager cursor_shape_manager = wl::CursorShapeManager::empty();
-            wl::CursorShapeDevice  cursor_shape_device  = wl::CursorShapeDevice::empty();
-            wl::PointerWarp        pointer_warp         = wl::PointerWarp::empty();
-            wl::PointerConstraints pointer_constraints  = wl::PointerConstraints::empty();
-            wl::ContentTypeManager content_type_manager = wl::ContentTypeManager::empty();
+            bool                         initialized = false;
+            wl::Display                  display     = wl::Display::empty();
+            wl::Registry                 registry    = wl::Registry::empty();
+            wl::Compositor               compositor  = wl::Compositor::empty();
+            std::vector<wl::Output>      outputs;
+            wl::XDGWmBase                xdg_wm_base                 = wl::XDGWmBase::empty();
+            wl::Shm                      shm                         = wl::Shm::empty();
+            wl::XDGDecorationManager     decoration_manager          = wl::XDGDecorationManager::empty();
+            wl::Seat                     seat                        = wl::Seat::empty();
+            wl::SinglePixelBufferManager single_pixel_buffer_manager = wl::SinglePixelBufferManager::empty();
+            wl::Viewporter               viewporter                  = wl::Viewporter::empty();
+            wl::CursorShapeManager       cursor_shape_manager        = wl::CursorShapeManager::empty();
+            wl::CursorShapeDevice        cursor_shape_device         = wl::CursorShapeDevice::empty();
+            wl::PointerWarp              pointer_warp                = wl::PointerWarp::empty();
+            wl::PointerConstraints       pointer_constraints         = wl::PointerConstraints::empty();
+            wl::ContentTypeManager       content_type_manager        = wl::ContentTypeManager::empty();
 
             wl::CursorTheme cursor_theme          = wl::CursorTheme::empty();
             wl::CursorTheme cursor_theme_high_dpi = wl::CursorTheme::empty();
@@ -60,8 +59,7 @@ export namespace stormkit::wsi::linux::wayland {
             std::vector<std::pair<Pointer, PointerState>>   pointers;
             std::vector<std::pair<Touch, TouchState>>       touchs;
 
-            wl::RelativePointerManager
-              relative_pointer_manager = wl::RelativePointerManager::empty();
+            wl::RelativePointerManager relative_pointer_manager = wl::RelativePointerManager::empty();
 
             std::vector<WaylandMonitor> monitors;
 

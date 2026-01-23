@@ -38,8 +38,7 @@ export namespace stormkit::gpu {
         [[nodiscard]]
         static auto create_signaled(const Device& device) noexcept -> Expected<Fence>;
         [[nodiscard]]
-        static auto allocate(const Device& device, bool signaled = false) noexcept
-          -> Expected<Heap<Fence>>;
+        static auto allocate(const Device& device, bool signaled = false) noexcept -> Expected<Heap<Fence>>;
         [[nodiscard]]
         static auto allocate_signaled(const Device& device) noexcept -> Expected<Heap<Fence>>;
         ~Fence();
@@ -51,8 +50,7 @@ export namespace stormkit::gpu {
         auto operator=(Fence&&) noexcept -> Fence&;
 
         [[nodiscard]]
-        auto wait(const std::chrono::milliseconds& wait_for = std::chrono::milliseconds::max())
-          const -> Expected<Result>;
+        auto wait(const std::chrono::milliseconds& wait_for = std::chrono::milliseconds::max()) const -> Expected<Result>;
         auto reset() -> Expected<void>;
 
         [[nodiscard]]
@@ -114,8 +112,7 @@ namespace stormkit::gpu {
     inline Fence::Fence(const Device& device, PrivateFuncTag) noexcept
         : m_vk_device { device.native_handle() },
           m_vk_device_table { as_ref(device.device_table()) },
-          m_vk_handle { [vk_device_table = *m_vk_device_table,
-                         vk_device       = m_vk_device](auto handle) noexcept {
+          m_vk_handle { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto handle) noexcept {
               vk_device_table.vkDestroyFence(vk_device, handle, nullptr);
           } } {
     }
@@ -138,8 +135,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Fence::allocate(const Device& device, bool signaled) noexcept
-      -> Expected<Heap<Fence>> {
+    inline auto Fence::allocate(const Device& device, bool signaled) noexcept -> Expected<Heap<Fence>> {
         auto fence = core::allocate_unsafe<Fence>(device, PrivateFuncTag {});
         return fence->do_init(signaled).transform(core::monadic::consume(fence));
     }
@@ -154,12 +150,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Fence::~Fence() = default;
+    inline Fence::~Fence()
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Fence::Fence(Fence&&) noexcept = default;
+    inline Fence::Fence(Fence&&) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -171,10 +169,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto Fence::status() const noexcept -> Expected<Status> {
         static constexpr auto POSSIBLE_RESULTS = std::array { VK_SUCCESS, VK_NOT_READY };
-        return vk_call<VkResult>(m_vk_device_table->vkGetFenceStatus,
-                                 as_view(POSSIBLE_RESULTS),
-                                 m_vk_device,
-                                 m_vk_handle)
+        return vk_call<VkResult>(m_vk_device_table->vkGetFenceStatus, as_view(POSSIBLE_RESULTS), m_vk_device, m_vk_handle)
           .transform([](auto&& result) static noexcept {
               if (result == VK_NOT_READY) return Status::UNSIGNALED;
               return Status::SIGNALED;
@@ -193,8 +188,7 @@ namespace stormkit::gpu {
                                  1u,
                                  &m_vk_handle.value(),
                                  true,
-                                 std::chrono::duration_cast<std::chrono::nanoseconds>(wait_for)
-                                   .count())
+                                 std::chrono::duration_cast<std::chrono::nanoseconds>(wait_for).count())
           .transform(monadic::from_vk<Result>())
           .transform_error(monadic::from_vk<Result>());
     }
@@ -219,17 +213,13 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto Fence::do_init(bool signaled) noexcept -> Expected<void> {
-        const auto flags = (signaled) ? VkFenceCreateFlags { VK_FENCE_CREATE_SIGNALED_BIT }
-                                      : VkFenceCreateFlags {};
+        const auto flags = (signaled) ? VkFenceCreateFlags { VK_FENCE_CREATE_SIGNALED_BIT } : VkFenceCreateFlags {};
 
         const auto create_info = VkFenceCreateInfo { .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
                                                      .pNext = nullptr,
                                                      .flags = flags };
 
-        return vk_call<VkFence>(m_vk_device_table->vkCreateFence,
-                                m_vk_device,
-                                &create_info,
-                                nullptr)
+        return vk_call<VkFence>(m_vk_device_table->vkCreateFence, m_vk_device, &create_info, nullptr)
           .transform(core::monadic::set(m_vk_handle))
           .transform_error(monadic::from_vk<Result>());
     }
@@ -240,8 +230,7 @@ namespace stormkit::gpu {
     inline Semaphore::Semaphore(const Device& device, PrivateFuncTag) noexcept
         : m_vk_device { device.native_handle() },
           m_vk_device_table { as_ref(device.device_table()) },
-          m_vk_handle { [vk_device_table = *m_vk_device_table,
-                         vk_device       = m_vk_device](auto handle) noexcept {
+          m_vk_handle { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto handle) noexcept {
               vk_device_table.vkDestroySemaphore(vk_device, handle, nullptr);
           } } {
     }
@@ -265,12 +254,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Semaphore::~Semaphore() = default;
+    inline Semaphore::~Semaphore()
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Semaphore::Semaphore(Semaphore&&) noexcept = default;
+    inline Semaphore::Semaphore(Semaphore&&) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -295,10 +286,7 @@ namespace stormkit::gpu {
             .flags = 0,
         };
 
-        return vk_call<VkSemaphore>(m_vk_device_table->vkCreateSemaphore,
-                                    m_vk_device,
-                                    &create_info,
-                                    nullptr)
+        return vk_call<VkSemaphore>(m_vk_device_table->vkCreateSemaphore, m_vk_device, &create_info, nullptr)
           .transform(core::monadic::set(m_vk_handle))
           .transform_error(monadic::from_vk<Result>());
     }

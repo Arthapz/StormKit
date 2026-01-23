@@ -1,13 +1,4 @@
-if is_plat("linux") then
-    add_requires(
-        "nzsl",
-        { configs = { toolchains = "gcc", runtimes = "stdc++_shared", fs_watcher = false, link = {} } }
-    )
-elseif is_plat("windows") then
-    add_requires("nzsl", { configs = { toolchains = "msvc", runtimes = "MD", fs_watcher = false, links = {} } })
-else
-    add_requires("nzsl", { configs = { fs_watcher = false, links = {} } })
-end
+-- add_requires("nzsl", { configs = { fs_watcher = false, kind = "binary" } })
 
 target("textured_cube", function()
     set_kind("binary")

@@ -31,8 +31,7 @@ namespace std {
     ////////////////////////////////////////
     template<typename... Ts, class CharT>
     template<class ParseContext>
-    constexpr auto formatter<std::variant<Ts...>, CharT>::parse(ParseContext& ctx) noexcept
-      -> decltype(ctx.begin()) {
+    constexpr auto formatter<std::variant<Ts...>, CharT>::parse(ParseContext& ctx) noexcept -> decltype(ctx.begin()) {
         return ctx.begin();
     }
 
@@ -40,8 +39,7 @@ namespace std {
     ////////////////////////////////////////
     template<typename... Ts, class CharT>
     template<class FormatContext>
-    inline auto formatter<std::variant<Ts...>, CharT>::format(const std::variant<Ts...>& variant,
-                                                              FormatContext&             ctx) const
+    inline auto formatter<std::variant<Ts...>, CharT>::format(const std::variant<Ts...>& variant, FormatContext& ctx) const
       -> decltype(ctx.out()) {
         return std::visit(
           [&ctx](auto&& value) mutable noexcept {

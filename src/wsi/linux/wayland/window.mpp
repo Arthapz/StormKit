@@ -43,8 +43,7 @@ export {
             Window(Window&&) noexcept;
             auto operator=(Window&&) noexcept -> Window&;
 
-            auto open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
-              -> void;
+            auto open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept -> void;
             auto close() noexcept -> void;
 
             auto handle_events() noexcept -> void;
@@ -88,10 +87,7 @@ export {
             auto handle_xdg_surface_configure(u32) noexcept -> void;
             auto handle_xdg_surface_close() noexcept -> void;
 
-            auto handle_xdg_top_level_configure(u32,
-                                                u32,
-                                                std::span<const xdg_toplevel_state>) noexcept
-              -> void;
+            auto handle_xdg_top_level_configure(u32, u32, std::span<const xdg_toplevel_state>) noexcept -> void;
             auto handle_surface_enter(wl_surface*, wl_output*) noexcept -> void;
 
             auto handle_keyboard_key(Key, char, bool) noexcept -> void;
@@ -120,13 +116,12 @@ export {
 
             Handles m_handles;
 
-            wl::Surface     m_surface       = wl::Surface::empty();
-            wl::XDGSurface  m_xdg_surface   = wl::XDGSurface::empty();
-            wl::XDGTopLevel m_xdg_top_level = wl::XDGTopLevel::empty();
-            wl::XDGTopLevelDecoration
-                            m_xdg_top_level_decoration = wl::XDGTopLevelDecoration::empty();
-            wl::ContentType m_content_type             = wl::ContentType::empty();
-            wl::Viewport    m_viewport                 = wl::Viewport::empty();
+            wl::Surface               m_surface                  = wl::Surface::empty();
+            wl::XDGSurface            m_xdg_surface              = wl::XDGSurface::empty();
+            wl::XDGTopLevel           m_xdg_top_level            = wl::XDGTopLevel::empty();
+            wl::XDGTopLevelDecoration m_xdg_top_level_decoration = wl::XDGTopLevelDecoration::empty();
+            wl::ContentType           m_content_type             = wl::ContentType::empty();
+            wl::Viewport              m_viewport                 = wl::Viewport::empty();
 
             DeferInit<SHMBuffer> m_shm_buffer;
             wl::ShmPool          m_shm_pool     = wl::ShmPool::empty();
