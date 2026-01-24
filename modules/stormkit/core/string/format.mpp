@@ -34,7 +34,7 @@ export {
             };
         } // namespace meta
 
-        inline constexpr struct {
+        inline constexpr struct FormatFN {
             template<meta::HasFormatAs T, typename FormatContext>
             static constexpr auto operator()(const T& value, FormatContext& ctx) noexcept -> FormatContext::iterator {
                 return format_as(value, ctx);

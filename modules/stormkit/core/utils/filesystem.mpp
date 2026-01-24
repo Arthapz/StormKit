@@ -385,7 +385,7 @@ namespace stormkit { inline namespace core { namespace io {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<Mode mode = Mode::UTF8>
+    template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto read_text_to(const stdfs::path& path, std::span<meta::ModeToCharType<mode>> out) noexcept -> Expected<usize> {
         return TextFile<mode>::open(path, Access::READ).and_then([&out](auto&& file) mutable noexcept {
@@ -396,7 +396,7 @@ namespace stormkit { inline namespace core { namespace io {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<Mode mode = Mode::UTF8>
+    template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto read_text(const stdfs::path& path) noexcept -> Expected<std::vector<meta::ModeToCharType<mode>>> {
         auto out = std::vector<meta::ModeToCharType<mode>> {};
@@ -436,7 +436,7 @@ namespace stormkit { inline namespace core { namespace io {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<Mode mode = Mode::UTF8>
+    template<Mode mode>
         STORMKIT_FORCE_INLINE
     inline auto write_text(const stdfs::path& path, std::span<const meta::ModeToCharType<mode>> data) noexcept
       -> Expected<usize> {

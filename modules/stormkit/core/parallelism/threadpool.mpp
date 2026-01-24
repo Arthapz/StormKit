@@ -21,7 +21,7 @@ export namespace stormkit { inline namespace core {
     class STORMKIT_API ThreadPool {
       public:
         static constexpr struct NoFutureType {
-        } NoFuture;
+        } NoFuture = {};
 
         template<class T>
         using Callback = std::function<T()>;

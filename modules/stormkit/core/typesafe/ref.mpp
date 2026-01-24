@@ -29,7 +29,7 @@ export {
         using ptr = T*;
 
         template<typename T, bool Optional = false>
-        class [[nodiscard, gsl::Pointer]]
+        class [[nodiscard]]
         Ref {
           public:
             using ElementType   = T;

@@ -98,7 +98,7 @@ export {
 using namespace std::literals;
 
 namespace stormkit { inline namespace core {
-    namespace { namespace ecma48 {
+    namespace ecma48 {
         constexpr auto FOREGROUND = frozen::make_unordered_map<ConsoleColor, frozen::string>({
           { ConsoleColor::BLACK,          "\x1B[30m" },
           { ConsoleColor::RED,            "\x1B[31m" },
@@ -143,7 +143,7 @@ namespace stormkit { inline namespace core {
         constexpr auto ITALIC    = "\x1B[3m"sv;
         constexpr auto UNDERLINE = "\x1B[4m"sv;
         constexpr auto INVERSE   = "\x1B[7m"sv;
-    }} // namespace ::ecma48
+    } // namespace ecma48
 
     /////////////////////////////////////
     /////////////////////////////////////

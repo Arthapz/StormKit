@@ -95,7 +95,7 @@ export namespace stormkit { inline namespace core {
         template<template<class> class Lock, LockAccessMode Mode>
         class Access {
           public:
-            using ValueType        = std::conditional_t<Mode == LockAccessMode::Read_Only, const ValueType, ValueType>;
+            using AccessValueType  = std::conditional_t<Mode == LockAccessMode::Read_Only, const ValueType, ValueType>;
             using RefContainerType = std::conditional_t<Mode == LockAccessMode::Read_Only, Ref<const ValueType>, Ref<ValueType>>;
             using ReferenceType    = ValueType&;
             using PointerType      = ValueType*;
