@@ -15,6 +15,12 @@ import std;
 
 import stormkit.core;
 
+import :core;
+
+// #ifdef STORMKIT_WSI
+import :wsi;
+// #endif
+
 namespace stdfs = std::filesystem;
 namespace stdr  = std::ranges;
 
@@ -66,6 +72,11 @@ export namespace stormkit::luau {
                                     std::string_view { msg, len }));
             }
 
+            core::init_lua(global_namespace());
+            // #ifdef STORMKIT_WSI
+            wsi::init_lua(global_namespace());
+            // #endif
+
             m_main_thread = lua_newthread(m_global_state);
             ensures(m_main_thread);
 
@@ -93,15 +104,12 @@ export namespace stormkit::luau {
 
                 lua_pop(m_global_state, 1);
             } else {
-                auto error = std::string {};
-                error.reserve(150);
+                auto l = 0;
+                luaL_traceback(m_global_state, m_main_thread, nullptr, l);
 
-                luaL_traceback(m_global_state, m_global_state, nullptr, 1);
-
-                error += lua_tostring(m_global_state, -1);
-
+                const auto str = lua_tostring(m_main_thread, -1);
+                out            = std::unexpected { std::string { str } };
                 lua_pop(m_global_state, 1);
-                out = std::unexpected { std::move(error) };
             }
 
             return out;
@@ -131,7 +139,7 @@ export namespace stormkit::luau {
         //    auto end_class(std::string_view name) noexcept -> Binder { return Binder { class.endClass() }; }
         // };
 
-        auto global_namespace() noexcept { return lb::getGlobalNamespace(m_global_state); }
+        auto global_namespace() noexcept -> lb::Namespace { return lb::getGlobalNamespace(m_global_state); }
 
         static auto create(const stdfs::path& file) noexcept -> Engine {
             auto engine = Engine {};

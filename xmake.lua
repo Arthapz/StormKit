@@ -21,7 +21,7 @@ includes("xmake/rules/*.lua")
 includes("xmake/options.xmake.lua")
 
 if get_config("devmode") then
-    set_policy("build.c++.modules.non_cascading_changes", true)
+    -- set_policy("build.c++.modules.non_cascading_changes", true)
     set_policy("build.c++.modules.hide_dependencies", true)
 end
 

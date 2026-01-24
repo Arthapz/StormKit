@@ -59,13 +59,14 @@ modules = {
     },
     luau = get_config("luau") and {
         modulename = "luau",
-        public_deps = { "core" },
+        public_deps = { "core", "wsi" },
         public_packages = { "luau", "luabridge3" },
         public_defines = { 'LUA_API=extern __attribute__((visibility("default")))' },
     } or nil,
     wsi = {
         modulename = "wsi",
         public_deps = { "core" },
+        public_defines = get_config("luau") and { "STORMKIT_WSI_LUA" } or {},
         deps = { "log" },
         packages = is_plat("linux") and {
             "libxcb",
@@ -137,14 +138,15 @@ modules = {
             "vulkan-headers",
             "vulkan-memory-allocator",
         },
-        public_deps = { "core", "log", "wsi", "image" },
+        public_deps = { "core", "wsi", "image" },
+        deps = { "log" },
         packages = is_plat("linux") and {
             "libxcb",
             "wayland",
         } or nil,
-        public_defines = {
+        public_defines = table.join({
             "STORMKIT_GPU_VULKAN",
-        },
+        }, get_config("luau") and { "STORMKIT_WSI_LUA" } or {}),
         custom = function() add_cxflags("clang::-Wno-missing-declarations") end,
     },
 }

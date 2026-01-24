@@ -1,13 +1,17 @@
-print(wsi.EventType)
+local function main()
+  local window = wsi.open_window("test", 800, 600, wsi.WindowFlag.RESIZEABLE)
 
-local window = wsi.open_window("test", 800, 600, wsi.WindowFlag.RESIZEABLE)
 
-print("wm: " .. window:wm())
+  window:on_closed(function()
+    print("Close event!")
+    return true
+  end)
 
--- window:on(wsi.EventType.CLOSED, function()
---   print("Close event!")
--- end)
+  window:event_loop(function()
+    print("AAAAAAAAAA")
+    window:clear()
+    print("BBBBBBBBB")
+  end)
+end
 
--- window:event_loop(function()
---   window.clear()
--- end)
+main()

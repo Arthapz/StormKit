@@ -1,0 +1,196 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/luau/lua.hpp>
+
+export module stormkit.luau:wsi;
+
+import std;
+
+import stormkit.core;
+import stormkit.wsi;
+
+namespace lb = luabridge;
+
+export namespace stormkit::luau::wsi {
+    inline auto init_lua(lb::Namespace global_namespace) noexcept -> void;
+} // namespace stormkit::luau::wsi
+
+namespace stormkit::luau::wsi {
+    using stormkit::wsi::EventType;
+    using stormkit::wsi::Window;
+    using stormkit::wsi::WindowFlag;
+    using stormkit::wsi::WM;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    auto open_window(std::string name, u32 width, u32 height, wsi::WindowFlag flags) noexcept -> decltype(auto) {
+        return wsi::Window::open(std::move(name), { width, height }, flags);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto bind_core(lb::Namespace& global_namespace) noexcept -> lb::Namespace {
+        return global_namespace.beginNamespace("wsi")
+          .beginNamespace("WM")
+          .addProperty(
+            "WIN32",
+            +[] static noexcept { return wsi::WM::WIN32; })
+          .addProperty(
+            "WAYLAND",
+            +[] static noexcept { return wsi::WM::WAYLAND; })
+          .addProperty(
+            "X11",
+            +[] static noexcept { return wsi::WM::X11; })
+          .addProperty(
+            "ANDROID",
+            +[] static noexcept { return wsi::WM::ANDROID; })
+          .addProperty(
+            "MACOS",
+            +[] static noexcept { return wsi::WM::MACOS; })
+          .addProperty(
+            "IOS",
+            +[] static noexcept { return wsi::WM::IOS; })
+          .addProperty(
+            "TVOS",
+            +[] static noexcept { return wsi::WM::TVOS; })
+          .addProperty(
+            "SWITCH",
+            +[] static noexcept { return wsi::WM::SWITCH; })
+          .endNamespace()
+          .endNamespace();
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto bind_window(lb::Namespace& global_namespace) noexcept -> lb::Namespace {
+        return global_namespace.beginNamespace("wsi")
+          .beginNamespace("WindowFlag")
+          .addProperty(
+            "DEFAULT",
+            +[] static noexcept { return wsi::WindowFlag::DEFAULT; })
+          .addProperty(
+            "BORDERLESS",
+            +[] static noexcept { return wsi::WindowFlag::BORDERLESS; })
+          .addProperty(
+            "RESIZEABLE",
+            +[] static noexcept { return wsi::WindowFlag::RESIZEABLE; })
+          .addProperty(
+            "EXTERNAL_CONTEXT",
+            +[] static noexcept { return wsi::WindowFlag::EXTERNAL_CONTEXT; })
+          .endNamespace()
+          .beginNamespace("EventType")
+          .addProperty(
+            "NONE",
+            +[] static noexcept { return wsi::EventType::NONE; })
+          .addProperty(
+            "CLOSED",
+            +[] static noexcept { return wsi::EventType::CLOSED; })
+          .addProperty(
+            "MONITOR_CHANGED",
+            +[] static noexcept { return wsi::EventType::MONITOR_CHANGED; })
+          .addProperty(
+            "RESIZED",
+            +[] static noexcept { return wsi::EventType::RESIZED; })
+          .addProperty(
+            "RESTORED",
+            +[] static noexcept { return wsi::EventType::RESTORED; })
+          .addProperty(
+            "MINIMIZED",
+            +[] static noexcept { return wsi::EventType::MINIMIZED; })
+          .addProperty(
+            "KEY_DOWN",
+            +[] static noexcept { return wsi::EventType::KEY_DOWN; })
+          .addProperty(
+            "KEY_UP",
+            +[] static noexcept { return wsi::EventType::KEY_UP; })
+          .addProperty(
+            "MOUSE_BUTTON_DOWN",
+            +[] static noexcept { return wsi::EventType::MOUSE_BUTTON_DOWN; })
+          .addProperty(
+            "MOUSE_BUTTON_UP",
+            +[] static noexcept { return wsi::EventType::MOUSE_BUTTON_UP; })
+          .addProperty(
+            "MOUSE_MOVED",
+            +[] static noexcept { return wsi::EventType::MOUSE_MOVED; })
+          .addProperty(
+            "ACTIVATE",
+            +[] static noexcept { return wsi::EventType::ACTIVATE; })
+          .addProperty(
+            "DEACTIVATE",
+            +[] static noexcept { return wsi::EventType::DEACTIVATE; })
+          .endNamespace()
+          .beginClass<wsi::Window>("window")
+          .addFunction("wm", &wsi::Window::wm)
+          .addFunction("clear", [](Window* window) static noexcept { window->clear(); })
+          .addFunction(
+            "event_loop",
+            +[](Window* window, lb::LuaRef func) static noexcept {
+                window->event_loop([func = std::move(func)] noexcept {
+                    const auto result = func();
+                    ensures(result.wasOk(), result.errorMessage());
+                });
+            })
+          .addFunction(
+            "on_closed",
+            +[](Window* window, lb::LuaRef func) static noexcept {
+                expects(func.isCallable());
+
+                window->on<wsi::EventType::CLOSED>([func = std::move(func)] noexcept {
+                    const auto result = func();
+                    ensures(result.wasOk(), result.errorMessage());
+                    const auto return_value = result[0];
+                    ensures(return_value.isValid());
+                    ensures(return_value.isBool(), "on_closed closure must return a boolean value");
+                    return return_value.cast<bool>().value();
+                });
+            })
+          .endClass()
+          .addFunction("open_window", &open_window)
+          .endNamespace();
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto init_lua(lb::Namespace global_namespace) noexcept -> void {
+        global_namespace = bind_core(global_namespace);
+        global_namespace = bind_window(global_namespace);
+    }
+} // namespace stormkit::luau::wsi
+
+using namespace stormkit;
+
+template<>
+struct lb::Stack<wsi::WindowFlag>: lb::Enum<wsi::WindowFlag> {};
+
+template<>
+struct lb::Stack<wsi::WM>
+    : lb::Enum<wsi::WM,
+               wsi::WM::WIN32,
+               wsi::WM::WAYLAND,
+               wsi::WM::X11,
+               wsi::WM::ANDROID,
+               wsi::WM::MACOS,
+               wsi::WM::IOS,
+               wsi::WM::TVOS,
+               wsi::WM::SWITCH> {};
+
+template<>
+struct lb::Stack<wsi::EventType>
+    : lb::Enum<wsi::EventType,
+               wsi::EventType::NONE,
+               wsi::EventType::CLOSED,
+               wsi::EventType::MONITOR_CHANGED,
+               wsi::EventType::RESIZED,
+               wsi::EventType::RESTORED,
+               wsi::EventType::MINIMIZED,
+               wsi::EventType::KEY_DOWN,
+               wsi::EventType::KEY_UP,
+               wsi::EventType::MOUSE_BUTTON_DOWN,
+               wsi::EventType::MOUSE_BUTTON_UP,
+               wsi::EventType::MOUSE_MOVED,
+               wsi::EventType::ACTIVATE,
+               wsi::EventType::DEACTIVATE> {};
