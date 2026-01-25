@@ -36,16 +36,19 @@ modules = {
     log = {
         modulename = "log",
         public_deps = table.join("core", get_config("luau") and "luau" or {}),
+        public_packages = get_config("luau") and { "luau", "luabridge3" } or {},
         has_headers = true,
     },
     entities = {
         modulename = "entities",
         public_deps = table.join("core", get_config("luau") and "luau" or {}),
+        public_packages = get_config("luau") and { "luau", "luabridge3" } or {},
     },
     image = {
         modulename = "image",
         packages = { "libktx", "libpng", "libjpeg-turbo" },
         public_deps = table.join("core", get_config("luau") and "luau" or {}),
+        public_packages = get_config("luau") and { "luau", "luabridge3" } or {},
     },
     main = {
         modulename = "main",
@@ -68,6 +71,7 @@ modules = {
         modulename = "wsi",
         public_deps = table.join("core", get_config("luau") and "luau" or {}),
         deps = { "log" },
+        public_packages = get_config("luau") and { "luau", "luabridge3" } or {},
         packages = is_plat("linux") and {
             "libxcb",
             "xcb-util-keysyms",
@@ -132,12 +136,12 @@ modules = {
     gpu = {
         modulename = "gpu",
         has_headers = true,
-        public_packages = {
+        public_packages = table.join({
             "frozen",
             "volk",
             "vulkan-headers",
             "vulkan-memory-allocator",
-        },
+        }, get_config("luau") and { "luau", "luabridge3" } or {}),
         public_deps = table.join("core", "wsi", "image", get_config("luau") and "luau" or {}),
         deps = { "log" },
         packages = is_plat("linux") and {
