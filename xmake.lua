@@ -167,6 +167,8 @@ namespace("stormkit", function()
                         end
                     end
 
+                    if not get_config("luau") then remove_files(path.join(src_path, name, "lua.mpp")) end
+
                     add_includedirs("$(projectdir)/include", { public = true })
 
                     if module.defines then add_defines(module.defines) end

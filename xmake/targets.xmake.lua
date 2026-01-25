@@ -35,17 +35,17 @@ modules = {
     },
     log = {
         modulename = "log",
-        public_deps = { "core" },
+        public_deps = table.join("core", get_config("luau") and "luau" or {}),
         has_headers = true,
     },
     entities = {
         modulename = "entities",
-        public_deps = { "core" },
+        public_deps = table.join("core", get_config("luau") and "luau" or {}),
     },
     image = {
-        packages = { "libktx", "libpng", "libjpeg-turbo" },
         modulename = "image",
-        public_deps = { "core" },
+        packages = { "libktx", "libpng", "libjpeg-turbo" },
+        public_deps = table.join("core", get_config("luau") and "luau" or {}),
     },
     main = {
         modulename = "main",
@@ -59,14 +59,14 @@ modules = {
     },
     luau = get_config("luau") and {
         modulename = "luau",
-        public_deps = { "core", "wsi" },
+        has_headers = true,
+        public_deps = { "core" },
         public_packages = { "luau", "luabridge3" },
-        public_defines = { 'LUA_API=extern __attribute__((visibility("default")))' },
+        public_defines = { "STORMKIT_LUA_BINDING", 'LUA_API=extern __attribute__((visibility("default")))' },
     } or nil,
     wsi = {
         modulename = "wsi",
-        public_deps = { "core" },
-        public_defines = get_config("luau") and { "STORMKIT_WSI_LUA" } or {},
+        public_deps = table.join("core", get_config("luau") and "luau" or {}),
         deps = { "log" },
         packages = is_plat("linux") and {
             "libxcb",
@@ -138,15 +138,15 @@ modules = {
             "vulkan-headers",
             "vulkan-memory-allocator",
         },
-        public_deps = { "core", "wsi", "image" },
+        public_deps = table.join("core", "wsi", "image", get_config("luau") and "luau" or {}),
         deps = { "log" },
         packages = is_plat("linux") and {
             "libxcb",
             "wayland",
         } or nil,
-        public_defines = table.join({
+        public_defines = {
             "STORMKIT_GPU_VULKAN",
-        }, get_config("luau") and { "STORMKIT_WSI_LUA" } or {}),
+        },
         custom = function() add_cxflags("clang::-Wno-missing-declarations") end,
     },
 }
