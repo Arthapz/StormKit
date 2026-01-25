@@ -31,6 +31,7 @@ auto main(std::span<const std::string_view> args) -> int {
     auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
 
     auto engine = luau::Engine::create(LUAU_DIR "/events.luau");
+    wsi::lua::init_lua(engine.global_namespace());
     engine.lua_main().transform_error(monadic::assert("lua runtime error!\n-------------------------------\n"));
 
     return 0;
