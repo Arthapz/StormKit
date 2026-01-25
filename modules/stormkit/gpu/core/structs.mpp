@@ -262,8 +262,15 @@ export {
             ImageSubresourceLayers src;
             ImageSubresourceLayers dst;
 
-            std::array<math::vec3i, 2> src_offset;
-            std::array<math::vec3i, 2> dst_offset;
+            struct {
+                math::vec3i        position;
+                math::Extent3<i32> extent;
+            } src_offset;
+
+            struct {
+                math::vec3i        position;
+                math::Extent3<i32> extent;
+            } dst_offset;
         };
 
         struct PushConstantRange {

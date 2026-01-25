@@ -21,6 +21,8 @@ export namespace stormkit::gpu {
     [[nodiscard]]
     auto to_vk(const T& value) noexcept -> decltype(auto);
 
+    struct ToVec;
+
     template<typename Out>
     [[nodiscard]]
     constexpr auto to_vk(const math::vec2i& vector) noexcept -> Out;
@@ -52,13 +54,13 @@ export namespace stormkit::gpu {
     [[nodiscard]]
     constexpr auto from_vk(const VkViewport& viewport) noexcept -> Viewport;
 
-    template<math::meta::IsExtent2 Extent>
+    template<typename Out = VkExtent2D, math::meta::IsExtent2 Extent>
     [[nodiscard]]
-    constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent2D;
+    constexpr auto to_vk(const Extent& extent) noexcept -> Out;
 
-    template<math::meta::IsExtent3 Extent>
+    template<typename Out = VkExtent3D, math::meta::IsExtent3 Extent>
     [[nodiscard]]
-    constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent3D;
+    constexpr auto to_vk(const Extent& extent) noexcept -> Out;
 
     template<math::meta::IsExtent2 Extent = math::vec3<u32>>
     [[nodiscard]]
@@ -164,20 +166,28 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<math::meta::IsExtent2 Extent>
+    template<typename Out, math::meta::IsExtent2 Extent>
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
-    constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent2D {
-        return VkExtent2D { .width = as<u32>(extent.width), .height = as<u32>(extent.height) };
+    constexpr auto to_vk(const Extent& extent) noexcept -> Out {
+        if constexpr (stormkit::meta::Is<Out, VkExtent2D>)
+            return VkExtent2D { .width = as<u32>(extent.width), .height = as<u32>(extent.height) };
+        else
+            return Out { .x = extent.width, .y = extent.height };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<math::meta::IsExtent3 Extent>
+    template<typename Out, math::meta::IsExtent3 Extent>
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
-    constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent3D {
-        return VkExtent3D { .width = as<u32>(extent.width), .height = as<u32>(extent.height), .depth = as<u32>(extent.depth) };
+    constexpr auto to_vk(const Extent& extent) noexcept -> Out {
+        if constexpr (stormkit::meta::Is<Out, VkExtent3D>)
+            return VkExtent3D { .width  = as<u32>(extent.width),
+                                .height = as<u32>(extent.height),
+                                .depth  = as<u32>(extent.depth) };
+        else
+            return Out { .x = extent.width, .y = extent.height, .z = extent.depth };
     }
 
     /////////////////////////////////////

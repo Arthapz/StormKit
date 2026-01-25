@@ -442,11 +442,11 @@ namespace stormkit::gpu {
 
                                       return VkImageBlit {
                                           .srcSubresource = vk_src_subresource_layers,
-                                          .srcOffsets     = { to_vk<VkOffset3D>(region.src_offset[0]),
-                                                             to_vk<VkOffset3D>(region.src_offset[1]) },
+                                          .srcOffsets     = { to_vk<VkOffset3D>(region.src_offset.position),
+                                                             to_vk<VkOffset3D>(region.src_offset.extent) },
                                           .dstSubresource = vk_dst_subresource_layers,
-                                          .dstOffsets     = { to_vk<VkOffset3D>(region.dst_offset[0]),
-                                                             to_vk<VkOffset3D>(region.dst_offset[1]) },
+                                          .dstOffsets     = { to_vk<VkOffset3D>(region.dst_offset.position),
+                                                             to_vk<VkOffset3D>(region.dst_offset.extent) },
                                       };
                                   })
                                 | stdr::to<std::vector>();
