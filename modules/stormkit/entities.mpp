@@ -16,6 +16,10 @@ import std;
 
 import stormkit.core;
 
+#ifdef STORMKIT_LUA_BINDING
+export import :lua;
+#endif
+
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 

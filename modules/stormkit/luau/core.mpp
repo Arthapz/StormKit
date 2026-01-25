@@ -22,10 +22,20 @@ namespace stormkit::luau::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     inline auto bind_color(lb::Namespace& global_namespace) noexcept -> lb::Namespace {
-        return global_namespace.beginNamespace("core")
-          .beginClass<RGBColorF>("RGBColorF")
+        return global_namespace.beginClass<RGBColorF>("fcolor").endClass().beginClass<RGBColorU>("ucolor").endClass();
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto bind_extent(lb::Namespace& global_namespace) noexcept -> lb::Namespace {
+        return global_namespace.beginNamespace("math")
+          .beginClass<math::Extent2<u32>>("uextent2")
           .endClass()
-          .beginClass<RGBColorU>("RGBColorU")
+          .beginClass<math::Extent3<u32>>("uextent3")
+          .endClass()
+          .beginClass<math::Extent2<f32>>("fextent2")
+          .endClass()
+          .beginClass<math::Extent3<f32>>("fextent3")
           .endClass()
           .endNamespace();
     }
@@ -34,5 +44,6 @@ namespace stormkit::luau::core {
     ////////////////////////////////////////
     inline auto init_lua(lb::Namespace global_namespace) noexcept -> void {
         global_namespace = bind_color(global_namespace);
+        global_namespace = bind_extent(global_namespace);
     }
 } // namespace stormkit::luau::core

@@ -17,10 +17,6 @@ import stormkit.core;
 
 import :core;
 
-// #ifdef STORMKIT_WSI
-import :wsi;
-// #endif
-
 namespace stdfs = std::filesystem;
 namespace stdr  = std::ranges;
 
@@ -73,9 +69,6 @@ export namespace stormkit::luau {
             }
 
             core::init_lua(global_namespace());
-            // #ifdef STORMKIT_WSI
-            wsi::init_lua(global_namespace());
-            // #endif
 
             m_main_thread = lua_newthread(m_global_state);
             ensures(m_main_thread);

@@ -14,6 +14,10 @@ import std;
 
 import stormkit.core;
 
+#ifdef STORMKIT_LUA_BINDING
+export import :lua;
+#endif
+
 export namespace stormkit::image {
     class STORMKIT_API Image {
       public:
