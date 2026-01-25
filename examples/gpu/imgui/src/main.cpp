@@ -157,10 +157,10 @@ class Application: public base::Application {
             .QueueFamily                 = 0,
             .Queue                       = m_raster_queue->native_handle(),
             .DescriptorPool              = m_descriptor_pool->native_handle(),
+            .DescriptorPoolSize          = 0,
             .MinImageCount               = BUFFERING_COUNT,
             .ImageCount                  = BUFFERING_COUNT,
             .PipelineCache               = nullptr,
-            .DescriptorPoolSize          = 0,
             .PipelineInfoMain = {
             .RenderPass                  = m_render_pass->native_handle(),
             .Subpass                     = 0,
@@ -174,6 +174,8 @@ class Application: public base::Application {
                   if (result != VK_SUCCESS) elog("{}", gpu::from_vk<gpu::Result>(result));
               },
             .MinAllocationSize = 1024 * 1024,
+            .CustomShaderVertCreateInfo = {},
+            .CustomShaderFragCreateInfo = {},
         };
         ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_1, gpu::imgui_vk_loader, &*m_device);
         ImGui_ImplVulkan_Init(&init_info);
