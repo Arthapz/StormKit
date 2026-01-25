@@ -99,7 +99,7 @@ using namespace std::literals;
 
 namespace stormkit { inline namespace core {
     namespace ecma48 {
-        constexpr auto FOREGROUND = frozen::make_unordered_map<ConsoleColor, frozen::string>({
+        inline constexpr auto FOREGROUND = frozen::make_unordered_map<ConsoleColor, frozen::string>({
           { ConsoleColor::BLACK,          "\x1B[30m" },
           { ConsoleColor::RED,            "\x1B[31m" },
           { ConsoleColor::GREEN,          "\x1B[32m" },
@@ -118,7 +118,7 @@ namespace stormkit { inline namespace core {
           { ConsoleColor::BRIGHT_WHITE,   "\x1B[97m" },
         });
 
-        constexpr auto BACKGROUND = frozen::make_unordered_map<ConsoleColor, frozen::string>({
+        inline constexpr auto BACKGROUND = frozen::make_unordered_map<ConsoleColor, frozen::string>({
           { ConsoleColor::BLACK,          "\x1B[40m"  },
           { ConsoleColor::RED,            "\x1B[41m"  },
           { ConsoleColor::GREEN,          "\x1B[42m"  },
@@ -137,12 +137,12 @@ namespace stormkit { inline namespace core {
           { ConsoleColor::BRIGHT_WHITE,   "\x1B[107m" },
         });
 
-        constexpr auto RESET     = "\x1B[0m"sv;
-        constexpr auto BOLD      = "\x1B[1m"sv;
-        constexpr auto FAINT     = "\x1B[2m"sv;
-        constexpr auto ITALIC    = "\x1B[3m"sv;
-        constexpr auto UNDERLINE = "\x1B[4m"sv;
-        constexpr auto INVERSE   = "\x1B[7m"sv;
+        inline constexpr auto RESET     = "\x1B[0m"sv;
+        inline constexpr auto BOLD      = "\x1B[1m"sv;
+        inline constexpr auto FAINT     = "\x1B[2m"sv;
+        inline constexpr auto ITALIC    = "\x1B[3m"sv;
+        inline constexpr auto UNDERLINE = "\x1B[4m"sv;
+        inline constexpr auto INVERSE   = "\x1B[7m"sv;
     } // namespace ecma48
 
     /////////////////////////////////////
