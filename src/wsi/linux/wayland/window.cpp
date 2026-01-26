@@ -611,9 +611,9 @@ namespace stormkit::wsi::linux::wayland {
             old_shm_pool     = std::move(m_shm_pool);
             old_pixel_buffer = std::move(m_pixel_buffer);
 
-            SHMBuffer::create(size, std::format("StormKit::{}::PixelBuffer", m_title))
-              .transform(bind_front(&DeferInit<SHMBuffer>::construct<SHMBuffer&&>, &m_shm_buffer))
-              .transform_error(monadic::assert());
+            auto _ = SHMBuffer::create(size, std::format("StormKit::{}::PixelBuffer", m_title))
+                       .transform(bind_front(&DeferInit<SHMBuffer>::construct<SHMBuffer&&>, &m_shm_buffer))
+                       .transform_error(monadic::assert());
 
             m_shm_pool = wl::ShmPool::create(globals.shm,
                                              narrow<i32>(std::bit_cast<uptr>(m_shm_buffer->native_handle())),

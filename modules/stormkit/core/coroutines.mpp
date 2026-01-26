@@ -253,7 +253,7 @@ export namespace std {
 
             void await_resume() {
                 __generator_promise_base& __nestedPromise = *__gen_.__get_promise();
-                if (__nestedPromise.__exception_.get()) { rethrow_exception(move(__nestedPromise.__exception_.get())); }
+                if (__nestedPromise.__exception_.get()) { rethrow_exception(std::move(__nestedPromise.__exception_.get())); }
             }
         };
 
