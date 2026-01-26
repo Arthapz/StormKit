@@ -16,11 +16,11 @@ import gpu_app;
 LOGGER("stormkit.examples.gpu.textured_cube");
 
 #ifndef SHADER_DIR
-    #define SHADER_DIR "../share/shaders"
+    #define SHADER_DIR "."
 #endif
 
 #ifndef TEXTURE_DIR
-    #define TEXTURE_DIR "../share/textures"
+    #define TEXTURE_DIR "."
 #endif
 
 namespace stdc = std::chrono;
@@ -138,12 +138,18 @@ class Application: public base::Application {
                               .value();
 
         // load shaders
-        m_vertex_shader = gpu::Shader::load_from_file(m_device, SHADER_DIR "/textured_cube.spv", gpu::ShaderStageFlag::VERTEX)
-                            .transform_error(monadic::assert("Failed to load vertex shader"))
+        m_vertex_shader = gpu::Shader::load_from_file(m_device,
+                                                      SHADER_DIR "/shaders/textured_cube.spv",
+                                                      gpu::ShaderStageFlag::VERTEX)
+                            .transform_error(monadic::assert(std::format("Failed to load vertex shader {}",
+                                                                         SHADER_DIR "/shaders/textured_cube.spv")))
                             .value();
 
-        m_fragment_shader = gpu::Shader::load_from_file(m_device, SHADER_DIR "/textured_cube.spv", gpu::ShaderStageFlag::FRAGMENT)
-                              .transform_error(monadic::assert("Failed to load fragment shader"))
+        m_fragment_shader = gpu::Shader::load_from_file(m_device,
+                                                        SHADER_DIR "/shaders/textured_cube.spv",
+                                                        gpu::ShaderStageFlag::FRAGMENT)
+                              .transform_error(monadic::assert(std::format("Failed to load fragment shader {}",
+                                                                           SHADER_DIR "/shaders/textured_cube.spv")))
                               .value();
 
         m_descriptor_set_layout = gpu::DescriptorSetLayout::create(m_device,
@@ -162,8 +168,8 @@ class Application: public base::Application {
         const auto depth_format = [this] {
             const auto formats_properties = m_physical_device->formats_properties();
             const auto candidates         = std::array { gpu::PixelFormat::DEPTH32F,
-                                                 gpu::PixelFormat::DEPTH32F_STENCIL8U,
-                                                 gpu::PixelFormat::DEPTH24_UNORM_STENCIL8U };
+                                                         gpu::PixelFormat::DEPTH32F_STENCIL8U,
+                                                         gpu::PixelFormat::DEPTH24_UNORM_STENCIL8U };
 
             for (const auto format : candidates) {
                 const auto properties = stdr::find_if(formats_properties, [format](const auto& pair) {
@@ -244,7 +250,9 @@ class Application: public base::Application {
 
         // load texture
         auto image = image::Image {};
-        image.load_from_file(TEXTURE_DIR "/cube.png").transform_error(monadic::assert()).value();
+        image.load_from_file(TEXTURE_DIR "/textures/cube.png")
+          .transform_error(monadic::assert(std::format("Failed to load texture file {}", TEXTURE_DIR "/textures/cube.png")))
+          .value();
 
         m_texture = gpu::Image::create(m_device,
                                        { .extent   = image.extent(),
@@ -299,7 +307,7 @@ class Application: public base::Application {
               .transform_error(monadic::assert("Failed to submit texture upload command buffer"))
               .value();
 
-            *cpy_fence.wait().transform_error(monadic::assert());
+            auto _ = cpy_fence.wait().transform_error(monadic::assert());
         }
 
         m_texture_view = gpu::ImageView::create(m_device, m_texture)
@@ -314,30 +322,30 @@ class Application: public base::Application {
 
         for (auto _ : range(BUFFERING_COUNT)) {
             m_submission_resources.push_back({
-              .in_flight = gpu::Fence::create_signaled(m_device)
-                             .transform_error(core::monadic::assert("Failed to create swapchain image "
-                                                                    "in flight fence"))
-                             .value(),
+              .in_flight       = gpu::Fence::create_signaled(m_device)
+                                   .transform_error(core::monadic::assert("Failed to create swapchain image "
+                                                                          "in flight fence"))
+                                   .value(),
               .image_available = gpu::Semaphore::create(m_device)
                                    .transform_error(core::monadic::assert("Failed to create present "
                                                                           "wait semaphore"))
                                    .value(),
-              .render_cmb = m_command_pool->create_command_buffer()
-                              .transform_error(monadic::assert("Failed to create "
-                                                               "transition command "
-                                                               "buffers"))
-                              .value(),
-              .viewer_buffer = gpu::Buffer::create(m_device,
-                                                   {
-                                                     .usages = gpu::BufferUsageFlag::UNIFORM,
-                                                     .size   = sizeof(ViewerData),
-                                                   },
-                                                   true)
-                                 .transform_error(monadic::assert("Failed to allocate gpu viewer buffer"))
-                                 .value(),
-              .descriptor_set = m_descriptor_pool->create_descriptor_set(m_descriptor_set_layout)
-                                  .transform_error(monadic::assert("Failed to create descriptor set"))
-                                  .value(),
+              .render_cmb      = m_command_pool->create_command_buffer()
+                                   .transform_error(monadic::assert("Failed to create "
+                                                                    "transition command "
+                                                                    "buffers"))
+                                   .value(),
+              .viewer_buffer   = gpu::Buffer::create(m_device,
+                                                     {
+                                                       .usages = gpu::BufferUsageFlag::UNIFORM,
+                                                       .size   = sizeof(ViewerData),
+                                                     },
+                                                     true)
+                                   .transform_error(monadic::assert("Failed to allocate gpu viewer buffer"))
+                                   .value(),
+              .descriptor_set  = m_descriptor_pool->create_descriptor_set(m_descriptor_set_layout)
+                                   .transform_error(monadic::assert("Failed to create descriptor set"))
+                                   .value(),
             });
             auto&      res  = m_submission_resources.back();
             const auto sets = std::array<gpu::Descriptor, 2> {
@@ -361,8 +369,8 @@ class Application: public base::Application {
 
         const auto image_count     = stdr::size(images);
         auto       transition_cmbs = m_command_pool->create_command_buffers(image_count)
-                                 .transform_error(monadic::assert("Failed to create transition command buffers"))
-                                 .value();
+                                       .transform_error(monadic::assert("Failed to create transition command buffers"))
+                                       .value();
 
         m_image_resources = std::vector<SwapchainImageResource> {};
         m_image_resources.reserve(stdr::size(images));
@@ -473,11 +481,11 @@ class Application: public base::Application {
               .value()
               ->submit(m_raster_queue, {}, {}, {}, as_ref(cpy_fence));
 
-            cpy_fence.wait().transform_error(monadic::assert());
+            auto _ = cpy_fence.wait().transform_error(monadic::assert());
         }
 
         // wait for transition to be done
-        fence.wait().transform_error(monadic::assert());
+        auto _ = fence.wait().transform_error(monadic::assert());
     }
 
     auto run_example() {
@@ -485,9 +493,9 @@ class Application: public base::Application {
         const auto window_extent     = m_window->extent();
         const auto window_extent_f32 = window_extent.to<f32>();
         auto       viewer_data       = ViewerData {
-                        .proj = math::perspective(math::radians(45.f), window_extent_f32.width / window_extent_f32.height, 0.1f, 100.f),
-                        .view = math::look_at(math::vec3f { 0.f, 3.f, 5.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }),
-                        .model = math::mat4f::identity(),
+            .proj  = math::perspective(math::radians(45.f), window_extent_f32.width / window_extent_f32.height, 0.1f, 100.f),
+            .view  = math::look_at(math::vec3f { 0.f, 3.f, 5.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }),
+            .model = math::mat4f::identity(),
         };
         LOG_MODULE.flush();
 
@@ -560,9 +568,9 @@ class Application: public base::Application {
             if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
         };
 
-        m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index))
-          .transform(update_current_frame)
-          .transform_error(monadic::assert("Failed to present swapchain image"));
+        auto _ = m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index))
+                   .transform(update_current_frame)
+                   .transform_error(monadic::assert("Failed to present swapchain image"));
 
         m_raster_queue->wait_idle();
         m_device->wait_idle();

@@ -13,7 +13,6 @@ elseif is_plat("linux") then
     toolchain = "gcc"
 end
 add_requires("nzsl", { configs = { fs_watcher = false, kind = "binary", toolchains = toolchain, runtimes = runtimes } })
-
 target("triangle", function()
     set_kind("binary")
     set_languages("cxxlatest", "clatest")
@@ -40,10 +39,7 @@ target("triangle", function()
 
     add_includedirs("$(builddir)/shaders")
 
-    if get_config("devmode") then
-        add_defines('SHADER_DIR="$(builddir)/shaders"')
-        set_rundir("$(projectdir)")
-    end
+    if get_config("devmode") then set_rundir("$(builddir)") end
 
     add_embeddirs("$(builddir)/shaders")
 

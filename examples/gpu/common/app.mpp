@@ -60,7 +60,7 @@ export namespace base {
             *gpu::initialize_backend().transform_error(monadic::assert("Failed to initialize gpu backend"));
 
             // create gpu instance and attach surface to window
-            m_instance = gpu::Instance::create(std::string { example_name })
+            m_instance = gpu::Instance::create(std::string { example_name }, true)
                            .transform_error(monadic::assert("Failed to initialize gpu instance"))
                            .value();
 

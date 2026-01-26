@@ -51,18 +51,19 @@ export namespace stormkit::gpu {
         [[nodiscard]]
         auto memory_property() const noexcept -> MemoryPropertyFlag;
 
-        auto map(ioffset offset) noexcept -> Expected<Byte*>;
-        auto map(ioffset offset, usize size) noexcept -> Expected<MutableByteView>;
+        auto map(ioffset offset) noexcept -> Expected<byte*>;
+        auto map(ioffset offset, usize size) noexcept -> Expected<std::span<byte>>;
 
         template<typename T>
         auto map_as(ioffset offset) noexcept -> Expected<Ref<T>>;
 
         template<typename Self>
         [[nodiscard]]
-        auto data(this Self& self) noexcept -> core::meta::ForwardConst<Self, Byte>*;
+        auto data(this Self& self) noexcept -> core::meta::ForwardConst<Self, byte>*;
         template<typename Self>
         [[nodiscard]]
-        auto data(this Self& self, usize size) noexcept -> core::meta::If<core::meta::IsConst<Self>, ByteView, MutableByteView>;
+        auto data(this Self& self, usize size) noexcept
+          -> core::meta::If<core::meta::IsConst<Self>, std::span<byte>, std::span<const byte>>;
 
         template<typename T>
         [[nodiscard]]
@@ -74,9 +75,10 @@ export namespace stormkit::gpu {
         [[nodiscard]]
         auto is_persistently_mapped() const noexcept -> bool;
 
-        auto upload(std::span<const Byte> data, ioffset offset = 0) noexcept -> Expected<void>;
+        auto upload(std::span<const byte> data, ioffset offset = 0) noexcept -> Expected<void>;
 
-        template<core::meta::IsNot<ByteView> T>
+        template<typename T>
+            requires(not stormkit::meta::IsSpecializationWithNTTPOf<T, std::span>)
         auto upload(const T& data, ioffset offset = 0) noexcept -> Expected<void>;
 
         [[nodiscard]]
@@ -97,7 +99,7 @@ export namespace stormkit::gpu {
         MemoryPropertyFlag m_memory_property = {};
 
         bool  m_is_persistently_mapped = false;
-        Byte* m_mapped_pointer         = nullptr;
+        byte* m_mapped_pointer         = nullptr;
 
         VkDevice                    m_vk_device;
         Ref<const VolkDeviceTable>  m_vk_device_table;
@@ -153,8 +155,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Buffer::Buffer(Buffer&& other) noexcept
-      = default;
+    inline Buffer::Buffer(Buffer&& other) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -198,13 +199,13 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Buffer::map(ioffset offset) noexcept -> Expected<Byte*> {
+    inline auto Buffer::map(ioffset offset) noexcept -> Expected<byte*> {
         EXPECTS(m_vma_allocation and m_vk_handle);
         EXPECTS(offset < as<ioffset>(m_size));
 
         return vk_call<void*>(vmaMapMemory, m_vma_allocator, m_vma_allocation)
           .transform([this, &offset](auto&& ptr) noexcept {
-              m_mapped_pointer = std::bit_cast<Byte*>(ptr);
+              m_mapped_pointer = std::bit_cast<byte*>(ptr);
               m_mapped_pointer += offset;
               return m_mapped_pointer;
           })
@@ -214,7 +215,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Buffer::map(ioffset offset, usize size) noexcept -> Expected<MutableByteView> {
+    inline auto Buffer::map(ioffset offset, usize size) noexcept -> Expected<std::span<byte>> {
         EXPECTS(m_vma_allocation and m_vk_handle);
         return map(offset).transform([&size](auto&& ptr) noexcept { return as_bytes_mut(ptr, size); });
     }
@@ -235,11 +236,11 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    inline auto Buffer::data(this Self& self) noexcept -> core::meta::ForwardConst<Self, Byte>* {
+    inline auto Buffer::data(this Self& self) noexcept -> core::meta::ForwardConst<Self, byte>* {
         EXPECTS(self.m_vma_allocation and self.m_vk_handle);
         EXPECTS(self.m_mapped_pointer);
 
-        using Out = core::meta::ForwardConst<decltype(self), Byte>*;
+        using Out = core::meta::ForwardConst<decltype(self), byte>*;
         return std::bit_cast<Out>(self.m_mapped_pointer);
     }
 
@@ -248,11 +249,11 @@ namespace stormkit::gpu {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     inline auto Buffer::data(this Self& self, usize size) noexcept
-      -> core::meta::If<core::meta::IsConst<Self>, ByteView, MutableByteView> {
+      -> core::meta::If<core::meta::IsConst<Self>, std::span<byte>, std::span<const byte>> {
         EXPECTS(self.m_vma_allocation and self.m_vk_handle);
         EXPECTS(self.m_mapped_pointer);
 
-        using Out = core::meta::If<core::meta::IsConst<Self>, ByteView, MutableByteView>;
+        using Out = core::meta::If<core::meta::IsConst<Self>, std::span<byte>, std::span<const byte>>;
         return Out { std::bit_cast<typename Out::element_type>(self.m_mapped_pointer), size };
     }
 
@@ -295,23 +296,24 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Buffer::upload(std::span<const Byte> data, ioffset offset) noexcept -> Expected<void> {
+    inline auto Buffer::upload(std::span<const byte> data, ioffset offset) noexcept -> Expected<void> {
         EXPECTS(stdr::size(data) <= m_size);
 
         if (m_is_persistently_mapped) {
-            std::ranges::copy(data, m_mapped_pointer);
+            stdr::copy(data, m_mapped_pointer);
             return {};
         }
 
-        return map(offset, std::ranges::size(data)).transform([this, &data](auto&& out) noexcept {
-            std::ranges::copy(data, std::ranges::begin(out));
+        return map(offset, stdr::size(data)).transform([this, &data](auto&& out) noexcept -> void {
+            stdr::copy(data, stdr::begin(out));
             unmap();
         });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::IsNot<ByteView> T>
+    template<typename T>
+        requires(not stormkit::meta::IsSpecializationWithNTTPOf<T, std::span>)
     STORMKIT_FORCE_INLINE
     inline auto Buffer::upload(const T& data, ioffset offset) noexcept -> Expected<void> {
         const auto bytes = as_bytes(data);

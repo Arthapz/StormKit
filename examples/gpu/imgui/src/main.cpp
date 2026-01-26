@@ -70,18 +70,18 @@ class Application: public base::Application {
             out.reserve(BUFFERING_COUNT);
             for (auto _ : range(BUFFERING_COUNT)) {
                 out.push_back({
-                  .in_flight = gpu::Fence::create_signaled(m_device)
-                                 .transform_error(monadic::assert("Failed to create swapchain image "
-                                                                  "in flight fence"))
-                                 .value(),
+                  .in_flight       = gpu::Fence::create_signaled(m_device)
+                                       .transform_error(monadic::assert("Failed to create swapchain image "
+                                                                        "in flight fence"))
+                                       .value(),
                   .image_available = gpu::Semaphore::create(m_device)
                                        .transform_error(monadic::assert("Failed to create "
                                                                         "present wait semaphore"))
                                        .value(),
-                  .render_cmb = m_command_pool->create_command_buffer()
-                                  .transform_error(monadic::assert("Failed to create transition "
-                                                                   "command buffers"))
-                                  .value(),
+                  .render_cmb      = m_command_pool->create_command_buffer()
+                                       .transform_error(monadic::assert("Failed to create transition "
+                                                                        "command buffers"))
+                                       .value(),
                 });
             }
         });
@@ -91,15 +91,15 @@ class Application: public base::Application {
 
         const auto image_count     = stdr::size(images);
         auto       transition_cmbs = m_command_pool->create_command_buffers(image_count)
-                                 .transform_error(monadic::assert("Failed to create transition command buffers"))
-                                 .value();
+                                       .transform_error(monadic::assert("Failed to create transition command buffers"))
+                                       .value();
         m_image_resources.reserve(stdr::size(images));
 
         auto image_index = 0u;
         for (const auto& swap_image : images) {
-            auto view = gpu::ImageView::create(m_device, swap_image)
-                          .transform_error(core::monadic::assert("Failed to create swapchain image view"))
-                          .value();
+            auto view        = gpu::ImageView::create(m_device, swap_image)
+                                 .transform_error(core::monadic::assert("Failed to create swapchain image view"))
+                                 .value();
             auto framebuffer = m_render_pass->create_frame_buffer(m_device, window_extent, to_refs(view))
                                  .transform_error(core::monadic::assert(std::format("Failed to create framebuffer for image {}",
                                                                                     image_index)))
@@ -116,15 +116,15 @@ class Application: public base::Application {
             });
 
             auto& transition_cmb = transition_cmbs[image_index];
-            *transition_cmb.begin(true)
-               .transform_error(monadic::assert("Failed to begin texture transition command buffer"))
-               .value()
-               ->begin_debug_region(std::format("transition image {}", image_index))
-               .transition_image_layout(swap_image, gpu::ImageLayout::UNDEFINED, gpu::ImageLayout::PRESENT_SRC)
-               .end_debug_region()
-               .end()
-               .transform_error(monadic::assert("Failed to begin texture transition command "
-                                                "buffer"));
+            auto  _ = *transition_cmb.begin(true)
+                         .transform_error(monadic::assert("Failed to begin texture transition command buffer"))
+                         .value()
+                         ->begin_debug_region(std::format("transition image {}", image_index))
+                         .transition_image_layout(swap_image, gpu::ImageLayout::UNDEFINED, gpu::ImageLayout::PRESENT_SRC)
+                         .end_debug_region()
+                         .end()
+                         .transform_error(monadic::assert("Failed to begin texture transition command "
+                                                          "buffer"));
 
             ++image_index;
         }
@@ -139,7 +139,7 @@ class Application: public base::Application {
           .value();
 
         // wait for transition to be done
-        fence.wait().transform_error(monadic::assert());
+        auto _ = fence.wait().transform_error(monadic::assert());
     }
 
     auto init_imgui() -> void {
@@ -274,9 +274,9 @@ class Application: public base::Application {
             if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
         };
 
-        m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index))
-          .transform(update_current_frame)
-          .transform_error(monadic::assert("Failed to present swapchain image"));
+        *m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index))
+           .transform(update_current_frame)
+           .transform_error(monadic::assert("Failed to present swapchain image"));
     }
 
     auto deinit() {

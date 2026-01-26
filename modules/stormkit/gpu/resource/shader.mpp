@@ -131,14 +131,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Shader::~Shader()
-      = default;
+    inline Shader::~Shader() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Shader::Shader(Shader&&) noexcept
-      = default;
+    inline Shader::Shader(Shader&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

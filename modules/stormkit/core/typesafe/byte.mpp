@@ -56,6 +56,13 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto as_bytes(const T* const ptr, usize size = 1) noexcept -> std::span<const byte>;
 
+    template<std::ranges::range Range>
+    [[nodiscard]]
+    constexpr auto as_bytes(const Range& range) noexcept -> std::span<const byte>;
+
+    [[nodiscard]]
+    constexpr auto as_bytes(std::string_view string) noexcept -> std::span<const byte>;
+
     template<class T>
     [[nodiscard]]
     constexpr auto as_bytes(const T& value) noexcept -> std::span<const byte, sizeof(T)>;
@@ -65,6 +72,10 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto as_bytes_mut(std::span<T, EXTENT> container) noexcept
       -> std::span<byte, get_byte_extent_value_of<T, EXTENT>()>;
+
+    template<std::ranges::range Range>
+    [[nodiscard]]
+    constexpr auto as_bytes_mut(Range& range) noexcept -> std::span<byte>;
 
     template<typename T>
     [[nodiscard]]
@@ -125,6 +136,8 @@ namespace stormkit { inline namespace core {
         stdr::fill(bytes, byte { 0 });
     }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto zeroed() noexcept -> T {
@@ -158,6 +171,21 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    template<std::ranges::range Range>
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_bytes(const Range& range) noexcept -> std::span<const byte> {
+        return as_bytes(std::span { range });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_bytes(std::string_view value) noexcept -> std::span<const byte> {
+        return std::as_bytes(std::span<const char> { stdr::data(value), stdr::size(value) });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<class T>
     STORMKIT_FORCE_INLINE
     constexpr auto as_bytes(const T& value) noexcept -> std::span<const byte, sizeof(T)> {
@@ -170,6 +198,14 @@ namespace stormkit { inline namespace core {
     constexpr auto as_bytes_mut(std::span<T, EXTENT> container) noexcept
       -> std::span<byte, get_byte_extent_value_of<T, EXTENT>()> {
         return std::as_writable_bytes<T, EXTENT>(container);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::ranges::range Range>
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_bytes_mut(Range& range) noexcept -> std::span<byte> {
+        return as_bytes_mut(std::span { range });
     }
 
     /////////////////////////////////////
