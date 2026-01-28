@@ -31,13 +31,13 @@ namespace stormkit { inline namespace core {
         out      = replace(out, "basic_string_view<char, std::char_traits<char>>", "string_view");
         out      = replace(out, "basic_string_view<char, std::char_traits<char> >", "string_view");
         out      = replace(out,
-                      "basic_string<char, std::char_traits<char>, "
+                           "basic_string<char, std::char_traits<char>, "
                            "std::allocator<char>>",
-                      "string");
+                           "string");
         out      = replace(out,
-                      "basic_string<char, std::char_traits<char>, "
+                           "basic_string<char, std::char_traits<char>, "
                            "std::allocator<char> >",
-                      "string");
+                           "string");
         return out;
     }
 
@@ -63,14 +63,14 @@ namespace stormkit { inline namespace core {
                 continue;
             }
     #ifdef STORMKIT_COMPILER_MSSTL
-            const auto frame_str = std::to_string(frame);
-            auto       splitted  = split(frame_str, "+");
-            const auto address   = from_string<u64>(splitted[1].substr(2), 16)
-                                   .transform_error([stderr, &splitted](auto&& err) noexcept {
+            const auto frame_str        = std::to_string(frame);
+            auto       splitted         = split(frame_str, "+");
+            const auto address          = from_string<u64>(splitted[1].substr(2), 16)
+                                            .transform_error([stderr, &splitted](auto&& err) noexcept {
                                        std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
                                        return 0;
-                                   })
-                                   .value();
+                                            })
+                                            .value();
             splitted                    = split(splitted[0], "!");
             const auto formatted_symbol = prettify((stdr::size(splitted) >= 2)
                                                      ? "\n    in " + (YELLOW_TEXT_STYLE | splitted[1]).render()
@@ -83,11 +83,11 @@ namespace stormkit { inline namespace core {
             const auto frame_str = std::to_string(frame);
             const auto splitted  = split(frame_str, ": ");
             const auto address   = from_string<u64>(splitted[0].substr(2), 16)
-                                   .transform_error([stderr, &splitted](auto&& err) noexcept {
+                                     .transform_error([stderr, &splitted](auto&& err) noexcept {
                                        std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
                                        return 0;
-                                   })
-                                   .value();
+                                     })
+                                     .value();
 
             const auto formatted_symbol = prettify((stdr::size(splitted) > 2)
                                                      ? "\n    in " + (YELLOW_TEXT_STYLE | splitted[1]).render()

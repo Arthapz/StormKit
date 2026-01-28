@@ -1,6 +1,12 @@
 rule("stormkit.flags", function()
     on_load("linux", "mingw", "macosx", "ios", "android", function(target)
-        if get_config("lto") then target:set("policy", "build.optimization.lto", true) end
+        if get_config("lto") then
+            target:set("policy", "build.optimization.lto", true)
+            if get_config("toolchain") == "llvm" or get_config("toolchain") == "clang" then
+                target:add("ldflags", "-flto=thin", { force = true })
+                target:add("shflags", "-flto=thin", { force = true })
+            end
+        end
         if get_config("mold") and not is_subhost("windows") then
             local arg = "-fuse-ld=mold"
             if type(get_config("mold")) == "string" then arg = "-fuse-ld=" .. get_config("mold") end
@@ -9,9 +15,22 @@ rule("stormkit.flags", function()
         end
         target:set("utf-8", true)
 
-        if get_config("sanitizers") and is_mode("release", "releasedbg") and target:is_binary() then
+        if get_config("sanitizers") and is_mode("debug", "release", "releasedbg") and target:is_binary() then
             target:set("policy", "build.sanitizer.address", true)
             target:set("policy", "build.sanitizer.undefined", true)
+        end
+        if
+            get_config("toolchain") == "llvm"
+            or get_config("toolchain") == "clang"
+            or get_config("toolchain") == "gcc"
+        then
+            target:add("syslinks", "dl")
+
+            if is_mode("debug") then
+                target:add("cxflags", "-no-pie")
+                target:add("ldflags", "-fno-pie")
+                target:add("shflags", "-fno-pie")
+            end
         end
     end)
     on_load("windows", function(target)
