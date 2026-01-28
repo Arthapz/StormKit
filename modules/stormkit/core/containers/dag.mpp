@@ -48,7 +48,8 @@ export namespace stormkit { inline namespace core {
     template<typename VertexValue>
     class DAG {
       public:
-        using Vertex = dag::Vertex<VertexValue>;
+        using Vertex       = dag::Vertex<VertexValue>;
+        using ColorizeFunc = FunctionRef<std::string_view(const VertexValue&)>;
 
         struct Directed {};
 
@@ -96,7 +97,7 @@ export namespace stormkit { inline namespace core {
         constexpr auto topological_sort() const noexcept -> std::expected<std::vector<dag::VertexID>, std::vector<dag::VertexID>>;
         constexpr auto find_cycle() const noexcept -> std::optional<std::vector<dag::VertexID>>;
 
-        constexpr auto dump() const noexcept -> std::string;
+        constexpr auto dump(ColorizeFunc colorize = [](const auto&) { return "white"; }) const noexcept -> std::string;
 
       private:
         bool          m_directed;
@@ -521,8 +522,24 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename VertexValue>
-    constexpr auto DAG<VertexValue>::dump() const noexcept -> std::string {
-        return {};
+    constexpr auto DAG<VertexValue>::dump(ColorizeFunc colorize) const noexcept -> std::string {
+        auto out = std::string { "digraph G { \n"
+                                 "    rankdir = LR\n"
+                                 "    bgcolor = black\n\n"
+                                 "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n" };
+
+        for (const auto& [id, value] : m_vertices)
+            out += std::format("    \"node{}\" [label=\"id: {} value: {} \", style=filled,color=\"{}\"];\n",
+                               id,
+                               id,
+                               value,
+                               colorize(value));
+
+        for (const auto& [from, to] : m_edges) out += std::format("    \"node{}\" -> \"node{}\" [color=seagreen];\n", from, to);
+
+        out += "}";
+
+        return out;
     }
 
     namespace dag {
