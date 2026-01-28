@@ -6,12 +6,12 @@
 #define STORMKIT_TRY_EXPECTED_HPP
 
 #if (defined(__clang__) or defined(__GNUC__))
-    #define Try(m)                                      \
-        ({                                              \
-            auto res = (m);                             \
-            if (!res.has_value()) [[unlikely]]          \
-                return std::unexpected { res.error() }; \
-            std::move(res).value();                     \
+    #define Try(m)                                                 \
+        ({                                                         \
+            auto res = (m);                                        \
+            if (not res.has_value()) [[unlikely]]                  \
+                return std::unexpected { std::move(res).error() }; \
+            std::move(res).value();                                \
         })
     #define Ret(x)    return x
     #define RetErr(x) return std::unexpected { x };
