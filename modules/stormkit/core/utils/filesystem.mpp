@@ -9,6 +9,8 @@ module;
 #include <stormkit/core/memory_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/core/try_expected.hpp>
+
 #ifdef STORMKIT_OS_WINDOWS
     #include <fcntl.h>
     #include <io.h>
@@ -387,10 +389,8 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto read_text_to(const stdfs::path& path, std::span<meta::ModeToCharType<mode>> out) noexcept -> Expected<usize> {
-        return TextFile<mode>::open(path, Access::READ).and_then([&out](auto&& file) mutable noexcept {
-            EXPECTS(file.size() >= stdr::size(out));
-            return file.read_to(out);
-        });
+        auto   file = Try((TextFile<mode>::open(path, Access::READ)));
+        Return Try(file.read_to(std::span<meta::ModeToCharType<mode>> { out }));
     }
 
     ////////////////////////////////////////
@@ -399,24 +399,16 @@ namespace stormkit { inline namespace core { namespace io {
     STORMKIT_FORCE_INLINE
     inline auto read_text(const stdfs::path& path) noexcept -> Expected<std::vector<meta::ModeToCharType<mode>>> {
         auto out = std::vector<meta::ModeToCharType<mode>> {};
-        return TextFile<mode>::open(path, Access::READ)
-          .and_then([&out](auto&& file) mutable noexcept {
-              out.resize(file.size());
-              static_assert(core::meta::Is<std::vector<char>, decltype(out)>);
-              return file.read_to(std::span<meta::ModeToCharType<mode>> { out });
-          })
-          .transform(monadic::discard())
-          .transform(monadic::consume(out));
+        TryDiscard(read_text_to(path, out));
+        return out;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto read_to(const stdfs::path& path, std::span<Byte> out) noexcept -> Expected<usize> {
-        return File::open(path, Access::READ).and_then([&out](auto&& file) mutable noexcept {
-            EXPECTS(file.size() >= stdr::size(out));
-            return file.read_to(out);
-        });
+        auto   file = Try((File::open(path, Access::READ)));
+        Return Try(file.read_to(std::span<Byte> { out }));
     }
 
     ////////////////////////////////////////
@@ -424,13 +416,8 @@ namespace stormkit { inline namespace core { namespace io {
     STORMKIT_FORCE_INLINE
     inline auto read(const stdfs::path& path) noexcept -> Expected<std::vector<Byte>> {
         auto out = std::vector<Byte> {};
-        return File::open(path, Access::READ)
-          .and_then([&out](auto&& file) mutable noexcept {
-              out.resize(file.size());
-              return file.read_to(out);
-          })
-          .transform(monadic::discard())
-          .transform(monadic::consume(out));
+        TryDiscard(read_to(path, out));
+        return out;
     }
 
     ////////////////////////////////////////
@@ -439,13 +426,15 @@ namespace stormkit { inline namespace core { namespace io {
         STORMKIT_FORCE_INLINE
     inline auto write_text(const stdfs::path& path, std::span<const meta::ModeToCharType<mode>> data) noexcept
       -> Expected<usize> {
-        return TextFile<mode>::open(path, Access::WRITE).and_then(bind_back(&File::write, data));
+        auto   file = Try((TextFile<mode>::open(path, Access::WRITE)));
+        Return Try(file.write(data));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto write(const stdfs::path& path, std::span<const Byte> data) noexcept -> Expected<usize> {
-        return File::open(path, Access::WRITE).and_then(std::bind_back(&File::write, data));
+        auto   file = Try((File::open(path, Access::WRITE)));
+        Return Try(file.write(data));
     }
 }}} // namespace stormkit::core::io

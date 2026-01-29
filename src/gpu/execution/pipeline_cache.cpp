@@ -69,13 +69,13 @@ namespace stormkit::gpu {
                             .transform_error(monadic::from_vk<Result>())
                             .transform_error(result_to_load_error));
 
-        Ret({});
+        Return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto PipelineCache::read_pipeline_cache(const Device& device) noexcept -> LoadSaveExpected<void> {
-        if (not std::filesystem::exists(m_path)) Ret(create_new_pipeline_cache(device));
+        if (not std::filesystem::exists(m_path)) Return create_new_pipeline_cache(device);
 
         const auto physical_device_infos = device.physical_device().info();
 
@@ -87,13 +87,13 @@ namespace stormkit::gpu {
         if (m_serialized.guard.magic != MAGIC) {
             elog("Invalid pipeline cache magic number, have {}, expected: {}", m_serialized.guard.magic, MAGIC);
 
-            Ret(create_new_pipeline_cache(device));
+            Return create_new_pipeline_cache(device);
         }
 
         if (m_serialized.infos.version != VERSION) {
             elog("Mismatch pipeline cache version, have {}, expected: {}", m_serialized.infos.version, VERSION);
 
-            Ret(create_new_pipeline_cache(device));
+            Return create_new_pipeline_cache(device);
         }
 
         if (m_serialized.infos.vendor_id != physical_device_infos.vendor_id) {
@@ -101,7 +101,7 @@ namespace stormkit::gpu {
                  m_serialized.infos.vendor_id,
                  physical_device_infos.vendor_id);
 
-            Ret(create_new_pipeline_cache(device));
+            Return create_new_pipeline_cache(device);
         }
 
         if (m_serialized.infos.device_id != physical_device_infos.device_id) {
@@ -109,11 +109,11 @@ namespace stormkit::gpu {
                  m_serialized.infos.device_id,
                  physical_device_infos.device_id);
 
-            Ret(create_new_pipeline_cache(device));
+            Return create_new_pipeline_cache(device);
         }
 
         if (not stdr::equal(m_serialized.uuid.value, physical_device_infos.pipeline_cache_uuid)) {
-            Ret(create_new_pipeline_cache(device));
+            Return create_new_pipeline_cache(device);
         }
 
         auto data = std::vector<Byte> {};
@@ -133,7 +133,7 @@ namespace stormkit::gpu {
                             .transform_error(monadic::from_vk<Result>())
                             .transform_error(result_to_load_error));
 
-        Ret({});
+        Return {};
     }
 
     /////////////////////////////////////
@@ -153,6 +153,6 @@ namespace stormkit::gpu {
         Try(file.write(as_bytes(m_serialized.uuid.value)).transform_error(sys_to_load_error));
         Try(file.write(as_bytes(data)).transform_error(sys_to_load_error));
 
-        Ret({});
+        Return {};
     }
 } // namespace stormkit::gpu

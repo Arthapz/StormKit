@@ -150,14 +150,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Fence::~Fence()
-      = default;
+    inline Fence::~Fence() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Fence::Fence(Fence&&) noexcept
-      = default;
+    inline Fence::Fence(Fence&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -254,14 +252,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Semaphore::~Semaphore()
-      = default;
+    inline Semaphore::~Semaphore() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Semaphore::Semaphore(Semaphore&&) noexcept
-      = default;
+    inline Semaphore::Semaphore(Semaphore&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
