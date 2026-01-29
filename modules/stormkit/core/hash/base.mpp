@@ -2,6 +2,10 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
 export module stormkit.core:hash.base;
 
 import std;
@@ -12,18 +16,38 @@ export namespace stormkit { inline namespace core {
     using hash32 = std::uint32_t;
     using hash64 = std::uint64_t;
 
-    template<class T>
-    concept HashValue = meta::IsOneOf<T, hash32, hash64>;
+    namespace meta {
+        template<typename T>
+        concept HashValue = meta::IsOneOf<T, hash32, hash64>;
+    }
 
-    template<HashValue OutputType = hash32>
-    constexpr auto hash_combine(auto&& value) -> OutputType;
+    template<typename T, meta::HashValue Ret = hash32>
+    constexpr auto hasher(const T& value) noexcept -> Ret = delete;
 
-    template<typename T>
-    constexpr auto hash_combine(HashValue auto& hash, T&& range) noexcept;
+    namespace meta {
+        template<typename T>
+        concept HasHasher = requires(T&& value) {
+            { hasher(std::forward<T>(value)) } -> meta::HashValue;
+        };
+    } // namespace meta
 
-    template<typename... Args>
+    template<typename T, meta::HashValue Ret = hash32>
+    constexpr auto hash(T&& value) noexcept -> Ret;
+
+    template<meta::IsArithmetic T, meta::HashValue Ret = hash32>
+        requires(sizeof(T) <= sizeof(Ret))
+    constexpr auto hasher(T value) noexcept -> Ret;
+
+    template<meta::IsEnumeration T, meta::HashValue Ret = hash32>
+        requires(sizeof(T) <= sizeof(Ret))
+    constexpr auto hasher(T value) noexcept -> Ret;
+
+    template<typename T, meta::HashValue Ret = hash32>
+    constexpr auto hash_combine(Ret& hash, T&& range) noexcept -> void;
+
+    template<typename... Args, meta::HashValue Ret = hash32>
         requires(sizeof...(Args) > 1)
-    constexpr auto hash_combine(HashValue auto& hash, Args&&... args) noexcept;
+    constexpr auto hash_combine(Ret& hash, Args&&... args) noexcept -> void;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -31,33 +55,60 @@ export namespace stormkit { inline namespace core {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core {
-    template<HashValue OutputType>
-    constexpr auto hash_combine(auto&& value) -> OutputType {
-        auto hash = OutputType { 0u };
 
-        hash_combine(hash, std::forward<decltype(value)>(value));
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, meta::HashValue Ret>
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    constexpr auto hash(T&& value) noexcept -> Ret {
+        static_assert(meta::HasHasher<T> or meta::HasStdHashSpecialization<T>, "No hasher or std::hash specialization!");
 
-        return hash;
-    }
-
-    template<typename T>
-    constexpr auto hash_combine(HashValue auto& hash, T&& value) noexcept {
-        if constexpr (std::ranges::range<T>)
-            for (auto&& elem : value) hash_combine(hash, elem);
+        if constexpr (meta::HasHasher<T>) return hasher(std::forward<T>(value));
         else {
             const auto hasher = std::hash<meta::CanonicalType<T>> {};
-            hash ^= hasher(std::forward<T>(value)) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+            return static_cast<Ret>(hasher(std::forward<T>(value)));
         }
     }
 
-    template<typename... Args>
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsArithmetic T, meta::HashValue Ret = hash32>
+        requires(sizeof(T) <= sizeof(Ret))
+        STORMKIT_FORCE_INLINE STORMKIT_PURE
+    constexpr auto hasher(T value) noexcept -> Ret {
+        return static_cast<Ret>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsEnumeration T, meta::HashValue Ret = hash32>
+        requires(sizeof(T) <= sizeof(Ret))
+        STORMKIT_FORCE_INLINE STORMKIT_PURE
+    constexpr auto hasher(T value) noexcept -> Ret {
+        return static_cast<Ret>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, meta::HashValue Ret>
+    STORMKIT_FORCE_INLINE
+    constexpr auto hash_combine(Ret& out, T&& value) noexcept -> void {
+        if constexpr (std::ranges::range<T>)
+            for (auto&& elem : value) hash_combine(out, elem);
+        else { out ^= hash<T, Ret>(std::forward<T>(value)) + 0x9e3779b9 + (out << 6) + (out >> 2); }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename... Args, meta::HashValue Ret>
         requires(sizeof...(Args) > 1)
-    constexpr auto hash_combine(HashValue auto& hash, Args&&... args) noexcept {
+    STORMKIT_FORCE_INLINE
+    constexpr auto hash_combine(Ret& out, Args&&... args) noexcept -> void {
 #if defined(__cpp_expansion_statements) and __cpp_expansion_statements >= 202500L
         template for (constexpr auto elem : { std::forward<Args>(args)... })
-          hash_combine(hash, std::forward<decltype(elem)>(elem));
+          hash_combine<decltype(elem), Ret>(out, std::forward<decltype(elem)>(elem));
 #else
-        (hash_combine(hash, std::forward<Args>(args)), ...);
+        (hash_combine<Args, Ret>(out, std::forward<Args>(args)), ...);
 #endif
     }
 }} // namespace stormkit::core

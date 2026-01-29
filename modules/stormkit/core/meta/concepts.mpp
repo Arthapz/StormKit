@@ -66,7 +66,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsConvertibleTo = std::convertible_to<From, To>;
 
     template<class T>
-    concept IsHashable = requires(std::remove_cvref_t<T>& a) { std::hash<std::remove_cvref_t<T>> {}(a); };
+    concept HasStdHashSpecialization = requires(T&& a) { std::hash<std::remove_cvref_t<T>> {}(std::forward<T>(a)); };
 
     template<class T, class U>
     concept IsCanonical = IsStrict<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
