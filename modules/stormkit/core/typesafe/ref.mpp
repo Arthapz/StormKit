@@ -29,8 +29,7 @@ export {
         using ptr = T*;
 
         template<typename T, bool Optional = false>
-        class [[nodiscard]]
-        Ref {
+        class Ref {
           public:
             using ElementType   = T;
             using ReferenceType = ElementType&;
@@ -332,8 +331,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::~Ref() noexcept
-      = default;
+    constexpr Ref<T, Optional>::~Ref() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -486,7 +484,7 @@ namespace stormkit { inline namespace core {
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
     constexpr auto Ref<T, Optional>::operator==(const Ref<U, OptionalU>& other) const noexcept -> bool {
-        return m_value == other.value();
+        return m_value == other.m_value;
     }
 
     /////////////////////////////////////
