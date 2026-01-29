@@ -48,8 +48,19 @@ export namespace stormkit { inline namespace core {
     template<typename VertexValue>
     class DAG {
       public:
-        using Vertex       = dag::Vertex<VertexValue>;
-        using ColorizeFunc = FunctionRef<std::string_view(const VertexValue&)>;
+        using Vertex             = dag::Vertex<VertexValue>;
+        using ColorizeClosure    = FunctionRef<std::string(const VertexValue&)>;
+        using FormatValueClosure = FunctionRef<std::string(const VertexValue&)>;
+
+        struct Closures {
+            std::optional<ColorizeClosure>    colorize     = std::nullopt;
+            std::optional<FormatValueClosure> format_value = []() static noexcept -> std::optional<FormatValueClosure> {
+                if constexpr (std::formattable<VertexValue, char>)
+                    return [](const auto& value) static noexcept { return std::format("{}", value); };
+                else
+                    return std::nullopt;
+            }();
+        };
 
         struct Directed {};
 
@@ -97,7 +108,10 @@ export namespace stormkit { inline namespace core {
         constexpr auto topological_sort() const noexcept -> std::expected<std::vector<dag::VertexID>, std::vector<dag::VertexID>>;
         constexpr auto find_cycle() const noexcept -> std::optional<std::vector<dag::VertexID>>;
 
-        constexpr auto dump(ColorizeFunc colorize = [](const auto&) { return "white"; }) const noexcept -> std::string;
+        constexpr auto reverse() const noexcept -> DAG<Ref<const VertexValue>>;
+        constexpr auto reverse_clone() const noexcept -> DAG<VertexValue>;
+
+        constexpr auto dump(Closures closures = {}) const noexcept -> std::string;
 
       private:
         bool          m_directed;
@@ -522,18 +536,53 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename VertexValue>
-    constexpr auto DAG<VertexValue>::dump(ColorizeFunc colorize) const noexcept -> std::string {
-        auto out = std::string { "digraph G { \n"
+    constexpr auto DAG<VertexValue>::reverse() const noexcept -> DAG<Ref<const VertexValue>> {
+        auto out = DAG<Ref<const VertexValue>>(dag::DIRECTED, stdr::size(m_vertices));
+
+        for (auto&& [_, vertice] : m_vertices) out.add_vertex(as_ref(vertice));
+
+        for (auto&& [from, to] : m_edges) out.add_edge(to, from);
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename VertexValue>
+    constexpr auto DAG<VertexValue>::reverse_clone() const noexcept -> DAG<VertexValue> {
+        auto out = DAG<Ref<VertexValue>>(dag::DIRECTED, stdr::size(m_vertices));
+
+        for (auto&& [_, vertice] : m_vertices) out.add_vertex(vertice);
+
+        for (auto&& [from, to] : m_edges) out.add_edge(to, from);
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename VertexValue>
+    constexpr auto DAG<VertexValue>::dump(Closures closures) const noexcept -> std::string {
+        auto out = std::string { "digraph G {\n"
                                  "    rankdir = LR\n"
-                                 "    bgcolor = black\n\n"
+                                 "    bgcolor = black\n"
                                  "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n" };
 
-        for (const auto& [id, value] : m_vertices)
-            out += std::format("    \"node{}\" [label=\"id: {} value: {} \", style=filled,color=\"{}\"];\n",
-                               id,
-                               id,
-                               value,
-                               colorize(value));
+        if (closures.format_value)
+            for (const auto& [id, value] : m_vertices) {
+                out += std::format("    \"node{}\" [label=\"id: {} value: {}\", style=filled,color=\"{}\"];\n",
+                                   id,
+                                   id,
+                                   closures.format_value.value()(value),
+                                   closures.colorize ? closures.colorize.value()(value) : "white");
+            }
+        else
+            for (const auto& [id, value] : m_vertices) {
+                out += std::format("    \"node{}\" [label=\"id: {}\", style=filled,color=\"{}\"];\n",
+                                   id,
+                                   id,
+                                   closures.colorize ? closures.colorize.value()(value) : "white");
+            }
 
         for (const auto& [from, to] : m_edges) out += std::format("    \"node{}\" -> \"node{}\" [color=seagreen];\n", from, to);
 

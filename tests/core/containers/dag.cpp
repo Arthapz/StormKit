@@ -130,6 +130,60 @@ namespace {
                     EXPECTS(not result.has_value());
                 }
             } },
+          { "reverse",
+            [] {
+                auto dag = DAG<std::string> { dag::DIRECTED };
+                dag.emplace_vertex("a");
+                dag.emplace_vertex("b");
+                dag.emplace_vertex("c");
+                dag.emplace_vertex("d");
+
+                dag.add_edge(0, 1);
+                dag.add_edge(1, 2);
+                dag.add_edge(2, 3);
+                dag.add_edge(0, 3);
+
+                auto reversed = dag.reverse();
+
+                const auto& edges  = dag.edges();
+                const auto& redges = reversed.edges();
+
+                for (auto i : range(4u)) {
+                    const auto [from, to]   = edges[i];
+                    const auto [rfrom, rto] = redges[i];
+                    EXPECTS(from == rto and rfrom == to);
+                }
+            } },
+          { "dump",
+            [] {
+                auto dag = DAG<std::string> { dag::DIRECTED };
+                dag.emplace_vertex("a");
+                dag.emplace_vertex("b");
+                dag.emplace_vertex("c");
+                dag.emplace_vertex("d");
+
+                dag.add_edge(0, 1);
+                dag.add_edge(1, 2);
+                dag.add_edge(2, 3);
+                dag.add_edge(0, 3);
+
+                const auto required_result = "digraph G {\n"
+                                             "    rankdir = LR\n"
+                                             "    bgcolor = black\n"
+                                             "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n"
+                                             "    \"node0\" [label=\"id: 0 value: a\", style=filled,color=\"white\"];\n"
+                                             "    \"node1\" [label=\"id: 1 value: b\", style=filled,color=\"white\"];\n"
+                                             "    \"node2\" [label=\"id: 2 value: c\", style=filled,color=\"white\"];\n"
+                                             "    \"node3\" [label=\"id: 3 value: d\", style=filled,color=\"white\"];\n"
+                                             "    \"node0\" -> \"node1\" [color=seagreen];\n"
+                                             "    \"node1\" -> \"node2\" [color=seagreen];\n"
+                                             "    \"node2\" -> \"node3\" [color=seagreen];\n"
+                                             "    \"node0\" -> \"node3\" [color=seagreen];\n"
+                                             "}"sv;
+
+                const auto out = dag.dump();
+                EXPECTS(out == required_result);
+            } },
           }
     };
 } // namespace
