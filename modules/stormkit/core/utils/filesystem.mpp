@@ -398,9 +398,11 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto read_text(const stdfs::path& path) noexcept -> Expected<std::vector<meta::ModeToCharType<mode>>> {
-        auto out = std::vector<meta::ModeToCharType<mode>> {};
-        TryDiscard(read_text_to(path, out));
-        return out;
+        auto file = Try((TextFile<mode>::open(path, Access::READ)));
+        auto out  = std::vector<meta::ModeToCharType<mode>> {};
+        out.resize(file.size());
+        TryDiscard(file.read_to(std::span<meta::ModeToCharType<mode>> { out }));
+        Return out;
     }
 
     ////////////////////////////////////////
@@ -415,9 +417,11 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto read(const stdfs::path& path) noexcept -> Expected<std::vector<Byte>> {
-        auto out = std::vector<Byte> {};
-        TryDiscard(read_to(path, out));
-        return out;
+        auto file = Try((File::open(path, Access::READ)));
+        auto out  = std::vector<Byte> {};
+        out.resize(file.size());
+        TryDiscard(file.read_to(std::span<Byte> { out }));
+        Return out;
     }
 
     ////////////////////////////////////////
