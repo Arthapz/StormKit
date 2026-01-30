@@ -481,6 +481,68 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, bool Optional>
+    STORMKIT_FORCE_INLINE
+    constexpr auto Ref<T, Optional>::operator==(std::nullopt_t) const noexcept -> bool
+        requires(Optional == true)
+    {
+        return !m_value;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, bool Optional>
+    STORMKIT_FORCE_INLINE
+    constexpr auto Ref<T, Optional>::operator<(std::nullopt_t) const noexcept -> bool
+        requires(Optional == true)
+    {
+        return std::less<Ref<T, Optional>::pointer> {}(m_value, std::nullopt);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, bool Optional>
+    STORMKIT_FORCE_INLINE
+    constexpr auto Ref<T, Optional>::operator<=(std::nullopt_t) const noexcept -> bool
+        requires(Optional == true)
+    {
+        return !(std::nullopt < *this);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, bool Optional>
+    STORMKIT_FORCE_INLINE
+    constexpr auto Ref<T, Optional>::operator>(std::nullopt_t) const noexcept -> bool
+        requires(Optional == true)
+    {
+        return std::nullopt < *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, bool Optional>
+    STORMKIT_FORCE_INLINE
+    constexpr auto Ref<T, Optional>::operator>=(std::nullopt_t) const noexcept -> bool
+        requires(Optional == true)
+    {
+        return !(*this < std::nullopt);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, bool Optional>
+    STORMKIT_FORCE_INLINE
+    constexpr auto Ref<T, Optional>::operator<=>(std::nullopt_t) const noexcept
+      -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
+        requires(std::three_way_comparable<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
+                 and Optional == true)
+    {
+        return std::compare_three_way {}(m_value, static_cast<typename Ref<T, Optional>::pointer>(std::nullopt));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
     constexpr auto Ref<T, Optional>::operator==(const Ref<U, OptionalU>& other) const noexcept -> bool {
