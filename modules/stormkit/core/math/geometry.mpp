@@ -89,7 +89,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto rect<T>::extent() const noexcept -> Extent2<T> {
-        return { width, height };
+        return { width.value, height.value };
     }
 
     ////////////////////////////////////////
