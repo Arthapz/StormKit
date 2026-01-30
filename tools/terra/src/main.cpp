@@ -4,6 +4,8 @@ import stormkit.core;
 
 #include <stormkit/main/main_macro.hpp>
 
+#include <stormkit/core/try_expected.hpp>
+
 namespace stdr  = std::ranges;
 namespace stdfs = std::filesystem;
 
@@ -21,9 +23,7 @@ auto main(const std::span<const std::string_view> args) noexcept -> int {
         std::println(get_stderr(), "Template file {} doesn't exists", template_path.c_str());
         return -1;
     } else if (not stdfs::is_regular_file(template_path)) {
-        std::println(get_stderr(),
-                     "Template file {} path is not a regular file",
-                     template_path.c_str());
+        std::println(get_stderr(), "Template file {} path is not a regular file", template_path.c_str());
         return -1;
     }
 
@@ -32,12 +32,8 @@ auto main(const std::span<const std::string_view> args) noexcept -> int {
         return stdfs::path { args[2] };
     }();
 
-    const auto
-      template_data = io::readfile(io::text_file_tag, template_path)
-                        .transform_error(monadic::
-                                           assert(std::format("Failed to read file {}, reason: ",
-                                                              template_path.c_str())))
-                        .value();
+    const auto template_data = TryAssert(io::read_text(template_path),
+                                         std::format("Failed to read file {}, reason: ", template_path.c_str()));
 
     auto out = std::string {};
     out.reserve(stdr::size(template_data));
@@ -75,8 +71,7 @@ outfile = io.open("{}", "w")
             buff.clear();
             last_char_was_bracket = false;
         } else {
-            if (c == '{' and i + 1 < stdr::size(template_data) and template_data[i + 1] == '%')
-                last_char_was_bracket = true;
+            if (c == '{' and i + 1 < stdr::size(template_data) and template_data[i + 1] == '%') last_char_was_bracket = true;
             else
                 buff.emplace_back(c);
         }
@@ -92,7 +87,7 @@ outfile = io.open("{}", "w")
         out += "\\x" + str_char;
     }
 
-    out += "\")";
+    out += "\")\n";
     out += "outfile:close()";
 
     std::println("{}", out);
