@@ -27,26 +27,26 @@ namespace stdv = std::views;
 
 namespace stormkit::gpu {
     namespace {
-        constexpr auto OLD_LAYOUT_ACCESS_MAP = frozen::make_unordered_map<VkImageLayout,
-                                                                          std::pair<VkAccessFlags, VkPipelineStageFlags>>({
-          { VK_IMAGE_LAYOUT_UNDEFINED,                        { VK_ACCESS_NONE, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }            },
-          { VK_IMAGE_LAYOUT_PREINITIALIZED,                   { VK_ACCESS_NONE, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }            },
-          { VK_IMAGE_LAYOUT_GENERAL,
-           { VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
-              VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }                                                                  },
-          { VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-           { VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
-              VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }                                                                  },
-          { VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-           { VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-              VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT }                                                                      },
-          { VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-           { VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT }                          },
-          { VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-           { VK_ACCESS_INPUT_ATTACHMENT_READ_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT }                                      },
-          { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,             { VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT }  },
-          { VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,             { VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT } },
-          { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,                  { VK_ACCESS_MEMORY_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT }    },
+        constexpr auto
+          OLD_LAYOUT_ACCESS_MAP = frozen::make_unordered_map<VkImageLayout, std::pair<VkAccessFlags, VkPipelineStageFlags>>({
+            { VK_IMAGE_LAYOUT_UNDEFINED,                        { VK_ACCESS_NONE, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }            },
+            { VK_IMAGE_LAYOUT_PREINITIALIZED,                   { VK_ACCESS_NONE, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }            },
+            { VK_IMAGE_LAYOUT_GENERAL,
+             { VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }                                                                  },
+            { VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+             { VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }                                                                  },
+            { VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+             { VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT }                                                                      },
+            { VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+             { VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT }                          },
+            { VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+             { VK_ACCESS_INPUT_ATTACHMENT_READ_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT }                                      },
+            { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,             { VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT }  },
+            { VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,             { VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT } },
+            { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,                  { VK_ACCESS_MEMORY_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT }    },
         });
 
         constexpr auto NEW_LAYOUT_ACCESS_MAP = frozen::make_unordered_map<VkImageLayout,
@@ -108,6 +108,80 @@ namespace stormkit::gpu {
               return as_ref_mut(self);
           })
           .transform_error(monadic::from_vk<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto CommandBuffer::begin_rendering(const RenderingInfo& info) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        auto to_vk_attachment = [](const auto& attachment) static noexcept {
+            auto attachment_info = VkRenderingAttachmentInfo {
+                .sType              = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+                .pNext              = nullptr,
+                .imageView          = to_vk(attachment.image_view),
+                .imageLayout        = to_vk<VkImageLayout>(attachment.layout),
+                .resolveMode        = {},
+                .resolveImageView   = nullptr,
+                .resolveImageLayout = {},
+                .loadOp             = to_vk<VkAttachmentLoadOp>(attachment.load_op),
+                .storeOp            = to_vk<VkAttachmentStoreOp>(attachment.store_op),
+                .clearValue         = {},
+            };
+
+            if (attachment.resolve) {
+                auto& resolve = *attachment.resolve;
+
+                attachment_info.resolveMode        = to_vk<VkResolveModeFlagBits>(resolve.mode);
+                attachment_info.resolveImageView   = to_vk(resolve.image_view);
+                attachment_info.resolveImageLayout = to_vk<VkImageLayout>(resolve.layout);
+            }
+            if (attachment.clear_value) {
+                attachment_info
+                  .clearValue = std::visit(Overloaded {
+                                             [](const ClearColor& clear_color) static noexcept -> decltype(auto) {
+                                                 return VkClearValue {
+                                                     .color = VkClearColorValue { .float32 = { clear_color.color.red,
+                                                                                               clear_color.color.blue,
+                                                                                               clear_color.color.green,
+                                                                                               clear_color.color.alpha } },
+                                                 };
+                                             },
+                                             [](const ClearDepthStencil& clear_depth_stencil) static noexcept -> decltype(auto) {
+                                                 return VkClearValue {
+                                                     .depthStencil = VkClearDepthStencilValue { .depth   = clear_depth_stencil
+                                                                                                             .depth,
+                                                                                               .stencil = clear_depth_stencil
+                                                                                                             .stencil },
+                                                 };
+                                             } },
+                                           *attachment.clear_value);
+            }
+
+            return attachment_info;
+        };
+
+        const auto color_attachments  = info.color_attachments | stdv::transform(to_vk_attachment) | stdr::to<std::vector>();
+        const auto depth_attachment   = info.depth_attachment ? to_vk_attachment(*info.depth_attachment)
+                                                              : VkRenderingAttachmentInfo {};
+        const auto stencil_attachment = info.stencil_attachment ? to_vk_attachment(*info.stencil_attachment)
+                                                                : VkRenderingAttachmentInfo {};
+
+        const auto rendering_info = VkRenderingInfo {
+            .sType                = VK_STRUCTURE_TYPE_RENDERING_INFO,
+            .pNext                = nullptr,
+            .flags                = 0,
+            .renderArea           = to_vk(info.render_area),
+            .layerCount           = info.layer_count,
+            .viewMask             = info.view_mask,
+            .colorAttachmentCount = as<u32>(stdr::size(color_attachments)),
+            .pColorAttachments    = stdr::data(color_attachments),
+            .pDepthAttachment     = info.depth_attachment ? &depth_attachment : nullptr,
+            .pStencilAttachment   = info.stencil_attachment ? &stencil_attachment : nullptr,
+        };
+
+        vk_call(m_vk_device_table->vkCmdBeginRenderingKHR, m_vk_handle, &rendering_info);
+        return *this;
     }
 
     /////////////////////////////////////
@@ -258,7 +332,7 @@ namespace stormkit::gpu {
                                      | stdv::transform([](auto&& buffer_image_copy) noexcept {
                                            const auto image_subresource = VkImageSubresourceLayers {
                                                .aspectMask     = to_vk<VkImageAspectFlags>(buffer_image_copy.subresource_layers
-                                                                                         .aspect_mask),
+                                                                                             .aspect_mask),
                                                .mipLevel       = buffer_image_copy.subresource_layers.mip_level,
                                                .baseArrayLayer = buffer_image_copy.subresource_layers.base_array_layer,
                                                .layerCount     = buffer_image_copy.subresource_layers.layer_count,
@@ -300,7 +374,7 @@ namespace stormkit::gpu {
                                      | stdv::transform([](auto&& buffer_image_copy) noexcept {
                                            const auto image_subresource = VkImageSubresourceLayers {
                                                .aspectMask     = to_vk<VkImageAspectFlags>(buffer_image_copy.subresource_layers
-                                                                                         .aspect_mask),
+                                                                                             .aspect_mask),
                                                .mipLevel       = buffer_image_copy.subresource_layers.mip_level,
                                                .baseArrayLayer = buffer_image_copy.subresource_layers.base_array_layer,
                                                .layerCount     = buffer_image_copy.subresource_layers.layer_count,

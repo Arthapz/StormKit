@@ -20,10 +20,15 @@ namespace stdv = std::views;
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Pipeline::do_init(const PipelineLayout&            layout,
-                           const RenderPass&                render_pass,
-                           OptionalRef<const PipelineCache> pipeline_cache) noexcept -> Expected<void> {
+    auto Pipeline::do_init(const PipelineLayout&                          layout,
+                           OptionalRef<const RenderPass>                  render_pass,
+                           OptionalRef<const RasterPipelineRenderingInfo> rendering_info,
+                           OptionalRef<const PipelineCache>               pipeline_cache) noexcept -> Expected<void> {
         const auto& state = as<RasterPipelineState>(m_state);
+
+        if (not render_pass) expects(rendering_info != std::nullopt);
+        else
+            expects(render_pass != std::nullopt);
 
         const auto binding_descriptions = state.vertex_input_state.binding_descriptions
                                           | stdv::transform([](auto&& binding_description) static noexcept {
@@ -177,9 +182,36 @@ namespace stormkit::gpu {
             .maxDepthBounds        = state.depth_stencil_state.max_depth_bounds
         };
 
+        const auto [_, render_info] = [&]() {
+            auto info = VkPipelineRenderingCreateInfo {};
+            if (not rendering_info) return std::make_pair(std::vector<VkFormat> {}, std::move(info));
+
+            auto formats = rendering_info->color_attachment_formats
+                           | stdv::transform(monadic::to_vk<VkFormat>())
+                           | stdr::to<std::vector>();
+
+            info = VkPipelineRenderingCreateInfo {
+                .sType                   = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+                .pNext                   = nullptr,
+                .viewMask                = rendering_info->view_mask,
+                .colorAttachmentCount    = as<u32>(stdr::size(formats)),
+                .pColorAttachmentFormats = stdr::data(formats),
+                .depthAttachmentFormat   = {},
+                .stencilAttachmentFormat = {}
+            };
+
+            if (rendering_info->depth_attachment_format)
+                info.depthAttachmentFormat = to_vk<VkFormat>(*rendering_info->depth_attachment_format);
+
+            if (rendering_info->stencil_attachment_format)
+                info.stencilAttachmentFormat = to_vk<VkFormat>(*rendering_info->stencil_attachment_format);
+
+            return std::make_pair(std::move(formats), std::move(info));
+        }();
+
         const auto create_info = VkGraphicsPipelineCreateInfo {
             .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-            .pNext               = nullptr,
+            .pNext               = not render_pass ? &render_info : nullptr,
             .flags               = 0,
             .stageCount          = as<u32>(stdr::size(shaders)),
             .pStages             = stdr::data(shaders),
@@ -193,7 +225,7 @@ namespace stormkit::gpu {
             .pColorBlendState    = &color_blending,
             .pDynamicState       = &dynamic_state,
             .layout              = to_vk(layout),
-            .renderPass          = to_vk(render_pass),
+            .renderPass          = render_pass ? to_vk(render_pass) : nullptr,
             .subpass             = 0,
             .basePipelineHandle  = nullptr,
             .basePipelineIndex   = -1,

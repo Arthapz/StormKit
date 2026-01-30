@@ -88,6 +88,34 @@ export namespace stormkit::gpu {
         OptionalRef<const FrameBuffer> framebuffer = std::nullopt;
     };
 
+    struct RenderingInfo {
+        struct Attachment {
+            struct Resolve {
+                Ref<const gpu::ImageView> image_view;
+                ResolveModeFlag           mode;
+                gpu::ImageLayout          layout = ImageLayout::ATTACHMENT_OPTIMAL;
+            };
+
+            Ref<const gpu::ImageView> image_view;
+            gpu::ImageLayout          layout = ImageLayout::ATTACHMENT_OPTIMAL;
+
+            std::optional<Resolve> resolve = std::nullopt;
+
+            AttachmentLoadOperation  load_op  = AttachmentLoadOperation::CLEAR;
+            AttachmentStoreOperation store_op = AttachmentStoreOperation::STORE;
+
+            std::optional<ClearValue> clear_value = std::nullopt;
+        };
+
+        math::recti render_area;
+        u32         layer_count = 1u;
+        u32         view_mask   = 0u;
+
+        std::vector<Attachment>   color_attachments;
+        std::optional<Attachment> depth_attachment   = std::nullopt;
+        std::optional<Attachment> stencil_attachment = std::nullopt;
+    };
+
     class STORMKIT_API CommandBuffer {
         struct PrivateFuncTag {};
 
@@ -131,6 +159,7 @@ export namespace stormkit::gpu {
           -> CommandBuffer&;
         auto end_debug_region() noexcept -> CommandBuffer&;
 
+        auto begin_rendering(const RenderingInfo& info) noexcept -> CommandBuffer&;
         auto begin_render_pass(const RenderPass&           render_pass,
                                const FrameBuffer&          framebuffer,
                                std::span<const ClearValue> clear_values             = std::array { ClearValue {
@@ -138,6 +167,7 @@ export namespace stormkit::gpu {
                                bool                        secondary_commandbuffers = false) noexcept -> CommandBuffer&;
         auto next_sub_pass() noexcept -> CommandBuffer&;
         auto end_render_pass() noexcept -> CommandBuffer&;
+        auto end_rendering() noexcept -> CommandBuffer&;
 
         auto bind_pipeline(const Pipeline& pipeline) noexcept -> CommandBuffer&;
         auto set_viewport(u32 first_viewport, std::span<const Viewport> viewports) noexcept -> CommandBuffer&;
@@ -320,14 +350,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Queue::~Queue() noexcept
-      = default;
+    inline Queue::~Queue() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Queue::Queue(Queue&&) noexcept
-      = default;
+    inline Queue::Queue(Queue&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -428,14 +456,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline CommandBuffer::~CommandBuffer() noexcept
-      = default;
+    inline CommandBuffer::~CommandBuffer() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline CommandBuffer::CommandBuffer(CommandBuffer&&) noexcept
-      = default;
+    inline CommandBuffer::CommandBuffer(CommandBuffer&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -572,6 +598,16 @@ namespace stormkit::gpu {
         EXPECTS(m_state == State::RECORDING);
 
         vk_call(m_vk_device_table->vkCmdEndRenderPass, m_vk_handle);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::end_rendering() noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdEndRendering, m_vk_handle);
         return *this;
     }
 
@@ -779,14 +815,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline CommandPool::~CommandPool() noexcept
-      = default;
+    inline CommandPool::~CommandPool() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline CommandPool::CommandPool(CommandPool&&) noexcept
-      = default;
+    inline CommandPool::CommandPool(CommandPool&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

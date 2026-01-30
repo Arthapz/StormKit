@@ -35,6 +35,7 @@ namespace {
 
     constexpr auto BASE_EXTENSIONS = std::array {
         VK_KHR_MAINTENANCE_3_EXTENSION_NAME,
+        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
         // "VK_KHR_maintenance4"sv, "VK_KHR_maintenance5"sv, "VK_KHR_maintenance6"sv
     };
     constexpr auto SWAPCHAIN_EXTENSIONS = std::array {
@@ -268,15 +269,22 @@ namespace stormkit::gpu {
             };
         });
 
-        const auto& capabilities     = m_physical_device->capabilities();
-        const auto  enabled_features = [&capabilities] noexcept {
-            auto out              = zeroed<VkPhysicalDeviceFeatures>();
-            out.sampleRateShading = capabilities.features.sampler_rate_shading;
-            out.multiDrawIndirect = capabilities.features.multi_draw_indirect;
-            out.fillModeNonSolid  = capabilities.features.fill_Mode_non_solid;
-            out.samplerAnisotropy = capabilities.features.sampler_anisotropy;
-            return out;
-        }();
+        const auto& capabilities         = m_physical_device->capabilities();
+        const auto  enabled_1_0_features = VkPhysicalDeviceFeatures { .multiDrawIndirect = true, .samplerAnisotropy = true };
+        const auto  enabled_1_2_features = VkPhysicalDeviceVulkan12Features {
+            .sType                                    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+            .pNext                                    = nullptr,
+            .descriptorIndexing                       = true,
+            .descriptorBindingVariableDescriptorCount = true,
+            .runtimeDescriptorArray                   = true,
+            .bufferDeviceAddress                      = true
+        };
+        const auto enabled_1_3_features = VkPhysicalDeviceVulkan13Features {
+            .sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+            .pNext            = std::bit_cast<void*>(&enabled_1_2_features),
+            .synchronization2 = true,
+            .dynamicRendering = true
+        };
 
         const auto device_extensions = m_physical_device->extensions();
 
@@ -309,27 +317,27 @@ namespace stormkit::gpu {
         }();
         device_logger.ilog("Enabled device extensions: {}", extensions);
 
-        const auto acceleration_feature = [] static noexcept {
-            auto out  = zeroed<VkPhysicalDeviceAccelerationStructureFeaturesKHR>();
-            out.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
-            out.pNext = nullptr;
-            return out;
-        }();
-        const auto rt_pipeline_feature = [&acceleration_feature] noexcept {
-            auto out  = zeroed<VkPhysicalDeviceRayTracingPipelineFeaturesKHR>();
-            out.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
-            out.pNext = std::bit_cast<void*>(&acceleration_feature);
-            return out;
-        };
+        // const auto acceleration_feature = [] static noexcept {
+        //     auto out  = zeroed<VkPhysicalDeviceAccelerationStructureFeaturesKHR>();
+        //     out.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+        //     out.pNext = nullptr;
+        //     return out;
+        // }();
+        // const auto rt_pipeline_feature = [&acceleration_feature] noexcept {
+        //     auto out  = zeroed<VkPhysicalDeviceRayTracingPipelineFeaturesKHR>();
+        //     out.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+        //     out.pNext = std::bit_cast<void*>(&acceleration_feature);
+        //     return out;
+        // };
 
-        const auto next = [&]() -> void* {
-            if (raytracing_available and info.enable_raytracing) return std::bit_cast<void*>(&rt_pipeline_feature);
-            return nullptr;
-        }();
+        // const auto next = [&]() -> void* {
+        //     if (raytracing_available and info.enable_raytracing) return std::bit_cast<void*>(&rt_pipeline_feature);
+        //     return nullptr;
+        // }();
 
         const auto create_info = VkDeviceCreateInfo {
             .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-            .pNext                   = next,
+            .pNext                   = std::bit_cast<void*>(&enabled_1_3_features),
             .flags                   = 0,
             .queueCreateInfoCount    = as<u32>(stdr::size(queue_create_infos)),
             .pQueueCreateInfos       = stdr::data(queue_create_infos),
@@ -337,7 +345,7 @@ namespace stormkit::gpu {
             .ppEnabledLayerNames     = nullptr,
             .enabledExtensionCount   = as<u32>(stdr::size(extensions)),
             .ppEnabledExtensionNames = stdr::data(extensions),
-            .pEnabledFeatures        = &enabled_features,
+            .pEnabledFeatures        = &enabled_1_0_features,
         };
 
         auto allocator_create_info = VmaAllocatorCreateInfo {

@@ -25,12 +25,6 @@ rule("stormkit.flags", function()
             or get_config("toolchain") == "gcc"
         then
             target:add("syslinks", "dl")
-
-            if is_mode("debug") then
-                target:add("cxflags", "-no-pie")
-                target:add("ldflags", "-fno-pie")
-                target:add("shflags", "-fno-pie")
-            end
         end
     end)
     on_load("windows", function(target)

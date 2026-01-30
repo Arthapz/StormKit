@@ -27,7 +27,7 @@ namespace stormkit::gpu {
     namespace {
         constexpr auto VALIDATION_LAYERS = std::array {
             "VK_LAYER_KHRONOS_validation",
-            "VK_LAYER_LUNARG_api_dump",
+            // "VK_LAYER_LUNARG_api_dump",
             "VK_LAYER_LUNARG_monitor",
         };
         constexpr auto OPTIONAL_VALIDATION_LAYERS = std::array<CZString, 0> {
@@ -169,7 +169,7 @@ namespace stormkit::gpu {
                   .applicationVersion = vk_make_version<i32>(0, 0, 0),
                   .pEngineName        = ENGINE_NAME,
                   .engineVersion      = STORMKIT_VK_VERSION,
-                  .apiVersion         = VK_API_VERSION_1_1,
+                  .apiVersion         = VK_API_VERSION_1_3,
               };
 
               const auto create_info = VkInstanceCreateInfo {

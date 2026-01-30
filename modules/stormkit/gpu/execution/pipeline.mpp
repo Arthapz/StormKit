@@ -98,7 +98,7 @@ export namespace stormkit::gpu {
         auto operator=(PipelineLayout&&) noexcept -> PipelineLayout&;
 
         [[nodiscard]]
-        auto rasterLayout() const noexcept -> const RasterPipelineLayout&;
+        auto raster_layout() const noexcept -> const RasterPipelineLayout&;
 
         [[nodiscard]]
         auto native_handle() const noexcept -> VkPipelineLayout;
@@ -130,6 +130,12 @@ export namespace stormkit::gpu {
                            const PipelineLayout&            layout,
                            const RenderPass&                render_pass,
                            OptionalRef<const PipelineCache> cache = std::nullopt) noexcept -> Expected<Pipeline>;
+
+        static auto create(const Device&                      device,
+                           const RasterPipelineState&         state,
+                           const PipelineLayout&              layout,
+                           const RasterPipelineRenderingInfo& rendering_info,
+                           OptionalRef<const PipelineCache>   cache = std::nullopt) noexcept -> Expected<Pipeline>;
         ~Pipeline() noexcept;
 
         Pipeline(const Pipeline&)                    = delete;
@@ -151,7 +157,10 @@ export namespace stormkit::gpu {
         Pipeline(const Device&, const RasterPipelineState&, PrivateFuncTag) noexcept;
 
       private:
-        auto do_init(const PipelineLayout&, const RenderPass&, OptionalRef<const PipelineCache>) noexcept -> Expected<void>;
+        auto do_init(const PipelineLayout&,
+                     OptionalRef<const RenderPass>,
+                     OptionalRef<const RasterPipelineRenderingInfo>,
+                     OptionalRef<const PipelineCache>) noexcept -> Expected<void>;
 
         Type                              m_type;
         std::variant<RasterPipelineState> m_state;
@@ -316,7 +325,20 @@ namespace stormkit::gpu {
                                  const RenderPass&                render_pass,
                                  OptionalRef<const PipelineCache> cache) noexcept -> Expected<Pipeline> {
         auto pipeline = Pipeline { device, state, PrivateFuncTag {} };
-        Try(pipeline.do_init(layout, render_pass, std::move(cache)));
+        Try(pipeline.do_init(layout, as_opt_ref(render_pass), std::nullopt, std::move(cache)));
+        Return pipeline;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Pipeline::create(const Device&                      device,
+                                 const RasterPipelineState&         state,
+                                 const PipelineLayout&              layout,
+                                 const RasterPipelineRenderingInfo& rendering_info,
+                                 OptionalRef<const PipelineCache>   cache) noexcept -> Expected<Pipeline> {
+        auto pipeline = Pipeline { device, state, PrivateFuncTag {} };
+        Try(pipeline.do_init(layout, std::nullopt, as_opt_ref(rendering_info), std::move(cache)));
         Return pipeline;
     }
 

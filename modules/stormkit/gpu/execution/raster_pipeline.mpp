@@ -104,6 +104,13 @@ export namespace stormkit::gpu {
         float max_depth_bounds = 1.f;
     };
 
+    struct RasterPipelineRenderingInfo {
+        u32                        view_mask = 0u;
+        std::vector<PixelFormat>   color_attachment_formats;
+        std::optional<PixelFormat> depth_attachment_format   = std::nullopt;
+        std::optional<PixelFormat> stencil_attachment_format = std::nullopt;
+    };
+
     struct RasterPipelineLayout {
         std::vector<Ref<const DescriptorSetLayout>> descriptor_set_layouts = {};
         std::vector<PushConstantRange>              push_constant_ranges   = {};

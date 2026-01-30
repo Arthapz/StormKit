@@ -34,7 +34,6 @@ struct SubmissionResource {
 struct SwapchainImageResource {
     Ref<const gpu::Image> image;
     gpu::ImageView        view;
-    gpu::FrameBuffer      framebuffer;
     gpu::Semaphore        render_finished;
 };
 
@@ -55,14 +54,6 @@ class Application: public base::Application {
                                       std::format("Failed to load fragment shader {}", SHADER_DIR "/shaders/triangle.spv"));
 
         m_pipeline_layout = TryAssert(gpu::PipelineLayout::create(m_device, {}), "Failed to create pipeline layout");
-
-        // initialize render pass
-        m_render_pass = TryAssert(gpu::RenderPass::
-                                    create(m_device,
-                                           { .attachments = { { .format = m_swapchain->pixel_format() } },
-                                             .subpasses   = { { .bind_point            = gpu::PipelineBindPoint::GRAPHICS,
-                                                                .color_attachment_refs = { { .attachment_id = 0u } } } } }),
-                                  "Failed to create render pass");
 
         const auto window_extent = m_window->extent();
 
@@ -91,7 +82,11 @@ class Application: public base::Application {
         .shader_state  = to_refs(m_vertex_shader, m_fragment_shader),
     };
 
-        m_pipeline = TryAssert(gpu::Pipeline::create(m_device, state, m_pipeline_layout, m_render_pass),
+        const auto rendering_info = gpu::RasterPipelineRenderingInfo {
+            .color_attachment_formats = { m_swapchain->pixel_format() }
+        };
+
+        m_pipeline = TryAssert(gpu::Pipeline::create(m_device, state, m_pipeline_layout, rendering_info),
                                "Failed to create raster pipeline");
 
         // create present engine resources
@@ -122,14 +117,11 @@ class Application: public base::Application {
 
         auto image_index = 0u;
         for (const auto& swap_image : images) {
-            auto view        = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view");
-            auto framebuffer = TryAssert(m_render_pass->create_frame_buffer(m_device, window_extent, to_refs(view)),
-                                         std::format("Failed to create framebuffer for image {}", image_index));
+            auto view = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view");
 
             m_image_resources
               .push_back({ .image           = as_ref(swap_image),
                            .view            = std::move(view),
-                           .framebuffer     = std::move(framebuffer),
                            .render_finished = TryAssert(gpu::Semaphore::create(m_device),
                                                         "Failed to create render "
                                                         "signal semaphore") });
@@ -175,7 +167,6 @@ class Application: public base::Application {
                                                   "Failed to acquire next swapchain image");
 
         const auto& swapchain_image_resource = m_image_resources[image_index];
-        const auto& framebuffer              = swapchain_image_resource.framebuffer;
         const auto& signal                   = swapchain_image_resource.render_finished;
 
         static constexpr auto PIPELINE_FLAGS = std::array { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT };
@@ -185,12 +176,27 @@ class Application: public base::Application {
         TryAssertDiscard(render_cmb.reset(), "Failed to reset render command buffer");
         TryAssertDiscard(render_cmb.begin(), "Failed to begin render command buffer");
 
-        render_cmb.begin_debug_region("Render triangle")
-          .begin_render_pass(m_render_pass, framebuffer)
+        const auto window_extent  = m_window->extent().to<i32>();
+        const auto rendering_info = gpu::RenderingInfo {
+            .render_area       = { .x = 0, .y = 0, .width = window_extent.width, .height = window_extent.height },
+            .color_attachments = { { .image_view  = as_ref(swapchain_image_resource.view),
+                                     .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
+                                     .clear_value = gpu::ClearColor { .color = RGBColorDef::SILVER<float> } } }
+        };
+
+        render_cmb
+          .transition_image_layout(swapchain_image_resource.image,
+                                   gpu::ImageLayout::PRESENT_SRC,
+                                   gpu::ImageLayout::ATTACHMENT_OPTIMAL)
+          .begin_debug_region("Render triangle")
+          .begin_rendering(rendering_info)
           .bind_pipeline(m_pipeline)
           .draw(3)
-          .end_render_pass()
-          .end_debug_region();
+          .end_rendering()
+          .end_debug_region()
+          .transition_image_layout(swapchain_image_resource.image,
+                                   gpu::ImageLayout::ATTACHMENT_OPTIMAL,
+                                   gpu::ImageLayout::PRESENT_SRC);
 
         TryAssertDiscard(render_cmb.end(), "Failed to end render command buffer");
         TryAssertDiscard(render_cmb.submit(m_raster_queue, as_refs(wait), PIPELINE_FLAGS, as_refs(signal), as_ref(in_flight)),
