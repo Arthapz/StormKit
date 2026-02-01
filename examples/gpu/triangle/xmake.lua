@@ -39,7 +39,10 @@ target("triangle", function()
 
     add_includedirs("$(builddir)/shaders")
 
-    if get_config("devmode") then set_rundir("$(builddir)") end
+    if get_config("devmode") then
+        add_defines('SHADER_DIR="$(builddir)/shaders"')
+        set_rundir("$(projectdir)")
+    end
 
     add_embeddirs("$(builddir)/shaders")
 

@@ -19,8 +19,12 @@ import stormkit.luau;
 LOGGER("Luau-Events");
 
 #ifndef LUAU_DIR
-    #define LUAU_DIR "../luau"
+    #define LUAU_DIR "../share/luau"
 #endif
+
+namespace stdfs = std::filesystem;
+
+static const auto LUAU_FILE = stdfs::path { LUAU_DIR } / "events.luau";
 
 using namespace stormkit;
 
@@ -30,7 +34,7 @@ auto main(std::span<const std::string_view> args) -> int {
     wsi::parse_args(args);
     auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
 
-    auto engine = luau::Engine::create(LUAU_DIR "/events.luau");
+    auto engine = luau::Engine::create(LUAU_FILE);
     wsi::lua::init_lua(engine.global_namespace());
     auto _ = engine.lua_main().transform_error(monadic::assert("lua runtime error!\n-------------------------------\n"));
 

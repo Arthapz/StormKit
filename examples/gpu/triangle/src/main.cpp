@@ -16,7 +16,7 @@ import gpu_app;
 LOGGER("stormkit.examples.gpu.triangle");
 
 #ifndef SHADER_DIR
-    #define SHADER_DIR "."
+    #define SHADER_DIR "../share/stormkit/shaders/"
 #endif
 
 namespace stdr  = std::ranges;
@@ -37,21 +37,20 @@ struct SwapchainImageResource {
     gpu::Semaphore        render_finished;
 };
 
-static constexpr auto BUFFERING_COUNT = 2;
+namespace {
+    constexpr auto BUFFERING_COUNT = 2;
+    const auto     SHADER          = stdfs::path { SHADER_DIR } / "triangle.spv";
+} // namespace
 
 class Application: public base::Application {
   public:
     auto init_example() {
         // load shaders
-        m_vertex_shader = TryAssert(gpu::Shader::load_from_file(m_device,
-                                                                SHADER_DIR "/shaders/triangle.spv",
-                                                                gpu::ShaderStageFlag::VERTEX),
-                                    std::format("Failed to load vertex shader {}", SHADER_DIR "/shaders/triangle.spv"));
+        m_vertex_shader = TryAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::VERTEX),
+                                    std::format("Failed to load vertex shader {}", SHADER.string()));
 
-        m_fragment_shader = TryAssert(gpu::Shader::load_from_file(m_device,
-                                                                  SHADER_DIR "/shaders/triangle.spv",
-                                                                  gpu::ShaderStageFlag::FRAGMENT),
-                                      std::format("Failed to load fragment shader {}", SHADER_DIR "/shaders/triangle.spv"));
+        m_fragment_shader = TryAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::FRAGMENT),
+                                      std::format("Failed to load fragment shader {}", SHADER.string()));
 
         m_pipeline_layout = TryAssert(gpu::PipelineLayout::create(m_device, {}), "Failed to create pipeline layout");
 
@@ -171,11 +170,6 @@ class Application: public base::Application {
 
         static constexpr auto PIPELINE_FLAGS = std::array { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT };
 
-        // render in it
-        auto& render_cmb = submission_resource.render_cmb;
-        TryAssertDiscard(render_cmb.reset(), "Failed to reset render command buffer");
-        TryAssertDiscard(render_cmb.begin(), "Failed to begin render command buffer");
-
         const auto window_extent  = m_window->extent().to<i32>();
         const auto rendering_info = gpu::RenderingInfo {
             .render_area       = { .x = 0, .y = 0, .width = window_extent.width, .height = window_extent.height },
@@ -183,6 +177,11 @@ class Application: public base::Application {
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                      .clear_value = gpu::ClearColor { .color = RGBColorDef::SILVER<float> } } }
         };
+
+        // render in it
+        auto& render_cmb = submission_resource.render_cmb;
+        TryAssertDiscard(render_cmb.reset(), "Failed to reset render command buffer");
+        TryAssertDiscard(render_cmb.begin(), "Failed to begin render command buffer");
 
         render_cmb
           .transition_image_layout(swapchain_image_resource.image,
@@ -203,8 +202,8 @@ class Application: public base::Application {
                          "Failed to submit render command buffer");
 
         // present it
-        TryAssert(m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index)),
-                  "Failed to present swapchain image");
+        TryAssertDiscard(m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index)),
+                         "Failed to present swapchain image");
 
         if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
     }

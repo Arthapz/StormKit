@@ -25,9 +25,9 @@ if get_config("luau") then
             if get_config("devmode") then
                 add_defines('LUAU_DIR="$(builddir)/luau"')
                 set_rundir("$(projectdir)")
-            end
 
-            after_build(function(target) os.cp("examples/wsi/luau/luau", "$(builddir)") end)
+                after_build(function(target) os.cp("examples/wsi/luau/luau", "$(builddir)") end)
+            end
 
             set_group("examples/stormkit-wsi/luau")
         end)

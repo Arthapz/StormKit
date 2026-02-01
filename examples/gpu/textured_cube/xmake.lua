@@ -25,7 +25,11 @@ target("textured_cube", function()
 
     add_includedirs("$(builddir)/shaders")
 
-    if get_config("devmode") then set_rundir("$(builddir)") end
+    if get_config("devmode") then
+        add_defines('TEXTURE_DIR="examples/gpu/textured_cube/textures"')
+        add_defines('SHADER_DIR="$(builddir)/shaders"')
+        set_rundir("$(projectdir)")
+    end
 
     set_group("examples/stormkit-gpu")
 end)

@@ -2,6 +2,10 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+module;
+
+#include <stormkit/core/try_expected.hpp>
+
 export module gpu_app;
 
 import std;
@@ -57,16 +61,15 @@ export namespace base {
 
         auto init_gpu(std::string_view example_name) noexcept -> void {
             // initialize gpu backend (vulkan or webgpu depending the platform)
-            *gpu::initialize_backend().transform_error(monadic::assert("Failed to initialize gpu backend"));
+            TryAssertDiscard(gpu::initialize_backend(), "Failed to initialize gpu backend");
 
             // create gpu instance and attach surface to window
-            m_instance = gpu::Instance::create(std::string { example_name }, true)
-                           .transform_error(monadic::assert("Failed to initialize gpu instance"))
-                           .value();
+            m_instance = TryAssert(gpu::Instance::create(std::string { example_name }, true),
+                                   "Failed to initialize gpu instance");
 
-            m_surface = gpu::Surface::create_from_window(m_instance, m_window)
-                          .transform_error(monadic::assert("Failed to initialize window gpu surface"))
-                          .value();
+            m_surface = TryAssert(gpu::Surface::create_from_window(m_instance, m_window),
+                                  "Failed to initialize window gpu surface");
+
             // pick the best physical device
             const auto& physical_devices = m_instance->physical_devices();
             if (stdr::empty(physical_devices)) {
@@ -77,7 +80,7 @@ export namespace base {
 
             m_physical_device = as_opt_ref(physical_devices.front());
             auto score        = gpu::score_physical_device(*m_physical_device);
-            for (auto i = 1u; i < stdr::size(physical_devices); ++i) {
+            for (auto i : range(1_u32, stdr::size(physical_devices))) {
                 const auto& d       = physical_devices[i];
                 const auto  d_score = gpu::score_physical_device(d);
                 if (d_score > score) {
@@ -89,22 +92,17 @@ export namespace base {
             log::Logger::ilog("Picked gpu: {}", *m_physical_device);
 
             // create gpu device
-            m_device = gpu::Device::create(*m_physical_device, m_instance)
-                         .transform_error(monadic::assert("Failed to initialize gpu device"))
-                         .value();
+            m_device = TryAssert(gpu::Device::create(*m_physical_device, m_instance), "Failed to initialize gpu device");
 
             // create swapchain
             const auto window_extent = m_window->extent();
-            m_swapchain              = gpu::SwapChain::create(m_device, m_surface, window_extent)
-                            .transform_error(monadic::assert("Failed to create swapchain"))
-                            .value();
+            m_swapchain = TryAssert(gpu::SwapChain::create(m_device, m_surface, window_extent), "Failed to create swapchain");
 
             m_raster_queue = gpu::Queue::create(m_device, m_device->raster_queue_entry());
 
-            m_command_pool = gpu::CommandPool::create(m_device)
-                               .transform_error(monadic::assert("Failed to create raster queue "
-                                                                "command pool"))
-                               .value();
+            m_command_pool = TryAssert(gpu::CommandPool::create(m_device),
+                                       "Failed to create raster queue "
+                                       "command pool");
         }
     };
 } // namespace base
