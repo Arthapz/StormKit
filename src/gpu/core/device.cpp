@@ -23,24 +23,24 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 namespace {
-    constexpr auto RAYTRACING_EXTENSIONS = std::array {
-        VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
-        VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-        VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-        VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-        VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-        VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
-        VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-    };
+    constexpr auto RAYTRACING_EXTENSIONS = to_array<CZString>({
+      VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+      VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+      VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+      VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+      VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+      VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
+      VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+    });
 
-    constexpr auto BASE_EXTENSIONS = std::array {
-        VK_KHR_MAINTENANCE_3_EXTENSION_NAME,
-        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-        // "VK_KHR_maintenance4"sv, "VK_KHR_maintenance5"sv, "VK_KHR_maintenance6"sv
-    };
-    constexpr auto SWAPCHAIN_EXTENSIONS = std::array {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-    };
+    constexpr auto BASE_EXTENSIONS      = to_array<CZString>({
+      VK_KHR_MAINTENANCE_3_EXTENSION_NAME,
+      VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
+      VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+    });
+    constexpr auto SWAPCHAIN_EXTENSIONS = to_array<CZString>({
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    });
 
     auto vma_import_functions_from_volk(const VmaAllocatorCreateInfo* pAllocatorCreateInfo,
                                         VolkDeviceTable*              device_table,
@@ -269,22 +269,25 @@ namespace stormkit::gpu {
             };
         });
 
-        const auto& capabilities         = m_physical_device->capabilities();
-        const auto  enabled_1_0_features = VkPhysicalDeviceFeatures { .multiDrawIndirect = true, .samplerAnisotropy = true };
-        const auto  enabled_1_2_features = VkPhysicalDeviceVulkan12Features {
-            .sType                                    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-            .pNext                                    = nullptr,
-            .descriptorIndexing                       = true,
-            .descriptorBindingVariableDescriptorCount = true,
-            .runtimeDescriptorArray                   = true,
-            .bufferDeviceAddress                      = true
-        };
-        const auto enabled_1_3_features = VkPhysicalDeviceVulkan13Features {
-            .sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-            .pNext            = std::bit_cast<void*>(&enabled_1_2_features),
-            .synchronization2 = true,
-            .dynamicRendering = true
-        };
+        // const auto& capabilities         = m_physical_device->capabilities();
+        const auto enabled_1_0_features = init_by<VkPhysicalDeviceFeatures>([](auto& out) static noexcept {
+            out.multiDrawIndirect = true;
+            out.samplerAnisotropy = true;
+        });
+        const auto enabled_1_2_features = init_by<VkPhysicalDeviceVulkan12Features>([](auto& out) static noexcept {
+            out.sType                                    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+            out.pNext                                    = nullptr;
+            out.descriptorIndexing                       = true;
+            out.descriptorBindingVariableDescriptorCount = true;
+            out.runtimeDescriptorArray                   = true;
+            out.bufferDeviceAddress                      = true;
+        });
+        const auto enabled_1_3_features = init_by<VkPhysicalDeviceVulkan13Features>([&enabled_1_2_features](auto& out) noexcept {
+            out.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+            out.pNext            = std::bit_cast<void*>(&enabled_1_2_features);
+            out.synchronization2 = true;
+            out.dynamicRendering = true;
+        });
 
         const auto device_extensions = m_physical_device->extensions();
 
