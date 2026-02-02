@@ -438,7 +438,7 @@ class Application: public base::Application {
         auto&       in_flight = submission_resource.in_flight;
 
         TryAssert(in_flight.wait(), "Failed to wait in_flight fence");
-        in_flight.reset();
+        TryAssert(in_flight.reset(), "Failed to reset in_flight fence");
 
         const auto&& [_, image_index] = TryAssert(m_swapchain->acquire_next_image(100ms, wait),
                                                   "Failed to acquire next swapchain image");
@@ -451,7 +451,7 @@ class Application: public base::Application {
         viewer_data.model = math::rotate(math::mat4f::identity(), time * math::radians(90.f), math::vec3f { 0.f, 1.f, 0.f });
 
         auto& viewer_buffer = submission_resource.viewer_buffer;
-        viewer_buffer.upload(viewer_data);
+        TryAssert(viewer_buffer.upload(viewer_data), "Failed to upload texture to gpu");
 
         const auto rendering_info = gpu::RenderingInfo {
             .render_area = { .x = 0, .y = 0, .width = window_extent.to<i32>().width, .height = window_extent.to<i32>().height },

@@ -160,7 +160,7 @@ class Application: public base::Application {
         auto&       in_flight = submission_resource.in_flight;
 
         TryAssert(in_flight.wait(), "Failed to wait in_flight fence");
-        in_flight.reset();
+        TryAssert(in_flight.reset(), "Failed to reset in_flight fence");
 
         const auto&& [_, image_index] = TryAssert(m_swapchain->acquire_next_image(100ms, wait),
                                                   "Failed to acquire next swapchain image");

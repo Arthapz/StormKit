@@ -33,7 +33,7 @@ export namespace base {
 
             self.m_window->event_loop([&self] noexcept { self.run_example(); });
 
-            self.m_raster_queue->wait_idle();
+            TryAssertDiscard(self.m_raster_queue->wait_idle(), "Failed to wait for raster queue");
             self.m_device->wait_idle();
 
             if constexpr (requires { self.deinit(); }) self.deinit();
