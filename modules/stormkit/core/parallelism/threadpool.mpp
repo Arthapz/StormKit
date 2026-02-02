@@ -21,10 +21,11 @@ export namespace stormkit { inline namespace core {
     class STORMKIT_API ThreadPool {
       public:
         static constexpr struct NoFutureType {
-        } NoFuture = {};
+        } NO_FUTURE = {};
 
         template<class T>
-        using Callback = std::function<T()>;
+        using Closure = std::function<T()>;
+        // using Closure = std::move_only_function<T()>;
 
         explicit ThreadPool(u32 worker_count = std::thread::hardware_concurrency() / 2);
         ~ThreadPool();
@@ -35,15 +36,17 @@ export namespace stormkit { inline namespace core {
         ThreadPool(ThreadPool&&) noexcept;
         auto operator=(ThreadPool&&) noexcept -> ThreadPool&;
 
-        auto worker_count() const noexcept;
+        [[nodiscard]]
+        auto worker_count() const noexcept -> u32;
 
         template<class T>
-        auto post_task(Callback<T> callback);
+        [[nodiscard]]
+        auto post_task(Closure<T> task) noexcept -> decltype(auto);
 
         template<class T>
-        auto post_task(Callback<T> callback, NoFutureType);
+        auto post_task(Closure<T> task, NoFutureType) noexcept -> void;
 
-        auto join_all() -> void;
+        auto join_all() noexcept -> void;
 
         auto set_name(std::string_view name) noexcept -> void;
 
@@ -66,16 +69,16 @@ export namespace stormkit { inline namespace core {
         };
 
         template<class T>
-        auto post_task(Task::Type type, Callback<T> callback);
+        auto post_task(Task::Type type, Closure<T> task) noexcept -> decltype(auto);
 
         template<class T>
-        auto post_task(Task::Type type, Callback<T> callback, NoFutureType);
+        auto post_task(Task::Type type, Closure<T> task, NoFutureType) noexcept -> void;
 
         auto worker_main() noexcept -> void;
 
         u32 m_worker_count = 0;
 
-        std::vector<std::thread> m_workers;
+        std::vector<std::jthread> m_workers;
 
         mutable std::mutex      m_mutex;
         std::condition_variable m_work_signal;
@@ -120,7 +123,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto ThreadPool::worker_count() const noexcept {
+    inline auto ThreadPool::worker_count() const noexcept -> u32 {
         return m_worker_count;
     }
 
@@ -136,30 +139,30 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T>
     STORMKIT_FORCE_INLINE
-    inline auto ThreadPool::post_task(Callback<T> callback) {
-        return post_task<T>(Task::Type::Standard, std::move(callback));
+    inline auto ThreadPool::post_task(Closure<T> task) noexcept -> decltype(auto) {
+        return post_task<T>(Task::Type::Standard, std::move(task));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
     STORMKIT_FORCE_INLINE
-    inline auto ThreadPool::post_task(Callback<T> callback, NoFutureType t) {
-        post_task<T>(Task::Type::Standard, std::move(callback), t);
+    inline auto ThreadPool::post_task(Closure<T> task, NoFutureType t) noexcept -> void {
+        auto _ = post_task<T>(Task::Type::Standard, std::move(task), t);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    inline auto ThreadPool::post_task(Task::Type type, Callback<T> callback) {
-        auto packaged_task = std::make_shared<std::packaged_task<T()>>(std::move(callback));
+    inline auto ThreadPool::post_task(Task::Type type, Closure<T> closure) noexcept -> decltype(auto) {
+        auto packaged_task = std::make_shared<std::packaged_task<T()>>(std::move(closure));
 
         auto future = packaged_task->get_future();
 
-        auto task = Task { type, [callback = std::move(packaged_task)]() { (*callback)(); } };
+        auto task = Task { type, [task = std::move(packaged_task)]() { (*task)(); } };
 
         {
-            auto lock = std::unique_lock { m_mutex };
+            auto _ = std::unique_lock { m_mutex };
 
             m_tasks.emplace(std::move(task));
         }
@@ -172,8 +175,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    inline auto ThreadPool::post_task(Task::Type type, Callback<T> callback, NoFutureType) {
-        auto task = Task { type, [callback = std::move(callback)]() { callback(); } };
+    inline auto ThreadPool::post_task(Task::Type type, Closure<T> closure, NoFutureType) noexcept -> void {
+        auto task = Task { type, [task = std::move(closure)]() { task(); } };
 
         {
             auto lock = std::unique_lock { m_mutex };

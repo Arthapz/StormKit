@@ -6,13 +6,15 @@ module stormkit.core;
 
 import std;
 
+namespace stdr = std::ranges;
+
 namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
     ThreadPool::ThreadPool(ThreadPool&& other) noexcept {
         auto lock = std::scoped_lock { other.m_mutex };
 
-        m_worker_count = std::exchange(other.m_worker_count, 0u);
+        m_worker_count = other.m_worker_count;
         m_tasks        = std::move(other.m_tasks);
 
         m_workers.reserve(m_worker_count);
@@ -28,13 +30,13 @@ namespace stormkit {
         if (&other == this) [[unlikely]]
             return *this;
 
-        auto lock1 = std::unique_lock { other.m_mutex, std::defer_lock };
+        auto lock1 = std::unique_lock { m_mutex, std::defer_lock };
         auto lock2 = std::unique_lock { other.m_mutex, std::defer_lock };
         std::lock(lock1, lock2);
 
         join_all();
 
-        m_worker_count = std::exchange(other.m_worker_count, 0u);
+        m_worker_count = other.m_worker_count;
         m_tasks        = std::move(other.m_tasks);
 
         m_workers.reserve(m_worker_count);
@@ -48,11 +50,12 @@ namespace stormkit {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto ThreadPool::join_all() -> void {
-        for (const auto _ : range(m_worker_count)) post_task<void>(Task::Type::Terminate, [] {}, ThreadPool::NoFuture);
+    auto ThreadPool::join_all() noexcept -> void {
+        for (const auto _ : range(m_worker_count)) post_task<void>(Task::Type::Terminate, [] {}, ThreadPool::NO_FUTURE);
 
-        for (auto& thread : m_workers)
+        for (auto& thread : m_workers) {
             if (thread.joinable()) thread.join();
+        }
     }
 
     /////////////////////////////////////
@@ -63,7 +66,7 @@ namespace stormkit {
 
             {
                 auto lock = std::unique_lock { m_mutex };
-                if (std::empty(m_tasks)) m_work_signal.wait(lock, [this] { return not std::empty(m_tasks); });
+                if (stdr::empty(m_tasks)) m_work_signal.wait(lock, [this] { return not std::empty(m_tasks); });
 
                 task = std::move(m_tasks.front());
                 m_tasks.pop();
