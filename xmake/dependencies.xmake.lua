@@ -32,11 +32,13 @@ local package_configs = {
     },
     luau = {
         global = {
+            override = true,
             system = false,
             version = "master",
             configs = {
+                shared = false,
                 extern_c = true,
-                cxflags = { cxx_runtime },
+                build_cli = false,
             },
         },
     },
