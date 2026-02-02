@@ -34,7 +34,7 @@
     #define STORMKIT_INTRINSIC         [[msvc::intrinsic]]
     #define STORMKIT_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
     #define STORMKIT_PUSH_WARNINGS     _Pragma("warning(push)")
-    #define STORMKIT_POP_WARNINGS      _Pragma("warning(pop))")
+    #define STORMKIT_POP_WARNINGS      _Pragma("warning(pop)")
     #define STORMKIT_ARRAY_IF_MSVC     std::array
 #elif defined(_MSC_VER) and defined(__clang__)
     #if defined(_LIBCPP_VERSION)
