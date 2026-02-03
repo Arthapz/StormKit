@@ -22,7 +22,7 @@ namespace stormkit::luau::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     inline auto bind_color(lb::Namespace& global_namespace) noexcept -> lb::Namespace {
-        return global_namespace.beginClass<RGBColorF>("fcolor").endClass().beginClass<RGBColorU>("ucolor").endClass();
+        return global_namespace.beginClass<rgbcolor<f32>>("fcolor").endClass().beginClass<rgbcolor<u8>>("ucolor").endClass();
     }
 
     ////////////////////////////////////////
