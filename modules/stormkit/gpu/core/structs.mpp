@@ -236,11 +236,22 @@ export {
 
         struct ClearColor {
             rgbacolor_f color = stormkit::colors::SILVER<f32>;
+
+            constexpr auto operator==(const ClearColor& other) const noexcept -> bool;
         };
 
-        struct ClearDepthStencil {
-            f32 depth   = 1.f;
-            u32 stencil = 0;
+        struct ClearDepth {
+            f32            depth = 1.f;
+            constexpr auto operator==(const ClearDepth& other) const noexcept -> bool;
+        };
+
+        struct ClearStencil {
+            u32            stencil = 0u;
+            constexpr auto operator==(const ClearStencil& other) const noexcept -> bool;
+        };
+
+        struct ClearDepthStencil: ClearDepth, ClearStencil {
+            constexpr auto operator==(const ClearDepthStencil& other) const noexcept -> bool;
         };
 
         using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
@@ -320,6 +331,12 @@ export {
 
         template<core::meta::HashType Ret = hash32>
         constexpr auto hasher(const Scissor& value) noexcept -> Ret;
+
+        template<core::meta::HashType Ret = hash32>
+        constexpr auto hasher(const ClearColor& value) noexcept -> Ret;
+
+        template<core::meta::HashType Ret = hash32>
+        constexpr auto hasher(const ClearDepthStencil& value) noexcept -> Ret;
     } // namespace stormkit::gpu
 }
 
@@ -328,6 +345,34 @@ export {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto ClearColor::operator==(const ClearColor& other) const noexcept -> bool {
+        return color == other.color;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto ClearDepth::operator==(const ClearDepth& other) const noexcept -> bool {
+        return depth == other.depth;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto ClearStencil::operator==(const ClearStencil& other) const noexcept -> bool {
+        return stencil == other.stencil;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto ClearDepthStencil::operator==(const ClearDepthStencil& other) const noexcept -> bool {
+        return depth == other.depth and stencil == other.stencil;
+    }
+
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
@@ -371,13 +416,32 @@ namespace stormkit::gpu {
                            data.type);
     }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<core::meta::HashType Ret>
     constexpr auto hasher(const Viewport& value) noexcept -> Ret {
         return hash(value.position, value.extent, value.depth);
     }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
+
     template<core::meta::HashType Ret>
     constexpr auto hasher(const Scissor& value) noexcept -> Ret {
         return hash(value.offset, value.extent);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::HashType Ret>
+    constexpr auto hasher(const ClearColor& value) noexcept -> Ret {
+        return hash(value.color);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::HashType Ret>
+    constexpr auto hasher(const ClearDepthStencil& value) noexcept -> Ret {
+        return hash(value.depth, value.stencil);
     }
 } // namespace stormkit::gpu
