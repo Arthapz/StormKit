@@ -32,7 +32,6 @@ local package_configs = {
     },
     luau = {
         global = {
-            override = true,
             system = false,
             version = "master",
             configs = {
