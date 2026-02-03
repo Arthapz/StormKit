@@ -72,147 +72,58 @@ export {
 
         template<typename T>
         using mat2x2 = mat<T, 2, 2>;
-
-        using mat2x2f32 = mat2x2<f32>;
-        using mat2x2f64 = mat2x2<f64>;
-        using mat2x2f   = mat2x2f32;
-        using mat2f     = mat2x2f;
-
-        using mat2x2i32 = mat2x2<i32>;
-        using mat2x2i64 = mat2x2<i64>;
-        using mat2x2i   = mat2x2i32;
-        using mat2i     = mat2x2i;
-
-        using mat2x2u32 = mat2x2<u32>;
-        using mat2x2u64 = mat2x2<u64>;
-        using mat2x2u   = mat2x2u32;
-        using mat2u     = mat2x2u;
-
         template<typename T>
         using mat3x3 = mat<T, 3, 3>;
-
-        using mat3x3f32 = mat3x3<f32>;
-        using mat3x3f64 = mat3x3<f64>;
-        using mat3x3f   = mat3x3f32;
-        using mat3f     = mat3x3f;
-
-        using mat3x3i32 = mat3x3<i32>;
-        using mat3x3i64 = mat3x3<i64>;
-        using mat3x3i   = mat3x3i32;
-        using mat3i     = mat3x3i;
-
-        using mat3x3u32 = mat3x3<u32>;
-        using mat3x3u64 = mat3x3<u64>;
-        using mat3x3u   = mat3x3u32;
-        using mat3u     = mat3x3u;
-
         template<typename T>
         using mat4x4 = mat<T, 4, 4>;
-
-        using mat4x4f32 = mat4x4<f32>;
-        using mat4x4f64 = mat4x4<f64>;
-        using mat4x4f   = mat4x4f32;
-        using mat4f     = mat4x4f;
-
-        using mat4x4i32 = mat4x4<i32>;
-        using mat4x4i64 = mat4x4<i64>;
-        using mat4x4i   = mat4x4i32;
-        using mat4i     = mat4x4i;
-
-        using mat4x4u32 = mat4x4<u32>;
-        using mat4x4u64 = mat4x4<u64>;
-        using mat4x4u   = mat4x4u32;
-        using mat4u     = mat4x4u;
-
         template<typename T>
         using mat2x3 = mat<T, 2, 3>;
-
-        using mat2x3f32 = mat2x3<f32>;
-        using mat2x3f64 = mat2x3<f64>;
-        using mat2x3f   = mat2x3f32;
-
-        using mat2x3i32 = mat2x3<i32>;
-        using mat2x3i64 = mat2x3<i64>;
-        using mat2x3i   = mat2x3i32;
-
-        using mat2x3u32 = mat2x3<u32>;
-        using mat2x3u64 = mat2x3<u64>;
-        using mat2x3u   = mat2x3u32;
-
         template<typename T>
         using mat3x2 = mat<T, 3, 2>;
-
-        using mat3x2f32 = mat3x2<f32>;
-        using mat3x2f64 = mat3x2<f64>;
-        using mat3x2f   = mat3x2f32;
-
-        using mat3x2i32 = mat3x2<i32>;
-        using mat3x2i64 = mat3x2<i64>;
-        using mat3x2i   = mat3x2i32;
-
-        using mat3x2u32 = mat3x2<u32>;
-        using mat3x2u64 = mat3x2<u64>;
-        using mat3x2u   = mat3x2u32;
-
         template<typename T>
         using mat4x3 = mat<T, 4, 3>;
-
-        using mat4x3f32 = mat4x3<f32>;
-        using mat4x3f64 = mat4x3<f64>;
-        using mat4x3f   = mat4x3f32;
-
-        using mat4x3i32 = mat4x3<i32>;
-        using mat4x3i64 = mat4x3<i64>;
-        using mat4x3i   = mat4x3i32;
-
-        using mat4x3u32 = mat4x3<u32>;
-        using mat4x3u64 = mat4x3<u64>;
-        using mat4x3u   = mat4x3u32;
-
         template<typename T>
         using mat3x4 = mat<T, 3, 4>;
-
-        using mat3x4f32 = mat3x4<f32>;
-        using mat3x4f64 = mat3x4<f64>;
-        using mat3x4f   = mat3x4f32;
-
-        using mat3x4i32 = mat3x4<i32>;
-        using mat3x4i64 = mat3x4<i64>;
-        using mat3x4i   = mat3x4i32;
-
-        using mat3x4u32 = mat3x4<u32>;
-        using mat3x4u64 = mat3x4<u64>;
-        using mat3x4u   = mat3x4u32;
-
         template<typename T>
         using mat4x2 = mat<T, 4, 2>;
-
-        using mat4x2f32 = mat4x2<f32>;
-        using mat4x2f64 = mat4x2<f64>;
-        using mat4x2f   = mat4x2f32;
-
-        using mat4x2i32 = mat4x2<i32>;
-        using mat4x2i64 = mat4x2<i64>;
-        using mat4x2i   = mat4x2i32;
-
-        using mat4x2u32 = mat4x2<u32>;
-        using mat4x2u64 = mat4x2<u64>;
-        using mat4x2u   = mat4x2u32;
-
         template<typename T>
         using mat2x4 = mat<T, 2, 4>;
 
-        using mat2x4f32 = mat2x4<f32>;
-        using mat2x4f64 = mat2x4<f64>;
-        using mat2x4f   = mat2x4f32;
+        using fmat2 = mat2x2<f32>;
+        using imat2 = mat2x2<i32>;
+        using umat2 = mat2x2<u32>;
 
-        using mat2x4i32 = mat2x4<i32>;
-        using mat2x4i64 = mat2x4<i64>;
-        using mat2x4i   = mat2x4i32;
+        using fmat3 = mat3x3<f32>;
+        using imat3 = mat3x3<i32>;
+        using umat3 = mat3x3<u32>;
 
-        using mat2x4u32 = mat2x4<u32>;
-        using mat2x4u64 = mat2x4<u64>;
-        using mat2x4u   = mat2x4u32;
+        using fmat4 = mat4x4<f32>;
+        using imat4 = mat4x4<i32>;
+        using umat4 = mat4x4<u32>;
+
+        using fmat2x3 = mat2x3<f32>;
+        using imat2x3 = mat2x3<i32>;
+        using umat2x3 = mat2x3<u32>;
+
+        using fmat3x2 = mat3x2<f32>;
+        using imat3x2 = mat3x2<i32>;
+        using umat3x2 = mat3x2<u32>;
+
+        using fmat4x3 = mat4x3<f32>;
+        using imat4x3 = mat4x3<i32>;
+        using umat4x3 = mat4x3<u32>;
+
+        using fmat3x4 = mat3x4<f32>;
+        using imat3x4 = mat3x4<i32>;
+        using umat3x4 = mat3x4<u32>;
+
+        using fmat4x2 = mat4x2<f32>;
+        using imat4x2 = mat4x2<i32>;
+        using umat4x2 = mat4x2<u32>;
+
+        using fmat2x4 = mat2x4<f32>;
+        using imat2x4 = mat2x4<i32>;
+        using umat2x4 = mat2x4<u32>;
 
         namespace meta {
             template<typename T>
@@ -335,26 +246,26 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 namespace stormkit { inline namespace core { namespace math {
-    static_assert(sizeof(mat2x2i32) == sizeof(i32) * 2 * 2);
-    static_assert(sizeof(mat2x2i64) == sizeof(i64) * 2 * 2);
-    static_assert(sizeof(mat2x2u32) == sizeof(u32) * 2 * 2);
-    static_assert(sizeof(mat2x2u64) == sizeof(u64) * 2 * 2);
-    static_assert(sizeof(mat2x2f32) == sizeof(f32) * 2 * 2);
-    static_assert(sizeof(mat2x2f64) == sizeof(f64) * 2 * 2);
+    static_assert(sizeof(mat2x2<i32>) == sizeof(i32) * 2 * 2);
+    static_assert(sizeof(mat2x2<i64>) == sizeof(i64) * 2 * 2);
+    static_assert(sizeof(mat2x2<u32>) == sizeof(u32) * 2 * 2);
+    static_assert(sizeof(mat2x2<u64>) == sizeof(u64) * 2 * 2);
+    static_assert(sizeof(mat2x2<f32>) == sizeof(f32) * 2 * 2);
+    static_assert(sizeof(mat2x2<f64>) == sizeof(f64) * 2 * 2);
 
-    static_assert(sizeof(mat3x3i32) == sizeof(i32) * 3 * 3);
-    static_assert(sizeof(mat3x3i64) == sizeof(i64) * 3 * 3);
-    static_assert(sizeof(mat3x3u32) == sizeof(u32) * 3 * 3);
-    static_assert(sizeof(mat3x3u64) == sizeof(u64) * 3 * 3);
-    static_assert(sizeof(mat3x3f32) == sizeof(f32) * 3 * 3);
-    static_assert(sizeof(mat3x3f64) == sizeof(f64) * 3 * 3);
+    static_assert(sizeof(mat3x3<i32>) == sizeof(i32) * 3 * 3);
+    static_assert(sizeof(mat3x3<i64>) == sizeof(i64) * 3 * 3);
+    static_assert(sizeof(mat3x3<u32>) == sizeof(u32) * 3 * 3);
+    static_assert(sizeof(mat3x3<u64>) == sizeof(u64) * 3 * 3);
+    static_assert(sizeof(mat3x3<f32>) == sizeof(f32) * 3 * 3);
+    static_assert(sizeof(mat3x3<f64>) == sizeof(f64) * 3 * 3);
 
-    static_assert(sizeof(mat4x4i32) == sizeof(i32) * 4 * 4);
-    static_assert(sizeof(mat4x4i64) == sizeof(i64) * 4 * 4);
-    static_assert(sizeof(mat4x4u32) == sizeof(u32) * 4 * 4);
-    static_assert(sizeof(mat4x4u64) == sizeof(u64) * 4 * 4);
-    static_assert(sizeof(mat4x4f32) == sizeof(f32) * 4 * 4);
-    static_assert(sizeof(mat4x4f64) == sizeof(f64) * 4 * 4);
+    static_assert(sizeof(mat4x4<i32>) == sizeof(i32) * 4 * 4);
+    static_assert(sizeof(mat4x4<i64>) == sizeof(i64) * 4 * 4);
+    static_assert(sizeof(mat4x4<u32>) == sizeof(u32) * 4 * 4);
+    static_assert(sizeof(mat4x4<u64>) == sizeof(u64) * 4 * 4);
+    static_assert(sizeof(mat4x4<f32>) == sizeof(f32) * 4 * 4);
+    static_assert(sizeof(mat4x4<f64>) == sizeof(f64) * 4 * 4);
 
     ////////////////////////////////////////
     ////////////////////////////////////////

@@ -67,9 +67,9 @@ struct Vertex {
 };
 
 struct ViewerData {
-    math::mat4f proj;
-    math::mat4f view;
-    math::mat4f model;
+    math::fmat4 proj;
+    math::fmat4 view;
+    math::fmat4 model;
 
     static constexpr auto layout_binding() -> gpu::DescriptorSetLayoutBinding {
         return { .binding          = 0,
@@ -431,7 +431,7 @@ class Application: public base::Application {
                                        0.1f,
                                        100.f),
             .view  = math::look_at(math::fvec3 { 0.f, 3.f, 5.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }),
-            .model = math::mat4f::identity(),
+            .model = math::fmat4::identity(),
         };
 
         // get next swapchain image
@@ -452,7 +452,7 @@ class Application: public base::Application {
         // update viewer data and upload
         const auto time = stdc::duration_cast<Secondf>(current_time - m_start_time).count();
         viewer_data
-          .model = math::rotate(math::mat4f::identity(), time * math::angle::radians(90.f), math::fvec3 { 0.f, 1.f, 0.f });
+          .model = math::rotate(math::fmat4::identity(), time * math::angle::radians(90.f), math::fvec3 { 0.f, 1.f, 0.f });
 
         auto& viewer_buffer = submission_resource.viewer_buffer;
         TryAssert(viewer_buffer.upload(viewer_data), "Failed to upload texture to gpu");
