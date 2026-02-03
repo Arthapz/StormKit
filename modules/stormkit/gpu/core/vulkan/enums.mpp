@@ -448,8 +448,8 @@ export {
             EQUIVALENT    = VK_LOGIC_OP_EQUIVALENT,
             INVERT        = VK_LOGIC_OP_INVERT,
             NAND          = VK_LOGIC_OP_NAND,
-            NO_OP         = VK_LOGIC_OP_NO_OP,
             NOR           = VK_LOGIC_OP_NOR,
+            NO_OP         = VK_LOGIC_OP_NO_OP,
             OR            = VK_LOGIC_OP_OR,
             OR_INVERTED   = VK_LOGIC_OP_OR_INVERTED,
             OR_REVERSE    = VK_LOGIC_OP_OR_REVERSE,
@@ -515,9 +515,9 @@ export {
         enum class PixelFormat : u32 {
             A1_RGB5_UNORM_PACK16    = VK_FORMAT_A1R5G5B5_UNORM_PACK16,
             A2_RGB10I_PACK32        = VK_FORMAT_A2R10G10B10_SINT_PACK32,
+            A2_RGB10U_PACK32        = VK_FORMAT_A2R10G10B10_UINT_PACK32,
             A2_RGB10_SNORM_PACK32   = VK_FORMAT_A2R10G10B10_SNORM_PACK32,
             A2_RGB10_UNORM_PACK32   = VK_FORMAT_A2R10G10B10_UNORM_PACK32,
-            A2_RGB10U_PACK32        = VK_FORMAT_A2R10G10B10_UINT_PACK32,
             B10_GR11UF_PACK32       = VK_FORMAT_B10G11R11_UFLOAT_PACK32,
             BGR8_UNORM              = VK_FORMAT_B8G8R8_UNORM,
             BGRA8_UNORM             = VK_FORMAT_B8G8R8A8_UNORM,
@@ -529,53 +529,53 @@ export {
             DEPTH32F_STENCIL8U      = VK_FORMAT_D32_SFLOAT_S8_UINT,
             R16F                    = VK_FORMAT_R16_SFLOAT,
             R16I                    = VK_FORMAT_R16_SINT,
-            R16_SNORM               = VK_FORMAT_R16_SNORM,
             R16U                    = VK_FORMAT_R16_UINT,
+            R16_SNORM               = VK_FORMAT_R16_SNORM,
             R16_UNORM               = VK_FORMAT_R16_UNORM,
             R32F                    = VK_FORMAT_R32_SFLOAT,
             R32I                    = VK_FORMAT_R32_SINT,
             R32U                    = VK_FORMAT_R32_UINT,
             R5_G6_B5_UNORM_PACK16   = VK_FORMAT_R5G6B5_UNORM_PACK16,
             R8I                     = VK_FORMAT_R8_SINT,
-            R8_SNORM                = VK_FORMAT_R8_SNORM,
             R8U                     = VK_FORMAT_R8_UINT,
+            R8_SNORM                = VK_FORMAT_R8_SNORM,
             R8_UNORM                = VK_FORMAT_R8_UNORM,
             RG16F                   = VK_FORMAT_R16G16_SFLOAT,
             RG16I                   = VK_FORMAT_R16G16_SINT,
-            RG16_SNORM              = VK_FORMAT_R16G16_SNORM,
             RG16U                   = VK_FORMAT_R16G16_UINT,
+            RG16_SNORM              = VK_FORMAT_R16G16_SNORM,
             RG16_UNORM              = VK_FORMAT_R16G16_UNORM,
             RG32F                   = VK_FORMAT_R32G32_SFLOAT,
             RG32I                   = VK_FORMAT_R32G32_SINT,
             RG32U                   = VK_FORMAT_R32G32_UINT,
             RG8I                    = VK_FORMAT_R8G8_SINT,
-            RG8_SNORM               = VK_FORMAT_R8G8_SNORM,
             RG8U                    = VK_FORMAT_R8G8_UINT,
+            RG8_SNORM               = VK_FORMAT_R8G8_SNORM,
             RG8_UNORM               = VK_FORMAT_R8G8_UNORM,
             RGB16F                  = VK_FORMAT_R16G16B16_SFLOAT,
             RGB16I                  = VK_FORMAT_R16G16B16_SINT,
-            RGB16_SNORM             = VK_FORMAT_R16G16B16_SNORM,
             RGB16U                  = VK_FORMAT_R16G16B16_UINT,
+            RGB16_SNORM             = VK_FORMAT_R16G16B16_SNORM,
             RGB16_UNORM             = VK_FORMAT_R16G16B16_UNORM,
             RGB32F                  = VK_FORMAT_R32G32B32_SFLOAT,
             RGB32I                  = VK_FORMAT_R32G32B32_SINT,
             RGB32U                  = VK_FORMAT_R32G32B32_UINT,
             RGB8I                   = VK_FORMAT_R8G8B8_SINT,
-            RGB8_SNORM              = VK_FORMAT_R8G8B8_SNORM,
             RGB8U                   = VK_FORMAT_R8G8B8_UINT,
+            RGB8_SNORM              = VK_FORMAT_R8G8B8_SNORM,
             RGB8_UNORM              = VK_FORMAT_R8G8B8_UNORM,
             RGBA16F                 = VK_FORMAT_R16G16B16A16_SFLOAT,
             RGBA16I                 = VK_FORMAT_R16G16B16A16_SINT,
-            RGBA16_SNORM            = VK_FORMAT_R16G16B16A16_SNORM,
             RGBA16U                 = VK_FORMAT_R16G16B16A16_UINT,
+            RGBA16_SNORM            = VK_FORMAT_R16G16B16A16_SNORM,
             RGBA16_UNORM            = VK_FORMAT_R16G16B16A16_UNORM,
             RGBA32F                 = VK_FORMAT_R32G32B32A32_SFLOAT,
             RGBA32I                 = VK_FORMAT_R32G32B32A32_SINT,
             RGBA32U                 = VK_FORMAT_R32G32B32A32_UINT,
             RGBA4_UNORM_PACK16      = VK_FORMAT_R4G4B4A4_UNORM_PACK16,
             RGBA8I                  = VK_FORMAT_R8G8B8A8_SINT,
-            RGBA8_SNORM             = VK_FORMAT_R8G8B8A8_SNORM,
             RGBA8U                  = VK_FORMAT_R8G8B8A8_UINT,
+            RGBA8_SNORM             = VK_FORMAT_R8G8B8A8_SNORM,
             RGBA8_UNORM             = VK_FORMAT_R8G8B8A8_UNORM,
             SBGR8                   = VK_FORMAT_B8G8R8_SRGB,
             SBGRA8                  = VK_FORMAT_B8G8R8A8_SRGB,
@@ -704,8 +704,8 @@ export {
         enum class SamplerAddressMode : u8 {
             CLAMP_TO_BORDER      = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
             CLAMP_TO_EDGE        = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-            MIRROR_CLAMP_TO_EDGE = VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE,
             MIRRORED_REPEAT      = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
+            MIRROR_CLAMP_TO_EDGE = VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE,
             REPEAT               = VK_SAMPLER_ADDRESS_MODE_REPEAT,
         };
 
@@ -764,8 +764,6 @@ export {
         constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool;
         [[nodiscard]]
         constexpr auto is_depth_format(PixelFormat format) noexcept -> bool;
-        [[nodiscard]]
-        constexpr auto is_stencil_format(PixelFormat format) noexcept -> bool;
 
         [[nodiscard]]
         constexpr auto get_format_channel_count(PixelFormat format) noexcept -> u8;
@@ -829,7 +827,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::AccessFlag>(stormkit::gpu::AccessFlag value) noexcept -> std::string {
         switch (value) {
             case stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_READ: return "AccessFlag::COLOR_ATTACHMENT_READ";
@@ -881,7 +878,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation
                                                                                        value) noexcept -> std::string {
         switch (value) {
@@ -918,7 +914,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation
                                                                                         value) noexcept -> std::string {
         switch (value) {
@@ -988,7 +983,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::BlendFactor>(stormkit::gpu::BlendFactor value) noexcept
       -> std::string {
         switch (value) {
@@ -1045,7 +1039,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::BlendOperation>(stormkit::gpu::BlendOperation value) noexcept
       -> std::string {
         switch (value) {
@@ -1089,7 +1082,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::BorderColor>(stormkit::gpu::BorderColor value) noexcept
       -> std::string {
         switch (value) {
@@ -1139,7 +1131,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::BufferUsageFlag>(stormkit::gpu::BufferUsageFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -1190,7 +1181,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ColorComponentFlag>(stormkit::gpu::ColorComponentFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -1260,7 +1250,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ColorSpace>(stormkit::gpu::ColorSpace value) noexcept -> std::string {
         switch (value) {
             case stormkit::gpu::ColorSpace::ADOBERGB_LINEAR: return "ColorSpace::ADOBERGB_LINEAR";
@@ -1309,7 +1298,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::CommandBufferLevel>(stormkit::gpu::CommandBufferLevel value) noexcept
       -> std::string {
         switch (value) {
@@ -1353,7 +1341,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::CompareOperation>(stormkit::gpu::CompareOperation value) noexcept
       -> std::string {
         switch (value) {
@@ -1399,7 +1386,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::CullModeFlag>(stormkit::gpu::CullModeFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -1493,7 +1479,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::DebugObjectType>(stormkit::gpu::DebugObjectType value) noexcept
       -> std::string {
         switch (value) {
@@ -1561,7 +1546,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::DependencyFlag>(stormkit::gpu::DependencyFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -1612,7 +1596,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::DescriptorType>(stormkit::gpu::DescriptorType value) noexcept
       -> std::string {
         switch (value) {
@@ -1667,7 +1650,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::DynamicState>(stormkit::gpu::DynamicState value) noexcept
       -> std::string {
         switch (value) {
@@ -1711,7 +1693,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::Filter>(stormkit::gpu::Filter value) noexcept -> std::string {
         switch (value) {
             case stormkit::gpu::Filter::CUBIC_IMG: return "Filter::CUBIC_IMG";
@@ -1796,7 +1777,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::FormatFeatureFlag>(stormkit::gpu::FormatFeatureFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -1860,7 +1840,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::FrontFace>(stormkit::gpu::FrontFace value) noexcept -> std::string {
         switch (value) {
             case stormkit::gpu::FrontFace::CLOCKWISE: return "FrontFace::CLOCKWISE";
@@ -1896,7 +1875,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::GeometryFlag>(stormkit::gpu::GeometryFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -1935,7 +1913,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::GeometryType>(stormkit::gpu::GeometryType value) noexcept
       -> std::string {
         switch (value) {
@@ -1976,7 +1953,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageAspectFlag>(stormkit::gpu::ImageAspectFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -2038,7 +2014,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageCreateFlag>(stormkit::gpu::ImageCreateFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -2115,7 +2090,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageLayout>(stormkit::gpu::ImageLayout value) noexcept
       -> std::string {
         switch (value) {
@@ -2167,7 +2141,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageTiling>(stormkit::gpu::ImageTiling value) noexcept
       -> std::string {
         switch (value) {
@@ -2205,7 +2178,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageType>(stormkit::gpu::ImageType value) noexcept -> std::string {
         switch (value) {
             case stormkit::gpu::ImageType::T1D: return "ImageType::T1D";
@@ -2249,7 +2221,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageUsageFlag>(stormkit::gpu::ImageUsageFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -2298,7 +2269,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageViewType>(stormkit::gpu::ImageViewType value) noexcept
       -> std::string {
         switch (value) {
@@ -2323,8 +2293,8 @@ export {
             stormkit::gpu::LogicOperation::AND_REVERSE, stormkit::gpu::LogicOperation::CLEAR,
             stormkit::gpu::LogicOperation::COPY,        stormkit::gpu::LogicOperation::COPY_INVERTED,
             stormkit::gpu::LogicOperation::EQUIVALENT,  stormkit::gpu::LogicOperation::INVERT,
-            stormkit::gpu::LogicOperation::NAND,        stormkit::gpu::LogicOperation::NO_OP,
-            stormkit::gpu::LogicOperation::NOR,         stormkit::gpu::LogicOperation::OR,
+            stormkit::gpu::LogicOperation::NAND,        stormkit::gpu::LogicOperation::NOR,
+            stormkit::gpu::LogicOperation::NO_OP,       stormkit::gpu::LogicOperation::OR,
             stormkit::gpu::LogicOperation::OR_INVERTED, stormkit::gpu::LogicOperation::OR_REVERSE,
             stormkit::gpu::LogicOperation::SET,         stormkit::gpu::LogicOperation::XOR,
 
@@ -2346,8 +2316,8 @@ export {
             case stormkit::gpu::LogicOperation::EQUIVALENT: return "LogicOperation::EQUIVALENT";
             case stormkit::gpu::LogicOperation::INVERT: return "LogicOperation::INVERT";
             case stormkit::gpu::LogicOperation::NAND: return "LogicOperation::NAND";
-            case stormkit::gpu::LogicOperation::NO_OP: return "LogicOperation::NO_OP";
             case stormkit::gpu::LogicOperation::NOR: return "LogicOperation::NOR";
+            case stormkit::gpu::LogicOperation::NO_OP: return "LogicOperation::NO_OP";
             case stormkit::gpu::LogicOperation::OR: return "LogicOperation::OR";
             case stormkit::gpu::LogicOperation::OR_INVERTED: return "LogicOperation::OR_INVERTED";
             case stormkit::gpu::LogicOperation::OR_REVERSE: return "LogicOperation::OR_REVERSE";
@@ -2359,7 +2329,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::LogicOperation>(stormkit::gpu::LogicOperation value) noexcept
       -> std::string {
         switch (value) {
@@ -2372,8 +2341,8 @@ export {
             case stormkit::gpu::LogicOperation::EQUIVALENT: return "LogicOperation::EQUIVALENT";
             case stormkit::gpu::LogicOperation::INVERT: return "LogicOperation::INVERT";
             case stormkit::gpu::LogicOperation::NAND: return "LogicOperation::NAND";
-            case stormkit::gpu::LogicOperation::NO_OP: return "LogicOperation::NO_OP";
             case stormkit::gpu::LogicOperation::NOR: return "LogicOperation::NOR";
+            case stormkit::gpu::LogicOperation::NO_OP: return "LogicOperation::NO_OP";
             case stormkit::gpu::LogicOperation::OR: return "LogicOperation::OR";
             case stormkit::gpu::LogicOperation::OR_INVERTED: return "LogicOperation::OR_INVERTED";
             case stormkit::gpu::LogicOperation::OR_REVERSE: return "LogicOperation::OR_REVERSE";
@@ -2413,7 +2382,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::MemoryPropertyFlag>(stormkit::gpu::MemoryPropertyFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -2457,7 +2425,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::PhysicalDeviceType>(stormkit::gpu::PhysicalDeviceType value) noexcept
       -> std::string {
         switch (value) {
@@ -2496,7 +2463,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::PipelineBindPoint>(stormkit::gpu::PipelineBindPoint value) noexcept
       -> std::string {
         switch (value) {
@@ -2564,7 +2530,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::PipelineStageFlag>(stormkit::gpu::PipelineStageFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -2599,9 +2564,9 @@ export {
         return std::array {
             stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16,
             stormkit::gpu::PixelFormat::A2_RGB10I_PACK32,
+            stormkit::gpu::PixelFormat::A2_RGB10U_PACK32,
             stormkit::gpu::PixelFormat::A2_RGB10_SNORM_PACK32,
             stormkit::gpu::PixelFormat::A2_RGB10_UNORM_PACK32,
-            stormkit::gpu::PixelFormat::A2_RGB10U_PACK32,
             stormkit::gpu::PixelFormat::B10_GR11UF_PACK32,
             stormkit::gpu::PixelFormat::BGR8_UNORM,
             stormkit::gpu::PixelFormat::BGRA8_UNORM,
@@ -2613,53 +2578,53 @@ export {
             stormkit::gpu::PixelFormat::DEPTH32F_STENCIL8U,
             stormkit::gpu::PixelFormat::R16F,
             stormkit::gpu::PixelFormat::R16I,
-            stormkit::gpu::PixelFormat::R16_SNORM,
             stormkit::gpu::PixelFormat::R16U,
+            stormkit::gpu::PixelFormat::R16_SNORM,
             stormkit::gpu::PixelFormat::R16_UNORM,
             stormkit::gpu::PixelFormat::R32F,
             stormkit::gpu::PixelFormat::R32I,
             stormkit::gpu::PixelFormat::R32U,
             stormkit::gpu::PixelFormat::R5_G6_B5_UNORM_PACK16,
             stormkit::gpu::PixelFormat::R8I,
-            stormkit::gpu::PixelFormat::R8_SNORM,
             stormkit::gpu::PixelFormat::R8U,
+            stormkit::gpu::PixelFormat::R8_SNORM,
             stormkit::gpu::PixelFormat::R8_UNORM,
             stormkit::gpu::PixelFormat::RG16F,
             stormkit::gpu::PixelFormat::RG16I,
-            stormkit::gpu::PixelFormat::RG16_SNORM,
             stormkit::gpu::PixelFormat::RG16U,
+            stormkit::gpu::PixelFormat::RG16_SNORM,
             stormkit::gpu::PixelFormat::RG16_UNORM,
             stormkit::gpu::PixelFormat::RG32F,
             stormkit::gpu::PixelFormat::RG32I,
             stormkit::gpu::PixelFormat::RG32U,
             stormkit::gpu::PixelFormat::RG8I,
-            stormkit::gpu::PixelFormat::RG8_SNORM,
             stormkit::gpu::PixelFormat::RG8U,
+            stormkit::gpu::PixelFormat::RG8_SNORM,
             stormkit::gpu::PixelFormat::RG8_UNORM,
             stormkit::gpu::PixelFormat::RGB16F,
             stormkit::gpu::PixelFormat::RGB16I,
-            stormkit::gpu::PixelFormat::RGB16_SNORM,
             stormkit::gpu::PixelFormat::RGB16U,
+            stormkit::gpu::PixelFormat::RGB16_SNORM,
             stormkit::gpu::PixelFormat::RGB16_UNORM,
             stormkit::gpu::PixelFormat::RGB32F,
             stormkit::gpu::PixelFormat::RGB32I,
             stormkit::gpu::PixelFormat::RGB32U,
             stormkit::gpu::PixelFormat::RGB8I,
-            stormkit::gpu::PixelFormat::RGB8_SNORM,
             stormkit::gpu::PixelFormat::RGB8U,
+            stormkit::gpu::PixelFormat::RGB8_SNORM,
             stormkit::gpu::PixelFormat::RGB8_UNORM,
             stormkit::gpu::PixelFormat::RGBA16F,
             stormkit::gpu::PixelFormat::RGBA16I,
-            stormkit::gpu::PixelFormat::RGBA16_SNORM,
             stormkit::gpu::PixelFormat::RGBA16U,
+            stormkit::gpu::PixelFormat::RGBA16_SNORM,
             stormkit::gpu::PixelFormat::RGBA16_UNORM,
             stormkit::gpu::PixelFormat::RGBA32F,
             stormkit::gpu::PixelFormat::RGBA32I,
             stormkit::gpu::PixelFormat::RGBA32U,
             stormkit::gpu::PixelFormat::RGBA4_UNORM_PACK16,
             stormkit::gpu::PixelFormat::RGBA8I,
-            stormkit::gpu::PixelFormat::RGBA8_SNORM,
             stormkit::gpu::PixelFormat::RGBA8U,
+            stormkit::gpu::PixelFormat::RGBA8_SNORM,
             stormkit::gpu::PixelFormat::RGBA8_UNORM,
             stormkit::gpu::PixelFormat::SBGR8,
             stormkit::gpu::PixelFormat::SBGRA8,
@@ -2680,9 +2645,9 @@ export {
         switch (value) {
             case stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16: return "PixelFormat::A1_RGB5_UNORM_PACK16";
             case stormkit::gpu::PixelFormat::A2_RGB10I_PACK32: return "PixelFormat::A2_RGB10I_PACK32";
+            case stormkit::gpu::PixelFormat::A2_RGB10U_PACK32: return "PixelFormat::A2_RGB10U_PACK32";
             case stormkit::gpu::PixelFormat::A2_RGB10_SNORM_PACK32: return "PixelFormat::A2_RGB10_SNORM_PACK32";
             case stormkit::gpu::PixelFormat::A2_RGB10_UNORM_PACK32: return "PixelFormat::A2_RGB10_UNORM_PACK32";
-            case stormkit::gpu::PixelFormat::A2_RGB10U_PACK32: return "PixelFormat::A2_RGB10U_PACK32";
             case stormkit::gpu::PixelFormat::B10_GR11UF_PACK32: return "PixelFormat::B10_GR11UF_PACK32";
             case stormkit::gpu::PixelFormat::BGR8_UNORM: return "PixelFormat::BGR8_UNORM";
             case stormkit::gpu::PixelFormat::BGRA8_UNORM: return "PixelFormat::BGRA8_UNORM";
@@ -2694,53 +2659,53 @@ export {
             case stormkit::gpu::PixelFormat::DEPTH32F_STENCIL8U: return "PixelFormat::DEPTH32F_STENCIL8U";
             case stormkit::gpu::PixelFormat::R16F: return "PixelFormat::R16F";
             case stormkit::gpu::PixelFormat::R16I: return "PixelFormat::R16I";
-            case stormkit::gpu::PixelFormat::R16_SNORM: return "PixelFormat::R16_SNORM";
             case stormkit::gpu::PixelFormat::R16U: return "PixelFormat::R16U";
+            case stormkit::gpu::PixelFormat::R16_SNORM: return "PixelFormat::R16_SNORM";
             case stormkit::gpu::PixelFormat::R16_UNORM: return "PixelFormat::R16_UNORM";
             case stormkit::gpu::PixelFormat::R32F: return "PixelFormat::R32F";
             case stormkit::gpu::PixelFormat::R32I: return "PixelFormat::R32I";
             case stormkit::gpu::PixelFormat::R32U: return "PixelFormat::R32U";
             case stormkit::gpu::PixelFormat::R5_G6_B5_UNORM_PACK16: return "PixelFormat::R5_G6_B5_UNORM_PACK16";
             case stormkit::gpu::PixelFormat::R8I: return "PixelFormat::R8I";
-            case stormkit::gpu::PixelFormat::R8_SNORM: return "PixelFormat::R8_SNORM";
             case stormkit::gpu::PixelFormat::R8U: return "PixelFormat::R8U";
+            case stormkit::gpu::PixelFormat::R8_SNORM: return "PixelFormat::R8_SNORM";
             case stormkit::gpu::PixelFormat::R8_UNORM: return "PixelFormat::R8_UNORM";
             case stormkit::gpu::PixelFormat::RG16F: return "PixelFormat::RG16F";
             case stormkit::gpu::PixelFormat::RG16I: return "PixelFormat::RG16I";
-            case stormkit::gpu::PixelFormat::RG16_SNORM: return "PixelFormat::RG16_SNORM";
             case stormkit::gpu::PixelFormat::RG16U: return "PixelFormat::RG16U";
+            case stormkit::gpu::PixelFormat::RG16_SNORM: return "PixelFormat::RG16_SNORM";
             case stormkit::gpu::PixelFormat::RG16_UNORM: return "PixelFormat::RG16_UNORM";
             case stormkit::gpu::PixelFormat::RG32F: return "PixelFormat::RG32F";
             case stormkit::gpu::PixelFormat::RG32I: return "PixelFormat::RG32I";
             case stormkit::gpu::PixelFormat::RG32U: return "PixelFormat::RG32U";
             case stormkit::gpu::PixelFormat::RG8I: return "PixelFormat::RG8I";
-            case stormkit::gpu::PixelFormat::RG8_SNORM: return "PixelFormat::RG8_SNORM";
             case stormkit::gpu::PixelFormat::RG8U: return "PixelFormat::RG8U";
+            case stormkit::gpu::PixelFormat::RG8_SNORM: return "PixelFormat::RG8_SNORM";
             case stormkit::gpu::PixelFormat::RG8_UNORM: return "PixelFormat::RG8_UNORM";
             case stormkit::gpu::PixelFormat::RGB16F: return "PixelFormat::RGB16F";
             case stormkit::gpu::PixelFormat::RGB16I: return "PixelFormat::RGB16I";
-            case stormkit::gpu::PixelFormat::RGB16_SNORM: return "PixelFormat::RGB16_SNORM";
             case stormkit::gpu::PixelFormat::RGB16U: return "PixelFormat::RGB16U";
+            case stormkit::gpu::PixelFormat::RGB16_SNORM: return "PixelFormat::RGB16_SNORM";
             case stormkit::gpu::PixelFormat::RGB16_UNORM: return "PixelFormat::RGB16_UNORM";
             case stormkit::gpu::PixelFormat::RGB32F: return "PixelFormat::RGB32F";
             case stormkit::gpu::PixelFormat::RGB32I: return "PixelFormat::RGB32I";
             case stormkit::gpu::PixelFormat::RGB32U: return "PixelFormat::RGB32U";
             case stormkit::gpu::PixelFormat::RGB8I: return "PixelFormat::RGB8I";
-            case stormkit::gpu::PixelFormat::RGB8_SNORM: return "PixelFormat::RGB8_SNORM";
             case stormkit::gpu::PixelFormat::RGB8U: return "PixelFormat::RGB8U";
+            case stormkit::gpu::PixelFormat::RGB8_SNORM: return "PixelFormat::RGB8_SNORM";
             case stormkit::gpu::PixelFormat::RGB8_UNORM: return "PixelFormat::RGB8_UNORM";
             case stormkit::gpu::PixelFormat::RGBA16F: return "PixelFormat::RGBA16F";
             case stormkit::gpu::PixelFormat::RGBA16I: return "PixelFormat::RGBA16I";
-            case stormkit::gpu::PixelFormat::RGBA16_SNORM: return "PixelFormat::RGBA16_SNORM";
             case stormkit::gpu::PixelFormat::RGBA16U: return "PixelFormat::RGBA16U";
+            case stormkit::gpu::PixelFormat::RGBA16_SNORM: return "PixelFormat::RGBA16_SNORM";
             case stormkit::gpu::PixelFormat::RGBA16_UNORM: return "PixelFormat::RGBA16_UNORM";
             case stormkit::gpu::PixelFormat::RGBA32F: return "PixelFormat::RGBA32F";
             case stormkit::gpu::PixelFormat::RGBA32I: return "PixelFormat::RGBA32I";
             case stormkit::gpu::PixelFormat::RGBA32U: return "PixelFormat::RGBA32U";
             case stormkit::gpu::PixelFormat::RGBA4_UNORM_PACK16: return "PixelFormat::RGBA4_UNORM_PACK16";
             case stormkit::gpu::PixelFormat::RGBA8I: return "PixelFormat::RGBA8I";
-            case stormkit::gpu::PixelFormat::RGBA8_SNORM: return "PixelFormat::RGBA8_SNORM";
             case stormkit::gpu::PixelFormat::RGBA8U: return "PixelFormat::RGBA8U";
+            case stormkit::gpu::PixelFormat::RGBA8_SNORM: return "PixelFormat::RGBA8_SNORM";
             case stormkit::gpu::PixelFormat::RGBA8_UNORM: return "PixelFormat::RGBA8_UNORM";
             case stormkit::gpu::PixelFormat::SBGR8: return "PixelFormat::SBGR8";
             case stormkit::gpu::PixelFormat::SBGRA8: return "PixelFormat::SBGRA8";
@@ -2755,15 +2720,14 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::PixelFormat>(stormkit::gpu::PixelFormat value) noexcept
       -> std::string {
         switch (value) {
             case stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16: return "PixelFormat::A1_RGB5_UNORM_PACK16";
             case stormkit::gpu::PixelFormat::A2_RGB10I_PACK32: return "PixelFormat::A2_RGB10I_PACK32";
+            case stormkit::gpu::PixelFormat::A2_RGB10U_PACK32: return "PixelFormat::A2_RGB10U_PACK32";
             case stormkit::gpu::PixelFormat::A2_RGB10_SNORM_PACK32: return "PixelFormat::A2_RGB10_SNORM_PACK32";
             case stormkit::gpu::PixelFormat::A2_RGB10_UNORM_PACK32: return "PixelFormat::A2_RGB10_UNORM_PACK32";
-            case stormkit::gpu::PixelFormat::A2_RGB10U_PACK32: return "PixelFormat::A2_RGB10U_PACK32";
             case stormkit::gpu::PixelFormat::B10_GR11UF_PACK32: return "PixelFormat::B10_GR11UF_PACK32";
             case stormkit::gpu::PixelFormat::BGR8_UNORM: return "PixelFormat::BGR8_UNORM";
             case stormkit::gpu::PixelFormat::BGRA8_UNORM: return "PixelFormat::BGRA8_UNORM";
@@ -2775,53 +2739,53 @@ export {
             case stormkit::gpu::PixelFormat::DEPTH32F_STENCIL8U: return "PixelFormat::DEPTH32F_STENCIL8U";
             case stormkit::gpu::PixelFormat::R16F: return "PixelFormat::R16F";
             case stormkit::gpu::PixelFormat::R16I: return "PixelFormat::R16I";
-            case stormkit::gpu::PixelFormat::R16_SNORM: return "PixelFormat::R16_SNORM";
             case stormkit::gpu::PixelFormat::R16U: return "PixelFormat::R16U";
+            case stormkit::gpu::PixelFormat::R16_SNORM: return "PixelFormat::R16_SNORM";
             case stormkit::gpu::PixelFormat::R16_UNORM: return "PixelFormat::R16_UNORM";
             case stormkit::gpu::PixelFormat::R32F: return "PixelFormat::R32F";
             case stormkit::gpu::PixelFormat::R32I: return "PixelFormat::R32I";
             case stormkit::gpu::PixelFormat::R32U: return "PixelFormat::R32U";
             case stormkit::gpu::PixelFormat::R5_G6_B5_UNORM_PACK16: return "PixelFormat::R5_G6_B5_UNORM_PACK16";
             case stormkit::gpu::PixelFormat::R8I: return "PixelFormat::R8I";
-            case stormkit::gpu::PixelFormat::R8_SNORM: return "PixelFormat::R8_SNORM";
             case stormkit::gpu::PixelFormat::R8U: return "PixelFormat::R8U";
+            case stormkit::gpu::PixelFormat::R8_SNORM: return "PixelFormat::R8_SNORM";
             case stormkit::gpu::PixelFormat::R8_UNORM: return "PixelFormat::R8_UNORM";
             case stormkit::gpu::PixelFormat::RG16F: return "PixelFormat::RG16F";
             case stormkit::gpu::PixelFormat::RG16I: return "PixelFormat::RG16I";
-            case stormkit::gpu::PixelFormat::RG16_SNORM: return "PixelFormat::RG16_SNORM";
             case stormkit::gpu::PixelFormat::RG16U: return "PixelFormat::RG16U";
+            case stormkit::gpu::PixelFormat::RG16_SNORM: return "PixelFormat::RG16_SNORM";
             case stormkit::gpu::PixelFormat::RG16_UNORM: return "PixelFormat::RG16_UNORM";
             case stormkit::gpu::PixelFormat::RG32F: return "PixelFormat::RG32F";
             case stormkit::gpu::PixelFormat::RG32I: return "PixelFormat::RG32I";
             case stormkit::gpu::PixelFormat::RG32U: return "PixelFormat::RG32U";
             case stormkit::gpu::PixelFormat::RG8I: return "PixelFormat::RG8I";
-            case stormkit::gpu::PixelFormat::RG8_SNORM: return "PixelFormat::RG8_SNORM";
             case stormkit::gpu::PixelFormat::RG8U: return "PixelFormat::RG8U";
+            case stormkit::gpu::PixelFormat::RG8_SNORM: return "PixelFormat::RG8_SNORM";
             case stormkit::gpu::PixelFormat::RG8_UNORM: return "PixelFormat::RG8_UNORM";
             case stormkit::gpu::PixelFormat::RGB16F: return "PixelFormat::RGB16F";
             case stormkit::gpu::PixelFormat::RGB16I: return "PixelFormat::RGB16I";
-            case stormkit::gpu::PixelFormat::RGB16_SNORM: return "PixelFormat::RGB16_SNORM";
             case stormkit::gpu::PixelFormat::RGB16U: return "PixelFormat::RGB16U";
+            case stormkit::gpu::PixelFormat::RGB16_SNORM: return "PixelFormat::RGB16_SNORM";
             case stormkit::gpu::PixelFormat::RGB16_UNORM: return "PixelFormat::RGB16_UNORM";
             case stormkit::gpu::PixelFormat::RGB32F: return "PixelFormat::RGB32F";
             case stormkit::gpu::PixelFormat::RGB32I: return "PixelFormat::RGB32I";
             case stormkit::gpu::PixelFormat::RGB32U: return "PixelFormat::RGB32U";
             case stormkit::gpu::PixelFormat::RGB8I: return "PixelFormat::RGB8I";
-            case stormkit::gpu::PixelFormat::RGB8_SNORM: return "PixelFormat::RGB8_SNORM";
             case stormkit::gpu::PixelFormat::RGB8U: return "PixelFormat::RGB8U";
+            case stormkit::gpu::PixelFormat::RGB8_SNORM: return "PixelFormat::RGB8_SNORM";
             case stormkit::gpu::PixelFormat::RGB8_UNORM: return "PixelFormat::RGB8_UNORM";
             case stormkit::gpu::PixelFormat::RGBA16F: return "PixelFormat::RGBA16F";
             case stormkit::gpu::PixelFormat::RGBA16I: return "PixelFormat::RGBA16I";
-            case stormkit::gpu::PixelFormat::RGBA16_SNORM: return "PixelFormat::RGBA16_SNORM";
             case stormkit::gpu::PixelFormat::RGBA16U: return "PixelFormat::RGBA16U";
+            case stormkit::gpu::PixelFormat::RGBA16_SNORM: return "PixelFormat::RGBA16_SNORM";
             case stormkit::gpu::PixelFormat::RGBA16_UNORM: return "PixelFormat::RGBA16_UNORM";
             case stormkit::gpu::PixelFormat::RGBA32F: return "PixelFormat::RGBA32F";
             case stormkit::gpu::PixelFormat::RGBA32I: return "PixelFormat::RGBA32I";
             case stormkit::gpu::PixelFormat::RGBA32U: return "PixelFormat::RGBA32U";
             case stormkit::gpu::PixelFormat::RGBA4_UNORM_PACK16: return "PixelFormat::RGBA4_UNORM_PACK16";
             case stormkit::gpu::PixelFormat::RGBA8I: return "PixelFormat::RGBA8I";
-            case stormkit::gpu::PixelFormat::RGBA8_SNORM: return "PixelFormat::RGBA8_SNORM";
             case stormkit::gpu::PixelFormat::RGBA8U: return "PixelFormat::RGBA8U";
+            case stormkit::gpu::PixelFormat::RGBA8_SNORM: return "PixelFormat::RGBA8_SNORM";
             case stormkit::gpu::PixelFormat::RGBA8_UNORM: return "PixelFormat::RGBA8_UNORM";
             case stormkit::gpu::PixelFormat::SBGR8: return "PixelFormat::SBGR8";
             case stormkit::gpu::PixelFormat::SBGRA8: return "PixelFormat::SBGRA8";
@@ -2862,7 +2826,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::PolygonMode>(stormkit::gpu::PolygonMode value) noexcept
       -> std::string {
         switch (value) {
@@ -2907,7 +2870,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::PresentMode>(stormkit::gpu::PresentMode value) noexcept
       -> std::string {
         switch (value) {
@@ -2952,7 +2914,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::PrimitiveTopology>(stormkit::gpu::PrimitiveTopology value) noexcept
       -> std::string {
         switch (value) {
@@ -2996,7 +2957,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::QueueFlag>(stormkit::gpu::QueueFlag value) noexcept -> std::string {
         switch (value) {
             case stormkit::gpu::QueueFlag::COMPUTE: return "QueueFlag::COMPUTE";
@@ -3041,7 +3001,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ResolveModeFlag>(stormkit::gpu::ResolveModeFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -3151,7 +3110,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::Result>(stormkit::gpu::Result value) noexcept -> std::string {
         switch (value) {
             case stormkit::gpu::Result::ERROR_DEVICE_LOST: return "Result::ERROR_DEVICE_LOST";
@@ -3228,7 +3186,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::SampleCountFlag>(stormkit::gpu::SampleCountFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -3249,10 +3206,8 @@ export {
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::SamplerAddressMode>() noexcept -> decltype(auto) {
         return std::array {
-            stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER,
-            stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE,
-            stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE,
-            stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT,
+            stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER, stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE,
+            stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT, stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE,
             stormkit::gpu::SamplerAddressMode::REPEAT,
 
         };
@@ -3266,8 +3221,8 @@ export {
         switch (value) {
             case stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER: return "SamplerAddressMode::CLAMP_TO_BORDER";
             case stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE: return "SamplerAddressMode::CLAMP_TO_EDGE";
-            case stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE: return "SamplerAddressMode::MIRROR_CLAMP_TO_EDGE";
             case stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT: return "SamplerAddressMode::MIRRORED_REPEAT";
+            case stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE: return "SamplerAddressMode::MIRROR_CLAMP_TO_EDGE";
             case stormkit::gpu::SamplerAddressMode::REPEAT: return "SamplerAddressMode::REPEAT";
         }
         std::unreachable();
@@ -3275,14 +3230,13 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::SamplerAddressMode>(stormkit::gpu::SamplerAddressMode value) noexcept
       -> std::string {
         switch (value) {
             case stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER: return "SamplerAddressMode::CLAMP_TO_BORDER";
             case stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE: return "SamplerAddressMode::CLAMP_TO_EDGE";
-            case stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE: return "SamplerAddressMode::MIRROR_CLAMP_TO_EDGE";
             case stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT: return "SamplerAddressMode::MIRRORED_REPEAT";
+            case stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE: return "SamplerAddressMode::MIRROR_CLAMP_TO_EDGE";
             case stormkit::gpu::SamplerAddressMode::REPEAT: return "SamplerAddressMode::REPEAT";
         }
         std::unreachable();
@@ -3314,7 +3268,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::SamplerMipmapMode>(stormkit::gpu::SamplerMipmapMode value) noexcept
       -> std::string {
         switch (value) {
@@ -3354,7 +3307,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::ShaderStageFlag>(stormkit::gpu::ShaderStageFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -3395,7 +3347,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::StencilFaceFlag>(stormkit::gpu::StencilFaceFlag value) noexcept
       -> std::string {
         switch (value) {
@@ -3432,7 +3383,6 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::VertexInputRate>(stormkit::gpu::VertexInputRate value) noexcept
       -> std::string {
         switch (value) {
@@ -3441,100 +3391,6 @@ export {
         }
         std::unreachable();
     }
-
-    // enum class Format : u8 {
-    //     BYTE,
-    //     BYTE2,
-    //     BYTE3,
-    //     BYTE4,
-
-    //    BYTE_NORM,
-    //    BYTE2_NORM,
-    //    BYTE3_NORM,
-    //    BYTE4_NORM,
-
-    //    BYTE_SCALED,
-    //    BYTE2_SCALED,
-    //    BYTE3_SCALED,
-    //    BYTE4_SCALED,
-
-    //    UBYTE,
-    //    UBYTE2,
-    //    UBYTE3,
-    //    UBYTE4,
-
-    //    UBYTE_NORM,
-    //    UBYTE2_NORM,
-    //    UBYTE3_NORM,
-    //    UBYTE4_NORM,
-
-    //    UBYTE_UCALED,
-    //    UBYTE2_UCALED,
-    //    UBYTE3_UCALED,
-    //    UBYTE4_UCALED,
-
-    //    SHORT,
-    //    SHORT2,
-    //    SHORT3,
-    //    SHORT4,
-
-    //    SHORT_NORM,
-    //    SHORT2_NORM,
-    //    SHORT3_NORM,
-    //    SHORT4_NORM,
-
-    //    SHORT_SCALED,
-    //    SHORT2_SCALED,
-    //    SHORT3_SCALED,
-    //    SHORT4_SCALED,
-
-    //    USHORT,
-    //    USHORT2,
-    //    USHORT3,
-    //    USHORT4,
-
-    //    USHORT_NORM,
-    //    USHORT2_NORM,
-    //    USHORT3_NORM,
-    //    USHORT4_NORM,
-
-    //    USHORT_UCALED,
-    //    USHORT2_UCALED,
-    //    USHORT3_UCALED,
-    //    USHORT4_UCALED,
-
-    //    INT,
-    //    INT2,
-    //    INT3,
-    //    INT4,
-
-    //    UINT,
-    //    UINT2,
-    //    UINT3,
-    //    UINT4,
-
-    //    LONG,
-    //    LONG2,
-    //    LONG3,
-    //    LONG4,
-
-    //    ULONG,
-    //    ULONG2,
-    //    ULONG3,
-    //    ULONG4,
-
-    //    FLOAT,
-    //    FLOAT2,
-    //    FLOAT3,
-    //    FLOAT4,
-
-    //    DOUBLE,
-    //    DOUBLE2,
-    //    DOUBLE3,
-    //    DOUBLE4,
-
-    //    UNDEFINED,
-    // };
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3544,7 +3400,7 @@ export {
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool {
         return format == PixelFormat::DEPTH16_UNORM
                or format == PixelFormat::DEPTH24_UNORM_PACK32
@@ -3553,7 +3409,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool {
         return format == PixelFormat::DEPTH16_UNORM_STENCIL8U
                or format == PixelFormat::DEPTH24_UNORM_STENCIL8U
@@ -3562,14 +3418,14 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_depth_format(PixelFormat format) noexcept -> bool {
         return is_depth_only_format(format) or is_depth_stencil_format(format);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto get_format_channel_count(PixelFormat format) noexcept -> u8 {
         switch (format) {
             case PixelFormat::R8_SNORM:
@@ -3646,7 +3502,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto get_format_element_count(PixelFormat format) noexcept -> u8 {
         switch (format) {
             case PixelFormat::R8_SNORM:
@@ -3715,6 +3571,7 @@ namespace stormkit::gpu {
     template<typename T = VkFlags, meta::IsVulkanEnumeration U>
         requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
     STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     STORMKIT_INTRINSIC
     constexpr auto to_vk(U value) noexcept -> T {
         return narrow<T>(value);
@@ -3725,262 +3582,279 @@ namespace stormkit::gpu {
     template<meta::IsVulkanEnumeration T, typename U>
         requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
     STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     STORMKIT_INTRINSIC
     constexpr auto from_vk(U value) noexcept -> T {
         return narrow<T>(value);
     }
 } // namespace stormkit::gpu
 
-template stormkit::gpu::AccessFlag stormkit::gpu::from_vk<stormkit::gpu::AccessFlag, VkFlags>(VkFlags);
-template stormkit::gpu::AccessFlag stormkit::gpu::from_vk<stormkit::gpu::AccessFlag, VkAccessFlagBits>(VkAccessFlagBits);
-template VkFlags                   stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::AccessFlag);
-template VkAccessFlagBits          stormkit::gpu::to_vk<VkAccessFlagBits>(stormkit::gpu::AccessFlag);
+template stormkit::gpu::AccessFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::AccessFlag, VkFlags>(VkFlags);
+template stormkit::gpu::AccessFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::AccessFlag, VkAccessFlagBits>(VkAccessFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::AccessFlag);
+template VkAccessFlagBits STORMKIT_API stormkit::gpu::to_vk<VkAccessFlagBits>(stormkit::gpu::AccessFlag);
 
-template stormkit::gpu::AttachmentLoadOperation stormkit::gpu::from_vk<stormkit::gpu::AttachmentLoadOperation, VkFlags>(VkFlags);
-template stormkit::gpu::AttachmentLoadOperation stormkit::gpu::from_vk<stormkit::gpu::AttachmentLoadOperation,
-                                                                       VkAttachmentLoadOp>(VkAttachmentLoadOp);
-template VkFlags                                stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::AttachmentLoadOperation);
-template VkAttachmentLoadOp                     stormkit::gpu::to_vk<VkAttachmentLoadOp>(stormkit::gpu::AttachmentLoadOperation);
+template stormkit::gpu::AttachmentLoadOperation
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::AttachmentLoadOperation, VkFlags>(VkFlags);
+template stormkit::gpu::AttachmentLoadOperation
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::AttachmentLoadOperation, VkAttachmentLoadOp>(VkAttachmentLoadOp);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::AttachmentLoadOperation);
+template VkAttachmentLoadOp STORMKIT_API stormkit::gpu::to_vk<VkAttachmentLoadOp>(stormkit::gpu::AttachmentLoadOperation);
 
-template stormkit::gpu::AttachmentStoreOperation stormkit::gpu::from_vk<stormkit::gpu::AttachmentStoreOperation,
-                                                                        VkFlags>(VkFlags);
-template stormkit::gpu::AttachmentStoreOperation stormkit::gpu::from_vk<stormkit::gpu::AttachmentStoreOperation,
-                                                                        VkAttachmentStoreOp>(VkAttachmentStoreOp);
-template VkFlags                                 stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::AttachmentStoreOperation);
-template VkAttachmentStoreOp stormkit::gpu::to_vk<VkAttachmentStoreOp>(stormkit::gpu::AttachmentStoreOperation);
+template stormkit::gpu::AttachmentStoreOperation
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::AttachmentStoreOperation, VkFlags>(VkFlags);
+template stormkit::gpu::AttachmentStoreOperation
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::AttachmentStoreOperation, VkAttachmentStoreOp>(VkAttachmentStoreOp);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::AttachmentStoreOperation);
+template VkAttachmentStoreOp STORMKIT_API stormkit::gpu::to_vk<VkAttachmentStoreOp>(stormkit::gpu::AttachmentStoreOperation);
 
-template stormkit::gpu::BlendFactor stormkit::gpu::from_vk<stormkit::gpu::BlendFactor, VkFlags>(VkFlags);
-template stormkit::gpu::BlendFactor stormkit::gpu::from_vk<stormkit::gpu::BlendFactor, VkBlendFactor>(VkBlendFactor);
-template VkFlags                    stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BlendFactor);
-template VkBlendFactor              stormkit::gpu::to_vk<VkBlendFactor>(stormkit::gpu::BlendFactor);
+template stormkit::gpu::BlendFactor STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::BlendFactor, VkFlags>(VkFlags);
+template stormkit::gpu::BlendFactor STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::BlendFactor, VkBlendFactor>(VkBlendFactor);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BlendFactor);
+template VkBlendFactor STORMKIT_API stormkit::gpu::to_vk<VkBlendFactor>(stormkit::gpu::BlendFactor);
 
-template stormkit::gpu::BlendOperation stormkit::gpu::from_vk<stormkit::gpu::BlendOperation, VkFlags>(VkFlags);
-template stormkit::gpu::BlendOperation stormkit::gpu::from_vk<stormkit::gpu::BlendOperation, VkBlendOp>(VkBlendOp);
-template VkFlags                       stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BlendOperation);
-template VkBlendOp                     stormkit::gpu::to_vk<VkBlendOp>(stormkit::gpu::BlendOperation);
+template stormkit::gpu::BlendOperation STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::BlendOperation, VkFlags>(VkFlags);
+template stormkit::gpu::BlendOperation STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::BlendOperation, VkBlendOp>(VkBlendOp);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BlendOperation);
+template VkBlendOp STORMKIT_API stormkit::gpu::to_vk<VkBlendOp>(stormkit::gpu::BlendOperation);
 
-template stormkit::gpu::BorderColor stormkit::gpu::from_vk<stormkit::gpu::BorderColor, VkFlags>(VkFlags);
-template stormkit::gpu::BorderColor stormkit::gpu::from_vk<stormkit::gpu::BorderColor, VkBorderColor>(VkBorderColor);
-template VkFlags                    stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BorderColor);
-template VkBorderColor              stormkit::gpu::to_vk<VkBorderColor>(stormkit::gpu::BorderColor);
+template stormkit::gpu::BorderColor STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::BorderColor, VkFlags>(VkFlags);
+template stormkit::gpu::BorderColor STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::BorderColor, VkBorderColor>(VkBorderColor);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BorderColor);
+template VkBorderColor STORMKIT_API stormkit::gpu::to_vk<VkBorderColor>(stormkit::gpu::BorderColor);
 
-template stormkit::gpu::BufferUsageFlag stormkit::gpu::from_vk<stormkit::gpu::BufferUsageFlag, VkFlags>(VkFlags);
-template stormkit::gpu::BufferUsageFlag stormkit::gpu::from_vk<stormkit::gpu::BufferUsageFlag,
-                                                               VkBufferUsageFlagBits>(VkBufferUsageFlagBits);
-template VkFlags                        stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BufferUsageFlag);
-template VkBufferUsageFlagBits          stormkit::gpu::to_vk<VkBufferUsageFlagBits>(stormkit::gpu::BufferUsageFlag);
+template stormkit::gpu::BufferUsageFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::BufferUsageFlag, VkFlags>(VkFlags);
+template stormkit::gpu::BufferUsageFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::BufferUsageFlag, VkBufferUsageFlagBits>(VkBufferUsageFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BufferUsageFlag);
+template VkBufferUsageFlagBits STORMKIT_API stormkit::gpu::to_vk<VkBufferUsageFlagBits>(stormkit::gpu::BufferUsageFlag);
 
-template stormkit::gpu::ColorComponentFlag stormkit::gpu::from_vk<stormkit::gpu::ColorComponentFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ColorComponentFlag stormkit::gpu::from_vk<stormkit::gpu::ColorComponentFlag,
-                                                                  VkColorComponentFlagBits>(VkColorComponentFlagBits);
-template VkFlags                           stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ColorComponentFlag);
-template VkColorComponentFlagBits          stormkit::gpu::to_vk<VkColorComponentFlagBits>(stormkit::gpu::ColorComponentFlag);
+template stormkit::gpu::ColorComponentFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ColorComponentFlag, VkFlags>(VkFlags);
+template stormkit::gpu::ColorComponentFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ColorComponentFlag, VkColorComponentFlagBits>(VkColorComponentFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ColorComponentFlag);
+template VkColorComponentFlagBits STORMKIT_API stormkit::gpu::to_vk<VkColorComponentFlagBits>(stormkit::gpu::ColorComponentFlag);
 
-template stormkit::gpu::ColorSpace stormkit::gpu::from_vk<stormkit::gpu::ColorSpace, VkFlags>(VkFlags);
-template stormkit::gpu::ColorSpace stormkit::gpu::from_vk<stormkit::gpu::ColorSpace, VkColorSpaceKHR>(VkColorSpaceKHR);
-template VkFlags                   stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ColorSpace);
-template VkColorSpaceKHR           stormkit::gpu::to_vk<VkColorSpaceKHR>(stormkit::gpu::ColorSpace);
+template stormkit::gpu::ColorSpace STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ColorSpace, VkFlags>(VkFlags);
+template stormkit::gpu::ColorSpace
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ColorSpace, VkColorSpaceKHR>(VkColorSpaceKHR);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ColorSpace);
+template VkColorSpaceKHR STORMKIT_API stormkit::gpu::to_vk<VkColorSpaceKHR>(stormkit::gpu::ColorSpace);
 
-template stormkit::gpu::CommandBufferLevel stormkit::gpu::from_vk<stormkit::gpu::CommandBufferLevel, VkFlags>(VkFlags);
-template stormkit::gpu::CommandBufferLevel stormkit::gpu::from_vk<stormkit::gpu::CommandBufferLevel,
-                                                                  VkCommandBufferLevel>(VkCommandBufferLevel);
-template VkFlags                           stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::CommandBufferLevel);
-template VkCommandBufferLevel              stormkit::gpu::to_vk<VkCommandBufferLevel>(stormkit::gpu::CommandBufferLevel);
+template stormkit::gpu::CommandBufferLevel
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::CommandBufferLevel, VkFlags>(VkFlags);
+template stormkit::gpu::CommandBufferLevel
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::CommandBufferLevel, VkCommandBufferLevel>(VkCommandBufferLevel);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::CommandBufferLevel);
+template VkCommandBufferLevel STORMKIT_API stormkit::gpu::to_vk<VkCommandBufferLevel>(stormkit::gpu::CommandBufferLevel);
 
-template stormkit::gpu::CompareOperation stormkit::gpu::from_vk<stormkit::gpu::CompareOperation, VkFlags>(VkFlags);
-template stormkit::gpu::CompareOperation stormkit::gpu::from_vk<stormkit::gpu::CompareOperation, VkCompareOp>(VkCompareOp);
-template VkFlags                         stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::CompareOperation);
-template VkCompareOp                     stormkit::gpu::to_vk<VkCompareOp>(stormkit::gpu::CompareOperation);
+template stormkit::gpu::CompareOperation STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::CompareOperation, VkFlags>(VkFlags);
+template stormkit::gpu::CompareOperation
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::CompareOperation, VkCompareOp>(VkCompareOp);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::CompareOperation);
+template VkCompareOp STORMKIT_API stormkit::gpu::to_vk<VkCompareOp>(stormkit::gpu::CompareOperation);
 
-template stormkit::gpu::CullModeFlag stormkit::gpu::from_vk<stormkit::gpu::CullModeFlag, VkFlags>(VkFlags);
-template stormkit::gpu::CullModeFlag stormkit::gpu::from_vk<stormkit::gpu::CullModeFlag, VkCullModeFlagBits>(VkCullModeFlagBits);
-template VkFlags                     stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::CullModeFlag);
-template VkCullModeFlagBits          stormkit::gpu::to_vk<VkCullModeFlagBits>(stormkit::gpu::CullModeFlag);
+template stormkit::gpu::CullModeFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::CullModeFlag, VkFlags>(VkFlags);
+template stormkit::gpu::CullModeFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::CullModeFlag, VkCullModeFlagBits>(VkCullModeFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::CullModeFlag);
+template VkCullModeFlagBits STORMKIT_API stormkit::gpu::to_vk<VkCullModeFlagBits>(stormkit::gpu::CullModeFlag);
 
-template stormkit::gpu::DebugObjectType stormkit::gpu::from_vk<stormkit::gpu::DebugObjectType, VkFlags>(VkFlags);
-template stormkit::gpu::DebugObjectType stormkit::gpu::from_vk<stormkit::gpu::DebugObjectType, VkObjectType>(VkObjectType);
-template VkFlags                        stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DebugObjectType);
-template VkObjectType                   stormkit::gpu::to_vk<VkObjectType>(stormkit::gpu::DebugObjectType);
+template stormkit::gpu::DebugObjectType STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::DebugObjectType, VkFlags>(VkFlags);
+template stormkit::gpu::DebugObjectType
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::DebugObjectType, VkObjectType>(VkObjectType);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DebugObjectType);
+template VkObjectType STORMKIT_API stormkit::gpu::to_vk<VkObjectType>(stormkit::gpu::DebugObjectType);
 
-template stormkit::gpu::DependencyFlag stormkit::gpu::from_vk<stormkit::gpu::DependencyFlag, VkFlags>(VkFlags);
-template stormkit::gpu::DependencyFlag stormkit::gpu::from_vk<stormkit::gpu::DependencyFlag,
-                                                              VkDependencyFlagBits>(VkDependencyFlagBits);
-template VkFlags                       stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DependencyFlag);
-template VkDependencyFlagBits          stormkit::gpu::to_vk<VkDependencyFlagBits>(stormkit::gpu::DependencyFlag);
+template stormkit::gpu::DependencyFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::DependencyFlag, VkFlags>(VkFlags);
+template stormkit::gpu::DependencyFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::DependencyFlag, VkDependencyFlagBits>(VkDependencyFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DependencyFlag);
+template VkDependencyFlagBits STORMKIT_API stormkit::gpu::to_vk<VkDependencyFlagBits>(stormkit::gpu::DependencyFlag);
 
-template stormkit::gpu::DescriptorType stormkit::gpu::from_vk<stormkit::gpu::DescriptorType, VkFlags>(VkFlags);
-template stormkit::gpu::DescriptorType stormkit::gpu::from_vk<stormkit::gpu::DescriptorType, VkDescriptorType>(VkDescriptorType);
-template VkFlags                       stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DescriptorType);
-template VkDescriptorType              stormkit::gpu::to_vk<VkDescriptorType>(stormkit::gpu::DescriptorType);
+template stormkit::gpu::DescriptorType STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::DescriptorType, VkFlags>(VkFlags);
+template stormkit::gpu::DescriptorType
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::DescriptorType, VkDescriptorType>(VkDescriptorType);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DescriptorType);
+template VkDescriptorType STORMKIT_API stormkit::gpu::to_vk<VkDescriptorType>(stormkit::gpu::DescriptorType);
 
-template stormkit::gpu::DynamicState stormkit::gpu::from_vk<stormkit::gpu::DynamicState, VkFlags>(VkFlags);
-template stormkit::gpu::DynamicState stormkit::gpu::from_vk<stormkit::gpu::DynamicState, VkDynamicState>(VkDynamicState);
-template VkFlags                     stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DynamicState);
-template VkDynamicState              stormkit::gpu::to_vk<VkDynamicState>(stormkit::gpu::DynamicState);
+template stormkit::gpu::DynamicState STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::DynamicState, VkFlags>(VkFlags);
+template stormkit::gpu::DynamicState
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::DynamicState, VkDynamicState>(VkDynamicState);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DynamicState);
+template VkDynamicState STORMKIT_API stormkit::gpu::to_vk<VkDynamicState>(stormkit::gpu::DynamicState);
 
-template stormkit::gpu::Filter stormkit::gpu::from_vk<stormkit::gpu::Filter, VkFlags>(VkFlags);
-template stormkit::gpu::Filter stormkit::gpu::from_vk<stormkit::gpu::Filter, VkFilter>(VkFilter);
-template VkFlags               stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::Filter);
-template VkFilter              stormkit::gpu::to_vk<VkFilter>(stormkit::gpu::Filter);
+template stormkit::gpu::Filter STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::Filter, VkFlags>(VkFlags);
+template stormkit::gpu::Filter STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::Filter, VkFilter>(VkFilter);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::Filter);
+template VkFilter STORMKIT_API stormkit::gpu::to_vk<VkFilter>(stormkit::gpu::Filter);
 
-template stormkit::gpu::FormatFeatureFlag stormkit::gpu::from_vk<stormkit::gpu::FormatFeatureFlag, VkFlags>(VkFlags);
-template stormkit::gpu::FormatFeatureFlag stormkit::gpu::from_vk<stormkit::gpu::FormatFeatureFlag,
-                                                                 VkFormatFeatureFlagBits>(VkFormatFeatureFlagBits);
-template VkFlags                          stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::FormatFeatureFlag);
-template VkFormatFeatureFlagBits          stormkit::gpu::to_vk<VkFormatFeatureFlagBits>(stormkit::gpu::FormatFeatureFlag);
+template stormkit::gpu::FormatFeatureFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::FormatFeatureFlag, VkFlags>(VkFlags);
+template stormkit::gpu::FormatFeatureFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::FormatFeatureFlag, VkFormatFeatureFlagBits>(VkFormatFeatureFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::FormatFeatureFlag);
+template VkFormatFeatureFlagBits STORMKIT_API stormkit::gpu::to_vk<VkFormatFeatureFlagBits>(stormkit::gpu::FormatFeatureFlag);
 
-template stormkit::gpu::FrontFace stormkit::gpu::from_vk<stormkit::gpu::FrontFace, VkFlags>(VkFlags);
-template stormkit::gpu::FrontFace stormkit::gpu::from_vk<stormkit::gpu::FrontFace, VkFrontFace>(VkFrontFace);
-template VkFlags                  stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::FrontFace);
-template VkFrontFace              stormkit::gpu::to_vk<VkFrontFace>(stormkit::gpu::FrontFace);
+template stormkit::gpu::FrontFace STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::FrontFace, VkFlags>(VkFlags);
+template stormkit::gpu::FrontFace STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::FrontFace, VkFrontFace>(VkFrontFace);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::FrontFace);
+template VkFrontFace STORMKIT_API stormkit::gpu::to_vk<VkFrontFace>(stormkit::gpu::FrontFace);
 
-template stormkit::gpu::GeometryFlag stormkit::gpu::from_vk<stormkit::gpu::GeometryFlag, VkFlags>(VkFlags);
-template stormkit::gpu::GeometryFlag stormkit::gpu::from_vk<stormkit::gpu::GeometryFlag,
-                                                            VkGeometryFlagBitsKHR>(VkGeometryFlagBitsKHR);
-template VkFlags                     stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::GeometryFlag);
-template VkGeometryFlagBitsKHR       stormkit::gpu::to_vk<VkGeometryFlagBitsKHR>(stormkit::gpu::GeometryFlag);
+template stormkit::gpu::GeometryFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::GeometryFlag, VkFlags>(VkFlags);
+template stormkit::gpu::GeometryFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::GeometryFlag, VkGeometryFlagBitsKHR>(VkGeometryFlagBitsKHR);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::GeometryFlag);
+template VkGeometryFlagBitsKHR STORMKIT_API stormkit::gpu::to_vk<VkGeometryFlagBitsKHR>(stormkit::gpu::GeometryFlag);
 
-template stormkit::gpu::GeometryType stormkit::gpu::from_vk<stormkit::gpu::GeometryType, VkFlags>(VkFlags);
-template stormkit::gpu::GeometryType stormkit::gpu::from_vk<stormkit::gpu::GeometryType, VkGeometryTypeKHR>(VkGeometryTypeKHR);
-template VkFlags                     stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::GeometryType);
-template VkGeometryTypeKHR           stormkit::gpu::to_vk<VkGeometryTypeKHR>(stormkit::gpu::GeometryType);
+template stormkit::gpu::GeometryType STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::GeometryType, VkFlags>(VkFlags);
+template stormkit::gpu::GeometryType
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::GeometryType, VkGeometryTypeKHR>(VkGeometryTypeKHR);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::GeometryType);
+template VkGeometryTypeKHR STORMKIT_API stormkit::gpu::to_vk<VkGeometryTypeKHR>(stormkit::gpu::GeometryType);
 
-template stormkit::gpu::ImageAspectFlag stormkit::gpu::from_vk<stormkit::gpu::ImageAspectFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ImageAspectFlag stormkit::gpu::from_vk<stormkit::gpu::ImageAspectFlag,
-                                                               VkImageAspectFlagBits>(VkImageAspectFlagBits);
-template VkFlags                        stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageAspectFlag);
-template VkImageAspectFlagBits          stormkit::gpu::to_vk<VkImageAspectFlagBits>(stormkit::gpu::ImageAspectFlag);
+template stormkit::gpu::ImageAspectFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageAspectFlag, VkFlags>(VkFlags);
+template stormkit::gpu::ImageAspectFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageAspectFlag, VkImageAspectFlagBits>(VkImageAspectFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageAspectFlag);
+template VkImageAspectFlagBits STORMKIT_API stormkit::gpu::to_vk<VkImageAspectFlagBits>(stormkit::gpu::ImageAspectFlag);
 
-template stormkit::gpu::ImageCreateFlag stormkit::gpu::from_vk<stormkit::gpu::ImageCreateFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ImageCreateFlag stormkit::gpu::from_vk<stormkit::gpu::ImageCreateFlag,
-                                                               VkImageCreateFlagBits>(VkImageCreateFlagBits);
-template VkFlags                        stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageCreateFlag);
-template VkImageCreateFlagBits          stormkit::gpu::to_vk<VkImageCreateFlagBits>(stormkit::gpu::ImageCreateFlag);
+template stormkit::gpu::ImageCreateFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageCreateFlag, VkFlags>(VkFlags);
+template stormkit::gpu::ImageCreateFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageCreateFlag, VkImageCreateFlagBits>(VkImageCreateFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageCreateFlag);
+template VkImageCreateFlagBits STORMKIT_API stormkit::gpu::to_vk<VkImageCreateFlagBits>(stormkit::gpu::ImageCreateFlag);
 
-template stormkit::gpu::ImageLayout stormkit::gpu::from_vk<stormkit::gpu::ImageLayout, VkFlags>(VkFlags);
-template stormkit::gpu::ImageLayout stormkit::gpu::from_vk<stormkit::gpu::ImageLayout, VkImageLayout>(VkImageLayout);
-template VkFlags                    stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageLayout);
-template VkImageLayout              stormkit::gpu::to_vk<VkImageLayout>(stormkit::gpu::ImageLayout);
+template stormkit::gpu::ImageLayout STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageLayout, VkFlags>(VkFlags);
+template stormkit::gpu::ImageLayout STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageLayout, VkImageLayout>(VkImageLayout);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageLayout);
+template VkImageLayout STORMKIT_API stormkit::gpu::to_vk<VkImageLayout>(stormkit::gpu::ImageLayout);
 
-template stormkit::gpu::ImageTiling stormkit::gpu::from_vk<stormkit::gpu::ImageTiling, VkFlags>(VkFlags);
-template stormkit::gpu::ImageTiling stormkit::gpu::from_vk<stormkit::gpu::ImageTiling, VkImageTiling>(VkImageTiling);
-template VkFlags                    stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageTiling);
-template VkImageTiling              stormkit::gpu::to_vk<VkImageTiling>(stormkit::gpu::ImageTiling);
+template stormkit::gpu::ImageTiling STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageTiling, VkFlags>(VkFlags);
+template stormkit::gpu::ImageTiling STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageTiling, VkImageTiling>(VkImageTiling);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageTiling);
+template VkImageTiling STORMKIT_API stormkit::gpu::to_vk<VkImageTiling>(stormkit::gpu::ImageTiling);
 
-template stormkit::gpu::ImageType stormkit::gpu::from_vk<stormkit::gpu::ImageType, VkFlags>(VkFlags);
-template stormkit::gpu::ImageType stormkit::gpu::from_vk<stormkit::gpu::ImageType, VkImageType>(VkImageType);
-template VkFlags                  stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageType);
-template VkImageType              stormkit::gpu::to_vk<VkImageType>(stormkit::gpu::ImageType);
+template stormkit::gpu::ImageType STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageType, VkFlags>(VkFlags);
+template stormkit::gpu::ImageType STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageType, VkImageType>(VkImageType);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageType);
+template VkImageType STORMKIT_API stormkit::gpu::to_vk<VkImageType>(stormkit::gpu::ImageType);
 
-template stormkit::gpu::ImageUsageFlag stormkit::gpu::from_vk<stormkit::gpu::ImageUsageFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ImageUsageFlag stormkit::gpu::from_vk<stormkit::gpu::ImageUsageFlag,
-                                                              VkImageUsageFlagBits>(VkImageUsageFlagBits);
-template VkFlags                       stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageUsageFlag);
-template VkImageUsageFlagBits          stormkit::gpu::to_vk<VkImageUsageFlagBits>(stormkit::gpu::ImageUsageFlag);
+template stormkit::gpu::ImageUsageFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageUsageFlag, VkFlags>(VkFlags);
+template stormkit::gpu::ImageUsageFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageUsageFlag, VkImageUsageFlagBits>(VkImageUsageFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageUsageFlag);
+template VkImageUsageFlagBits STORMKIT_API stormkit::gpu::to_vk<VkImageUsageFlagBits>(stormkit::gpu::ImageUsageFlag);
 
-template stormkit::gpu::ImageViewType stormkit::gpu::from_vk<stormkit::gpu::ImageViewType, VkFlags>(VkFlags);
-template stormkit::gpu::ImageViewType stormkit::gpu::from_vk<stormkit::gpu::ImageViewType, VkImageViewType>(VkImageViewType);
-template VkFlags                      stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageViewType);
-template VkImageViewType              stormkit::gpu::to_vk<VkImageViewType>(stormkit::gpu::ImageViewType);
+template stormkit::gpu::ImageViewType STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageViewType, VkFlags>(VkFlags);
+template stormkit::gpu::ImageViewType
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ImageViewType, VkImageViewType>(VkImageViewType);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageViewType);
+template VkImageViewType STORMKIT_API stormkit::gpu::to_vk<VkImageViewType>(stormkit::gpu::ImageViewType);
 
-template stormkit::gpu::LogicOperation stormkit::gpu::from_vk<stormkit::gpu::LogicOperation, VkFlags>(VkFlags);
-template stormkit::gpu::LogicOperation stormkit::gpu::from_vk<stormkit::gpu::LogicOperation, VkLogicOp>(VkLogicOp);
-template VkFlags                       stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::LogicOperation);
-template VkLogicOp                     stormkit::gpu::to_vk<VkLogicOp>(stormkit::gpu::LogicOperation);
+template stormkit::gpu::LogicOperation STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::LogicOperation, VkFlags>(VkFlags);
+template stormkit::gpu::LogicOperation STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::LogicOperation, VkLogicOp>(VkLogicOp);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::LogicOperation);
+template VkLogicOp STORMKIT_API stormkit::gpu::to_vk<VkLogicOp>(stormkit::gpu::LogicOperation);
 
-template stormkit::gpu::MemoryPropertyFlag stormkit::gpu::from_vk<stormkit::gpu::MemoryPropertyFlag, VkFlags>(VkFlags);
-template stormkit::gpu::MemoryPropertyFlag stormkit::gpu::from_vk<stormkit::gpu::MemoryPropertyFlag,
-                                                                  VkMemoryPropertyFlagBits>(VkMemoryPropertyFlagBits);
-template VkFlags                           stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::MemoryPropertyFlag);
-template VkMemoryPropertyFlagBits          stormkit::gpu::to_vk<VkMemoryPropertyFlagBits>(stormkit::gpu::MemoryPropertyFlag);
+template stormkit::gpu::MemoryPropertyFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::MemoryPropertyFlag, VkFlags>(VkFlags);
+template stormkit::gpu::MemoryPropertyFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::MemoryPropertyFlag, VkMemoryPropertyFlagBits>(VkMemoryPropertyFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::MemoryPropertyFlag);
+template VkMemoryPropertyFlagBits STORMKIT_API stormkit::gpu::to_vk<VkMemoryPropertyFlagBits>(stormkit::gpu::MemoryPropertyFlag);
 
-template stormkit::gpu::PhysicalDeviceType stormkit::gpu::from_vk<stormkit::gpu::PhysicalDeviceType, VkFlags>(VkFlags);
-template stormkit::gpu::PhysicalDeviceType stormkit::gpu::from_vk<stormkit::gpu::PhysicalDeviceType,
-                                                                  VkPhysicalDeviceType>(VkPhysicalDeviceType);
-template VkFlags                           stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PhysicalDeviceType);
-template VkPhysicalDeviceType              stormkit::gpu::to_vk<VkPhysicalDeviceType>(stormkit::gpu::PhysicalDeviceType);
+template stormkit::gpu::PhysicalDeviceType
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PhysicalDeviceType, VkFlags>(VkFlags);
+template stormkit::gpu::PhysicalDeviceType
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PhysicalDeviceType, VkPhysicalDeviceType>(VkPhysicalDeviceType);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PhysicalDeviceType);
+template VkPhysicalDeviceType STORMKIT_API stormkit::gpu::to_vk<VkPhysicalDeviceType>(stormkit::gpu::PhysicalDeviceType);
 
-template stormkit::gpu::PipelineBindPoint stormkit::gpu::from_vk<stormkit::gpu::PipelineBindPoint, VkFlags>(VkFlags);
-template stormkit::gpu::PipelineBindPoint stormkit::gpu::from_vk<stormkit::gpu::PipelineBindPoint,
-                                                                 VkPipelineBindPoint>(VkPipelineBindPoint);
-template VkFlags                          stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PipelineBindPoint);
-template VkPipelineBindPoint              stormkit::gpu::to_vk<VkPipelineBindPoint>(stormkit::gpu::PipelineBindPoint);
+template stormkit::gpu::PipelineBindPoint STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PipelineBindPoint, VkFlags>(VkFlags);
+template stormkit::gpu::PipelineBindPoint
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PipelineBindPoint, VkPipelineBindPoint>(VkPipelineBindPoint);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PipelineBindPoint);
+template VkPipelineBindPoint STORMKIT_API stormkit::gpu::to_vk<VkPipelineBindPoint>(stormkit::gpu::PipelineBindPoint);
 
-template stormkit::gpu::PipelineStageFlag stormkit::gpu::from_vk<stormkit::gpu::PipelineStageFlag, VkFlags>(VkFlags);
-template stormkit::gpu::PipelineStageFlag stormkit::gpu::from_vk<stormkit::gpu::PipelineStageFlag,
-                                                                 VkPipelineStageFlagBits>(VkPipelineStageFlagBits);
-template VkFlags                          stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PipelineStageFlag);
-template VkPipelineStageFlagBits          stormkit::gpu::to_vk<VkPipelineStageFlagBits>(stormkit::gpu::PipelineStageFlag);
+template stormkit::gpu::PipelineStageFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PipelineStageFlag, VkFlags>(VkFlags);
+template stormkit::gpu::PipelineStageFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PipelineStageFlag, VkPipelineStageFlagBits>(VkPipelineStageFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PipelineStageFlag);
+template VkPipelineStageFlagBits STORMKIT_API stormkit::gpu::to_vk<VkPipelineStageFlagBits>(stormkit::gpu::PipelineStageFlag);
 
-template stormkit::gpu::PixelFormat stormkit::gpu::from_vk<stormkit::gpu::PixelFormat, VkFlags>(VkFlags);
-template stormkit::gpu::PixelFormat stormkit::gpu::from_vk<stormkit::gpu::PixelFormat, VkFormat>(VkFormat);
-template VkFlags                    stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PixelFormat);
-template VkFormat                   stormkit::gpu::to_vk<VkFormat>(stormkit::gpu::PixelFormat);
+template stormkit::gpu::PixelFormat STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PixelFormat, VkFlags>(VkFlags);
+template stormkit::gpu::PixelFormat STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PixelFormat, VkFormat>(VkFormat);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PixelFormat);
+template VkFormat STORMKIT_API stormkit::gpu::to_vk<VkFormat>(stormkit::gpu::PixelFormat);
 
-template stormkit::gpu::PolygonMode stormkit::gpu::from_vk<stormkit::gpu::PolygonMode, VkFlags>(VkFlags);
-template stormkit::gpu::PolygonMode stormkit::gpu::from_vk<stormkit::gpu::PolygonMode, VkPolygonMode>(VkPolygonMode);
-template VkFlags                    stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PolygonMode);
-template VkPolygonMode              stormkit::gpu::to_vk<VkPolygonMode>(stormkit::gpu::PolygonMode);
+template stormkit::gpu::PolygonMode STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PolygonMode, VkFlags>(VkFlags);
+template stormkit::gpu::PolygonMode STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PolygonMode, VkPolygonMode>(VkPolygonMode);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PolygonMode);
+template VkPolygonMode STORMKIT_API stormkit::gpu::to_vk<VkPolygonMode>(stormkit::gpu::PolygonMode);
 
-template stormkit::gpu::PresentMode stormkit::gpu::from_vk<stormkit::gpu::PresentMode, VkFlags>(VkFlags);
-template stormkit::gpu::PresentMode stormkit::gpu::from_vk<stormkit::gpu::PresentMode, VkPresentModeKHR>(VkPresentModeKHR);
-template VkFlags                    stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PresentMode);
-template VkPresentModeKHR           stormkit::gpu::to_vk<VkPresentModeKHR>(stormkit::gpu::PresentMode);
+template stormkit::gpu::PresentMode STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PresentMode, VkFlags>(VkFlags);
+template stormkit::gpu::PresentMode
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PresentMode, VkPresentModeKHR>(VkPresentModeKHR);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PresentMode);
+template VkPresentModeKHR STORMKIT_API stormkit::gpu::to_vk<VkPresentModeKHR>(stormkit::gpu::PresentMode);
 
-template stormkit::gpu::PrimitiveTopology stormkit::gpu::from_vk<stormkit::gpu::PrimitiveTopology, VkFlags>(VkFlags);
-template stormkit::gpu::PrimitiveTopology stormkit::gpu::from_vk<stormkit::gpu::PrimitiveTopology,
-                                                                 VkPrimitiveTopology>(VkPrimitiveTopology);
-template VkFlags                          stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PrimitiveTopology);
-template VkPrimitiveTopology              stormkit::gpu::to_vk<VkPrimitiveTopology>(stormkit::gpu::PrimitiveTopology);
+template stormkit::gpu::PrimitiveTopology STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PrimitiveTopology, VkFlags>(VkFlags);
+template stormkit::gpu::PrimitiveTopology
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::PrimitiveTopology, VkPrimitiveTopology>(VkPrimitiveTopology);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PrimitiveTopology);
+template VkPrimitiveTopology STORMKIT_API stormkit::gpu::to_vk<VkPrimitiveTopology>(stormkit::gpu::PrimitiveTopology);
 
-template stormkit::gpu::QueueFlag stormkit::gpu::from_vk<stormkit::gpu::QueueFlag, VkFlags>(VkFlags);
-template stormkit::gpu::QueueFlag stormkit::gpu::from_vk<stormkit::gpu::QueueFlag, VkQueueFlagBits>(VkQueueFlagBits);
-template VkFlags                  stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::QueueFlag);
-template VkQueueFlagBits          stormkit::gpu::to_vk<VkQueueFlagBits>(stormkit::gpu::QueueFlag);
+template stormkit::gpu::QueueFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::QueueFlag, VkFlags>(VkFlags);
+template stormkit::gpu::QueueFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::QueueFlag, VkQueueFlagBits>(VkQueueFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::QueueFlag);
+template VkQueueFlagBits STORMKIT_API stormkit::gpu::to_vk<VkQueueFlagBits>(stormkit::gpu::QueueFlag);
 
-template stormkit::gpu::ResolveModeFlag stormkit::gpu::from_vk<stormkit::gpu::ResolveModeFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ResolveModeFlag stormkit::gpu::from_vk<stormkit::gpu::ResolveModeFlag,
-                                                               VkResolveModeFlagBits>(VkResolveModeFlagBits);
-template VkFlags                        stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ResolveModeFlag);
-template VkResolveModeFlagBits          stormkit::gpu::to_vk<VkResolveModeFlagBits>(stormkit::gpu::ResolveModeFlag);
+template stormkit::gpu::ResolveModeFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ResolveModeFlag, VkFlags>(VkFlags);
+template stormkit::gpu::ResolveModeFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ResolveModeFlag, VkResolveModeFlagBits>(VkResolveModeFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ResolveModeFlag);
+template VkResolveModeFlagBits STORMKIT_API stormkit::gpu::to_vk<VkResolveModeFlagBits>(stormkit::gpu::ResolveModeFlag);
 
-template stormkit::gpu::Result stormkit::gpu::from_vk<stormkit::gpu::Result, VkFlags>(VkFlags);
-template stormkit::gpu::Result stormkit::gpu::from_vk<stormkit::gpu::Result, VkResult>(VkResult);
-template VkFlags               stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::Result);
-template VkResult              stormkit::gpu::to_vk<VkResult>(stormkit::gpu::Result);
+template stormkit::gpu::Result STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::Result, VkFlags>(VkFlags);
+template stormkit::gpu::Result STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::Result, VkResult>(VkResult);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::Result);
+template VkResult STORMKIT_API stormkit::gpu::to_vk<VkResult>(stormkit::gpu::Result);
 
-template stormkit::gpu::SampleCountFlag stormkit::gpu::from_vk<stormkit::gpu::SampleCountFlag, VkFlags>(VkFlags);
-template stormkit::gpu::SampleCountFlag stormkit::gpu::from_vk<stormkit::gpu::SampleCountFlag,
-                                                               VkSampleCountFlagBits>(VkSampleCountFlagBits);
-template VkFlags                        stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::SampleCountFlag);
-template VkSampleCountFlagBits          stormkit::gpu::to_vk<VkSampleCountFlagBits>(stormkit::gpu::SampleCountFlag);
+template stormkit::gpu::SampleCountFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::SampleCountFlag, VkFlags>(VkFlags);
+template stormkit::gpu::SampleCountFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::SampleCountFlag, VkSampleCountFlagBits>(VkSampleCountFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::SampleCountFlag);
+template VkSampleCountFlagBits STORMKIT_API stormkit::gpu::to_vk<VkSampleCountFlagBits>(stormkit::gpu::SampleCountFlag);
 
-template stormkit::gpu::SamplerAddressMode stormkit::gpu::from_vk<stormkit::gpu::SamplerAddressMode, VkFlags>(VkFlags);
-template stormkit::gpu::SamplerAddressMode stormkit::gpu::from_vk<stormkit::gpu::SamplerAddressMode,
-                                                                  VkSamplerAddressMode>(VkSamplerAddressMode);
-template VkFlags                           stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::SamplerAddressMode);
-template VkSamplerAddressMode              stormkit::gpu::to_vk<VkSamplerAddressMode>(stormkit::gpu::SamplerAddressMode);
+template stormkit::gpu::SamplerAddressMode
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::SamplerAddressMode, VkFlags>(VkFlags);
+template stormkit::gpu::SamplerAddressMode
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::SamplerAddressMode, VkSamplerAddressMode>(VkSamplerAddressMode);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::SamplerAddressMode);
+template VkSamplerAddressMode STORMKIT_API stormkit::gpu::to_vk<VkSamplerAddressMode>(stormkit::gpu::SamplerAddressMode);
 
-template stormkit::gpu::SamplerMipmapMode stormkit::gpu::from_vk<stormkit::gpu::SamplerMipmapMode, VkFlags>(VkFlags);
-template stormkit::gpu::SamplerMipmapMode stormkit::gpu::from_vk<stormkit::gpu::SamplerMipmapMode,
-                                                                 VkSamplerMipmapMode>(VkSamplerMipmapMode);
-template VkFlags                          stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::SamplerMipmapMode);
-template VkSamplerMipmapMode              stormkit::gpu::to_vk<VkSamplerMipmapMode>(stormkit::gpu::SamplerMipmapMode);
+template stormkit::gpu::SamplerMipmapMode STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::SamplerMipmapMode, VkFlags>(VkFlags);
+template stormkit::gpu::SamplerMipmapMode
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::SamplerMipmapMode, VkSamplerMipmapMode>(VkSamplerMipmapMode);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::SamplerMipmapMode);
+template VkSamplerMipmapMode STORMKIT_API stormkit::gpu::to_vk<VkSamplerMipmapMode>(stormkit::gpu::SamplerMipmapMode);
 
-template stormkit::gpu::ShaderStageFlag stormkit::gpu::from_vk<stormkit::gpu::ShaderStageFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ShaderStageFlag stormkit::gpu::from_vk<stormkit::gpu::ShaderStageFlag,
-                                                               VkShaderStageFlagBits>(VkShaderStageFlagBits);
-template VkFlags                        stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ShaderStageFlag);
-template VkShaderStageFlagBits          stormkit::gpu::to_vk<VkShaderStageFlagBits>(stormkit::gpu::ShaderStageFlag);
+template stormkit::gpu::ShaderStageFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ShaderStageFlag, VkFlags>(VkFlags);
+template stormkit::gpu::ShaderStageFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::ShaderStageFlag, VkShaderStageFlagBits>(VkShaderStageFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ShaderStageFlag);
+template VkShaderStageFlagBits STORMKIT_API stormkit::gpu::to_vk<VkShaderStageFlagBits>(stormkit::gpu::ShaderStageFlag);
 
-template stormkit::gpu::StencilFaceFlag stormkit::gpu::from_vk<stormkit::gpu::StencilFaceFlag, VkFlags>(VkFlags);
-template stormkit::gpu::StencilFaceFlag stormkit::gpu::from_vk<stormkit::gpu::StencilFaceFlag,
-                                                               VkStencilFaceFlagBits>(VkStencilFaceFlagBits);
-template VkFlags                        stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::StencilFaceFlag);
-template VkStencilFaceFlagBits          stormkit::gpu::to_vk<VkStencilFaceFlagBits>(stormkit::gpu::StencilFaceFlag);
+template stormkit::gpu::StencilFaceFlag STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::StencilFaceFlag, VkFlags>(VkFlags);
+template stormkit::gpu::StencilFaceFlag
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::StencilFaceFlag, VkStencilFaceFlagBits>(VkStencilFaceFlagBits);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::StencilFaceFlag);
+template VkStencilFaceFlagBits STORMKIT_API stormkit::gpu::to_vk<VkStencilFaceFlagBits>(stormkit::gpu::StencilFaceFlag);
 
-template stormkit::gpu::VertexInputRate stormkit::gpu::from_vk<stormkit::gpu::VertexInputRate, VkFlags>(VkFlags);
-template stormkit::gpu::VertexInputRate stormkit::gpu::from_vk<stormkit::gpu::VertexInputRate,
-                                                               VkVertexInputRate>(VkVertexInputRate);
-template VkFlags                        stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::VertexInputRate);
-template VkVertexInputRate              stormkit::gpu::to_vk<VkVertexInputRate>(stormkit::gpu::VertexInputRate);
+template stormkit::gpu::VertexInputRate STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::VertexInputRate, VkFlags>(VkFlags);
+template stormkit::gpu::VertexInputRate
+  STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::VertexInputRate, VkVertexInputRate>(VkVertexInputRate);
+template VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::VertexInputRate);
+template VkVertexInputRate STORMKIT_API stormkit::gpu::to_vk<VkVertexInputRate>(stormkit::gpu::VertexInputRate);

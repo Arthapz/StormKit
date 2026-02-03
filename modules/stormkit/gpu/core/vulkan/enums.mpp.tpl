@@ -16,8 +16,8 @@ import stormkit.core;
 
 import :vulkan.volk;
 {%
-    import("core.base.json")
-    local json_data = json.loadfile("modules/stormkit/gpu/core/vulkan/mapping.json")
+import("core.base.json")
+local json_data = json.loadfile("modules/stormkit/gpu/core/vulkan/mapping.json")
 %}
 
 export {
@@ -298,10 +298,14 @@ namespace stormkit::gpu {
     }
 }
 
-{% for name, enumeration in table.orderpairs(json_data) do %}
-    template stormkit::gpu::{% outfile:write(name) %} stormkit::gpu::from_vk<stormkit::gpu::{% outfile:write(name) %}, VkFlags>(VkFlags);
-    template stormkit::gpu::{% outfile:write(name) %} stormkit::gpu::from_vk<stormkit::gpu::{% outfile:write(name) %}, {% outfile:write(enumeration.vktype) %}>({% outfile:write(enumeration.vktype) %});
-    template VkFlags stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::{% outfile:write(name) %});
-    template {% outfile:write(enumeration.vktype) %} stormkit::gpu::to_vk<{% outfile:write(enumeration.vktype) %}>(stormkit::gpu::{% outfile:write(name) %});
-{% end %}
 
+{% for name, enumeration in table.orderpairs(json_data) do %}
+    template
+    stormkit::gpu::{% outfile:write(name) %} STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::{% outfile:write(name) %}, VkFlags>(VkFlags);
+    template
+    stormkit::gpu::{% outfile:write(name) %} STORMKIT_API stormkit::gpu::from_vk<stormkit::gpu::{% outfile:write(name) %}, {% outfile:write(enumeration.vktype) %}>({% outfile:write(enumeration.vktype) %});
+    template
+    VkFlags STORMKIT_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::{% print("lool") outfile:write(name) %});
+    template
+    {% outfile:write(enumeration.vktype) %} STORMKIT_API stormkit::gpu::to_vk<{% print("lol") outfile:write(enumeration.vktype) %}>(stormkit::gpu::{% print("lel") outfile:write(name) %});
+{% end %}

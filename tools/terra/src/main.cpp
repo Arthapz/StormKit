@@ -20,10 +20,10 @@ auto main(const std::span<const std::string_view> args) noexcept -> int {
     }
     const auto template_path = stdfs::path { args[1] };
     if (not stdfs::exists(template_path)) {
-        std::println(get_stderr(), "Template file {} doesn't exists", template_path.c_str());
+        std::println(get_stderr(), "Template file {} doesn't exists", template_path.string());
         return -1;
     } else if (not stdfs::is_regular_file(template_path)) {
-        std::println(get_stderr(), "Template file {} path is not a regular file", template_path.c_str());
+        std::println(get_stderr(), "Template file {} path is not a regular file", template_path.string());
         return -1;
     }
 
@@ -32,8 +32,8 @@ auto main(const std::span<const std::string_view> args) noexcept -> int {
         return stdfs::path { args[2] };
     }();
 
-    const auto template_data = TryAssert(io::read_text(template_path),
-                                         std::format("Failed to read file {}, reason: ", template_path.c_str()));
+    const auto template_data = TryAssert(io::read_text<io::Mode::AINSI>(template_path),
+                                         std::format("Failed to read file {}, reason: ", template_path.string()));
 
     auto out = std::string {};
     out.reserve(stdr::size(template_data));
@@ -45,7 +45,7 @@ auto main(const std::span<const std::string_view> args) noexcept -> int {
     out += std::format(R"(
 outfile = io.open("{}", "w")
 )",
-                       out_path.c_str());
+                       replace(out_path.string(), "\\", "/"));
 
     bool last_char_was_bracket = false;
     bool is_parsing_lua        = false;
