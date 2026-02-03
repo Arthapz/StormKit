@@ -151,11 +151,11 @@ export {
                 std::optional<u32>   mipmap_precision_bits;
                 u32                  max_draw_indexed_index_value;
                 std::optional<u32>   max_draw_indirect_count;
-                float                max_sampler_lod_bias;
-                float                max_sampler_anisotropy;
+                f32                  max_sampler_lod_bias;
+                f32                  max_sampler_anisotropy;
                 u32                  max_viewports;
                 std::array<u32, 2>   max_viewport_dimensions;
-                std::array<float, 2> viewport_bounds_range;
+                std::array<f32, 2>   viewport_bounds_range;
                 std::optional<u32>   viewport_sub_pixel_bits;
                 std::optional<usize> min_memory_map_alignment;
                 std::optional<u64>   min_texel_buffer_offset_alignment;
@@ -165,8 +165,8 @@ export {
                 u32                  max_texel_offset;
                 i32                  min_texel_gather_offset;
                 u32                  max_texel_gather_offset;
-                float                min_interpolation_offset;
-                float                max_interpolation_offset;
+                f32                  min_interpolation_offset;
+                f32                  max_interpolation_offset;
                 std::optional<u32>   sub_pixel_interpolation_offset_bits;
                 u32                  max_framebuffer_width;
                 u32                  max_framebuffer_height;
@@ -183,15 +183,15 @@ export {
                 SampleCountFlag      storage_image_sample_counts;
                 u32                  max_sample_mask_words;
                 bool                 timestamp_compute_and_engine;
-                float                timestamp_period;
+                f32                  timestamp_period;
                 u32                  max_clip_distances;
                 u32                  max_cull_distances;
                 u32                  max_combined_clip_and_cull_distances;
                 u32                  discrete_queue_priorities;
-                std::array<float, 2> point_size_range;
-                std::array<float, 2> line_width_range;
-                float                point_size_granularity;
-                float                line_width_granularity;
+                std::array<f32, 2>   point_size_range;
+                std::array<f32, 2>   line_width_range;
+                f32                  point_size_granularity;
+                f32                  line_width_granularity;
                 bool                 strict_lines;
                 bool                 standard_sample_locations;
                 std::optional<u64>   optimal_buffer_copy_offset_alignment;
@@ -230,7 +230,7 @@ export {
         };
 
         struct Scissor {
-            math::ivec2        offset;
+            math::ivec2    offset;
             math::uextent2 extent;
         };
 
@@ -239,8 +239,8 @@ export {
         };
 
         struct ClearDepthStencil {
-            float depth   = 1.f;
-            u32   stencil = 0;
+            f32 depth   = 1.f;
+            u32 stencil = 0;
         };
 
         using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
@@ -252,7 +252,7 @@ export {
 
             ImageSubresourceLayers subresource_layers;
 
-            math::ivec3        offset;
+            math::ivec3    offset;
             math::uextent3 extent;
         };
 
@@ -261,12 +261,12 @@ export {
             ImageSubresourceLayers dst;
 
             struct {
-                math::ivec3        position;
+                math::ivec3    position;
                 math::iextent3 extent;
             } src_offset;
 
             struct {
-                math::ivec3        position;
+                math::ivec3    position;
                 math::iextent3 extent;
             } dst_offset;
         };

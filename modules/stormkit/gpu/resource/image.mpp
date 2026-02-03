@@ -31,7 +31,7 @@ export namespace stormkit::gpu {
             SamplerAddressMode address_mode_w = SamplerAddressMode::REPEAT;
 
             bool  enable_anisotropy = false;
-            float max_anisotropy    = 0.f;
+            f32 max_anisotropy    = 0.f;
 
             BorderColor border_color = BorderColor::INT_OPAQUE_BLACK;
 
@@ -41,10 +41,10 @@ export namespace stormkit::gpu {
             CompareOperation compare_operation = CompareOperation::ALWAYS;
 
             SamplerMipmapMode mipmap_mode  = SamplerMipmapMode::LINEAR;
-            float             mip_lod_bias = 0.f;
+            f32             mip_lod_bias = 0.f;
 
-            float min_lod = 0.f;
-            float max_lod = 0.f;
+            f32 min_lod = 0.f;
+            f32 max_lod = 0.f;
         };
 
         static constexpr auto DEBUG_TYPE = DebugObjectType::SAMPLER;

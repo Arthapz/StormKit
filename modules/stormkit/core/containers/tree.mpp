@@ -238,7 +238,7 @@ namespace stormkit { inline namespace core {
     template<class TreeNodeClass>
     auto Tree<TreeNodeClass>::get_free_node() -> TreeNodeIndexType {
         if (m_tree[m_first_free_index].next_sibling() == TreeNode::INVALID_INDEX) {
-            const auto size      = as<float>(stdr::size(m_tree));
+            const auto size      = as<f32>(stdr::size(m_tree));
             const auto first_new = as<TreeNodeIndexType>(stdr::size(m_tree));
 
             m_tree.resize(as<usize>(size * 1.5f));

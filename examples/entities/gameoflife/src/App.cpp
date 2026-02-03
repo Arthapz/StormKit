@@ -135,11 +135,11 @@ auto App::handleMouse(const stormkit::wsi::MouseButtonPushedEventData& event) ->
         return;
     if (event.button != wsi::MouseButton::LEFT) return;
 
-    const auto cell_width  = as<float>(m_window->size().width) / as<float>(BOARD_SIZE);
-    const auto cell_height = as<float>(m_window->size().height) / as<float>(BOARD_SIZE);
+    const auto cell_width  = as<f32>(m_window->size().width) / as<f32>(BOARD_SIZE);
+    const auto cell_height = as<f32>(m_window->size().height) / as<f32>(BOARD_SIZE);
 
-    const auto x = glm::floor(as<float>(event.position.x) / cell_width);
-    const auto y = glm::floor(as<float>(event.position.y) / cell_height);
+    const auto x = glm::floor(as<f32>(event.position.x) / cell_width);
+    const auto y = glm::floor(as<f32>(event.position.y) / cell_height);
 
     const auto cells = m_entities.entities_with_component<PositionComponent>();
     const auto it    = std::ranges::find_if(cells, [&](const auto e) {

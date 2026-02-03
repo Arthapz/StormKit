@@ -251,7 +251,7 @@ namespace stormkit::gpu {
             return q;
         }();
 
-        auto priorities = std::vector<std::vector<float>> {};
+        auto priorities = std::vector<std::vector<f32>> {};
         priorities.reserve(stdr::size(queues));
 
         const auto queue_create_infos = transform(queues, [&priorities](auto queue) {
