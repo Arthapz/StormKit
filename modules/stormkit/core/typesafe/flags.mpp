@@ -128,7 +128,7 @@ namespace stormkit { inline namespace core {
             return res + 1;
         }();
 
-        auto out   = std::array<std::pair<T, ConstexprString<BUF_LEN>>, OUT_SIZE> {};
+        auto out   = std::array<std::pair<T, meta::ConstexprString<BUF_LEN>>, OUT_SIZE> {};
         auto queue = std::vector<std::tuple<T, std::string, bool>> {};
         for (const auto& [k, v] : mapping) queue.emplace_back(k, std::string { v }, true);
 
@@ -191,7 +191,7 @@ namespace stormkit { inline namespace core {
             return res;
         }();
 
-        auto out   = std::array<std::pair<T, ConstexprString<BUF_LEN>>, OUT_SIZE> {};
+        auto out   = std::array<std::pair<T, meta::ConstexprString<BUF_LEN>>, OUT_SIZE> {};
         auto queue = std::vector<std::tuple<T, std::string, bool>> {};
         for (const auto& [k, v] : mapping) queue.emplace_back(k, std::string { v }, true);
 

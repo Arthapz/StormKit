@@ -18,6 +18,10 @@ import :typesafe.floating_point;
 import :math.linear;
 import :math.linear.vector;
 
+import :hash.base;
+
+import :string.format;
+
 export {
     namespace stormkit { inline namespace core { namespace math {
         template<core::meta::IsArithmetic T, usize M, usize N>
@@ -277,7 +281,7 @@ export {
 
         template<typename T>
         [[nodiscard]]
-        constexpr auto rotate(const mat4x4<T>& mat, Radian<T> angle, const vec3<T>& axis) noexcept -> mat4x4<T>;
+        constexpr auto rotate(const mat4x4<T>& mat, angle::radian<T> angle, const vec3<T>& axis) noexcept -> mat4x4<T>;
 
         template<core::meta::IsArithmetic T>
         [[nodiscard]]
@@ -289,7 +293,7 @@ export {
 
         template<core::meta::IsArithmetic T>
         [[nodiscard]]
-        constexpr auto perspective(Radian<T> fov_y, T aspect, T near, T far) noexcept -> mat4x4<T>;
+        constexpr auto perspective(angle::radian<T> fov_y, T aspect, T near, T far) noexcept -> mat4x4<T>;
 
         template<typename T>
         [[nodiscard]]
@@ -309,25 +313,15 @@ export {
             requires(not core::meta::IsConst<T>)
         [[nodiscard]]
         constexpr auto as_mdspan(T& value) noexcept -> MatrixSpan<typename T::value_type, T::EXTENTS[0], T::EXTENTS[1]>;
+
+        template<core::meta::HashType Ret = hash32, meta::IsMat T>
+        constexpr auto hasher(const T& value) noexcept -> Ret;
+
+        template<meta::IsMat T, typename FormatContext>
+        auto format_as(const T& value, FormatContext& ctx) noexcept -> decltype(ctx.out);
     }}} // namespace stormkit::core::math
 
     namespace std {
-        template<stormkit::math::meta::IsMat T>
-        struct hash<T> {
-            [[nodiscard]]
-            auto operator()(const T&) const noexcept -> stormkit::u64;
-        };
-
-        template<stormkit::math::meta::IsMat T, class CharT>
-        struct formatter<T, CharT> {
-            template<class ParseContext>
-            constexpr auto parse(ParseContext& ctx) noexcept -> decltype(ctx.begin());
-
-            template<class FormatContext>
-            [[nodiscard]]
-            auto format(const T&, FormatContext& ctx) const -> decltype(ctx.out());
-        };
-
         template<stormkit::math::meta::IsMat T>
         constexpr range_format format_kind<T> = range_format::disabled;
     } // namespace std
@@ -575,7 +569,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<typename T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto rotate(const mat4x4<T>& mat, Radian<T> angle, const vec3<T>& axis) noexcept -> mat4x4<T> {
+    constexpr auto rotate(const mat4x4<T>& mat, angle::radian<T> angle, const vec3<T>& axis) noexcept -> mat4x4<T> {
         auto out = mat4x4<T> {};
 
         rotate(as_mdspan(mat), angle, as_mdspan(axis), as_mdspan_mut(out));
@@ -611,7 +605,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto perspective(Radian<T> fov_y, T aspect, T near, T far) noexcept -> mat4x4<T> {
+    constexpr auto perspective(angle::radian<T> fov_y, T aspect, T near, T far) noexcept -> mat4x4<T> {
         auto out = mat4x4<T> {};
 
         perspective(fov_y, aspect, near, far, as_mdspan_mut(out));
@@ -659,71 +653,57 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto as_mdspan_mut(T& value) noexcept -> MatrixSpan<typename T::value_type, T::EXTENTS[0], T::EXTENTS[1]> {
         return MatrixSpan<typename T::value_type, T::EXTENTS[0], T::EXTENTS[1]> { stdr::data(value), T::EXTENTS };
     }
-}}} // namespace stormkit::core::math
 
-////////////////////////////////////////
-////////////////////////////////////////
-template<stormkit::math::meta::IsMat T>
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::HashType Ret = hash32, meta::IsMat T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-auto std::hash<T>::operator()(const T& mat) const noexcept -> stormkit::u64 {
-    const auto span = as_span(mat);
-
-    auto hash = stormkit::u64 { 0 };
-    for (const auto v : span) stormkit::hash_combine(hash, v);
-
-    return hash;
-}
-
-////////////////////////////////////////
-////////////////////////////////////////
-template<stormkit::math::meta::IsMat T, class CharT>
-template<class ParseContext>
-constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept -> decltype(ctx.begin()) {
-    return ctx.begin();
-}
-
-////////////////////////////////////////
-////////////////////////////////////////
-template<stormkit::math::meta::IsMat T, class CharT>
-template<class FormatContext>
-inline auto std::formatter<T, CharT>::format(const T& mat, FormatContext& ctx) const -> decltype(ctx.out()) {
-    auto out = ctx.out();
-
-    auto i               = 0;
-    auto check_by_extent = [&i](auto, auto) mutable {
-        const auto insert = i++ < (T::EXTENTS[0] - 1);
-        if (not insert) i = 0;
-
-        return insert;
-    };
-
-    format_to(out, "{ mat:");
-    auto l = 0u;
-    if constexpr (stormkit::meta::IsIntegral<typename T::value_type>) {
-        auto max_digit = 0u;
-        for (auto v : as_span(mat)) max_digit = std::max(max_digit, v == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
-        for (auto&& slice : mat | stdv::chunk_by(check_by_extent)) {
-            format_to(out,
-                      "{}|{:n:>{}}|{}",
-                      (l > 0) ? "      "sv : " "sv,
-                      slice,
-                      max_digit,
-                      (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "}"sv);
-            ++l;
-        }
-    } else {
-        auto max_digit = 0u;
-        for (auto v : as_span(mat)) max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
-        for (auto&& slice : mat | stdv::chunk_by(check_by_extent)) {
-            format_to(out,
-                      "{}| {:n:>{}.5f}|{}",
-                      (l > 0) ? "      "sv : " "sv,
-                      slice,
-                      max_digit,
-                      (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "}"sv);
-            ++l;
-        }
+    constexpr auto hasher(const T& value) noexcept -> Ret {
+        return hash<Ret>(as_span(value));
     }
 
-    return out;
-}
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T, typename FormatContext>
+    inline auto format_as(const T& mat, FormatContext& ctx) noexcept -> decltype(ctx.out) {
+        auto out = ctx.out();
+
+        auto i               = 0;
+        auto check_by_extent = [&i](auto, auto) mutable {
+            const auto insert = i++ < (T::EXTENTS[0] - 1);
+            if (not insert) i = 0;
+
+            return insert;
+        };
+
+        format_to(out, "[mat ");
+        auto l = 0u;
+        if constexpr (stormkit::meta::IsIntegral<typename T::value_type>) {
+            auto max_digit = 0u;
+            for (auto v : as_span(mat)) max_digit = std::max(max_digit, v == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
+            for (auto&& slice : mat | stdv::chunk_by(check_by_extent)) {
+                format_to(out,
+                          "{}|{:n:>{}}|{}",
+                          (l > 0) ? "      "sv : " "sv,
+                          slice,
+                          max_digit,
+                          (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "}"sv);
+                ++l;
+            }
+        } else {
+            auto max_digit = 0u;
+            for (auto v : as_span(mat)) max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
+            for (auto&& slice : mat | stdv::chunk_by(check_by_extent)) {
+                format_to(out,
+                          "{}| {:n:>{}.5f}|{}",
+                          (l > 0) ? "      "sv : " "sv,
+                          slice,
+                          max_digit,
+                          (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "]"sv);
+                ++l;
+            }
+        }
+
+        return out;
+    }
+}}} // namespace stormkit::core::math

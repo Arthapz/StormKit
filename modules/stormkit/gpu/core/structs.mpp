@@ -4,9 +4,7 @@
 
 module;
 
-#include <stormkit/core/as_casts_macro.hpp>
 #include <stormkit/core/flags_macro.hpp>
-#include <stormkit/core/hash_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #include <stormkit/gpu/vulkan.hpp>
@@ -316,10 +314,13 @@ export {
 
         [[nodiscard]]
         auto to_string(const PhysicalDeviceInfo& data) noexcept;
-    } // namespace stormkit::gpu
 
-    HASH_FUNC(stormkit::gpu::Viewport, value.position, value.extent, value.depth)
-    HASH_FUNC(stormkit::gpu::Scissor, value.offset, value.extent)
+        template<core::meta::HashType Ret = hash32>
+        constexpr auto hasher(const Viewport& value) noexcept -> Ret;
+
+        template<core::meta::HashType Ret = hash32>
+        constexpr auto hasher(const Scissor& value) noexcept -> Ret;
+    } // namespace stormkit::gpu
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -368,5 +369,15 @@ namespace stormkit::gpu {
                            data.driver_minor_version,
                            data.driver_patch_version,
                            data.type);
+    }
+
+    template<core::meta::HashType Ret>
+    constexpr auto hasher(const Viewport& value) noexcept -> Ret {
+        return hash(value.position, value.extent, value.depth);
+    }
+
+    template<core::meta::HashType Ret>
+    constexpr auto hasher(const Scissor& value) noexcept -> Ret {
+        return hash(value.offset, value.extent);
     }
 } // namespace stormkit::gpu

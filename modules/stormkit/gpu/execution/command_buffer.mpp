@@ -5,7 +5,6 @@
 module;
 
 #include <stormkit/core/contract_macro.hpp>
-#include <stormkit/core/hash_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #include <stormkit/gpu/vulkan.hpp>

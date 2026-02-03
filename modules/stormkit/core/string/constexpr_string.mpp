@@ -12,7 +12,7 @@ import std;
 
 namespace stdr = std::ranges;
 
-export namespace stormkit { inline namespace core {
+export namespace stormkit { inline namespace core { namespace meta {
     template<std::size_t N>
     struct ConstexprString {
         consteval ConstexprString() noexcept = default;
@@ -38,13 +38,13 @@ export namespace stormkit { inline namespace core {
         std::array<char, N> data   = {};
         std::size_t         m_size = 0;
     };
-}} // namespace stormkit::core
+}}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit { inline namespace core {
+namespace stormkit { inline namespace core { namespace meta {
     /////////////////////////////////////
     /////////////////////////////////////
     template<std::size_t N>
@@ -101,4 +101,4 @@ namespace stormkit { inline namespace core {
     constexpr auto ConstexprString<N>::update_size() noexcept -> void {
         m_size = std::char_traits<char>::length(stdr::data(data));
     }
-}} // namespace stormkit::core
+}}} // namespace stormkit::core::meta

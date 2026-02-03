@@ -11,6 +11,8 @@ export module stormkit.core:typesafe.strong_type;
 import std;
 
 import :meta;
+import :string.constexpr_string;
+import :hash;
 
 export {
     namespace stormkit { inline namespace core {
@@ -69,12 +71,12 @@ export {
 
         struct ImplicitConvertionTag {};
 
-        template<meta::IsPlain T, typename Tag, typename... Capabilities>
+        template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
         class StrongType;
 
         namespace meta {
             template<typename T>
-            concept IsStrongType = IsSpecializationOf<T, StrongType>;
+            concept IsStrongType = IsSpecializationOfNTTP_TTVTs<T, StrongType>;
 
             template<typename T, typename Capability>
             concept HasCapability = DerivedFrom<T, Capability>;
@@ -114,7 +116,7 @@ export {
             return meta::ToPlainType<T> { std::forward<T>(second).get() / std::forward<decltype(first)>(first) };
         }
 
-        template<meta::IsPlain T, typename Tag, typename... Capabilities>
+        template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
         class StrongType {
           public:
             using ValueType = T;
@@ -182,19 +184,14 @@ export {
         // constexpr auto operator+=(First& first, Second&& second) {
         //     first.get() += std::forward<Second>(second).get();
         // }
+
+        template<meta::HashType Ret = hash32, meta::IsStrongType T>
+        constexpr auto hasher(const T& value) noexcept -> Ret;
+
+        template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities, typename FormatContext>
+        auto format_as(const StrongType<T, Tag, Name, Capabilities...>& value, FormatContext& ctx) noexcept
+          -> decltype(ctx.out());
     }} // namespace stormkit::core
-
-    template<stormkit::meta::IsStrongType T>
-    struct std::hash<T> {
-        [[nodiscard]]
-        auto operator()(const T& value) const noexcept -> std::uint64_t;
-    };
-
-    template<stormkit::meta::IsStrongType T, typename CharT>
-    struct std::formatter<T, CharT>: std::formatter<typename T::ValueType, CharT> {
-        template<class FormatContext>
-        auto format(const T& data, FormatContext& ctx) const noexcept -> decltype(ctx.out());
-    };
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,19 +201,19 @@ export {
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Capabilities...>::StrongType(ValueType value) noexcept(meta::IsNoexceptConstructible<ValueType,
-                                                                                                                      ValueType>)
+    constexpr StrongType<T, Tag, Name, Capabilities...>::
+      StrongType(ValueType value) noexcept(meta::IsNoexceptConstructible<ValueType, ValueType>)
         : m_value { value } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     template<class... Args>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Capabilities...>::
+    constexpr StrongType<T, Tag, Name, Capabilities...>::
       StrongType(std::in_place_t, Args&&... args) noexcept(meta::IsNoexceptConstructible<ValueType, Args...>)
         requires(meta::IsConstructible<ValueType, Args...>)
         : m_value { std::forward<Args>(args)... } {
@@ -224,76 +221,77 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Capabilities...>::~StrongType() noexcept(meta::IsNoexceptDestructible<ValueType>)
-      = default;
+    constexpr StrongType<T, Tag, Name, Capabilities...>::~StrongType() noexcept(meta::IsNoexceptDestructible<
+                                                                                ValueType>) = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Capabilities...>::StrongType(const StrongType&) noexcept(meta::IsNoexceptCopyConstructible<
-                                                                                          ValueType>)
+    constexpr StrongType<T, Tag, Name, Capabilities...>::StrongType(const StrongType&) noexcept(meta::IsNoexceptCopyConstructible<
+                                                                                                ValueType>)
         requires(meta::IsCopyConstructible<ValueType>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr auto StrongType<T, Tag, Capabilities...>::operator=(const StrongType&) noexcept(meta::IsNoexceptCopyAssignable<
-                                                                                              ValueType>) -> StrongType&
+    constexpr auto StrongType<T, Tag, Name, Capabilities...>::
+      operator=(const StrongType&) noexcept(meta::IsNoexceptCopyAssignable<ValueType>) -> StrongType&
         requires(meta::IsCopyAssignable<ValueType>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Capabilities...>::StrongType(StrongType&&) noexcept(meta::IsNoexceptMoveConstructible<ValueType>)
+    constexpr StrongType<T, Tag, Name, Capabilities...>::StrongType(StrongType&&) noexcept(meta::IsNoexceptMoveConstructible<
+                                                                                           ValueType>)
         requires(meta::IsMoveConstructible<ValueType>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr auto StrongType<T, Tag, Capabilities...>::operator=(StrongType&&) noexcept(meta::IsNoexceptMoveAssignable<
-                                                                                         ValueType>) -> StrongType&
+    constexpr auto StrongType<T, Tag, Name, Capabilities...>::operator=(StrongType&&) noexcept(meta::IsNoexceptMoveAssignable<
+                                                                                               ValueType>) -> StrongType&
         requires(meta::IsMoveAssignable<ValueType>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     template<typename Self>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr StrongType<T, Tag, Capabilities...>::operator T(this Self&& self) noexcept {
+    constexpr StrongType<T, Tag, Name, Capabilities...>::operator T(this Self&& self) noexcept {
         return std::forward_like<decltype(self)>(self.m_value);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr StrongType<T, Tag, Capabilities...>::operator T&() & noexcept {
+    constexpr StrongType<T, Tag, Name, Capabilities...>::operator T&() & noexcept {
         return get();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr StrongType<T, Tag, Capabilities...>::operator const T&() const & noexcept {
+    constexpr StrongType<T, Tag, Name, Capabilities...>::operator const T&() const & noexcept {
         return get();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, typename... Capabilities>
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto StrongType<T, Tag, Capabilities...>::get(this auto&& self) noexcept -> decltype(auto) {
+    constexpr auto StrongType<T, Tag, Name, Capabilities...>::get(this auto&& self) noexcept -> decltype(auto) {
         return std::forward_like<decltype(self)>(self.m_value);
     }
 
@@ -306,24 +304,21 @@ namespace stormkit { inline namespace core {
         else
             return std::forward<T>(value);
     }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::HashType Ret, meta::IsStrongType T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto hasher(const T& value) noexcept -> Ret {
+        return hash<Ret>(value.get());
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities, typename FormatContext>
+    STORMKIT_FORCE_INLINE
+    inline auto format_as(const StrongType<T, Tag, Name, Capabilities...>& value, FormatContext& ctx) noexcept
+      -> decltype(ctx.out()) {
+        return std::format_to(ctx.out(), "[{} value: {}]", Name, value.get());
+    }
 }} // namespace stormkit::core
-
-using namespace stormkit;
-
-////////////////////////////////////////
-////////////////////////////////////////
-template<meta::IsStrongType T>
-STORMKIT_FORCE_INLINE
-inline auto std::hash<T>::operator()(const T& value) const noexcept -> std::uint64_t {
-    return std::hash<typename T::ValueType> {}(value.get());
-}
-
-////////////////////////////////////////
-////////////////////////////////////////
-template<meta::IsStrongType T, typename CharT>
-template<class FormatContext>
-STORMKIT_FORCE_INLINE
-auto std::formatter<T, CharT>::format(const T& data, FormatContext& ctx) const noexcept -> decltype(ctx.out()) {
-    auto&& out = ctx.out();
-    return std::format_to(out, "{}", data.get());
-}

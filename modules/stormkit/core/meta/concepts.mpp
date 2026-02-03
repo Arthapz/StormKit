@@ -29,6 +29,11 @@ namespace stormkit { inline namespace core { namespace meta::details {
     constexpr auto is_specialization_of_helper_nttp_ttv(const T<T1, T2, Args...>&) noexcept -> std::true_type {
         return {};
     }
+
+    template<template<class, class, auto, class...> typename T, typename T1, typename T2, auto Arg, typename... Ts>
+    constexpr auto is_specialization_of_helper_nttp_ttvts(const T<T1, T2, Arg, Ts...>&) noexcept -> std::true_type {
+        return {};
+    }
 }}} // namespace stormkit::core::meta::details
 
 export namespace stormkit { inline namespace core { namespace meta {
@@ -236,6 +241,11 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename S, template<class, class, auto> typename T>
     concept IsSpecializationOfNTTP_TTV = requires(S&& s) {
         { details::is_specialization_of_helper_nttp_ttv<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
+    };
+
+    template<typename S, template<class, class, auto, class...> typename T>
+    concept IsSpecializationOfNTTP_TTVTs = requires(S&& s) {
+        { details::is_specialization_of_helper_nttp_ttvts<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
     };
 
     template<typename S, template<typename, auto...> class T>

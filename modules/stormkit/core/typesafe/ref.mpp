@@ -4,8 +4,6 @@
 
 module;
 
-#include <stormkit/core/hash_macro.hpp>
-
 #include <stormkit/core/platform_macro.hpp>
 
 #include <stormkit/core/contract_macro.hpp>
@@ -260,22 +258,17 @@ export {
             requires(std::ranges::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_mut_opt_refs(T& range) noexcept -> decltype(auto);
+
+        template<meta::HashType Ret = hash32, typename T>
+        constexpr auto hasher(const Ref<T>& value) noexcept -> Ret;
     }} // namespace stormkit::core
 
-    namespace std {
-        template<typename T>
-        struct pointer_traits<stormkit::Ref<T>> {
-            using pointer         = typename stormkit::Ref<T>::PointerType;
-            using element_type    = typename stormkit::Ref<T>::ElementType;
-            using difference_type = std::ptrdiff_t;
-        };
-
-        template<typename T>
-        struct hash<stormkit::Ref<T>> {
-            [[nodiscard]]
-            auto operator()(const stormkit::Ref<T>& ref) const noexcept -> stormkit::u64;
-        };
-    } // namespace std
+    template<typename T>
+    struct std::pointer_traits<stormkit::Ref<T>> {
+        using pointer         = typename stormkit::Ref<T>::PointerType;
+        using element_type    = typename stormkit::Ref<T>::ElementType;
+        using difference_type = std::ptrdiff_t;
+    };
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -859,13 +852,12 @@ namespace stormkit { inline namespace core {
                  })
                | std::ranges::to<Out>();
     }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, meta::HashType Ret>
+    STORMKIT_FORCE_INLINE
+    constexpr auto hasher(const Ref<T>& value) noexcept -> Ret {
+        return hash<Ret>(value.get());
+    }
 }} // namespace stormkit::core
-
-using namespace stormkit;
-
-template<typename T>
-inline auto std::hash<Ref<T>>::operator()(const Ref<T>& ref) const noexcept -> u64 {
-    auto hash = u64 { 0 };
-    hash_combine(hash, ref.get());
-    return hash;
-}

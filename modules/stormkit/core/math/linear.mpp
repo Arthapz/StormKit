@@ -21,11 +21,17 @@ import :functional;
 
 // TODO improve template deduction
 export namespace stormkit { inline namespace core { namespace math {
-    template<core::meta::IsArithmetic T>
-    using Euler = StrongType<T, struct EulerAngleTag, ArithmeticTag, ImplicitConvertionTag>;
+    namespace angle {
+        template<core::meta::IsArithmetic T>
+        using euler = StrongType<T, struct EulerAngleTag, "euler", ArithmeticTag, ImplicitConvertionTag>;
 
-    template<core::meta::IsArithmetic T>
-    using Radian = StrongType<T, struct RadianAngleTag, ArithmeticTag, ImplicitConvertionTag>;
+        template<core::meta::IsArithmetic T>
+        using radian = StrongType<T, struct RadianAngleTag, "radian", ArithmeticTag, ImplicitConvertionTag>;
+
+        template<core::meta::IsArithmetic T>
+        [[nodiscard]]
+        constexpr auto radians(T degres) noexcept -> radian<T>;
+    } // namespace angle
 
     template<core::meta::IsArithmetic T, usize... Sizes>
         requires(sizeof...(Sizes) >= 1)
@@ -72,10 +78,6 @@ export namespace stormkit { inline namespace core { namespace math {
     template<meta::IsTensorSpan To, meta::IsTensorSpan From>
     [[nodiscard]]
     constexpr auto as(const From& data) noexcept -> To;
-
-    template<core::meta::IsArithmetic T>
-    [[nodiscard]]
-    constexpr auto radians(T degres) noexcept -> Radian<T>;
 
     template<typename T, usize... Sizes>
         requires(not core::meta::IsConst<T>)
@@ -179,7 +181,7 @@ export namespace stormkit { inline namespace core { namespace math {
 
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
-    constexpr auto perspective(Radian<T> fov_y, T aspect, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void;
+    constexpr auto perspective(angle::radian<T> fov_y, T aspect, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void;
 
     template<typename T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
@@ -196,6 +198,17 @@ export namespace stormkit { inline namespace core { namespace math {
 namespace stdr = std::ranges;
 
 namespace stormkit { inline namespace core { namespace math {
+    namespace angle {
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<core::meta::IsArithmetic T>
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
+        constexpr auto radians(T degres) noexcept -> radian<T> {
+            static constexpr auto one_rad = std::numbers::pi_v<T> / T { 180 };
+            return radian<T> { degres * one_rad };
+        }
+    } // namespace angle
+
     template<typename T, usize M, usize N>
     using MatData = std::array<T, M * N>;
     template<typename T, usize M>
@@ -265,15 +278,6 @@ namespace stormkit { inline namespace core { namespace math {
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto as(const From& data) noexcept -> To {
         return To { data };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto radians(T degres) noexcept -> Radian<T> {
-        static constexpr auto one_rad = std::numbers::pi_v<T> / T { 180 };
-        return Radian { degres * one_rad };
     }
 
     ////////////////////////////////////////
@@ -598,7 +602,7 @@ namespace stormkit { inline namespace core { namespace math {
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto rotate(const SquareMatrixSpan<const T, 4>& a,
-                          Radian<T>                           angle,
+                          angle::radian<T>                    angle,
                           const VectorSpan<const T, 3>&       axis,
                           SquareMatrixSpan<T, 4>              out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
@@ -679,7 +683,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto perspective(Radian<T> fov_y, T aspect, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void {
+    constexpr auto perspective(angle::radian<T> fov_y, T aspect, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void {
         EXPECTS(not is_equal(aspect, T { 0 }));
         EXPECTS(not is_equal(near, far));
 
