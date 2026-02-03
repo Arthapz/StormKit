@@ -231,7 +231,7 @@ class Application: public base::Application {
             .render_area       = { .x = 0, .y = 0, .width = window_extent.width, .height = window_extent.height },
             .color_attachments = { { .image_view  = as_ref(swapchain_image_resource.view),
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
-                                     .clear_value = gpu::ClearColor { .color = RGBColorDef::SILVER<float> } } }
+                                     .clear_value = gpu::ClearColor { .color = colors::SILVER<f32> } } }
         };
 
         // render in it

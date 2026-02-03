@@ -457,7 +457,7 @@ class Application: public base::Application {
             .render_area = { .x = 0, .y = 0, .width = window_extent.to<i32>().width, .height = window_extent.to<i32>().height },
             .color_attachments = { { .image_view  = as_ref(swapchain_image_resource.view),
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
-                                     .clear_value = gpu::ClearColor { .color = RGBColorDef::SILVER<float> } } },
+                                     .clear_value = gpu::ClearColor { .color = colors::SILVER<f32> } } },
             .depth_attachment  = { { .image_view  = as_ref(swapchain_image_resource.depth_view),
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                      .clear_value = gpu::ClearDepthStencil {} } }

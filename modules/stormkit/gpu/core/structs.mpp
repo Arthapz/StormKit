@@ -237,7 +237,7 @@ export {
         };
 
         struct ClearColor {
-            RGBColorF color = stormkit::RGBColorDef::SILVER<float>;
+            rgbacolor_f color = stormkit::colors::SILVER<f32>;
         };
 
         struct ClearDepthStencil {

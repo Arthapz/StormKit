@@ -141,10 +141,10 @@ namespace stormkit::gpu {
                   .clearValue = std::visit(Overloaded {
                                              [](const ClearColor& clear_color) static noexcept -> decltype(auto) {
                                                  return VkClearValue {
-                                                     .color = VkClearColorValue { .float32 = { clear_color.color.red,
-                                                                                               clear_color.color.blue,
-                                                                                               clear_color.color.green,
-                                                                                               clear_color.color.alpha } },
+                                                     .color = VkClearColorValue { .float32 = { clear_color.color.r,
+                                                                                               clear_color.color.b,
+                                                                                               clear_color.color.g,
+                                                                                               clear_color.color.a } },
                                                  };
                                              },
                                              [](const ClearDepthStencil& clear_depth_stencil) static noexcept -> decltype(auto) {
@@ -196,10 +196,10 @@ namespace stormkit::gpu {
                                      | stdv::transform(core::monadic::either(
                                        [](const ClearColor& clear_color) static noexcept -> decltype(auto) {
                                            return VkClearValue {
-                                               .color = VkClearColorValue { .float32 = { clear_color.color.red,
-                                                                                         clear_color.color.blue,
-                                                                                         clear_color.color.green,
-                                                                                         clear_color.color.alpha } },
+                                               .color = VkClearColorValue { .float32 = { clear_color.color.r,
+                                                                                         clear_color.color.b,
+                                                                                         clear_color.color.g,
+                                                                                         clear_color.color.a } },
                                            };
                                        },
                                        [](const ClearDepthStencil& clear_depth_stencil) static noexcept -> decltype(auto) {
