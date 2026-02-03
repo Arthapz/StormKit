@@ -9,5 +9,5 @@ import std;
 import :typesafe.floating_point;
 
 export namespace stormkit { inline namespace core {
-    using Secondf = std::chrono::duration<f32, std::chrono::seconds::period>;
+    using fsecond = std::chrono::duration<f32, std::chrono::seconds::period>;
 }} // namespace stormkit::core

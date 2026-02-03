@@ -450,7 +450,7 @@ class Application: public base::Application {
         const auto& signal                   = swapchain_image_resource.render_finished;
 
         // update viewer data and upload
-        const auto time = stdc::duration_cast<Secondf>(current_time - m_start_time).count();
+        const auto time = stdc::duration_cast<fsecond>(current_time - m_start_time).count();
         viewer_data
           .model = math::rotate(math::fmat4::identity(), time * math::angle::radians(90.f), math::fvec3 { 0.f, 1.f, 0.f });
 

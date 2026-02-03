@@ -124,8 +124,8 @@ auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> vo
             m_is_on_edit_mode = !m_is_on_edit_mode;
             m_update_system->setEditModeEnabled(m_is_on_edit_mode);
             break;
-        case wsi::Key::ADD: m_update_system->incrementDelta(Secondf { 0.01f }); break;
-        case wsi::Key::SUBSTRACT: m_update_system->incrementDelta(Secondf { -0.01f }); break;
+        case wsi::Key::ADD: m_update_system->incrementDelta(fsecond { 0.01f }); break;
+        case wsi::Key::SUBSTRACT: m_update_system->incrementDelta(fsecond { -0.01f }); break;
         default: break;
     }
 }

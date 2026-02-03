@@ -109,7 +109,7 @@ export namespace stormkit::entities {
         virtual ~System();
 
         virtual auto pre_update() -> void;
-        virtual auto update(Secondf delta) -> void = 0;
+        virtual auto update(fsecond delta) -> void = 0;
         virtual auto post_update() -> void;
 
         [[nodiscard]]
@@ -202,7 +202,7 @@ export namespace stormkit::entities {
         template<meta::IsSystem T, class Self>
         auto get_system(this Self& self) noexcept -> core::meta::ForwardConst<Self, T&>;
 
-        auto step(Secondf delta) -> void;
+        auto step(fsecond delta) -> void;
 
         auto entity_count() const noexcept -> usize;
 

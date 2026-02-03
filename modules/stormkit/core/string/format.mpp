@@ -45,7 +45,7 @@ export {
         auto format_as(std::byte, FormatContext& ctx) noexcept -> decltype(ctx.out());
 
         template<typename FormatContext>
-        auto format_as(stormkit::Secondf, FormatContext& ctx) noexcept -> decltype(ctx.out());
+        auto format_as(stormkit::fsecond, FormatContext& ctx) noexcept -> decltype(ctx.out());
     }} // namespace stormkit::core
 
     template<stormkit::core::meta::HasFormatAs T, typename CharT>
@@ -110,7 +110,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class FormatContext>
     STORMKIT_FORCE_INLINE
-    inline auto format_as(Secondf value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
+    inline auto format_as(fsecond value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         auto&& out = ctx.out();
         return std::format_to(out, "{}", value.count());
     }

@@ -90,7 +90,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::step(Secondf delta) -> void {
+    auto EntityManager::step(fsecond delta) -> void {
         for (auto entity : m_removed_entities) {
             auto it = m_registered_components_for_entities.find(entity);
             // a this point, all entities should be valid
