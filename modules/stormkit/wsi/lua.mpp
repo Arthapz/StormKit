@@ -13,209 +13,56 @@ export module stormkit.wsi:lua;
 import std;
 
 import stormkit.core;
+
 import :core;
-import :mouse;
-import :keyboard;
-import :monitor;
 import :window;
 
 namespace lb = luabridge;
 
-export namespace stormkit::wsi::lua {
-    inline auto init_lua(lb::Namespace global_namespace) noexcept -> void;
-} // namespace stormkit::wsi::lua
+export {
+    namespace stormkit::wsi::lua {
+        STORMKIT_API
+        auto init_lua(lb::Namespace global_namespace) noexcept -> void;
+    } // namespace stormkit::wsi::lua
+
+    template<>
+    struct lb::Stack<stormkit::wsi::WindowFlag>: lb::Enum<stormkit::wsi::WindowFlag> {};
+
+    template<>
+    struct lb::Stack<stormkit::wsi::WM>
+        : lb::Enum<stormkit::wsi::WM,
+                   stormkit::wsi::WM::WIN32,
+                   stormkit::wsi::WM::WAYLAND,
+                   stormkit::wsi::WM::X11,
+                   stormkit::wsi::WM::ANDROID,
+                   stormkit::wsi::WM::MACOS,
+                   stormkit::wsi::WM::IOS,
+                   stormkit::wsi::WM::TVOS,
+                   stormkit::wsi::WM::SWITCH> {};
+
+    template<>
+    struct lb::Stack<stormkit::wsi::EventType>
+        : lb::Enum<stormkit::wsi::EventType,
+                   stormkit::wsi::EventType::NONE,
+                   stormkit::wsi::EventType::CLOSED,
+                   stormkit::wsi::EventType::MONITOR_CHANGED,
+                   stormkit::wsi::EventType::RESIZED,
+                   stormkit::wsi::EventType::RESTORED,
+                   stormkit::wsi::EventType::MINIMIZED,
+                   stormkit::wsi::EventType::KEY_DOWN,
+                   stormkit::wsi::EventType::KEY_UP,
+                   stormkit::wsi::EventType::MOUSE_BUTTON_DOWN,
+                   stormkit::wsi::EventType::MOUSE_BUTTON_UP,
+                   stormkit::wsi::EventType::MOUSE_MOVED,
+                   stormkit::wsi::EventType::ACTIVATE,
+                   stormkit::wsi::EventType::DEACTIVATE> {};
+}
 
 namespace stormkit::wsi::lua {
-    using stormkit::wsi::EventType;
-    using stormkit::wsi::Window;
-    using stormkit::wsi::WindowFlag;
-    using stormkit::wsi::WM;
-
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline auto open_window(std::string name, u32 width, u32 height, wsi::WindowFlag flags) noexcept -> decltype(auto) {
+    STORMKIT_FORCE_INLINE
+    inline auto open_window(std::string name, u32 width, u32 height, wsi::WindowFlag flags) noexcept -> wsi::Window {
         return wsi::Window::open(std::move(name), { width, height }, flags);
     }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline auto bind_core(lb::Namespace& global_namespace) noexcept -> lb::Namespace {
-        return global_namespace.beginNamespace("wsi")
-          .beginNamespace("wm")
-          .addProperty(
-            "WIN32",
-            +[] static noexcept { return wsi::WM::WIN32; })
-          .addProperty(
-            "WAYLAND",
-            +[] static noexcept { return wsi::WM::WAYLAND; })
-          .addProperty(
-            "X11",
-            +[] static noexcept { return wsi::WM::X11; })
-          .addProperty(
-            "ANDROID",
-            +[] static noexcept { return wsi::WM::ANDROID; })
-          .addProperty(
-            "MACOS",
-            +[] static noexcept { return wsi::WM::MACOS; })
-          .addProperty(
-            "IOS",
-            +[] static noexcept { return wsi::WM::IOS; })
-          .addProperty(
-            "TVOS",
-            +[] static noexcept { return wsi::WM::TVOS; })
-          .addProperty(
-            "SWITCH",
-            +[] static noexcept { return wsi::WM::SWITCH; })
-          .endNamespace()
-          .endNamespace();
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<wsi::EventType EVENT_TYPE, typename... Args>
-    STORMKIT_FORCE_INLINE
-    inline constexpr auto make_lua_closure() noexcept {
-        return [](Window* window, lb::LuaRef func) static noexcept {
-            window->on<EVENT_TYPE>([func = std::move(func)](Args&&... args) noexcept {
-                const auto result = func(std::forward<Args>(args)...);
-                ensures(result.wasOk(), result.errorMessage());
-            });
-        };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline auto bind_window(lb::Namespace& global_namespace) noexcept -> lb::Namespace {
-        return global_namespace.beginNamespace("wsi")
-          .beginNamespace("window_flag")
-          .addProperty(
-            "DEFAULT",
-            +[] static noexcept { return wsi::WindowFlag::DEFAULT; })
-          .addProperty(
-            "BORDERLESS",
-            +[] static noexcept { return wsi::WindowFlag::BORDERLESS; })
-          .addProperty(
-            "RESIZEABLE",
-            +[] static noexcept { return wsi::WindowFlag::RESIZEABLE; })
-          .addProperty(
-            "EXTERNAL_CONTEXT",
-            +[] static noexcept { return wsi::WindowFlag::EXTERNAL_CONTEXT; })
-          .endNamespace()
-          .beginNamespace("EventType")
-          .addProperty(
-            "NONE",
-            +[] static noexcept { return wsi::EventType::NONE; })
-          .addProperty(
-            "CLOSED",
-            +[] static noexcept { return wsi::EventType::CLOSED; })
-          .addProperty(
-            "MONITOR_CHANGED",
-            +[] static noexcept { return wsi::EventType::MONITOR_CHANGED; })
-          .addProperty(
-            "RESIZED",
-            +[] static noexcept { return wsi::EventType::RESIZED; })
-          .addProperty(
-            "RESTORED",
-            +[] static noexcept { return wsi::EventType::RESTORED; })
-          .addProperty(
-            "MINIMIZED",
-            +[] static noexcept { return wsi::EventType::MINIMIZED; })
-          .addProperty(
-            "KEY_DOWN",
-            +[] static noexcept { return wsi::EventType::KEY_DOWN; })
-          .addProperty(
-            "KEY_UP",
-            +[] static noexcept { return wsi::EventType::KEY_UP; })
-          .addProperty(
-            "MOUSE_BUTTON_DOWN",
-            +[] static noexcept { return wsi::EventType::MOUSE_BUTTON_DOWN; })
-          .addProperty(
-            "MOUSE_BUTTON_UP",
-            +[] static noexcept { return wsi::EventType::MOUSE_BUTTON_UP; })
-          .addProperty(
-            "MOUSE_MOVED",
-            +[] static noexcept { return wsi::EventType::MOUSE_MOVED; })
-          .addProperty(
-            "ACTIVATE",
-            +[] static noexcept { return wsi::EventType::ACTIVATE; })
-          .addProperty(
-            "DEACTIVATE",
-            +[] static noexcept { return wsi::EventType::DEACTIVATE; })
-          .endNamespace()
-          .beginClass<wsi::Window>("window")
-          .addFunction("wm", &wsi::Window::wm)
-          .addFunction("extent", &wsi::Window::extent)
-          .addFunction("clear", [](Window* window) static noexcept { window->clear(); })
-          .addFunction(
-            "event_loop",
-            +[](Window* window, lb::LuaRef func) static noexcept {
-                window->event_loop([func = std::move(func)] noexcept {
-                    const auto result = func();
-                    ensures(result.wasOk(), result.errorMessage());
-                });
-            })
-          .addFunction(
-            "on_closed",
-            +[](Window* window, lb::LuaRef func) static noexcept {
-                expects(func.isCallable());
-
-                window->on<wsi::EventType::CLOSED>([func = std::move(func)] noexcept {
-                    const auto result = func();
-                    ensures(result.wasOk(), result.errorMessage());
-                    const auto return_value = result[0];
-                    ensures(return_value.isValid());
-                    ensures(return_value.isBool(), "on_closed closure must return a boolean value");
-                    return return_value.cast<bool>().value();
-                });
-            })
-          .addFunction("on_resized", +(make_lua_closure<wsi::EventType::RESIZED, const math::uextent2&>()))
-          .addFunction("on_restored", +(make_lua_closure<wsi::EventType::RESTORED>()))
-          .addFunction("on_minimized", +(make_lua_closure<wsi::EventType::MINIMIZED>()))
-          .addFunction("on_activate", +(make_lua_closure<wsi::EventType::ACTIVATE>()))
-          .addFunction("on_deactivate", +(make_lua_closure<wsi::EventType::DEACTIVATE>()))
-          .endClass()
-          .addFunction("open_window", &open_window)
-          .endNamespace();
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline auto init_lua(lb::Namespace global_namespace) noexcept -> void {
-        global_namespace = bind_core(global_namespace);
-        global_namespace = bind_window(global_namespace);
-    }
 } // namespace stormkit::wsi::lua
-
-using namespace stormkit;
-
-template<>
-struct lb::Stack<wsi::WindowFlag>: lb::Enum<wsi::WindowFlag> {};
-
-template<>
-struct lb::Stack<wsi::WM>
-    : lb::Enum<wsi::WM,
-               wsi::WM::WIN32,
-               wsi::WM::WAYLAND,
-               wsi::WM::X11,
-               wsi::WM::ANDROID,
-               wsi::WM::MACOS,
-               wsi::WM::IOS,
-               wsi::WM::TVOS,
-               wsi::WM::SWITCH> {};
-
-template<>
-struct lb::Stack<wsi::EventType>
-    : lb::Enum<wsi::EventType,
-               wsi::EventType::NONE,
-               wsi::EventType::CLOSED,
-               wsi::EventType::MONITOR_CHANGED,
-               wsi::EventType::RESIZED,
-               wsi::EventType::RESTORED,
-               wsi::EventType::MINIMIZED,
-               wsi::EventType::KEY_DOWN,
-               wsi::EventType::KEY_UP,
-               wsi::EventType::MOUSE_BUTTON_DOWN,
-               wsi::EventType::MOUSE_BUTTON_UP,
-               wsi::EventType::MOUSE_MOVED,
-               wsi::EventType::ACTIVATE,
-               wsi::EventType::DEACTIVATE> {};
