@@ -167,7 +167,10 @@ export namespace stormkit { inline namespace core {
     using abgrcolor_u = abgrcolor<u8>;
 
     template<ColorLayout LAYOUT, meta::ColorComponentStorageType T, typename FormatContext>
-    constexpr auto format_as(const color<LAYOUT, T>& color, FormatContext& ctx) noexcept -> decltype(ctx.out());
+    auto format_as(const color<LAYOUT, T>& color, FormatContext& ctx) noexcept -> decltype(ctx.out());
+
+    template<meta::HashType Ret = hash32, ColorLayout LAYOUT, meta::ColorComponentStorageType T>
+    constexpr auto hasher(const color<LAYOUT, T>& color) noexcept -> Ret;
 }} // namespace stormkit::core
 
 namespace stormkit { inline namespace core { namespace details {
@@ -304,9 +307,6 @@ export namespace stormkit { inline namespace core {
             .c = { .r = 0, .g = 0, .b = 0, .a = 0 }
         };
     } // namespace colors
-
-    template<ColorLayout LAYOUT, meta::ColorComponentStorageType T, typename FormatContext>
-    constexpr auto format_as(const color<LAYOUT, T>& color, FormatContext& ctx) noexcept -> decltype(ctx.out());
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -409,47 +409,6 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<ColorLayout LAYOUT, meta::ColorComponentStorageType T, typename FormatContext>
-    constexpr auto format_as(const color<LAYOUT, T>& color, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
-        if constexpr (LAYOUT == ColorLayout::R) return std::format_to(ctx.out(), "[color layout: R red: {}]", color.r);
-        else if constexpr (LAYOUT == ColorLayout::RG)
-            return std::format_to(ctx.out(), "[color layout: RG red: {}, green: {}]", color.r, color.g);
-        else if constexpr (LAYOUT == ColorLayout::RGB)
-            return std::format_to(ctx.out(), "[color layout: RGB red: {}, green: {}, blue: {}]", color.r, color.g, color.b);
-        else if constexpr (LAYOUT == ColorLayout::BGR)
-            return std::format_to(ctx.out(), "[color layout: BGR blue: {}, green: {}, red: {}]", color.r, color.g);
-        else if constexpr (LAYOUT == ColorLayout::RGBA)
-            return std::format_to(ctx.out(),
-                                  "[color layout: RGBA red: {}, green: {}, blue: {}, alpha: {}]",
-                                  color.r,
-                                  color.g,
-                                  color.b,
-                                  color.a);
-        else if constexpr (LAYOUT == ColorLayout::ARGB)
-            return std::format_to(ctx.out(),
-                                  "[color layout: ARGB alpha: {}, red: {}, green: {}, blue: {}]",
-                                  color.a,
-                                  color.r,
-                                  color.g,
-                                  color.b);
-        else if constexpr (LAYOUT == ColorLayout::BGRA)
-            return std::format_to(ctx.out(),
-                                  "[color layout: BGRA bue: {}, green: {}, red: {}, alpha: {}]",
-                                  color.b,
-                                  color.g,
-                                  color.r,
-                                  color.a);
-        else if constexpr (LAYOUT == ColorLayout::ABGR)
-            return std::format_to(ctx.out(),
-                                  "[color layout: ABGR alpha: {}, blue: {}, green: {}, red: {}]",
-                                  color.a,
-                                  color.b,
-                                  color.g,
-                                  color.r);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
     template<meta::ColorComponentStorageType T>
     STORMKIT_FORCE_INLINE
     constexpr auto color<ColorLayout::R, T>::operator==(const color& other) const noexcept -> bool {
@@ -510,5 +469,69 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr auto color<ColorLayout::ABGR, T>::operator==(const color& other) const noexcept -> bool {
         return r == other.r and g == other.g and b == other.b and a == other.a;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<ColorLayout LAYOUT, meta::ColorComponentStorageType T, typename FormatContext>
+    STORMKIT_FORCE_INLINE
+    inline auto format_as(const color<LAYOUT, T>& color, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
+        if constexpr (LAYOUT == ColorLayout::R) return std::format_to(ctx.out(), "[color layout: R red: {}]", color.r);
+        else if constexpr (LAYOUT == ColorLayout::RG)
+            return std::format_to(ctx.out(), "[color layout: RG red: {}, green: {}]", color.r, color.g);
+        else if constexpr (LAYOUT == ColorLayout::RGB)
+            return std::format_to(ctx.out(), "[color layout: RGB red: {}, green: {}, blue: {}]", color.r, color.g, color.b);
+        else if constexpr (LAYOUT == ColorLayout::BGR)
+            return std::format_to(ctx.out(), "[color layout: BGR blue: {}, green: {}, red: {}]", color.r, color.g);
+        else if constexpr (LAYOUT == ColorLayout::RGBA)
+            return std::format_to(ctx.out(),
+                                  "[color layout: RGBA red: {}, green: {}, blue: {}, alpha: {}]",
+                                  color.r,
+                                  color.g,
+                                  color.b,
+                                  color.a);
+        else if constexpr (LAYOUT == ColorLayout::ARGB)
+            return std::format_to(ctx.out(),
+                                  "[color layout: ARGB alpha: {}, red: {}, green: {}, blue: {}]",
+                                  color.a,
+                                  color.r,
+                                  color.g,
+                                  color.b);
+        else if constexpr (LAYOUT == ColorLayout::BGRA)
+            return std::format_to(ctx.out(),
+                                  "[color layout: BGRA bue: {}, green: {}, red: {}, alpha: {}]",
+                                  color.b,
+                                  color.g,
+                                  color.r,
+                                  color.a);
+        else if constexpr (LAYOUT == ColorLayout::ABGR)
+            return std::format_to(ctx.out(),
+                                  "[color layout: ABGR alpha: {}, blue: {}, green: {}, red: {}]",
+                                  color.a,
+                                  color.b,
+                                  color.g,
+                                  color.r);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::HashType Ret, ColorLayout LAYOUT, meta::ColorComponentStorageType T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto hasher(const color<LAYOUT, T>& color) noexcept -> Ret {
+        if constexpr (LAYOUT == ColorLayout::R) return hash(color.r);
+        else if constexpr (LAYOUT == ColorLayout::RG)
+            return hash(color.r, color.g);
+        else if constexpr (LAYOUT == ColorLayout::RGB)
+            return hash(color.r, color.g, color.b);
+        else if constexpr (LAYOUT == ColorLayout::BGR)
+            return hash(color.b, color.g, color.r);
+        else if constexpr (LAYOUT == ColorLayout::RGBA)
+            return hash(color.r, color.g, color.b, color.a);
+        else if constexpr (LAYOUT == ColorLayout::ARGB)
+            return hash(color.a, color.r, color.g, color.b);
+        else if constexpr (LAYOUT == ColorLayout::BGRA)
+            return hash(color.b, color.g, color.r, color.a);
+        else if constexpr (LAYOUT == ColorLayout::ABGR)
+            return hash(color.a, color.b, color.g, color.r);
     }
 }} // namespace stormkit::core
