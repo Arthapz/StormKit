@@ -120,7 +120,7 @@ namespace {
             "linear.matrix.translate",
             [] static {
                 constexpr auto a = math::mat4f::identity();
-                const auto     b = math::vec3f { 3, 2, 3 };
+                const auto     b = math::fvec3 { 3, 2, 3 };
 
                 const auto result = math::translate(a, b);
                 EXPECTS((result[0, 0] == 1));
@@ -135,7 +135,7 @@ namespace {
             "linear.matrix.scale",
             [] static {
                 const auto a = math::mat4i::identity();
-                const auto b = math::vec3i { 3, 2, 3 };
+                const auto b = math::ivec3 { 3, 2, 3 };
 
                 const auto result = math::scale(a, b);
                 EXPECTS((result[0, 0] == 3));

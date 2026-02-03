@@ -71,7 +71,7 @@ export namespace stormkit::wsi::win32 {
         [[nodiscard]]
         auto is_virtual_keyboard_visible() const noexcept -> bool;
 
-        auto set_mouse_position(const math::vec2i& position, u8 mouse_id) noexcept -> void;
+        auto set_mouse_position(const math::ivec2& position, u8 mouse_id) noexcept -> void;
 
         [[nodiscard]]
         auto is_mouse_inside() const noexcept -> bool;

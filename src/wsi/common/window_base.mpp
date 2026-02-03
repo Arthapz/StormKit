@@ -106,7 +106,7 @@ export namespace stormkit::wsi::common {
 
             f32 dpi = 1.f;
 
-            math::vec2i position = { 0, 0 };
+            math::ivec2 position = { 0, 0 };
         } m_state;
 
         std::vector<MouseState>    m_mouse_states;

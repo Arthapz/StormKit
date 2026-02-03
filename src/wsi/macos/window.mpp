@@ -180,7 +180,7 @@ export namespace stormkit::wsi::macos {
             return false;
         }
 
-        auto set_mouse_position([[maybe_unused]] const math::vec2i& position,
+        auto set_mouse_position([[maybe_unused]] const math::ivec2& position,
                                 [[maybe_unused]] u8                 mouse_id) noexcept -> void {}
 
         [[nodiscard]]

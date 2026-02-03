@@ -51,8 +51,8 @@ struct SwapchainImageResource {
 };
 
 struct Vertex {
-    math::vec3f position;
-    math::vec2f uv;
+    math::fvec3 position;
+    math::fvec2 uv;
 
     static constexpr auto attribute_descriptions() noexcept -> std::array<gpu::VertexInputAttributeDescription, 2> {
         return to_array<gpu::VertexInputAttributeDescription>({
@@ -430,7 +430,7 @@ class Application: public base::Application {
                                        window_extent_f32.width / window_extent_f32.height,
                                        0.1f,
                                        100.f),
-            .view  = math::look_at(math::vec3f { 0.f, 3.f, 5.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }),
+            .view  = math::look_at(math::fvec3 { 0.f, 3.f, 5.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }),
             .model = math::mat4f::identity(),
         };
 
@@ -452,7 +452,7 @@ class Application: public base::Application {
         // update viewer data and upload
         const auto time = stdc::duration_cast<Secondf>(current_time - m_start_time).count();
         viewer_data
-          .model = math::rotate(math::mat4f::identity(), time * math::angle::radians(90.f), math::vec3f { 0.f, 1.f, 0.f });
+          .model = math::rotate(math::mat4f::identity(), time * math::angle::radians(90.f), math::fvec3 { 0.f, 1.f, 0.f });
 
         auto& viewer_buffer = submission_resource.viewer_buffer;
         TryAssert(viewer_buffer.upload(viewer_data), "Failed to upload texture to gpu");

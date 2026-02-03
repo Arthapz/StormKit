@@ -172,9 +172,9 @@ export namespace stormkit::image {
         [[nodiscard]]
         auto pixel(usize id, u32 layer = 0u, u32 face = 0u, u32 level = 0u) const noexcept -> std::span<const Byte>;
         [[nodiscard]]
-        auto pixel(math::vec3u position, u32 layer = 0u, u32 face = 0u, u32 level = 0u) noexcept -> std::span<Byte>;
+        auto pixel(math::uvec3 position, u32 layer = 0u, u32 face = 0u, u32 level = 0u) noexcept -> std::span<Byte>;
         [[nodiscard]]
-        auto pixel(math::vec3u position, u32 layer = 0u, u32 face = 0u, u32 level = 0u) const noexcept -> std::span<const Byte>;
+        auto pixel(math::uvec3 position, u32 layer = 0u, u32 face = 0u, u32 level = 0u) const noexcept -> std::span<const Byte>;
 
         [[nodiscard]]
         auto extent(u32 level = 0u) const noexcept -> math::uextent3;
@@ -304,7 +304,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::pixel(math::vec3u position, u32 layer, u32 face, u32 level) noexcept -> std::span<Byte> {
+    inline auto Image::pixel(math::uvec3 position, u32 layer, u32 face, u32 level) noexcept -> std::span<Byte> {
         const auto mip_extent = extent(level);
 
         const auto id = position.x + (position.y * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z);
@@ -314,7 +314,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::pixel(math::vec3u position, u32 layer, u32 face, u32 level) const noexcept -> std::span<const Byte> {
+    inline auto Image::pixel(math::uvec3 position, u32 layer, u32 face, u32 level) const noexcept -> std::span<const Byte> {
         const auto mip_extent = extent(level);
 
         const auto id = position.x + (position.y * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z);

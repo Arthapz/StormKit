@@ -88,7 +88,7 @@ export namespace stormkit::wsi::linux {
         [[nodiscard]]
         auto is_virtual_keyboard_visible() const noexcept -> bool;
 
-        auto set_mouse_position(const math::vec2i& position, u8 mouse_id = 0) noexcept -> void;
+        auto set_mouse_position(const math::ivec2& position, u8 mouse_id = 0) noexcept -> void;
 
         [[nodiscard]]
         auto native_handle() const noexcept -> NativeHandle;
@@ -481,7 +481,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::set_mouse_position(const math::vec2i& position, u8 mouse_id) noexcept -> void {
+    inline auto Window::set_mouse_position(const math::ivec2& position, u8 mouse_id) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).set_mouse_position(position, mouse_id); break;
             case WM::WAYLAND: as<wayland::Window>(m_impl).set_mouse_position(position, mouse_id); break;

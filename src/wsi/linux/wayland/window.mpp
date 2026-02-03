@@ -79,7 +79,7 @@ export {
             [[nodiscard]]
             auto is_virtual_keyboard_visible() const noexcept -> bool;
 
-            auto set_mouse_position(const math::vec2i& position, u8 id) noexcept -> void;
+            auto set_mouse_position(const math::ivec2& position, u8 id) noexcept -> void;
 
             [[nodiscard]]
             auto native_handle() const noexcept -> NativeHandle;

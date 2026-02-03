@@ -382,7 +382,7 @@ static_assert(sizeof(math::uextent2) == sizeof(std::array<u32, 2>));
 static_assert(sizeof(math::uextent3) == sizeof(std::array<u32, 3>));
 
 static_assert(sizeof(math::iextent2) == sizeof(std::array<i32, 2>));
-static_assert(sizeof(math::extent3_i) == sizeof(std::array<i32, 3>));
+static_assert(sizeof(math::iextent3) == sizeof(std::array<i32, 3>));
 
 static_assert(sizeof(math::extent2<u16>) == sizeof(std::array<u16, 2>));
 static_assert(sizeof(math::extent3<u16>) == sizeof(std::array<u16, 3>));

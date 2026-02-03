@@ -218,13 +218,13 @@ namespace stormkit { inline namespace core { namespace math {
     using VecData = std::array<T, N>;
 
     template<typename T>
-    using Vec2Data = VecData<T, 2>;
+    using vec2data = VecData<T, 2>;
 
     template<typename T>
-    using Vec3Data = VecData<T, 3>;
+    using vec3data = VecData<T, 3>;
 
     template<typename T>
-    using Vec4Data = VecData<T, 4>;
+    using vec4data = VecData<T, 4>;
 
     // ////////////////////////////////////////
     // ////////////////////////////////////////
@@ -612,13 +612,13 @@ namespace stormkit { inline namespace core { namespace math {
         const auto sin = std::sin(angle.get());
 
         const auto axis_norm = [&axis] noexcept {
-            auto axis_norm = Vec3Data<T> {};
+            auto axis_norm = vec3data<T> {};
             normalize(axis, as_mdspan_mut<3>(axis_norm));
             return axis_norm;
         }();
 
         const auto temp = [&axis_norm, &cos] noexcept {
-            auto temp = Vec3Data<T> {};
+            auto temp = vec3data<T> {};
             mul(as_mdspan<3>(axis_norm), T { 1 } - cos, as_mdspan_mut<3>(temp));
             return temp;
         }();
@@ -710,24 +710,24 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(center.data_handle() != out.data_handle());
         EXPECTS(up.data_handle() != out.data_handle());
 
-        const auto z_temp = init_by<Vec3Data<T>>([&eye, &center](auto& out) noexcept {
+        const auto z_temp = init_by<vec3data<T>>([&eye, &center](auto& out) noexcept {
             sub(center, eye, as_mdspan_mut<3>(out));
         });
-        const auto z      = init_by<Vec3Data<T>>([&z_temp](auto& out) noexcept {
+        const auto z      = init_by<vec3data<T>>([&z_temp](auto& out) noexcept {
             normalize(as_mdspan<3>(z_temp), as_mdspan_mut<3>(out));
         });
 
-        const auto x_temp = init_by<Vec3Data<T>>([&up, &z](auto& out) noexcept {
+        const auto x_temp = init_by<vec3data<T>>([&up, &z](auto& out) noexcept {
             cross(up, as_mdspan<3>(z), as_mdspan_mut<3>(out));
         });
-        const auto x      = init_by<Vec3Data<T>>([&x_temp](auto& out) noexcept {
+        const auto x      = init_by<vec3data<T>>([&x_temp](auto& out) noexcept {
             normalize(as_mdspan<3>(x_temp), as_mdspan_mut<3>(out));
         });
 
-        const auto y_temp = init_by<Vec3Data<T>>([&z, &x](auto& out) noexcept {
+        const auto y_temp = init_by<vec3data<T>>([&z, &x](auto& out) noexcept {
             cross(as_mdspan<3>(z), as_mdspan<3>(x), as_mdspan_mut<3>(out));
         });
-        const auto y      = init_by<Vec3Data<T>>([&y_temp](auto& out) noexcept {
+        const auto y      = init_by<vec3data<T>>([&y_temp](auto& out) noexcept {
             normalize(as_mdspan<3>(y_temp), as_mdspan_mut<3>(out));
         });
 

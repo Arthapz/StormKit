@@ -85,16 +85,16 @@ export {
             using std::function<void(u8, Key, char)>::function;
         };
 
-        struct MouseButtonDownEventFunc: std::function<void(u8, MouseButton, const math::vec2i&)> {
-            using std::function<void(u8, MouseButton, const math::vec2i&)>::function;
+        struct MouseButtonDownEventFunc: std::function<void(u8, MouseButton, const math::ivec2&)> {
+            using std::function<void(u8, MouseButton, const math::ivec2&)>::function;
         };
 
-        struct MouseButtonUpEventFunc: std::function<void(u8, MouseButton, const math::vec2i&)> {
-            using std::function<void(u8, MouseButton, const math::vec2i&)>::function;
+        struct MouseButtonUpEventFunc: std::function<void(u8, MouseButton, const math::ivec2&)> {
+            using std::function<void(u8, MouseButton, const math::ivec2&)>::function;
         };
 
-        struct MouseMovedEventFunc: std::function<void(u8, const math::vec2i&)> {
-            using std::function<void(u8, const math::vec2i&)>::function;
+        struct MouseMovedEventFunc: std::function<void(u8, const math::ivec2&)> {
+            using std::function<void(u8, const math::ivec2&)>::function;
         };
 
         struct DeactivateEventFunc: std::function<void()> {
@@ -203,7 +203,7 @@ export {
             [[nodiscard]]
             auto is_virtual_keyboard_visible() const noexcept -> bool;
 
-            auto set_mouse_position(const math::vec2i& position, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
+            auto set_mouse_position(const math::ivec2& position, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
 
             [[nodiscard]]
             auto native_handle() const noexcept -> NativeHandle;

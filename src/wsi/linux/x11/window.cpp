@@ -613,7 +613,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::vec2i& position, u8) noexcept -> void {
+    auto Window::set_mouse_position(const math::ivec2& position, u8) noexcept -> void {
         auto& globals = xcb::get_globals();
 
         const auto _position = position.to<f32>();
@@ -748,7 +748,7 @@ namespace stormkit::wsi::linux::x11 {
                             auto button = button_event->detail;
                             WindowBase::mouse_button_down_event(GLOBAL_MOUSE_ID,
                                                                 x11_button_to_stormkit(as<xcb_button_t>(button)),
-                                                                math::vec2i { button_event->event_x, button_event->event_y });
+                                                                math::ivec2 { button_event->event_x, button_event->event_y });
                         } break;
                         case XCB_INPUT_BUTTON_RELEASE: [[fallthrough]];
                         case XCB_INPUT_RAW_BUTTON_RELEASE: {
@@ -757,7 +757,7 @@ namespace stormkit::wsi::linux::x11 {
                             auto button = button_event->detail;
                             WindowBase::mouse_button_up_event(GLOBAL_MOUSE_ID,
                                                               x11_button_to_stormkit(as<xcb_button_t>(button)),
-                                                              math::vec2i { button_event->event_x, button_event->event_y });
+                                                              math::ivec2 { button_event->event_x, button_event->event_y });
                         } break;
                     }
                 }

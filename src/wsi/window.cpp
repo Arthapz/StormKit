@@ -221,7 +221,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::vec2i& position, u8 mouse_id) noexcept -> void {
+    auto Window::set_mouse_position(const math::ivec2& position, u8 mouse_id) noexcept -> void {
         m_impl->set_mouse_position(position, mouse_id);
     }
 

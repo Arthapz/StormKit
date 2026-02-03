@@ -224,13 +224,13 @@ export {
         };
 
         struct Viewport {
-            math::vec2f        position;
+            math::fvec2        position;
             math::extent2<f32> extent;
-            math::vec2f        depth;
+            math::fvec2        depth;
         };
 
         struct Scissor {
-            math::vec2i        offset;
+            math::ivec2        offset;
             math::uextent2 extent;
         };
 
@@ -252,7 +252,7 @@ export {
 
             ImageSubresourceLayers subresource_layers;
 
-            math::vec3i        offset;
+            math::ivec3        offset;
             math::uextent3 extent;
         };
 
@@ -261,12 +261,12 @@ export {
             ImageSubresourceLayers dst;
 
             struct {
-                math::vec3i        position;
+                math::ivec3        position;
                 math::iextent3 extent;
             } src_offset;
 
             struct {
-                math::vec3i        position;
+                math::ivec3        position;
                 math::iextent3 extent;
             } dst_offset;
         };

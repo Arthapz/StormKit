@@ -61,7 +61,7 @@ namespace stormkit::wsi::win32 {
 
         auto get_client_rect(HWND window_handle) noexcept -> RECT;
 
-        // auto get_monitor_scale(HMONITOR monitor) -> math::vec2f;
+        // auto get_monitor_scale(HMONITOR monitor) -> math::fvec2;
 
         auto CALLBACK global_on_event(HWND handle, UINT message, WPARAM w_param, LPARAM l_param) noexcept -> LRESULT;
 
@@ -422,7 +422,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::vec2i& position, u8 id) noexcept -> void {
+    auto Window::set_mouse_position(const math::ivec2& position, u8 id) noexcept -> void {
         expects(id == GLOBAL_MOUSE_ID, "StormKit WSI win32 backend only support one mouse");
         auto mouse_position = POINT { as<long>(position.x), as<long>(position.y) };
         ClientToScreen(m_window_handle, &mouse_position);
@@ -499,8 +499,8 @@ namespace stormkit::wsi::win32 {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        // auto get_monitor_scale(HMONITOR monitor) -> math::vec2f {
-        //     auto scale = math::vec2f {};
+        // auto get_monitor_scale(HMONITOR monitor) -> math::fvec2 {
+        //     auto scale = math::fvec2 {};
 
         //    auto x_dpi       = 0u;
         //    auto y_dpi       = 0u;
@@ -627,7 +627,7 @@ namespace stormkit::wsi::win32 {
                 case WM_XBUTTONDOWN: {
                     const auto [x, y] = extract_mouse_position(window_handle, w_param, l_param, false);
                     const auto button = extract_mouse_button(message, w_param, l_param);
-                    window.mouse_button_down_event(GLOBAL_MOUSE_ID, button, math::vec2i { x, y });
+                    window.mouse_button_down_event(GLOBAL_MOUSE_ID, button, math::ivec2 { x, y });
                 } break;
                 case WM_LBUTTONUP: [[fallthrough]];
                 case WM_RBUTTONUP: [[fallthrough]];
@@ -635,7 +635,7 @@ namespace stormkit::wsi::win32 {
                 case WM_XBUTTONUP: {
                     const auto [x, y] = extract_mouse_position(window_handle, w_param, l_param, false);
                     const auto button = extract_mouse_button(message, w_param, l_param);
-                    window.mouse_button_up_event(GLOBAL_MOUSE_ID, button, math::vec2i { x, y });
+                    window.mouse_button_up_event(GLOBAL_MOUSE_ID, button, math::ivec2 { x, y });
                 } break;
                 case WM_KEYDOWN: [[fallthrough]];
                 case WM_SYSKEYDOWN: {
@@ -680,13 +680,13 @@ namespace stormkit::wsi::win32 {
                     if (state.locked and state.relative) {
                         const auto relative_x = x - as<i32>(state.locked_at.x);
                         const auto relative_y = y - as<i32>(state.locked_at.y);
-                        window.mouse_moved_event(GLOBAL_MOUSE_ID, math::vec2i { relative_x, relative_y });
+                        window.mouse_moved_event(GLOBAL_MOUSE_ID, math::ivec2 { relative_x, relative_y });
                     } else if (state.relative) {
                         const auto relative_x = x - as<i32>(state.last_position.x);
                         const auto relative_y = y - as<i32>(state.last_position.y);
-                        window.mouse_moved_event(GLOBAL_MOUSE_ID, math::vec2i { relative_x, relative_y });
+                        window.mouse_moved_event(GLOBAL_MOUSE_ID, math::ivec2 { relative_x, relative_y });
                     } else
-                        window.mouse_moved_event(GLOBAL_MOUSE_ID, math::vec2i { x, y });
+                        window.mouse_moved_event(GLOBAL_MOUSE_ID, math::ivec2 { x, y });
                 } break;
                 default: return;
             }

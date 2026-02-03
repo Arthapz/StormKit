@@ -45,8 +45,8 @@ export namespace stormkit::wsi::common {
         bool relative = false;
         bool confined = false;
 
-        math::vec2u locked_at     = {};
-        math::vec2u last_position = {};
+        math::uvec2 locked_at     = {};
+        math::uvec2 last_position = {};
 
         std::array<ButtonState, 15> buttons = filled_with<15>(ButtonState::UP);
     };

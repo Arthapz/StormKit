@@ -171,13 +171,13 @@ class Application: public base::Application {
                    if (key == wsi::Key::ESCAPE) m_window->close();
                    io.AddInputCharactersUTF8(&c);
                } },
-               wsi::MouseMovedEventFunc { [&io](u8 /*id*/, const math::vec2i& position) mutable noexcept {
+               wsi::MouseMovedEventFunc { [&io](u8 /*id*/, const math::ivec2& position) mutable noexcept {
                    const auto _position = position.to<f32>();
 
                    io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
                    io.AddMousePosEvent(_position.x, _position.y);
                } },
-               wsi::MouseButtonDownEventFunc { [&io](u8 /*id*/, wsi::MouseButton button, const math::vec2i&) mutable noexcept {
+               wsi::MouseButtonDownEventFunc { [&io](u8 /*id*/, wsi::MouseButton button, const math::ivec2&) mutable noexcept {
                    auto mouse_button = -1;
                    if (button == wsi::MouseButton::LEFT) mouse_button = 0;
                    if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
@@ -188,7 +188,7 @@ class Application: public base::Application {
                    io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
                    io.AddMouseButtonEvent(mouse_button, true);
                } },
-               wsi::MouseButtonUpEventFunc { [&io](u8 /*id*/, wsi::MouseButton button, const math::vec2i&) mutable noexcept {
+               wsi::MouseButtonUpEventFunc { [&io](u8 /*id*/, wsi::MouseButton button, const math::ivec2&) mutable noexcept {
                    auto mouse_button = -1;
                    if (button == wsi::MouseButton::LEFT) mouse_button = 0;
                    if (button == wsi::MouseButton::RIGHT) mouse_button = 1;

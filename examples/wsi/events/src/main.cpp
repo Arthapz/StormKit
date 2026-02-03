@@ -45,13 +45,13 @@ auto main(std::span<const std::string_view> args) -> int {
           wsi::MonitorChangedEventFunc { [](const wsi::Monitor& monitor) noexcept {
               ilog("Monitor changed event: {}", monitor);
           } },
-          wsi::MouseMovedEventFunc { [](u8 /*id*/, const math::vec2i& position) noexcept {
+          wsi::MouseMovedEventFunc { [](u8 /*id*/, const math::ivec2& position) noexcept {
               ilog("Mouse move event: {}", position);
           } },
-          wsi::MouseButtonDownEventFunc { [](u8 /*id*/, wsi::MouseButton button, const math::vec2i& position) noexcept {
+          wsi::MouseButtonDownEventFunc { [](u8 /*id*/, wsi::MouseButton button, const math::ivec2& position) noexcept {
               ilog("Mouse button down event: {} {}", button, position);
           } },
-          wsi::MouseButtonUpEventFunc { [](u8 /*id*/, wsi::MouseButton button, const math::vec2i& position) noexcept {
+          wsi::MouseButtonUpEventFunc { [](u8 /*id*/, wsi::MouseButton button, const math::ivec2& position) noexcept {
               ilog("Mouse button up event: {} {}", button, position);
           } },
           wsi::RestoredEventFunc { [] noexcept { ilog("Restored event"); } },

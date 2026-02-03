@@ -430,7 +430,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::vec2i& position, u8 mouse_id) noexcept -> void {
+    auto Window::set_mouse_position(const math::ivec2& position, u8 mouse_id) noexcept -> void {
         if (not m_state.open) return;
 
         auto& globals = wl::get_globals();
