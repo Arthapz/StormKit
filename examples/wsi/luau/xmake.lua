@@ -22,10 +22,14 @@ if get_config("luau") then
             add_files("src/main.cpp")
             -- if is_plat("windows") then add_files("win32/*.manifest") end
 
-            if get_config("devmode") then
-                add_defines('LUAU_DIR="examples/wsi/luau/luau"')
-                set_rundir("$(projectdir)")
-            end
+            on_load(function(target)
+                if get_config("devmode") then
+                    local lua_dir = path.unix(path.join(os.projectdir(), "examples", "wsi", "luau", "luau"))
+                    target:add("defines", format('LUAU_DIR="%s"', lua_dir))
+                end
+            end)
+
+            if get_config("devmode") then set_rundir("$(projectdir)") end
 
             set_group("examples/stormkit-wsi/luau")
         end)

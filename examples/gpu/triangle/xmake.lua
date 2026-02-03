@@ -38,10 +38,15 @@ target("triangle", function()
 
     add_includedirs("$(builddir)/shaders")
 
-    if get_config("devmode") then
-        add_defines('SHADER_DIR="$(builddir)/shaders"')
-        set_rundir("$(projectdir)")
-    end
+    on_load(function(target)
+        if get_config("devmode") then
+            import("core.project.config")
+            local shader_dir = path.unix(path.join(config.builddir(), "shaders"))
+            target:add("defines", format('SHADER_DIR="%s"', shader_dir))
+        end
+    end)
+
+    if get_config("devmode") then set_rundir("$(projectdir)") end
 
     add_embeddirs("$(builddir)/shaders")
 

@@ -25,11 +25,17 @@ target("textured_cube", function()
 
     add_includedirs("$(builddir)/shaders")
 
-    if get_config("devmode") then
-        add_defines('TEXTURE_DIR="examples/gpu/textured_cube/textures"')
-        add_defines('SHADER_DIR="$(builddir)/shaders"')
-        set_rundir("$(projectdir)")
-    end
+    on_load(function(target)
+        if get_config("devmode") then
+            import("core.project.config")
+            local shader_dir = path.unix(path.join(config.builddir(), "shaders"))
+            target:add("defines", format('SHADER_DIR="%s"', shader_dir))
+            local texture_dir = path.unix(path.join(os.projectdir(), "examples", "gpu", "textured_cube", "textures"))
+            target:add("defines", format('TEXTURE_DIR="%s"', texture_dir))
+        end
+    end)
+
+    if get_config("devmode") then set_rundir("$(projectdir)") end
 
     set_group("examples/stormkit-gpu")
 end)
