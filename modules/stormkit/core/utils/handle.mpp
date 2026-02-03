@@ -17,55 +17,47 @@ import :typesafe.safecasts;
 import :typesafe.integer;
 import :meta;
 
-export {
-    namespace stormkit { inline namespace core {
-        template<class T, meta::IsIntegral _ID>
-        struct Handle {
-            using ID = _ID;
-
-            static constexpr auto INVALID_HANDLE_VALUE = std::numeric_limits<ID>::max();
-
-            [[nodiscard]]
-            constexpr auto operator<=>(const Handle<T, ID>&) const noexcept -> std::strong_ordering = default;
-
-            template<std::derived_from<T> U>
-            constexpr operator Handle<U, ID>() const noexcept;
-
-            constexpr auto& operator++() noexcept;
-
-            constexpr auto operator++(int) noexcept;
-
-            constexpr auto& operator--() noexcept;
-
-            constexpr auto operator--(int) noexcept;
-
-            constexpr operator ID() const noexcept;
-
-            [[nodiscard]]
-            static constexpr auto invalid_handle() noexcept -> Handle;
-
-            ID id = INVALID_HANDLE_VALUE;
-        };
-
-        template<class T>
-        using Handle32 = Handle<T, u32>;
-
-        template<class T>
-        using Handle64 = Handle<T, u64>;
-
-        template<meta::HashType Ret = hash32, class T, meta::IsIntegral _ID>
-        constexpr auto hasher(const Handle<T, _ID>& value) noexcept -> Ret;
-
-        template<class T, meta::IsIntegral _ID, typename FormatContext>
-        auto format_as(const Handle<T, _ID>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
-    }} // namespace stormkit::core
-
+export namespace stormkit { inline namespace core {
     template<class T, meta::IsIntegral _ID>
-    struct std::hash<stormkit::core::Handle<T, _ID>> {
+    struct Handle {
+        using ID = _ID;
+
+        static constexpr auto INVALID_HANDLE_VALUE = std::numeric_limits<ID>::max();
+
         [[nodiscard]]
-        constexpr auto operator()(stormkit::core::Handle<T, _ID> handle) const noexcept -> stormkit::core::hash64;
+        constexpr auto operator<=>(const Handle<T, ID>&) const noexcept -> std::strong_ordering = default;
+
+        template<std::derived_from<T> U>
+        constexpr operator Handle<U, ID>() const noexcept;
+
+        constexpr auto& operator++() noexcept;
+
+        constexpr auto operator++(int) noexcept;
+
+        constexpr auto& operator--() noexcept;
+
+        constexpr auto operator--(int) noexcept;
+
+        constexpr operator ID() const noexcept;
+
+        [[nodiscard]]
+        static constexpr auto invalid_handle() noexcept -> Handle;
+
+        ID id = INVALID_HANDLE_VALUE;
     };
-}
+
+    template<class T>
+    using Handle32 = Handle<T, u32>;
+
+    template<class T>
+    using Handle64 = Handle<T, u64>;
+
+    template<meta::HashType Ret = hash32, class T, meta::IsIntegral _ID>
+    constexpr auto hasher(const Handle<T, _ID>& value) noexcept -> Ret;
+
+    template<class T, meta::IsIntegral _ID, typename FormatContext>
+    auto format_as(const Handle<T, _ID>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///

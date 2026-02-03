@@ -36,7 +36,7 @@ export {
         constexpr auto as_string(Monitor::Flags flags) noexcept -> std::string_view;
 
         template<typename FormatContext>
-        auto format_as(const Monitor&, FormatContext&) noexcept -> FormatContext::iterator;
+        auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept -> decltype(ctx.out());
 
         [[nodiscard]]
         STORMKIT_API
@@ -98,13 +98,12 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     template<typename FormatContext>
     STORMKIT_FORCE_INLINE
-    inline auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept -> FormatContext::iterator {
-        auto&& out = ctx.out();
-        return format_to(out,
-                         "{{ Monitor: .name = {}, .flags = {}, .extents = {}, .scale_factor = {} }}",
-                         monitor.name,
-                         monitor.flags,
-                         monitor.extents,
-                         monitor.scale_factor);
+    inline auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
+        return std::format_to(ctx.out(),
+                              "{{ Monitor: .name = {}, .flags = {}, .extents = {}, .scale_factor = {} }}",
+                              monitor.name,
+                              monitor.flags,
+                              monitor.extents,
+                              monitor.scale_factor);
     }
 } // namespace stormkit::wsi
