@@ -32,13 +32,13 @@ using namespace stormkit;
 
 template<typename FormatContext>
 constexpr auto format_as(const POINT& point, FormatContext& ctx) -> decltype(ctx.out()) {
-    return std::format_to(ctx.out(), "{{ .x = {}, .y = {} }}", point.x, point.y);
+    return std::format_to(ctx.out(), "[vec2 x: {}, y: {}]", point.x, point.y);
 }
 
 template<typename FormatContext>
 constexpr auto format_as(const RECT& rect, FormatContext& ctx) -> decltype(ctx.out()) {
     return std::format_to(ctx.out(),
-                          "{{ .left = {}, .top = {}, .right = {}, .bottom = {} }}",
+                          "[rect left: {}, top: {}, right: {}, bottom: {}]",
                           rect.left,
                           rect.top,
                           rect.right,
@@ -125,8 +125,7 @@ namespace stormkit::wsi::win32 {
 
         SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
 
-        const auto adjusted = adjust_extent(extent, style, style_ex);
-        std::println("{} => {}", extent, adjusted);
+        const auto adjusted       = adjust_extent(extent, style, style_ex);
         m_window_handle           = CreateWindowExA(style_ex,
                                                     CLASS_NAME,
                                                     std::data(title),
@@ -529,7 +528,9 @@ namespace stormkit::wsi::win32 {
 
             switch (message) {
                 case WM_DESTROY: PostQuitMessage(0); return 0;
-                case WM_CLOSE: window.closed_event(); return 0;
+                case WM_CLOSE:
+                    if (window.closed_event()) DestroyWindow(window_handle);
+                    return 0;
                 case WM_CREATE: window.WindowBase::set_open(true); break;
                 case WM_NCDESTROY: window.WindowBase::set_open(false); break;
                 case WM_MOUSEACTIVATE: {
