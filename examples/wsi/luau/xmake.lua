@@ -20,13 +20,11 @@ if get_config("luau") then
             end
 
             add_files("src/main.cpp")
-            if is_plat("windows") then add_files("win32/*.manifest") end
+            -- if is_plat("windows") then add_files("win32/*.manifest") end
 
             if get_config("devmode") then
-                add_defines('LUAU_DIR="$(builddir)/luau"')
+                add_defines('LUAU_DIR="examples/wsi/luau/luau"')
                 set_rundir("$(projectdir)")
-
-                after_build(function(target) os.cp("examples/wsi/luau/luau", "$(builddir)") end)
             end
 
             set_group("examples/stormkit-wsi/luau")

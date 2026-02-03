@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 #include <stormkit/core/try_expected.hpp>
 
@@ -51,8 +52,7 @@ export namespace stormkit::luau {
         }
 
         auto load(const stdfs::path& file) noexcept {
-            expects(not stdr::empty(file));
-            auto data = *io::read_text(file).transform_error(monadic::assert(std::format("Failed to load {}", file.string())));
+            auto data = TryAssert(io::read_text<io::Mode::AINSI>(file), std::format("Failed to load {}", file.string()));
 
             auto bytecode_size = 0_usize;
             auto bytecode      = luau_compile(stdr::data(data), stdr::size(data), nullptr, &bytecode_size);
@@ -79,7 +79,7 @@ export namespace stormkit::luau {
         }
 
         auto lua_main() noexcept -> std::expected<void, std::string> {
-            expects(m_main_thread);
+            EXPECTS(m_main_thread);
 
             auto out = std::expected<void, std::string> {};
 

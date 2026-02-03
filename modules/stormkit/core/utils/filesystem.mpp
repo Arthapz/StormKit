@@ -12,6 +12,8 @@ module;
 #include <stormkit/core/try_expected.hpp>
 
 #ifdef STORMKIT_OS_WINDOWS
+    #include <stormkit/core/platform/windows.hpp>
+
     #include <fcntl.h>
     #include <io.h>
     #include <sys/stat.h>
@@ -141,21 +143,32 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     inline auto Descriptor<mode>::open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor<mode>> {
-        const auto p            = path.string();
+        if (not stdfs::exists(path)) return std::unexpected { SystemError { .code = std::errc::no_such_file_or_directory } };
+        if (stdfs::is_directory(path)) return std::unexpected { SystemError { .code = std::errc::is_a_directory } };
+
         const auto posix_access = [&access]() noexcept {
+#ifdef STORMKIT_OS_WINDOWS
+            if (access == Access::READ) return _O_RDONLY;
+            else if (access == Access::WRITE)
+                return _O_WRONLY;
+            else
+                return _O_RDWR;
+#else
             if (access == Access::READ) return O_RDONLY;
             else if (access == Access::WRITE)
                 return O_WRONLY;
             else
                 return O_RDWR;
+#endif
             std::unreachable();
         }();
 
 #ifdef STORMKIT_OS_WINDOWS
         const auto text_mode = []() noexcept {
             switch (mode) {
-                case Mode::BINARY: return 0;
     #ifdef STORMKIT_OS_WINDOWS
+                case Mode::BINARY: return _O_BINARY;
+                case Mode::AINSI: return _O_TEXT;
                 case Mode::UTF8: return _O_U8TEXT;
                 case Mode::WIDE: return _O_WTEXT;
                 default: break;
@@ -166,23 +179,14 @@ namespace stormkit { inline namespace core { namespace io {
             std::unreachable();
         }();
 
-        const auto win32_access = [&access]() noexcept {
-            if (access == Access::READ) return _S_IREAD;
-            else if (access == Access::WRITE)
-                return _S_IWRITE;
-            else
-                return _S_IREAD | _S_IWRITE;
-            std::unreachable();
-        }();
-
         auto ret = 0;
-        const auto
-          // err = _sopen_s(&ret, stdr::data(p), posix_access | text_mode, _SH_DENYNO,
-          // win32_access);
-          err = _sopen_s(&ret, stdr::data(p), posix_access | text_mode, _SH_SECURE, win32_access);
+        auto str = path.string();
+        const auto //
+          err = _sopen_s(&ret, str.c_str(), posix_access | text_mode, _SH_DENYWR, 0);
+        // err = _sopen_s(&ret, stdr::data(p), posix_access | text_mode, _SH_SECURE, 0);
         if (err != 0) return std::unexpected { SystemError::from_errno() };
 #else
-        const auto ret = ::open(stdr::data(p), posix_access);
+        const auto ret = ::open(path.c_str(), posix_access);
         if (ret == -1) return std::unexpected { SystemError::from_errno() };
 #endif
         return Expected<Descriptor<mode>> { std::in_place, PrivateFuncTag {}, ret };
@@ -262,7 +266,6 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto Descriptor<mode>::read_to(std::span<char> out) noexcept -> Expected<usize>
         requires(mode == Mode::UTF8 or mode == Mode::AINSI)
     {
-        static_assert(stdr::contiguous_range<std::span<char>>);
         return read_to(as_bytes_mut(out));
     }
 
@@ -321,13 +324,15 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto Descriptor<mode>::flush() noexcept -> void {
         EXPECTS(m_descriptor != 0);
 #ifdef STORMKIT_OS_WINDOWS
-        _commit
-#elifdef STORMKIT_OS_LINUX
-        fdatasync
+        FlushFileBuffers(reinterpret_cast<HANDLE>(m_descriptor));
 #else
+    #if STORMKIT_OS_LINUX
+        fdatasync
+    #else
         fsync
-#endif
+    #endif
           (m_descriptor);
+#endif
     }
 
     ////////////////////////////////////////
@@ -389,8 +394,9 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto read_text_to(const stdfs::path& path, std::span<meta::ModeToCharType<mode>> out) noexcept -> Expected<usize> {
-        auto   file = Try((TextFile<mode>::open(path, Access::READ)));
-        Return Try(file.read_to(std::span<meta::ModeToCharType<mode>> { out }));
+        auto file = Try((TextFile<mode>::open(path, Access::READ)));
+        ENSURES(stdr::size(out) >= file.size());
+        Return Try(file.read_to(out));
     }
 
     ////////////////////////////////////////
@@ -401,7 +407,8 @@ namespace stormkit { inline namespace core { namespace io {
         auto file = Try((TextFile<mode>::open(path, Access::READ)));
         auto out  = std::vector<meta::ModeToCharType<mode>> {};
         out.resize(file.size());
-        TryDiscard(file.read_to(std::span<meta::ModeToCharType<mode>> { out }));
+        auto readed = Try(file.read_to(out));
+        out.resize(readed);
         Return out;
     }
 
@@ -410,7 +417,7 @@ namespace stormkit { inline namespace core { namespace io {
     STORMKIT_FORCE_INLINE
     inline auto read_to(const stdfs::path& path, std::span<Byte> out) noexcept -> Expected<usize> {
         auto   file = Try((File::open(path, Access::READ)));
-        Return Try(file.read_to(std::span<Byte> { out }));
+        Return Try(file.read_to(out));
     }
 
     ////////////////////////////////////////
@@ -420,7 +427,8 @@ namespace stormkit { inline namespace core { namespace io {
         auto file = Try((File::open(path, Access::READ)));
         auto out  = std::vector<Byte> {};
         out.resize(file.size());
-        TryDiscard(file.read_to(std::span<Byte> { out }));
+        auto readed = Try(file.read_to(out));
+        out.resize(readed);
         Return out;
     }
 
