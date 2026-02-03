@@ -65,8 +65,8 @@ export {
             using std::function<void(const Monitor&)>::function;
         };
 
-        struct ResizedEventFunc: std::function<void(const math::Extent2<u32>&)> {
-            using std::function<void(const math::Extent2<u32>&)>::function;
+        struct ResizedEventFunc: std::function<void(const math::uextent2&)> {
+            using std::function<void(const math::uextent2&)>::function;
         };
 
         struct RestoredEventFunc: std::function<void()> {
@@ -128,7 +128,7 @@ export {
             Window(Window&&) noexcept;
             auto operator=(Window&&) noexcept -> Window&;
 
-            static auto open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept -> Window;
+            static auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept -> Window;
 
             auto close() noexcept -> void;
             [[nodiscard]]
@@ -158,10 +158,10 @@ export {
             auto title() const noexcept -> const std::string&;
             auto set_title(std::string title) noexcept -> void;
 
-            auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
+            auto set_extent(const math::uextent2& extent) noexcept -> void;
 
             [[nodiscard]]
-            auto extent() const noexcept -> const math::Extent2<u32>&;
+            auto extent() const noexcept -> const math::uextent2&;
 
             auto set_fullscreen(bool fullscreen) noexcept -> void;
             auto toggle_fullscreen() noexcept -> void;

@@ -132,7 +132,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(std::string title, const math::Extent2<u32>& extent, WindowFlag flags) noexcept -> void {
+    auto Window::open(std::string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
         const auto& connection = xcb::get_globals().connection;
 
         const auto screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
@@ -460,7 +460,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
+    auto Window::set_extent(const math::uextent2& extent) noexcept -> void {
         auto& globals = xcb::get_globals();
 
         const auto mask   = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
@@ -683,7 +683,7 @@ namespace stormkit::wsi::linux::x11 {
                 auto configure_event = std::bit_cast<xcb_configure_notify_event_t*>(xevent);
 
                 if ((configure_event->width != m_state.extent.width) || (configure_event->height != m_state.extent.height)) {
-                    m_state.extent = math::Extent2 { configure_event->width, configure_event->height }.narrow_to<u32>();
+                    m_state.extent = math::extent2 { configure_event->width, configure_event->height }.narrow_to<u32>();
 
                     if (m_graphics_context) update_framebuffer();
 

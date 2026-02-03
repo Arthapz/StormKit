@@ -41,7 +41,7 @@ auto main(std::span<const std::string_view> args) -> int {
 
     auto foo = 0;
     window
-      .on(wsi::ResizedEventFunc { [](const math::Extent2<u32>& extent) static noexcept { ilog("Resize event: {}", extent); } },
+      .on(wsi::ResizedEventFunc { [](const math::uextent2& extent) static noexcept { ilog("Resize event: {}", extent); } },
           wsi::MonitorChangedEventFunc { [](const wsi::Monitor& monitor) noexcept {
               ilog("Monitor changed event: {}", monitor);
           } },

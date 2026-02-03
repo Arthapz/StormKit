@@ -35,7 +35,7 @@ export namespace stormkit::wsi::linux {
         Window(Window&&) noexcept;
         auto operator=(Window&&) noexcept -> Window&;
 
-        auto open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept -> void;
+        auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
         auto close() noexcept -> void;
 
         [[nodiscard]]
@@ -56,9 +56,9 @@ export namespace stormkit::wsi::linux {
         [[nodiscard]]
         auto title() const noexcept -> const std::string&;
 
-        auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
+        auto set_extent(const math::uextent2& extent) noexcept -> void;
         [[nodiscard]]
-        auto extent() const noexcept -> const math::Extent2<u32>&;
+        auto extent() const noexcept -> const math::uextent2&;
 
         auto set_fullscreen(bool fullscreen) noexcept -> void;
         [[nodiscard]]
@@ -143,7 +143,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::open(std::string title, const math::Extent2<u32>& extent, WindowFlag flags) noexcept -> void {
+    inline auto Window::open(std::string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).open(std::move(title), extent, flags); break;
             case WM::WAYLAND: as<wayland::Window>(m_impl).open(std::move(title), extent, flags); break;
@@ -271,7 +271,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
+    inline auto Window::set_extent(const math::uextent2& extent) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).set_extent(extent); break;
             case WM::WAYLAND: as<wayland::Window>(m_impl).set_extent(extent); break;
@@ -283,7 +283,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto Window::extent() const noexcept -> const math::Extent2<u32>& {
+    inline auto Window::extent() const noexcept -> const math::uextent2& {
         switch (m_wm) {
             case WM::X11: return as<x11::Window>(m_impl).extent();
             case WM::WAYLAND: return as<wayland::Window>(m_impl).extent();

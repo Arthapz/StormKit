@@ -42,7 +42,7 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities, const math::Extent2<u32>& extent) noexcept
+        auto choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities, const math::uextent2& extent) noexcept
           -> VkExtent2D {
             static constexpr auto int_max = std::numeric_limits<u32>::max();
 
@@ -51,7 +51,7 @@ namespace stormkit::gpu {
 
             auto actual_extent   = to_vk(extent);
             actual_extent.width  = std::max(capabilities.minImageExtent.width,
-                                           std::min(capabilities.maxImageExtent.width, actual_extent.width));
+                                            std::min(capabilities.maxImageExtent.width, actual_extent.width));
             actual_extent.height = std::max(capabilities.minImageExtent.height,
                                             std::min(capabilities.maxImageExtent.height, actual_extent.height));
 
@@ -74,7 +74,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     auto SwapChain::do_init(const Device&             device,
                             const Surface&            surface,
-                            const math::Extent2<u32>& extent,
+                            const math::uextent2& extent,
                             VkSwapchainKHR            old_swapchain) noexcept -> Expected<void> {
         const auto& physical_device = device.physical_device();
 
@@ -139,14 +139,14 @@ namespace stormkit::gpu {
           .transform([this, &device](auto&& vk_images) noexcept {
               m_image_count = as<u32>(std::ranges::size(vk_images));
               m_images      = vk_images
-                         | std::views::transform([this, &device](auto&& image) noexcept {
+                              | std::views::transform([this, &device](auto&& image) noexcept {
                                const auto create_info = Image::CreateInfo {
                                    .extent = { m_extent.width, m_extent.height, 1_u32 },
                                    .format = m_pixel_format
                                };
                                return Image::create(device, create_info, std::move(image));
-                           })
-                         | std::ranges::to<std::vector>();
+                                })
+                              | std::ranges::to<std::vector>();
           })
           .transform_error(monadic::from_vk<Result>());
     }

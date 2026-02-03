@@ -225,13 +225,13 @@ export {
 
         struct Viewport {
             math::vec2f        position;
-            math::Extent2<f32> extent;
+            math::extent2<f32> extent;
             math::vec2f        depth;
         };
 
         struct Scissor {
             math::vec2i        offset;
-            math::Extent2<u32> extent;
+            math::uextent2 extent;
         };
 
         struct ClearColor {
@@ -253,7 +253,7 @@ export {
             ImageSubresourceLayers subresource_layers;
 
             math::vec3i        offset;
-            math::Extent3<u32> extent;
+            math::uextent3 extent;
         };
 
         struct BlitRegion {
@@ -262,12 +262,12 @@ export {
 
             struct {
                 math::vec3i        position;
-                math::Extent3<i32> extent;
+                math::iextent3 extent;
             } src_offset;
 
             struct {
                 math::vec3i        position;
-                math::Extent3<i32> extent;
+                math::iextent3 extent;
             } dst_offset;
         };
 
@@ -308,7 +308,7 @@ export {
         using Expected = std::expected<T, Result>;
 
         [[nodiscard]]
-        constexpr auto compute_mip_level(const math::Extent2<u32>& extent) noexcept -> u32;
+        constexpr auto compute_mip_level(const math::uextent2& extent) noexcept -> u32;
         [[nodiscard]]
         constexpr auto compute_uniform_buffer_offset_align(usize size, const RenderCapabilities& capabilities) noexcept -> usize;
 
@@ -331,7 +331,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto compute_mip_level(const math::Extent2<u32>& extent) noexcept -> u32 {
+    constexpr auto compute_mip_level(const math::uextent2& extent) noexcept -> u32 {
         const auto as_float = extent.to<f32>();
         return as<u32>(math::floor(math::log2(math::max(as_float.width, as_float.height)))) + 1;
     }

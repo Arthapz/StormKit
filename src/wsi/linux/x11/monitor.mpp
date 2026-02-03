@@ -77,11 +77,11 @@ namespace stormkit::wsi::linux::x11 {
 
                     if (crtc == nullptr) {}
 
-                    monitor.extents.emplace_back(math::Extent2 { as<u32>(crtc.handle()->width), as<u32>(crtc.handle()->height) });
+                    monitor.extents.emplace_back(math::extent2 { as<u32>(crtc.handle()->width), as<u32>(crtc.handle()->height) });
                 }
 
                 if (stdr::empty(monitor.extents))
-                    monitor.extents.emplace_back(math::Extent2 { as<u32>(xcb_monitor_iter.data->width),
+                    monitor.extents.emplace_back(math::extent2 { as<u32>(xcb_monitor_iter.data->width),
                                                                  as<u32>(xcb_monitor_iter.data->height) });
             }
         }

@@ -56,7 +56,7 @@ export namespace stormkit::wsi::macos {
             return *this;
         }
 
-        auto open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
+        auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept
           -> void {
             const auto resizeable  = check_flag_bit(flags, WindowFlag::RESIZEABLE);
             const auto borderless  = check_flag_bit(flags, WindowFlag::BORDERLESS);
@@ -108,7 +108,7 @@ export namespace stormkit::wsi::macos {
             }
         }
 
-        auto set_extent([[maybe_unused]] const math::Extent2<u32>& extent) noexcept -> void {}
+        auto set_extent([[maybe_unused]] const math::uextent2& extent) noexcept -> void {}
 
         auto set_fullscreen(bool fullscreen) noexcept -> void {
             if (WindowBase::set_fullscreen(fullscreen)) {}

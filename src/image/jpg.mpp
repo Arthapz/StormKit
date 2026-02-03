@@ -73,7 +73,7 @@ namespace stormkit::image::details {
         auto          image_memory = std::vector<Byte> {};
         volatile auto format       = Format {}; // NOTE volatile for error: variable ‘format’ might be
                                                 // clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
-        auto extent    = math::Extent3<u32> {};
+        auto extent    = math::uextent3 {};
         auto info      = jpeg_decompress_struct {};
         auto error_mgr = jpeg_error_mgr {};
 

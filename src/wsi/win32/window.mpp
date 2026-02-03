@@ -34,7 +34,7 @@ export namespace stormkit::wsi::win32 {
         Window(Window&&) noexcept;
         auto operator=(Window&&) noexcept -> Window&;
 
-        auto open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
+        auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept
           -> void;
         auto close() noexcept -> void;
 
@@ -44,7 +44,7 @@ export namespace stormkit::wsi::win32 {
         auto fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void;
 
         auto set_title(std::string title) noexcept -> void;
-        auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
+        auto set_extent(const math::uextent2& extent) noexcept -> void;
         auto set_fullscreen(bool fullscreen) noexcept -> void;
 
         auto confine_mouse(bool confined, u8 mouse_id) noexcept -> void;
@@ -84,7 +84,7 @@ export namespace stormkit::wsi::win32 {
         [[nodiscard]]
         auto native_handle() const noexcept -> NativeHandle;
 
-        auto update_geometry(const math::Extent2<u32>& extent) noexcept -> void;
+        auto update_geometry(const math::uextent2& extent) noexcept -> void;
 
         auto win32_state(this auto& self) noexcept -> decltype(auto);
         auto state(this auto& self) noexcept -> decltype(auto);
@@ -102,8 +102,8 @@ export namespace stormkit::wsi::win32 {
             bool mouse_inside     = false;
             bool resizing         = false;
 
-            math::Extent2<u32> extent;
-            math::Extent2<u32> last_extent;
+            math::uextent2 extent;
+            math::uextent2 last_extent;
 
             DWORD tls_index = 0;
 
@@ -131,7 +131,7 @@ export namespace stormkit::wsi::win32 {
             HBitmap            bitmap     = HBitmap::empty();
             std::atomic<void*> pixels_ptr = nullptr;
 
-            math::Extent2<LONG> extent;
+            math::extent2<LONG> extent;
         } m_gdi_frame_data;
     };
 } // namespace stormkit::wsi::win32
@@ -165,7 +165,7 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::update_geometry(const math::Extent2<u32>& extent) noexcept -> void {
+    inline auto Window::update_geometry(const math::uextent2& extent) noexcept -> void {
         m_state.extent       = extent;
         m_win32_state.extent = extent;
     }

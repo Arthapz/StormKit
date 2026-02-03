@@ -53,9 +53,9 @@ export namespace stormkit::wsi::common {
         [[nodiscard]]
         auto title() const noexcept -> const std::string&;
 
-        auto set_extent(const math::Extent2<u32>& extent) noexcept -> bool;
+        auto set_extent(const math::uextent2& extent) noexcept -> bool;
         [[nodiscard]]
-        auto extent() const noexcept -> const math::Extent2<u32>&;
+        auto extent() const noexcept -> const math::uextent2&;
 
         auto set_fullscreen(bool fullscreen) noexcept -> bool;
         [[nodiscard]]
@@ -100,7 +100,7 @@ export namespace stormkit::wsi::common {
             bool                       active     = false;
             bool                       fullscreen = false;
             bool                       visible    = false;
-            math::Extent2<u32>         extent;
+            math::uextent2         extent;
             OptionalRef<const Monitor> current_monitor;
             std::string                title;
 
@@ -174,7 +174,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::set_extent(const math::Extent2<u32>& extent) noexcept -> bool {
+    inline auto WindowBase::set_extent(const math::uextent2& extent) noexcept -> bool {
         if (not m_state.open) return false;
 
         m_state.extent = extent;
@@ -184,7 +184,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::extent() const noexcept -> const math::Extent2<u32>& {
+    inline auto WindowBase::extent() const noexcept -> const math::uextent2& {
         return m_state.extent;
     }
 

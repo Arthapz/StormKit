@@ -171,10 +171,10 @@ export namespace stormkit::gpu {
         auto bind_pipeline(const Pipeline& pipeline) noexcept -> CommandBuffer&;
         auto set_viewport(u32 first_viewport, std::span<const Viewport> viewports) noexcept -> CommandBuffer&;
         auto set_scissor(u32 first_scissor, std::span<const Scissor> scissors) noexcept -> CommandBuffer&;
-        auto set_line_width(float width) noexcept -> CommandBuffer&;
-        auto set_depth_bias(float constant_factor, float clamp, float slope_factor) noexcept -> CommandBuffer&;
-        auto set_blend_constants(std::span<const float> constants) noexcept -> CommandBuffer&;
-        auto set_depth_bounds(float min, float max) noexcept -> CommandBuffer&;
+        auto set_line_width(f32 width) noexcept -> CommandBuffer&;
+        auto set_depth_bias(f32 constant_factor, f32 clamp, f32 slope_factor) noexcept -> CommandBuffer&;
+        auto set_blend_constants(std::span<const f32> constants) noexcept -> CommandBuffer&;
+        auto set_depth_bounds(f32 min, f32 max) noexcept -> CommandBuffer&;
         auto set_stencil_compare_mask(StencilFaceFlag face, u32 mask) noexcept -> CommandBuffer&;
         auto set_stencil_write_mask(StencilFaceFlag face, u32 mask) noexcept -> CommandBuffer&;
         auto set_stencil_reference(StencilFaceFlag face, u32 reference) noexcept -> CommandBuffer&;
@@ -213,7 +213,7 @@ export namespace stormkit::gpu {
                         ImageLayout                   dst_layout,
                         const ImageSubresourceLayers& src_subresource_layers,
                         const ImageSubresourceLayers& dst_subresource_layers,
-                        const math::Extent3<u32>&     extent) noexcept -> CommandBuffer&;
+                        const math::uextent3&     extent) noexcept -> CommandBuffer&;
 
         auto resolve_image(const Image&                  src,
                            const Image&                  dst,
@@ -626,7 +626,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto CommandBuffer::set_line_width(float width) noexcept -> CommandBuffer& {
+    inline auto CommandBuffer::set_line_width(f32 width) noexcept -> CommandBuffer& {
         EXPECTS(m_state == State::RECORDING);
 
         vk_call(m_vk_device_table->vkCmdSetLineWidth, m_vk_handle, width);
@@ -636,7 +636,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto CommandBuffer::set_depth_bias(float constant_factor, float clamp, float slope_factor) noexcept -> CommandBuffer& {
+    inline auto CommandBuffer::set_depth_bias(f32 constant_factor, f32 clamp, f32 slope_factor) noexcept -> CommandBuffer& {
         EXPECTS(m_state == State::RECORDING);
 
         vk_call(m_vk_device_table->vkCmdSetDepthBias, m_vk_handle, constant_factor, clamp, slope_factor);
@@ -646,7 +646,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto CommandBuffer::set_blend_constants(std::span<const float> constants) noexcept -> CommandBuffer& {
+    inline auto CommandBuffer::set_blend_constants(std::span<const f32> constants) noexcept -> CommandBuffer& {
         EXPECTS(m_state == State::RECORDING);
 
         f32 data[] = { constants[0], constants[1], constants[2], constants[3] };
@@ -658,7 +658,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto CommandBuffer::set_depth_bounds(float min, float max) noexcept -> CommandBuffer& {
+    inline auto CommandBuffer::set_depth_bounds(f32 min, f32 max) noexcept -> CommandBuffer& {
         EXPECTS(m_state == State::RECORDING);
 
         vk_call(m_vk_device_table->vkCmdSetDepthBounds, m_vk_handle, min, max);

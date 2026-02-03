@@ -26,7 +26,7 @@ export namespace stormkit { inline namespace core { namespace math {
         Positive<T> height;
 
         constexpr auto position() const noexcept -> vec2<T>;
-        constexpr auto extent() const noexcept -> Extent2<T>;
+        constexpr auto extent() const noexcept -> extent2<T>;
 
         template<core::meta::IsArithmetic U>
         constexpr auto to() const noexcept -> rect<U>;
@@ -88,7 +88,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto rect<T>::extent() const noexcept -> Extent2<T> {
+    constexpr auto rect<T>::extent() const noexcept -> extent2<T> {
         return { width.value, height.value };
     }
 

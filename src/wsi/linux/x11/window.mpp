@@ -72,7 +72,7 @@ export namespace stormkit::wsi::linux::x11 {
         Window(Window&&) noexcept;
         auto operator=(Window&&) noexcept -> Window&;
 
-        auto open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept -> void;
+        auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
         auto close() noexcept -> void;
 
         auto handle_events() noexcept -> void;
@@ -81,7 +81,7 @@ export namespace stormkit::wsi::linux::x11 {
         auto fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void;
 
         auto set_title(std::string title) noexcept -> void;
-        auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
+        auto set_extent(const math::uextent2& extent) noexcept -> void;
         auto set_fullscreen(bool fullscreen) noexcept -> void;
 
         auto confine_mouse(bool confined, u8 mouse_id) noexcept -> void;

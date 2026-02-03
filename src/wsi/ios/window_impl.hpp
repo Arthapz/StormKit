@@ -44,7 +44,7 @@ namespace storm::window {
         void set_title(const std::string& title) noexcept override;
         void setVideoSettings(const storm::window::VideoSettings& settings) noexcept override;
 
-        storm::core::Extentu size() const noexcept override;
+        storm::core::extentu size() const noexcept override;
 
         bool is_open() const noexcept override;
         bool isVisible() const noexcept override;

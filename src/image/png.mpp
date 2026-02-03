@@ -77,7 +77,7 @@ namespace stormkit::image::details {
     auto load_png(std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error> {
         auto image_memory = std::vector<Byte> {};
         auto format       = Format {};
-        auto extent       = math::Extent3<u32> {};
+        auto extent       = math::uextent3 {};
 
         auto read_param = png::ReadParam { 8u, data };
 

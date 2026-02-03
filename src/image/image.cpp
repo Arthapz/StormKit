@@ -138,7 +138,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Image::Image(const math::Extent3<u32>& extent, Format format) noexcept : Image {} {
+    Image::Image(const math::uextent3& extent, Format format) noexcept : Image {} {
         create(extent, format);
     }
 
@@ -402,7 +402,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::create(math::Extent3<u32> extent, Format format) noexcept -> void {
+    auto Image::create(math::uextent3 extent, Format format) noexcept -> void {
         EXPECTS(extent.width > 0u and extent.height > 0u and extent.depth > 0u and format != Format::UNDEFINED);
         m_data.data.clear();
 
@@ -469,7 +469,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::scale(const math::Extent3<u32>&) const noexcept -> Image {
+    auto Image::scale(const math::uextent3&) const noexcept -> Image {
         return *this;
     }
 

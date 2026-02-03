@@ -202,7 +202,7 @@ extern "C" {
         EXPECTS(ptr != 0);
 
         auto& window = *std::bit_cast<stormkit::wsi::macos::Window*>(ptr);
-        window.WindowBase::set_extent(math::Extent2 { width, height }.to<u32>());
+        window.WindowBase::set_extent(math::extent2 { width, height }.to<u32>());
 
         window.resized_event(window.extent());
     }

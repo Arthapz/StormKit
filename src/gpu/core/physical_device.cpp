@@ -14,6 +14,9 @@ import stormkit.core;
 
 using namespace std::literals;
 
+namespace stdr = std::ranges;
+namespace stdv = std::views;
+
 namespace stormkit::gpu {
     namespace {
         constexpr auto RAYTRACING_EXTENSIONS = std::array {
@@ -99,39 +102,39 @@ namespace stormkit::gpu {
         m_device_info.driver_major_version = vk_version_major(properties.driverVersion);
         m_device_info.driver_minor_version = vk_version_minor(properties.driverVersion);
         m_device_info.driver_patch_version = vk_version_patch(properties.driverVersion);
-        std::ranges::copy(properties.pipelineCacheUUID, std::ranges::begin(m_device_info.pipeline_cache_uuid));
+        stdr::copy(properties.pipelineCacheUUID, stdr::begin(m_device_info.pipeline_cache_uuid));
 
         m_device_info.type = from_vk<PhysicalDeviceType>(properties.deviceType);
 
-        m_capabilities.limits.max_image_dimension_1D                     = properties.limits.maxImageDimension1D;
-        m_capabilities.limits.max_image_dimension_2D                     = properties.limits.maxImageDimension2D;
-        m_capabilities.limits.max_image_dimension_3D                     = properties.limits.maxImageDimension3D;
-        m_capabilities.limits.max_image_dimension_cube                   = properties.limits.maxImageDimensionCube;
-        m_capabilities.limits.max_image_array_layers                     = properties.limits.maxImageArrayLayers;
-        m_capabilities.limits.max_texel_buffer_elements                  = properties.limits.maxTexelBufferElements;
-        m_capabilities.limits.max_uniform_buffer_range                   = properties.limits.maxUniformBufferRange;
-        m_capabilities.limits.max_storage_buffer_range                   = properties.limits.maxStorageBufferRange;
-        m_capabilities.limits.max_push_constants_size                    = properties.limits.maxPushConstantsSize;
-        m_capabilities.limits.max_memory_allocation_count                = properties.limits.maxMemoryAllocationCount;
-        m_capabilities.limits.max_sampler_allocation_count               = properties.limits.maxSamplerAllocationCount;
-        m_capabilities.limits.buffer_image_granularity                   = properties.limits.bufferImageGranularity;
-        m_capabilities.limits.sparse_address_space_size                  = properties.limits.sparseAddressSpaceSize;
-        m_capabilities.limits.max_bound_descriptor_sets                  = properties.limits.maxBoundDescriptorSets;
-        m_capabilities.limits.max_per_stage_descriptor_samplers          = properties.limits.maxPerStageDescriptorSamplers;
-        m_capabilities.limits.max_per_stage_descriptor_uniform_buffers   = properties.limits.maxPerStageDescriptorUniformBuffers;
-        m_capabilities.limits.max_per_stage_descriptor_storage_buffers   = properties.limits.maxPerStageDescriptorStorageBuffers;
-        m_capabilities.limits.max_per_stage_descriptor_sampled_images    = properties.limits.maxPerStageDescriptorSampledImages;
-        m_capabilities.limits.max_per_stage_descriptor_storage_images    = properties.limits.maxPerStageDescriptorStorageImages;
-        m_capabilities.limits.max_per_stage_descriptor_input_attachments = properties.limits
-                                                                             .maxPerStageDescriptorInputAttachments;
-        m_capabilities.limits.max_per_stage_resources                    = properties.limits.maxPerStageResources;
-        m_capabilities.limits.max_descriptor_set_samplers                = properties.limits.maxDescriptorSetSamplers;
-        m_capabilities.limits.max_descriptor_set_uniform_buffers         = properties.limits.maxDescriptorSetUniformBuffers;
-        m_capabilities.limits.max_descriptor_set_uniform_buffers_dynamic = properties.limits
-                                                                             .maxDescriptorSetUniformBuffersDynamic;
-        m_capabilities.limits.max_descriptor_set_storage_buffers         = properties.limits.maxDescriptorSetStorageBuffers;
-        m_capabilities.limits.max_descriptor_set_storage_buffers_dynamic = properties.limits
-                                                                             .maxDescriptorSetStorageBuffersDynamic;
+        m_capabilities.limits.max_image_dimension_1D                   = properties.limits.maxImageDimension1D;
+        m_capabilities.limits.max_image_dimension_2D                   = properties.limits.maxImageDimension2D;
+        m_capabilities.limits.max_image_dimension_3D                   = properties.limits.maxImageDimension3D;
+        m_capabilities.limits.max_image_dimension_cube                 = properties.limits.maxImageDimensionCube;
+        m_capabilities.limits.max_image_array_layers                   = properties.limits.maxImageArrayLayers;
+        m_capabilities.limits.max_texel_buffer_elements                = properties.limits.maxTexelBufferElements;
+        m_capabilities.limits.max_uniform_buffer_range                 = properties.limits.maxUniformBufferRange;
+        m_capabilities.limits.max_storage_buffer_range                 = properties.limits.maxStorageBufferRange;
+        m_capabilities.limits.max_push_constants_size                  = properties.limits.maxPushConstantsSize;
+        m_capabilities.limits.max_memory_allocation_count              = properties.limits.maxMemoryAllocationCount;
+        m_capabilities.limits.max_sampler_allocation_count             = properties.limits.maxSamplerAllocationCount;
+        m_capabilities.limits.buffer_image_granularity                 = properties.limits.bufferImageGranularity;
+        m_capabilities.limits.sparse_address_space_size                = properties.limits.sparseAddressSpaceSize;
+        m_capabilities.limits.max_bound_descriptor_sets                = properties.limits.maxBoundDescriptorSets;
+        m_capabilities.limits.max_per_stage_descriptor_samplers        = properties.limits.maxPerStageDescriptorSamplers;
+        m_capabilities.limits.max_per_stage_descriptor_uniform_buffers = properties.limits.maxPerStageDescriptorUniformBuffers;
+        m_capabilities.limits.max_per_stage_descriptor_storage_buffers = properties.limits.maxPerStageDescriptorStorageBuffers;
+        m_capabilities.limits.max_per_stage_descriptor_sampled_images  = properties.limits.maxPerStageDescriptorSampledImages;
+        m_capabilities.limits.max_per_stage_descriptor_storage_images  = properties.limits.maxPerStageDescriptorStorageImages;
+        m_capabilities.limits
+          .max_per_stage_descriptor_input_attachments            = properties.limits.maxPerStageDescriptorInputAttachments;
+        m_capabilities.limits.max_per_stage_resources            = properties.limits.maxPerStageResources;
+        m_capabilities.limits.max_descriptor_set_samplers        = properties.limits.maxDescriptorSetSamplers;
+        m_capabilities.limits.max_descriptor_set_uniform_buffers = properties.limits.maxDescriptorSetUniformBuffers;
+        m_capabilities.limits
+          .max_descriptor_set_uniform_buffers_dynamic            = properties.limits.maxDescriptorSetUniformBuffersDynamic;
+        m_capabilities.limits.max_descriptor_set_storage_buffers = properties.limits.maxDescriptorSetStorageBuffers;
+        m_capabilities.limits
+          .max_descriptor_set_storage_buffers_dynamic              = properties.limits.maxDescriptorSetStorageBuffersDynamic;
         m_capabilities.limits.max_descriptor_set_sampled_images    = properties.limits.maxDescriptorSetSampledImages;
         m_capabilities.limits.max_descriptor_set_storage_images    = properties.limits.maxDescriptorSetStorageImages;
         m_capabilities.limits.max_descriptor_set_input_attachments = properties.limits.maxDescriptorSetInputAttachments;
@@ -142,33 +145,34 @@ namespace stormkit::gpu {
         m_capabilities.limits.max_vertex_output_components         = properties.limits.maxVertexOutputComponents;
         m_capabilities.limits.max_tessellation_generation_level    = properties.limits.maxTessellationGenerationLevel;
         m_capabilities.limits.max_tessellation_patch_size          = properties.limits.maxTessellationPatchSize;
-        m_capabilities.limits.max_tessellation_control_per_vertex_input_components
-          = properties.limits.maxTessellationControlPerVertexInputComponents;
-        m_capabilities.limits.max_tessellation_control_per_vertex_output_components
-          = properties.limits.maxTessellationControlPerVertexOutputComponents;
-        m_capabilities.limits.max_tessellation_control_per_patch_output_components
-          = properties.limits.maxTessellationControlPerPatchOutputComponents;
-        m_capabilities.limits.max_tessellation_control_total_output_components = properties.limits
-                                                                                   .maxTessellationControlTotalOutputComponents;
-        m_capabilities.limits.max_tessellation_evaluation_input_components = properties.limits
-                                                                               .maxTessellationEvaluationInputComponents;
-        m_capabilities.limits.max_tessellation_evaluation_output_components = properties.limits
-                                                                                .maxTessellationEvaluationOutputComponents;
-        m_capabilities.limits.max_geometry_shader_invocations        = properties.limits.maxGeometryShaderInvocations;
-        m_capabilities.limits.max_geometry_input_components          = properties.limits.maxGeometryInputComponents;
-        m_capabilities.limits.max_geometry_output_components         = properties.limits.maxGeometryOutputComponents;
-        m_capabilities.limits.max_geometry_output_vertices           = properties.limits.maxGeometryOutputVertices;
-        m_capabilities.limits.max_geometry_total_output_components   = properties.limits.maxGeometryTotalOutputComponents;
-        m_capabilities.limits.max_fragment_input_components          = properties.limits.maxFragmentInputComponents;
-        m_capabilities.limits.max_fragment_output_attachments        = properties.limits.maxFragmentOutputAttachments;
-        m_capabilities.limits.max_fragment_dual_src_attachments      = properties.limits.maxFragmentDualSrcAttachments;
+        m_capabilities.limits
+          .max_tessellation_control_per_vertex_input_components = properties.limits
+                                                                    .maxTessellationControlPerVertexInputComponents;
+        m_capabilities.limits
+          .max_tessellation_control_per_vertex_output_components = properties.limits
+                                                                     .maxTessellationControlPerVertexOutputComponents;
+        m_capabilities.limits
+          .max_tessellation_control_per_patch_output_components = properties.limits
+                                                                    .maxTessellationControlPerPatchOutputComponents;
+        m_capabilities.limits
+          .max_tessellation_control_total_output_components = properties.limits.maxTessellationControlTotalOutputComponents;
+        m_capabilities.limits
+          .max_tessellation_evaluation_input_components = properties.limits.maxTessellationEvaluationInputComponents;
+        m_capabilities.limits
+          .max_tessellation_evaluation_output_components           = properties.limits.maxTessellationEvaluationOutputComponents;
+        m_capabilities.limits.max_geometry_shader_invocations      = properties.limits.maxGeometryShaderInvocations;
+        m_capabilities.limits.max_geometry_input_components        = properties.limits.maxGeometryInputComponents;
+        m_capabilities.limits.max_geometry_output_components       = properties.limits.maxGeometryOutputComponents;
+        m_capabilities.limits.max_geometry_output_vertices         = properties.limits.maxGeometryOutputVertices;
+        m_capabilities.limits.max_geometry_total_output_components = properties.limits.maxGeometryTotalOutputComponents;
+        m_capabilities.limits.max_fragment_input_components        = properties.limits.maxFragmentInputComponents;
+        m_capabilities.limits.max_fragment_output_attachments      = properties.limits.maxFragmentOutputAttachments;
+        m_capabilities.limits.max_fragment_dual_src_attachments    = properties.limits.maxFragmentDualSrcAttachments;
         m_capabilities.limits.max_fragment_combined_output_resources = properties.limits.maxFragmentCombinedOutputResources;
         m_capabilities.limits.max_compute_shared_memory_size         = properties.limits.maxComputeSharedMemorySize;
-        std::ranges::copy(properties.limits.maxComputeWorkGroupCount,
-                          std::ranges::begin(m_capabilities.limits.max_compute_work_group_count));
+        stdr::copy(properties.limits.maxComputeWorkGroupCount, stdr::begin(m_capabilities.limits.max_compute_work_group_count));
         m_capabilities.limits.max_compute_work_group_invocations = properties.limits.maxComputeWorkGroupInvocations;
-        std::ranges::copy(properties.limits.maxComputeWorkGroupSize,
-                          std::ranges::begin(m_capabilities.limits.max_compute_work_group_size));
+        stdr::copy(properties.limits.maxComputeWorkGroupSize, stdr::begin(m_capabilities.limits.max_compute_work_group_size));
         m_capabilities.limits.sub_pixel_precision_bits     = properties.limits.subPixelPrecisionBits;
         m_capabilities.limits.sub_texel_precision_bits     = properties.limits.subTexelPrecisionBits;
         m_capabilities.limits.mipmap_precision_bits        = properties.limits.mipmapPrecisionBits;
@@ -177,41 +181,41 @@ namespace stormkit::gpu {
         m_capabilities.limits.max_sampler_lod_bias         = properties.limits.maxSamplerLodBias;
         m_capabilities.limits.max_sampler_anisotropy       = properties.limits.maxSamplerAnisotropy;
         m_capabilities.limits.max_viewports                = properties.limits.maxViewports;
-        std::ranges::copy(properties.limits.maxViewportDimensions,
-                          std::ranges::begin(m_capabilities.limits.max_viewport_dimensions));
-        std::ranges::copy(properties.limits.viewportBoundsRange, std::ranges::begin(m_capabilities.limits.viewport_bounds_range));
-        m_capabilities.limits.viewport_sub_pixel_bits                  = properties.limits.viewportSubPixelBits;
-        m_capabilities.limits.min_memory_map_alignment                 = properties.limits.minMemoryMapAlignment;
-        m_capabilities.limits.min_texel_buffer_offset_alignment        = properties.limits.minTexelBufferOffsetAlignment;
-        m_capabilities.limits.min_uniform_buffer_offset_alignment      = properties.limits.minUniformBufferOffsetAlignment;
-        m_capabilities.limits.min_storage_buffer_offset_alignment      = properties.limits.minStorageBufferOffsetAlignment;
-        m_capabilities.limits.min_texel_offset                         = properties.limits.minTexelOffset;
-        m_capabilities.limits.max_texel_offset                         = properties.limits.maxTexelOffset;
-        m_capabilities.limits.min_texel_gather_offset                  = properties.limits.minTexelGatherOffset;
-        m_capabilities.limits.max_texel_gather_offset                  = properties.limits.maxTexelGatherOffset;
-        m_capabilities.limits.min_interpolation_offset                 = properties.limits.minInterpolationOffset;
-        m_capabilities.limits.max_interpolation_offset                 = properties.limits.maxInterpolationOffset;
-        m_capabilities.limits.sub_pixel_interpolation_offset_bits      = properties.limits.subPixelInterpolationOffsetBits;
-        m_capabilities.limits.max_framebuffer_width                    = properties.limits.maxFramebufferWidth;
-        m_capabilities.limits.max_framebuffer_height                   = properties.limits.maxFramebufferHeight;
-        m_capabilities.limits.max_framebuffer_layers                   = properties.limits.maxFramebufferLayers;
-        m_capabilities.limits.framebuffer_color_sample_counts          = narrow<SampleCountFlag>(properties.limits
-                                                                                          .framebufferColorSampleCounts);
-        m_capabilities.limits.framebuffer_depth_sample_counts          = narrow<SampleCountFlag>(properties.limits
-                                                                                          .framebufferDepthSampleCounts);
-        m_capabilities.limits.framebuffer_stencil_sample_counts        = narrow<SampleCountFlag>(properties.limits
-                                                                                            .framebufferStencilSampleCounts);
-        m_capabilities.limits.framebuffer_no_attachments_sample_counts = narrow<
-          SampleCountFlag>(properties.limits.framebufferNoAttachmentsSampleCounts);
-        m_capabilities.limits.max_color_attachments               = properties.limits.maxColorAttachments;
-        m_capabilities.limits.sampled_image_color_sample_counts   = narrow<SampleCountFlag>(properties.limits
-                                                                                            .sampledImageColorSampleCounts);
-        m_capabilities.limits.sampled_image_integer_sample_counts = narrow<SampleCountFlag>(properties.limits
-                                                                                              .sampledImageIntegerSampleCounts);
-        m_capabilities.limits.sampled_image_depth_sample_counts   = narrow<SampleCountFlag>(properties.limits
-                                                                                            .sampledImageDepthSampleCounts);
-        m_capabilities.limits.sampled_image_stencil_sample_counts = narrow<SampleCountFlag>(properties.limits
-                                                                                              .sampledImageStencilSampleCounts);
+        stdr::copy(properties.limits.maxViewportDimensions, stdr::begin(m_capabilities.limits.max_viewport_dimensions));
+        stdr::copy(properties.limits.viewportBoundsRange, stdr::begin(m_capabilities.limits.viewport_bounds_range));
+        m_capabilities.limits.viewport_sub_pixel_bits             = properties.limits.viewportSubPixelBits;
+        m_capabilities.limits.min_memory_map_alignment            = properties.limits.minMemoryMapAlignment;
+        m_capabilities.limits.min_texel_buffer_offset_alignment   = properties.limits.minTexelBufferOffsetAlignment;
+        m_capabilities.limits.min_uniform_buffer_offset_alignment = properties.limits.minUniformBufferOffsetAlignment;
+        m_capabilities.limits.min_storage_buffer_offset_alignment = properties.limits.minStorageBufferOffsetAlignment;
+        m_capabilities.limits.min_texel_offset                    = properties.limits.minTexelOffset;
+        m_capabilities.limits.max_texel_offset                    = properties.limits.maxTexelOffset;
+        m_capabilities.limits.min_texel_gather_offset             = properties.limits.minTexelGatherOffset;
+        m_capabilities.limits.max_texel_gather_offset             = properties.limits.maxTexelGatherOffset;
+        m_capabilities.limits.min_interpolation_offset            = properties.limits.minInterpolationOffset;
+        m_capabilities.limits.max_interpolation_offset            = properties.limits.maxInterpolationOffset;
+        m_capabilities.limits.sub_pixel_interpolation_offset_bits = properties.limits.subPixelInterpolationOffsetBits;
+        m_capabilities.limits.max_framebuffer_width               = properties.limits.maxFramebufferWidth;
+        m_capabilities.limits.max_framebuffer_height              = properties.limits.maxFramebufferHeight;
+        m_capabilities.limits.max_framebuffer_layers              = properties.limits.maxFramebufferLayers;
+        m_capabilities.limits
+          .framebuffer_color_sample_counts = narrow<SampleCountFlag>(properties.limits.framebufferColorSampleCounts);
+        m_capabilities.limits
+          .framebuffer_depth_sample_counts = narrow<SampleCountFlag>(properties.limits.framebufferDepthSampleCounts);
+        m_capabilities.limits
+          .framebuffer_stencil_sample_counts = narrow<SampleCountFlag>(properties.limits.framebufferStencilSampleCounts);
+        m_capabilities.limits
+          .framebuffer_no_attachments_sample_counts = narrow<SampleCountFlag>(properties.limits
+                                                                                .framebufferNoAttachmentsSampleCounts);
+        m_capabilities.limits.max_color_attachments = properties.limits.maxColorAttachments;
+        m_capabilities.limits
+          .sampled_image_color_sample_counts = narrow<SampleCountFlag>(properties.limits.sampledImageColorSampleCounts);
+        m_capabilities.limits
+          .sampled_image_integer_sample_counts = narrow<SampleCountFlag>(properties.limits.sampledImageIntegerSampleCounts);
+        m_capabilities.limits
+          .sampled_image_depth_sample_counts = narrow<SampleCountFlag>(properties.limits.sampledImageDepthSampleCounts);
+        m_capabilities.limits
+          .sampled_image_stencil_sample_counts = narrow<SampleCountFlag>(properties.limits.sampledImageStencilSampleCounts);
         m_capabilities.limits.storage_image_sample_counts  = narrow<SampleCountFlag>(properties.limits.storageImageSampleCounts);
         m_capabilities.limits.max_sample_mask_words        = properties.limits.maxSampleMaskWords;
         m_capabilities.limits.timestamp_compute_and_engine = properties.limits.timestampComputeAndGraphics;
@@ -220,8 +224,8 @@ namespace stormkit::gpu {
         m_capabilities.limits.max_cull_distances           = properties.limits.maxCullDistances;
         m_capabilities.limits.max_combined_clip_and_cull_distances = properties.limits.maxCombinedClipAndCullDistances;
         m_capabilities.limits.discrete_queue_priorities            = properties.limits.discreteQueuePriorities;
-        std::ranges::copy(properties.limits.pointSizeRange, std::ranges::begin(m_capabilities.limits.point_size_range));
-        std::ranges::copy(properties.limits.lineWidthRange, std::ranges::begin(m_capabilities.limits.line_width_range));
+        stdr::copy(properties.limits.pointSizeRange, stdr::begin(m_capabilities.limits.point_size_range));
+        stdr::copy(properties.limits.lineWidthRange, stdr::begin(m_capabilities.limits.line_width_range));
         m_capabilities.limits.point_size_granularity                  = properties.limits.pointSizeGranularity;
         m_capabilities.limits.line_width_granularity                  = properties.limits.lineWidthGranularity;
         m_capabilities.limits.strict_lines                            = properties.limits.strictLines;
@@ -289,7 +293,7 @@ namespace stormkit::gpu {
         m_extensions = *vk_enumerate<VkExtensionProperties>(vkEnumerateDeviceExtensionProperties, m_vk_handle, nullptr)
                           .transform_error(core::monadic::assert(format("Failed to enumerate device {} extensions properties",
                                                                         m_device_info.device_name)))
-                       | std::views::transform([](auto&& extension) noexcept {
+                       | stdv::transform([](auto&& extension) noexcept {
                              const auto string_size = std::char_traits<char>::length(extension.extensionName);
 
                              auto string = std::string {};
@@ -297,21 +301,21 @@ namespace stormkit::gpu {
                              stdr::copy(std::string_view { extension.extensionName, string_size }, std::begin(string));
                              return string;
                          })
-                       | std::ranges::to<std::vector>();
+                       | stdr::to<std::vector>();
 
         const auto vk_memory_properties = vk_call<VkPhysicalDeviceMemoryProperties>(vkGetPhysicalDeviceMemoryProperties,
                                                                                     m_vk_handle);
         m_memory_types                  = vk_memory_properties.memoryTypes
-                         | std::views::transform([](auto&& type) static noexcept {
+                                          | stdv::transform([](auto&& type) static noexcept {
                                return core::narrow<MemoryPropertyFlag>(type.propertyFlags);
-                           })
-                         | std::ranges::to<std::vector>();
+                                            })
+                                          | stdr::to<std::vector>();
 
         m_queue_families = vk_enumerate<VkQueueFamilyProperties>(vkGetPhysicalDeviceQueueFamilyProperties, m_vk_handle)
-                           | std::views::transform([](auto&& family) static noexcept {
+                           | stdv::transform([](auto&& family) static noexcept {
                                  return QueueFamily { .flags = narrow<QueueFlag>(family.queueFlags), .count = family.queueCount };
                              })
-                           | std::ranges::to<std::vector>();
+                           | stdr::to<std::vector>();
 
         const auto format_values = core::meta::enumerate<PixelFormat>();
         for (const auto val : format_values) {
@@ -338,28 +342,28 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto PhysicalDevice::check_extension_support(std::string_view extension) const noexcept -> bool {
-        return std::ranges::any_of(m_extensions, [extension](const auto& e) { return e == extension; });
+        return stdr::any_of(m_extensions, [extension](const auto& e) { return e == extension; });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto PhysicalDevice::check_extension_support(std::span<const std::string_view> extensions) const noexcept -> bool {
-        auto required_extensions = HashSet<std::string_view> { std::ranges::begin(extensions), std::ranges::end(extensions) };
-        // HashSet<std::string_view> { std::ranges::begin(extensions),
-        // std::ranges::end(extensions) };
+        auto required_extensions = HashSet<std::string_view> { stdr::begin(extensions), stdr::end(extensions) };
+        // HashSet<std::string_view> { stdr::begin(extensions),
+        // stdr::end(extensions) };
 
         for (const auto& extension : m_extensions) required_extensions.erase(extension);
 
-        return std::ranges::empty(required_extensions);
+        return stdr::empty(required_extensions);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto PhysicalDevice::check_extension_support(std::span<const CZString> extensions) const noexcept -> bool {
-        auto required_extensions = HashSet<std::string_view> { std::ranges::begin(extensions), std::ranges::end(extensions) };
+        auto required_extensions = HashSet<std::string_view> { stdr::begin(extensions), stdr::end(extensions) };
 
         for (const auto& extension : m_extensions) required_extensions.erase(extension);
 
-        return std::ranges::empty(required_extensions);
+        return stdr::empty(required_extensions);
     }
 } // namespace stormkit::gpu

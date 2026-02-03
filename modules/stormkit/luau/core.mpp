@@ -29,13 +29,13 @@ namespace stormkit::luau::core {
     ////////////////////////////////////////
     inline auto bind_extent(lb::Namespace& global_namespace) noexcept -> lb::Namespace {
         return global_namespace.beginNamespace("math")
-          .beginClass<math::Extent2<u32>>("uextent2")
+          .beginClass<math::uextent2>("uextent2")
           .endClass()
-          .beginClass<math::Extent3<u32>>("uextent3")
+          .beginClass<math::uextent3>("uextent3")
           .endClass()
-          .beginClass<math::Extent2<f32>>("fextent2")
+          .beginClass<math::extent2<f32>>("fextent2")
           .endClass()
-          .beginClass<math::Extent3<f32>>("fextent3")
+          .beginClass<math::extent3<f32>>("fextent3")
           .endClass()
           .endNamespace();
     }

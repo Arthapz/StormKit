@@ -24,7 +24,7 @@ export {
             Flags       flags = Flags::NONE;
             std::string name;
 
-            std::vector<math::Extent2<u32>> extents;
+            std::vector<math::uextent2> extents;
             u32                             scale_factor = 1;
 
             [[nodiscard]]

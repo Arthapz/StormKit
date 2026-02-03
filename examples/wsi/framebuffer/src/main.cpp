@@ -68,7 +68,7 @@ auto main(std::span<const std::string_view> args) -> int {
     auto pixels = std::vector<rgbcolor<u8>> {};
     update_pixels(pool, pixels, window.extent());
     auto active = true;
-    window.on(wsi::ResizedEventFunc { [&](const math::Extent2<u32>& extent) mutable noexcept {
+    window.on(wsi::ResizedEventFunc { [&](const math::uextent2& extent) mutable noexcept {
                   update_pixels(pool, pixels, extent);
                   window.fill_framebuffer(pixels);
               } },

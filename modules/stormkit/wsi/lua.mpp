@@ -168,7 +168,7 @@ namespace stormkit::wsi::lua {
                     return return_value.cast<bool>().value();
                 });
             })
-          .addFunction("on_resized", +(make_lua_closure<wsi::EventType::RESIZED, const math::Extent2<u32>&>()))
+          .addFunction("on_resized", +(make_lua_closure<wsi::EventType::RESIZED, const math::uextent2&>()))
           .addFunction("on_restored", +(make_lua_closure<wsi::EventType::RESTORED>()))
           .addFunction("on_minimized", +(make_lua_closure<wsi::EventType::MINIMIZED>()))
           .addFunction("on_activate", +(make_lua_closure<wsi::EventType::ACTIVATE>()))

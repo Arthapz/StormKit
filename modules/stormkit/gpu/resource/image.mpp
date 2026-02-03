@@ -127,7 +127,7 @@ export namespace stormkit::gpu {
 
       public:
         struct CreateInfo {
-            math::Extent3<u32> extent;
+            math::uextent3 extent;
             PixelFormat        format     = PixelFormat::RGBA8_UNORM;
             u32                layers     = 1u;
             u32                mip_levels = 1u;
@@ -152,7 +152,7 @@ export namespace stormkit::gpu {
         auto operator=(Image&&) noexcept -> Image&;
 
         [[nodiscard]]
-        auto extent() const noexcept -> const math::Extent3<u32>&;
+        auto extent() const noexcept -> const math::uextent3&;
         [[nodiscard]]
         auto format() const noexcept -> PixelFormat;
         [[nodiscard]]
@@ -180,7 +180,7 @@ export namespace stormkit::gpu {
         auto do_init(const CreateInfo&) noexcept -> Expected<void>;
         auto do_init(const VkImageCreateInfo&, MemoryPropertyFlag) noexcept -> Expected<void>;
 
-        math::Extent3<u32> m_extent     = { 0, 0, 0 };
+        math::uextent3 m_extent     = { 0, 0, 0 };
         PixelFormat        m_format     = {};
         u32                m_layers     = 0;
         u32                m_faces      = 0;
@@ -471,7 +471,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Image::extent() const noexcept -> const math::Extent3<u32>& {
+    inline auto Image::extent() const noexcept -> const math::uextent3& {
         return m_extent;
     }
 

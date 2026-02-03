@@ -114,7 +114,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(std::string title, const math::Extent2<u32>& extent, WindowFlag flags) noexcept -> void {
+    auto Window::open(std::string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
         auto& globals = wl::get_globals();
 
         m_surface = wl::Surface::create(globals.compositor);
@@ -230,7 +230,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_extent(const math::Extent2<u32>&) noexcept -> void {
+    auto Window::set_extent(const math::uextent2&) noexcept -> void {
     }
 
     /////////////////////////////////////

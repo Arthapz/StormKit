@@ -120,7 +120,7 @@ namespace stormkit::image::details {
         /**/
         /*auto image_data = image::Image::ImageData {};*/
         /**/
-        /*image_data.extent = math::ExtentI { image.extent().x, image.extent().y, image.extent().z
+        /*image_data.extent = math::extentI { image.extent().x, image.extent().y, image.extent().z
          * };*/
         /*image_data.channel_count     = get_format_channel_count(format);*/
         /*image_data.bytes_per_channel = getSizeof(format);*/

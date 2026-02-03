@@ -90,7 +90,7 @@ namespace stormkit::image::details {
         const auto  raw_header = data.subspan(SIZE_OF_HEADER);
         const auto* header     = std::bit_cast<const QOIHeader*>(stdr::data(raw_header));
 
-        const auto extent   = math::Extent3<u32> { .width = byte_swap(header->width), .height = byte_swap(header->height) };
+        const auto extent   = math::uextent3 { .width = byte_swap(header->width), .height = byte_swap(header->height) };
         const auto channels = header->channels;
         const auto format   = CHANNELS_TO_FORMAT.at(header->channels)[header->colorspace];
 

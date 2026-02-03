@@ -83,7 +83,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] CZString argv[])
 auto App::do_initWindow() -> void {
     const auto window_style = wsi::WindowStyle::ALL;
 
-    m_window = allocate<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
+    m_window = allocate<wsi::Window>(WINDOW_TITLE, math::uextent2 { 800u, 600u }, window_style);
 
     m_renderer = allocate<Renderer>(*m_window);
 }

@@ -426,7 +426,10 @@ class Application: public base::Application {
         const auto window_extent     = m_window->extent();
         const auto window_extent_f32 = window_extent.to<f32>();
         auto       viewer_data       = ViewerData {
-            .proj  = math::perspective(math::radians(45.f), window_extent_f32.width / window_extent_f32.height, 0.1f, 100.f),
+            .proj  = math::perspective(math::angle::radians(45.f),
+                                       window_extent_f32.width / window_extent_f32.height,
+                                       0.1f,
+                                       100.f),
             .view  = math::look_at(math::vec3f { 0.f, 3.f, 5.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }),
             .model = math::mat4f::identity(),
         };
@@ -447,8 +450,9 @@ class Application: public base::Application {
         const auto& signal                   = swapchain_image_resource.render_finished;
 
         // update viewer data and upload
-        const auto time   = stdc::duration_cast<Secondf>(current_time - m_start_time).count();
-        viewer_data.model = math::rotate(math::mat4f::identity(), time * math::radians(90.f), math::vec3f { 0.f, 1.f, 0.f });
+        const auto time = stdc::duration_cast<Secondf>(current_time - m_start_time).count();
+        viewer_data
+          .model = math::rotate(math::mat4f::identity(), time * math::angle::radians(90.f), math::vec3f { 0.f, 1.f, 0.f });
 
         auto& viewer_buffer = submission_resource.viewer_buffer;
         TryAssert(viewer_buffer.upload(viewer_data), "Failed to upload texture to gpu");

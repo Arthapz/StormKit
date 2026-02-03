@@ -407,7 +407,7 @@ namespace stormkit::gpu {
                                    ImageLayout                   dst_layout,
                                    const ImageSubresourceLayers& src_subresource_layers,
                                    const ImageSubresourceLayers& dst_subresource_layers,
-                                   const math::Extent3<u32>&     extent) noexcept -> CommandBuffer& {
+                                   const math::uextent3&     extent) noexcept -> CommandBuffer& {
         EXPECTS(m_state == State::RECORDING);
 
         const auto vk_src_subresource_layers = VkImageSubresourceLayers {

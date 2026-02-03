@@ -65,13 +65,13 @@ export namespace stormkit::gpu {
     [[nodiscard]]
     constexpr auto to_vk(const Extent& extent) noexcept -> Out;
 
-    template<math::meta::IsExtent2 Extent = math::vec3<u32>>
+    template<math::meta::IsExtent2 Out = math::uextent2>
     [[nodiscard]]
-    constexpr auto from_vk(const VkExtent2D& viewport) noexcept -> Extent;
+    constexpr auto from_vk(const VkExtent2D& viewport) noexcept -> Out;
 
-    template<math::meta::IsExtent3 Extent = math::vec3<u32>>
+    template<math::meta::IsExtent3 Out = math::uextent3>
     [[nodiscard]]
-    constexpr auto from_vk(const VkExtent3D& viewport) noexcept -> Extent;
+    constexpr auto from_vk(const VkExtent3D& viewport) noexcept -> Out;
 } // namespace stormkit::gpu
 
 namespace stormkit::gpu {
@@ -204,21 +204,21 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<math::meta::IsExtent2 Extent>
+    template<math::meta::IsExtent2 Out>
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
-    constexpr auto from_vk(const VkExtent2D& extent) noexcept -> Extent {
-        using T = typename Extent::ElementType;
-        return Extent { .width = as<T>(extent.width), .height = as<T>(extent.height) };
+    constexpr auto from_vk(const VkExtent2D& extent) noexcept -> Out {
+        using T = typename Out::ElementType;
+        return Out { .width = as<T>(extent.width), .height = as<T>(extent.height) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<math::meta::IsExtent3 Extent>
+    template<math::meta::IsExtent3 Out>
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
-    constexpr auto from_vk(const VkExtent3D& extent) noexcept -> Extent {
-        using T = typename Extent::ElementType;
-        return Extent { .width = as<T>(extent.width), .height = as<T>(extent.height) };
+    constexpr auto from_vk(const VkExtent3D& extent) noexcept -> Out {
+        using T = typename Out::ElementType;
+        return Out { .width = as<T>(extent.width), .height = as<T>(extent.height) };
     }
 } // namespace stormkit::gpu

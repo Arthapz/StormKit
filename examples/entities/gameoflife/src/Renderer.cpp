@@ -28,7 +28,7 @@ auto Renderer::operator=(Renderer&&) noexcept -> Renderer& = default;
 
 auto Renderer::renderFrame() -> void {
     const auto& surface_extent  = m_surface->extent();
-    const auto  surface_extentf = math::ExtentF { surface_extent };
+    const auto  surface_extentf = math::fextent2 { surface_extent };
 
     if (m_surface->needRecreate()) {
         m_surface->recreate();
@@ -136,7 +136,7 @@ auto Renderer::do_initBaseRenderObjects() -> void {
 
 auto Renderer::do_initMeshRenderObjects() -> void {
     const auto& surface_extent  = m_surface->extent();
-    const auto  surface_extentf = math::ExtentF { surface_extent };
+    const auto  surface_extentf = math::fextent2 { surface_extent };
 
     m_board.vertex_shader   = m_device->allocateShader(SHADER_DATA, gpu::ShaderStageFlag::Vertex);
     m_board.fragment_shader = m_device->allocateShader(SHADER_DATA, gpu::ShaderStageFlag::Fragment);
@@ -212,7 +212,7 @@ auto Renderer::do_initMeshRenderObjects() -> void {
 
 auto Renderer::do_initPerFrameObjects() -> void {
     const auto& surface_extent  = m_surface->extent();
-    const auto  surface_extentf = math::ExtentF { surface_extent };
+    const auto  surface_extentf = math::fextent2 { surface_extent };
     const auto  buffering_count = m_surface->bufferingCount();
 
     m_surface_views.clear();

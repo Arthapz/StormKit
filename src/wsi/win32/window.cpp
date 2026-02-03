@@ -45,7 +45,7 @@ constexpr auto format_as(const RECT& rect, FormatContext& ctx) -> decltype(ctx.o
                           rect.bottom);
 }
 
-auto adjust_extent(const math::Extent2<u32>& extent, DWORD style, DWORD style_ex) noexcept -> math::Extent2<LONG> {
+auto adjust_extent(const math::uextent2& extent, DWORD style, DWORD style_ex) noexcept -> math::extent2<LONG> {
     auto rect = RECT { .left = 0, .top = 0, .right = as<LONG>(extent.width), .bottom = as<LONG>(extent.height) };
 
     AdjustWindowRectEx(&rect, style, FALSE, style_ex);
@@ -105,7 +105,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(std::string title, const math::Extent2<u32>& extent, WindowFlag flags) noexcept -> void {
+    auto Window::open(std::string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
         auto style      = DWORD { WS_SYSMENU | WS_BORDER };
         auto style_ex   = DWORD { 0 };
         auto h_instance = GetModuleHandleA(nullptr);
@@ -224,7 +224,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
+    auto Window::set_extent(const math::uextent2& extent) noexcept -> void {
         const auto adjusted = adjust_extent(extent, m_win32_state.style, m_win32_state.style_ex);
         SetWindowPos(m_window_handle,
                      HWND_TOP,
