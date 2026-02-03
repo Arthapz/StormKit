@@ -22,18 +22,21 @@ export import :lua;
 export {
     namespace stormkit::log {
         struct Module;
-        enum class Severity {
-            INFO = 1,
-            WARNING,
-            ERROR,
-            FATAL,
-            DEBUG,
+        enum class Severity : u8 {
+            INFO    = 1,
+            WARNING = 2,
+            ERROR   = 4,
+            FATAL   = 8,
+            DEBUG   = 16,
         };
 
         [[nodiscard]]
         constexpr auto as_string(Severity severity) noexcept -> std::string_view;
         [[nodiscard]]
         constexpr auto to_string(Severity severity) noexcept -> std::string;
+
+        STORMKIT_API
+        auto           parse_args(std::span<const std::string_view> args) noexcept -> void;
 
         class STORMKIT_API Logger {
           public:
@@ -52,6 +55,9 @@ export {
             auto start_time() const noexcept -> const LogClock::time_point&;
             [[nodiscard]]
             auto log_level() const noexcept -> const Severity&;
+
+            [[nodiscard]]
+            auto mutex() noexcept -> std::mutex&;
 
             template<class T, typename... Args>
             [[nodiscard]]
@@ -93,6 +99,8 @@ export {
           protected:
             LogClock::time_point m_start_time;
             Severity             m_log_level;
+
+            std::mutex m_mutex;
         };
 
         struct Module {
@@ -129,8 +137,8 @@ export {
             FileLogger(const FileLogger&) noexcept                    = delete;
             auto operator=(const FileLogger&) noexcept -> FileLogger& = delete;
 
-            FileLogger(FileLogger&&) noexcept;
-            auto operator=(FileLogger&&) noexcept -> FileLogger&;
+            FileLogger(FileLogger&&) noexcept                    = delete;
+            auto operator=(FileLogger&&) noexcept -> FileLogger& = delete;
 
             auto write(Severity severity, const Module& module, CZString string) noexcept -> void override;
             auto flush() noexcept -> void override;
@@ -146,11 +154,11 @@ export {
             explicit ConsoleLogger(LogClock::time_point start) noexcept;
             ConsoleLogger(LogClock::time_point start, Severity log_level) noexcept;
 
-            ConsoleLogger(const ConsoleLogger&) noexcept;
-            auto operator=(const ConsoleLogger&) noexcept -> ConsoleLogger&;
+            ConsoleLogger(const ConsoleLogger&) noexcept                    = delete;
+            auto operator=(const ConsoleLogger&) noexcept -> ConsoleLogger& = delete;
 
-            ConsoleLogger(ConsoleLogger&&) noexcept;
-            auto operator=(ConsoleLogger&&) noexcept -> ConsoleLogger&;
+            ConsoleLogger(ConsoleLogger&&) noexcept                    = delete;
+            auto operator=(ConsoleLogger&&) noexcept -> ConsoleLogger& = delete;
 
             ~ConsoleLogger() noexcept override;
 
@@ -173,11 +181,11 @@ namespace stormkit::log {
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     inline constexpr auto as_string(Severity severity) noexcept -> std::string_view {
         switch (severity) {
-            case Severity::INFO: return "INFO";
-            case Severity::WARNING: return "WARNING";
-            case Severity::ERROR: return "ERROR";
-            case Severity::FATAL: return "FATAL";
-            case Severity::DEBUG: return "DEBUG";
+            case Severity::INFO: return "Severity::INFO";
+            case Severity::WARNING: return "Severity::WARNING";
+            case Severity::ERROR: return "Severity::ERROR";
+            case Severity::FATAL: return "Severity::FATAL";
+            case Severity::DEBUG: return "Severity::DEBUG";
             default: break;
         }
 
@@ -186,7 +194,7 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    STORMKIT_FORCE_INLINE
     inline constexpr auto to_string(Severity severity) noexcept -> std::string {
         return std::string { as_string(severity) };
     }
@@ -200,23 +208,29 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    STORMKIT_FORCE_INLINE
     inline auto Logger::start_time() const noexcept -> const LogClock::time_point& {
         return m_start_time;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    STORMKIT_FORCE_INLINE
     inline auto Logger::log_level() const noexcept -> const Severity& {
         return m_log_level;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Logger::mutex() noexcept -> std::mutex& {
+        return m_mutex;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<class T, typename... Args>
     STORMKIT_FORCE_INLINE
-    STORMKIT_PURE
     inline auto Logger::create_logger_instance(Args&&... param_args) noexcept -> T {
         static_assert(std::is_base_of<Logger, T>::value, "T must inherit Logger");
 
@@ -229,7 +243,6 @@ namespace stormkit::log {
     ////////////////////////////////////////
     template<class T, typename... Args>
     STORMKIT_FORCE_INLINE
-    STORMKIT_PURE
     auto Logger::allocate_logger_instance(Args&&... param_args) noexcept -> Heap<T> {
         static_assert(std::is_base_of<Logger, T>::value, "T must inherit Logger");
 
@@ -246,48 +259,21 @@ namespace stormkit::log {
     auto Logger::log(Severity severity, const Module& m, std::string_view format_string, Args&&... param_args) noexcept -> void {
         EXPECTS(has_logger());
 
-        const auto format        = format_string;
-        auto       memory_buffer = std::string {};
-        memory_buffer.reserve(std::size(format_string));
-        std::vformat_to(std::back_inserter(memory_buffer), format, std::make_format_args(param_args...));
+        const auto log_level = instance().log_level();
+        if (not check_flag_bit(log_level, severity)) return;
 
+        auto memory_buffer = std::string {};
+        memory_buffer.reserve(std::size(format_string));
+        std::vformat_to(std::back_inserter(memory_buffer), format_string, std::make_format_args(param_args...));
+
+        auto _ = std::unique_lock(instance().mutex());
         instance().write(severity, m, std::data(memory_buffer));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ConsoleLogger::ConsoleLogger(const ConsoleLogger&) noexcept = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto ConsoleLogger::operator=(const ConsoleLogger&) noexcept -> ConsoleLogger& = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline ConsoleLogger::ConsoleLogger(ConsoleLogger&&) noexcept = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto ConsoleLogger::operator=(ConsoleLogger&&) noexcept -> ConsoleLogger& = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
     inline ConsoleLogger::~ConsoleLogger() noexcept = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline FileLogger::FileLogger(FileLogger&&) noexcept = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto FileLogger::operator=(FileLogger&&) noexcept -> FileLogger& = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -393,7 +379,6 @@ namespace stormkit::log {
     ////////////////////////////////////////
     template<meta::ConstexprString str>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     inline constexpr auto operator""_module() noexcept -> stormkit::log::Module {
         return Module { str.view() };
     }

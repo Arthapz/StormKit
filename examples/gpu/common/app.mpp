@@ -11,6 +11,8 @@ export module gpu_app;
 import std;
 import stormkit;
 
+export import :logger;
+
 using namespace stormkit;
 
 namespace stdr = std::ranges;
@@ -20,11 +22,12 @@ export namespace base {
     class Application {
       public:
         auto run(this auto& self, std::span<const std::string_view> args) {
+            wsi::parse_args(args);
+            log::parse_args(args);
+
             const auto example_name = self.example_name();
 
             auto logger_singleton = log::Logger::create_logger_instance<log::ConsoleLogger>();
-
-            wsi::parse_args(args);
 
             self.init_window(example_name);
             self.init_gpu(example_name);
@@ -73,10 +76,10 @@ export namespace base {
             // pick the best physical device
             const auto& physical_devices = m_instance->physical_devices();
             if (stdr::empty(physical_devices)) {
-                log::Logger::elog("No render physical device found!");
+                elog("No render physical device found!");
                 return;
             }
-            log::Logger::ilog("Physical devices: {}", physical_devices);
+            ilog("Physical devices: {}", physical_devices);
 
             m_physical_device = as_opt_ref(physical_devices.front());
             auto score        = gpu::score_physical_device(*m_physical_device);
@@ -89,7 +92,7 @@ export namespace base {
                 }
             }
 
-            log::Logger::ilog("Picked gpu: {}", *m_physical_device);
+            ilog("Picked gpu: {}", *m_physical_device);
 
             // create gpu device
             m_device = TryAssert(gpu::Device::create(*m_physical_device, m_instance), "Failed to initialize gpu device");

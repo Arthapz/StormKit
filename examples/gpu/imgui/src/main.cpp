@@ -17,8 +17,6 @@ import gpu_app;
 #include <imgui_impl_vulkan.h>
 #undef assert
 
-LOGGER("stormkit.examples.gpu.imgui");
-
 namespace stdr  = std::ranges;
 namespace stdfs = std::filesystem;
 

@@ -12,23 +12,32 @@ import std;
 
 import stormkit.core;
 
+namespace stdr = std::ranges;
+
 namespace stormkit::log {
     namespace {
-#ifdef STORMKIT_BUILD_DEBUG
-        constexpr auto DEFAULT_SEVERITY = Severity::INFO
-                                          | Severity::DEBUG
-                                          | Severity::ERROR
-                                          | Severity::FATAL
-                                          | Severity::WARNING;
-#else
-        constexpr auto DEFAULT_SEVERITY = Severity::INFO | Severity::ERROR | Severity::FATAL;
-#endif
         constinit Logger* logger = nullptr;
+
+        constinit auto debug_enabled = false;
+
+        auto make_default_severity() noexcept {
+            auto severity = Severity::INFO | Severity::ERROR | Severity::FATAL | Severity::WARNING;
+
+            if (debug_enabled) severity |= Severity::DEBUG;
+
+            return severity;
+        }
     } // namespace
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Logger::Logger(LogClock::time_point start_time) noexcept : Logger { std::move(start_time), DEFAULT_SEVERITY } {
+    auto parse_args(std::span<const std::string_view> args) noexcept -> void {
+        debug_enabled = stdr::find_if(args, [](auto&& v) { return v == "--debug" or v == "-d"; }) != stdr::cend(args);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    Logger::Logger(LogClock::time_point start_time) noexcept : Logger { std::move(start_time), make_default_severity() } {
         EXPECTS(not logger);
 
         logger = this;

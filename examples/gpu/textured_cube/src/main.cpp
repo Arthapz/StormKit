@@ -14,8 +14,6 @@ import gpu_app;
 #include <stormkit/log/log_macro.hpp>
 #include <stormkit/main/main_macro.hpp>
 
-LOGGER("stormkit.examples.gpu.textured_cube");
-
 #ifndef SHADER_DIR
     #define SHADER_DIR "../share/stormkit/shaders/"
 #endif

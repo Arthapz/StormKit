@@ -32,8 +32,7 @@ target("triangle", function()
         add_defines("STORMKIT_ASSERT=0")
     end
 
-    add_files("../common/app.mpp")
-    add_files("src/*.cpp")
+    add_files("src/*.cpp", "src/*.mpp", "../common/app.mpp")
     add_files("shaders/*.nzsl")
     if is_plat("windows") then add_files("win32/*.manifest") end
 

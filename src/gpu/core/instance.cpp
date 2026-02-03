@@ -144,7 +144,7 @@ namespace stormkit::gpu {
                   }
               });
 
-              ilog("Enabled layers: {}", validation_layers);
+              dlog("Enabled layers: {}", validation_layers);
 
               const auto instance_extensions = [this]() noexcept {
                   auto e = concat(BASE_EXTENSIONS, SURFACE_EXTENSIONS);
@@ -158,7 +158,7 @@ namespace stormkit::gpu {
 
                   return e;
               }();
-              ilog("Enabled instance extensions: {}", instance_extensions);
+              dlog("Enabled instance extensions: {}", instance_extensions);
 
               constexpr auto ENGINE_NAME = "StormKit";
 

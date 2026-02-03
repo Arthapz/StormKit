@@ -32,6 +32,8 @@ using namespace stormkit;
 ////////////////////////////////////////
 auto main(std::span<const std::string_view> args) -> int {
     wsi::parse_args(args);
+    log::parse_args(args);
+
     auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
 
     auto engine = luau::Engine::create(LUAU_FILE);

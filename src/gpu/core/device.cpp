@@ -318,7 +318,7 @@ namespace stormkit::gpu {
 
             return e;
         }();
-        device_logger.ilog("Enabled device extensions: {}", extensions);
+        device_logger.dlog("Enabled device extensions: {}", extensions);
 
         // const auto acceleration_feature = [] static noexcept {
         //     auto out  = zeroed<VkPhysicalDeviceAccelerationStructureFeaturesKHR>();
