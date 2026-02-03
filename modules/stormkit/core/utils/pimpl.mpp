@@ -63,7 +63,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    Pimpl<T, Defer>::Pimpl() noexcept(not Defer) {
+    inline Pimpl<T, Defer>::Pimpl() noexcept(not Defer) {
         if constexpr (not Defer) init();
     }
 
@@ -71,8 +71,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    Pimpl<T, Defer>::~Pimpl()
-      = default;
+    inline Pimpl<T, Defer>::~Pimpl() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -80,7 +79,7 @@ namespace stormkit { inline namespace core {
     template<class... Args>
         requires(meta::EnableCtor<Pimpl<T, Defer>, Args...>)
     STORMKIT_FORCE_INLINE
-    Pimpl<T, Defer>::Pimpl(Args&&... args) {
+    inline Pimpl<T, Defer>::Pimpl(Args&&... args) {
         init(std::forward<Args>(args)...);
     }
 
@@ -88,21 +87,20 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    Pimpl<T, Defer>::Pimpl(Pimpl&&) noexcept
-      = default;
+    inline Pimpl<T, Defer>::Pimpl(Pimpl&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    auto Pimpl<T, Defer>::operator=(Pimpl&&) noexcept -> Pimpl& = default;
+    inline auto Pimpl<T, Defer>::operator=(Pimpl&&) noexcept -> Pimpl& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, bool Defer>
     template<class... Args>
     STORMKIT_FORCE_INLINE
-    auto Pimpl<T, Defer>::init(Args&&... args) -> void {
+    inline auto Pimpl<T, Defer>::init(Args&&... args) -> void {
         m_data = std::make_unique<T>(std::forward<Args>(args)...);
     }
 
@@ -110,7 +108,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    auto Pimpl<T, Defer>::operator->() noexcept -> T* {
+    inline auto Pimpl<T, Defer>::operator->() noexcept -> T* {
         return &get();
     }
 
@@ -118,7 +116,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    auto Pimpl<T, Defer>::operator->() const noexcept -> const T* {
+    inline auto Pimpl<T, Defer>::operator->() const noexcept -> const T* {
         return &get();
     }
 
@@ -126,7 +124,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    auto Pimpl<T, Defer>::operator*() noexcept -> T& {
+    inline auto Pimpl<T, Defer>::operator*() noexcept -> T& {
         return get();
     }
 
@@ -134,7 +132,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    auto Pimpl<T, Defer>::operator*() const noexcept -> const T& {
+    inline auto Pimpl<T, Defer>::operator*() const noexcept -> const T& {
         return get();
     }
 
@@ -142,7 +140,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    auto Pimpl<T, Defer>::get() noexcept -> T& {
+    inline auto Pimpl<T, Defer>::get() noexcept -> T& {
         EXPECTS(m_data != nullptr);
         return *m_data;
     }
@@ -151,7 +149,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    auto Pimpl<T, Defer>::get() const noexcept -> const T& {
+    inline auto Pimpl<T, Defer>::get() const noexcept -> const T& {
         EXPECTS(m_data != nullptr);
         return *m_data;
     }
@@ -160,7 +158,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<class T, bool Defer>
     STORMKIT_FORCE_INLINE
-    Pimpl<T, Defer>::operator bool() const noexcept {
+    inline Pimpl<T, Defer>::operator bool() const noexcept {
         return m_data != nullptr;
     }
 }} // namespace stormkit::core

@@ -179,7 +179,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    inline constexpr auto as_string(Severity severity) noexcept -> std::string_view {
+    constexpr auto as_string(Severity severity) noexcept -> std::string_view {
         switch (severity) {
             case Severity::INFO: return "Severity::INFO";
             case Severity::WARNING: return "Severity::WARNING";
@@ -195,7 +195,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline constexpr auto to_string(Severity severity) noexcept -> std::string {
+    constexpr auto to_string(Severity severity) noexcept -> std::string {
         return std::string { as_string(severity) };
     }
 
@@ -230,7 +230,6 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, typename... Args>
-    STORMKIT_FORCE_INLINE
     inline auto Logger::create_logger_instance(Args&&... param_args) noexcept -> T {
         static_assert(std::is_base_of<Logger, T>::value, "T must inherit Logger");
 
@@ -242,8 +241,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, typename... Args>
-    STORMKIT_FORCE_INLINE
-    auto Logger::allocate_logger_instance(Args&&... param_args) noexcept -> Heap<T> {
+    inline auto Logger::allocate_logger_instance(Args&&... param_args) noexcept -> Heap<T> {
         static_assert(std::is_base_of<Logger, T>::value, "T must inherit Logger");
 
         auto time_point = LogClock::now();
@@ -255,8 +253,8 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Args>
-    STORMKIT_FORCE_INLINE
-    auto Logger::log(Severity severity, const Module& m, std::string_view format_string, Args&&... param_args) noexcept -> void {
+    inline auto Logger::log(Severity severity, const Module& m, std::string_view format_string, Args&&... param_args) noexcept
+      -> void {
         EXPECTS(has_logger());
 
         const auto log_level = instance().log_level();
@@ -379,7 +377,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     template<meta::ConstexprString str>
     STORMKIT_FORCE_INLINE
-    inline constexpr auto operator""_module() noexcept -> stormkit::log::Module {
+    constexpr auto operator""_module() noexcept -> stormkit::log::Module {
         return Module { str.view() };
     }
 } // namespace stormkit::log

@@ -152,28 +152,28 @@ namespace stormkit::gpu {
     template<std::integral T>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    inline constexpr auto vk_make_version(T major, T minor, T patch) noexcept -> u32 {
+    constexpr auto vk_make_version(T major, T minor, T patch) noexcept -> u32 {
         return vk_version_major(major) | vk_version_minor(minor) | vk_version_patch(patch);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    inline constexpr auto vk_version_major(std::integral auto version) noexcept -> u32 {
+    constexpr auto vk_version_major(std::integral auto version) noexcept -> u32 {
         return as<u32>(version) >> 22u;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    inline constexpr auto vk_version_minor(std::integral auto version) noexcept -> u32 {
+    constexpr auto vk_version_minor(std::integral auto version) noexcept -> u32 {
         return ((as<u32>(version) >> 12u) & 0x3ffu);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    inline constexpr auto vk_version_patch(std::integral auto version) noexcept -> u32 {
+    constexpr auto vk_version_patch(std::integral auto version) noexcept -> u32 {
         return as<u32>(version) & 0xfffu;
     }
 

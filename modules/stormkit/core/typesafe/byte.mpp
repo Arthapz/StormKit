@@ -260,49 +260,49 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-        inline constexpr auto operator""_b(unsigned long long value) noexcept -> byte {
+        constexpr auto operator""_b(unsigned long long value) noexcept -> byte {
             return static_cast<byte>(value);
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
-        inline constexpr auto operator""_kb(unsigned long long x) noexcept -> u64 {
+        constexpr auto operator""_kb(unsigned long long x) noexcept -> u64 {
             return x * 1000ULL;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
-        inline constexpr auto operator""_mb(unsigned long long x) noexcept -> u64 {
+        constexpr auto operator""_mb(unsigned long long x) noexcept -> u64 {
             return x * 1000_kb;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
-        inline constexpr auto operator""_gb(unsigned long long x) noexcept -> u64 {
+        constexpr auto operator""_gb(unsigned long long x) noexcept -> u64 {
             return x * 1000_mb;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
-        inline constexpr auto operator""_kib(unsigned long long x) noexcept -> u64 {
+        constexpr auto operator""_kib(unsigned long long x) noexcept -> u64 {
             return x * 1024;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
-        inline constexpr auto operator""_mib(unsigned long long x) noexcept -> u64 {
+        constexpr auto operator""_mib(unsigned long long x) noexcept -> u64 {
             return x * 1024_kib;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
-        inline constexpr auto operator""_gib(unsigned long long x) noexcept -> u64 {
+        constexpr auto operator""_gib(unsigned long long x) noexcept -> u64 {
             return x * 1024_mib;
         }
     } // namespace literals

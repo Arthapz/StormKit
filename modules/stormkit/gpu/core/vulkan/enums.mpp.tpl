@@ -87,7 +87,6 @@ export {
     }
     template<>
     STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
     constexpr auto stormkit::core::to_string<stormkit::gpu::{% outfile:write(name) %}>(stormkit::gpu::{% outfile:write(name) %} value) noexcept -> std::string {
         switch(value) {
            {% for val_name, value in table.orderpairs(enumeration["values"]) do %}case stormkit::gpu::{% outfile:write(name) %}::{% outfile:write(val_name) %}: return "{%  outfile:write(name) %}::{% outfile:write(val_name) %}";
@@ -96,99 +95,6 @@ export {
         std::unreachable();
     }
     {% end %}
-        // enum class Format : u8 {
-        //     BYTE,
-        //     BYTE2,
-        //     BYTE3,
-        //     BYTE4,
-
-        //    BYTE_NORM,
-        //    BYTE2_NORM,
-        //    BYTE3_NORM,
-        //    BYTE4_NORM,
-
-        //    BYTE_SCALED,
-        //    BYTE2_SCALED,
-        //    BYTE3_SCALED,
-        //    BYTE4_SCALED,
-
-        //    UBYTE,
-        //    UBYTE2,
-        //    UBYTE3,
-        //    UBYTE4,
-
-        //    UBYTE_NORM,
-        //    UBYTE2_NORM,
-        //    UBYTE3_NORM,
-        //    UBYTE4_NORM,
-
-        //    UBYTE_UCALED,
-        //    UBYTE2_UCALED,
-        //    UBYTE3_UCALED,
-        //    UBYTE4_UCALED,
-
-        //    SHORT,
-        //    SHORT2,
-        //    SHORT3,
-        //    SHORT4,
-
-        //    SHORT_NORM,
-        //    SHORT2_NORM,
-        //    SHORT3_NORM,
-        //    SHORT4_NORM,
-
-        //    SHORT_SCALED,
-        //    SHORT2_SCALED,
-        //    SHORT3_SCALED,
-        //    SHORT4_SCALED,
-
-        //    USHORT,
-        //    USHORT2,
-        //    USHORT3,
-        //    USHORT4,
-
-        //    USHORT_NORM,
-        //    USHORT2_NORM,
-        //    USHORT3_NORM,
-        //    USHORT4_NORM,
-
-        //    USHORT_UCALED,
-        //    USHORT2_UCALED,
-        //    USHORT3_UCALED,
-        //    USHORT4_UCALED,
-
-        //    INT,
-        //    INT2,
-        //    INT3,
-        //    INT4,
-
-        //    UINT,
-        //    UINT2,
-        //    UINT3,
-        //    UINT4,
-
-        //    LONG,
-        //    LONG2,
-        //    LONG3,
-        //    LONG4,
-
-        //    ULONG,
-        //    ULONG2,
-        //    ULONG3,
-        //    ULONG4,
-
-        //    FLOAT,
-        //    FLOAT2,
-        //    FLOAT3,
-        //    FLOAT4,
-
-        //    DOUBLE,
-        //    DOUBLE2,
-        //    DOUBLE3,
-        //    DOUBLE4,
-
-        //    UNDEFINED,
-        // };
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,6 +105,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool {
         return format == PixelFormat::DEPTH16_UNORM
                or format == PixelFormat::DEPTH24_UNORM_PACK32
@@ -208,6 +115,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool {
         return format == PixelFormat::DEPTH16_UNORM_STENCIL8U
                or format == PixelFormat::DEPTH24_UNORM_STENCIL8U
@@ -217,6 +125,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     constexpr auto is_depth_format(PixelFormat format) noexcept -> bool {
         return is_depth_only_format(format) or is_depth_stencil_format(format);
     }
@@ -224,6 +133,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     constexpr auto get_format_channel_count(PixelFormat format) noexcept -> u8 {
         switch (format) {
             case PixelFormat::R8_SNORM:
@@ -301,6 +211,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     constexpr auto get_format_element_count(PixelFormat format) noexcept -> u8 {
         switch (format) {
             case PixelFormat::R8_SNORM:
@@ -369,6 +280,7 @@ namespace stormkit::gpu {
     template<typename T = VkFlags, meta::IsVulkanEnumeration U>
         requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
     STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     STORMKIT_INTRINSIC
     constexpr auto to_vk(U value) noexcept -> T{
         return narrow<T>(value);
@@ -379,6 +291,7 @@ namespace stormkit::gpu {
     template<meta::IsVulkanEnumeration T, typename U>
         requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
     STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     STORMKIT_INTRINSIC
     constexpr auto from_vk(U value) noexcept -> T {
         return narrow<T>(value);

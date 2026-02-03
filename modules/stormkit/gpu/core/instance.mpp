@@ -229,14 +229,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Instance::~Instance()
-      = default;
+    inline Instance::~Instance() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Instance::Instance(Instance&&) noexcept
-      = default;
+    inline Instance::Instance(Instance&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -312,20 +310,18 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline constexpr Surface::Surface(PrivateFuncTag) noexcept {
+    constexpr Surface::Surface(PrivateFuncTag) noexcept {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Surface::~Surface()
-      = default;
+    inline Surface::~Surface() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Surface::Surface(Surface&&) noexcept
-      = default;
+    inline Surface::Surface(Surface&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -335,7 +331,7 @@ namespace stormkit::gpu {
 #if false
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Surface::create_offscreen(const Instance& instance) noexcept
+    STORMKIT_FORCE_INLINE inline auto Surface::create_offscreen(const Instance& instance) noexcept
         -> Expected<Surface> {
         auto surface = Surface { PrivateFuncTag {} };
         return surface.do_init_offscreen(instance).transform(core::monadic::consume(instance));
@@ -343,7 +339,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Surface::allocate_offscreen(const Instance& instance) noexcept
+    STORMKIT_FORCE_INLINE inline auto Surface::allocate_offscreen(const Instance& instance) noexcept
         -> Expected<Heap<Surface>> {
         auto surface = core::allocate_unsafe<Surface>(PrivateFuncTag {});
         return surface->do_init_offscreen(instance).transform(core::monadic::consume(instance));
