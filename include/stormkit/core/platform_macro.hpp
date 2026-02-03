@@ -97,27 +97,23 @@
     #define STORMKIT_LIFETIMEBOUND
 #endif
 
-#if not defined(STORMKIT_COMPILER_MSVC)
-    #if __has_cpp_attribute(gnu::pure)
-        #define STORMKIT_PURE [[gnu::pure]]
-    #else
-        #define STORMKIT_PURE
-    #endif
+#if __has_cpp_attribute(gnu::pure)
+    #define STORMKIT_PURE [[gnu::pure]]
 #else
     #define STORMKIT_PURE
 #endif
 
-#if not defined(STORMKIT_COMPILER_MSVC)
-    #if __has_cpp_attribute(gnu::const)
-        #define STORMKIT_CONST [[gnu::const]]
-    #else
-        #define STORMKIT_CONST
-    #endif
+#if __has_cpp_attribute(gnu::const)
+    #define STORMKIT_CONST [[gnu::const]]
 #else
     #define STORMKIT_CONST
 #endif
 
-#define STORMKIT_FORCE_INLINE STORMKIT_FORCE_INLINE_IMPL
+#ifdef STORMKIT_BUILD_DEBUG
+    #define STORMKIT_FORCE_INLINE
+#else
+    #define STORMKIT_FORCE_INLINE STORMKIT_FORCE_INLINE_IMPL
+#endif
 
 #if defined(__MINGW32__)
     #define STORMKIT_COMPILER STORMKIT_COMPILER_MINGW
