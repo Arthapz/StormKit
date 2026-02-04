@@ -23,7 +23,7 @@ target("imgui", function()
         add_defines("STORMKIT_ASSERT=0")
     end
 
-    add_files("src/*.cpp", "src/*.mpp", "../common/app.mpp")
+    add_files("src/*.cpp", "src/*.cppm", "../common/app.cppm")
     if is_plat("windows") then add_files("win32/*.manifest") end
 
     if get_config("devmode") then set_rundir("$(projectdir)") end

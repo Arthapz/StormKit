@@ -18,7 +18,7 @@ if has_config("enable_gpu") and has_config("enable_wsi") and has_config("enable-
         end
 
         add_files("src/*.cpp")
-        add_files("src/*.mpp")
+        add_files("src/*.cppm")
         add_files("shaders/*.nzsl")
         if is_plat("windows") then add_files("win32/*.manifest") end
 

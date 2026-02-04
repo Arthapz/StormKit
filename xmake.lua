@@ -111,7 +111,7 @@ namespace("stormkit", function()
                     local module_path = path.join("modules", "stormkit", modulename)
                     local include_path = path.join("include", "(stormkit", modulename)
 
-                    for _, file in ipairs(os.files(path.join(src_path, "**.mpp"))) do
+                    for _, file in ipairs(os.files(path.join(src_path, "**.cppm"))) do
                         add_files(file)
                     end
                     for _, file in ipairs(os.files(path.join(src_path, "**.cpp"))) do
@@ -127,10 +127,10 @@ namespace("stormkit", function()
                         add_files(file)
                     end
 
-                    if os.exists(module_path .. ".mpp") then add_files(module_path .. ".mpp", { public = true }) end
+                    if os.exists(module_path .. ".cppm") then add_files(module_path .. ".cppm", { public = true }) end
 
                     if os.files(module_path) then
-                        for _, file in ipairs(os.files(path.join(module_path, "**.mpp"))) do
+                        for _, file in ipairs(os.files(path.join(module_path, "**.cppm"))) do
                             add_files(file, { public = true })
                         end
                         for _, file in ipairs(os.files(path.join(module_path, "**.inl"))) do
@@ -171,7 +171,7 @@ namespace("stormkit", function()
                         end
                     end
 
-                    if not get_config("luau") then remove_files(path.join(module_path, "lua.mpp")) end
+                    if not get_config("luau") then remove_files(path.join(module_path, "lua.cppm")) end
 
                     add_includedirs("$(projectdir)/include", { public = true })
 
@@ -220,7 +220,7 @@ namespace("stormkit", function()
         set_languages("cxxlatest", "clatest")
 
         add_rules("stormkit.flags")
-        add_files("modules/stormkit.mpp")
+        add_files("modules/stormkit.cppm")
 
         add_deps("core", "main")
         for _, name in ipairs({ "log", "entities", "image", "wsi", "gpu", "luau" }) do
