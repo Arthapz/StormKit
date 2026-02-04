@@ -91,6 +91,12 @@ local package_configs = {
             },
         },
     },
+    ["volk"] = {
+        global = {
+            version = "1.4.335",
+            system = false,
+        },
+    },
     ["vulkan-headers"] = {
         global = {
             version = "1.4.335",
