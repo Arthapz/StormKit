@@ -91,11 +91,10 @@ local package_configs = {
             },
         },
     },
-    ["vulkan-header"] = {
+    ["vulkan-headers"] = {
         global = {
-            version = "v1.4.335",
+            version = "1.4.335",
             system = false,
-            override = true,
             configs = {
                 modules = false,
             },
