@@ -70,11 +70,15 @@ for name, module in pairs(modules) do
     end
 end
 
+set_suffixname("-d")
+
 ---------------------------- targets ----------------------------
 namespace("stormkit", function()
     for _, name in ipairs({ "log", "entities", "image", "wsi", "gpu", "luau" }) do
         if get_config(name) then set_configvar("STORMKIT_LIB_" .. string.upper(name) .. "_ENABLED", "true") end
     end
+
+    includes("src/core/xmake.lua")
 
     for name, module in pairs(modules) do
         if module then

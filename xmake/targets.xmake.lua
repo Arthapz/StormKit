@@ -1,33 +1,4 @@
 modules = {
-    core = {
-        public_packages = { "frozen", "unordered_dense", "tl_function_ref" },
-        modulename = "core",
-        has_headers = true,
-        custom = function()
-            if is_plat("windows") then add_packages("wil") end
-
-            set_configdir("$(builddir)/.gens/include/")
-            add_configfiles("include/(stormkit/core/config.hpp.in)")
-            add_headerfiles("$(builddir)/.gens/include/(stormkit/core/*.hpp)")
-            -- add_cxflags("clang::-Wno-language-extension-token")
-
-            on_config(function(target)
-                local output, errors = os.iorunv("git", { "rev-parse", "--abbrev-ref", "HEAD" })
-
-                if not errors == "" then
-                    print("Failed to get git hash and branch, reason: ", errors, output)
-                    target:set("configvar", "STORMKIT_GIT_BRANCH", " ")
-                    target:set("configvar", "STORMKIT_GIT_COMMIT_HASH", " ")
-                    return
-                end
-
-                target:set("configvar", "STORMKIT_GIT_BRANCH", output:trim())
-                output, errors = os.iorunv("git", { "rev-parse", "--verify", "HEAD" })
-
-                target:set("configvar", "STORMKIT_GIT_COMMIT_HASH", output:trim())
-            end)
-        end,
-    },
     test = {
         modulename = "test",
         public_deps = { "core" },
