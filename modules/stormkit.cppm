@@ -12,23 +12,22 @@ import std;
 export module stormkit;
 
 export import stormkit.core;
-export import stormkit.main;
 
-#ifdef STORMKIT_LIB_LOG_ENABLED
+#if STORMKIT_LIB_LOG_ENABLED
 export import stormkit.log;
 #endif
-#ifdef STORMKIT_LIB_ENTITIES_ENABLED
+#if STORMKIT_LIB_ENTITIES_ENABLED
 export import stormkit.entities;
 #endif
-#ifdef STORMKIT_LIB_IMAGE_ENABLED
+#if STORMKIT_LIB_IMAGE_ENABLED
 export import stormkit.image;
 #endif
-#ifdef STORMKIT_LIB_WSI_ENABLED
+#if STORMKIT_LIB_WSI_ENABLED
 export import stormkit.wsi;
 #endif
-#ifdef STORMKIT_LIB_GPU_ENABLED
+#if STORMKIT_LIB_GPU_ENABLED
 export import stormkit.gpu;
 #endif
-#ifdef STORMKIT_LIB_LUAU_ENABLED
-export import stormkit.luau;
+#if STORMKIT_LIB_LUA_ENABLED
+export import stormkit.lua;
 #endif

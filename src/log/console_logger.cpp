@@ -48,9 +48,10 @@ namespace stormkit::log {
         const auto out      = (is_error) ? get_stderr() : get_stdout();
 
         const auto header = [&severity, &module, &time] noexcept {
-            if (std::empty(module.name)) return std::format("[{}, {:%S}]", as_string(severity), time);
+            const auto severity_str = replace(as_string(severity), "Severity::", "");
+            if (std::empty(module.name)) return std::format("[{}, {:%S}]", severity_str, time);
             else
-                return std::format("[{}, {:%S}, {}]", as_string(severity), time, module.name);
+                return std::format("[{}, {:%S}, {}]", severity_str, time, module.name);
         }();
 
         const auto prefixed_string = [&header, string] noexcept {

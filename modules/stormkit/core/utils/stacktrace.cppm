@@ -1,5 +1,6 @@
 module;
 
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:utils.stracktrace;
@@ -9,6 +10,6 @@ import std;
 import :parallelism.threadutils;
 
 export namespace stormkit { inline namespace core {
-    STORMKIT_API
+    STORMKIT_CORE_API
     auto print_stacktrace(int ignore_count = 0) noexcept -> void;
 }} // namespace stormkit::core

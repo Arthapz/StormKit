@@ -7,6 +7,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.core:instance;
@@ -24,7 +25,7 @@ export {
     namespace stormkit::gpu {
         class PhysicalDevice;
 
-        class STORMKIT_API Instance {
+        class STORMKIT_GPU_API Instance {
             struct PrivateFuncTag {};
 
           public:
@@ -69,10 +70,9 @@ export {
         };
 
         [[nodiscard]]
-        STORMKIT_API
-        auto score_physical_device(const PhysicalDevice& physical_device) noexcept -> u64;
+        STORMKIT_GPU_API auto score_physical_device(const PhysicalDevice& physical_device) noexcept -> u64;
 
-        class STORMKIT_API PhysicalDevice {
+        class STORMKIT_GPU_API PhysicalDevice {
           public:
             static constexpr auto DEBUG_TYPE = DebugObjectType::PHYSICAL_DEVICE;
 
@@ -125,7 +125,7 @@ export {
             friend class Instance;
         };
 
-        class STORMKIT_API Surface {
+        class STORMKIT_GPU_API Surface {
             struct PrivateFuncTag {};
 
           public:

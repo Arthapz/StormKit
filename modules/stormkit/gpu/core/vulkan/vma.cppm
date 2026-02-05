@@ -3,11 +3,14 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
 #define VMA_STATIC_VULKAN_FUNCTIONS  0
-#define VMA_CALL_PRE                 STORMKIT_API
+// #ifdef STORMKIT_GPU_BUILD
+#define VMA_CALL_PRE STORMKIT_GPU_API
+// #endif
 #include <vk_mem_alloc.h>
 
 export module stormkit.gpu.core:vulkan.vma;

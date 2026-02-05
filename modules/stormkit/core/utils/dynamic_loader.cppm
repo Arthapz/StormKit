@@ -4,11 +4,10 @@
 
 module;
 
-#include <stormkit/core/platform_macro.hpp>
-
-#include <stormkit/core/memory_macro.hpp>
-
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/contract_macro.hpp>
+#include <stormkit/core/memory_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:utils.dynamic_loader;
 
@@ -18,7 +17,7 @@ import :utils.contract;
 import :utils.pimpl;
 
 export namespace stormkit { inline namespace core {
-    class STORMKIT_API DynamicLoader {
+    class STORMKIT_CORE_API DynamicLoader {
       public:
         template<class T>
         using Expected = std::expected<T, std::error_code>;
@@ -67,8 +66,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline DynamicLoader::DynamicLoader() noexcept
-      = default;
+    inline DynamicLoader::DynamicLoader() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

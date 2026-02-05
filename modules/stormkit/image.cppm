@@ -4,9 +4,10 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <stormkit/core/contract_macro.hpp>
+#include <stormkit/image/api.hpp>
 
 export module stormkit.image;
 
@@ -14,12 +15,8 @@ import std;
 
 import stormkit.core;
 
-#ifdef STORMKIT_LUA_BINDING
-export import :lua;
-#endif
-
 export namespace stormkit::image {
-    class STORMKIT_API Image {
+    class STORMKIT_IMAGE_API Image {
       public:
         enum class Format : u8 {
             R8_SNORM     = 0,
@@ -112,12 +109,12 @@ export namespace stormkit::image {
 
         struct ImageData {
             math::uextent3 extent            = { .width = 0u, .height = 0u };
-            u32                channel_count     = 0u;
-            u32                bytes_per_channel = 0u;
-            u32                layers            = 1u;
-            u32                faces             = 1u;
-            u32                mip_levels        = 1u;
-            Format             format            = Format::UNDEFINED;
+            u32            channel_count     = 0u;
+            u32            bytes_per_channel = 0u;
+            u32            layers            = 1u;
+            u32            faces             = 1u;
+            u32            mip_levels        = 1u;
+            Format         format            = Format::UNDEFINED;
 
             std::vector<Byte> data = {};
         };

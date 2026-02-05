@@ -63,10 +63,11 @@ namespace stormkit::log {
         static constexpr auto LOG_LINE        = "[{}, {}] {}\n"sv;
         static constexpr auto LOG_LINE_MODULE = "[{}, {}, {}] {}\n"sv;
 
-        auto final_string = std::string {};
-        if (std::empty(m.name)) final_string = std::format(LOG_LINE, to_string(severity), time, string);
+        auto       final_string = std::string {};
+        const auto severity_str = replace(as_string(severity), "Severity::", "");
+        if (std::empty(m.name)) final_string = std::format(LOG_LINE, severity_str, time, string);
         else
-            final_string = std::format(LOG_LINE_MODULE, to_string(severity), time, m.name, string);
+            final_string = std::format(LOG_LINE_MODULE, severity_str, time, m.name, string);
 
         m_streams.at(filepath.string()) << final_string << std::flush;
     }

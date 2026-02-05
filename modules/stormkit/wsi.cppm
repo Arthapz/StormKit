@@ -10,7 +10,3 @@ export import :window;
 // export import :event_handler;
 export import :keyboard;
 export import :mouse;
-
-#ifdef STORMKIT_LUA_BINDING
-export import :lua;
-#endif

@@ -4,21 +4,17 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
+#include <stormkit/core/memory_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <stormkit/core/memory_macro.hpp>
-
-#include <stormkit/core/contract_macro.hpp>
+#include <stormkit/entities/api.hpp>
 
 export module stormkit.entities;
 
 import std;
 
 import stormkit.core;
-
-#ifdef STORMKIT_LUA_BINDING
-export import :lua;
-#endif
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -69,7 +65,7 @@ export namespace stormkit::entities {
         std::vector<Entity> entities;
     };
 
-    class STORMKIT_API MessageBus {
+    class STORMKIT_ENTITIES_API MessageBus {
       public:
         MessageBus();
         ~MessageBus();
@@ -94,7 +90,7 @@ export namespace stormkit::entities {
 
     class EntityManager;
 
-    class STORMKIT_API System {
+    class STORMKIT_ENTITIES_API System {
       public:
         using ComponentTypes = HashSet<Component::Type>;
 
@@ -146,7 +142,7 @@ export namespace stormkit::entities {
         ComponentTypes m_types;
     };
 
-    class STORMKIT_API EntityManager {
+    class STORMKIT_ENTITIES_API EntityManager {
       public:
         static constexpr auto ADDED_ENTITY_MESSAGE_ID   = 1;
         static constexpr auto REMOVED_ENTITY_MESSAGE_ID = 2;

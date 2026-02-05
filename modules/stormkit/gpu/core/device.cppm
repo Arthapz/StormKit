@@ -7,6 +7,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.core:device;
@@ -27,7 +28,7 @@ export {
         class Fence;
         class Semaphore;
 
-        class STORMKIT_API Device {
+        class STORMKIT_GPU_API Device {
             struct PrivateFuncTag {};
 
           public:
@@ -117,7 +118,7 @@ export {
             VkRAIIHandle<VmaAllocator> m_vma_allocator = { [](auto handle) static noexcept { vmaDestroyAllocator(handle); } };
         };
 
-        STORMKIT_API
+        STORMKIT_GPU_API
         auto imgui_vk_loader(const char* func_name, void*) noexcept -> PFN_vkVoidFunction;
     } // namespace stormkit::gpu
 

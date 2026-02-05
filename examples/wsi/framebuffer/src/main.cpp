@@ -4,9 +4,7 @@
 
 import std;
 
-import stormkit.core;
-import stormkit.log;
-import stormkit.wsi;
+import stormkit;
 
 #include <stormkit/log/log_macro.hpp>
 #include <stormkit/main/main_macro.hpp>

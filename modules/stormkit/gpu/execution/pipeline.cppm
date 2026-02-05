@@ -9,6 +9,7 @@ module;
 
 #include <stormkit/core/contract_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.execution:pipeline;
@@ -24,7 +25,7 @@ import :render_pass;
 export namespace stormkit::gpu {
     class CommandBuffer;
 
-    class STORMKIT_API PipelineCache {
+    class STORMKIT_GPU_API PipelineCache {
         struct PrivateFuncTag {};
 
       public:
@@ -82,7 +83,7 @@ export namespace stormkit::gpu {
         VkRAIIHandle<VkPipelineCache> m_vk_handle;
     };
 
-    class STORMKIT_API PipelineLayout {
+    class STORMKIT_GPU_API PipelineLayout {
         struct PrivateFuncTag {};
 
       public:
@@ -114,7 +115,7 @@ export namespace stormkit::gpu {
         VkRAIIHandle<VkPipelineLayout> m_vk_handle;
     };
 
-    class STORMKIT_API Pipeline {
+    class STORMKIT_GPU_API Pipeline {
         struct PrivateFuncTag {};
 
       public:

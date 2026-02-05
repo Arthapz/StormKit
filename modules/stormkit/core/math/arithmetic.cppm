@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:math.arithmetic;
@@ -175,18 +176,18 @@ namespace stormkit { inline namespace core { namespace math {
     }
 
 #ifndef STORMKIT_OS_WINDOWS
-    #undef STORMKIT_API
-    #define STORMKIT_API
+    #undef STORMKIT_CORE_API
+    #define STORMKIT_CORE_API
 #endif
 
-#define INSTANCIATE(t)                                             \
-    template STORMKIT_API auto is_positive<t>(t) noexcept -> bool; \
-    template STORMKIT_API auto is_negative<t>(t) noexcept -> bool; \
-    template STORMKIT_API auto abs<t>(t) noexcept -> t;            \
-    template STORMKIT_API auto min<t>(t, t) noexcept -> t;         \
-    template STORMKIT_API auto max<t>(t, t) noexcept -> t;         \
-    template STORMKIT_API auto log2<t>(t) noexcept -> t;           \
-    template STORMKIT_API auto floor<t>(t) noexcept -> t;
+#define INSTANCIATE(t)                                                  \
+    template STORMKIT_CORE_API auto is_positive<t>(t) noexcept -> bool; \
+    template STORMKIT_CORE_API auto is_negative<t>(t) noexcept -> bool; \
+    template STORMKIT_CORE_API auto abs<t>(t) noexcept -> t;            \
+    template STORMKIT_CORE_API auto min<t>(t, t) noexcept -> t;         \
+    template STORMKIT_CORE_API auto max<t>(t, t) noexcept -> t;         \
+    template STORMKIT_CORE_API auto log2<t>(t) noexcept -> t;           \
+    template STORMKIT_CORE_API auto floor<t>(t) noexcept -> t;
 
     INSTANCIATE(u8);
     INSTANCIATE(i8);

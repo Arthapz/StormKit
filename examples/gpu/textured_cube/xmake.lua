@@ -1,41 +1,24 @@
--- add_requires("nzsl", { configs = { fs_watcher = false, kind = "binary" } })
+add_requires("nzsl", {
+    configs = {
+        fs_watcher = false,
+        kind = "binary",
+    },
+})
 
 target("textured_cube", function()
-    set_kind("binary")
-    set_languages("cxxlatest", "clatest")
+    add_rules("stormkit::example", "compile.shaders")
 
-    add_rules("stormkit.flags")
-    add_rules("platform.windows.subsystem.console")
-    -- add_rules("platform.windows.subsystem.windows")
+    add_files("src/*.cpp", "src/*.cppm", "../common/app.cppm", "shaders/*.nzsl")
 
-    add_rules("compile.shaders")
-    add_deps("core", "main", "log", "wsi", "gpu", "stormkit")
-
-    if is_mode("debug") then
-        add_defines("STORMKIT_BUILD_DEBUG")
-        add_defines("STORMKIT_ASSERT=1")
-        set_suffixname("-d")
-    else
-        add_defines("STORMKIT_ASSERT=0")
+    if get_config("devmode") then
+        add_defines(format('RESOURCE_DIR="%s"', path.unix(path.join(os.projectdir(), "gpu/textured_cube"))))
+        add_defines(format('SHADER_DIR="%s"', path.unix("$(builddir)/shader")))
     end
-
-    add_files("src/*.cpp", "src/*.cppm", "../common/app.cppm")
-    add_files("shaders/*.nzsl")
-    if is_plat("windows") then add_files("win32/*.manifest") end
-
-    add_includedirs("$(builddir)/shaders")
-
-    on_load(function(target)
-        if get_config("devmode") then
-            import("core.project.config")
-            local shader_dir = path.unix(path.join(config.builddir(), "shaders"))
-            target:add("defines", format('SHADER_DIR="%s"', shader_dir))
-            local texture_dir = path.unix(path.join(os.projectdir(), "examples", "gpu", "textured_cube", "textures"))
-            target:add("defines", format('TEXTURE_DIR="%s"', texture_dir))
-        end
-    end)
+    add_embeddirs("$(builddir)/shaders")
 
     if get_config("devmode") then set_rundir("$(projectdir)") end
+
+    add_packages("nzsl")
 
     set_group("examples/stormkit-gpu")
 end)

@@ -6,6 +6,7 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.execution:swapchain;
@@ -17,7 +18,7 @@ import stormkit.gpu.core;
 import stormkit.gpu.resource;
 
 export namespace stormkit::gpu {
-    class STORMKIT_API SwapChain {
+    class STORMKIT_GPU_API SwapChain {
         struct PrivateFuncTag {};
 
       public:
@@ -30,14 +31,14 @@ export namespace stormkit::gpu {
             ImageID id;
         };
 
-        static auto create(const Device&             device,
-                           const Surface&            surface,
-                           const math::uextent2& extent,
-                           OptionalRef<SwapChain>    old_swapchain = std::nullopt) noexcept -> Expected<SwapChain>;
-        static auto allocate(const Device&             device,
-                             const Surface&            surface,
-                             const math::uextent2& extent,
-                             OptionalRef<SwapChain>    old_swapchain = std::nullopt) noexcept -> Expected<Heap<SwapChain>>;
+        static auto create(const Device&          device,
+                           const Surface&         surface,
+                           const math::uextent2&  extent,
+                           OptionalRef<SwapChain> old_swapchain = std::nullopt) noexcept -> Expected<SwapChain>;
+        static auto allocate(const Device&          device,
+                             const Surface&         surface,
+                             const math::uextent2&  extent,
+                             OptionalRef<SwapChain> old_swapchain = std::nullopt) noexcept -> Expected<Heap<SwapChain>>;
         ~SwapChain();
 
         SwapChain(const SwapChain&)                    = delete;
@@ -62,8 +63,8 @@ export namespace stormkit::gpu {
         auto do_init(const Device&, const Surface&, const math::uextent2&, VkSwapchainKHR) noexcept -> Expected<void>;
 
         math::uextent2 m_extent;
-        PixelFormat        m_pixel_format;
-        u32                m_image_count;
+        PixelFormat    m_pixel_format;
+        u32            m_image_count;
 
         VkDevice                     m_vk_device;
         Ref<const VolkDeviceTable>   m_vk_device_table;
@@ -89,14 +90,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline SwapChain::~SwapChain()
-      = default;
+    inline SwapChain::~SwapChain() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline SwapChain::SwapChain(SwapChain&&) noexcept
-      = default;
+    inline SwapChain::SwapChain(SwapChain&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -106,10 +105,10 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto SwapChain::create(const Device&             device,
-                                  const Surface&            surface,
-                                  const math::uextent2& extent,
-                                  OptionalRef<SwapChain>    old_swapchain) noexcept -> Expected<SwapChain> {
+    inline auto SwapChain::create(const Device&          device,
+                                  const Surface&         surface,
+                                  const math::uextent2&  extent,
+                                  OptionalRef<SwapChain> old_swapchain) noexcept -> Expected<SwapChain> {
         auto swapchain = SwapChain { device, PrivateFuncTag {} };
         return swapchain.do_init(device, surface, extent, old_swapchain ? old_swapchain->native_handle() : nullptr)
           .transform(core::monadic::consume(swapchain));
@@ -118,10 +117,10 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto SwapChain::allocate(const Device&             device,
-                                    const Surface&            surface,
-                                    const math::uextent2& extent,
-                                    OptionalRef<SwapChain>    old_swapchain) noexcept -> Expected<Heap<SwapChain>> {
+    inline auto SwapChain::allocate(const Device&          device,
+                                    const Surface&         surface,
+                                    const math::uextent2&  extent,
+                                    OptionalRef<SwapChain> old_swapchain) noexcept -> Expected<Heap<SwapChain>> {
         auto swapchain = std::make_unique<SwapChain>(device, PrivateFuncTag {});
         return swapchain->do_init(device, surface, extent, old_swapchain ? old_swapchain->native_handle() : nullptr)
           .transform(core::monadic::consume(swapchain));

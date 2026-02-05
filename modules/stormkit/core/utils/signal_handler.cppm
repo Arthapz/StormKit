@@ -1,5 +1,6 @@
 module;
 
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #include <csignal>
@@ -10,7 +11,7 @@ import std;
 import :utils.stracktrace;
 
 export namespace stormkit { inline namespace core {
-    STORMKIT_API
+    STORMKIT_CORE_API
     auto setup_signal_handler() noexcept -> void;
 }} // namespace stormkit::core
 

@@ -7,6 +7,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.core:sync;
@@ -22,7 +23,7 @@ import :device;
 export namespace stormkit::gpu {
     class Device;
 
-    class STORMKIT_API Fence {
+    class STORMKIT_GPU_API Fence {
         struct PrivateFuncTag {};
 
       public:
@@ -69,7 +70,7 @@ export namespace stormkit::gpu {
         VkRAIIHandle<VkFence>      m_vk_handle;
     };
 
-    class STORMKIT_API Semaphore {
+    class STORMKIT_GPU_API Semaphore {
         struct PrivateFuncTag {};
 
       public:

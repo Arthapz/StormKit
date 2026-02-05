@@ -7,6 +7,8 @@ module;
 #include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/wsi/api.hpp>
+
 export module stormkit.wsi:monitor;
 
 import std;
@@ -25,7 +27,7 @@ export {
             std::string name;
 
             std::vector<math::uextent2> extents;
-            u32                             scale_factor = 1;
+            u32                         scale_factor = 1;
 
             [[nodiscard]]
             constexpr auto operator<=>(const Monitor& other) const noexcept -> std::strong_ordering;
@@ -39,12 +41,10 @@ export {
         auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept -> decltype(ctx.out());
 
         [[nodiscard]]
-        STORMKIT_API
-        auto get_monitors(bool update = false) noexcept -> std::span<const Monitor>;
+        STORMKIT_WSI_API auto get_monitors(bool update = false) noexcept -> std::span<const Monitor>;
 
         [[nodiscard]]
-        STORMKIT_API
-        auto get_primary_monitor() noexcept -> const Monitor&;
+        STORMKIT_WSI_API auto get_primary_monitor() noexcept -> const Monitor&;
     } // namespace stormkit::wsi
 
     FLAG_ENUM(stormkit::wsi::Monitor::Flags);

@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:parallelism.locked;
@@ -29,8 +30,7 @@ export namespace stormkit { inline namespace core {
     };
 
     template<meta::IsNotRawIndirection T, class Mutex = details::DefaultMutex>
-    class STORMKIT_API
-    Locked {
+    class STORMKIT_CORE_API Locked {
       public:
         using ValueType          = T;
         using ReferenceType      = ValueType&;
@@ -138,8 +138,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsNotRawIndirection T, class Mutex>
     STORMKIT_FORCE_INLINE
-    Locked<T, Mutex>::Locked() noexcept(noexcept(std::is_nothrow_default_constructible_v<ValueType>))
-      = default;
+    Locked<T, Mutex>::Locked() noexcept(noexcept(std::is_nothrow_default_constructible_v<ValueType>)) = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////

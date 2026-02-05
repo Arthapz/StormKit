@@ -8,7 +8,3 @@ export module stormkit.gpu;
 export import stormkit.gpu.core;
 export import stormkit.gpu.execution;
 export import stormkit.gpu.resource;
-
-#ifdef STORMKIT_LUA_BINDING
-export import :lua;
-#endif

@@ -7,6 +7,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.execution:descriptors;
@@ -40,7 +41,7 @@ export namespace stormkit::gpu {
     using Descriptor = std::variant<BufferDescriptor, ImageDescriptor>;
     class DescriptorPool;
 
-    class STORMKIT_API DescriptorSet {
+    class STORMKIT_GPU_API DescriptorSet {
         struct PrivateFuncTag {};
 
         using Deleter = std::function<void(VkDescriptorSet)>;
@@ -83,7 +84,7 @@ export namespace stormkit::gpu {
         usize           descriptor_count;
     };
 
-    class STORMKIT_API DescriptorSetLayout {
+    class STORMKIT_GPU_API DescriptorSetLayout {
         struct PrivateFuncTag {};
 
       public:
@@ -125,7 +126,7 @@ export namespace stormkit::gpu {
         VkRAIIHandle<VkDescriptorSetLayout> m_vk_handle;
     };
 
-    class STORMKIT_API DescriptorPool {
+    class STORMKIT_GPU_API DescriptorPool {
         struct PrivateFuncTag {};
 
       public:

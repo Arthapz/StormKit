@@ -7,6 +7,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.resource:image;
@@ -18,7 +19,7 @@ import stormkit.image;
 import stormkit.gpu.core;
 
 export namespace stormkit::gpu {
-    class STORMKIT_API Sampler {
+    class STORMKIT_GPU_API Sampler {
         struct PrivateFuncTag {};
 
       public:
@@ -30,8 +31,8 @@ export namespace stormkit::gpu {
             SamplerAddressMode address_mode_v = SamplerAddressMode::REPEAT;
             SamplerAddressMode address_mode_w = SamplerAddressMode::REPEAT;
 
-            bool  enable_anisotropy = false;
-            f32 max_anisotropy    = 0.f;
+            bool enable_anisotropy = false;
+            f32  max_anisotropy    = 0.f;
 
             BorderColor border_color = BorderColor::INT_OPAQUE_BLACK;
 
@@ -41,7 +42,7 @@ export namespace stormkit::gpu {
             CompareOperation compare_operation = CompareOperation::ALWAYS;
 
             SamplerMipmapMode mipmap_mode  = SamplerMipmapMode::LINEAR;
-            f32             mip_lod_bias = 0.f;
+            f32               mip_lod_bias = 0.f;
 
             f32 min_lod = 0.f;
             f32 max_lod = 0.f;
@@ -79,7 +80,7 @@ export namespace stormkit::gpu {
 
     class Image;
 
-    class STORMKIT_API ImageView {
+    class STORMKIT_GPU_API ImageView {
         struct PrivateFuncTag {};
 
       public:
@@ -122,12 +123,12 @@ export namespace stormkit::gpu {
         VkRAIIHandle<VkImageView>  m_vk_handle;
     };
 
-    class STORMKIT_API Image {
+    class STORMKIT_GPU_API Image {
         struct PrivateFuncTag {};
 
       public:
         struct CreateInfo {
-            math::uextent3 extent;
+            math::uextent3     extent;
             PixelFormat        format     = PixelFormat::RGBA8_UNORM;
             u32                layers     = 1u;
             u32                mip_levels = 1u;
@@ -180,15 +181,15 @@ export namespace stormkit::gpu {
         auto do_init(const CreateInfo&) noexcept -> Expected<void>;
         auto do_init(const VkImageCreateInfo&, MemoryPropertyFlag) noexcept -> Expected<void>;
 
-        math::uextent3 m_extent     = { 0, 0, 0 };
-        PixelFormat        m_format     = {};
-        u32                m_layers     = 0;
-        u32                m_faces      = 0;
-        u32                m_mip_levels = 0;
-        ImageType          m_type       = {};
-        ImageCreateFlag    m_flags      = {};
-        SampleCountFlag    m_samples    = {};
-        ImageUsageFlag     m_usages     = {};
+        math::uextent3  m_extent     = { 0, 0, 0 };
+        PixelFormat     m_format     = {};
+        u32             m_layers     = 0;
+        u32             m_faces      = 0;
+        u32             m_mip_levels = 0;
+        ImageType       m_type       = {};
+        ImageCreateFlag m_flags      = {};
+        SampleCountFlag m_samples    = {};
+        ImageUsageFlag  m_usages     = {};
 
         VkDevice                    m_vk_device = nullptr;
         Ref<const VolkDeviceTable>  m_vk_device_table;
@@ -261,14 +262,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Sampler::~Sampler()
-      = default;
+    inline Sampler::~Sampler() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Sampler::Sampler(Sampler&&) noexcept
-      = default;
+    inline Sampler::Sampler(Sampler&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -356,14 +355,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ImageView::~ImageView()
-      = default;
+    inline ImageView::~ImageView() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ImageView::ImageView(ImageView&&) noexcept
-      = default;
+    inline ImageView::ImageView(ImageView&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -438,14 +435,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Image::~Image()
-      = default;
+    inline Image::~Image() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Image::Image(Image&&) noexcept
-      = default;
+    inline Image::Image(Image&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

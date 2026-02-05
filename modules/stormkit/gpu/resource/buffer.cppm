@@ -7,6 +7,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.resource:buffer;
@@ -19,7 +20,7 @@ import stormkit.gpu.core;
 namespace stdr = std::ranges;
 
 export namespace stormkit::gpu {
-    class STORMKIT_API Buffer {
+    class STORMKIT_GPU_API Buffer {
         struct PrivateFuncTag {};
 
       public:

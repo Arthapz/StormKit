@@ -4,11 +4,10 @@
 
 module;
 
-#include <stormkit/core/memory_macro.hpp>
-
-#include <stormkit/core/platform_macro.hpp>
-
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/contract_macro.hpp>
+#include <stormkit/core/memory_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:containers.tree;
 
@@ -26,7 +25,7 @@ namespace stdr  = std::ranges;
 namespace stdfs = std::filesystem;
 
 export namespace stormkit { inline namespace core {
-    class STORMKIT_API TreeNode {
+    class STORMKIT_CORE_API TreeNode {
       public:
         using IndexType    = Handle32<TreeNode>;
         using DirtyBitType = u32;

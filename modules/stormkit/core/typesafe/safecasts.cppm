@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:typesafe.safecasts;
@@ -22,8 +23,7 @@ export {
     namespace stormkit { inline namespace core {
         template<typename... Args>
         [[nodiscard]]
-        constexpr auto is_equal_impl(Args...) noexcept -> bool
-          = delete
+        constexpr auto is_equal_impl(Args...) noexcept -> bool = delete
 #if defined(STORMKIT_COMPILER_MSVC)
           ;
 #else
@@ -32,8 +32,7 @@ export {
 
         template<typename T, typename... Args>
         [[nodiscard]]
-        constexpr auto is_impl(Args...) noexcept -> bool
-          = delete
+        constexpr auto is_impl(Args...) noexcept -> bool = delete
 #if defined(STORMKIT_COMPILER_MSVC)
           ;
 #else
@@ -42,8 +41,7 @@ export {
 
         template<typename T, typename... Args>
         [[nodiscard]]
-        constexpr auto as_impl(Args..., const std::source_location&) noexcept -> T
-          = delete
+        constexpr auto as_impl(Args..., const std::source_location&) noexcept -> T = delete
 #if defined(STORMKIT_COMPILER_MSVC)
           ;
 #else
@@ -52,8 +50,7 @@ export {
 
         template<typename T, typename... Args>
         [[nodiscard]]
-        constexpr auto narrow_impl(Args...) noexcept -> T
-          = delete
+        constexpr auto narrow_impl(Args...) noexcept -> T = delete
 #if defined(STORMKIT_COMPILER_MSVC)
           ;
 #else
@@ -529,13 +526,13 @@ namespace stormkit { inline namespace core {
     }
 
 #ifndef STORMKIT_OS_WINDOWS
-    #undef STORMKIT_API
-    #define STORMKIT_API
+    #undef STORMKIT_CORE_API
+    #define STORMKIT_CORE_API
 #endif
 
-#define IS_EQUAL_INSTANCIATE(t1, t2)    template STORMKIT_API auto is_equal_impl<t1, t2>(t1, t2) noexcept -> bool;
-#define IS_EQUAL_INSTANCIATE_F1(t1, t2) template STORMKIT_API auto is_equal_impl<t1, t2, t1>(t1, t2, t1) noexcept -> bool;
-#define IS_EQUAL_INSTANCIATE_F2(t1, t2) template STORMKIT_API auto is_equal_impl(t1, t2, t2) noexcept -> bool
+#define IS_EQUAL_INSTANCIATE(t1, t2)    template STORMKIT_CORE_API auto is_equal_impl<t1, t2>(t1, t2) noexcept -> bool;
+#define IS_EQUAL_INSTANCIATE_F1(t1, t2) template STORMKIT_CORE_API auto is_equal_impl<t1, t2, t1>(t1, t2, t1) noexcept -> bool;
+#define IS_EQUAL_INSTANCIATE_F2(t1, t2) template STORMKIT_CORE_API auto is_equal_impl(t1, t2, t2) noexcept -> bool
 
     IS_EQUAL_INSTANCIATE(u8, u8);
     IS_EQUAL_INSTANCIATE(u8, i8);
@@ -709,9 +706,9 @@ namespace stormkit { inline namespace core {
 #undef IS_EQUAL_INSTANCIATE_F1
 #undef IS_EQUAL_INSTANCIATE_F2
 
-#define AS_NARROW_INSTANCIATE(t1, t2)                                                       \
-    template STORMKIT_API auto as_impl<t1>(t2, const std::source_location&) noexcept -> t1; \
-    template STORMKIT_API auto narrow_impl<t1>(t2) noexcept -> t1
+#define AS_NARROW_INSTANCIATE(t1, t2)                                                            \
+    template STORMKIT_CORE_API auto as_impl<t1>(t2, const std::source_location&) noexcept -> t1; \
+    template STORMKIT_CORE_API auto narrow_impl<t1>(t2) noexcept -> t1
 
     AS_NARROW_INSTANCIATE(u8, u8);
     AS_NARROW_INSTANCIATE(u8, i8);

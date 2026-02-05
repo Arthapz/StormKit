@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:parallelism.threadutils;
@@ -13,17 +14,17 @@ import std;
 import :meta;
 
 export namespace stormkit { inline namespace core {
-    STORMKIT_API
+    STORMKIT_CORE_API
     auto set_current_thread_name(std::string_view name) noexcept -> void;
-    STORMKIT_API
+    STORMKIT_CORE_API
     auto set_thread_name(std::thread& thread, std::string_view name) noexcept -> void;
-    STORMKIT_API
+    STORMKIT_CORE_API
     auto set_thread_name(std::jthread& thread, std::string_view name) noexcept -> void;
-    STORMKIT_API
+    STORMKIT_CORE_API
     auto get_current_thread_name() noexcept -> std::string;
-    STORMKIT_API
+    STORMKIT_CORE_API
     auto get_thread_name(const std::thread& thread) noexcept -> std::string;
-    STORMKIT_API
+    STORMKIT_CORE_API
     auto get_thread_name(const std::jthread& thread) noexcept -> std::string;
 
     template<std::ranges::input_range Range>

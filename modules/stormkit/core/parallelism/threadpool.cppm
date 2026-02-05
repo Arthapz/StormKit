@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:parallelism.threadpool;
@@ -18,7 +19,7 @@ import :utils.numeric_range;
 import :typesafe.integer;
 
 export namespace stormkit { inline namespace core {
-    class STORMKIT_API ThreadPool {
+    class STORMKIT_CORE_API ThreadPool {
       public:
         static constexpr struct NoFutureType {
         } NO_FUTURE = {};

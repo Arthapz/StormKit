@@ -18,8 +18,8 @@ import gpu_app;
     #define SHADER_DIR "../share/stormkit/shaders/"
 #endif
 
-#ifndef TEXTURE_DIR
-    #define TEXTURE_DIR "../share/stormkit/textures/"
+#ifndef RESOURCE_DIR
+    #define RESOURCE_DIR "../share/stormkit/"
 #endif
 
 namespace stdc  = std::chrono;
@@ -79,7 +79,7 @@ struct ViewerData {
 
 namespace {
     const auto     SHADER   = stdfs::path { SHADER_DIR } / "textured_cube.spv";
-    const auto     TEXTURE  = stdfs::path { TEXTURE_DIR } / "cube.png";
+    const auto     TEXTURE  = stdfs::path { RESOURCE_DIR } / "textures/cube.png";
     constexpr auto VERTICES = std::array<Vertex, 36> {
         Vertex { { -1.f, -1.f, -1.f }, { 2.f / 3.f, 3.f / 4.f } }, // -X side
         { { -1.f, -1.f, 1.f },  { 1.f / 3.f, 3.f / 4.f } },

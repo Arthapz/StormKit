@@ -8,6 +8,8 @@ module;
 #include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/log/api.hpp>
+
 export module stormkit.log;
 
 import std;
@@ -35,10 +37,10 @@ export {
         [[nodiscard]]
         constexpr auto to_string(Severity severity) noexcept -> std::string;
 
-        STORMKIT_API
-        auto           parse_args(std::span<const std::string_view> args) noexcept -> void;
+        STORMKIT_LOG_API
+        auto parse_args(std::span<const std::string_view> args) noexcept -> void;
 
-        class STORMKIT_API Logger {
+        class STORMKIT_LOG_API Logger {
           public:
             using LogClock = std::chrono::high_resolution_clock;
 
@@ -128,7 +130,7 @@ export {
         [[nodiscard]]
         constexpr auto operator""_module() noexcept -> stormkit::log::Module;
 
-        class STORMKIT_API FileLogger final: public Logger {
+        class STORMKIT_LOG_API FileLogger final: public Logger {
           public:
             FileLogger(LogClock::time_point start, std::filesystem::path path) noexcept;
             FileLogger(LogClock::time_point start, std::filesystem::path path, Severity log_level) noexcept;
@@ -149,7 +151,7 @@ export {
             std::filesystem::path m_base_path;
         };
 
-        class STORMKIT_API ConsoleLogger final: public Logger {
+        class STORMKIT_LOG_API ConsoleLogger final: public Logger {
           public:
             explicit ConsoleLogger(LogClock::time_point start) noexcept;
             ConsoleLogger(LogClock::time_point start, Severity log_level) noexcept;

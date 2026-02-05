@@ -4,9 +4,9 @@
 
 module;
 
-#include <stormkit/core/platform_macro.hpp>
-
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/memory_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:utils.app;
 
@@ -15,7 +15,7 @@ import std;
 import :typesafe.integer;
 
 export namespace stormkit { inline namespace core {
-    class STORMKIT_API App {
+    class STORMKIT_CORE_API App {
       public:
         App() noexcept          = default;
         virtual ~App() noexcept = default;

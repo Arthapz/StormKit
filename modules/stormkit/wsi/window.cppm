@@ -8,6 +8,8 @@ module;
 #include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/wsi/api.hpp>
+
 export module stormkit.wsi:window;
 
 import std;
@@ -121,7 +123,7 @@ export {
           DeactivateEventFunc,
           ActivateEventFunc>;
 
-        class STORMKIT_API Window {
+        class STORMKIT_WSI_API Window {
           public:
             ~Window() noexcept;
 

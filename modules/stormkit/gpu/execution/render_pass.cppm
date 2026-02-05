@@ -7,6 +7,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.execution:render_pass;
@@ -20,7 +21,7 @@ import stormkit.gpu.resource;
 export namespace stormkit::gpu {
     class RenderPass;
 
-    class STORMKIT_API FrameBuffer {
+    class STORMKIT_GPU_API FrameBuffer {
         struct PrivateFuncTag {};
 
       public:
@@ -28,11 +29,11 @@ export namespace stormkit::gpu {
 
         static auto create(const Device&                     device,
                            const RenderPass&                 render_pass,
-                           const math::uextent2&         extent,
+                           const math::uextent2&             extent,
                            std::vector<Ref<const ImageView>> attachments) noexcept -> Expected<FrameBuffer>;
         static auto allocate(const Device&                     device,
                              const RenderPass&                 render_pass,
-                             const math::uextent2&         extent,
+                             const math::uextent2&             extent,
                              std::vector<Ref<const ImageView>> attachments) noexcept -> Expected<Heap<FrameBuffer>>;
         ~FrameBuffer() noexcept;
 
@@ -55,7 +56,7 @@ export namespace stormkit::gpu {
       private:
         auto do_init(const RenderPass&) noexcept -> Expected<void>;
 
-        math::uextent2                m_extent = { 0, 0 };
+        math::uextent2                    m_extent = { 0, 0 };
         std::vector<Ref<const ImageView>> m_attachments;
 
         VkDevice                    m_vk_device = nullptr;
@@ -103,7 +104,7 @@ export namespace stormkit::gpu {
         auto is_compatible(const RenderPassDescription& description) const noexcept -> bool;
     };
 
-    class STORMKIT_API RenderPass {
+    class STORMKIT_GPU_API RenderPass {
         struct PrivateFuncTag {};
 
       public:
@@ -121,10 +122,10 @@ export namespace stormkit::gpu {
         auto operator=(RenderPass&&) noexcept -> RenderPass&;
 
         auto create_frame_buffer(const Device&                     device,
-                                 const math::uextent2&         extent,
+                                 const math::uextent2&             extent,
                                  std::vector<Ref<const ImageView>> attachments) const noexcept -> Expected<FrameBuffer>;
         auto allocate_frame_buffer(const Device&                     device,
-                                   const math::uextent2&         extent,
+                                   const math::uextent2&             extent,
                                    std::vector<Ref<const ImageView>> attachments) const noexcept -> Expected<Heap<FrameBuffer>>;
 
         [[nodiscard]]
@@ -169,7 +170,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline FrameBuffer::FrameBuffer(const Device&                     device,
-                                    const math::uextent2&         extent,
+                                    const math::uextent2&             extent,
                                     std::vector<Ref<const ImageView>> attachments,
                                     PrivateFuncTag) noexcept
         : m_extent { extent },
@@ -186,7 +187,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto FrameBuffer::create(const Device&                     device,
                                     const RenderPass&                 render_pass,
-                                    const math::uextent2&         extent,
+                                    const math::uextent2&             extent,
                                     std::vector<Ref<const ImageView>> attachments) noexcept -> Expected<FrameBuffer> {
         auto frame_buffer = FrameBuffer { device, extent, std::move(attachments), PrivateFuncTag {} };
         return frame_buffer.do_init(render_pass).transform(core::monadic::consume(frame_buffer));
@@ -197,7 +198,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto FrameBuffer::allocate(const Device&                     device,
                                       const RenderPass&                 render_pass,
-                                      const math::uextent2&         extent,
+                                      const math::uextent2&             extent,
                                       std::vector<Ref<const ImageView>> attachments) noexcept -> Expected<Heap<FrameBuffer>> {
         auto frame_buffer = allocate_unsafe<FrameBuffer>(device, extent, std::move(attachments), PrivateFuncTag {});
         return frame_buffer->do_init(render_pass).transform(core::monadic::consume(frame_buffer));
@@ -312,7 +313,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto RenderPass::create_frame_buffer(const Device&                     device,
-                                                const math::uextent2&         extent,
+                                                const math::uextent2&             extent,
                                                 std::vector<Ref<const ImageView>> attachments) const noexcept
       -> Expected<FrameBuffer> {
         return FrameBuffer::create(device, *this, extent, std::move(attachments));
@@ -322,7 +323,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto RenderPass::allocate_frame_buffer(const Device&                     device,
-                                                  const math::uextent2&         extent,
+                                                  const math::uextent2&             extent,
                                                   std::vector<Ref<const ImageView>> attachments) const noexcept
       -> Expected<Heap<FrameBuffer>> {
         return FrameBuffer::allocate(device, *this, extent, std::move(attachments));

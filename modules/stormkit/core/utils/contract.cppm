@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #ifndef STORMKIT_ASSERT
@@ -31,11 +32,11 @@ export namespace stormkit { inline namespace core {
     constexpr auto as_string(AssertType type) noexcept -> std::string_view;
     constexpr auto to_string(AssertType type) noexcept -> std::string;
 
-    STORMKIT_API
-    auto           assert_base(bool                        cond,
-                               AssertType                  type,
-                               std::string_view            message,
-                               const std::source_location& location = std::source_location::current()) noexcept -> void;
+    STORMKIT_CORE_API
+    auto assert_base(bool                        cond,
+                     AssertType                  type,
+                     std::string_view            message,
+                     const std::source_location& location = std::source_location::current()) noexcept -> void;
 
     consteval auto consteval_assert_base(bool cond, AssertType type, std::string_view message) noexcept -> void;
 

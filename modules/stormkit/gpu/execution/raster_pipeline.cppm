@@ -4,9 +4,8 @@
 
 module;
 
-#include <stormkit/core/platform_macro.hpp>
-
 #include <stormkit/core/contract_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 #include <volk.h>
 
@@ -58,15 +57,15 @@ export namespace stormkit::gpu {
         CullModeFlag cull_mode                  = CullModeFlag::BACK;
         FrontFace    front_face                 = FrontFace::CLOCKWISE;
         bool         depth_bias_enable          = false;
-        f32        depth_bias_constant_factor = 0.f;
-        f32        depth_bias_clamp           = 0.f;
-        f32        depth_bias_slope_factor    = 0.f;
+        f32          depth_bias_constant_factor = 0.f;
+        f32          depth_bias_clamp           = 0.f;
+        f32          depth_bias_slope_factor    = 0.f;
     };
 
     struct RasterPipelineMultiSampleState {
         bool            sample_shading_enable = false;
         SampleCountFlag rasterization_samples = SampleCountFlag::C1;
-        f32           min_sample_shading    = 0.f;
+        f32             min_sample_shading    = 0.f;
     };
 
     struct RasterPipelineColorBlendAttachmentState {
@@ -86,7 +85,7 @@ export namespace stormkit::gpu {
         bool                                                 logic_operation_enable = false;
         LogicOperation                                       logic_operation        = LogicOperation::COPY;
         std::vector<RasterPipelineColorBlendAttachmentState> attachments;
-        std::array<f32, 4>                                 blend_constants = { 0.f, 0.f, 0.f, 0.f };
+        std::array<f32, 4>                                   blend_constants = { 0.f, 0.f, 0.f, 0.f };
     };
 
     using RasterPipelineDynamicState = std::vector<DynamicState>;

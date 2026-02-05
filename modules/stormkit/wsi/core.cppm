@@ -6,6 +6,8 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/wsi/api.hpp>
+
 export module stormkit.wsi:core;
 
 import std;
@@ -26,12 +28,11 @@ export namespace stormkit::wsi {
 
     constexpr auto as_string(WM wm) noexcept -> std::string_view;
 
-    STORMKIT_API
-    auto           parse_args(std::span<const std::string_view> args) noexcept -> void;
+    STORMKIT_WSI_API
+    auto parse_args(std::span<const std::string_view> args) noexcept -> void;
 
     [[nodiscard]]
-    STORMKIT_API
-    auto wm() noexcept -> WM;
+    STORMKIT_WSI_API auto wm() noexcept -> WM;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////

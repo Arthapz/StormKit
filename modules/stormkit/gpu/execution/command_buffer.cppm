@@ -7,6 +7,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 export module stormkit.gpu.execution:command_buffer;
@@ -34,7 +35,7 @@ export namespace stormkit::gpu {
 
     class SwapChain;
 
-    class STORMKIT_API Queue {
+    class STORMKIT_GPU_API Queue {
         struct PrivateFuncTag {};
 
       public:
@@ -115,7 +116,7 @@ export namespace stormkit::gpu {
         std::optional<Attachment> stencil_attachment = std::nullopt;
     };
 
-    class STORMKIT_API CommandBuffer {
+    class STORMKIT_GPU_API CommandBuffer {
         struct PrivateFuncTag {};
 
       public:
@@ -152,10 +153,8 @@ export namespace stormkit::gpu {
           -> Expected<Ref<CommandBuffer>>;
         auto end() noexcept -> Expected<Ref<CommandBuffer>>;
 
-        auto begin_debug_region(std::string_view name, const rgbcolor_f& color = colors::WHITE<f32>) noexcept
-          -> CommandBuffer&;
-        auto insert_debug_label(std::string_view name, const rgbcolor_f& color = colors::WHITE<f32>) noexcept
-          -> CommandBuffer&;
+        auto begin_debug_region(std::string_view name, const rgbcolor_f& color = colors::WHITE<f32>) noexcept -> CommandBuffer&;
+        auto insert_debug_label(std::string_view name, const rgbcolor_f& color = colors::WHITE<f32>) noexcept -> CommandBuffer&;
         auto end_debug_region() noexcept -> CommandBuffer&;
 
         auto begin_rendering(const RenderingInfo& info) noexcept -> CommandBuffer&;
@@ -213,7 +212,7 @@ export namespace stormkit::gpu {
                         ImageLayout                   dst_layout,
                         const ImageSubresourceLayers& src_subresource_layers,
                         const ImageSubresourceLayers& dst_subresource_layers,
-                        const math::uextent3&     extent) noexcept -> CommandBuffer&;
+                        const math::uextent3&         extent) noexcept -> CommandBuffer&;
 
         auto resolve_image(const Image&                  src,
                            const Image&                  dst,
@@ -286,7 +285,7 @@ export namespace stormkit::gpu {
         VkRAIIHandle<VkCommandBuffer> m_vk_handle;
     };
 
-    class STORMKIT_API CommandPool {
+    class STORMKIT_GPU_API CommandPool {
         struct PrivateFuncTag {};
 
       public:

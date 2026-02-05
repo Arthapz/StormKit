@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
@@ -377,13 +378,13 @@ namespace stormkit { inline namespace core {
     }
 
 #ifndef STORMKIT_OS_WINDOWS
-    #undef STORMKIT_API
-    #define STORMKIT_API
+    #undef STORMKIT_CORE_API
+    #define STORMKIT_CORE_API
 #endif
 
-#define INSTANCIATE(t)                                                               \
-    template struct STORMKIT_API CheckedValue<t, PositiveTag, math::is_positive<t>>; \
-    template struct STORMKIT_API CheckedValue<t, NegativeTag, math::is_positive<t>>
+#define INSTANCIATE(t)                                                                    \
+    template struct STORMKIT_CORE_API CheckedValue<t, PositiveTag, math::is_positive<t>>; \
+    template struct STORMKIT_CORE_API CheckedValue<t, NegativeTag, math::is_positive<t>>
 
     INSTANCIATE(u8);
     INSTANCIATE(i8);

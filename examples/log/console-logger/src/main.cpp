@@ -4,8 +4,7 @@
 
 import std;
 
-import stormkit.core;
-import stormkit.log;
+import stormkit;
 
 #include <stormkit/main/main_macro.hpp>
 
