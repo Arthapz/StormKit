@@ -40,6 +40,9 @@ export namespace stormkit::lua {
 
         auto lua_main() noexcept -> std::expected<void, std::string>;
 
+        template<typename T>
+        auto global_state(this T& self) noexcept -> decltype(auto);
+
         static auto create(const stdfs::path& file, Modules modules = {}) noexcept -> Engine;
 
       private:
@@ -63,5 +66,12 @@ namespace stormkit::lua {
         auto engine = Engine { std::move(modules) };
         engine.load(file);
         return engine;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    inline auto Engine::global_state(this T& self) noexcept -> decltype(auto) {
+        return std::forward_like<T&>(self.m_global_state);
     }
 } // namespace stormkit::lua
