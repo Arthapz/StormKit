@@ -22,13 +22,13 @@ import :functional;
 // TODO improve template deduction
 export namespace stormkit { inline namespace core { namespace math {
     namespace angle {
-        template<core::meta::IsArithmetic T>
+        template<core::meta::IsFloatingPoint T>
         using euler = StrongType<T, struct EulerAngleTag, "euler", ArithmeticTag, ImplicitConvertionTag>;
 
-        template<core::meta::IsArithmetic T>
+        template<core::meta::IsFloatingPoint T>
         using radian = StrongType<T, struct RadianAngleTag, "radian", ArithmeticTag, ImplicitConvertionTag>;
 
-        template<core::meta::IsArithmetic T>
+        template<core::meta::IsFloatingPoint T>
         [[nodiscard]]
         constexpr auto radians(T degres) noexcept -> radian<T>;
     } // namespace angle
@@ -201,7 +201,7 @@ namespace stormkit { inline namespace core { namespace math {
     namespace angle {
         ////////////////////////////////////////
         ////////////////////////////////////////
-        template<core::meta::IsArithmetic T>
+        template<core::meta::IsFloatingPoint T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
         constexpr auto radians(T degres) noexcept -> radian<T> {
             static constexpr auto one_rad = std::numbers::pi_v<T> / T { 180 };
@@ -398,7 +398,7 @@ namespace stormkit { inline namespace core { namespace math {
                     }
                 });
 
-                out[i, j] = narrow<T>(std::pow(T { -1 }, i + j)) * determinant(as_mdspan<N, N>(submatrix));
+                out[i, j] = narrow<T>(std::pow(-1, i + j)) * determinant(as_mdspan<N, N>(submatrix));
             }
     }
 
@@ -435,7 +435,7 @@ namespace stormkit { inline namespace core { namespace math {
 
                 const auto det = determinant(as_mdspan<N, N>(submatrix));
 
-                result += mat[i, j] * narrow<T>(std::pow(T { -1 }, i + j)) * det;
+                result += mat[i, j] * narrow<T>(std::pow(-1, i + j)) * det;
             }
             return result;
         }
@@ -608,8 +608,8 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(axis.data_handle() != out.data_handle());
 
-        const auto cos = std::cos(angle.get());
-        const auto sin = std::sin(angle.get());
+        const auto cos = narrow<T>(std::cos(angle.get()));
+        const auto sin = narrow<T>(std::sin(angle.get()));
 
         const auto axis_norm = [&axis] noexcept {
             auto axis_norm = vec3data<T> {};
@@ -617,11 +617,14 @@ namespace stormkit { inline namespace core { namespace math {
             return axis_norm;
         }();
 
-        const auto temp = [&axis_norm, &cos] noexcept {
-            auto temp = vec3data<T> {};
-            mul(as_mdspan<3>(axis_norm), T { 1 } - cos, as_mdspan_mut<3>(temp));
-            return temp;
-        }();
+        const auto temp =
+          [&axis_norm, &cos] noexcept {
+              auto temp = vec3data<T> {};
+              mul<T>(as_mdspan<3>(axis_norm), T { 1 } - cos, as_mdspan_mut<3>(temp));
+              return temp;
+          }
+
+        ();
 
         auto rotation_matrix = SMatData<T, 4> {};
         stdr::fill(rotation_matrix, 0);
@@ -687,7 +690,7 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(not is_equal(aspect, T { 0 }));
         EXPECTS(not is_equal(near, far));
 
-        const auto half_fov_y = std::tan(fov_y.get() / T { 2 });
+        const auto half_fov_y = narrow<T>(std::tan(fov_y.get() / T { 2 }));
 
         stdr::fill(as_span_mut(out), T { 0 });
         out[0, 0] = T { 1 } / (aspect * half_fov_y);

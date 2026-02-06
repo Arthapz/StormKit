@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:math.linear.vector;
@@ -22,83 +23,88 @@ import :hash.base;
 import :string.format;
 
 export namespace stormkit { inline namespace core { namespace math {
-    template<core::meta::IsArithmetic T>
-    struct alignas(std::array<T, 2>) vec2 {
-        using value_type  = T;
-        using size_type   = usize;
-        using extent_type = u8;
+    inline namespace vector {
+        template<core::meta::IsArithmetic T>
+        struct alignas(std::array<T, 2>) vec2 {
+            using value_type  = T;
+            using size_type   = usize;
+            using extent_type = u8;
 
-        static constexpr auto EXTENT = std::array<extent_type, 1> { 2uz };
+            static constexpr auto EXTENT = std::array<extent_type, 1> { 2uz };
 
-        T x;
-        T y;
+            T x;
+            T y;
 
-        template<typename Self>
-        constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&>;
+            template<typename Self>
+            constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&>;
 
-        template<core::meta::IsArithmetic U>
-        constexpr auto to() const noexcept -> vec2<U>;
-    };
+            template<core::meta::IsArithmetic U>
+            constexpr auto to() const noexcept -> vec2<U>;
+        };
 
-    using fvec2 = vec2<f32>;
-    using ivec2 = vec2<i32>;
-    using uvec2 = vec2<u32>;
+        using fvec2 = vec2<f32>;
+        using ivec2 = vec2<i32>;
+        using uvec2 = vec2<u32>;
 
-    template<core::meta::IsArithmetic T>
-    struct alignas(std::array<T, 3>) vec3 {
-        using value_type  = T;
-        using size_type   = usize;
-        using extent_type = u8;
+        template<core::meta::IsArithmetic T>
+        struct alignas(std::array<T, 3>) vec3 {
+            using value_type  = T;
+            using size_type   = usize;
+            using extent_type = u8;
 
-        static constexpr auto EXTENT = std::array<extent_type, 1> { 3uz };
+            static constexpr auto EXTENT = std::array<extent_type, 1> { 3uz };
 
-        T x;
-        T y;
-        T z;
+            T x;
+            T y;
+            T z;
 
-        template<typename Self>
-        constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&>;
+            template<typename Self>
+            constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&>;
 
-        template<core::meta::IsArithmetic U>
-        constexpr auto to() const noexcept -> vec3<U>;
-    };
+            template<core::meta::IsArithmetic U>
+            constexpr auto to() const noexcept -> vec3<U>;
+        };
 
-    using fvec3 = vec3<f32>;
-    using ivec3 = vec3<i32>;
-    using uvec3 = vec3<u32>;
+        using fvec3 = vec3<f32>;
+        using ivec3 = vec3<i32>;
+        using uvec3 = vec3<u32>;
 
-    template<core::meta::IsArithmetic T>
-    struct alignas(std::array<T, 4>) vec4 {
-        using value_type  = T;
-        using size_type   = usize;
-        using extent_type = u8;
+        template<core::meta::IsArithmetic T>
+        struct alignas(std::array<T, 4>) vec4 {
+            using value_type  = T;
+            using size_type   = usize;
+            using extent_type = u8;
 
-        static constexpr auto EXTENT = std::array<extent_type, 1> { 4uz };
+            static constexpr auto EXTENT = std::array<extent_type, 1> { 4uz };
 
-        T x;
-        T y;
-        T z;
-        T w;
+            T x;
+            T y;
+            T z;
+            T w;
 
-        template<typename Self>
-        constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&>;
+            template<typename Self>
+            constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&>;
 
-        template<core::meta::IsArithmetic U>
-        constexpr auto to() const noexcept -> vec4<U>;
-    };
+            template<core::meta::IsArithmetic U>
+            constexpr auto to() const noexcept -> vec4<U>;
+        };
 
-    using fvec4 = vec4<f32>;
-    using ivec4 = vec4<i32>;
-    using uvec4 = vec4<u32>;
+        using fvec4 = vec4<f32>;
+        using ivec4 = vec4<i32>;
+        using uvec4 = vec4<u32>;
+
+    } // namespace vector
 
     namespace meta {
         template<typename T>
         concept IsVec2 = core::meta::IsSpecializationOf<T, vec2>;
         template<typename T>
         concept IsVec3 = core::meta::IsSpecializationOf<T, vec3>;
+        template<typename T>
+        concept IsVec4 = core::meta::IsSpecializationOf<T, vec4>;
 
         template<typename T>
-        concept IsVec = IsVec2<T> || IsVec3<T>;
+        concept IsVec = IsVec2<T> || IsVec3<T> || IsVec4<T>;
 
         template<typename T, typename U>
         concept HasOneVecType = not(core::meta::IsMdspanType<T> and core::meta::IsMdspanType<U>)
@@ -106,69 +112,71 @@ export namespace stormkit { inline namespace core { namespace math {
                                 or meta::IsVec<U>;
     } // namespace meta
 
-    template<meta::IsVec T>
-    [[nodiscard]]
-    constexpr auto add(const T& a, const T& b) noexcept -> T;
+    inline namespace vector {
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto add(const T& a, const T& b) noexcept -> T;
 
-    template<meta::IsVec T>
-    [[nodiscard]]
-    constexpr auto sub(const T& a, const T& b) noexcept -> T;
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto sub(const T& a, const T& b) noexcept -> T;
 
-    template<meta::IsVec T>
-    [[nodiscard]]
-    constexpr auto mul(const T& a, typename T::value_type b) noexcept -> T;
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto mul(const T& a, typename T::value_type b) noexcept -> T;
 
-    template<meta::IsVec T>
-    [[nodiscard]]
-    constexpr auto div(const T& a, typename T::value_type b) noexcept -> T;
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto div(const T& a, typename T::value_type b) noexcept -> T;
 
-    template<meta::IsVec T>
-    [[nodiscard]]
-    constexpr auto dot(const T& a, const T& b) noexcept -> typename T::value_type;
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto dot(const T& a, const T& b) noexcept -> typename T::value_type;
 
-    template<typename T>
-    [[nodiscard]]
-    constexpr auto cross(const vec3<T>& a, const vec3<T>& b) noexcept -> vec3<T>;
+        template<typename T>
+        [[nodiscard]]
+        constexpr auto cross(const vec3<T>& a, const vec3<T>& b) noexcept -> vec3<T>;
 
-    template<meta::IsVec T>
-    [[nodiscard]]
-    constexpr auto normalize(const T& a) noexcept -> T;
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto normalize(const T& a) noexcept -> T;
 
-    template<meta::IsVec T>
-    [[nodiscard]]
-    constexpr auto as_mdspan(const T& value) noexcept -> VectorSpan<const typename T::value_type, T::EXTENT[0]>;
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto as_mdspan(const T& value) noexcept -> VectorSpan<const typename T::value_type, T::EXTENT[0]>;
 
-    template<meta::IsVec T>
-        requires(not core::meta::IsConst<T>)
-    [[nodiscard]]
-    constexpr auto as_mdspan_mut(T& value) noexcept -> VectorSpan<typename T::value_type, T::EXTENT[0]>;
+        template<meta::IsVec T>
+            requires(not core::meta::IsConst<T>)
+        [[nodiscard]]
+        constexpr auto as_mdspan_mut(T& value) noexcept -> VectorSpan<typename T::value_type, T::EXTENT[0]>;
 
-    template<core::meta::IsArithmetic T>
-    auto to_string(const vec2<T>& value) noexcept -> std::string;
+        template<core::meta::IsArithmetic T>
+        auto to_string(const vec2<T>& value) noexcept -> std::string;
 
-    template<core::meta::IsArithmetic T>
-    auto to_string(const vec3<T>& value) noexcept -> std::string;
+        template<core::meta::IsArithmetic T>
+        auto to_string(const vec3<T>& value) noexcept -> std::string;
 
-    template<core::meta::IsArithmetic T>
-    auto to_string(const vec4<T>& value) noexcept -> std::string;
+        template<core::meta::IsArithmetic T>
+        auto to_string(const vec4<T>& value) noexcept -> std::string;
 
-    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
-    constexpr auto hasher(const vec2<T>& value) noexcept -> Ret;
+        template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+        constexpr auto hasher(const vec2<T>& value) noexcept -> Ret;
 
-    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
-    constexpr auto hasher(const vec3<T>& value) noexcept -> Ret;
+        template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+        constexpr auto hasher(const vec3<T>& value) noexcept -> Ret;
 
-    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
-    constexpr auto hasher(const vec4<T>& value) noexcept -> Ret;
+        template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+        constexpr auto hasher(const vec4<T>& value) noexcept -> Ret;
 
-    template<core::meta::IsArithmetic T, typename FormatContext>
-    auto format_as(const vec2<T>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
+        template<core::meta::IsArithmetic T, typename FormatContext>
+        auto format_as(const vec2<T>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
 
-    template<core::meta::IsArithmetic T, typename FormatContext>
-    auto format_as(const vec3<T>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
+        template<core::meta::IsArithmetic T, typename FormatContext>
+        auto format_as(const vec3<T>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
 
-    template<core::meta::IsArithmetic T, typename FormatContext>
-    auto format_as(const vec4<T>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
+        template<core::meta::IsArithmetic T, typename FormatContext>
+        auto format_as(const vec4<T>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
+    } // namespace vector
 }}} // namespace stormkit::core::math
 
 ////////////////////////////////////////////////////////////////////
@@ -177,7 +185,7 @@ export namespace stormkit { inline namespace core { namespace math {
 
 namespace stdr = std::ranges;
 
-namespace stormkit { inline namespace core { namespace math {
+namespace stormkit { inline namespace core { namespace math { inline namespace vector {
     static_assert(sizeof(uvec2) == sizeof(u32) * 2);
     static_assert(sizeof(vec2<u64>) == sizeof(u64) * 2);
     static_assert(sizeof(ivec2) == sizeof(i32) * 2);
@@ -266,7 +274,7 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto normalize(const T& a) noexcept -> T {
         auto out = T {};
 
-        normalize(as_mdspan(a), as_mdspan_mut(out));
+        math::normalize(as_mdspan(a), as_mdspan_mut(out));
 
         return out;
     }
@@ -278,7 +286,7 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto add(const T& a, const T& b) noexcept -> T {
         auto out = T {};
 
-        add(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
+        math::add(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
 
         return out;
     }
@@ -290,7 +298,7 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto sub(const T& a, const T& b) noexcept -> T {
         auto out = T {};
 
-        sub(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
+        math::sub(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
 
         return out;
     }
@@ -302,7 +310,7 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto mul(const T& a, typename T::value_type b) noexcept -> T {
         auto out = T {};
 
-        mul(as_mdspan(a), b, as_mdspan_mut(out));
+        math::mul(as_mdspan(a), b, as_mdspan_mut(out));
 
         return out;
     }
@@ -314,7 +322,7 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto div(const T& a, typename T::value_type b) noexcept -> T {
         auto out = T {};
 
-        div(as_mdspan(a), b, as_mdspan_mut(out));
+        math::div(as_mdspan(a), b, as_mdspan_mut(out));
 
         return out;
     }
@@ -324,7 +332,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<meta::IsVec T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto dot(const T& a, const T& b) noexcept -> typename T::value_type {
-        return dot(as_mdspan(a), as_mdspan(b));
+        return math::dot(as_mdspan(a), as_mdspan(b));
     }
 
     ////////////////////////////////////////
@@ -334,7 +342,7 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto cross(const vec3<T>& a, const vec3<T>& b) noexcept -> vec3<T> {
         auto out = vec3<T> {};
 
-        cross(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
+        math::cross(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
 
         return out;
     }
@@ -427,4 +435,102 @@ namespace stormkit { inline namespace core { namespace math {
     inline auto format_as(const vec4<T>& value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         return std::format_to(ctx.out(), "[vec4 x: {}, y: {}, z: {}, w: {}]", value.x, value.y, value.z, value.w);
     }
-}}} // namespace stormkit::core::math
+
+#define ADD_INSTANCIATE(vec_type) \
+    template STORMKIT_CORE_API auto add<vec_type>(const vec_type&, const vec_type&) noexcept -> vec_type
+
+    ADD_INSTANCIATE(fvec2);
+    ADD_INSTANCIATE(fvec3);
+    ADD_INSTANCIATE(fvec4);
+    ADD_INSTANCIATE(uvec2);
+    ADD_INSTANCIATE(uvec3);
+    ADD_INSTANCIATE(uvec4);
+    ADD_INSTANCIATE(ivec2);
+    ADD_INSTANCIATE(ivec3);
+    ADD_INSTANCIATE(ivec4);
+
+#undef ADD_INSTANCIATE
+
+#define SUB_INSTANCIATE(vec_type) \
+    template STORMKIT_CORE_API auto sub<vec_type>(const vec_type&, const vec_type&) noexcept -> vec_type
+
+    SUB_INSTANCIATE(fvec2);
+    SUB_INSTANCIATE(fvec3);
+    SUB_INSTANCIATE(fvec4);
+    SUB_INSTANCIATE(uvec2);
+    SUB_INSTANCIATE(uvec3);
+    SUB_INSTANCIATE(uvec4);
+    SUB_INSTANCIATE(ivec2);
+    SUB_INSTANCIATE(ivec3);
+    SUB_INSTANCIATE(ivec4);
+
+#undef SUB_INSTANCIATE
+
+#define MUL_INSTANCIATE(vec_type) \
+    template STORMKIT_CORE_API auto mul<vec_type>(const vec_type&, typename vec_type::value_type) noexcept -> vec_type
+
+    MUL_INSTANCIATE(fvec2);
+    MUL_INSTANCIATE(fvec3);
+    MUL_INSTANCIATE(fvec4);
+    MUL_INSTANCIATE(uvec2);
+    MUL_INSTANCIATE(uvec3);
+    MUL_INSTANCIATE(uvec4);
+    MUL_INSTANCIATE(ivec2);
+    MUL_INSTANCIATE(ivec3);
+    MUL_INSTANCIATE(ivec4);
+
+#undef MUL_INSTANCIATE
+
+#define DIV_INSTANCIATE(vec_type) \
+    template STORMKIT_CORE_API auto div<vec_type>(const vec_type&, typename vec_type::value_type) noexcept -> vec_type
+
+    DIV_INSTANCIATE(fvec2);
+    DIV_INSTANCIATE(fvec3);
+    DIV_INSTANCIATE(fvec4);
+    DIV_INSTANCIATE(uvec2);
+    DIV_INSTANCIATE(uvec3);
+    DIV_INSTANCIATE(uvec4);
+    DIV_INSTANCIATE(ivec2);
+    DIV_INSTANCIATE(ivec3);
+    DIV_INSTANCIATE(ivec4);
+
+#undef DIV_INSTANCIATE
+
+#define DOT_INSTANCIATE(vec_type) \
+    template STORMKIT_CORE_API auto dot<vec_type>(const vec_type&, const vec_type&) noexcept -> typename vec_type::value_type
+
+    DOT_INSTANCIATE(fvec2);
+    DOT_INSTANCIATE(fvec3);
+    DOT_INSTANCIATE(fvec4);
+    DOT_INSTANCIATE(uvec2);
+    DOT_INSTANCIATE(uvec3);
+    DOT_INSTANCIATE(uvec4);
+    DOT_INSTANCIATE(ivec2);
+    DOT_INSTANCIATE(ivec3);
+    DOT_INSTANCIATE(ivec4);
+
+#undef DOT_INSTANCIATE
+
+#define CROSS_INSTANCIATE(type) \
+    template STORMKIT_CORE_API auto cross<type>(const vec3<type>&, const vec3<type>&) noexcept -> vec3<type>
+
+    CROSS_INSTANCIATE(f32);
+    CROSS_INSTANCIATE(u32);
+    CROSS_INSTANCIATE(i32);
+
+#undef CROSS_INSTANCIATE
+
+#define NORMALIZE_INSTANCIATE(vec_type) template STORMKIT_CORE_API auto normalize<vec_type>(const vec_type&) noexcept -> vec_type
+
+    NORMALIZE_INSTANCIATE(fvec2);
+    NORMALIZE_INSTANCIATE(fvec3);
+    NORMALIZE_INSTANCIATE(fvec4);
+    NORMALIZE_INSTANCIATE(uvec2);
+    NORMALIZE_INSTANCIATE(uvec3);
+    NORMALIZE_INSTANCIATE(uvec4);
+    NORMALIZE_INSTANCIATE(ivec2);
+    NORMALIZE_INSTANCIATE(ivec3);
+    NORMALIZE_INSTANCIATE(ivec4);
+
+#undef NORMALIZE_INSTANCIATE
+}}}} // namespace stormkit::core::math::vector

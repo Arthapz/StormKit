@@ -1,6 +1,10 @@
 local function main()
   local window = wsi.window.open("test", 800, 600, wsi.window_flag.RESIZEABLE)
 
+  local mat = math.identity.fmat4
+
+  print(mat)
+  
   window:on_closed(function()
     print("Close event!")
     return true

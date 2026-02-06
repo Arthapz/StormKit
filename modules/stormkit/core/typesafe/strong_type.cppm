@@ -117,7 +117,7 @@ export {
         }
 
         template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
-        class StrongType {
+        class StrongType: public Capabilities... {
           public:
             using ValueType = T;
 
