@@ -133,6 +133,8 @@ export {
             auto operator=(Window&&) noexcept -> Window&;
 
             static auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept -> Window;
+            static auto allocate_and_open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept
+              -> Heap<Window>;
 
             auto close() noexcept -> void;
             [[nodiscard]]

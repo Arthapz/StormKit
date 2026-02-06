@@ -71,6 +71,14 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    auto Window::allocate_and_open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept -> Heap<Window> {
+        auto window = allocate_unsafe<Window>(Window {});
+        window->m_impl->open(std::move(title), size, flags);
+        return window;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto Window::close() noexcept -> void {
         m_impl->close();
     }
