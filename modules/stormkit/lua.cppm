@@ -19,8 +19,6 @@ import stormkit.core;
 
 namespace stdfs = std::filesystem;
 
-namespace lb = luabridge;
-
 export namespace stormkit::lua {
     struct Modules {
         bool log      = false;
@@ -42,8 +40,6 @@ export namespace stormkit::lua {
 
         auto lua_main() noexcept -> std::expected<void, std::string>;
 
-        auto global_namespace() noexcept -> lb::Namespace;
-
         static auto create(const stdfs::path& file, Modules modules = {}) noexcept -> Engine;
 
       private:
@@ -51,8 +47,8 @@ export namespace stormkit::lua {
 
         auto load(const stdfs::path&) noexcept -> void;
 
-        lua_State* m_global_state = nullptr;
-        lua_State* m_main_thread  = nullptr;
+        sol::state       m_global_state;
+        sol::load_result m_script;
     };
 } // namespace stormkit::lua
 
@@ -61,12 +57,6 @@ export namespace stormkit::lua {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit::lua {
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline auto Engine::global_namespace() noexcept -> lb::Namespace {
-        return lb::getGlobalNamespace(m_global_state);
-    }
-
     ////////////////////////////////////////
     ////////////////////////////////////////
     inline auto Engine::create(const stdfs::path& file, Modules modules) noexcept -> Engine {

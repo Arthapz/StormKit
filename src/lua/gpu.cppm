@@ -13,12 +13,6 @@ import std;
 import stormkit.core;
 import stormkit.gpu;
 
-namespace lb = luabridge;
-
 export namespace stormkit::lua::gpu {
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    inline auto init_lua(lb::Namespace&& global_namespace) noexcept -> lb::Namespace {
-        return global_namespace;
-    }
+    auto init_lua(sol::state& global_state) noexcept -> void;
 } // namespace stormkit::lua::gpu

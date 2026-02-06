@@ -34,6 +34,7 @@ export namespace stormkit::wsi {
     };
 
     constexpr auto as_string(MouseButton button) noexcept -> std::string_view;
+    constexpr auto to_string(MouseButton button) noexcept -> std::string;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////
@@ -65,5 +66,12 @@ namespace stormkit::wsi {
         }
 
         std::unreachable();
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto to_string(MouseButton button) noexcept -> std::string {
+        return std::string { as_string(button) };
     }
 } // namespace stormkit::wsi

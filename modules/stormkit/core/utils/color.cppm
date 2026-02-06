@@ -52,6 +52,9 @@ export namespace stormkit { inline namespace core {
 
     template<meta::ColorComponentStorageType T>
     struct color<ColorLayout::R, T> {
+        static constexpr auto LAYOUT = ColorLayout::R;
+        using Storage                = T;
+
         static constexpr auto COMPONENTS_COUNT = 1;
         T                     r;
 
@@ -60,6 +63,9 @@ export namespace stormkit { inline namespace core {
 
     template<meta::ColorComponentStorageType T>
     struct color<ColorLayout::RG, T> {
+        static constexpr auto LAYOUT = ColorLayout::RG;
+        using Storage                = T;
+
         static constexpr auto COMPONENTS_COUNT = 2;
         T                     r;
         T                     g;
@@ -69,6 +75,9 @@ export namespace stormkit { inline namespace core {
 
     template<meta::ColorComponentStorageType T>
     struct color<ColorLayout::RGB, T> {
+        static constexpr auto LAYOUT = ColorLayout::RGB;
+        using Storage                = T;
+
         static constexpr auto COMPONENTS_COUNT = 3;
         T                     r;
         T                     g;
@@ -79,6 +88,9 @@ export namespace stormkit { inline namespace core {
 
     template<meta::ColorComponentStorageType T>
     struct color<ColorLayout::RGBA, T> {
+        static constexpr auto LAYOUT = ColorLayout::RGBA;
+        using Storage                = T;
+
         static constexpr auto COMPONENTS_COUNT = 4;
         T                     r;
         T                     g;
@@ -90,6 +102,9 @@ export namespace stormkit { inline namespace core {
 
     template<meta::ColorComponentStorageType T>
     struct color<ColorLayout::ARGB, T> {
+        static constexpr auto LAYOUT = ColorLayout::ARGB;
+        using Storage                = T;
+
         static constexpr auto COMPONENTS_COUNT = 4;
         T                     a;
         T                     r;
@@ -101,6 +116,9 @@ export namespace stormkit { inline namespace core {
 
     template<meta::ColorComponentStorageType T>
     struct color<ColorLayout::BGR, T> {
+        static constexpr auto LAYOUT = ColorLayout::BGR;
+        using Storage                = T;
+
         static constexpr auto COMPONENTS_COUNT = 3;
         T                     b;
         T                     g;
@@ -111,6 +129,9 @@ export namespace stormkit { inline namespace core {
 
     template<meta::ColorComponentStorageType T>
     struct color<ColorLayout::BGRA, T> {
+        static constexpr auto LAYOUT = ColorLayout::BGRA;
+        using Storage                = T;
+
         static constexpr auto COMPONENTS_COUNT = 4;
         T                     b;
         T                     g;
@@ -122,6 +143,9 @@ export namespace stormkit { inline namespace core {
 
     template<meta::ColorComponentStorageType T>
     struct color<ColorLayout::ABGR, T> {
+        static constexpr auto LAYOUT = ColorLayout::ABGR;
+        using Storage                = T;
+
         static constexpr auto COMPONENTS_COUNT = 4;
         T                     a;
         T                     b;
@@ -165,6 +189,12 @@ export namespace stormkit { inline namespace core {
     using bgrcolor_u  = bgrcolor<u8>;
     using bgracolor_u = bgracolor<u8>;
     using abgrcolor_u = abgrcolor<u8>;
+
+    constexpr auto as_string(ColorLayout layout) noexcept -> std::string_view;
+    constexpr auto to_string(ColorLayout layout) noexcept -> std::string;
+
+    template<ColorLayout LAYOUT, meta::ColorComponentStorageType T>
+    constexpr auto to_string(const color<LAYOUT, T>& color) noexcept -> std::string;
 
     template<ColorLayout LAYOUT, meta::ColorComponentStorageType T, typename FormatContext>
     auto format_as(const color<LAYOUT, T>& color, FormatContext& ctx) noexcept -> decltype(ctx.out());
@@ -300,6 +330,11 @@ export namespace stormkit { inline namespace core {
                   .g = 0,
                   .b = ColorComponent<T>::max() / T { 2 },
                   .a = ColorComponent<T>::max() }
+        };
+
+        template<meta::ColorComponentStorageType T>
+        inline constexpr auto FUSCHIA = details::ImplicitConverter<ColorLayout::RGBA, T> {
+            .c = { .r = ColorComponent<T>::max(), .g = 0, .b = ColorComponent<T>::max(), .a = ColorComponent<T>::max() }
         };
 
         template<meta::ColorComponentStorageType T>
@@ -473,40 +508,73 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_string(ColorLayout layout) noexcept -> std::string_view {
+        switch (layout) {
+            case ColorLayout::R: return "R";
+            case ColorLayout::RG: return "RG";
+            case ColorLayout::RGB: return "RGB";
+            case ColorLayout::BGR: return "BGR";
+            case ColorLayout::RGBA: return "RGBA";
+            case ColorLayout::ARGB: return "ARGB";
+            case ColorLayout::BGRA: return "BGRA";
+            case ColorLayout::ABGR: return "ABGR";
+            default: break;
+        }
+        std::unreachable();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto to_string(ColorLayout layout) noexcept -> std::string {
+        return std::string { as_string(layout) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<ColorLayout LAYOUT, meta::ColorComponentStorageType T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto to_string(const color<LAYOUT, T>& color) noexcept -> std::string {
+        return std::format("{}", color);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<ColorLayout LAYOUT, meta::ColorComponentStorageType T, typename FormatContext>
     STORMKIT_FORCE_INLINE
     inline auto format_as(const color<LAYOUT, T>& color, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
-        if constexpr (LAYOUT == ColorLayout::R) return std::format_to(ctx.out(), "[color layout: R red: {}]", color.r);
+        if constexpr (LAYOUT == ColorLayout::R) return std::format_to(ctx.out(), "[color layout: R, red: {}]", color.r);
         else if constexpr (LAYOUT == ColorLayout::RG)
-            return std::format_to(ctx.out(), "[color layout: RG red: {}, green: {}]", color.r, color.g);
+            return std::format_to(ctx.out(), "[color layout: RG, red: {}, green: {}]", color.r, color.g);
         else if constexpr (LAYOUT == ColorLayout::RGB)
-            return std::format_to(ctx.out(), "[color layout: RGB red: {}, green: {}, blue: {}]", color.r, color.g, color.b);
+            return std::format_to(ctx.out(), "[color layout: RGB, red: {}, green: {}, blue: {}]", color.r, color.g, color.b);
         else if constexpr (LAYOUT == ColorLayout::BGR)
-            return std::format_to(ctx.out(), "[color layout: BGR blue: {}, green: {}, red: {}]", color.r, color.g);
+            return std::format_to(ctx.out(), "[color layout: BGR, blue: {}, green: {}, red: {}]", color.r, color.g);
         else if constexpr (LAYOUT == ColorLayout::RGBA)
             return std::format_to(ctx.out(),
-                                  "[color layout: RGBA red: {}, green: {}, blue: {}, alpha: {}]",
+                                  "[color layout: RGBA, red: {}, green: {}, blue: {}, alpha: {}]",
                                   color.r,
                                   color.g,
                                   color.b,
                                   color.a);
         else if constexpr (LAYOUT == ColorLayout::ARGB)
             return std::format_to(ctx.out(),
-                                  "[color layout: ARGB alpha: {}, red: {}, green: {}, blue: {}]",
+                                  "[color layout: ARGB, alpha: {}, red: {}, green: {}, blue: {}]",
                                   color.a,
                                   color.r,
                                   color.g,
                                   color.b);
         else if constexpr (LAYOUT == ColorLayout::BGRA)
             return std::format_to(ctx.out(),
-                                  "[color layout: BGRA bue: {}, green: {}, red: {}, alpha: {}]",
+                                  "[color layout: BGRA, bue: {}, green: {}, red: {}, alpha: {}]",
                                   color.b,
                                   color.g,
                                   color.r,
                                   color.a);
         else if constexpr (LAYOUT == ColorLayout::ABGR)
             return std::format_to(ctx.out(),
-                                  "[color layout: ABGR alpha: {}, blue: {}, green: {}, red: {}]",
+                                  "[color layout: ABGR, alpha: {}, blue: {}, green: {}, red: {}]",
                                   color.a,
                                   color.b,
                                   color.g,

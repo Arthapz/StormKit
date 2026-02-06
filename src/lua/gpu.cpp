@@ -6,13 +6,16 @@ module;
 
 #include <stormkit/lua/lua.hpp>
 
-module stormkit.lua:image;
+module stormkit.lua;
 
 import std;
 
 import stormkit.core;
-import stormkit.image;
+import stormkit.gpu;
 
-export namespace stormkit::lua::image {
-    auto init_lua(sol::state& global_state) noexcept -> void;
-} // namespace stormkit::lua::image
+namespace stormkit::lua::gpu {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    auto init_lua(sol::state&) noexcept -> void {
+    }
+} // namespace stormkit::lua::gpu

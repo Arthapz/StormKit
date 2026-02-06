@@ -27,6 +27,7 @@ export namespace stormkit::wsi {
     };
 
     constexpr auto as_string(WM wm) noexcept -> std::string_view;
+    constexpr auto to_string(WM wm) noexcept -> std::string;
 
     STORMKIT_WSI_API
     auto parse_args(std::span<const std::string_view> args) noexcept -> void;
@@ -57,5 +58,12 @@ namespace stormkit::wsi {
         }
 
         std::unreachable();
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto to_string(WM wm) noexcept -> std::string {
+        return std::string { as_string(wm) };
     }
 } // namespace stormkit::wsi

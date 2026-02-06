@@ -1,15 +1,15 @@
 add_requires("luau", {
     system = false,
-    version = "master",
+    version = "upstream",
     configs = {
         shared = false,
         extern_c = true,
         build_cli = false,
     },
 })
-add_requires("luabridge3", {
+add_requires("sol2", {
     system = false,
-    version = "master",
+    version = "develop",
 })
 
 local src_lua_dir = path.join(src_dir, "lua")
@@ -26,15 +26,28 @@ target("lua", function()
     add_files(path.join(module_dir, "lua.cppm"), { public = true })
     add_files(path.join(src_lua_dir, "lua.cpp"))
     add_files(path.join(src_lua_dir, "core.cppm"))
-    add_files(path.join(src_lua_dir, "log.cppm"), { public = true })
+    add_files(path.join(src_lua_dir, "core.cpp"))
+    add_files(path.join(src_lua_dir, "core/*.cpp"))
+    add_files(path.join(src_lua_dir, "log.cppm"))
+    add_files(path.join(src_lua_dir, "log.cpp"))
 
-    if get_config("entities") then add_files(path.join(src_lua_dir, "entities.cppm"), { public = true }) end
-    if get_config("image") then add_files(path.join(src_lua_dir, "image.cppm"), { public = true }) end
+    if get_config("entities") then
+        add_files(path.join(src_lua_dir, "entities.cppm"))
+        add_files(path.join(src_lua_dir, "entities.cpp"))
+    end
+    if get_config("image") then
+        add_files(path.join(src_lua_dir, "image.cppm"))
+        add_files(path.join(src_lua_dir, "image.cpp"))
+    end
     if get_config("wsi") then
         add_files(path.join(src_lua_dir, "wsi.cpp"))
-        add_files(path.join(src_lua_dir, "wsi.cppm"), { public = true })
+        add_files(path.join(src_lua_dir, "wsi/*.cpp"))
+        add_files(path.join(src_lua_dir, "wsi.cppm"))
     end
-    if get_config("gpu") then add_files(path.join(src_lua_dir, "gpu.cppm"), { public = true }) end
+    if get_config("gpu") then
+        add_files(path.join(src_lua_dir, "gpu.cppm"))
+        add_files(path.join(src_lua_dir, "gpu.cpp"))
+    end
 
     add_headerfiles(path.join(include_dir, "(stormkit/lua/**.hpp)"))
     add_includedirs(include_dir, { public = true })
@@ -45,7 +58,7 @@ target("lua", function()
     if get_config("wsi") then add_deps("wsi") end
     if get_config("gpu") then add_deps("gpu") end
 
-    add_packages("luau", "luabridge3", { public = true })
+    add_packages("luau", "sol2", { public = true })
 
     add_options("sanitizers")
 

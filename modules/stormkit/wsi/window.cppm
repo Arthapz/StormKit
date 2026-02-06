@@ -39,6 +39,7 @@ export {
             EXTERNAL_CONTEXT = 0b1000,
         };
         constexpr auto as_string(WindowFlag button) noexcept -> std::string_view;
+        constexpr auto to_string(WindowFlag button) noexcept -> std::string;
 
         enum class EventType : u8 {
             NONE = 0,
@@ -56,6 +57,7 @@ export {
             DEACTIVATE,
         };
         constexpr auto as_string(EventType type) noexcept -> std::string_view;
+        constexpr auto to_string(EventType type) noexcept -> std::string;
 
         using NativeHandle = void*;
 
@@ -250,6 +252,8 @@ namespace stdr = std::ranges;
 using namespace std::literals;
 
 namespace stormkit::wsi {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_string(WindowFlag flag) noexcept -> std::string_view {
         using Pair                    = std::pair<WindowFlag, std::string_view>;
@@ -265,6 +269,13 @@ namespace stormkit::wsi {
         const auto it = stdr::find_if(MAPPING, [&flag](auto&& pair) { return pair.first == flag; });
         ensures(it != stdr::cend(MAPPING));
         return it->second;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto to_string(WindowFlag flag) noexcept -> std::string {
+        return std::string { as_string(flag) };
     }
 
     ////////////////////////////////////////
@@ -288,6 +299,13 @@ namespace stormkit::wsi {
         }
 
         std::unreachable();
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto to_string(EventType type) noexcept -> std::string {
+        return std::string { as_string(type) };
     }
 
     ////////////////////////////////////////

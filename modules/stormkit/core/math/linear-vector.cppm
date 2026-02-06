@@ -143,6 +143,15 @@ export namespace stormkit { inline namespace core { namespace math {
     [[nodiscard]]
     constexpr auto as_mdspan_mut(T& value) noexcept -> VectorSpan<typename T::value_type, T::EXTENT[0]>;
 
+    template<core::meta::IsArithmetic T>
+    auto to_string(const vec2<T>& value) noexcept -> std::string;
+
+    template<core::meta::IsArithmetic T>
+    auto to_string(const vec3<T>& value) noexcept -> std::string;
+
+    template<core::meta::IsArithmetic T>
+    auto to_string(const vec4<T>& value) noexcept -> std::string;
+
     template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
     constexpr auto hasher(const vec2<T>& value) noexcept -> Ret;
 
@@ -349,6 +358,30 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    STORMKIT_FORCE_INLINE
+    auto to_string(const vec2<T>& value) noexcept -> std::string {
+        return std::format("{}", value);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    STORMKIT_FORCE_INLINE
+    auto to_string(const vec3<T>& value) noexcept -> std::string {
+        return std::format("{}", value);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    STORMKIT_FORCE_INLINE
+    auto to_string(const vec4<T>& value) noexcept -> std::string {
+        return std::format("{}", value);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<core::meta::HashType Ret, core::meta::IsArithmetic T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto hasher(const vec2<T>& value) noexcept -> Ret {
@@ -384,7 +417,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T, typename FormatContext>
     STORMKIT_FORCE_INLINE
     inline auto format_as(const vec3<T>& value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
-        return std::format_to(ctx.out(), "[vec2 x: {}, y: {}, z: {}]", value.x, value.y, value.z);
+        return std::format_to(ctx.out(), "[vec3 x: {}, y: {}, z: {}]", value.x, value.y, value.z);
     }
 
     ////////////////////////////////////////
@@ -392,6 +425,6 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T, typename FormatContext>
     STORMKIT_FORCE_INLINE
     inline auto format_as(const vec4<T>& value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
-        return std::format_to(ctx.out(), "[vec2 x: {}, y: {}, z: {}, w: {}]", value.x, value.y, value.z, value.w);
+        return std::format_to(ctx.out(), "[vec4 x: {}, y: {}, z: {}, w: {}]", value.x, value.y, value.z, value.w);
     }
 }}} // namespace stormkit::core::math

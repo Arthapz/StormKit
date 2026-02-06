@@ -143,6 +143,7 @@ export namespace stormkit::wsi {
         UNKNOWN = std::numeric_limits<u8>::max(),
     };
     constexpr auto as_string(Key key) noexcept -> std::string_view;
+    constexpr auto to_string(Key key) noexcept -> std::string;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////
@@ -152,6 +153,7 @@ export namespace stormkit::wsi {
 namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_string(Key key) noexcept -> std::string_view {
         switch (key) {
             case Key::A: return "Key::A";
@@ -281,5 +283,12 @@ namespace stormkit::wsi {
             default: break;
         }
         std::unreachable();
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto to_string(Key key) noexcept -> std::string {
+        return std::string { as_string(key) };
     }
 } // namespace stormkit::wsi

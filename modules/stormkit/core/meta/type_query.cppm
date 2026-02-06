@@ -78,7 +78,7 @@ namespace stormkit { inline namespace core { namespace meta {
         using UnderlyingType = details::UnderlyingType<T>::Type;
 
         template<IsArithmetic T>
-        using ArithmeticOrderingType = Select<IsIntegral<T>, std::strong_ordering, std::weak_ordering>;
+        using ArithmeticOrderingType = Select<IsIntegral<T>, std::strong_ordering, std::partial_ordering>;
 
         template<IsEnumeration>
         constexpr auto enumerate() noexcept -> decltype(auto) = delete;

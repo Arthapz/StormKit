@@ -3,9 +3,13 @@
 
 #include <stormkit/core/platform_macro.hpp>
 
+#include <stormkit/lua/api.hpp>
+
 STORMKIT_PUSH_WARNINGS
 
-#define LUA_API extern __attribute__((visibility("default")))
+#define LUA_API        extern "C" STORMKIT_LUA_API
+#define LUACODE_API    extern "C" STORMKIT_LUA_API
+#define LUACODEGEN_API extern "C" STORMKIT_LUA_API
 
 extern "C" {
 #include <lua.h>
@@ -14,10 +18,12 @@ extern "C" {
 #include <lualib.h>
 }
 
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#undef lua_rawgetp
-#undef lua_rawsetp
-#include <LuaBridge/LuaBridge.h>
+// #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#define SOL_USE_LUAU         1
+#define SOL_SAFE_STACK_CHECK 1
+#define SOL_LUA_BIT32_LIB    1
+#define LUA_VERSION_NUM      501
+#include <sol/sol.hpp>
 #undef assert
 
 STORMKIT_POP_WARNINGS

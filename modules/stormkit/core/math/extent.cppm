@@ -155,7 +155,10 @@ export {
         constexpr auto operator/=(Extent& extent, typename Extent::ElementType factor) noexcept -> Extent&;
 
         template<meta::IsExtent2 Extent>
-        auto to_string(Extent&& extent) noexcept -> std::string;
+        auto to_string(const Extent& extent) noexcept -> std::string;
+
+        template<meta::IsExtent3 Extent>
+        auto to_string(const Extent& extent) noexcept -> std::string;
 
         template<core::meta::IsArithmetic T, typename FormatContext>
         auto format_as(const extent<T, 2>& extent, FormatContext& ctx) noexcept -> decltype(ctx.out());
@@ -337,7 +340,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<stormkit::math::meta::IsExtent2 Extent>
     STORMKIT_FORCE_INLINE
-    inline auto to_string(Extent&& extent) noexcept -> std::string {
+    inline auto to_string(const Extent& extent) noexcept -> std::string {
         return std::format("{}", extent);
     }
 
@@ -345,13 +348,14 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<stormkit::math::meta::IsExtent3 Extent>
     STORMKIT_FORCE_INLINE
-    inline auto to_string(Extent&& extent) noexcept -> std::string {
+    inline auto to_string(const Extent& extent) noexcept -> std::string {
         return std::format("{}", extent);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<core::meta::IsArithmetic T, typename FormatContext>
+    STORMKIT_FORCE_INLINE
     inline auto format_as(const extent<T, 2>& extent, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         return std::format_to(ctx.out(), "[extent2 width: {}, height: {}]", extent.width, extent.height);
     }
@@ -359,6 +363,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     /////////////////////////////////////
     template<core::meta::IsArithmetic T, typename FormatContext>
+    STORMKIT_FORCE_INLINE
     inline auto format_as(const extent<T, 3>& extent, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         return std::format_to(ctx.out(), "[extent3 width: {}, height: {}, depth: {}]", extent.width, extent.height, extent.depth);
     }
@@ -366,6 +371,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     /////////////////////////////////////
     template<core::meta::HashType Ret, core::meta::IsArithmetic T>
+    STORMKIT_FORCE_INLINE
     constexpr auto hasher(const extent<T, 2>& extent) noexcept -> Ret {
         return hash<Ret>(extent.width, extent.height);
     }
@@ -373,6 +379,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     /////////////////////////////////////
     template<core::meta::HashType Ret, core::meta::IsArithmetic T>
+    STORMKIT_FORCE_INLINE
     constexpr auto hasher(const extent<T, 3>& extent) noexcept -> Ret {
         return hash<Ret>(extent.width, extent.height, extent.depth);
     }

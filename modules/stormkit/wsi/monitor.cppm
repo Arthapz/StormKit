@@ -32,10 +32,16 @@ export {
             [[nodiscard]]
             constexpr auto operator<=>(const Monitor& other) const noexcept -> std::strong_ordering;
 
+            [[nodiscard]]
+            constexpr auto operator==(const Monitor& other) const noexcept -> bool;
+
             void* native_handle = nullptr;
         };
 
         constexpr auto as_string(Monitor::Flags flags) noexcept -> std::string_view;
+        constexpr auto to_string(Monitor::Flags flags) noexcept -> std::string;
+
+        auto to_string(const Monitor& monitor) noexcept -> std::string;
 
         template<typename FormatContext>
         auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept -> decltype(ctx.out());
@@ -83,9 +89,24 @@ namespace stormkit::wsi {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_PURE
+    constexpr auto Monitor::operator==(const Monitor& other) const noexcept -> bool {
+        if (flags != other.flags) return false;
+        if (name != other.name) return false;
+        if (std::size(extents) != std::size(other.extents)) return false;
+        for (auto i : range(std::size(extents))) {
+            if (extents[i].width != other.extents[i].width) return false;
+            if (extents[i].height != other.extents[i].height) return false;
+        }
+
+        return true;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(Monitor::Flags wm) noexcept -> std::string_view {
-        switch (wm) {
+    constexpr auto as_string(Monitor::Flags flags) noexcept -> std::string_view {
+        switch (flags) {
             case Monitor::Flags::NONE: return "Monitor::Flags::NONE";
             case Monitor::Flags::PRIMARY: return "Monitor::Flags::PRIMARY";
             default: break;
@@ -96,11 +117,25 @@ namespace stormkit::wsi {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto to_string(Monitor::Flags flags) noexcept -> std::string {
+        return std::string { as_string(flags) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto to_string(const Monitor& monitor) noexcept -> std::string {
+        return std::format("{}", monitor);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<typename FormatContext>
     STORMKIT_FORCE_INLINE
     inline auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         return std::format_to(ctx.out(),
-                              "{{ Monitor: .name = {}, .flags = {}, .extents = {}, .scale_factor = {} }}",
+                              "[Monitor name: {}, flags: {}, extents: {}, scale_factor: {}]",
                               monitor.name,
                               monitor.flags,
                               monitor.extents,
