@@ -353,70 +353,75 @@ namespace stormkit::lua::core {
                    &math::is_orthogonal<math::imat4>,
                    &math::is_orthogonal<math::imat4x2>,
                    &math::is_orthogonal<math::imat4x3>);
-        metatable["mul"] = sol::
-          overload(&math::mul<math::fmat2>,
-                   &math::mul<math::fmat2x3>,
-                   &math::mul<math::fmat2x4>,
-                   &math::mul<math::fmat3>,
-                   &math::mul<math::fmat3x2>,
-                   &math::mul<math::fmat3x4>,
-                   &math::mul<math::fmat4>,
-                   &math::mul<math::fmat4x2>,
-                   &math::mul<math::fmat4x3>,
-                   &math::mul<math::umat2>,
-                   &math::mul<math::umat2x3>,
-                   &math::mul<math::umat2x4>,
-                   &math::mul<math::umat3>,
-                   &math::mul<math::umat3x2>,
-                   &math::mul<math::umat3x4>,
-                   &math::mul<math::umat4>,
-                   &math::mul<math::umat4x2>,
-                   &math::mul<math::umat4x3>,
-                   &math::mul<math::imat2>,
-                   &math::mul<math::imat2x3>,
-                   &math::mul<math::imat2x4>,
-                   &math::mul<math::imat3>,
-                   &math::mul<math::imat3x2>,
-                   &math::mul<math::imat3x4>,
-                   &math::mul<math::imat4>,
-                   &math::mul<math::imat4x2>,
-                   &math::mul<math::imat4x3>);
-        // metatable["div"] = sol::
-        //   overload(&math::div<math::fmat2>,
-        //            &math::div<math::fmat2x3>,
-        //            &math::div<math::fmat2x4>,
-        //            &math::div<math::fmat3>,
-        //            &math::div<math::fmat3x2>,
-        //            &math::div<math::fmat3x4>,
-        //            &math::div<math::fmat4>,
-        //            &math::div<math::fmat4x2>,
-        //            &math::div<math::fmat4x3>,
-        //            &math::div<math::umat2>,
-        //            &math::div<math::umat2x3>,
-        //            &math::div<math::umat2x4>,
-        //            &math::div<math::umat3>,
-        //            &math::div<math::umat3x2>,
-        //            &math::div<math::umat3x4>,
-        //            &math::div<math::umat4>,
-        //            &math::div<math::umat4x2>,
-        //            &math::div<math::umat4x3>,
-        //            &math::div<math::imat2>,
-        //            &math::div<math::imat2x3>,
-        //            &math::div<math::imat2x4>,
-        //            &math::div<math::imat3>,
-        //            &math::div<math::imat3x2>,
-        //            &math::div<math::imat3x4>,
-        //            &math::div<math::imat4>,
-        //            &math::div<math::imat4x2>,
-        //            &math::div<math::imat4x3>);
+        metatable["mul"] = sol::overload(
+          +[](const math::fmat2& a, typename math::fmat2::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::fmat2x3& a, typename math::fmat2x3::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::fmat2x4& a, typename math::fmat2x4::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::fmat3& a, typename math::fmat3::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::fmat3x2& a, typename math::fmat3x2::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::fmat3x4& a, typename math::fmat3x4::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::fmat4& a, typename math::fmat4::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::fmat4x2& a, typename math::fmat4x2::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::fmat4x3& a, typename math::fmat4x3::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::umat2& a, typename math::umat2::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::umat2x3& a, typename math::umat2x3::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::umat2x4& a, typename math::umat2x4::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::umat3& a, typename math::umat3::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::umat3x2& a, typename math::umat3x2::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::umat3x4& a, typename math::umat3x4::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::umat4& a, typename math::umat4::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::umat4x2& a, typename math::umat4x2::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::umat4x3& a, typename math::umat4x3::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::imat2& a, typename math::imat2::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::imat2x3& a, typename math::imat2x3::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::imat2x4& a, typename math::imat2x4::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::imat3& a, typename math::imat3::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::imat3x2& a, typename math::imat3x2::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::imat3x4& a, typename math::imat3x4::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::imat4& a, typename math::imat4::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::imat4x2& a, typename math::imat4x2::value_type b) static noexcept { return mul(a, b); },
+          +[](const math::imat4x3& a, typename math::imat4x3::value_type b) static noexcept { return mul(a, b); });
+        metatable["div"] = sol::overload(
+          +[](const math::fmat2& a, typename math::fmat2::value_type b) static noexcept { return div(a, b); },
+          +[](const math::fmat2x3& a, typename math::fmat2x3::value_type b) static noexcept { return div(a, b); },
+          +[](const math::fmat2x4& a, typename math::fmat2x4::value_type b) static noexcept { return div(a, b); },
+          +[](const math::fmat3& a, typename math::fmat3::value_type b) static noexcept { return div(a, b); },
+          +[](const math::fmat3x2& a, typename math::fmat3x2::value_type b) static noexcept { return div(a, b); },
+          +[](const math::fmat3x4& a, typename math::fmat3x4::value_type b) static noexcept { return div(a, b); },
+          +[](const math::fmat4& a, typename math::fmat4::value_type b) static noexcept { return div(a, b); },
+          +[](const math::fmat4x2& a, typename math::fmat4x2::value_type b) static noexcept { return div(a, b); },
+          +[](const math::fmat4x3& a, typename math::fmat4x3::value_type b) static noexcept { return div(a, b); },
+          +[](const math::umat2& a, typename math::umat2::value_type b) static noexcept { return div(a, b); },
+          +[](const math::umat2x3& a, typename math::umat2x3::value_type b) static noexcept { return div(a, b); },
+          +[](const math::umat2x4& a, typename math::umat2x4::value_type b) static noexcept { return div(a, b); },
+          +[](const math::umat3& a, typename math::umat3::value_type b) static noexcept { return div(a, b); },
+          +[](const math::umat3x2& a, typename math::umat3x2::value_type b) static noexcept { return div(a, b); },
+          +[](const math::umat3x4& a, typename math::umat3x4::value_type b) static noexcept { return div(a, b); },
+          +[](const math::umat4& a, typename math::umat4::value_type b) static noexcept { return div(a, b); },
+          +[](const math::umat4x2& a, typename math::umat4x2::value_type b) static noexcept { return div(a, b); },
+          +[](const math::umat4x3& a, typename math::umat4x3::value_type b) static noexcept { return div(a, b); },
+          +[](const math::imat2& a, typename math::imat2::value_type b) static noexcept { return div(a, b); },
+          +[](const math::imat2x3& a, typename math::imat2x3::value_type b) static noexcept { return div(a, b); },
+          +[](const math::imat2x4& a, typename math::imat2x4::value_type b) static noexcept { return div(a, b); },
+          +[](const math::imat3& a, typename math::imat3::value_type b) static noexcept { return div(a, b); },
+          +[](const math::imat3x2& a, typename math::imat3x2::value_type b) static noexcept { return div(a, b); },
+          +[](const math::imat3x4& a, typename math::imat3x4::value_type b) static noexcept { return div(a, b); },
+          +[](const math::imat4& a, typename math::imat4::value_type b) static noexcept { return div(a, b); },
+          +[](const math::imat4x2& a, typename math::imat4x2::value_type b) static noexcept { return div(a, b); },
+          +[](const math::imat4x3& a, typename math::imat4x3::value_type b) static noexcept { return div(a, b); });
 
-        // CONTINUER ICI
-        // metatable["translate"]      = sol::overload(&math::translate<f32>, &math::translate<i32>);
-        // metatable["scale"]          = sol::overload(&math::scale<f32>, &math::scale<u32>, &math::scale<i32>);
-        // metatable["rotate"]         = sol::overload(&math::rotate<f32>, &math::rotate<i32>);
-        // metatable["orthographique"] = sol::overload(&math::orthographique<f32>, &math::orthographique<i32>);
-        // metatable["perspective"]    = sol::overload(&math::perspective<f32>, &math::perspective<i32>);
-        // metatable["look_at"]        = sol::overload(&math::look_at<f32>, &math::look_at<i32>);
+        metatable["translate"] = sol::overload(&math::matrix::translate<f32>, &math::matrix::translate<i32>);
+        metatable["scale"]     = sol::overload(&math::matrix::scale<f32>, &math::matrix::scale<u32>, &math::matrix::scale<i32>);
+        metatable["rotate"]    = &math::matrix::rotate<f32>;
+        metatable["orthographique"] = sol::overload(
+          +[](f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far) static noexcept {
+              return math::orthographique(left, right, bottom, top, near, far);
+          },
+          +[](f32 left, f32 right, f32 bottom, f32 top) static noexcept {
+              return math::orthographique(left, right, bottom, top);
+          });
+        metatable["perspective"] = &math::matrix::perspective<f32>;
+        metatable["look_at"]     = &math::matrix::look_at<f32>;
     }
 
     auto bind_linear(sol::table& parent) noexcept -> void {
