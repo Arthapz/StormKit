@@ -17,10 +17,6 @@ import frozen;
 
 import stormkit.core;
 
-#ifdef STORMKIT_LUA_BINDING
-export import :lua;
-#endif
-
 export {
     namespace stormkit::log {
         struct Module;
