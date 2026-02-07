@@ -2,6 +2,8 @@ add_requires("nzsl", {
     configs = {
         fs_watcher = false,
         kind = "binary",
+        toolchain = is_plat("windows") and "cl" or nil,
+        runtimes = is_plat("windows") and "MD" or nil,
     },
 })
 
