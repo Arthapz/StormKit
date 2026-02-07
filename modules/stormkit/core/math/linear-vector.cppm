@@ -436,6 +436,11 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
         return std::format_to(ctx.out(), "[vec4 x: {}, y: {}, z: {}, w: {}]", value.x, value.y, value.z, value.w);
     }
 
+#ifndef STORMKIT_OS_WINDOWS
+    #undef STORMKIT_CORE_API
+    #define STORMKIT_CORE_API
+#endif
+
 #define ADD_INSTANCIATE(vec_type) \
     template STORMKIT_CORE_API auto add<vec_type>(const vec_type&, const vec_type&) noexcept -> vec_type
 

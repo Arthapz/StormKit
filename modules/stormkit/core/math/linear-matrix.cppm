@@ -633,33 +633,10 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
         return out;
     }
 
-    // DETERMINANT_INSTANCIATE(fmat2);
-    // DETERMINANT_INSTANCIATE(fmat2x3);
-    // DETERMINANT_INSTANCIATE(fmat2x4);
-    // DETERMINANT_INSTANCIATE(fmat3);
-    // DETERMINANT_INSTANCIATE(fmat3x2);
-    // DETERMINANT_INSTANCIATE(fmat3x4);
-    // DETERMINANT_INSTANCIATE(fmat4);
-    // DETERMINANT_INSTANCIATE(fmat4x2);
-    // DETERMINANT_INSTANCIATE(fmat4x3);
-    // DETERMINANT_INSTANCIATE(umat2);
-    // DETERMINANT_INSTANCIATE(umat2x3);
-    // DETERMINANT_INSTANCIATE(umat2x4);
-    // DETERMINANT_INSTANCIATE(umat3);
-    // DETERMINANT_INSTANCIATE(umat3x2);
-    // DETERMINANT_INSTANCIATE(umat3x4);
-    // DETERMINANT_INSTANCIATE(umat4);
-    // DETERMINANT_INSTANCIATE(umat4x2);
-    // DETERMINANT_INSTANCIATE(umat4x3);
-    // DETERMINANT_INSTANCIATE(imat2);
-    // DETERMINANT_INSTANCIATE(imat2x3);
-    // DETERMINANT_INSTANCIATE(imat2x4);
-    // DETERMINANT_INSTANCIATE(imat3);
-    // DETERMINANT_INSTANCIATE(imat3x2);
-    // DETERMINANT_INSTANCIATE(imat3x4);
-    // DETERMINANT_INSTANCIATE(imat4);
-    // DETERMINANT_INSTANCIATE(imat4x2);
-    // DETERMINANT_INSTANCIATE(imat4x3);
+#ifndef STORMKIT_OS_WINDOWS
+    #undef STORMKIT_CORE_API
+    #define STORMKIT_CORE_API
+#endif
 
 #define DETERMINANT_INSTANCIATE(mat_type) \
     template STORMKIT_CORE_API auto determinant<mat_type>(const mat_type&) noexcept -> typename mat_type::value_type
