@@ -3590,6 +3590,11 @@ namespace stormkit::gpu {
     }
 } // namespace stormkit::gpu
 
+#ifndef STORMKIT_OS_WINDOWS
+    #undef STORMKIT_GPU_API
+    #define STORMKIT_GPU_API
+#endif
+
 template stormkit::gpu::AccessFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::AccessFlag, VkFlags>(VkFlags);
 template stormkit::gpu::AccessFlag STORMKIT_GPU_API
                                            stormkit::gpu::from_vk<stormkit::gpu::AccessFlag, VkAccessFlagBits>(VkAccessFlagBits);

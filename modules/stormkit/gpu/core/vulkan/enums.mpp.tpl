@@ -299,6 +299,10 @@ namespace stormkit::gpu {
     }
 }
 
+#ifndef STORMKIT_OS_WINDOWS
+    #undef STORMKIT_GPU_API
+    #define STORMKIT_GPU_API
+#endif
 
 {% for name, enumeration in table.orderpairs(json_data) do %}
     template
