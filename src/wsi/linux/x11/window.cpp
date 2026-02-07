@@ -410,7 +410,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::clear(const rgbcolor<u8>& color) noexcept -> void {
+    auto Window::clear(const ucolor_rgb& color) noexcept -> void {
         expects(m_graphics_context, "clear called on a window opened with EXTERNAL_CONTEXT flag");
         const auto _color = (255_u32 << 24) | as<u32>(color.r) << 16 | as<u32>(color.g) << 8 | color.b;
         stdr::fill(m_framebuffer, _color);
@@ -424,7 +424,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(std::span<const rgbcolor<u8>> pixels) noexcept -> void {
+    auto Window::fill_framebuffer(std::span<const ucolor_rgb> pixels) noexcept -> void {
         expects(m_graphics_context, "fill_framebuffer called on a window opened with EXTERNAL_CONTEXT flag");
         const auto count = std::min(stdr::size(pixels), stdr::size(m_framebuffer));
         stdr::copy(pixels | stdv::take(count) | stdv::transform([](const auto& col) static noexcept {

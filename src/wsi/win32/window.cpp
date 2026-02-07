@@ -174,7 +174,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::clear(const rgbcolor<u8>& color) noexcept -> void {
+    auto Window::clear(const ucolor_rgb& color) noexcept -> void {
         if (m_win32_state.external_context) return;
 
         auto       hbrush = HBrush::create(RGB(color.r, color.g, color.b));
@@ -187,7 +187,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(std::span<const rgbcolor<u8>> pixels) noexcept -> void {
+    auto Window::fill_framebuffer(std::span<const ucolor_rgb> pixels) noexcept -> void {
         if (m_win32_state.external_context) return;
 
         const auto [width, height] = extent();

@@ -156,39 +156,39 @@ export namespace stormkit { inline namespace core {
     };
 
     template<meta::ColorComponentStorageType T>
-    using rcolor = color<ColorLayout::R, T>;
+    using color_r = color<ColorLayout::R, T>;
     template<meta::ColorComponentStorageType T>
-    using rgcolor = color<ColorLayout::RG, T>;
+    using color_rg = color<ColorLayout::RG, T>;
     template<meta::ColorComponentStorageType T>
-    using rgbcolor = color<ColorLayout::RGB, T>;
+    using color_rgb = color<ColorLayout::RGB, T>;
     template<meta::ColorComponentStorageType T>
-    using rgbacolor = color<ColorLayout::RGBA, T>;
+    using color_rgba = color<ColorLayout::RGBA, T>;
     template<meta::ColorComponentStorageType T>
-    using argbcolor = color<ColorLayout::ARGB, T>;
+    using color_argb = color<ColorLayout::ARGB, T>;
     template<meta::ColorComponentStorageType T>
-    using bgrcolor = color<ColorLayout::BGR, T>;
+    using color_bgr = color<ColorLayout::BGR, T>;
     template<meta::ColorComponentStorageType T>
-    using bgracolor = color<ColorLayout::BGRA, T>;
+    using color_bgra = color<ColorLayout::BGRA, T>;
     template<meta::ColorComponentStorageType T>
-    using abgrcolor = color<ColorLayout::ABGR, T>;
+    using color_abgr = color<ColorLayout::ABGR, T>;
 
-    using rcolor_f    = rcolor<f32>;
-    using rgcolor_f   = rgcolor<f32>;
-    using rgbcolor_f  = rgbcolor<f32>;
-    using rgbacolor_f = rgbacolor<f32>;
-    using argbcolor_f = argbcolor<f32>;
-    using bgrcolor_f  = bgrcolor<f32>;
-    using bgracolor_f = bgracolor<f32>;
-    using abgrcolor_f = abgrcolor<f32>;
+    using fcolor_r    = color_r<f32>;
+    using fcolor_rg   = color_rg<f32>;
+    using fcolor_rgb  = color_rgb<f32>;
+    using fcolor_rgba = color_rgba<f32>;
+    using fcolor_argb = color_argb<f32>;
+    using fcolor_bgr  = color_bgr<f32>;
+    using fcolor_bgra = color_bgra<f32>;
+    using fcolor_abgr = color_abgr<f32>;
 
-    using rcolor_u    = rcolor<u8>;
-    using rgcolor_u   = rgcolor<u8>;
-    using rgbcolor_u  = rgbcolor<u8>;
-    using rgbacolor_u = rgbacolor<u8>;
-    using argbcolor_u = argbcolor<u8>;
-    using bgrcolor_u  = bgrcolor<u8>;
-    using bgracolor_u = bgracolor<u8>;
-    using abgrcolor_u = abgrcolor<u8>;
+    using ucolor_r    = color_r<u8>;
+    using ucolor_rg   = color_rg<u8>;
+    using ucolor_rgb  = color_rgb<u8>;
+    using ucolor_rgba = color_rgba<u8>;
+    using ucolor_argb = color_argb<u8>;
+    using ucolor_bgr  = color_bgr<u8>;
+    using ucolor_bgra = color_bgra<u8>;
+    using ucolor_abgr = color_abgr<u8>;
 
     constexpr auto as_string(ColorLayout layout) noexcept -> std::string_view;
     constexpr auto to_string(ColorLayout layout) noexcept -> std::string;

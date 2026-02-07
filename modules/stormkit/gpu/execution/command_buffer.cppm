@@ -153,8 +153,8 @@ export namespace stormkit::gpu {
           -> Expected<Ref<CommandBuffer>>;
         auto end() noexcept -> Expected<Ref<CommandBuffer>>;
 
-        auto begin_debug_region(std::string_view name, const rgbcolor_f& color = colors::WHITE<f32>) noexcept -> CommandBuffer&;
-        auto insert_debug_label(std::string_view name, const rgbcolor_f& color = colors::WHITE<f32>) noexcept -> CommandBuffer&;
+        auto begin_debug_region(std::string_view name, const fcolor_rgb& color = colors::WHITE<f32>) noexcept -> CommandBuffer&;
+        auto insert_debug_label(std::string_view name, const fcolor_rgb& color = colors::WHITE<f32>) noexcept -> CommandBuffer&;
         auto end_debug_region() noexcept -> CommandBuffer&;
 
         auto begin_rendering(const RenderingInfo& info) noexcept -> CommandBuffer&;
@@ -529,7 +529,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto CommandBuffer::begin_debug_region(std::string_view name, const rgbcolor_f& color) noexcept -> CommandBuffer& {
+    inline auto CommandBuffer::begin_debug_region(std::string_view name, const fcolor_rgb& color) noexcept -> CommandBuffer& {
         EXPECTS(m_state == State::RECORDING);
 
         if (not vkCmdBeginDebugUtilsLabelEXT) [[unlikely]]
@@ -549,7 +549,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto CommandBuffer::insert_debug_label(std::string_view name, const rgbcolor_f& color) noexcept -> CommandBuffer& {
+    inline auto CommandBuffer::insert_debug_label(std::string_view name, const fcolor_rgb& color) noexcept -> CommandBuffer& {
         EXPECTS(m_state == State::RECORDING);
 
         if (not vkCmdInsertDebugUtilsLabelEXT) [[unlikely]]

@@ -141,8 +141,8 @@ export {
             auto is_open() const noexcept -> bool;
             auto handle_events() noexcept -> void;
 
-            auto clear(const rgbcolor<u8>& color = colors::BLACK<u8>) noexcept -> void;
-            auto fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void;
+            auto clear(const ucolor_rgb& color = colors::BLACK<u8>) noexcept -> void;
+            auto fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void;
 
             template<EventCallbackFunc T>
             auto on(T&& callback) noexcept -> void;

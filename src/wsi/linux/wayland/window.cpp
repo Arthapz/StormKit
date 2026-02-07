@@ -194,7 +194,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::clear(const rgbcolor<u8>& color) noexcept -> void {
+    auto Window::clear(const ucolor_rgb& color) noexcept -> void {
         const auto value = (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
 
         auto view = std::span<i32> { std::bit_cast<i32*>(m_shm_buffer.get().begin()), m_shm_buffer->size() / sizeof(i32) };
@@ -207,7 +207,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void {
+    auto Window::fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void {
         auto view = std::span<i32> { std::bit_cast<i32*>(m_shm_buffer.get().begin()), m_shm_buffer->size() / sizeof(i32) };
         stdr::copy(colors | stdv::transform([](const auto& color) static noexcept {
                        return (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);

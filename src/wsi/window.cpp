@@ -85,13 +85,13 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::clear(const rgbcolor<u8>& color) noexcept -> void {
+    auto Window::clear(const ucolor_rgb& color) noexcept -> void {
         m_impl->clear(color);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void {
+    auto Window::fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void {
         m_impl->fill_framebuffer(colors);
     }
 

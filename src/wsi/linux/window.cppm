@@ -49,8 +49,8 @@ export namespace stormkit::wsi::linux {
 
         auto handle_events() noexcept -> void;
 
-        auto clear(const rgbcolor<u8>& color) noexcept -> void;
-        auto fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void;
+        auto clear(const ucolor_rgb& color) noexcept -> void;
+        auto fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void;
 
         auto set_title(std::string title) noexcept -> void;
         [[nodiscard]]
@@ -221,7 +221,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::clear(const rgbcolor<u8>& color) noexcept -> void {
+    inline auto Window::clear(const ucolor_rgb& color) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).clear(color); break;
             case WM::WAYLAND: as<wayland::Window>(m_impl).clear(color); break;
@@ -233,7 +233,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void {
+    inline auto Window::fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).fill_framebuffer(colors); break;
             case WM::WAYLAND: as<wayland::Window>(m_impl).fill_framebuffer(colors); break;

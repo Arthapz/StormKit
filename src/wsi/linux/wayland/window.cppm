@@ -48,8 +48,8 @@ export {
 
             auto handle_events() noexcept -> void;
 
-            auto clear(const rgbcolor<u8>& color) noexcept -> void;
-            auto fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void;
+            auto clear(const ucolor_rgb& color) noexcept -> void;
+            auto fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void;
 
             auto set_title(std::string title) noexcept -> void;
             auto set_extent(const math::uextent2& extent) noexcept -> void;

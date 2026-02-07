@@ -235,7 +235,7 @@ export {
         };
 
         struct ClearColor {
-            rgbacolor_f color = stormkit::colors::SILVER<f32>;
+            fcolor_rgba color = stormkit::colors::SILVER<f32>;
 
             constexpr auto operator==(const ClearColor& other) const noexcept -> bool;
         };

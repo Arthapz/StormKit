@@ -77,29 +77,29 @@ namespace stormkit::lua::core {
           ColorLayout::ABGR);
 
         auto f32_metatable = global_state["fcolor"].get_or_create<sol::table>();
-        _bind_color<rgbcolor_f, rgbcolor_f(f32, f32, f32)>("rgb",
+        _bind_color<fcolor_rgb, fcolor_rgb(f32, f32, f32)>("rgb",
                                                            f32_metatable,
-                                                           std::pair { "r", &rgbcolor_f::r },
-                                                           std::pair { "g", &rgbcolor_f::g },
-                                                           std::pair { "b", &rgbcolor_f::b });
-        _bind_color<rgbacolor_f, rgbacolor_f(f32, f32, f32, f32)>("rgba",
+                                                           std::pair { "r", &fcolor_rgb::r },
+                                                           std::pair { "g", &fcolor_rgb::g },
+                                                           std::pair { "b", &fcolor_rgb::b });
+        _bind_color<fcolor_rgba, fcolor_rgba(f32, f32, f32, f32)>("rgba",
                                                                   f32_metatable,
-                                                                  std::pair { "r", &rgbacolor_f::r },
-                                                                  std::pair { "g", &rgbacolor_f::g },
-                                                                  std::pair { "b", &rgbacolor_f::b },
-                                                                  std::pair { "a", &rgbacolor_f::a });
+                                                                  std::pair { "r", &fcolor_rgba::r },
+                                                                  std::pair { "g", &fcolor_rgba::g },
+                                                                  std::pair { "b", &fcolor_rgba::b },
+                                                                  std::pair { "a", &fcolor_rgba::a });
 
         auto u8_metatable = global_state["ucolor"].get_or_create<sol::table>();
-        _bind_color<rgbcolor_u, rgbcolor_u(u8, u8, u8)>("rgb",
+        _bind_color<ucolor_rgb, ucolor_rgb(u8, u8, u8)>("rgb",
                                                         u8_metatable,
-                                                        std::pair { "r", &rgbcolor_u::r },
-                                                        std::pair { "g", &rgbcolor_u::g },
-                                                        std::pair { "b", &rgbcolor_u::b });
-        _bind_color<rgbacolor_u, rgbacolor_u(u8, u8, u8, u8)>("rgba",
+                                                        std::pair { "r", &ucolor_rgb::r },
+                                                        std::pair { "g", &ucolor_rgb::g },
+                                                        std::pair { "b", &ucolor_rgb::b });
+        _bind_color<ucolor_rgba, ucolor_rgba(u8, u8, u8, u8)>("rgba",
                                                               u8_metatable,
-                                                              std::pair { "r", &rgbacolor_u::r },
-                                                              std::pair { "g", &rgbacolor_u::g },
-                                                              std::pair { "b", &rgbacolor_u::b },
-                                                              std::pair { "a", &rgbacolor_u::a });
+                                                              std::pair { "r", &ucolor_rgba::r },
+                                                              std::pair { "g", &ucolor_rgba::g },
+                                                              std::pair { "b", &ucolor_rgba::b },
+                                                              std::pair { "a", &ucolor_rgba::a });
     }
 } // namespace stormkit::lua::core

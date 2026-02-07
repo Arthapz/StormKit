@@ -82,13 +82,13 @@ export namespace stormkit::wsi::macos {
 
         auto handle_events() noexcept -> void { macOS::processEvents(); }
 
-        auto clear([[maybe_unused]] const rgbcolor<u8>& color) noexcept -> void {
+        auto clear([[maybe_unused]] const ucolor_rgb& color) noexcept -> void {
             const auto value = as<u32>(color.r) << 16 | as<u32>(color.g) << 8 | color.b;
             stdr::fill(m_pixels, value);
             m_window->drawBitmap(std::bit_cast<unsigned char*>(stdr::data(m_pixels)));
         }
 
-        auto fill_framebuffer(std::span<const rgbcolor<u8>> pixels) noexcept -> void {
+        auto fill_framebuffer(std::span<const ucolor_rgb> pixels) noexcept -> void {
             const auto [width, height] = extent();
             const auto count           = std::min(as<u32>(stdr::size(pixels)), height * width);
             if (stdr::size(pixels) > stdr::size(m_pixels)) m_pixels.resize(stdr::size(pixels));
