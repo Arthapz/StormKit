@@ -1,3 +1,13 @@
+add_requires("libktx")
+add_requires("libpng")
+add_requires("libjpeg-turbo", is_plat("windows") and {
+    system = false,
+    configs = {
+        runtimes = "MD",
+        shared = true,
+    },
+})
+
 local src_image_dir = path.join(src_dir, "image")
 
 target("image", function()

@@ -1,3 +1,20 @@
+local vulkan_version = "1.4.335"
+add_requires("volk", {
+    version = vulkan_version,
+    system = false,
+})
+add_requires("vulkan-headers", {
+    version = vulkan_version,
+    system = false,
+    configs = {
+        modules = false,
+    },
+})
+add_requires("vulkan-memory-allocator", {
+    version = "v3.3.0",
+    system = false,
+})
+
 local src_gpu_dir = path.join(src_dir, "gpu")
 local module_gpu_dir = path.join(module_dir, "gpu")
 

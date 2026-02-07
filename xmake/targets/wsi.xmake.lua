@@ -1,3 +1,21 @@
+if is_plat("linux") then
+    add_requires("libxcb")
+    add_requires("xcb-util-keysyms")
+    add_requires("xcb-util")
+    add_requires("xcb-util-image")
+    add_requires("xcb-util-wm")
+    add_requires("xcb-util-errors")
+    add_requires("wayland")
+    add_requires("wayland-protocols")
+    add_requires("libxkbcommon", {
+        system = false,
+        configs = {
+            wayland = true,
+            x11 = true,
+        },
+    })
+end
+
 local src_wsi_dir = path.join(src_dir, "wsi")
 local module_wsi_dir = path.join(module_dir, "wsi")
 
