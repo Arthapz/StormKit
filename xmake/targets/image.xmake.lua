@@ -6,7 +6,7 @@ add_requires("libjpeg-turbo", is_plat("windows") and {
         runtimes = "MD",
         shared = true,
     },
-})
+} or {})
 
 local src_image_dir = path.join(src_dir, "image")
 
