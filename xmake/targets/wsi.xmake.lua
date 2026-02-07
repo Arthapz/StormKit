@@ -74,7 +74,11 @@ target("wsi", function()
         add_files(path.join(src_wsi_dir, "win32/**.cpp"), path.join(src_wsi_dir, "win32/**.cppm"))
         add_syslinks("User32", "Shell32", "Gdi32", "Shcore", "Gdiplus")
     elseif is_plat("macosx") then
-        add_files(path.join(src_wsi_dir, "macos/**.cpp"), path.join(src_wsi_dir, "macos/**.m"))
+        add_files(
+            path.join(src_wsi_dir, "macos/**.cpp"),
+            path.join(src_wsi_dir, "macos/**.m"),
+            path.join(src_wsi_dir, "macos/**.cppm")
+        )
         add_files(path.join(src_wsi_dir, "macos/**.swift"), { public = true })
         set_values("swift.modulename", "macOS")
         set_values("swift.interop", "cxx")
