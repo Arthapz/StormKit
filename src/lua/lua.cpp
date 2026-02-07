@@ -49,13 +49,69 @@ namespace stormkit::lua {
     ////////////////////////////////////////
     ////////////////////////////////////////
     Engine::Engine(Modules modules) noexcept {
-        m_global_state.open_libraries(sol::lib::base);
-        m_global_state.open_libraries(sol::lib::bit32);
-        m_global_state.open_libraries(sol::lib::debug);
-        m_global_state.open_libraries(sol::lib::io);
-        m_global_state.open_libraries(sol::lib::os);
-        m_global_state.open_libraries(sol::lib::string);
-        m_global_state.open_libraries(sol::lib::table);
+        for (auto lib : {
+               sol::lib::base,
+               sol::lib::bit32,
+               sol::lib::debug,
+               sol::lib::io,
+               sol::lib::os,
+               sol::lib::string,
+               sol::lib::table,
+             })
+            m_global_state.open_libraries(lib);
+
+        auto tostring              = sol::protected_function { m_global_state["tostring"] };
+        m_global_state["tostring"] = [format = std::move(tostring)](sol::object v) noexcept {
+            if (not v.valid()) return std::string {};
+            if (v.is<sol::lua_table>()) {
+                auto out = std::string { "[lua_table " };
+                for (auto&& [key, value] : v.as<sol::table>()) {
+                    auto key_as_string   = sol::object { luacall(format, key) }.as<std::string>();
+                    auto value_as_string = sol::object { luacall(format, value) }.as<std::string>();
+                    out += key_as_string;
+                    out += ": ";
+                    out += value_as_string;
+                    out += ", ";
+                }
+                out = out.substr(0, stdr::size(out) - 2);
+                out += "]";
+                return out;
+            }
+            return sol::object { luacall(format, v) }.as<std::string>();
+        };
+        m_global_state["print"] = [this](std::string_view str, sol::variadic_args args) noexcept {
+            const auto format = sol::protected_function { m_global_state["format"] };
+            const auto result = luacall(format, str, std::move(args));
+            const auto out    = sol::object { result }.as<std::string>();
+            std::println("{}", out);
+        };
+
+        m_global_state["format"] = [this](std::string_view str, sol::variadic_args args) noexcept {
+            auto slices = split(str, "{}");
+            if (stdr::size(slices) == 1) { return std::format("{}", str); }
+
+            expects(args.size() == stdr::size(slices) - 1,
+                    std::format("Invalid count of args! should be {}, got {}", stdr::size(slices) - 1, args.size()));
+
+            auto out = std::string {};
+            out.reserve(stdr::size(str));
+            auto it = stdr::begin(slices);
+            out += *it;
+            ++it;
+            for (auto v : args) {
+                auto       format = sol::protected_function { m_global_state["tostring"] };
+                const auto result = luacall(m_global_state["tostring"], v);
+                out += sol::object { result }.as<std::string>();
+
+                out += *it;
+                ++it;
+
+                if (it == stdr::cend(slices)) break;
+            }
+
+            return out;
+        };
+
         core::init_lua(m_global_state);
         if (modules.log) {
 #if STORMKIT_LIB_LOG_ENABLED
@@ -115,64 +171,13 @@ namespace stormkit::lua {
     ////////////////////////////////////////
     auto Engine::load(const stdfs::path& file) noexcept -> void {
         const auto code = TryAssert(io::read_text<io::Mode::AINSI>(file), std::format("Failed to load {}", file.string()));
-
-        m_script = m_global_state.load(std::string_view { stdr::data(code), stdr::size(code) });
-
-        // auto bytecode_size = 0_usize;
-        // auto bytecode      = luau_compile(stdr::data(data), stdr::size(data), nullptr, &bytecode_size);
-        // auto result        = luau_load(m_global_state, "main", bytecode, bytecode_size, 0);
-        // std::free(bytecode);
-
-        // if (result != 0) {
-        //     auto len = usize { 0 };
-        //     auto msg = lua_tolstring(m_global_state, -1, &len);
-
-        //    ensures(result == 0,
-        //            std::format("Lua compilation error!\n-------------------------------\n{}", std::string_view { msg, len }));
-        // }
-
-        // m_main_thread = lua_newthread(m_global_state);
-        // ensures(m_main_thread);
-
-        // lua_pushvalue(m_global_state, -2);
-        // lua_remove(m_global_state, -3);
-        // lua_xmove(m_global_state, m_main_thread, 1);
+        m_script        = m_global_state.load(std::string_view { stdr::data(code), stdr::size(code) });
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto Engine::lua_main() noexcept -> std::expected<void, std::string> {
-        // EXPECTS(m_main_thread);
-
-        auto out = std::expected<void, std::string> {};
-
-        // traceback(m_global_state);
-
-        // luaL_sandbox(m_global_state);
-        // luaL_sandboxthread(m_global_state);
-
-        // auto status = lua_resume(m_global_state, nullptr, 0);
-        // if (status == 0) {
-        //     //  if (const auto n = lua_gettop(m_global_state); n) {
-        //     //      luaL_checkstack(m_global_state, LUA_MINSTACK, "too many results to print");
-        //     //      lua_getglobal(m_global_state, "print");
-        //     //      lua_insert(m_global_state, 1);
-        //     //      lua_pcall(m_global_state, n, 0, 0);
-        //     //  }
-
-        //    // lua_pop(m_global_state, 1);
-        // } else {
-        //    traceback(m_global_state);
-        //    auto error = std::string { lua_tostring(m_global_state, -1) };
-        //    out        = std::unexpected { std::move(error) };
-        // }
-
-        // return out;
-        auto result = m_script();
-        if (not result.valid()) {
-            const auto err = sol::error { result };
-            out            = std::unexpected { err.what() };
-        }
-        return out;
+    auto Engine::lua_main() noexcept -> void {
+        const auto function = sol::protected_function { m_script };
+        luacall(function);
     }
 } // namespace stormkit::lua

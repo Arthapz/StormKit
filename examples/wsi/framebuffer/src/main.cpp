@@ -16,7 +16,7 @@ using namespace std::literals;
 
 namespace stdr = std::ranges;
 
-auto update_pixels(stormkit::ThreadPool& pool, std::vector<rgbcolor<u8>>& pixels, const auto& extent) noexcept {
+auto update_pixels(stormkit::ThreadPool& pool, std::vector<ucolor_rgb>& pixels, const auto& extent) noexcept {
     const auto rect_width  = extent.width / 5;
     const auto rect_height = extent.height / 5;
 
@@ -64,7 +64,7 @@ auto main(std::span<const std::string_view> args) -> int {
     ilog("wm: {}", window.wm());
 
     auto pool   = core::ThreadPool {};
-    auto pixels = std::vector<rgbcolor<u8>> {};
+    auto pixels = std::vector<ucolor_rgb> {};
     update_pixels(pool, pixels, window.extent());
     auto active = true;
     window.on(wsi::ResizedEventFunc { [&](const math::uextent2& extent) mutable noexcept {

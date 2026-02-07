@@ -34,30 +34,24 @@ export namespace stormkit::entities {
 #endif
     };
 
-    struct Component {
-        using Type = u64;
-
-        static constexpr Type INVALID_TYPE = 0;
-        static constexpr Type TYPE         = INVALID_TYPE;
-    };
+    using ComponentType = u64;
 
     namespace meta {
         template<typename T>
-        concept IsComponentType = core::meta::Is<T, Component> and requires(T&& component) { T::TYPE; };
-
-        template<typename T>
-        concept IsSystem = core::meta::Is<T, System>;
+        concept IsComponentType = requires(T&& component) {
+            { component.type() } -> core::meta::Is<ComponentType>;
+        };
     } // namespace meta
 
     template<class Result>
     constexpr auto component_hash(std::string_view str) noexcept -> Result;
 
-    constexpr auto component_hash(CZString str, usize size) noexcept -> Component::Type;
+    constexpr auto component_hash(CZString str, usize size) noexcept -> ComponentType;
 
-    constexpr auto component_hash(std::string_view str) noexcept -> Component::Type;
+    constexpr auto component_hash(std::string_view str) noexcept -> ComponentType;
 
     namespace literals {
-        constexpr auto operator""_component_type(CZString str, usize size) -> Component::Type;
+        constexpr auto operator""_component_type(CZString str, usize size) -> ComponentType;
     } // namespace literals
 
     struct Message {
@@ -92,9 +86,22 @@ export namespace stormkit::entities {
 
     class STORMKIT_ENTITIES_API System {
       public:
-        using ComponentTypes = HashSet<Component::Type>;
+        using ComponentTypes = std::vector<ComponentType>;
+        using Entities       = std::vector<Entity>;
 
-        System(EntityManager& manager, u32 priority, ComponentTypes types);
+        using PreUpdateClosure  = std::function<void(EntityManager&, const Entities&)>;
+        using UpdateClosure     = std::function<void(EntityManager&, fsecond delta, const Entities&)>;
+        using PostUpdateClosure = std::function<void(EntityManager&, const Entities&)>;
+        using OnMessageReceived = std::function<void(EntityManager&, const Message&, const Entities&)>;
+
+        struct Closures {
+            PreUpdateClosure  pre_update = monadic::noop();
+            UpdateClosure     update;
+            PostUpdateClosure post_update         = monadic::noop();
+            OnMessageReceived on_message_received = monadic::noop();
+        };
+
+        System(std::string name, ComponentTypes types, Closures&& closures) noexcept;
 
         System(const System&)                    = delete;
         auto operator=(const System&) -> System& = delete;
@@ -102,103 +109,94 @@ export namespace stormkit::entities {
         System(System&&) noexcept;
         auto operator=(System&&) noexcept -> System&;
 
-        virtual ~System();
-
-        virtual auto pre_update() -> void;
-        virtual auto update(fsecond delta) -> void = 0;
-        virtual auto post_update() -> void;
+        ~System() noexcept;
 
         [[nodiscard]]
-        auto priority() const noexcept -> u32;
+        auto name() const noexcept -> const std::string&;
         [[nodiscard]]
         auto components_used() const noexcept -> const ComponentTypes&;
 
-        auto add_entity(Entity e) -> void;
-        auto remove_entity(Entity e) -> void;
+      private:
+        auto add_entity(Entity e) noexcept -> void;
+        auto remove_entity(Entity e) noexcept -> void;
 
-        struct Predicate {
-#ifdef STORMKIT_COMPILER_MSVC
-            [[nodiscard]]
-            auto operator()(const std::unique_ptr<System>& s1, const std::unique_ptr<System>& s2) const noexcept
-#else
-            [[nodiscard]]
-            static auto operator()(const std::unique_ptr<System>& s1, const std::unique_ptr<System>& s2) noexcept
-#endif
-              -> bool {
-                return s1->priority() < s2->priority();
-            }
-        };
+        auto pre_update(EntityManager&) noexcept -> void;
+        auto update(EntityManager&, fsecond) noexcept -> void;
+        auto post_update(EntityManager&) noexcept -> void;
 
-      protected:
-        virtual auto on_message_received(const Message& message) -> void = 0;
+        auto on_message_received(EntityManager&, const Message&) noexcept -> void;
 
-        Ref<const EntityManager> m_manager;
-        HashSet<Entity>          m_entities;
+        std::string m_name;
+
+        ComponentTypes m_types;
+
+        Closures m_closures;
+
+        Entities m_entities;
 
         friend class EntityManager;
-
-      private:
-        u32            m_priority;
-        ComponentTypes m_types;
     };
+
+    struct ComponentStore {};
 
     class STORMKIT_ENTITIES_API EntityManager {
       public:
         static constexpr auto ADDED_ENTITY_MESSAGE_ID   = 1;
         static constexpr auto REMOVED_ENTITY_MESSAGE_ID = 2;
 
-        explicit EntityManager();
-        ~EntityManager();
+        EntityManager() noexcept;
+        ~EntityManager() noexcept;
 
         EntityManager(const EntityManager&)                    = delete;
         auto operator=(const EntityManager&) -> EntityManager& = delete;
 
-        EntityManager(EntityManager&&);
-        auto operator=(EntityManager&&) -> EntityManager&;
+        EntityManager(EntityManager&&) noexcept;
+        auto operator=(EntityManager&&) noexcept -> EntityManager&;
 
-        auto make_entity() -> Entity;
-        auto destroy_entity(Entity entity) -> void;
-        auto destroy_all_entities() -> void;
-        auto has_entity(Entity entity) const -> bool;
-
-        template<meta::IsComponentType T, typename... Args>
-        auto add_component(Entity entity, Args&&... args) -> T&;
+        auto make_entity() noexcept -> Entity;
+        auto destroy_entity(Entity entity) noexcept -> void;
+        auto destroy_all_entities() noexcept -> void;
+        auto has_entity(Entity entity) const noexcept -> bool;
 
         template<meta::IsComponentType T>
-        auto destroy_component(Entity entity) -> void;
+        auto add_component(Entity entity, T&& component) noexcept -> T&;
 
-        template<meta::IsComponentType T>
-        auto has_component(Entity entity) const -> bool;
+        auto destroy_component(Entity entity, std::string_view name) noexcept -> void;
+        auto destroy_component(Entity entity, ComponentType type) noexcept -> void;
 
-        auto has_component(Entity entity, Component::Type type) const -> bool;
+        auto has_component(Entity entity, std::string_view name) const noexcept -> bool;
+        auto has_component(Entity entity, ComponentType type) const noexcept -> bool;
 
         auto entities() const noexcept -> const std::vector<Entity>&;
 
-        template<meta::IsComponentType T>
-        auto entities_with_component() const -> std::vector<Entity>;
+        auto entities_with_component(ComponentType type) const noexcept -> std::vector<Entity>;
+        auto entities_with_component(std::string_view name) const noexcept -> std::vector<Entity>;
 
         template<meta::IsComponentType T, class Self>
-        auto getComponent(this Self& self, Entity entity) -> core::meta::ForwardConst<Self, T&>;
-
-        template<class Self>
-        auto components(this Self& self, Entity entity) -> std::vector<Ref<core::meta::ForwardConst<Self, Component>>>;
+        auto get_component(this Self& self, Entity entity, ComponentType type) noexcept -> core::meta::ForwardConst<Self, T&>;
+        template<meta::IsComponentType T, class Self>
+        auto get_component(this Self& self, Entity entity, std::string_view name) noexcept -> core::meta::ForwardConst<Self, T&>;
 
         template<meta::IsComponentType T, class Self>
-        auto components_of_type(this Self& self) noexcept -> std::vector<Ref<core::meta::ForwardConst<Self, T>>>;
+        auto components_of_type(this Self& self, ComponentType type) noexcept
+          -> std::vector<Ref<core::meta::ForwardConst<Self, T>>>;
+        template<meta::IsComponentType T, class Self>
+        auto components_of_type(this Self& self, std::string_view name) noexcept
+          -> std::vector<Ref<core::meta::ForwardConst<Self, T>>>;
 
-        template<meta::IsSystem T, typename... Args>
-        auto add_system(Args&&... args) -> T&;
+        auto components_types_of(Entity entity) const noexcept -> std::vector<ComponentType>;
 
-        template<meta::IsSystem T>
-        auto has_system() const noexcept -> bool;
+        auto add_system(std::string name, System::ComponentTypes types, System::Closures&& closures) noexcept -> System&;
+        auto has_system(std::string_view name) const noexcept -> bool;
+        auto remove_system(std::string_view name) noexcept -> void;
 
         template<class Self>
         auto systems(this Self& self) noexcept -> std::vector<Ref<core::meta::ForwardConst<Self, System>>>;
 
-        template<meta::IsSystem T, class Self>
-        auto get_system(this Self& self) noexcept -> core::meta::ForwardConst<Self, T&>;
+        template<class Self>
+        auto get_system(this Self& self, std::string_view name) noexcept -> core::meta::ForwardConst<Self, System&>;
 
-        auto step(fsecond delta) -> void;
+        auto step(fsecond delta) noexcept -> void;
 
         auto entity_count() const noexcept -> usize;
 
@@ -207,25 +205,33 @@ export namespace stormkit::entities {
       private:
         using ComponentKey = u64;
 
-        static constexpr auto component_key_for(Entity e, Component::Type type) noexcept -> ComponentKey;
-        static constexpr auto is_key_entity(Entity e, ComponentKey key) noexcept -> bool;
+        struct Store {
+            ComponentType                   type;
+            usize                           size;
+            std::vector<Entity>             entities;
+            std::vector<std::byte>          data;
+            std::function<void(std::byte*)> delete_func;
+        };
 
-        auto purpose_to_systems(Entity e) -> void;
-        auto remove_from_systems(Entity e) -> void;
-        auto get_needed_entities(System& system) -> void;
+        using ComponentStore = std::vector<Store>;
 
-        Entity             m_next_valid_entity = 1;
-        std::queue<Entity> m_free_entities;
+        auto purpose_to_systems(Entity e) noexcept -> void;
+        auto remove_from_systems(Entity e) noexcept -> void;
+        auto get_needed_entities(System& system) noexcept -> void;
 
-        HashSet<Entity> m_entities;
+        Entity m_next_valid_entity = 1;
+
+        std::vector<Entity> m_entities;
+
+        std::vector<Entity> m_free_entities;
 
         HashSet<Entity> m_added_entities;
         HashSet<Entity> m_updated_entities;
         HashSet<Entity> m_removed_entities;
 
-        HashMap<Entity, std::vector<Component::Type>>        m_registered_components_for_entities;
-        std::set<std::unique_ptr<System>, System::Predicate> m_systems;
-        HashMap<ComponentKey, std::unique_ptr<Component>>    m_components;
+        std::vector<System> m_systems;
+
+        ComponentStore m_components;
 
         MessageBus m_message_bus;
     };
@@ -253,21 +259,21 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto component_hash(CZString str, usize size) noexcept -> Component::Type {
+    constexpr auto component_hash(CZString str, usize size) noexcept -> ComponentType {
         return size == 0 ? 0xcbf29ce484222325UL
                          : (as<usize>(str[0]) ^ component_hash(std::string_view { str + 1, size - 1 })) * 0x100000001b3UL;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto component_hash(std::string_view str) noexcept -> Component::Type {
+    constexpr auto component_hash(std::string_view str) noexcept -> ComponentType {
         return component_hash(std::data(str), std::size(str));
     }
 
     namespace literals {
         /////////////////////////////////////
         /////////////////////////////////////
-        constexpr auto operator""_component_type(CZString str, usize size) -> Component::Type {
+        constexpr auto operator""_component_type(CZString str, usize size) -> ComponentType {
             return stormkit::entities::component_hash(str, size);
         }
     } // namespace literals
@@ -280,8 +286,8 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto System::priority() const noexcept -> u32 {
-        return m_priority;
+    inline auto System::name() const noexcept -> const std::string& {
+        return m_name;
     }
 
     /////////////////////////////////////
@@ -292,104 +298,116 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsComponentType T, typename... Args>
-    auto EntityManager::add_component(Entity entity, Args&&... args) -> T& {
-        static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
-
+    template<meta::IsComponentType T>
+    auto EntityManager::add_component(Entity entity, T&& component) noexcept -> T& {
+        using PureT = core::meta::ToPlainType<T>;
         EXPECTS(has_entity(entity));
-        EXPECTS(not has_component<T>(entity));
+        EXPECTS(not has_component(entity, component.type()));
 
-        auto component = std::make_unique<T>(std::forward<Args>(args)...);
+        auto it = stdr::find_if(m_components, [type = component.type()](const auto& pair) noexcept { return pair.type == type; });
+        if (it == stdr::cend(m_components))
+            it = m_components.emplace(stdr::cend(m_components),
+                                      Store { component.type(), sizeof(PureT), {}, {}, [](auto ptr) static noexcept {
+                                                 std::bit_cast<PureT*>(ptr)->~PureT();
+                                             } });
 
-        auto type                                     = T::TYPE;
-        m_components[component_key_for(entity, type)] = std::move(component);
-        m_registered_components_for_entities.at(entity).emplace_back(type);
+        ENSURES(it != stdr::cend(m_components));
+
+        auto& [_, size, entities, components, _] = *it;
+        ENSURES(size == sizeof(PureT));
+
+        const auto old_size = stdr::size(components);
+        components.resize(old_size + sizeof(Entity) + size);
+        new (stdr::data(components) + old_size) Entity { entity };
+        auto* _component = new (stdr::data(components) + sizeof(Entity) + old_size) PureT { std::forward<T>(component) };
+
+        entities.emplace_back(entity);
 
         m_updated_entities.emplace(entity);
 
-        return getComponent<T>(entity);
+        return *_component;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsComponentType T>
-    auto EntityManager::destroy_component(Entity entity) -> void {
-        static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
-
-        EXPECTS(has_entity(entity));
-        EXPECTS(has_component<T>(entity));
-
-        const auto key = component_key_for(entity, T::TYPE);
-
-        if (m_components.find(key) != stdr::cend(m_components)) m_components.erase(key);
-
-        m_updated_entities.emplace(entity);
+    inline auto EntityManager::destroy_component(Entity entity, std::string_view name) noexcept -> void {
+        destroy_component(entity, component_hash(name));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsComponentType T>
-    auto EntityManager::has_component(Entity entity) const -> bool {
-        static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
-
-        return has_component(entity, T::TYPE);
+    inline auto EntityManager::has_component(Entity entity, std::string_view name) const noexcept -> bool {
+        return has_component(entity, component_hash(name));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto EntityManager::entities() const noexcept -> const std::vector<Entity>& {
-        return m_entities.values();
+        return m_entities;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsComponentType T>
-    auto EntityManager::entities_with_component() const -> std::vector<Entity> {
+    inline auto EntityManager::entities_with_component(ComponentType type) const noexcept -> std::vector<Entity> {
         // clang-format off
         return entities() 
-               | stdv::filter([](auto&& entity) static noexcept { return stdr::any_of(entity, T::TYPE); })
+               | stdv::filter([this, type](auto entity) noexcept { return has_component(entity, type); })
                | stdr::to<std::vector>();
         // clang-format on
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    inline auto EntityManager::entities_with_component(std::string_view name) const noexcept -> std::vector<Entity> {
+        return entities_with_component(component_hash(name));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<meta::IsComponentType T, class Self>
-    auto EntityManager::getComponent(this Self& self, Entity entity) -> core::meta::ForwardConst<Self, T&> {
-        EXPECTS(self.template has_component<T>(entity));
+    auto EntityManager::get_component(this Self& self, Entity entity, ComponentType type) noexcept
+      -> core::meta::ForwardConst<Self, T&> {
         EXPECTS(self.has_entity(entity));
+        EXPECTS(self.has_component(entity, type));
 
-        const auto key = component_key_for(entity, T::TYPE);
-        return *std::bit_cast<T*>(self.m_components.at(key).get());
-    }
+        auto it = stdr::find_if(self.m_components, [&type](const auto& pair) noexcept { return pair.type == type; });
+        ENSURES(it != stdr::cend(self.m_components));
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class Self>
-    auto EntityManager::components(this Self& self, Entity entity)
-      -> std::vector<Ref<core::meta::ForwardConst<Self, Component>>> {
-        if (not self.has_entity(entity)) [[unlikely]]
-            return {};
-        // clang-format off
-        return self.m_components 
-               | stdv::filter([entity](auto&& pair) noexcept {
-                   return EntityManager::is_key_entity(entity, pair.first);
-               }) 
-               | stdv::values 
-               | stdv::transform(monadic::as_ref()) 
-               | stdr::to<std::vector>();
-        // clang-format on
+        auto& [_, size, _, components, _] = *it;
+
+        auto component_it = stdr::data(components);
+        for (;;) {
+            auto e = *std::bit_cast<Entity*>(component_it);
+            if (e != entity) {
+                component_it += sizeof(Entity) + size;
+                continue;
+            }
+
+            component_it += sizeof(Entity);
+
+            break;
+        }
+        return std::forward_like<Self&>(*std::bit_cast<T*>(component_it));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsComponentType T, class Self>
-    auto EntityManager::components_of_type(this Self& self) noexcept -> std::vector<Ref<core::meta::ForwardConst<Self, T>>> {
+    auto EntityManager::get_component(this Self& self, Entity entity, std::string_view name) noexcept
+      -> core::meta::ForwardConst<Self, T&> {
+        return self.template get_component<T>(entity, component_hash(name));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsComponentType T, class Self>
+    auto EntityManager::components_of_type(this Self& self, ComponentType type) noexcept
+      -> std::vector<Ref<core::meta::ForwardConst<Self, T>>> {
         // clang-format off
         return self.m_entities 
-               | stdv::filter(bind_front(&EntityManager::has_component<T>, &self))
-               | stdv::transform(bind_front(&EntityManager::getComponent<T>, &self))
-               | stdv::transform(monadic::forward_like<Self>())
+               | stdv::filter([&self, type](auto entity) noexcept { return self.has_component(entity, type); })
+               | stdv::transform([&self, type](auto entity) noexcept { return self.template get_component<T>(entity, type); })
+               | stdv::transform(monadic::forward_like<Self&>())
                | stdv::transform(monadic::as_ref())
                | stdr::to<std::vector>();
         // clang-format on
@@ -397,11 +415,33 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsSystem T, typename... Args>
-    auto EntityManager::add_system(Args&&... args) -> T& {
-        m_systems.emplace(std::make_unique<T>(std::forward<Args>(args)..., *this));
+    template<meta::IsComponentType T, class Self>
+    auto EntityManager::components_of_type(this Self& self, std::string_view name) noexcept
+      -> std::vector<Ref<core::meta::ForwardConst<Self, T>>> {
+        return self.template components_of_type<T>(component_hash(name));
+    }
 
-        auto& system = get_system<T>();
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto EntityManager::components_types_of(Entity entity) const noexcept -> std::vector<ComponentType> {
+        EXPECTS(has_entity(entity));
+
+        auto out = std::vector<ComponentType> {};
+        for (auto&& [type, _, entities, _, _] : m_components) {
+            for (auto e : entities)
+                if (e == entity) {
+                    out.emplace_back(type);
+                    break;
+                }
+        }
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto EntityManager::add_system(std::string name, System::ComponentTypes types, System::Closures&& closures) noexcept
+      -> System& {
+        auto& system = m_systems.emplace_back(std::move(name), std::move(types), std::move(closures));
 
         get_needed_entities(system);
 
@@ -410,9 +450,15 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsSystem T>
-    auto EntityManager::has_system() const noexcept -> bool {
-        return stdr::any_of(m_systems, monadic::is<T>());
+    inline auto EntityManager::has_system(std::string_view name) const noexcept -> bool {
+        return stdr::any_of(m_systems, [name](const auto& system) noexcept { return system.name() == name; });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto EntityManager::remove_system(std::string_view name) noexcept -> void {
+        auto&& [begin, end] = stdr::remove_if(m_systems, [&name](const auto& system) { return name == system.name(); });
+        m_systems.erase(begin, end);
     }
 
     /////////////////////////////////////
@@ -430,30 +476,17 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsSystem T, class Self>
-    auto EntityManager::get_system(this Self& self) noexcept -> core::meta::ForwardConst<Self, T&> {
-        EXPECTS(self.template has_system<T>());
+    template<class Self>
+    auto EntityManager::get_system(this Self& self, std::string_view name) noexcept -> core::meta::ForwardConst<Self, System&> {
+        EXPECTS(self.has_system(name));
 
-        auto it = stdr::find_if(self.m_systems, monadic::is<T>());
-
-        return as<core::meta::ForwardConst<Self, T&>>(*it->get());
+        auto it = stdr::find_if(self.m_systems, [name](const auto& system) noexcept { return system.name() == name; });
+        return std::forward_like<Self&>(*it->get());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto EntityManager::entity_count() const noexcept -> usize {
         return std::size(m_entities);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    constexpr auto EntityManager::component_key_for(Entity e, Component::Type type) noexcept -> ComponentKey {
-        return (static_cast<u64>(e) << 32) | static_cast<u64>(type);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    constexpr auto EntityManager::is_key_entity(Entity e, ComponentKey type) noexcept -> bool {
-        return static_cast<u64>(e) == (type >> 32);
     }
 } // namespace stormkit::entities

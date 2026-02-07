@@ -11,8 +11,6 @@ namespace("lua", function()
 
         if get_config("devmode") then set_rundir("$(projectdir)") end
 
-        add_packages("luau", "luabridge3")
-
         set_group("examples/stormkit-lua")
     end)
 end)

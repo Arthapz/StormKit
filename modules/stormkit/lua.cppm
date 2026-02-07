@@ -38,7 +38,7 @@ export namespace stormkit::lua {
         Engine(Engine&& other) noexcept;
         auto operator=(Engine&& other) noexcept -> Engine&;
 
-        auto lua_main() noexcept -> std::expected<void, std::string>;
+        auto lua_main() noexcept -> void;
 
         template<typename T>
         auto global_state(this T& self) noexcept -> decltype(auto);
@@ -53,6 +53,9 @@ export namespace stormkit::lua {
         sol::state       m_global_state;
         sol::load_result m_script;
     };
+
+    template<typename... Args>
+    auto luacall(const sol::protected_function& function, Args&&... args) noexcept -> decltype(function());
 } // namespace stormkit::lua
 
 ////////////////////////////////////////////////////////////////////
@@ -73,5 +76,18 @@ namespace stormkit::lua {
     template<typename T>
     inline auto Engine::global_state(this T& self) noexcept -> decltype(auto) {
         return std::forward_like<T&>(self.m_global_state);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename... Args>
+    STORMKIT_FORCE_INLINE
+    inline auto luacall(const sol::protected_function& function, Args&&... args) noexcept -> decltype(function()) {
+        auto result = function(std::forward<Args>(args)...);
+        if (not result.valid())
+            ensures(false,
+                    std::format("lua runtime error!\n-----------------------------------------\n{}",
+                                sol::error { result }.what()));
+        return result;
     }
 } // namespace stormkit::lua
