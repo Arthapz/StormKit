@@ -1,10 +1,6 @@
 local function main()
   local window = wsi.window.open("test", 800, 600, wsi.window_flag.RESIZEABLE)
 
-  local mat = math.identity.fmat4
-
-  print(mat)
-  
   window:on_closed(function()
     print("Close event!")
     return true
@@ -12,47 +8,38 @@ local function main()
 
   window:on_resized(function(extent)
     print("Resize event:\n   ", extent)
-    return true
   end)
 
   window:on_monitor_changed(function(monitor)
     print("Monitor changed event:\n   ", monitor)
-    return true
   end)
 
   window:on_mouse_moved(function(_, position)
     print("Mouse move event:\n   ", position)
-    return true
   end)
 
   window:on_mouse_button_down(function(_, button, position)
     print("Mouse button down event:\n   ", button, "\n   ", position)
-    return true
   end)
 
   window:on_mouse_button_up(function(_, button, position)
     print("Mouse button up event:\n   ", button, "\n   ", position)
-    return true
   end)
 
   window:on_restored(function()
     print("Restored event!")
-    return true
   end)
 
   window:on_minimized(function()
     print("Minimzed event!")
-    return true
   end)
 
   window:on_activated(function()
     print("Activate event!")
-    return true
   end)
 
   window:on_deactivated(function()
     print("Deactivate event!")
-    return true
   end)
 
   local foo = 0

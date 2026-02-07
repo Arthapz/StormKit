@@ -2,8 +2,6 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-#include <stormkit/lua/lua.hpp>
-
 import std;
 
 import stormkit;
@@ -11,6 +9,8 @@ import stormkit;
 #include <stormkit/main/main_macro.hpp>
 
 #include <stormkit/log/log_macro.hpp>
+
+#include <stormkit/core/try_expected.hpp>
 
 LOGGER("lua-Events");
 

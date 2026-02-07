@@ -25,11 +25,11 @@ namespace stormkit::lua::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto init_lua(sol::state& global_state) noexcept -> void {
-        auto wsi_metatable = global_state["wsi"].get_or_create<sol::table>();
-        bind_core(global_state, wsi_metatable);
-        bind_window(global_state, wsi_metatable);
-        bind_monitor(global_state, wsi_metatable);
-        bind_keyboard(global_state, wsi_metatable);
-        bind_mouse(global_state, wsi_metatable);
+        auto wsi = global_state["wsi"].get_or_create<sol::table>();
+        bind_core(global_state, wsi);
+        bind_window(global_state, wsi);
+        bind_monitor(global_state, wsi);
+        bind_keyboard(global_state, wsi);
+        bind_mouse(global_state, wsi);
     }
 } // namespace stormkit::lua::wsi
