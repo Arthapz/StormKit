@@ -84,6 +84,41 @@ export namespace std {
         _T* __value_;
     };
 
+    #if defined(__clang__) and (__clang_major__ < 22)
+    namespace ranges {
+        template<class _Rng, typename _Allocator = use_allocator_arg>
+        struct elements_of {
+            explicit constexpr elements_of(_Rng&& __rng) noexcept
+                requires std::is_default_constructible_v<_Allocator>
+                : __range(static_cast<_Rng&&>(__rng)) {}
+
+            constexpr elements_of(_Rng&& __rng, _Allocator&& __alloc) noexcept
+                : __range((_Rng&&)__rng), __alloc((_Allocator&&)__alloc) {}
+
+            constexpr elements_of(elements_of&&) noexcept = default;
+
+            constexpr elements_of(const elements_of&)            = delete;
+            constexpr elements_of& operator=(const elements_of&) = delete;
+            constexpr elements_of& operator=(elements_of&&)      = delete;
+
+            constexpr _Rng&& get() noexcept { return static_cast<_Rng&&>(__range); }
+
+            constexpr _Allocator get_allocator() const noexcept { return __alloc; }
+
+          private:
+            [[no_unique_address]]
+            _Allocator __alloc; // \expos
+            _Rng&&     __range; // \expos
+        };
+
+        template<class _Rng>
+        elements_of(_Rng&&) -> elements_of<_Rng>;
+
+        template<class _Rng, typename Allocator>
+        elements_of(_Rng&&, Allocator&&) -> elements_of<_Rng, Allocator>;
+    } // namespace ranges
+    #endif
+
     template<class _Alloc>
     inline constexpr bool __allocator_needs_to_be_stored = !allocator_traits<_Alloc>::is_always_equal::value
                                                            || !is_default_constructible_v<_Alloc>;
