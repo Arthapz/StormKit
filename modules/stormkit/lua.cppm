@@ -30,6 +30,7 @@ export namespace stormkit::lua {
 
     class STORMKIT_LUA_API Engine {
       public:
+        using InitUserLibrariesClosure = FunctionRef<void(sol::state&)>;
         ~Engine() noexcept;
 
         Engine(const Engine&)                    = delete;
@@ -38,20 +39,16 @@ export namespace stormkit::lua {
         Engine(Engine&& other) noexcept;
         auto operator=(Engine&& other) noexcept -> Engine&;
 
-        auto lua_main() noexcept -> void;
-
-        template<typename T>
-        auto global_state(this T& self) noexcept -> decltype(auto);
-
-        static auto create(const stdfs::path& file, Modules modules = {}) noexcept -> Engine;
+        static auto create(stdfs::path              file,
+                           Modules                  modules             = {},
+                           InitUserLibrariesClosure init_user_libraries = monadic::noop()) noexcept -> Engine;
 
       private:
-        explicit Engine(Modules) noexcept;
+        Engine() noexcept;
 
-        auto load(const stdfs::path&) noexcept -> void;
+        auto load(stdfs::path&&, Modules&&, InitUserLibrariesClosure&&) noexcept -> void;
 
-        sol::state       m_global_state;
-        sol::load_result m_script;
+        auto init_libraries(Modules&&, sol::state&) noexcept -> void;
     };
 
     template<typename... Args>
@@ -65,17 +62,27 @@ export namespace stormkit::lua {
 namespace stormkit::lua {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline auto Engine::create(const stdfs::path& file, Modules modules) noexcept -> Engine {
-        auto engine = Engine { std::move(modules) };
-        engine.load(file);
-        return engine;
-    }
+    inline Engine::Engine() noexcept = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
-    inline auto Engine::global_state(this T& self) noexcept -> decltype(auto) {
-        return std::forward_like<T&>(self.m_global_state);
+    inline Engine::Engine(Engine&& other) noexcept = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::operator=(Engine&& other) noexcept -> Engine& = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline Engine::~Engine() noexcept = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Engine::create(stdfs::path file, Modules modules, InitUserLibrariesClosure init_user_libraries) noexcept
+      -> Engine {
+        auto engine = Engine {};
+        engine.load(std::move(file), std::move(modules), std::move(init_user_libraries));
+        return engine;
     }
 
     ////////////////////////////////////////

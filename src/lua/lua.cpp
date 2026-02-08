@@ -48,7 +48,22 @@ LOGGER("stormkit.lua")
 namespace stormkit::lua {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    Engine::Engine(Modules modules) noexcept {
+    auto Engine::load(stdfs::path&& file, Modules&& modules, InitUserLibrariesClosure&& init_user_libraries) noexcept -> void {
+        auto global_state = sol::state {};
+
+        init_libraries(std::move(modules), global_state);
+        init_user_libraries(global_state);
+
+        const auto code     = TryAssert(io::read_text<io::Mode::AINSI>(file), std::format("Failed to load {}", file.string()));
+        const auto script   = global_state.load(std::string_view { stdr::data(code), stdr::size(code) });
+        const auto function = sol::protected_function { script };
+
+        luacall(function);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    auto Engine::init_libraries(Modules&& modules, sol::state& global_state) noexcept -> void {
         for (auto lib : {
                sol::lib::base,
                sol::lib::bit32,
@@ -58,10 +73,10 @@ namespace stormkit::lua {
                sol::lib::string,
                sol::lib::table,
              })
-            m_global_state.open_libraries(lib);
+            global_state.open_libraries(lib);
 
-        auto tostring              = sol::protected_function { m_global_state["tostring"] };
-        m_global_state["tostring"] = [format = std::move(tostring)](sol::object v) noexcept {
+        auto tostring            = sol::protected_function { global_state["tostring"] };
+        global_state["tostring"] = [format = std::move(tostring)](sol::object v) noexcept {
             if (not v.valid()) return std::string {};
             if (v.is<sol::lua_table>()) {
                 auto out = std::string { "[lua_table " };
@@ -79,14 +94,14 @@ namespace stormkit::lua {
             }
             return sol::object { luacall(format, v) }.as<std::string>();
         };
-        m_global_state["print"] = [this](std::string_view str, sol::variadic_args args) noexcept {
-            const auto format = sol::protected_function { m_global_state["format"] };
+        global_state["print"] = [&global_state](std::string_view str, sol::variadic_args args) noexcept {
+            const auto format = sol::protected_function { global_state["format"] };
             const auto result = luacall(format, str, std::move(args));
             const auto out    = sol::object { result }.as<std::string>();
             std::println("{}", out);
         };
 
-        m_global_state["format"] = [this](std::string_view str, sol::variadic_args args) noexcept {
+        global_state["format"] = [&global_state](std::string_view str, sol::variadic_args args) noexcept {
             auto slices = split(str, "{}");
             if (stdr::size(slices) == 1) { return std::format("{}", str); }
 
@@ -99,8 +114,8 @@ namespace stormkit::lua {
             out += *it;
             ++it;
             for (auto v : args) {
-                auto       format = sol::protected_function { m_global_state["tostring"] };
-                const auto result = luacall(m_global_state["tostring"], v);
+                auto       format = sol::protected_function { global_state["tostring"] };
+                const auto result = luacall(global_state["tostring"], v);
                 out += sol::object { result }.as<std::string>();
 
                 out += *it;
@@ -112,11 +127,11 @@ namespace stormkit::lua {
             return out;
         };
 
-        core::init_lua(m_global_state);
+        core::init_lua(global_state);
         if (modules.log) {
 #if STORMKIT_LIB_LOG_ENABLED
             dlog("Log module enabled");
-            log::init_lua(m_global_state);
+            log::init_lua(global_state);
 #else
             elog("Trying to bind log module while disabled in this stormkit distribution!");
 #endif
@@ -124,7 +139,7 @@ namespace stormkit::lua {
         if (modules.entities) {
 #if STORMKIT_LIB_ENTITIES_ENABLED
             dlog("Entities module enabled");
-            entities::init_lua(m_global_state);
+            entities::init_lua(global_state);
 #else
             elog("Trying to bind entities module while disabled in this stormkit distribution!");
 #endif
@@ -132,7 +147,7 @@ namespace stormkit::lua {
         if (modules.image) {
 #if STORMKIT_LIB_IMAGE_ENABLED
             dlog("Image module enabled");
-            image::init_lua(m_global_state);
+            image::init_lua(global_state);
 #else
             elog("Trying to bind image module while disabled in this stormkit distribution!");
 #endif
@@ -140,7 +155,7 @@ namespace stormkit::lua {
         if (modules.wsi) {
 #if STORMKIT_LIB_WSI_ENABLED
             dlog("Wsi module enabled");
-            wsi::init_lua(m_global_state);
+            wsi::init_lua(global_state);
 #else
             elog("Trying to bind wsi module while disabled in this stormkit distribution!");
 #endif
@@ -148,36 +163,10 @@ namespace stormkit::lua {
         if (modules.gpu) {
 #if STORMKIT_LIB_GPU_ENABLED
             dlog("Gpu module enabled");
-            gpu::init_lua(m_global_state);
+            gpu::init_lua(global_state);
 #else
             elog("Trying to bind gpu module while disabled in this stormkit distribution!");
 #endif
         }
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    Engine::Engine(Engine&& other) noexcept = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    auto Engine::operator=(Engine&& other) noexcept -> Engine& = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    Engine::~Engine() noexcept = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    auto Engine::load(const stdfs::path& file) noexcept -> void {
-        const auto code = TryAssert(io::read_text<io::Mode::AINSI>(file), std::format("Failed to load {}", file.string()));
-        m_script        = m_global_state.load(std::string_view { stdr::data(code), stdr::size(code) });
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    auto Engine::lua_main() noexcept -> void {
-        const auto function = sol::protected_function { m_script };
-        luacall(function);
     }
 } // namespace stormkit::lua
