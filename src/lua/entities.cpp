@@ -50,15 +50,12 @@ namespace stormkit::lua::entities {
             ensures(type_closure.has_value(), "Missing type() function on lua component");
 
             const auto type   = sol::protected_function { *type_closure };
-            const auto result = luacall(type);
-            auto       value  = sol::object { result };
-            ensures(value.is<std::string>(), "type() function of lua component must return a string value");
+            const auto result = luacall(type, component);
+            const auto value  = sol::object { result };
 
-            const auto component_str = value.as<std::string>();
-
-            manager->add_component<LuaComponent>(entity,
-                                                 LuaComponent { .data  = std::move(component),
-                                                                ._type = component_hash(component_str) });
+            ensures(value.is<std::string>(), "Component type() must return a string or a component type");
+            const auto _type = component_hash(value.as<std::string>());
+            manager->add_component<LuaComponent>(entity, LuaComponent { .data = std::move(component), ._type = _type });
         };
         manager["get_component"] = +[](EntityManager* manager, Entity entity, std::string_view name) static noexcept {
             return manager->get_component<LuaComponent>(entity, name).data;
