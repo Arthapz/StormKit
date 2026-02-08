@@ -34,7 +34,7 @@ auto update_pixels(stormkit::ThreadPool& pool, std::vector<ucolor_rgb>& pixels, 
         const auto x = as<u32>(x_y % extent.width);
         const auto y = as<u32>(x_y / extent.width);
 
-        if (math::AABB({ as<u32>(x), as<u32>(y) }, rect)) data[y, x] = colors::BLACK<u8>;
+        if (math::AABB(math::uvec2 { as<u32>(x), as<u32>(y) }, rect)) data[y, x] = colors::BLACK<u8>;
         else {
             const auto color_id = as<f32>(x) / as<f32>(extent.width);
             if (color_id >= 0.8) data[y, x] = colors::BLUE<u8>;

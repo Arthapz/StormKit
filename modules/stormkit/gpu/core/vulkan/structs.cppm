@@ -49,7 +49,7 @@ export namespace stormkit::gpu {
     constexpr auto to_vk(const Viewport& viewport) noexcept -> VkViewport;
 
     [[nodiscard]]
-    constexpr auto to_vk(const math::recti& rect) noexcept -> VkRect2D;
+    constexpr auto to_vk(const math::irect& rect) noexcept -> VkRect2D;
 
     [[nodiscard]]
     constexpr auto to_vk(const Scissor& viewport) noexcept -> VkRect2D;
@@ -91,7 +91,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto to_vk(const math::recti& rect) noexcept -> VkRect2D {
+    constexpr auto to_vk(const math::irect& rect) noexcept -> VkRect2D {
         return VkRect2D {
             .offset = { rect.x,                    rect.y                     },
             .extent = { as<u32>(rect.width.value), as<u32>(rect.height.value) }

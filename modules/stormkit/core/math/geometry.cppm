@@ -20,10 +20,10 @@ import :math.linear.vector;
 export namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
     struct rect {
-        T           x;
-        T           y;
-        Positive<T> width;
-        Positive<T> height;
+        T           x      = T { 0 };
+        T           y      = T { 0 };
+        Positive<T> width  = T { 0 };
+        Positive<T> height = T { 0 };
 
         constexpr auto position() const noexcept -> vec2<T>;
         constexpr auto extent() const noexcept -> extent2<T>;
@@ -32,22 +32,19 @@ export namespace stormkit { inline namespace core { namespace math {
         constexpr auto to() const noexcept -> rect<U>;
     };
 
-    using recti = rect<i32>;
-    using rectu = rect<u32>;
-    using rectf = rect<f32>;
+    using irect = rect<i32>;
+    using urect = rect<u32>;
+    using frect = rect<f32>;
 
     template<core::meta::IsArithmetic T>
     rect(T, T, T, T) -> rect<T>;
 
-    template<typename T, typename FormatContext>
-    constexpr auto format_as(const rect<T>& point, FormatContext& ctx) -> decltype(ctx.out());
-
     template<core::meta::IsArithmetic T>
     struct bounding_rect {
-        T left;
-        T top;
-        T right;
-        T bottom;
+        T left   = T { 0 };
+        T top    = T { 0 };
+        T right  = T { 0 };
+        T bottom = T { 0 };
 
         constexpr auto topleft() const noexcept -> vec2<T>;
         constexpr auto bottomright() const noexcept -> vec2<T>;
@@ -56,14 +53,33 @@ export namespace stormkit { inline namespace core { namespace math {
         constexpr auto to() const noexcept -> rect<U>;
     };
 
-    template<typename T, typename FormatContext>
-    constexpr auto format_as(const bounding_rect<T>& point, FormatContext& ctx) -> decltype(ctx.out());
+    using ibounding_rect = bounding_rect<i32>;
+    using ubounding_rect = bounding_rect<u32>;
+    using fbounding_rect = bounding_rect<f32>;
+
+    template<core::meta::IsArithmetic T>
+    auto to_string(const rect<T>& value) noexcept -> std::string;
+
+    template<core::meta::IsArithmetic T>
+    auto to_string(const bounding_rect<T>& value) noexcept -> std::string;
+
+    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+    constexpr auto hasher(const rect<T>& value) noexcept -> Ret;
+
+    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+    constexpr auto hasher(const bounding_rect<T>& value) noexcept -> Ret;
+
+    template<core::meta::IsArithmetic T, typename FormatContext>
+    auto format_as(const rect<T>& value, FormatContext& ctx) -> decltype(ctx.out());
+
+    template<core::meta::IsArithmetic T, typename FormatContext>
+    auto format_as(const bounding_rect<T>& value, FormatContext& ctx) -> decltype(ctx.out());
 
     template<typename T>
-    constexpr auto to_bounding_rect(const rect<T>& _rect) noexcept -> bounding_rect<T>;
+    constexpr auto to_bounding_rect(const rect<T>& value) noexcept -> bounding_rect<T>;
 
     template<typename T>
-    constexpr auto to_rect(const bounding_rect<T>& _rect) noexcept -> rect<T>;
+    constexpr auto to_rect(const bounding_rect<T>& value) noexcept -> rect<T>;
 
     template<typename T>
     constexpr auto AABB(const rect<T>& rect1, const rect<T>& rect2) noexcept -> bool;
@@ -104,19 +120,6 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T, typename FormatContext>
-    STORMKIT_FORCE_INLINE
-    constexpr auto format_as(const rect<T>& point, FormatContext& ctx) -> decltype(ctx.out()) {
-        return std::format_to(ctx.out(),
-                              "{{ rect: .x = {}, .y = {}, .width = {}, .height = {} }}",
-                              point.x,
-                              point.y,
-                              point.width,
-                              point.height);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto bounding_rect<T>::topleft() const noexcept -> vec2<T> {
@@ -143,11 +146,56 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T, typename FormatContext>
+    template<core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE
-    constexpr auto format_as(const bounding_rect<T>& point, FormatContext& ctx) -> decltype(ctx.out()) {
+    inline auto to_string(const rect<T>& value) noexcept -> std::string {
+        return std::format("{}", value);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    STORMKIT_FORCE_INLINE
+    inline auto to_string(const bounding_rect<T>& value) noexcept -> std::string {
+        return std::format("{}", value);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto hasher(const rect<T>& value) noexcept -> Ret {
+        return hash<Ret>(value.x, value.y, value.width, value.height);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto hasher(const bounding_rect<T>& value) noexcept -> Ret {
+        return hash(value.left, value.top, value.right, value.bottom);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, typename FormatContext>
+    STORMKIT_FORCE_INLINE
+    inline auto format_as(const rect<T>& point, FormatContext& ctx) -> decltype(ctx.out()) {
         return std::format_to(ctx.out(),
-                              "{{ bounding_rect: .left = {}, .top = {}, .right = {}, .bottom = {} }}",
+                              "[rect x = {}, y = {}, width = {}, height = {}]",
+                              point.x,
+                              point.y,
+                              point.width,
+                              point.height);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, typename FormatContext>
+    STORMKIT_FORCE_INLINE
+    inline auto format_as(const bounding_rect<T>& point, FormatContext& ctx) -> decltype(ctx.out()) {
+        return std::format_to(ctx.out(),
+                              "[bounding_rect left = {}, top = {}, right = {}, bottom = {}]",
                               point.left,
                               point.top,
                               point.right,

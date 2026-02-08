@@ -14,6 +14,49 @@ import stormkit.core;
 
 namespace stormkit::lua::core {
     namespace {
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<auto... Rects>
+        auto _bind_rect(auto& parent) {
+            (
+              [&] noexcept {
+                  using Type = typename decltype(Rects)::Type;
+                  using Rect = math::rect<Type>;
+
+                  parent.template new_usertype<Rect>(
+                    Rects.name,
+                    sol::constructors<Rect(), Rect(Type, Type, Type, Type)> {},
+                    "position",
+                    &Rect::position,
+                    "extent",
+                    &Rect::extent,
+                    "to_bounding_rect",
+                    +[](const Rect* rect) noexcept -> math::bounding_rect<Type> { return to_bounding_rect<Type>(*rect); });
+              }(),
+              ...);
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<auto... Rects>
+        auto _bind_bounding_rect(auto& parent) {
+            (
+              [&] noexcept {
+                  using Type = typename decltype(Rects)::Type;
+                  using Rect = math::bounding_rect<Type>;
+
+                  parent.template new_usertype<Rect>(
+                    Rects.name,
+                    sol::constructors<Rect(), Rect(Type, Type, Type, Type)> {},
+                    "topleft",
+                    &Rect::topleft,
+                    "bottomright",
+                    &Rect::bottomright,
+                    "to_rect",
+                    +[](const Rect* rect) noexcept -> math::rect<Type> { return to_rect<Type>(*rect); });
+              }(),
+              ...);
+        }
 
         ////////////////////////////////////////
         ////////////////////////////////////////
@@ -436,9 +479,33 @@ namespace stormkit::lua::core {
         bind_linear_matrix(parent);
     }
 
+    template<typename T, meta::ConstexprString Name>
+    struct _Rect {
+        using Type                 = T;
+        static constexpr auto name = Name;
+    };
+
+    auto bind_geometry(sol::table& parent) noexcept -> void {
+        _bind_rect<_Rect<i32, "irect"> {}, _Rect<f32, "frect"> {}, _Rect<u32, "urect"> {}>(parent);
+        _bind_bounding_rect<_Rect<i32, "ibounding_rect"> {},
+                            _Rect<f32, "fbounding_rect"> {},
+                            _Rect<u32, "ubounding_rect"> {}>(parent);
+        parent["AABB"] = sol::overload(
+          +[](const math::irect& rect1, const math::irect& rect2) static noexcept { return AABB(rect1, rect2); },
+          +[](const math::ivec2& vec, const math::irect& rect) static noexcept { return AABB(vec, rect); },
+          +[](const math::ivec2& vec, const math::ibounding_rect& rect) static noexcept { return AABB(vec, rect); },
+          +[](const math::frect& rect1, const math::frect& rect2) static noexcept { return AABB(rect1, rect2); },
+          +[](const math::fvec2& vec, const math::frect& rect) static noexcept { return AABB(vec, rect); },
+          +[](const math::fvec2& vec, const math::fbounding_rect& rect) static noexcept { return AABB(vec, rect); },
+          +[](const math::urect& rect1, const math::urect& rect2) static noexcept { return AABB(rect1, rect2); },
+          +[](const math::uvec2& vec, const math::urect& rect) static noexcept { return AABB(vec, rect); },
+          +[](const math::uvec2& vec, const math::ubounding_rect& rect) static noexcept { return AABB(vec, rect); });
+    }
+
     auto bind_math(sol::state& global_state) noexcept -> void {
-        auto math_metatable = global_state["math"].get_or_create<sol::table>();
-        bind_extent(math_metatable);
-        bind_linear(math_metatable);
+        auto math_table = global_state["math"].get_or_create<sol::table>();
+        bind_extent(math_table);
+        bind_linear(math_table);
+        bind_geometry(math_table);
     }
 } // namespace stormkit::lua::core

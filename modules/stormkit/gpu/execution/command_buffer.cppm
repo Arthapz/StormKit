@@ -107,7 +107,7 @@ export namespace stormkit::gpu {
             std::optional<ClearValue> clear_value = std::nullopt;
         };
 
-        math::recti render_area;
+        math::irect render_area;
         u32         layer_count = 1u;
         u32         view_mask   = 0u;
 
