@@ -32,7 +32,7 @@ auto main(std::span<const std::string_view> args) -> int {
 
     auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
 
-    auto engine = lua::Engine::create(LUA_FILE, { .wsi = true });
+    auto engine = lua::Engine::create(LUA_FILE, { .log = true, .wsi = true });
     engine.lua_main();
 
     return 0;
