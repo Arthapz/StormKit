@@ -33,10 +33,10 @@ namespace stormkit::lua::entities {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto bind_manager(sol::table& entities) noexcept -> void {
-        const auto engine = false;
+        auto no_constructor = false;
 
-        auto manager = [&entities, &engine]() {
-            if (engine) return entities.new_usertype<EntityManager>("manager", sol::no_constructor);
+        auto manager = [&entities, no_constructor]() {
+            if (no_constructor) return entities.new_usertype<EntityManager>("manager", sol::no_constructor);
             else
                 return entities.new_usertype<EntityManager>("manager");
         }(/*config.engine*/);
@@ -103,7 +103,7 @@ namespace stormkit::lua::entities {
         manager["has_system"]    = &EntityManager::has_system;
         manager["remove_system"] = &EntityManager::remove_system;
 
-        if (not engine) {
+        if (not no_constructor) {
             manager["step"] = +[](EntityManager* manager, float delta) static noexcept { manager->step(fsecond { delta }); };
         }
     }
