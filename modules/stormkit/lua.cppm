@@ -39,9 +39,9 @@ export namespace stormkit::lua {
         Engine(Engine&& other) noexcept;
         auto operator=(Engine&& other) noexcept -> Engine&;
 
-        static auto create(stdfs::path              file,
-                           Modules                  modules             = {},
-                           InitUserLibrariesClosure init_user_libraries = monadic::noop()) noexcept -> Engine;
+        static auto run(stdfs::path              file,
+                        Modules                  modules             = {},
+                        InitUserLibrariesClosure init_user_libraries = monadic::noop()) noexcept -> Engine;
 
       private:
         Engine() noexcept;
@@ -78,8 +78,7 @@ namespace stormkit::lua {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline auto Engine::create(stdfs::path file, Modules modules, InitUserLibrariesClosure init_user_libraries) noexcept
-      -> Engine {
+    inline auto Engine::run(stdfs::path file, Modules modules, InitUserLibrariesClosure init_user_libraries) noexcept -> Engine {
         auto engine = Engine {};
         engine.load(std::move(file), std::move(modules), std::move(init_user_libraries));
         return engine;

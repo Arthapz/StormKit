@@ -1,4 +1,3 @@
-
 local function main()
   local window = wsi.window.open("test", 800, 600, wsi.window_flag.RESIZEABLE)
 
