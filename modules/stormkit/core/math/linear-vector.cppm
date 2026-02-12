@@ -143,6 +143,14 @@ export namespace stormkit { inline namespace core { namespace math {
 
         template<meta::IsVec T>
         [[nodiscard]]
+        constexpr auto as_view(const T& value) noexcept -> std::span<const typename T::value_type, T::EXTENT[0]>;
+
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto as_view_mut(T& value) noexcept -> std::span<typename T::value_type, T::EXTENT[0]>;
+
+        template<meta::IsVec T>
+        [[nodiscard]]
         constexpr auto as_mdspan(const T& value) noexcept -> VectorSpan<const typename T::value_type, T::EXTENT[0]>;
 
         template<meta::IsVec T>
@@ -345,6 +353,22 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
         math::cross(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
 
         return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsVec T>
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    constexpr auto as_view(const T& value) noexcept -> std::span<const typename T::value_type, T::EXTENT[0]> {
+        return std::span<const typename T::value_type, T::EXTENT[0]> { &value.x, T::EXTENT[0] };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsVec T>
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    constexpr auto as_view_mut(T& value) noexcept -> std::span<typename T::value_type, T::EXTENT[0]> {
+        return std::span<typename T::value_type, T::EXTENT[0]> { &value.x, T::EXTENT[0] };
     }
 
     ////////////////////////////////////////

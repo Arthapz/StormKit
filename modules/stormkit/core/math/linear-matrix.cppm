@@ -216,8 +216,12 @@ export {
 
             template<meta::IsMat T>
             [[nodiscard]]
-            constexpr auto as_span(T& value) noexcept
-              -> std::span<core::meta::ForwardConst<T, typename T::value_type>, T::EXTENTS[0] * T::EXTENTS[1]>;
+            constexpr auto as_view(const T& value) noexcept
+              -> std::span<const typename T::value_type, T::EXTENTS[0] * T::EXTENTS[1]>;
+
+            template<meta::IsMat T>
+            [[nodiscard]]
+            constexpr auto as_view_mut(T& value) noexcept -> std::span<typename T::value_type, T::EXTENTS[0] * T::EXTENTS[1]>;
 
             template<meta::IsMat T>
             [[nodiscard]]
@@ -549,12 +553,18 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     ////////////////////////////////////////
     template<meta::IsMat T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto as_span(T& value) noexcept
-      -> std::span<core::meta::ForwardConst<T, typename T::value_type>, T::EXTENTS[0] * T::EXTENTS[1]> {
-        return std::span<core::meta::ForwardConst<T, typename T::value_type>, T::EXTENTS[0] * T::EXTENTS[1]> {
-            stdr::data(value),
-            T::EXTENTS[0] * T::EXTENTS[1]
-        };
+    constexpr auto as_view(const T& value) noexcept -> std::span<const typename T::value_type, T::EXTENTS[0] * T::EXTENTS[1]> {
+        return std::span<const typename T::value_type, T::EXTENTS[0] * T::EXTENTS[1]> { stdr::data(value),
+                                                                                        T::EXTENTS[0] * T::EXTENTS[1] };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T>
+    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    constexpr auto as_view_mut(T& value) noexcept -> std::span<typename T::value_type, T::EXTENTS[0] * T::EXTENTS[1]> {
+        return std::span<typename T::value_type, T::EXTENTS[0] * T::EXTENTS[1]> { stdr::data(value),
+                                                                                  T::EXTENTS[0] * T::EXTENTS[1] };
     }
 
     ////////////////////////////////////////
@@ -586,7 +596,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     template<core::meta::HashType Ret = hash32, meta::IsMat T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto hasher(const T& value) noexcept -> Ret {
-        return hash<Ret>(as_span(value));
+        return hash<Ret>(as_view(value));
     }
 
     ////////////////////////////////////////
@@ -607,7 +617,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
         auto l = 0u;
         if constexpr (stormkit::meta::IsIntegral<typename T::value_type>) {
             auto max_digit = 0u;
-            for (auto v : as_span(mat)) max_digit = std::max(max_digit, v == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
+            for (auto v : as_view(mat)) max_digit = std::max(max_digit, v == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
             for (auto&& slice : mat | stdv::chunk_by(check_by_extent)) {
                 format_to(out,
                           "{}|{:n:>{}}|{}",
@@ -619,7 +629,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
             }
         } else {
             auto max_digit = 0u;
-            for (auto v : as_span(mat)) max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
+            for (auto v : as_view(mat)) max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
             for (auto&& slice : mat | stdv::chunk_by(check_by_extent)) {
                 format_to(out,
                           "{}| {:n:>{}.5f}|{}",

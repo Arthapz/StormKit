@@ -16,6 +16,19 @@ namespace {
     auto _ = test::TestSuite {
         "core.math.linear.vector",
         {
+          { "linear.vector.as_view",
+            [] static {
+                auto       a     = math::ivec2 { 2, 3 };
+                const auto span  = math::as_view(a);
+                auto       span2 = math::as_view_mut(a);
+
+                EXPECTS(span[0] == 2);
+                EXPECTS(span[1] == 3);
+
+                span2[0] = 1;
+
+                EXPECTS(span[0] == 1);
+            } },
           { "linear.vector.operator[]",
             [] static {
                 auto a = math::ivec2 { 2, 3 };
