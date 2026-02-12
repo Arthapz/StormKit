@@ -36,7 +36,7 @@ export namespace stormkit { inline namespace core { namespace math {
             T y;
 
             template<typename Self>
-            constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&>;
+            constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type>&;
 
             template<core::meta::IsArithmetic U>
             constexpr auto to() const noexcept -> vec2<U>;
@@ -59,7 +59,7 @@ export namespace stormkit { inline namespace core { namespace math {
             T z;
 
             template<typename Self>
-            constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&>;
+            constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type>&;
 
             template<core::meta::IsArithmetic U>
             constexpr auto to() const noexcept -> vec3<U>;
@@ -83,7 +83,7 @@ export namespace stormkit { inline namespace core { namespace math {
             T w;
 
             template<typename Self>
-            constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&>;
+            constexpr auto operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type>&;
 
             template<core::meta::IsArithmetic U>
             constexpr auto to() const noexcept -> vec4<U>;
@@ -212,10 +212,10 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
     template<core::meta::IsArithmetic T>
     template<typename Self>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto vec2<T>::operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&> {
-        static constexpr auto* members = { &vec2::x, &vec2::y };
+    constexpr auto vec2<T>::operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type>& {
+        static constexpr auto members = std::array { &vec2::x, &vec2::y };
 
-        return std::forward_like<Self>(self->*members[i]);
+        return std::forward_like<Self&>(self.*members[i]);
     }
 
     ////////////////////////////////////////
@@ -232,10 +232,10 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
     template<core::meta::IsArithmetic T>
     template<typename Self>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto vec3<T>::operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&> {
-        static constexpr auto* members = { &vec3::x, &vec3::y, &vec3::z };
+    constexpr auto vec3<T>::operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type>& {
+        static constexpr auto members = std::array { &vec3::x, &vec3::y, &vec3::z };
 
-        return std::forward_like<Self>(self->*members[i]);
+        return std::forward_like<Self&>(self.*members[i]);
     }
 
     ////////////////////////////////////////
@@ -252,10 +252,10 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
     template<core::meta::IsArithmetic T>
     template<typename Self>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto vec4<T>::operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type&> {
-        static constexpr auto* members = { &vec4::x, &vec4::y, &vec4::z, &vec4::w };
+    constexpr auto vec4<T>::operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, value_type>& {
+        static constexpr auto members = std::array { &vec4::x, &vec4::y, &vec4::z, &vec4::w };
 
-        return std::forward_like<Self>(self->*members[i]);
+        return std::forward_like<Self&>(self.*members[i]);
     }
 
     ////////////////////////////////////////

@@ -39,12 +39,12 @@ export {
 
                 template<typename Self>
                 [[nodiscard]]
-                constexpr auto operator[](this Self&& self, size_type i) noexcept -> core::meta::ForwardLike<Self, value_type>;
+                constexpr auto operator[](this Self&& self, size_type i) noexcept -> core::meta::ForwardLike<Self, value_type>&;
 
                 template<typename Self>
                 [[nodiscard]]
                 constexpr auto operator[](this Self&& self, size_type i, size_type j) noexcept
-                  -> core::meta::ForwardLike<Self, value_type>;
+                  -> core::meta::ForwardLike<Self, value_type>&;
 
                 template<typename Self>
                 [[nodiscard]]
@@ -280,8 +280,9 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     template<core::meta::IsArithmetic T, usize M, usize N>
     template<typename Self>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto mat<T, M, N>::operator[](this Self&& self, size_type i) noexcept -> core::meta::ForwardLike<Self, value_type> {
-        return std::forward<Self>(self).values[i];
+    constexpr auto mat<T, M, N>::operator[](this Self&& self, size_type i) noexcept
+      -> core::meta::ForwardLike<Self, value_type>& {
+        return std::forward_like<Self&>(self.values[i]);
     }
 
     ////////////////////////////////////////
@@ -290,8 +291,8 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     template<typename Self>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto mat<T, M, N>::operator[](this Self&& self, size_type i, size_type j) noexcept
-      -> core::meta::ForwardLike<Self, value_type> {
-        return std::forward_like<Self>(self.operator[](j + i * M));
+      -> core::meta::ForwardLike<Self, value_type>& {
+        return std::forward_like<Self&>(self.operator[](j + i * M));
     }
 
     ////////////////////////////////////////

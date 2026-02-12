@@ -16,6 +16,17 @@ namespace {
     auto _ = test::TestSuite {
         "core.math.linear.vector",
         {
+          { "linear.vector.operator[]",
+            [] static {
+                auto a = math::ivec2 { 2, 3 };
+                EXPECTS(a[0] == 2);
+                const auto c = math::ivec3 { 1, 3, 3 };
+                EXPECTS(c[1] == 3);
+                const auto b = math::ivec4 { 5, 3, 9, 2 };
+                EXPECTS(b[2] == 9);
+
+                a[0] = 5;
+            } },
           {
             "linear.vector.add",
             [] static {

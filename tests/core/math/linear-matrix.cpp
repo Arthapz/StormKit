@@ -16,6 +16,17 @@ namespace {
     auto _ = test::TestSuite {
         "core.math.linear.matrix",
         {
+          { "linear.matrix.operator[]",
+            [] static {
+                auto a = math::imat4 { 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 4, 0, 0, 0 };
+                EXPECTS(a[0] == 0);
+                EXPECTS(a[1] == 1);
+                EXPECTS(a[0] == 0);
+
+                EXPECTS((a[0, 2] == 2));
+
+                a[0] = 5;
+            } },
           {
             "linear.matrix.determinant",
             [] static {
