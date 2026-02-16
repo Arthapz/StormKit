@@ -89,9 +89,19 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto bytes_as(std::span<const byte, EXTENT> bytes) noexcept -> const T&;
 
+    template<typename T, usize EXTENT>
+    [[nodiscard]]
+    constexpr auto bytes_as_span(std::span<const byte, EXTENT> bytes) noexcept
+      -> std::span<const T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)>;
+
     template<class T, usize EXTENT>
     [[nodiscard]]
     constexpr auto bytes_mut_as(std::span<const byte, EXTENT> bytes) noexcept -> T&;
+
+    template<typename T, usize EXTENT>
+    [[nodiscard]]
+    constexpr auto bytes_mut_as_span(std::span<const byte, EXTENT> bytes) noexcept
+      -> std::span<T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)>;
 
     template<typename T, usize N>
     [[nodiscard]]
@@ -236,12 +246,38 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    template<typename T, usize EXTENT>
+    STORMKIT_FORCE_INLINE
+    constexpr auto bytes_as_span(std::span<const byte, EXTENT> bytes) noexcept
+      -> std::span<const T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)> {
+        if constexpr (EXTENT != std::dynamic_extent)
+            return std::span<const T, EXTENT / sizeof(T)> { std::bit_cast<const T* const>(stdr::data(bytes)),
+                                                            EXTENT / sizeof(T) };
+        else
+            return std::span { std::bit_cast<const T* const>(stdr::data(bytes)), stdr::size(bytes) / sizeof(T) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<class T, usize EXTENT>
     STORMKIT_FORCE_INLINE
     constexpr auto bytes_mut_as(std::span<const byte, EXTENT> bytes) noexcept -> T& {
         if constexpr (EXTENT != std::dynamic_extent) EXPECTS(EXTENT == sizeof(T));
         EXPECTS(stdr::size(bytes) == sizeof(T));
         return *std::bit_cast<T* const>(stdr::data(bytes));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, usize EXTENT>
+    STORMKIT_FORCE_INLINE
+    constexpr auto bytes_mut_as_span(std::span<const byte, EXTENT> bytes) noexcept
+      -> std::span<T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)> {
+        if constexpr (EXTENT != std::dynamic_extent)
+            return std::span<const T, EXTENT / sizeof(T)> { std::bit_cast<const T* const>(stdr::data(bytes)),
+                                                            EXTENT / sizeof(T) };
+        else
+            return std::span { std::bit_cast<const T* const>(stdr::data(bytes)), stdr::size(bytes) / sizeof(T) };
     }
 
     /////////////////////////////////////

@@ -170,10 +170,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto Shader::load_from_bytes(const Device& device, std::span<const Byte> data, ShaderStageFlag type) noexcept
       -> Expected<Shader> {
-        auto shader = Shader { device,
-                               bytes_as<std::span<const SpirvID>>(data) | stdr::to<std::vector>(),
-                               type,
-                               PrivateFuncTag {} };
+        auto shader = Shader { device, bytes_as_span<const SpirvID>(data) | stdr::to<std::vector>(), type, PrivateFuncTag {} };
         return shader.do_init().transform(core::monadic::consume(shader));
     }
 
@@ -217,7 +214,7 @@ namespace stormkit::gpu {
                                                      std::span<const Byte> data,
                                                      ShaderStageFlag       type) noexcept -> Expected<std::unique_ptr<Shader>> {
         auto shader = std::make_unique<Shader>(device,
-                                               bytes_as<std::span<const SpirvID>>(data) | stdr::to<std::vector>(),
+                                               bytes_as_span<const SpirvID>(data) | stdr::to<std::vector>(),
                                                type,
                                                PrivateFuncTag {});
         return shader->do_init().transform(core::monadic::consume(shader));
