@@ -68,8 +68,8 @@ export {
             };
 
             template<typename T, typename U>
-            concept HasIsTypeQueryier = requires(U&& value) {
-                { is_impl<T>(std::forward<U>(value)) } -> IsBooleanTestable;
+            concept HasIsTypeQueryier = requires(const U& value) {
+                { is_impl<T, U>(value) } -> IsBooleanTestable;
             };
 
             template<typename T, typename U>

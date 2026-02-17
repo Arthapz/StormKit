@@ -24,7 +24,7 @@ namespace stormkit::lua::core {
                   using Rect = math::rect<Type>;
 
                   parent.template new_usertype<Rect>(
-                    Rects.name,
+                    std::string { Rects.name },
                     sol::constructors<Rect(), Rect(Type, Type, Type, Type)> {},
                     "position",
                     &Rect::position,
@@ -46,7 +46,7 @@ namespace stormkit::lua::core {
                   using Rect = math::bounding_rect<Type>;
 
                   parent.template new_usertype<Rect>(
-                    Rects.name,
+                    std::string { Rects.name },
                     sol::constructors<Rect(), Rect(Type, Type, Type, Type)> {},
                     "topleft",
                     &Rect::topleft,
