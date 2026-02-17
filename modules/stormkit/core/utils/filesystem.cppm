@@ -143,14 +143,15 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     inline auto Descriptor<mode>::open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor<mode>> {
-        if (not stdfs::exists(path)) return std::unexpected { SystemError { .code = std::errc::no_such_file_or_directory } };
+        if (access == Access::READ and not stdfs::exists(path))
+            return std::unexpected { SystemError { .code = std::errc::no_such_file_or_directory } };
         if (stdfs::is_directory(path)) return std::unexpected { SystemError { .code = std::errc::is_a_directory } };
 
         const auto posix_access = [&access]() noexcept {
 #ifdef STORMKIT_OS_WINDOWS
             if (access == Access::READ) return _O_RDONLY;
             else if (access == Access::WRITE)
-                return _O_WRONLY;
+                return (_O_WRONLY | _O_CREAT);
             else
                 return _O_RDWR;
 #else
@@ -168,8 +169,8 @@ namespace stormkit { inline namespace core { namespace io {
             switch (mode) {
     #ifdef STORMKIT_OS_WINDOWS
                 case Mode::BINARY: return _O_BINARY;
-                case Mode::AINSI: return _O_TEXT;
-                case Mode::UTF8: return _O_U8TEXT;
+                case Mode::AINSI: [[fallthrough]];
+                case Mode::UTF8: return _O_TEXT;
                 case Mode::WIDE: return _O_WTEXT;
                 default: break;
     #else
@@ -182,8 +183,7 @@ namespace stormkit { inline namespace core { namespace io {
         auto ret = 0;
         auto str = path.string();
         const auto //
-          err = _sopen_s(&ret, str.c_str(), posix_access | text_mode, _SH_DENYWR, 0);
-        // err = _sopen_s(&ret, stdr::data(p), posix_access | text_mode, _SH_SECURE, 0);
+          err = _sopen_s(&ret, str.c_str(), posix_access | text_mode, _SH_DENYNO, _S_IREAD);
         if (err != 0) return std::unexpected { SystemError::from_errno() };
 #else
         const auto ret = ::open(path.c_str(), posix_access);
