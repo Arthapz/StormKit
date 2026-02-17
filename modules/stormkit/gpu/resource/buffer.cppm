@@ -120,6 +120,9 @@ export namespace stormkit::gpu {
         usize         size;
         u64           offset = 0;
     };
+
+    template<core::meta::HashType Ret = hash32>
+    constexpr auto hasher(const Buffer::CreateInfo& create_info) noexcept -> Ret;
 } // namespace stormkit::gpu
 
 ////////////////////////////////////////////////////////////////////
@@ -327,5 +330,12 @@ namespace stormkit::gpu {
     inline auto Buffer::native_handle() const noexcept -> VkBuffer {
         EXPECTS(m_vk_handle);
         return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::HashType Ret = hash32>
+    constexpr auto hasher(const Buffer::CreateInfo& create_info) noexcept -> Ret {
+        return hash(create_info.usages, create_info.size, create_info.property);
     }
 } // namespace stormkit::gpu

@@ -211,6 +211,9 @@ export namespace stormkit::gpu {
         const Image&          image;
         ImageSubresourceRange range;
     };
+
+    template<core::meta::HashType Ret = hash32>
+    constexpr auto hasher(const Image::CreateInfo& value) noexcept -> Ret;
 } // namespace stormkit::gpu
 
 ////////////////////////////////////////////////////////////////////
@@ -561,5 +564,21 @@ namespace stormkit::gpu {
         };
 
         return do_init(create_info, info.property);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::HashType Ret = hash32>
+    constexpr auto hasher(const Image::CreateInfo& create_info) noexcept -> Ret {
+        return hash(create_info.extent,
+                    create_info.format,
+                    create_info.layers,
+                    create_info.mip_levels,
+                    create_info.type,
+                    create_info.flags,
+                    create_info.samples,
+                    create_info.usages,
+                    create_info.tiling,
+                    create_info.property);
     }
 } // namespace stormkit::gpu
