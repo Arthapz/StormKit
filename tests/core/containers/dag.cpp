@@ -33,7 +33,7 @@ namespace {
                                                   Edge { 3, 2 },
                                                   Edge { 1, 4 });
 
-                auto dag = DAG<i32> { dag::DIRECTED };
+                auto dag = DAG<i32> {};
                 for (auto i : range(7)) dag.add_vertex(i);
 
                 for (auto&& [from, to] : edges) dag.add_edge(from, to);
@@ -56,7 +56,7 @@ namespace {
             } },
           { "remove_edge_and_vertex",
             [] {
-                auto dag = DAG<std::string> { dag::DIRECTED };
+                auto dag = DAG<std::string> {};
                 dag.emplace_vertex("a");
                 dag.emplace_vertex("b");
                 dag.emplace_vertex("c");
@@ -99,7 +99,7 @@ namespace {
             } },
           { "find_cycle",
             [] {
-                auto dag = DAG<i32> { dag::DIRECTED };
+                auto dag = DAG<i32> {};
                 dag.add_vertex(0);
                 dag.add_vertex(1);
                 dag.add_vertex(4);
@@ -130,9 +130,9 @@ namespace {
                     EXPECTS(not result.has_value());
                 }
             } },
-          { "reverse",
+          { "reverse_view",
             [] {
-                auto dag = DAG<std::string> { dag::DIRECTED };
+                auto dag = DAG<std::string> {};
                 dag.emplace_vertex("a");
                 dag.emplace_vertex("b");
                 dag.emplace_vertex("c");
@@ -143,7 +143,31 @@ namespace {
                 dag.add_edge(2, 3);
                 dag.add_edge(0, 3);
 
-                auto reversed = dag.reverse();
+                auto reversed = dag.reverse_view();
+
+                const auto& edges  = dag.edges();
+                const auto& redges = reversed.edges();
+
+                for (auto i : range(4u)) {
+                    const auto [from, to]   = edges[i];
+                    const auto [rfrom, rto] = redges[i];
+                    EXPECTS(from == rto and rfrom == to);
+                }
+            } },
+          { "reverse_clone",
+            [] {
+                auto dag = DAG<std::string> {};
+                dag.emplace_vertex("a");
+                dag.emplace_vertex("b");
+                dag.emplace_vertex("c");
+                dag.emplace_vertex("d");
+
+                dag.add_edge(0, 1);
+                dag.add_edge(1, 2);
+                dag.add_edge(2, 3);
+                dag.add_edge(0, 3);
+
+                auto reversed = dag.reverse_clone();
 
                 const auto& edges  = dag.edges();
                 const auto& redges = reversed.edges();
@@ -156,7 +180,7 @@ namespace {
             } },
           { "dump",
             [] {
-                auto dag = DAG<std::string> { dag::DIRECTED };
+                auto dag = DAG<std::string> {};
                 dag.emplace_vertex("a");
                 dag.emplace_vertex("b");
                 dag.emplace_vertex("c");

@@ -28,9 +28,6 @@ namespace stdfs = std::filesystem;
 
 export namespace stormkit { inline namespace core {
     namespace dag {
-        inline constexpr struct {
-        } DIRECTED = {};
-
         using VertexID = u32;
 
         struct Edge {
@@ -62,10 +59,7 @@ export namespace stormkit { inline namespace core {
             }();
         };
 
-        struct Directed {};
-
-        constexpr explicit DAG(std::optional<decltype(dag::DIRECTED)> = std::nullopt,
-                               std::optional<usize> reserve           = std::nullopt) noexcept;
+        constexpr explicit DAG(std::optional<usize> reserve = std::nullopt) noexcept;
         constexpr ~DAG() noexcept;
 
         constexpr DAG(DAG&&) noexcept;
@@ -108,13 +102,18 @@ export namespace stormkit { inline namespace core {
         constexpr auto topological_sort() const noexcept -> std::expected<std::vector<dag::VertexID>, std::vector<dag::VertexID>>;
         constexpr auto find_cycle() const noexcept -> std::optional<std::vector<dag::VertexID>>;
 
-        constexpr auto reverse() const noexcept -> DAG<Ref<const VertexValue>>;
+        constexpr auto reverse_view() const noexcept -> DAG<Ref<const VertexValue>>;
         constexpr auto reverse_clone() const noexcept -> DAG<VertexValue>;
 
         constexpr auto dump(Closures closures = {}) const noexcept -> std::string;
 
+        // FIXME find a way to make it not accessible to user
+        template<typename FromDAG, bool AS_REF>
+        static constexpr auto reverse_from(dag::VertexID,
+                                           const std::vector<typename FromDAG::Vertex>&,
+                                           const std::vector<dag::Edge>&) noexcept -> DAG<VertexValue>;
+
       private:
-        bool          m_directed;
         dag::VertexID m_next_id = 0;
 
         std::vector<Vertex>                            m_vertices;
@@ -146,8 +145,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename VertexValue>
-    constexpr DAG<VertexValue>::DAG(std::optional<decltype(dag::DIRECTED)> directed, std::optional<usize> reserve) noexcept
-        : m_directed { directed } {
+    constexpr DAG<VertexValue>::DAG(std::optional<usize> reserve) noexcept {
         if (reserve) m_vertices.reserve(*reserve);
     }
 
@@ -165,13 +163,6 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename VertexValue>
     constexpr auto DAG<VertexValue>::operator=(DAG&&) noexcept -> DAG& = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename VertexValue>
-    constexpr auto DAG<VertexValue>::directed() const noexcept -> bool {
-        return m_directed;
-    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -324,12 +315,7 @@ namespace stormkit { inline namespace core {
 
         const auto& edge = m_edges.emplace_back(from, to);
 
-        if (m_directed) {
-            m_adjacent_edges[from].emplace_back(edge);
-        } else {
-            m_adjacent_edges[from].emplace_back(edge);
-            m_adjacent_edges[to].emplace_back(edge);
-        }
+        m_adjacent_edges[from].emplace_back(edge);
     }
 
     ////////////////////////////////////////
@@ -339,9 +325,7 @@ namespace stormkit { inline namespace core {
         if (not has_vertex(from) or not has_vertex(to)) return false;
 
         return stdr::any_of(m_edges, [from, to](auto&& edge) noexcept { return edge.from == from and edge.to == to; })
-               and (m_directed ? true : stdr::any_of(m_edges, [from, to](auto&& edge) noexcept {
-                       return edge.from == to and edge.to == from;
-                   }));
+               and stdr::any_of(m_edges, [from, to](auto&& edge) noexcept { return edge.from == to and edge.to == from; });
     }
 
     ////////////////////////////////////////
@@ -358,23 +342,10 @@ namespace stormkit { inline namespace core {
             });
             m_edges.erase(it);
         }
-        if (not m_directed) {
-            const auto it = stdr::find_if(m_edges, [from, to](auto&& edge) noexcept {
-                return edge.from == to and edge.to == from;
-            });
-            m_edges.erase(it);
-        }
-
         for (auto&& [_, edges] : m_adjacent_edges) {
             {
                 const auto it = stdr::find_if(edges, [from, to](auto&& edge) noexcept {
                     return edge.from == from and edge.to == to;
-                });
-                if (it != stdr::cend(edges)) edges.erase(it);
-            }
-            if (not m_directed) {
-                const auto it = stdr::find_if(edges, [from, to](auto&& edge) noexcept {
-                    return edge.from == to and edge.to == from;
                 });
                 if (it != stdr::cend(edges)) edges.erase(it);
             }
@@ -427,8 +398,6 @@ namespace stormkit { inline namespace core {
     template<typename VertexValue>
     constexpr auto DAG<VertexValue>::topological_sort() const noexcept
       -> std::expected<std::vector<dag::VertexID>, std::vector<dag::VertexID>> {
-        expects(m_directed, "Can't do topological sort on a non-directed graph");
-
         if (auto result = find_cycle(); result.has_value()) return std::unexpected { std::move(*result) };
 
         struct Degree {
@@ -536,27 +505,15 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename VertexValue>
-    constexpr auto DAG<VertexValue>::reverse() const noexcept -> DAG<Ref<const VertexValue>> {
-        auto out = DAG<Ref<const VertexValue>>(dag::DIRECTED, stdr::size(m_vertices));
-
-        for (auto&& [_, vertice] : m_vertices) out.add_vertex(as_ref(vertice));
-
-        for (auto&& [from, to] : m_edges) out.add_edge(to, from);
-
-        return out;
+    constexpr auto DAG<VertexValue>::reverse_view() const noexcept -> DAG<Ref<const VertexValue>> {
+        return DAG<Ref<const VertexValue>>::template reverse_from<DAG<VertexValue>, true>(m_next_id, m_vertices, m_edges);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename VertexValue>
     constexpr auto DAG<VertexValue>::reverse_clone() const noexcept -> DAG<VertexValue> {
-        auto out = DAG<Ref<VertexValue>>(dag::DIRECTED, stdr::size(m_vertices));
-
-        for (auto&& [_, vertice] : m_vertices) out.add_vertex(vertice);
-
-        for (auto&& [from, to] : m_edges) out.add_edge(to, from);
-
-        return out;
+        return reverse_from<DAG<VertexValue>, false>(m_next_id, m_vertices, m_edges);
     }
 
     ////////////////////////////////////////
@@ -587,6 +544,39 @@ namespace stormkit { inline namespace core {
         for (const auto& [from, to] : m_edges) out += std::format("    \"node{}\" -> \"node{}\" [color=seagreen];\n", from, to);
 
         out += "}";
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename VertexValue>
+    template<typename FromDAG, bool AS_REF>
+    constexpr auto DAG<VertexValue>::reverse_from(dag::VertexID                                next_id,
+                                                  const std::vector<typename FromDAG::Vertex>& vertices,
+                                                  const std::vector<dag::Edge>& edges) noexcept -> DAG<VertexValue> {
+        auto out      = DAG<VertexValue> {};
+        out.m_next_id = next_id;
+
+        out.m_adjacent_edges.reserve(stdr::size(vertices));
+        if constexpr (AS_REF) {
+            for (const auto& [id, vertice] : vertices) {
+                out.m_vertices.emplace_back(id, as_ref(vertice));
+                out.m_adjacent_edges[id] = {};
+            }
+        } else {
+            for (const auto& [id, vertice] : vertices) {
+                out.m_vertices.emplace_back(id, auto(vertice));
+                out.m_adjacent_edges[id] = {};
+            }
+        }
+
+        out.m_edges.reserve(stdr::size(edges));
+        for (auto&& [from, to] : edges) {
+            const auto& edge = out.m_edges.emplace_back(to, from);
+
+            out.m_adjacent_edges[to].emplace_back(edge);
+        }
 
         return out;
     }
