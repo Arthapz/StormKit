@@ -8,6 +8,8 @@ module;
 
 export module stormkit.core:hash.string;
 
+import :hash.base;
+
 import :string.czstring;
 import :typesafe.integer;
 import :typesafe.safecasts;
@@ -21,13 +23,8 @@ export namespace stormkit { inline namespace core {
         using is_transparent = void;
         using is_avalanching = void;
 
-#ifdef STORMKIT_COMPILER_MSVC
         [[nodiscard]]
-        auto operator()(std::string_view value, u64 seed = 0) const noexcept -> u64;
-#else
-        [[nodiscard]]
-        static auto operator()(std::string_view value, u64 seed = 0) noexcept -> u64;
-#endif
+        static constexpr auto operator()(std::string_view value, u64 seed = 0) noexcept -> u64;
     };
 
     template<class Value, class Key = std::string>
@@ -43,6 +40,14 @@ export namespace stormkit { inline namespace core {
 
     template<std::size_t Size, class Value = std::string>
     using FrozenStringHashSet = frozen::unordered_set<std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
+
+    template<meta::HashType Ret = hash32>
+    constexpr auto hasher(std::string_view value) noexcept -> Ret;
+
+    namespace literals {
+        constexpr auto operator""_hash32(CZString str, usize size) -> hash32;
+        constexpr auto operator""_hash64(CZString str, usize size) -> hash64;
+    } // namespace literals
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -177,15 +182,34 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-#ifdef STORMKIT_COMPILER_MSVC
-    inline auto StringHash::operator()(std::string_view value, u64 seed) const noexcept
-#else
-    inline auto StringHash::operator()(std::string_view value, u64 seed) noexcept
-#endif
-      -> u64 {
+    constexpr auto StringHash::operator()(std::string_view value, u64 seed) noexcept -> u64 {
         auto mask   = u8 { 0b01111 };
         auto hasher = Lehmer128Hasher { seed };
         hash_selected_characters(mask, hasher, std::data(value), std::size(value));
         return hasher.hash();
     }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::HashType Ret = hash32>
+    STORMKIT_FORCE_INLINE
+    constexpr auto hasher(std::string_view value) noexcept -> Ret {
+        return StringHash::operator()(value);
+    }
+
+    namespace literals {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        constexpr auto operator""_hash32(CZString str, usize size) -> hash32 {
+            return hash<hash32>(std::string_view { str, size });
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        constexpr auto operator""_hash64(CZString str, usize size) -> hash64 {
+            return hash<hash64>(std::string_view { str, size });
+        }
+    } // namespace literals
 }} // namespace stormkit::core

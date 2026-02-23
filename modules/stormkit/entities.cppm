@@ -34,7 +34,7 @@ export namespace stormkit::entities {
 #endif
     };
 
-    using ComponentType = u64;
+    using ComponentType = u32;
 
     namespace meta {
         template<typename T>
@@ -42,17 +42,6 @@ export namespace stormkit::entities {
             { component.type() } -> core::meta::Is<ComponentType>;
         };
     } // namespace meta
-
-    template<class Result>
-    constexpr auto component_hash(std::string_view str) noexcept -> Result;
-
-    constexpr auto component_hash(CZString str, usize size) noexcept -> ComponentType;
-
-    constexpr auto component_hash(std::string_view str) noexcept -> ComponentType;
-
-    namespace literals {
-        constexpr auto operator""_component_type(CZString str, usize size) -> ComponentType;
-    } // namespace literals
 
     struct Message {
         u32                 id;
@@ -250,36 +239,6 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class Result>
-    constexpr auto component_hash(std::string_view str) noexcept -> Result {
-        return std::empty(str)
-                 ? 0xcbf29ce484222325UL
-                 : (as<hash64>(str[0]) ^ component_hash<Result>(str.substr(1, std::size(str) - 1))) * 0x100000001b3UL;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    constexpr auto component_hash(CZString str, usize size) noexcept -> ComponentType {
-        return size == 0 ? 0xcbf29ce484222325UL
-                         : (as<usize>(str[0]) ^ component_hash(std::string_view { str + 1, size - 1 })) * 0x100000001b3UL;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    constexpr auto component_hash(std::string_view str) noexcept -> ComponentType {
-        return component_hash(std::data(str), std::size(str));
-    }
-
-    namespace literals {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        constexpr auto operator""_component_type(CZString str, usize size) -> ComponentType {
-            return stormkit::entities::component_hash(str, size);
-        }
-    } // namespace literals
-
-    /////////////////////////////////////
-    /////////////////////////////////////
     inline auto MessageBus::empty() const noexcept -> bool {
         return std::empty(m_messages);
     }
@@ -331,13 +290,13 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto EntityManager::destroy_component(Entity entity, std::string_view name) noexcept -> void {
-        destroy_component(entity, component_hash(name));
+        destroy_component(entity, hash(name));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto EntityManager::has_component(Entity entity, std::string_view name) const noexcept -> bool {
-        return has_component(entity, component_hash(name));
+        return has_component(entity, hash(name));
     }
 
     /////////////////////////////////////
@@ -359,7 +318,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto EntityManager::entities_with_component(std::string_view name) const noexcept -> std::vector<Entity> {
-        return entities_with_component(component_hash(name));
+        return entities_with_component(hash(name));
     }
 
     /////////////////////////////////////
@@ -395,7 +354,7 @@ namespace stormkit::entities {
     template<meta::IsComponentType T, class Self>
     auto EntityManager::get_component(this Self& self, Entity entity, std::string_view name) noexcept
       -> core::meta::ForwardConst<Self, T&> {
-        return self.template get_component<T>(entity, component_hash(name));
+        return self.template get_component<T>(entity, hash(name));
     }
 
     /////////////////////////////////////
@@ -418,7 +377,7 @@ namespace stormkit::entities {
     template<meta::IsComponentType T, class Self>
     auto EntityManager::components_of_type(this Self& self, std::string_view name) noexcept
       -> std::vector<Ref<core::meta::ForwardConst<Self, T>>> {
-        return self.template components_of_type<T>(component_hash(name));
+        return self.template components_of_type<T>(hash(name));
     }
 
     /////////////////////////////////////

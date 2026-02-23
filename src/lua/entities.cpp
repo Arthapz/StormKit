@@ -17,7 +17,6 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 namespace stormkit::lua::entities {
-    using stormkit::entities::component_hash;
     using stormkit::entities::ComponentType;
     using stormkit::entities::Entity;
     using stormkit::entities::EntityManager;
@@ -54,7 +53,7 @@ namespace stormkit::lua::entities {
             const auto value  = sol::object { result };
 
             ensures(value.is<std::string>(), "Component type() must return a string or a component type");
-            const auto _type = component_hash(value.as<std::string>());
+            const auto _type = hash(value.as<std::string>());
             manager->add_component<LuaComponent>(entity, LuaComponent { .data = std::move(component), ._type = _type });
         };
         manager["get_component"] = +[](EntityManager* manager, Entity entity, std::string_view name) static noexcept {
@@ -93,7 +92,7 @@ namespace stormkit::lua::entities {
 
             manager->add_system(std::move(name),
                                 types | stdv::transform([](const auto& type) static noexcept {
-                                    return component_hash(type);
+                                    return hash(type);
                                 }) | stdr::to<std::vector>(),
                                 std::move(_closures));
         };

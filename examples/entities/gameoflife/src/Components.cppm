@@ -20,7 +20,7 @@ export {
         stormkit::u32 x;
         stormkit::u32 y;
 
-        static constexpr Type TYPE = stormkit::entities::component_hash("PositionComponent");
+        static constexpr Type TYPE = stormkit::hash("PositionComponent");
     };
 
 #ifdef STORMKIT_BUILD_MODULES

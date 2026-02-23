@@ -52,6 +52,13 @@ export namespace stormkit { inline namespace core {
     template<meta::HashType Ret = hash32, typename... Args>
         requires(sizeof...(Args) >= 2)
     constexpr auto hash_combine(Ret& hash, Args&&... args) noexcept -> void;
+
+    namespace literals {
+        constexpr auto operator""_hash32(unsigned long long int) -> hash32;
+        constexpr auto operator""_hash32(long double) -> hash32;
+        constexpr auto operator""_hash64(unsigned long long int) -> hash64;
+        constexpr auto operator""_hash64(long double) -> hash64;
+    } // namespace literals
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -125,4 +132,34 @@ namespace stormkit { inline namespace core {
         (stormkit::hash_combine<Ret>(out, std::forward<Args>(args)), ...);
 #endif
     }
+
+    namespace literals {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        constexpr auto operator""_hash32(unsigned long long int value) -> hash32 {
+            return hash<hash32>(value);
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        constexpr auto operator""_hash32(long double value) -> hash32 {
+            return hash<hash32>(value);
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        constexpr auto operator""_hash64(unsigned long long int value) -> hash64 {
+            return hash<hash64>(value);
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        constexpr auto operator""_hash64(long double value) -> hash64 {
+            return hash<hash64>(value);
+        }
+    } // namespace literals
 }} // namespace stormkit::core
