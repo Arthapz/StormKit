@@ -119,10 +119,10 @@ namespace {
 
                     auto&& cycle = std::move(*result);
                     EXPECTS(stdr::size(cycle) == 4);
-                    EXPECTS(dag.get_vertex_value(cycle[0]).value == 0);
-                    EXPECTS(dag.get_vertex_value(cycle[1]).value == 1);
-                    EXPECTS(dag.get_vertex_value(cycle[2]).value == 6);
-                    EXPECTS(dag.get_vertex_value(cycle[3]).value == 0);
+                    EXPECTS(dag.get_vertex_value(cycle[0]) == 0);
+                    EXPECTS(dag.get_vertex_value(cycle[1]) == 1);
+                    EXPECTS(dag.get_vertex_value(cycle[2]) == 6);
+                    EXPECTS(dag.get_vertex_value(cycle[3]) == 0);
                 }
 
                 {

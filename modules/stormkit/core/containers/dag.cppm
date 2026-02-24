@@ -80,7 +80,8 @@ export namespace stormkit { inline namespace core {
         template<typename... Args>
         constexpr auto emplace_vertex(Args&&... vertex) noexcept -> dag::VertexID
             requires(meta::IsConstructible<VertexValue, Args...>);
-        constexpr auto get_vertex_value(this auto&& self, dag::VertexID id) noexcept -> decltype(auto);
+        template<typename Self>
+        constexpr auto get_vertex_value(this Self&& self, dag::VertexID id) noexcept -> meta::ForwardLike<Self, VertexValue>;
         constexpr auto has_vertex(const VertexValue& vertex) const noexcept -> bool
             requires(meta::HasEqualityOperator<VertexValue, VertexValue>);
         constexpr auto has_vertex(dag::VertexID vertex) const noexcept -> bool;
@@ -240,12 +241,13 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename VertexValue>
-    constexpr auto DAG<VertexValue>::get_vertex_value(this auto&& self, dag::VertexID id) noexcept -> decltype(auto) {
+    template<typename Self>
+    constexpr auto DAG<VertexValue>::get_vertex_value(this Self&& self, dag::VertexID id) noexcept
+      -> meta::ForwardLike<Self, VertexValue> {
         expects(self.has_vertex(id), std::format("Unknown DAG vertex id: {}!", id));
 
-        return std::forward_like<decltype(self)>(*stdr::find_if(self.m_vertices, [id](const auto& other) noexcept {
-            return other.id == id;
-        }));
+        return std::forward_like<Self>(stdr::find_if(self.m_vertices, [id](const auto& other) noexcept { return other.id == id; })
+                                         ->value);
     }
 
     ////////////////////////////////////////
