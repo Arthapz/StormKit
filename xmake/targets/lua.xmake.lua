@@ -7,7 +7,7 @@ add_requires("luau", {
         build_cli = false,
     },
 })
-add_requires("sol2", {
+add_requires("sol2_luau", {
     system = false,
     version = "develop",
 })
@@ -58,7 +58,7 @@ target("lua", function()
     if get_config("wsi") then add_deps("wsi") end
     if get_config("gpu") then add_deps("gpu") end
 
-    add_packages("luau", "sol2", { public = true })
+    add_packages("luau", "sol2_luau", { public = true })
 
     add_options("sanitizers")
 

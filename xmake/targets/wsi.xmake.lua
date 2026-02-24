@@ -31,7 +31,7 @@ target("wsi", function()
     add_files(path.join(src_wsi_dir, "*.cpp"), path.join(src_wsi_dir, "common/*.cppm"))
 
     if is_plat("linux") then
-        add_files(path.join(src_wsi_dir, "linux/**.cpp"))
+        add_files(path.join(src_wsi_dir, "linux/**.cpp"), path.join(src_wsi_dir, "linux/**.cppm"))
 
         add_rules("wayland.protocols")
 

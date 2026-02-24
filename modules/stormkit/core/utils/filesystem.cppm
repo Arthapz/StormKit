@@ -326,7 +326,7 @@ namespace stormkit { inline namespace core { namespace io {
 #ifdef STORMKIT_OS_WINDOWS
         FlushFileBuffers(reinterpret_cast<HANDLE>(m_descriptor));
 #else
-    #if STORMKIT_OS_LINUX
+    #ifdef STORMKIT_OS_LINUX
         fdatasync
     #else
         fsync

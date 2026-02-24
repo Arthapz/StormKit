@@ -19,6 +19,8 @@ extern "C" {
 }
 
 // #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#define SOL_USING_CXX_LUA    0
+#define SOL_NO_LUA_HPP       1
 #define SOL_USE_LUAU         1
 #define SOL_SAFE_STACK_CHECK 1
 #define SOL_LUA_BIT32_LIB    1
