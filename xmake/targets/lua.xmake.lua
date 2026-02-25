@@ -1,3 +1,8 @@
+local is_libcpp = false
+if is_plat("linux") then
+    if has_config("runtimes") then is_libcpp = get_config("runtimes"):startswith("c++") end
+end
+
 add_requires("luau", {
     system = false,
     version = "upstream",
@@ -5,9 +10,9 @@ add_requires("luau", {
         shared = false,
         extern_c = true,
         build_cli = false,
-        cxxflags = is_plat("linux") and { "-stdlib=libc++" } or nil,
-        shflags = is_plat("linux") and { "-stdlib=libc++" } or nil,
-        arflags = is_plat("linux") and { "-stdlib=libc++" } or nil,
+        cxxflags = is_libcpp and { "-stdlib=libc++" } or nil,
+        shflags = is_libcpp and { "-stdlib=libc++" } or nil,
+        arflags = is_libcpp and { "-stdlib=libc++" } or nil,
     },
 })
 add_requires("sol2_luau", {
