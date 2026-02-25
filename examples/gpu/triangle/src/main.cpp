@@ -13,11 +13,11 @@ import gpu_app;
 #include <stormkit/main/main_macro.hpp>
 
 #ifndef SHADER_DIR
-    #define SHADER_DIR "../share/stormkit/shaders/"
+static constexpr auto SHADER_DIR "../share/stormkit/shaders/"
 #endif
 
-namespace stdr  = std::ranges;
-namespace stdfs = std::filesystem;
+  namespace stdr = std::ranges;
+namespace stdfs  = std::filesystem;
 
 using namespace std::literals;
 using namespace stormkit;

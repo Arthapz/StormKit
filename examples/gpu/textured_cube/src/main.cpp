@@ -15,16 +15,16 @@ import gpu_app;
 #include <stormkit/main/main_macro.hpp>
 
 #ifndef SHADER_DIR
-    #define SHADER_DIR "../share/stormkit/shaders/"
+static constexpr auto SHADER_DIR "../share/stormkit/shaders/"
 #endif
 
 #ifndef RESOURCE_DIR
-    #define RESOURCE_DIR "../share/stormkit/"
+  static constexpr auto RESOURCE_DIR "../share/stormkit/"
 #endif
 
-namespace stdc  = std::chrono;
-namespace stdr  = std::ranges;
-namespace stdfs = std::filesystem;
+  namespace stdc = std::chrono;
+namespace stdr   = std::ranges;
+namespace stdfs  = std::filesystem;
 
 using clock = stdc::high_resolution_clock;
 
