@@ -14,7 +14,7 @@ target("textured_cube", function()
 
     if get_config("devmode") then
         add_defines(format('RESOURCE_DIR="%s"', path.unix(path.join(os.projectdir(), "gpu/textured_cube"))))
-        add_defines(format('SHADER_DIR="%s"', path.unix("$(builddir)/shader")))
+        add_defines(format('SHADER_DIR="%s"', path.unix("$(builddir)/shaders")))
     end
     add_embeddirs("$(builddir)/shaders")
 
