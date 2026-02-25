@@ -5,6 +5,9 @@ add_requires("luau", {
         shared = false,
         extern_c = true,
         build_cli = false,
+        cxxflags = is_plat("linux") and { "-stdlib=libc++" } or nil,
+        shflags = is_plat("linux") and { "-stdlib=libc++" } or nil,
+        arflags = is_plat("linux") and { "-stdlib=libc++" } or nil,
     },
 })
 add_requires("sol2_luau", {
