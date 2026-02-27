@@ -81,7 +81,7 @@ namespace("stormkit", function()
     if get_config("tools") then includes("xmake/targets/tools.xmake.lua") end
 
     target("stormkit", function()
-        set_kind("moduleonly")
+        set_kind("static")
 
         set_languages("cxxlatest", "clatest")
 
