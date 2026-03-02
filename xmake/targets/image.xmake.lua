@@ -16,6 +16,8 @@ target("image", function()
 
     set_languages("cxxlatest", "clatest")
 
+    set_prefixname("libstormkit-")
+
     add_defines("STORMKIT_IMAGE_BUILD", { public = false })
 
     add_files(path.join(module_dir, "image.cppm"), { public = true })

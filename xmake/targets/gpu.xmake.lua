@@ -22,6 +22,8 @@ target("gpu", function()
     set_kind("$(kind)")
     add_rules("flags")
 
+    set_prefixname("libstormkit-")
+
     set_languages("cxxlatest", "clatest")
 
     add_defines("STORMKIT_GPU_BUILD", { public = false })

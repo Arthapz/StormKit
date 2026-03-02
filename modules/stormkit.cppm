@@ -13,21 +13,21 @@ export module stormkit;
 
 export import stormkit.core;
 
-#if STORMKIT_LIB_LOG_ENABLED
+#if STORMKIT_LIB_LOG_ENABLED and defined(STORMKIT_IMPORT_LOG)
 export import stormkit.log;
 #endif
-#if STORMKIT_LIB_ENTITIES_ENABLED
+#if STORMKIT_LIB_ENTITIES_ENABLED and defined(STORMKIT_IMPORT_ENTITIES)
 export import stormkit.entities;
 #endif
-#if STORMKIT_LIB_IMAGE_ENABLED
+#if STORMKIT_LIB_IMAGE_ENABLED and defined(STORMKIT_IMPORT_IMAGE)
 export import stormkit.image;
 #endif
-#if STORMKIT_LIB_WSI_ENABLED
+#if STORMKIT_LIB_WSI_ENABLED and defined(STORMKIT_IMPORT_WSI)
 export import stormkit.wsi;
 #endif
-#if STORMKIT_LIB_GPU_ENABLED
+#if STORMKIT_LIB_GPU_ENABLED and defined(STORMKIT_IMPORT_GPU)
 export import stormkit.gpu;
 #endif
-#if STORMKIT_LIB_LUA_ENABLED
+#if STORMKIT_LIB_LUA_ENABLED and defined(STORMKIT_IMPORT_LUA)
 export import stormkit.lua;
 #endif

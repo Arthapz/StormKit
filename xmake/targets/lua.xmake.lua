@@ -29,6 +29,8 @@ target("lua", function()
 
     set_languages("cxxlatest", "clatest")
 
+    set_prefixname("libstormkit-")
+
     add_defines("STORMKIT_LUA_BUILD", { public = false })
 
     add_files(path.join(module_dir, "lua.cppm"), { public = true })

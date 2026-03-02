@@ -87,11 +87,14 @@ namespace("stormkit", function()
 
         add_rules("stormkit::flags")
 
-        add_files("modules/stormkit.cppm")
+        add_files("modules/stormkit.cppm", { public = true })
 
         add_deps("stormkit::core")
         for _, name in ipairs({ "log", "entities", "gpu", "image", "wsi", "lua" }) do
-            if get_config(name) then add_deps("stormkit::" .. name) end
+            if get_config(name) then
+                add_deps("stormkit::" .. name)
+                add_defines("STORMKIT_IMPORT_" .. string.upper(name), { public = true })
+            end
         end
 
         set_group("libraries")

@@ -6,6 +6,8 @@ target("test", function()
 
     set_languages("cxxlatest", "clatest")
 
+    set_prefixname("libstormkit-")
+
     add_files(path.join(module_dir, "test.cppm"), { public = true })
     add_files(path.join(src_test_dir, "*.cpp"))
 

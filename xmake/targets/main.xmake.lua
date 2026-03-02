@@ -6,6 +6,8 @@ target("main", function()
 
     set_languages("cxxlatest", "clatest")
 
+    set_prefixname("libstormkit-")
+
     add_defines("STORMKIT_MAIN_BUILD", { public = false })
 
     add_files(path.join(module_dir, "main.cppm"), { public = true })

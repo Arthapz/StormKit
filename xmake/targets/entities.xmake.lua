@@ -6,6 +6,8 @@ target("entities", function()
 
     set_languages("cxxlatest", "clatest")
 
+    set_prefixname("libstormkit-")
+
     add_defines("STORMKIT_ENTITIES_BUILD", { public = false })
 
     add_files(path.join(module_dir, "entities.cppm"), { public = true })
