@@ -85,6 +85,8 @@ namespace("stormkit", function()
 
         set_languages("cxxlatest", "clatest")
 
+        set_suffixname("")
+
         add_rules("stormkit::flags")
 
         add_files("modules/stormkit.cppm", { public = true })

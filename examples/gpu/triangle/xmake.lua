@@ -1,11 +1,13 @@
-add_requires("nzsl", {
-    configs = {
-        fs_watcher = false,
-        kind = "binary",
-        toolchain = is_plat("windows") and "cl" or nil,
-        runtimes = is_plat("windows") and "MD" or nil,
-    },
-})
+local runtimes
+local toolchain
+if is_plat("windows") then
+    runtimes = "MD"
+    toolchain = "msvc"
+elseif is_plat("linux") then
+    runtimes = "stdc++_shared"
+    toolchain = "gcc"
+end
+add_requires("nzsl", { configs = { fs_watcher = false, kind = "binary", toolchains = toolchain, runtimes = runtimes } })
 
 target("triangle", function()
     add_rules("stormkit::example", "compile.shaders")
