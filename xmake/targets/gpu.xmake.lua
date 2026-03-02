@@ -22,7 +22,7 @@ target("gpu", function()
     set_kind("$(kind)")
     add_rules("flags")
 
-    set_prefixname("libstormkit-")
+    set_basename("stormkit-gpu")
 
     set_languages("cxxlatest", "clatest")
 

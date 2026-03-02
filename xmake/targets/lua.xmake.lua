@@ -29,7 +29,7 @@ target("lua", function()
 
     set_languages("cxxlatest", "clatest")
 
-    set_prefixname("libstormkit-")
+    set_basename("stormkit-lua")
 
     add_defines("STORMKIT_LUA_BUILD", { public = false })
 

@@ -6,7 +6,7 @@ target("main", function()
 
     set_languages("cxxlatest", "clatest")
 
-    set_prefixname("libstormkit-")
+    set_basename("stormkit-main")
 
     add_defines("STORMKIT_MAIN_BUILD", { public = false })
 

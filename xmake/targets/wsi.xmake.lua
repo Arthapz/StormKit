@@ -25,7 +25,7 @@ target("wsi", function()
 
     set_languages("cxxlatest", "clatest")
 
-    set_prefixname("libstormkit-")
+    set_basename("stormkit-wsi")
 
     add_defines("STORMKIT_WSI_BUILD", { public = false })
 

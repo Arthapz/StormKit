@@ -11,7 +11,7 @@ target("core", function()
 
     set_languages("cxxlatest", "clatest")
 
-    set_prefixname("libstormkit-")
+    set_basename("stormkit-core")
 
     add_defines("ANKERL_UNORDERED_DENSE_STD_MODULE=1", "FROZEN_STD_MODULE=1", { public = true })
     add_defines("STORMKIT_CORE_BUILD", { public = false })

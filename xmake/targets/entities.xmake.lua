@@ -6,7 +6,7 @@ target("entities", function()
 
     set_languages("cxxlatest", "clatest")
 
-    set_prefixname("libstormkit-")
+    set_basename("stormkit-entities")
 
     add_defines("STORMKIT_ENTITIES_BUILD", { public = false })
 

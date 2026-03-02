@@ -16,7 +16,7 @@ target("image", function()
 
     set_languages("cxxlatest", "clatest")
 
-    set_prefixname("libstormkit-")
+    set_basename("stormkit-image")
 
     add_defines("STORMKIT_IMAGE_BUILD", { public = false })
 
