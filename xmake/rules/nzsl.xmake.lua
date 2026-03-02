@@ -87,6 +87,7 @@ rule("compile.shaders", function()
 
     before_buildcmd_file(function(target, batchcmds, shaderfile, opt)
         import("lib.detect.find_tool")
+        import("utils.progress")
 
         local outputdir = path.join(import("core.project.config").builddir(), "shaders")
         local nzslc = target:data("nzslc")
@@ -96,6 +97,7 @@ rule("compile.shaders", function()
         local outputfile = path.join(outputdir or path.directory(shaderfile), path.basename(shaderfile) .. ".spv")
 
         -- add commands
+        if progress.apply_target then opt.progress = progress.apply_target(target, opt.progress) end
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.shader %s", shaderfile)
         local argv = { "--compile=spv", "--optimize", "--spv-version=130", "--gl-flipy" }
         if outputdir then

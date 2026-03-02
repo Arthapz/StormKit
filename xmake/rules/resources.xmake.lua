@@ -2,15 +2,12 @@
 rule("stormkit.utils.resource2cpp", function()
     before_build(function(target, opt)
         import("core.base.option")
-        if xmake.version():ge("2.5.9") then
-            import("utils.progress")
-        elseif not import("utils.progress", { try = true }) then
-            import("private.utils.progress")
-        end
+        import("utils.progress")
 
         local function GenerateEmbedHeader(filepath, targetpath)
             local bufferSize = 1024 * 1024
 
+            if progress.apply_target then opt.progress = progress.apply_target(target, opt.progress) end
             progress.show(opt.progress, "${color.build.object}embedding %s", filepath)
 
             local resource = assert(io.open(filepath, "rb"))
