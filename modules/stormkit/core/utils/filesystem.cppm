@@ -157,7 +157,7 @@ namespace stormkit { inline namespace core { namespace io {
 #else
             if (access == Access::READ) return O_RDONLY;
             else if (access == Access::WRITE)
-                return O_WRONLY;
+                return O_WRONLY | O_CREAT;
             else
                 return O_RDWR;
 #endif
