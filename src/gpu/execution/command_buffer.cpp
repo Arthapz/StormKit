@@ -71,22 +71,50 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto CommandBuffer::begin(bool one_time_submit, std::optional<InheritanceInfo> inheritance_info) noexcept
+    auto CommandBuffer::begin(bool one_time_submit, InheritanceInfo inheritance_info_variant) noexcept
       -> Expected<Ref<CommandBuffer>> {
         EXPECTS(m_state == State::INITIAL);
 
-        const auto vk_inheritance_info = [&inheritance_info] {
-            auto info  = zeroed<VkCommandBufferInheritanceInfo>();
-            info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-            if (inheritance_info) {
-                info.renderPass  = to_vk(*inheritance_info->render_pass);
-                info.subpass     = inheritance_info->subpass;
-                info.framebuffer = to_vk(*inheritance_info->framebuffer);
-            }
-            return info;
-        }();
+        auto rendering_color_attachments    = std::vector<VkFormat> {};
+        auto vk_rendering_inheritance_info  = zeroed<VkCommandBufferInheritanceRenderingInfo>();
+        vk_rendering_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
 
-        const auto flags = [this, one_time_submit]() -> VkCommandBufferUsageFlags {
+        const auto vk_inheritance_info =
+          [&inheritance_info_variant, &rendering_color_attachments, &vk_rendering_inheritance_info] noexcept {
+              auto info  = zeroed<VkCommandBufferInheritanceInfo>();
+              info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+
+              if (is<RenderPassInheritanceInfo>(inheritance_info_variant)) {
+                  const auto& inheritance_info = as<RenderPassInheritanceInfo>(inheritance_info_variant);
+                  info.renderPass              = to_vk(*inheritance_info.render_pass);
+                  info.subpass                 = inheritance_info.subpass;
+                  info.framebuffer             = to_vk(*inheritance_info.framebuffer);
+              } else if (is<RenderingInheritanceInfo>(inheritance_info_variant)) {
+                  info.pNext = &vk_rendering_inheritance_info;
+
+                  const auto& inheritance_info = as<RenderingInheritanceInfo>(inheritance_info_variant);
+
+                  rendering_color_attachments                           = inheritance_info.color_attachments
+                                                                          | stdv::transform(gpu::monadic::to_vk<VkFormat>())
+                                                                          | stdr::to<std::vector>();
+                  vk_rendering_inheritance_info.viewMask                = inheritance_info.view_mask;
+                  vk_rendering_inheritance_info.colorAttachmentCount    = as<u32>(stdr::size(inheritance_info.color_attachments));
+                  vk_rendering_inheritance_info.pColorAttachmentFormats = stdr::data(rendering_color_attachments);
+
+                  if (inheritance_info.depth_attachment)
+                      vk_rendering_inheritance_info
+                        .depthAttachmentFormat = gpu::to_vk<VkFormat>(*inheritance_info.depth_attachment);
+                  if (inheritance_info.stencil_attachment)
+                      vk_rendering_inheritance_info
+                        .stencilAttachmentFormat = gpu::to_vk<VkFormat>(*inheritance_info.stencil_attachment);
+
+                  vk_rendering_inheritance_info
+                    .rasterizationSamples = gpu::to_vk<VkSampleCountFlagBits>(inheritance_info.rasterization_samples);
+              }
+              return info;
+          }();
+
+        const auto flags = [this, one_time_submit] noexcept -> VkCommandBufferUsageFlags {
             auto flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
             if (!one_time_submit) flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
@@ -407,7 +435,7 @@ namespace stormkit::gpu {
                                    ImageLayout                   dst_layout,
                                    const ImageSubresourceLayers& src_subresource_layers,
                                    const ImageSubresourceLayers& dst_subresource_layers,
-                                   const math::uextent3&     extent) noexcept -> CommandBuffer& {
+                                   const math::uextent3&         extent) noexcept -> CommandBuffer& {
         EXPECTS(m_state == State::RECORDING);
 
         const auto vk_src_subresource_layers = VkImageSubresourceLayers {

@@ -82,11 +82,21 @@ export namespace stormkit::gpu {
 
     class CommandPool;
 
-    struct InheritanceInfo {
+    struct RenderPassInheritanceInfo {
         OptionalRef<const RenderPass>  render_pass = std::nullopt;
         u32                            subpass     = 0;
         OptionalRef<const FrameBuffer> framebuffer = std::nullopt;
     };
+
+    struct RenderingInheritanceInfo {
+        u32                        view_mask             = 0;
+        std::vector<PixelFormat>   color_attachments     = {};
+        std::optional<PixelFormat> depth_attachment      = std::nullopt;
+        std::optional<PixelFormat> stencil_attachment    = std::nullopt;
+        SampleCountFlag            rasterization_samples = SampleCountFlag::C1;
+    };
+
+    using InheritanceInfo = std::variant<std::monostate, RenderPassInheritanceInfo, RenderingInheritanceInfo>;
 
     struct RenderingInfo {
         struct Attachment {
@@ -149,7 +159,7 @@ export namespace stormkit::gpu {
         [[nodiscard]]
         auto level() const noexcept -> CommandBufferLevel;
 
-        auto begin(bool one_time_submit = false, std::optional<InheritanceInfo> inheritance_info = std::nullopt) noexcept
+        auto begin(bool one_time_submit = false, InheritanceInfo inheritance_info = std::monostate {}) noexcept
           -> Expected<Ref<CommandBuffer>>;
         auto end() noexcept -> Expected<Ref<CommandBuffer>>;
 
