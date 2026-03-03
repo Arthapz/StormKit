@@ -61,9 +61,13 @@ export {
         [[nodiscard]]
         constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool;
         [[nodiscard]]
+        constexpr auto is_stencil_only_format(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
         constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool;
         [[nodiscard]]
         constexpr auto is_depth_format(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto is_stencil_format(PixelFormat format) noexcept -> bool;
 
         [[nodiscard]]
         constexpr auto get_format_channel_count(PixelFormat format) noexcept -> u8;
@@ -121,6 +125,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
 	STORMKIT_CONST
+    constexpr auto is_stencil_only_format(PixelFormat format) noexcept -> bool {
+        return format == PixelFormat::S8U;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool {
         return format == PixelFormat::DEPTH16_UNORM_STENCIL8U
                or format == PixelFormat::DEPTH24_UNORM_STENCIL8U
@@ -133,6 +145,14 @@ namespace stormkit::gpu {
 	STORMKIT_CONST
     constexpr auto is_depth_format(PixelFormat format) noexcept -> bool {
         return is_depth_only_format(format) or is_depth_stencil_format(format);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
+    constexpr auto is_stencil_format(PixelFormat format) noexcept -> bool {
+        return is_stencil_only_format(format) or is_depth_stencil_format(format);
     }
 
     /////////////////////////////////////

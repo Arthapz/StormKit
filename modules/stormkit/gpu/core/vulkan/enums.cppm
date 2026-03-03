@@ -476,8 +476,8 @@ export {
            EQUIVALENT = VK_LOGIC_OP_EQUIVALENT,
            INVERT = VK_LOGIC_OP_INVERT,
            NAND = VK_LOGIC_OP_NAND,
-           NOR = VK_LOGIC_OP_NOR,
            NO_OP = VK_LOGIC_OP_NO_OP,
+           NOR = VK_LOGIC_OP_NOR,
            OR = VK_LOGIC_OP_OR,
            OR_INVERTED = VK_LOGIC_OP_OR_INVERTED,
            OR_REVERSE = VK_LOGIC_OP_OR_REVERSE,
@@ -548,9 +548,9 @@ export {
         enum class PixelFormat : u32 {
            A1_RGB5_UNORM_PACK16 = VK_FORMAT_A1R5G5B5_UNORM_PACK16,
            A2_RGB10I_PACK32 = VK_FORMAT_A2R10G10B10_SINT_PACK32,
-           A2_RGB10U_PACK32 = VK_FORMAT_A2R10G10B10_UINT_PACK32,
            A2_RGB10_SNORM_PACK32 = VK_FORMAT_A2R10G10B10_SNORM_PACK32,
            A2_RGB10_UNORM_PACK32 = VK_FORMAT_A2R10G10B10_UNORM_PACK32,
+           A2_RGB10U_PACK32 = VK_FORMAT_A2R10G10B10_UINT_PACK32,
            B10_GR11UF_PACK32 = VK_FORMAT_B10G11R11_UFLOAT_PACK32,
            BGR8_UNORM = VK_FORMAT_B8G8R8_UNORM,
            BGRA8_UNORM = VK_FORMAT_B8G8R8A8_UNORM,
@@ -562,54 +562,55 @@ export {
            DEPTH32F_STENCIL8U = VK_FORMAT_D32_SFLOAT_S8_UINT,
            R16F = VK_FORMAT_R16_SFLOAT,
            R16I = VK_FORMAT_R16_SINT,
-           R16U = VK_FORMAT_R16_UINT,
            R16_SNORM = VK_FORMAT_R16_SNORM,
+           R16U = VK_FORMAT_R16_UINT,
            R16_UNORM = VK_FORMAT_R16_UNORM,
            R32F = VK_FORMAT_R32_SFLOAT,
            R32I = VK_FORMAT_R32_SINT,
            R32U = VK_FORMAT_R32_UINT,
            R5_G6_B5_UNORM_PACK16 = VK_FORMAT_R5G6B5_UNORM_PACK16,
            R8I = VK_FORMAT_R8_SINT,
-           R8U = VK_FORMAT_R8_UINT,
            R8_SNORM = VK_FORMAT_R8_SNORM,
+           R8U = VK_FORMAT_R8_UINT,
            R8_UNORM = VK_FORMAT_R8_UNORM,
            RG16F = VK_FORMAT_R16G16_SFLOAT,
            RG16I = VK_FORMAT_R16G16_SINT,
-           RG16U = VK_FORMAT_R16G16_UINT,
            RG16_SNORM = VK_FORMAT_R16G16_SNORM,
+           RG16U = VK_FORMAT_R16G16_UINT,
            RG16_UNORM = VK_FORMAT_R16G16_UNORM,
            RG32F = VK_FORMAT_R32G32_SFLOAT,
            RG32I = VK_FORMAT_R32G32_SINT,
            RG32U = VK_FORMAT_R32G32_UINT,
            RG8I = VK_FORMAT_R8G8_SINT,
-           RG8U = VK_FORMAT_R8G8_UINT,
            RG8_SNORM = VK_FORMAT_R8G8_SNORM,
+           RG8U = VK_FORMAT_R8G8_UINT,
            RG8_UNORM = VK_FORMAT_R8G8_UNORM,
            RGB16F = VK_FORMAT_R16G16B16_SFLOAT,
            RGB16I = VK_FORMAT_R16G16B16_SINT,
-           RGB16U = VK_FORMAT_R16G16B16_UINT,
            RGB16_SNORM = VK_FORMAT_R16G16B16_SNORM,
+           RGB16U = VK_FORMAT_R16G16B16_UINT,
            RGB16_UNORM = VK_FORMAT_R16G16B16_UNORM,
            RGB32F = VK_FORMAT_R32G32B32_SFLOAT,
            RGB32I = VK_FORMAT_R32G32B32_SINT,
            RGB32U = VK_FORMAT_R32G32B32_UINT,
            RGB8I = VK_FORMAT_R8G8B8_SINT,
-           RGB8U = VK_FORMAT_R8G8B8_UINT,
            RGB8_SNORM = VK_FORMAT_R8G8B8_SNORM,
+           RGB8U = VK_FORMAT_R8G8B8_UINT,
            RGB8_UNORM = VK_FORMAT_R8G8B8_UNORM,
            RGBA16F = VK_FORMAT_R16G16B16A16_SFLOAT,
            RGBA16I = VK_FORMAT_R16G16B16A16_SINT,
-           RGBA16U = VK_FORMAT_R16G16B16A16_UINT,
            RGBA16_SNORM = VK_FORMAT_R16G16B16A16_SNORM,
+           RGBA16U = VK_FORMAT_R16G16B16A16_UINT,
            RGBA16_UNORM = VK_FORMAT_R16G16B16A16_UNORM,
            RGBA32F = VK_FORMAT_R32G32B32A32_SFLOAT,
            RGBA32I = VK_FORMAT_R32G32B32A32_SINT,
            RGBA32U = VK_FORMAT_R32G32B32A32_UINT,
            RGBA4_UNORM_PACK16 = VK_FORMAT_R4G4B4A4_UNORM_PACK16,
            RGBA8I = VK_FORMAT_R8G8B8A8_SINT,
-           RGBA8U = VK_FORMAT_R8G8B8A8_UINT,
            RGBA8_SNORM = VK_FORMAT_R8G8B8A8_SNORM,
+           RGBA8U = VK_FORMAT_R8G8B8A8_UINT,
            RGBA8_UNORM = VK_FORMAT_R8G8B8A8_UNORM,
+           S8U = VK_FORMAT_S8_UINT,
            SBGR8 = VK_FORMAT_B8G8R8_SRGB,
            SBGRA8 = VK_FORMAT_B8G8R8A8_SRGB,
            SR8 = VK_FORMAT_R8_SRGB,
@@ -745,8 +746,8 @@ export {
         enum class SamplerAddressMode : u8 {
            CLAMP_TO_BORDER = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
            CLAMP_TO_EDGE = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-           MIRRORED_REPEAT = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
            MIRROR_CLAMP_TO_EDGE = VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE,
+           MIRRORED_REPEAT = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
            REPEAT = VK_SAMPLER_ADDRESS_MODE_REPEAT,
            
         };
@@ -811,9 +812,13 @@ export {
         [[nodiscard]]
         constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool;
         [[nodiscard]]
+        constexpr auto is_stencil_only_format(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
         constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool;
         [[nodiscard]]
         constexpr auto is_depth_format(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto is_stencil_format(PixelFormat format) noexcept -> bool;
 
         [[nodiscard]]
         constexpr auto get_format_channel_count(PixelFormat format) noexcept -> u8;
@@ -2274,8 +2279,8 @@ export {
            stormkit::gpu::LogicOperation::EQUIVALENT,
            stormkit::gpu::LogicOperation::INVERT,
            stormkit::gpu::LogicOperation::NAND,
-           stormkit::gpu::LogicOperation::NOR,
            stormkit::gpu::LogicOperation::NO_OP,
+           stormkit::gpu::LogicOperation::NOR,
            stormkit::gpu::LogicOperation::OR,
            stormkit::gpu::LogicOperation::OR_INVERTED,
            stormkit::gpu::LogicOperation::OR_REVERSE,
@@ -2298,8 +2303,8 @@ export {
            case stormkit::gpu::LogicOperation::EQUIVALENT: return "LogicOperation::EQUIVALENT";
            case stormkit::gpu::LogicOperation::INVERT: return "LogicOperation::INVERT";
            case stormkit::gpu::LogicOperation::NAND: return "LogicOperation::NAND";
-           case stormkit::gpu::LogicOperation::NOR: return "LogicOperation::NOR";
            case stormkit::gpu::LogicOperation::NO_OP: return "LogicOperation::NO_OP";
+           case stormkit::gpu::LogicOperation::NOR: return "LogicOperation::NOR";
            case stormkit::gpu::LogicOperation::OR: return "LogicOperation::OR";
            case stormkit::gpu::LogicOperation::OR_INVERTED: return "LogicOperation::OR_INVERTED";
            case stormkit::gpu::LogicOperation::OR_REVERSE: return "LogicOperation::OR_REVERSE";
@@ -2322,8 +2327,8 @@ export {
            case stormkit::gpu::LogicOperation::EQUIVALENT: return "LogicOperation::EQUIVALENT";
            case stormkit::gpu::LogicOperation::INVERT: return "LogicOperation::INVERT";
            case stormkit::gpu::LogicOperation::NAND: return "LogicOperation::NAND";
-           case stormkit::gpu::LogicOperation::NOR: return "LogicOperation::NOR";
            case stormkit::gpu::LogicOperation::NO_OP: return "LogicOperation::NO_OP";
+           case stormkit::gpu::LogicOperation::NOR: return "LogicOperation::NOR";
            case stormkit::gpu::LogicOperation::OR: return "LogicOperation::OR";
            case stormkit::gpu::LogicOperation::OR_INVERTED: return "LogicOperation::OR_INVERTED";
            case stormkit::gpu::LogicOperation::OR_REVERSE: return "LogicOperation::OR_REVERSE";
@@ -2529,9 +2534,9 @@ export {
         return std::array {
            stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16,
            stormkit::gpu::PixelFormat::A2_RGB10I_PACK32,
-           stormkit::gpu::PixelFormat::A2_RGB10U_PACK32,
            stormkit::gpu::PixelFormat::A2_RGB10_SNORM_PACK32,
            stormkit::gpu::PixelFormat::A2_RGB10_UNORM_PACK32,
+           stormkit::gpu::PixelFormat::A2_RGB10U_PACK32,
            stormkit::gpu::PixelFormat::B10_GR11UF_PACK32,
            stormkit::gpu::PixelFormat::BGR8_UNORM,
            stormkit::gpu::PixelFormat::BGRA8_UNORM,
@@ -2543,54 +2548,55 @@ export {
            stormkit::gpu::PixelFormat::DEPTH32F_STENCIL8U,
            stormkit::gpu::PixelFormat::R16F,
            stormkit::gpu::PixelFormat::R16I,
-           stormkit::gpu::PixelFormat::R16U,
            stormkit::gpu::PixelFormat::R16_SNORM,
+           stormkit::gpu::PixelFormat::R16U,
            stormkit::gpu::PixelFormat::R16_UNORM,
            stormkit::gpu::PixelFormat::R32F,
            stormkit::gpu::PixelFormat::R32I,
            stormkit::gpu::PixelFormat::R32U,
            stormkit::gpu::PixelFormat::R5_G6_B5_UNORM_PACK16,
            stormkit::gpu::PixelFormat::R8I,
-           stormkit::gpu::PixelFormat::R8U,
            stormkit::gpu::PixelFormat::R8_SNORM,
+           stormkit::gpu::PixelFormat::R8U,
            stormkit::gpu::PixelFormat::R8_UNORM,
            stormkit::gpu::PixelFormat::RG16F,
            stormkit::gpu::PixelFormat::RG16I,
-           stormkit::gpu::PixelFormat::RG16U,
            stormkit::gpu::PixelFormat::RG16_SNORM,
+           stormkit::gpu::PixelFormat::RG16U,
            stormkit::gpu::PixelFormat::RG16_UNORM,
            stormkit::gpu::PixelFormat::RG32F,
            stormkit::gpu::PixelFormat::RG32I,
            stormkit::gpu::PixelFormat::RG32U,
            stormkit::gpu::PixelFormat::RG8I,
-           stormkit::gpu::PixelFormat::RG8U,
            stormkit::gpu::PixelFormat::RG8_SNORM,
+           stormkit::gpu::PixelFormat::RG8U,
            stormkit::gpu::PixelFormat::RG8_UNORM,
            stormkit::gpu::PixelFormat::RGB16F,
            stormkit::gpu::PixelFormat::RGB16I,
-           stormkit::gpu::PixelFormat::RGB16U,
            stormkit::gpu::PixelFormat::RGB16_SNORM,
+           stormkit::gpu::PixelFormat::RGB16U,
            stormkit::gpu::PixelFormat::RGB16_UNORM,
            stormkit::gpu::PixelFormat::RGB32F,
            stormkit::gpu::PixelFormat::RGB32I,
            stormkit::gpu::PixelFormat::RGB32U,
            stormkit::gpu::PixelFormat::RGB8I,
-           stormkit::gpu::PixelFormat::RGB8U,
            stormkit::gpu::PixelFormat::RGB8_SNORM,
+           stormkit::gpu::PixelFormat::RGB8U,
            stormkit::gpu::PixelFormat::RGB8_UNORM,
            stormkit::gpu::PixelFormat::RGBA16F,
            stormkit::gpu::PixelFormat::RGBA16I,
-           stormkit::gpu::PixelFormat::RGBA16U,
            stormkit::gpu::PixelFormat::RGBA16_SNORM,
+           stormkit::gpu::PixelFormat::RGBA16U,
            stormkit::gpu::PixelFormat::RGBA16_UNORM,
            stormkit::gpu::PixelFormat::RGBA32F,
            stormkit::gpu::PixelFormat::RGBA32I,
            stormkit::gpu::PixelFormat::RGBA32U,
            stormkit::gpu::PixelFormat::RGBA4_UNORM_PACK16,
            stormkit::gpu::PixelFormat::RGBA8I,
-           stormkit::gpu::PixelFormat::RGBA8U,
            stormkit::gpu::PixelFormat::RGBA8_SNORM,
+           stormkit::gpu::PixelFormat::RGBA8U,
            stormkit::gpu::PixelFormat::RGBA8_UNORM,
+           stormkit::gpu::PixelFormat::S8U,
            stormkit::gpu::PixelFormat::SBGR8,
            stormkit::gpu::PixelFormat::SBGRA8,
            stormkit::gpu::PixelFormat::SR8,
@@ -2608,9 +2614,9 @@ export {
         switch(value) {
            case stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16: return "PixelFormat::A1_RGB5_UNORM_PACK16";
            case stormkit::gpu::PixelFormat::A2_RGB10I_PACK32: return "PixelFormat::A2_RGB10I_PACK32";
-           case stormkit::gpu::PixelFormat::A2_RGB10U_PACK32: return "PixelFormat::A2_RGB10U_PACK32";
            case stormkit::gpu::PixelFormat::A2_RGB10_SNORM_PACK32: return "PixelFormat::A2_RGB10_SNORM_PACK32";
            case stormkit::gpu::PixelFormat::A2_RGB10_UNORM_PACK32: return "PixelFormat::A2_RGB10_UNORM_PACK32";
+           case stormkit::gpu::PixelFormat::A2_RGB10U_PACK32: return "PixelFormat::A2_RGB10U_PACK32";
            case stormkit::gpu::PixelFormat::B10_GR11UF_PACK32: return "PixelFormat::B10_GR11UF_PACK32";
            case stormkit::gpu::PixelFormat::BGR8_UNORM: return "PixelFormat::BGR8_UNORM";
            case stormkit::gpu::PixelFormat::BGRA8_UNORM: return "PixelFormat::BGRA8_UNORM";
@@ -2622,54 +2628,55 @@ export {
            case stormkit::gpu::PixelFormat::DEPTH32F_STENCIL8U: return "PixelFormat::DEPTH32F_STENCIL8U";
            case stormkit::gpu::PixelFormat::R16F: return "PixelFormat::R16F";
            case stormkit::gpu::PixelFormat::R16I: return "PixelFormat::R16I";
-           case stormkit::gpu::PixelFormat::R16U: return "PixelFormat::R16U";
            case stormkit::gpu::PixelFormat::R16_SNORM: return "PixelFormat::R16_SNORM";
+           case stormkit::gpu::PixelFormat::R16U: return "PixelFormat::R16U";
            case stormkit::gpu::PixelFormat::R16_UNORM: return "PixelFormat::R16_UNORM";
            case stormkit::gpu::PixelFormat::R32F: return "PixelFormat::R32F";
            case stormkit::gpu::PixelFormat::R32I: return "PixelFormat::R32I";
            case stormkit::gpu::PixelFormat::R32U: return "PixelFormat::R32U";
            case stormkit::gpu::PixelFormat::R5_G6_B5_UNORM_PACK16: return "PixelFormat::R5_G6_B5_UNORM_PACK16";
            case stormkit::gpu::PixelFormat::R8I: return "PixelFormat::R8I";
-           case stormkit::gpu::PixelFormat::R8U: return "PixelFormat::R8U";
            case stormkit::gpu::PixelFormat::R8_SNORM: return "PixelFormat::R8_SNORM";
+           case stormkit::gpu::PixelFormat::R8U: return "PixelFormat::R8U";
            case stormkit::gpu::PixelFormat::R8_UNORM: return "PixelFormat::R8_UNORM";
            case stormkit::gpu::PixelFormat::RG16F: return "PixelFormat::RG16F";
            case stormkit::gpu::PixelFormat::RG16I: return "PixelFormat::RG16I";
-           case stormkit::gpu::PixelFormat::RG16U: return "PixelFormat::RG16U";
            case stormkit::gpu::PixelFormat::RG16_SNORM: return "PixelFormat::RG16_SNORM";
+           case stormkit::gpu::PixelFormat::RG16U: return "PixelFormat::RG16U";
            case stormkit::gpu::PixelFormat::RG16_UNORM: return "PixelFormat::RG16_UNORM";
            case stormkit::gpu::PixelFormat::RG32F: return "PixelFormat::RG32F";
            case stormkit::gpu::PixelFormat::RG32I: return "PixelFormat::RG32I";
            case stormkit::gpu::PixelFormat::RG32U: return "PixelFormat::RG32U";
            case stormkit::gpu::PixelFormat::RG8I: return "PixelFormat::RG8I";
-           case stormkit::gpu::PixelFormat::RG8U: return "PixelFormat::RG8U";
            case stormkit::gpu::PixelFormat::RG8_SNORM: return "PixelFormat::RG8_SNORM";
+           case stormkit::gpu::PixelFormat::RG8U: return "PixelFormat::RG8U";
            case stormkit::gpu::PixelFormat::RG8_UNORM: return "PixelFormat::RG8_UNORM";
            case stormkit::gpu::PixelFormat::RGB16F: return "PixelFormat::RGB16F";
            case stormkit::gpu::PixelFormat::RGB16I: return "PixelFormat::RGB16I";
-           case stormkit::gpu::PixelFormat::RGB16U: return "PixelFormat::RGB16U";
            case stormkit::gpu::PixelFormat::RGB16_SNORM: return "PixelFormat::RGB16_SNORM";
+           case stormkit::gpu::PixelFormat::RGB16U: return "PixelFormat::RGB16U";
            case stormkit::gpu::PixelFormat::RGB16_UNORM: return "PixelFormat::RGB16_UNORM";
            case stormkit::gpu::PixelFormat::RGB32F: return "PixelFormat::RGB32F";
            case stormkit::gpu::PixelFormat::RGB32I: return "PixelFormat::RGB32I";
            case stormkit::gpu::PixelFormat::RGB32U: return "PixelFormat::RGB32U";
            case stormkit::gpu::PixelFormat::RGB8I: return "PixelFormat::RGB8I";
-           case stormkit::gpu::PixelFormat::RGB8U: return "PixelFormat::RGB8U";
            case stormkit::gpu::PixelFormat::RGB8_SNORM: return "PixelFormat::RGB8_SNORM";
+           case stormkit::gpu::PixelFormat::RGB8U: return "PixelFormat::RGB8U";
            case stormkit::gpu::PixelFormat::RGB8_UNORM: return "PixelFormat::RGB8_UNORM";
            case stormkit::gpu::PixelFormat::RGBA16F: return "PixelFormat::RGBA16F";
            case stormkit::gpu::PixelFormat::RGBA16I: return "PixelFormat::RGBA16I";
-           case stormkit::gpu::PixelFormat::RGBA16U: return "PixelFormat::RGBA16U";
            case stormkit::gpu::PixelFormat::RGBA16_SNORM: return "PixelFormat::RGBA16_SNORM";
+           case stormkit::gpu::PixelFormat::RGBA16U: return "PixelFormat::RGBA16U";
            case stormkit::gpu::PixelFormat::RGBA16_UNORM: return "PixelFormat::RGBA16_UNORM";
            case stormkit::gpu::PixelFormat::RGBA32F: return "PixelFormat::RGBA32F";
            case stormkit::gpu::PixelFormat::RGBA32I: return "PixelFormat::RGBA32I";
            case stormkit::gpu::PixelFormat::RGBA32U: return "PixelFormat::RGBA32U";
            case stormkit::gpu::PixelFormat::RGBA4_UNORM_PACK16: return "PixelFormat::RGBA4_UNORM_PACK16";
            case stormkit::gpu::PixelFormat::RGBA8I: return "PixelFormat::RGBA8I";
-           case stormkit::gpu::PixelFormat::RGBA8U: return "PixelFormat::RGBA8U";
            case stormkit::gpu::PixelFormat::RGBA8_SNORM: return "PixelFormat::RGBA8_SNORM";
+           case stormkit::gpu::PixelFormat::RGBA8U: return "PixelFormat::RGBA8U";
            case stormkit::gpu::PixelFormat::RGBA8_UNORM: return "PixelFormat::RGBA8_UNORM";
+           case stormkit::gpu::PixelFormat::S8U: return "PixelFormat::S8U";
            case stormkit::gpu::PixelFormat::SBGR8: return "PixelFormat::SBGR8";
            case stormkit::gpu::PixelFormat::SBGRA8: return "PixelFormat::SBGRA8";
            case stormkit::gpu::PixelFormat::SR8: return "PixelFormat::SR8";
@@ -2687,9 +2694,9 @@ export {
         switch(value) {
            case stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16: return "PixelFormat::A1_RGB5_UNORM_PACK16";
            case stormkit::gpu::PixelFormat::A2_RGB10I_PACK32: return "PixelFormat::A2_RGB10I_PACK32";
-           case stormkit::gpu::PixelFormat::A2_RGB10U_PACK32: return "PixelFormat::A2_RGB10U_PACK32";
            case stormkit::gpu::PixelFormat::A2_RGB10_SNORM_PACK32: return "PixelFormat::A2_RGB10_SNORM_PACK32";
            case stormkit::gpu::PixelFormat::A2_RGB10_UNORM_PACK32: return "PixelFormat::A2_RGB10_UNORM_PACK32";
+           case stormkit::gpu::PixelFormat::A2_RGB10U_PACK32: return "PixelFormat::A2_RGB10U_PACK32";
            case stormkit::gpu::PixelFormat::B10_GR11UF_PACK32: return "PixelFormat::B10_GR11UF_PACK32";
            case stormkit::gpu::PixelFormat::BGR8_UNORM: return "PixelFormat::BGR8_UNORM";
            case stormkit::gpu::PixelFormat::BGRA8_UNORM: return "PixelFormat::BGRA8_UNORM";
@@ -2701,54 +2708,55 @@ export {
            case stormkit::gpu::PixelFormat::DEPTH32F_STENCIL8U: return "PixelFormat::DEPTH32F_STENCIL8U";
            case stormkit::gpu::PixelFormat::R16F: return "PixelFormat::R16F";
            case stormkit::gpu::PixelFormat::R16I: return "PixelFormat::R16I";
-           case stormkit::gpu::PixelFormat::R16U: return "PixelFormat::R16U";
            case stormkit::gpu::PixelFormat::R16_SNORM: return "PixelFormat::R16_SNORM";
+           case stormkit::gpu::PixelFormat::R16U: return "PixelFormat::R16U";
            case stormkit::gpu::PixelFormat::R16_UNORM: return "PixelFormat::R16_UNORM";
            case stormkit::gpu::PixelFormat::R32F: return "PixelFormat::R32F";
            case stormkit::gpu::PixelFormat::R32I: return "PixelFormat::R32I";
            case stormkit::gpu::PixelFormat::R32U: return "PixelFormat::R32U";
            case stormkit::gpu::PixelFormat::R5_G6_B5_UNORM_PACK16: return "PixelFormat::R5_G6_B5_UNORM_PACK16";
            case stormkit::gpu::PixelFormat::R8I: return "PixelFormat::R8I";
-           case stormkit::gpu::PixelFormat::R8U: return "PixelFormat::R8U";
            case stormkit::gpu::PixelFormat::R8_SNORM: return "PixelFormat::R8_SNORM";
+           case stormkit::gpu::PixelFormat::R8U: return "PixelFormat::R8U";
            case stormkit::gpu::PixelFormat::R8_UNORM: return "PixelFormat::R8_UNORM";
            case stormkit::gpu::PixelFormat::RG16F: return "PixelFormat::RG16F";
            case stormkit::gpu::PixelFormat::RG16I: return "PixelFormat::RG16I";
-           case stormkit::gpu::PixelFormat::RG16U: return "PixelFormat::RG16U";
            case stormkit::gpu::PixelFormat::RG16_SNORM: return "PixelFormat::RG16_SNORM";
+           case stormkit::gpu::PixelFormat::RG16U: return "PixelFormat::RG16U";
            case stormkit::gpu::PixelFormat::RG16_UNORM: return "PixelFormat::RG16_UNORM";
            case stormkit::gpu::PixelFormat::RG32F: return "PixelFormat::RG32F";
            case stormkit::gpu::PixelFormat::RG32I: return "PixelFormat::RG32I";
            case stormkit::gpu::PixelFormat::RG32U: return "PixelFormat::RG32U";
            case stormkit::gpu::PixelFormat::RG8I: return "PixelFormat::RG8I";
-           case stormkit::gpu::PixelFormat::RG8U: return "PixelFormat::RG8U";
            case stormkit::gpu::PixelFormat::RG8_SNORM: return "PixelFormat::RG8_SNORM";
+           case stormkit::gpu::PixelFormat::RG8U: return "PixelFormat::RG8U";
            case stormkit::gpu::PixelFormat::RG8_UNORM: return "PixelFormat::RG8_UNORM";
            case stormkit::gpu::PixelFormat::RGB16F: return "PixelFormat::RGB16F";
            case stormkit::gpu::PixelFormat::RGB16I: return "PixelFormat::RGB16I";
-           case stormkit::gpu::PixelFormat::RGB16U: return "PixelFormat::RGB16U";
            case stormkit::gpu::PixelFormat::RGB16_SNORM: return "PixelFormat::RGB16_SNORM";
+           case stormkit::gpu::PixelFormat::RGB16U: return "PixelFormat::RGB16U";
            case stormkit::gpu::PixelFormat::RGB16_UNORM: return "PixelFormat::RGB16_UNORM";
            case stormkit::gpu::PixelFormat::RGB32F: return "PixelFormat::RGB32F";
            case stormkit::gpu::PixelFormat::RGB32I: return "PixelFormat::RGB32I";
            case stormkit::gpu::PixelFormat::RGB32U: return "PixelFormat::RGB32U";
            case stormkit::gpu::PixelFormat::RGB8I: return "PixelFormat::RGB8I";
-           case stormkit::gpu::PixelFormat::RGB8U: return "PixelFormat::RGB8U";
            case stormkit::gpu::PixelFormat::RGB8_SNORM: return "PixelFormat::RGB8_SNORM";
+           case stormkit::gpu::PixelFormat::RGB8U: return "PixelFormat::RGB8U";
            case stormkit::gpu::PixelFormat::RGB8_UNORM: return "PixelFormat::RGB8_UNORM";
            case stormkit::gpu::PixelFormat::RGBA16F: return "PixelFormat::RGBA16F";
            case stormkit::gpu::PixelFormat::RGBA16I: return "PixelFormat::RGBA16I";
-           case stormkit::gpu::PixelFormat::RGBA16U: return "PixelFormat::RGBA16U";
            case stormkit::gpu::PixelFormat::RGBA16_SNORM: return "PixelFormat::RGBA16_SNORM";
+           case stormkit::gpu::PixelFormat::RGBA16U: return "PixelFormat::RGBA16U";
            case stormkit::gpu::PixelFormat::RGBA16_UNORM: return "PixelFormat::RGBA16_UNORM";
            case stormkit::gpu::PixelFormat::RGBA32F: return "PixelFormat::RGBA32F";
            case stormkit::gpu::PixelFormat::RGBA32I: return "PixelFormat::RGBA32I";
            case stormkit::gpu::PixelFormat::RGBA32U: return "PixelFormat::RGBA32U";
            case stormkit::gpu::PixelFormat::RGBA4_UNORM_PACK16: return "PixelFormat::RGBA4_UNORM_PACK16";
            case stormkit::gpu::PixelFormat::RGBA8I: return "PixelFormat::RGBA8I";
-           case stormkit::gpu::PixelFormat::RGBA8U: return "PixelFormat::RGBA8U";
            case stormkit::gpu::PixelFormat::RGBA8_SNORM: return "PixelFormat::RGBA8_SNORM";
+           case stormkit::gpu::PixelFormat::RGBA8U: return "PixelFormat::RGBA8U";
            case stormkit::gpu::PixelFormat::RGBA8_UNORM: return "PixelFormat::RGBA8_UNORM";
+           case stormkit::gpu::PixelFormat::S8U: return "PixelFormat::S8U";
            case stormkit::gpu::PixelFormat::SBGR8: return "PixelFormat::SBGR8";
            case stormkit::gpu::PixelFormat::SBGRA8: return "PixelFormat::SBGRA8";
            case stormkit::gpu::PixelFormat::SR8: return "PixelFormat::SR8";
@@ -3160,8 +3168,8 @@ export {
         return std::array {
            stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER,
            stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE,
-           stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT,
            stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE,
+           stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT,
            stormkit::gpu::SamplerAddressMode::REPEAT,
            
         };
@@ -3173,8 +3181,8 @@ export {
         switch(value) {
            case stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER: return "SamplerAddressMode::CLAMP_TO_BORDER";
            case stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE: return "SamplerAddressMode::CLAMP_TO_EDGE";
-           case stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT: return "SamplerAddressMode::MIRRORED_REPEAT";
            case stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE: return "SamplerAddressMode::MIRROR_CLAMP_TO_EDGE";
+           case stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT: return "SamplerAddressMode::MIRRORED_REPEAT";
            case stormkit::gpu::SamplerAddressMode::REPEAT: return "SamplerAddressMode::REPEAT";
            
         }
@@ -3186,8 +3194,8 @@ export {
         switch(value) {
            case stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER: return "SamplerAddressMode::CLAMP_TO_BORDER";
            case stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE: return "SamplerAddressMode::CLAMP_TO_EDGE";
-           case stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT: return "SamplerAddressMode::MIRRORED_REPEAT";
            case stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE: return "SamplerAddressMode::MIRROR_CLAMP_TO_EDGE";
+           case stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT: return "SamplerAddressMode::MIRRORED_REPEAT";
            case stormkit::gpu::SamplerAddressMode::REPEAT: return "SamplerAddressMode::REPEAT";
            
         }
@@ -3355,6 +3363,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
 	STORMKIT_CONST
+    constexpr auto is_stencil_only_format(PixelFormat format) noexcept -> bool {
+        return format == PixelFormat::S8U;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
     constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool {
         return format == PixelFormat::DEPTH16_UNORM_STENCIL8U
                or format == PixelFormat::DEPTH24_UNORM_STENCIL8U
@@ -3367,6 +3383,14 @@ namespace stormkit::gpu {
 	STORMKIT_CONST
     constexpr auto is_depth_format(PixelFormat format) noexcept -> bool {
         return is_depth_only_format(format) or is_depth_stencil_format(format);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+	STORMKIT_CONST
+    constexpr auto is_stencil_format(PixelFormat format) noexcept -> bool {
+        return is_stencil_only_format(format) or is_depth_stencil_format(format);
     }
 
     /////////////////////////////////////

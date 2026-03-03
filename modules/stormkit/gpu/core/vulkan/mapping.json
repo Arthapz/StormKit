@@ -244,7 +244,8 @@
       "DEPTH32F":                { "vulkan": "VK_FORMAT_D32_SFLOAT",               "webgpu": "" },     
       "DEPTH16_UNORM_STENCIL8U": { "vulkan": "VK_FORMAT_D16_UNORM_S8_UINT",        "webgpu": "" },            
       "DEPTH24_UNORM_STENCIL8U": { "vulkan": "VK_FORMAT_D24_UNORM_S8_UINT",        "webgpu": "" },            
-      "DEPTH32F_STENCIL8U":      { "vulkan": "VK_FORMAT_D32_SFLOAT_S8_UINT",       "webgpu": "" }
+      "DEPTH32F_STENCIL8U":      { "vulkan": "VK_FORMAT_D32_SFLOAT_S8_UINT",       "webgpu": "" },
+      "S8U":                     { "vulkan": "VK_FORMAT_S8_UINT",                  "webgpu": "" }
     }
   },
   "AttachmentLoadOperation": {
