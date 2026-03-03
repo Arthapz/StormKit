@@ -188,21 +188,10 @@ namespace stormkit { inline namespace core {
     constexpr auto DAG<VertexValue>::add_vertex(const VertexValue& vertex) noexcept -> dag::VertexID
         requires(meta::IsCopyConstructible<VertexValue>)
     {
-        if constexpr (meta::HasEqualityOperator<VertexValue, VertexValue>) {
-            if (not has_vertex(vertex)) {
-                const auto id = m_next_id++;
-                m_vertices.emplace_back(id, vertex);
-                m_adjacent_edges[id] = {};
-                return id;
-            }
-
-            return stdr::find_if(m_vertices, [&vertex](const auto& other) noexcept { return vertex == other.value; })->id;
-        } else {
-            const auto id = m_next_id++;
-            m_vertices.emplace_back(id, vertex);
-            m_adjacent_edges[id] = {};
-            return id;
-        }
+        const auto id = m_next_id++;
+        m_vertices.emplace_back(id, vertex);
+        m_adjacent_edges[id] = {};
+        return id;
     }
 
     ////////////////////////////////////////
@@ -211,21 +200,10 @@ namespace stormkit { inline namespace core {
     constexpr auto DAG<VertexValue>::add_vertex(VertexValue&& vertex) noexcept -> dag::VertexID
         requires(meta::IsMoveConstructible<VertexValue>)
     {
-        if constexpr (meta::HasEqualityOperator<VertexValue, VertexValue>) {
-            if (not has_vertex(vertex)) {
-                const auto id = m_next_id++;
-                m_vertices.emplace_back(id, std::move(vertex));
-                m_adjacent_edges[id] = {};
-                return id;
-            }
-
-            return stdr::find_if(m_vertices, [&vertex](const auto& other) noexcept { return vertex == other.value; })->id;
-        } else {
-            const auto id = m_next_id++;
-            m_vertices.emplace_back(id, std::move(vertex));
-            m_adjacent_edges[id] = {};
-            return id;
-        }
+        const auto id = m_next_id++;
+        m_vertices.emplace_back(id, std::move(vertex));
+        m_adjacent_edges[id] = {};
+        return id;
     }
 
     ////////////////////////////////////////
