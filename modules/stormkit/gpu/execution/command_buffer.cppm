@@ -167,7 +167,7 @@ export namespace stormkit::gpu {
         auto insert_debug_label(std::string_view name, const fcolor_rgb& color = colors::WHITE<f32>) noexcept -> CommandBuffer&;
         auto end_debug_region() noexcept -> CommandBuffer&;
 
-        auto begin_rendering(const RenderingInfo& info) noexcept -> CommandBuffer&;
+        auto begin_rendering(const RenderingInfo& info, bool secondary_commandbuffers = false) noexcept -> CommandBuffer&;
         auto begin_render_pass(const RenderPass&           render_pass,
                                const FrameBuffer&          framebuffer,
                                std::span<const ClearValue> clear_values             = std::array { ClearValue {

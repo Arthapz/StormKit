@@ -114,11 +114,15 @@ namespace stormkit::gpu {
               return info;
           }();
 
-        const auto flags = [this, one_time_submit] noexcept -> VkCommandBufferUsageFlags {
+        const auto flags = [this, one_time_submit, &inheritance_info_variant] noexcept -> VkCommandBufferUsageFlags {
             auto flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
             if (!one_time_submit) flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-            if (m_level == CommandBufferLevel::SECONDARY) flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            if (m_level == CommandBufferLevel::SECONDARY) {
+                if (is<RenderPassInheritanceInfo>(inheritance_info_variant)
+                    or is<RenderingInheritanceInfo>(inheritance_info_variant))
+                    flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            }
 
             return flags;
         }();
@@ -140,7 +144,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto CommandBuffer::begin_rendering(const RenderingInfo& info) noexcept -> CommandBuffer& {
+    auto CommandBuffer::begin_rendering(const RenderingInfo& info, bool secondary) noexcept -> CommandBuffer& {
         EXPECTS(m_state == State::RECORDING);
 
         auto to_vk_attachment = [](const auto& attachment) static noexcept {
@@ -198,7 +202,7 @@ namespace stormkit::gpu {
         const auto rendering_info = VkRenderingInfo {
             .sType                = VK_STRUCTURE_TYPE_RENDERING_INFO,
             .pNext                = nullptr,
-            .flags                = 0,
+            .flags                = as<VkRenderingFlags>((secondary) ? VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT : 0),
             .renderArea           = to_vk(info.render_area),
             .layerCount           = info.layer_count,
             .viewMask             = info.view_mask,
