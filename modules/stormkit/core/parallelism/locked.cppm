@@ -63,8 +63,10 @@ export namespace stormkit { inline namespace core {
         Locked(const Locked&)                    = delete;
         auto operator=(const Locked&) -> Locked& = delete;
 
-        Locked(Locked&&) noexcept                    = delete;
-        auto operator=(Locked&&) noexcept -> Locked& = delete;
+        Locked(Locked&&) noexcept;
+        auto operator=(Locked&&) noexcept -> Locked&;
+
+        ~Locked() noexcept;
 
         template<LockAccessMode Mode, template<class> class Lock, typename... LockArgs, class Self>
         auto access(this Self& self, LockArgs&&... lock_args) noexcept -> Access<Lock, Mode>;
@@ -106,7 +108,8 @@ export namespace stormkit { inline namespace core {
             Access(ConstReferenceType value, MutexType& mutex, LockArgs&&... args) noexcept;
 
             template<typename... LockArgs>
-            explicit(sizeof...(LockArgs) == 0) Access(const Locked& locked, LockArgs&&... args) noexcept;
+            explicit(sizeof...(LockArgs) == 0) Access(const Locked& locked, LockArgs&&... args) noexcept
+                requires(Mode == LockAccessMode::READ_ONLY);
 
             template<typename... LockArgs>
             explicit(sizeof...(LockArgs) == 0) Access(Locked& locked, LockArgs&&... args) noexcept;
@@ -120,8 +123,8 @@ export namespace stormkit { inline namespace core {
             RefContainerType m_value;
         };
 
-        Mutex     m_mutex;
-        ValueType m_value;
+        mutable Mutex m_mutex;
+        ValueType     m_value;
     };
 
     template<typename T>
@@ -151,13 +154,42 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsNotRawIndirection T, class Mutex>
+    Locked<T, Mutex>::Locked(Locked&& other) noexcept {
+        auto from = other.write();
+
+        m_value = std::move(*from);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsNotRawIndirection T, class Mutex>
+    auto Locked<T, Mutex>::operator=(Locked&& other) noexcept -> Locked& {
+        if (&other == this) [[unlikely]]
+            return *this;
+
+        auto from = other.write();
+        auto to   = write();
+
+        *to = std::move(*from);
+
+        return *this;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsNotRawIndirection T, class Mutex>
+    Locked<T, Mutex>::~Locked() noexcept = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<LockAccessMode Mode, template<class> class Lock, typename... LockArgs, class Self>
     STORMKIT_FORCE_INLINE
     auto Locked<T, Mutex>::access(this Self& self, LockArgs&&... lock_args) noexcept -> Access<Lock, Mode> {
         static_assert(not(Mode == LockAccessMode::READ_ONLY and not std::is_const_v<meta::RemoveIndirectionsType<Self>>),
                       "can't get read access on const Locked<T>");
         using AccessType = Access<Lock, Mode>;
-        return AccessType { std::forward<Self>(self), std::forward<LockArgs>(lock_args)... };
+        return AccessType { std::forward<Self&>(self), std::forward<LockArgs>(lock_args)... };
     }
 
     ////////////////////////////////////////
@@ -255,6 +287,7 @@ namespace stormkit { inline namespace core {
     template<typename... LockArgs>
     STORMKIT_FORCE_INLINE
     Locked<T, Mutex>::Access<Lock, Mode>::Access(const Locked& locked, LockArgs&&... lock_args) noexcept
+        requires(Mode == LockAccessMode::READ_ONLY)
         : Access { locked.m_value, locked.m_mutex, std::forward<LockArgs>(lock_args)... } {
     }
 

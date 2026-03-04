@@ -34,6 +34,12 @@ namespace {
 
                 EXPECTS(locked_int.unsafe() == (ITERATIONS * 2));
             } },
+          { "Locked.move",
+            [] static noexcept {
+                auto locked_int = Locked { 0 };
+
+                auto locked_int2 = std::move(locked_int);
+            } },
           }
     };
 } // namespace
