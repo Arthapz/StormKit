@@ -87,7 +87,7 @@ export namespace stormkit { inline namespace core {
                     LockArgs&&... lock_args) noexcept(noexcept(std::is_nothrow_assignable_v<ValueType, ValueType&&>)) -> void;
 
         template<typename Self>
-        auto unsafe(this Self& self) noexcept -> meta::ForwardConst<Self, ReferenceType>;
+        auto unsafe(this Self& self) noexcept -> meta::ForwardConst<Self, ValueType>&;
 
         auto mutex() const noexcept -> const MutexType&;
 
@@ -97,8 +97,6 @@ export namespace stormkit { inline namespace core {
           public:
             using AccessValueType  = std::conditional_t<Mode == LockAccessMode::Read_Only, const ValueType, ValueType>;
             using RefContainerType = std::conditional_t<Mode == LockAccessMode::Read_Only, Ref<const ValueType>, Ref<ValueType>>;
-            using ReferenceType    = ValueType&;
-            using PointerType      = ValueType*;
 
             template<typename... LockArgs>
             Access(ReferenceType value, MutexType& mutex, LockArgs&&... args) noexcept;
@@ -109,11 +107,8 @@ export namespace stormkit { inline namespace core {
             template<typename... LockArgs>
             explicit Access(Locked& locked, LockArgs&&... args) noexcept;
 
-            template<class Self>
-            auto operator->(this Self&& self) noexcept -> meta::ForwardConst<Self, PointerType>;
-
-            template<class Self>
-            auto operator*(this Self&& self) noexcept -> meta::ForwardConst<Self, ReferenceType>;
+            auto operator->() const noexcept -> AccessValueType*;
+            auto operator*() const noexcept -> AccessValueType&;
 
             mutable Lock<MutexType> lock;
 
@@ -158,7 +153,7 @@ namespace stormkit { inline namespace core {
         static_assert(not(Mode == LockAccessMode::Read_Only and not std::is_const_v<meta::RemoveIndirectionsType<Self>>),
                       "can't get read access on const Locked<T>");
         using AccessType = Access<Lock, Mode>;
-        return AccessType { self, std::forward<LockArgs>(lock_args)... };
+        return AccessType { std::forward<Self>(self), std::forward<LockArgs>(lock_args)... };
     }
 
     ////////////////////////////////////////
@@ -217,8 +212,8 @@ namespace stormkit { inline namespace core {
     template<meta::IsNotRawIndirection T, class Mutex>
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    auto Locked<T, Mutex>::unsafe(this Self& self) noexcept -> meta::ForwardConst<Self, ReferenceType> {
-        return self.m_value;
+    auto Locked<T, Mutex>::unsafe(this Self& self) noexcept -> meta::ForwardConst<Self, ValueType>& {
+        return std::forward_like<Self&>(self.m_value);
     }
 
     ////////////////////////////////////////
@@ -263,19 +258,17 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, LockAccessMode Mode>
-    template<class Self>
     STORMKIT_FORCE_INLINE
-    auto Locked<T, Mutex>::Access<Lock, Mode>::operator->(this Self&& self) noexcept -> meta::ForwardConst<Self, PointerType> {
-        return self.m_value.get();
+    auto Locked<T, Mutex>::Access<Lock, Mode>::operator->() const noexcept -> AccessValueType* {
+        return m_value.get();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, LockAccessMode Mode>
-    template<class Self>
     STORMKIT_FORCE_INLINE
-    auto Locked<T, Mutex>::Access<Lock, Mode>::operator*(this Self&& self) noexcept -> meta::ForwardConst<Self, ReferenceType> {
-        return *self.m_value;
+    auto Locked<T, Mutex>::Access<Lock, Mode>::operator*() const noexcept -> AccessValueType& {
+        return *m_value;
     }
 }} // namespace stormkit::core
