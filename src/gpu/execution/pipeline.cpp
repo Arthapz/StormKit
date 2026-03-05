@@ -17,6 +17,8 @@ import stormkit.gpu.core;
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
+using namespace std::literals;
+
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
@@ -154,14 +156,21 @@ namespace stormkit::gpu {
         const auto shaders = state.shader_state
                              | stdv::transform(core::monadic::unref())
                              | stdv::transform([](auto&& shader) static noexcept {
-                                   static constexpr auto NAME = "main";
+                                   const auto name = [](const auto& shader) static noexcept {
+                                       if (shader.type() == ShaderStageFlag::VERTEX) return "vert_main"sv;
+                                       else if (shader.type() == ShaderStageFlag::FRAGMENT)
+                                           return "frag_main"sv;
+                                       else
+                                           return "main"sv;
+                                   }(shader);
+
                                    return VkPipelineShaderStageCreateInfo {
                                        .sType               = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                                        .pNext               = nullptr,
                                        .flags               = 0,
                                        .stage               = to_vk<VkShaderStageFlagBits>(shader.type()),
                                        .module              = to_vk(shader),
-                                       .pName               = NAME,
+                                       .pName               = stdr::data(name),
                                        .pSpecializationInfo = nullptr,
                                    };
                                })
