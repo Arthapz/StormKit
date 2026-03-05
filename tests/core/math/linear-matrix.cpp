@@ -21,15 +21,13 @@ namespace {
                 auto a = math::imat4 { 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 4, 0, 0, 0 };
                 EXPECTS(a[0] == 0);
                 EXPECTS(a[1] == 1);
-                EXPECTS(a[0] == 0);
-
-                EXPECTS((a[0, 2] == 2));
+                EXPECTS((a[1, 2] == 2));
 
                 const auto span  = math::as_view(a);
                 auto       span2 = math::as_view_mut(a);
 
-                EXPECTS(span[0] == 2);
-                EXPECTS(span[1] == 3);
+                EXPECTS(span[0] == 0);
+                EXPECTS(span[1] == 1);
 
                 span2[0] = 1;
 
@@ -42,7 +40,7 @@ namespace {
                 EXPECTS(a[1] == 1);
                 EXPECTS(a[0] == 0);
 
-                EXPECTS((a[0, 2] == 2));
+                EXPECTS((a[1, 2] == 2));
 
                 a[0] = 5;
             } },
