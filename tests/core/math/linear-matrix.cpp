@@ -173,6 +173,22 @@ namespace {
                 EXPECTS((result[2, 2] == 3));
                 EXPECTS((result[3, 3] == 1));
             },
-          }, },
+          }, { "linear.matrix.to_string",
+            [] static {
+                auto a = math::imat4x3 {
+                    { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }
+                };
+
+                const auto as_string = math::to_string(a);
+                EXPECTS((as_string ==
+                         // clang-format off
+R"([mat   1,   2,   3
+       4,   5,   6
+       7,   8,   9
+      10,  11,  12])"));
+                // clang-format on
+            } },
+
+          },
     };
 } // namespace

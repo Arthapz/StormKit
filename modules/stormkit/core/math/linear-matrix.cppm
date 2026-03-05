@@ -23,9 +23,13 @@ import :hash.base;
 
 import :string.format;
 
+import :utils.numeric_range;
+
 export {
     namespace stormkit { inline namespace core { namespace math {
         inline namespace matrix {
+            // M => rows
+            // N => columns
             template<core::meta::IsArithmetic T, usize M, usize N>
             struct alignas(std::array<T, M * N>) mat {
                 using value_type   = T;
@@ -296,7 +300,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto mat<T, M, N>::operator[](this Self&& self, size_type i, size_type j) noexcept
       -> core::meta::ForwardLike<Self, value_type>& {
-        return std::forward_like<Self&>(self.operator[](j + i * M));
+        return std::forward_like<Self&>(self.operator[](((i * EXTENTS[0]) + j)));
     }
 
     ////////////////////////////////////////
@@ -506,7 +510,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     template<core::meta::IsArithmetic T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far) noexcept -> mat4x4<T> {
-        auto out = mat4x4<T> {};
+        auto out = mat4x4<T>::identity();
 
         math::orthographique(left, right, bottom, top, near, far, as_mdspan_mut(out));
 
@@ -518,7 +522,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     template<core::meta::IsArithmetic T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto orthographique(T left, T right, T bottom, T top) noexcept -> mat4x4<T> {
-        auto out = mat4x4<T> {};
+        auto out = mat4x4<T>::identity();
 
         math::orthographique(left, right, bottom, top, as_mdspan_mut(out));
 
@@ -605,39 +609,31 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     inline auto format_as(const T& mat, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         auto out = ctx.out();
 
-        auto i               = 0;
-        auto check_by_extent = [&i](auto, auto) mutable {
-            const auto insert = i++ < (T::EXTENTS[0] - 1);
-            if (not insert) i = 0;
-
-            return insert;
-        };
+        auto max_digit = 0u;
+        for (auto v : as_view(mat)) max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
 
         format_to(out, "[mat ");
-        auto l = 0u;
-        if constexpr (stormkit::meta::IsIntegral<typename T::value_type>) {
-            auto max_digit = 0u;
-            for (auto v : as_view(mat)) max_digit = std::max(max_digit, v == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
-            for (auto&& slice : mat | stdv::chunk_by(check_by_extent)) {
-                format_to(out,
-                          "{}|{:n:>{}}|{}",
-                          (l > 0) ? "      "sv : " "sv,
-                          slice,
-                          max_digit,
-                          (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "}"sv);
-                ++l;
-            }
-        } else {
-            auto max_digit = 0u;
-            for (auto v : as_view(mat)) max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
-            for (auto&& slice : mat | stdv::chunk_by(check_by_extent)) {
-                format_to(out,
-                          "{}| {:n:>{}.5f}|{}",
-                          (l > 0) ? "      "sv : " "sv,
-                          slice,
-                          max_digit,
-                          (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "]"sv);
-                ++l;
+
+        for (auto i : range(T::EXTENTS[0] * T::EXTENTS[1])) {
+            const auto row = i / T::EXTENTS[1];
+            const auto col = i % T::EXTENTS[1];
+
+            if (row != 0 && col == 0) format_to(out, "     ");
+
+            if constexpr (stormkit::meta::IsIntegral<typename T::value_type>) {
+                if (col < T::EXTENTS[1] - 1) format_to(out, "{:>{}}, ", mat[i], max_digit);
+                else {
+                    if (row < T::EXTENTS[0] - 1) format_to(out, "{:>{}}\n", mat[i], max_digit);
+                    else
+                        format_to(out, "{:>{}}]", mat[i], max_digit);
+                }
+            } else {
+                if (col < T::EXTENTS[1] - 1) format_to(out, "{:>{}.5f}, ", mat[i], max_digit + 5);
+                else {
+                    if (row < T::EXTENTS[0] - 1) format_to(out, "{:>{}.5f}\n", mat[i], max_digit + 5);
+                    else
+                        format_to(out, "{:>{}.5f}]", mat[i], max_digit + 5);
+                }
             }
         }
 
