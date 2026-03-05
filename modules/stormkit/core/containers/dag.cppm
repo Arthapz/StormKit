@@ -117,9 +117,9 @@ export namespace stormkit { inline namespace core {
       private:
         dag::VertexID m_next_id = 0;
 
-        std::vector<Vertex>                            m_vertices;
-        std::vector<dag::Edge>                         m_edges;
-        HashMap<dag::VertexID, std::vector<dag::Edge>> m_adjacent_edges;
+        std::vector<Vertex>                                           m_vertices;
+        std::vector<dag::Edge>                                        m_edges;
+        std::vector<std::pair<dag::VertexID, std::vector<dag::Edge>>> m_adjacent_edges;
     };
 
     namespace dag {
@@ -190,7 +190,7 @@ namespace stormkit { inline namespace core {
     {
         const auto id = m_next_id++;
         m_vertices.emplace_back(id, vertex);
-        m_adjacent_edges[id] = {};
+        m_adjacent_edges.emplace_back(id, std::vector<dag::Edge> {});
         return id;
     }
 
@@ -202,7 +202,7 @@ namespace stormkit { inline namespace core {
     {
         const auto id = m_next_id++;
         m_vertices.emplace_back(id, std::move(vertex));
-        m_adjacent_edges[id] = {};
+        m_adjacent_edges.emplace_back(id, std::vector<dag::Edge> {});
         return id;
     }
 
@@ -243,7 +243,7 @@ namespace stormkit { inline namespace core {
     template<typename VertexValue>
     STORMKIT_FORCE_INLINE
     constexpr auto DAG<VertexValue>::has_vertex(dag::VertexID id) const noexcept -> bool {
-        return m_adjacent_edges.find(id) != stdr::cend(m_adjacent_edges);
+        return stdr::any_of(m_vertices, [&id](const auto& vertex) noexcept { return vertex.id == id; });
     }
 
     ////////////////////////////////////////
@@ -257,14 +257,9 @@ namespace stormkit { inline namespace core {
             expects(has_vertex(vertex), "Unknown DAG vertex value!");
 
         auto it = stdr::find_if(m_vertices, [&value = vertex](const auto& vertex) noexcept { return vertex.value == value; });
-        auto&& [remove_begin, remove_end] = stdr::remove_if(m_edges, [&it](auto&& edge) noexcept {
-            return edge.from == it->id or edge.to == it->id;
-        });
-
         const auto id = it->id;
-        m_adjacent_edges.erase(it->id);
-        m_edges.erase(remove_begin, remove_end);
-        m_vertices.erase(it);
+
+        remove_vertex(id);
     }
 
     ////////////////////////////////////////
@@ -273,16 +268,17 @@ namespace stormkit { inline namespace core {
     constexpr auto DAG<VertexValue>::remove_vertex(dag::VertexID id) noexcept -> void {
         expects(has_vertex(id), std::format("Unknown DAG vertex id: {}!", id));
 
-        auto it = stdr::find_if(m_vertices, [id](const auto& vertex) noexcept { return vertex.id == id; });
-
         auto touching = std::vector<dag::Edge> {};
         for (auto&& edge : m_edges)
             if (edge.from == id or edge.to == id) touching.emplace_back(edge);
 
         for (auto&& [from, to] : touching) remove_edge(from, to);
 
-        m_adjacent_edges.erase(id);
-        m_vertices.erase(it);
+        auto&& [begin, end]   = stdr::remove_if(m_vertices, [id](const auto& vertex) noexcept { return vertex.id == id; });
+        auto&& [begin2, end2] = stdr::remove_if(m_adjacent_edges, [id](const auto& pair) noexcept { return pair.first == id; });
+
+        m_adjacent_edges.erase(begin2, end2);
+        m_vertices.erase(begin, end);
     }
 
     ////////////////////////////////////////
@@ -295,7 +291,10 @@ namespace stormkit { inline namespace core {
 
         const auto& edge = m_edges.emplace_back(from, to);
 
-        m_adjacent_edges[from].emplace_back(edge);
+        auto& adjacent_edges = stdr::find_if(m_adjacent_edges, [id = from](const auto& pair) noexcept {
+                                   return pair.first == id;
+                               })->second;
+        adjacent_edges.emplace_back(edge);
     }
 
     ////////////////////////////////////////
@@ -304,8 +303,7 @@ namespace stormkit { inline namespace core {
     constexpr auto DAG<VertexValue>::has_edge(dag::VertexID from, dag::VertexID to) const noexcept -> bool {
         if (not has_vertex(from) or not has_vertex(to)) return false;
 
-        return stdr::any_of(m_edges, [from, to](auto&& edge) noexcept { return edge.from == from and edge.to == to; })
-               and stdr::any_of(m_edges, [from, to](auto&& edge) noexcept { return edge.from == to and edge.to == from; });
+        return stdr::any_of(m_edges, [from, to](auto&& edge) noexcept { return edge.from == from and edge.to == to; });
     }
 
     ////////////////////////////////////////
@@ -314,21 +312,21 @@ namespace stormkit { inline namespace core {
     constexpr auto DAG<VertexValue>::remove_edge(dag::VertexID from, dag::VertexID to) noexcept -> void {
         expects(has_vertex(from), std::format("Unknown DAG vertex from: {}", from));
         expects(has_vertex(to), std::format("Unknown DAG vertex to: {}", to));
+
         if (not has_edge(from, to)) return;
 
         {
-            const auto it = stdr::find_if(m_edges, [from, to](auto&& edge) noexcept {
+            auto&& [begin, end] = stdr::remove_if(m_edges, [from, to](auto&& edge) noexcept {
                 return edge.from == from and edge.to == to;
             });
-            m_edges.erase(it);
+
+            m_edges.erase(begin, end);
         }
         for (auto&& [_, edges] : m_adjacent_edges) {
-            {
-                const auto it = stdr::find_if(edges, [from, to](auto&& edge) noexcept {
-                    return edge.from == from and edge.to == to;
-                });
-                if (it != stdr::cend(edges)) edges.erase(it);
-            }
+            auto&& [begin, end] = stdr::remove_if(edges, [from, to](auto&& edge) noexcept {
+                return edge.from == from and edge.to == to;
+            });
+            edges.erase(begin, end);
         }
     }
 
@@ -338,7 +336,9 @@ namespace stormkit { inline namespace core {
     constexpr auto DAG<VertexValue>::adjacent_edges(dag::VertexID id) const noexcept -> const std::vector<dag::Edge>& {
         expects(has_vertex(id), std::format("Unknown DAG vertex id: {}!", id));
 
-        return m_adjacent_edges.at(id);
+        const auto& adjacent_edges = stdr::find_if(m_adjacent_edges, [id](const auto& pair) noexcept { return pair.first == id; })
+                                       ->second;
+        return adjacent_edges;
     }
 
     ////////////////////////////////////////
@@ -542,12 +542,12 @@ namespace stormkit { inline namespace core {
         if constexpr (AS_REF) {
             for (const auto& [id, vertice] : vertices) {
                 out.m_vertices.emplace_back(id, as_ref(vertice));
-                out.m_adjacent_edges[id] = {};
+                out.m_adjacent_edges.emplace_back(id, std::vector<dag::Edge> {});
             }
         } else {
             for (const auto& [id, vertice] : vertices) {
                 out.m_vertices.emplace_back(id, auto(vertice));
-                out.m_adjacent_edges[id] = {};
+                out.m_adjacent_edges.emplace_back(id, std::vector<dag::Edge> {});
             }
         }
 
@@ -555,7 +555,10 @@ namespace stormkit { inline namespace core {
         for (auto&& [from, to] : edges) {
             const auto& edge = out.m_edges.emplace_back(to, from);
 
-            out.m_adjacent_edges[to].emplace_back(edge);
+            auto& adjacent_edges = stdr::find_if(out.m_adjacent_edges, [id = to](const auto& pair) noexcept {
+                                       return pair.first == id;
+                                   })->second;
+            adjacent_edges.emplace_back(edge);
         }
 
         return out;
