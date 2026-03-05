@@ -186,7 +186,6 @@ R"([mat   1,   2,   3
       10,  11,  12])"));
                 // clang-format on
             } },
-
           },
     };
 } // namespace

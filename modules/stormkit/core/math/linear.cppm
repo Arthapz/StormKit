@@ -173,11 +173,11 @@ export namespace stormkit { inline namespace core { namespace math {
     /* graphics */
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
-    constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void;
+    constexpr auto orthographique(T left, T right, T top, T bottom, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void;
 
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
-    constexpr auto orthographique(T left, T right, T bottom, T top, SquareMatrixSpan<T, 4> out) noexcept -> void;
+    constexpr auto orthographique(T left, T right, T top, T bottom, SquareMatrixSpan<T, 4> out) noexcept -> void;
 
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
@@ -658,13 +658,14 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void {
+    constexpr auto orthographique(T left, T right, T top, T bottom, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void {
         out[0, 0] = T { 2 } / (right - left);
         out[1, 1] = T { 2 } / (top - bottom);
         out[2, 2] = -T { 2 } / (far - near);
-        out[3, 0] = -((right + left) / (right - left));
-        out[3, 1] = -((top + bottom) / (top - bottom));
-        out[3, 2] = -((far + near) / (far - near));
+
+        out[0, 3] = -((right + left) / (right - left));
+        out[1, 3] = -((top + bottom) / (top - bottom));
+        out[2, 3] = -((far + near) / (far - near));
     }
 
     ////////////////////////////////////////
@@ -672,14 +673,14 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto orthographique(T left, T right, T bottom, T top, SquareMatrixSpan<T, 4> out) noexcept -> void {
+    constexpr auto orthographique(T left, T right, T top, T bottom, SquareMatrixSpan<T, 4> out) noexcept -> void {
         out[0, 0] = T { 2 } / (right - left);
         out[1, 1] = T { 2 } / (top - bottom);
         out[2, 2] = -T { 2 };
 
-        out[0, 3] = -((right + left) / (right - left));
-        out[1, 3] = -((top + bottom) / (top - bottom));
-        out[2, 3] = -T { 1 };
+        out[3, 0] = -((right + left) / (right - left));
+        out[3, 1] = -((top + bottom) / (top - bottom));
+        out[3, 2] = -T { 1 };
     }
 
     ////////////////////////////////////////

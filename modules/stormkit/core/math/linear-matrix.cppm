@@ -204,11 +204,11 @@ export {
 
             template<core::meta::IsArithmetic T>
             [[nodiscard]]
-            constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far) noexcept -> mat4x4<T>;
+            constexpr auto orthographique(T left, T right, T top, T bottom, T near, T far) noexcept -> mat4x4<T>;
 
             template<core::meta::IsArithmetic T>
             [[nodiscard]]
-            constexpr auto orthographique(T left, T right, T bottom, T top) noexcept -> mat4x4<T>;
+            constexpr auto orthographique(T left, T right, T top, T bottom) noexcept -> mat4x4<T>;
 
             template<core::meta::IsArithmetic T>
             [[nodiscard]]
@@ -509,10 +509,10 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far) noexcept -> mat4x4<T> {
+    constexpr auto orthographique(T left, T right, T top, T bottom, T near, T far) noexcept -> mat4x4<T> {
         auto out = mat4x4<T>::identity();
 
-        math::orthographique(left, right, bottom, top, near, far, as_mdspan_mut(out));
+        math::orthographique(left, right, top, bottom, near, far, as_mdspan_mut(out));
 
         return out;
     }
@@ -521,10 +521,10 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto orthographique(T left, T right, T bottom, T top) noexcept -> mat4x4<T> {
+    constexpr auto orthographique(T left, T right, T top, T bottom) noexcept -> mat4x4<T> {
         auto out = mat4x4<T>::identity();
 
-        math::orthographique(left, right, bottom, top, as_mdspan_mut(out));
+        math::orthographique(left, right, top, bottom, as_mdspan_mut(out));
 
         return out;
     }
@@ -610,7 +610,13 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
         auto out = ctx.out();
 
         auto max_digit = 0u;
-        for (auto v : as_view(mat)) max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
+        if constexpr (stormkit::meta::IsSigned<typename T::value_type>)
+            for (auto v : as_view(mat)) {
+                max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
+                if (v < 0) max_digit = max_digit + 1;
+            }
+        else
+            for (auto v : as_view(mat)) max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
 
         format_to(out, "[mat ");
 
@@ -628,11 +634,11 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
                         format_to(out, "{:>{}}]", mat[i], max_digit);
                 }
             } else {
-                if (col < T::EXTENTS[1] - 1) format_to(out, "{:>{}.5f}, ", mat[i], max_digit + 5);
+                if (col < T::EXTENTS[1] - 1) format_to(out, "{:>{}.5f}, ", mat[i], max_digit);
                 else {
-                    if (row < T::EXTENTS[0] - 1) format_to(out, "{:>{}.5f}\n", mat[i], max_digit + 5);
+                    if (row < T::EXTENTS[0] - 1) format_to(out, "{:>{}.5f}\n", mat[i], max_digit);
                     else
-                        format_to(out, "{:>{}.5f}]", mat[i], max_digit + 5);
+                        format_to(out, "{:>{}.5f}]", mat[i], max_digit);
                 }
             }
         }
