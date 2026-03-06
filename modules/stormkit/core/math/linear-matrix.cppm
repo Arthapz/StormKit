@@ -620,7 +620,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
 
         format_to(out, "[mat ");
 
-        for (auto i : range(T::EXTENTS[0] * T::EXTENTS[1])) {
+        for (auto i : range<usize>(T::EXTENTS[0] * T::EXTENTS[1])) {
             const auto row = i / T::EXTENTS[1];
             const auto col = i % T::EXTENTS[1];
 
