@@ -661,11 +661,11 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto orthographique(T left, T right, T top, T bottom, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void {
         out[0, 0] = T { 2 } / (right - left);
         out[1, 1] = T { 2 } / (top - bottom);
-        out[2, 2] = -T { 2 } / (far - near);
+        out[2, 2] = T { 1 } / (far - near);
 
-        out[0, 3] = -((right + left) / (right - left));
-        out[1, 3] = -((top + bottom) / (top - bottom));
-        out[2, 3] = -((far + near) / (far - near));
+        out[0, 3] = -(right + left) / (right - left);
+        out[1, 3] = -(top + bottom) / (top - bottom);
+        out[2, 3] = -near / (far - near);
     }
 
     ////////////////////////////////////////
@@ -674,13 +674,10 @@ namespace stormkit { inline namespace core { namespace math {
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto orthographique(T left, T right, T top, T bottom, SquareMatrixSpan<T, 4> out) noexcept -> void {
-        out[0, 0] = T { 2 } / (right - left);
-        out[1, 1] = T { 2 } / (top - bottom);
-        out[2, 2] = -T { 2 };
+        constexpr auto far  = T { 100 };
+        constexpr auto near = T { 0.1 };
 
-        out[3, 0] = -((right + left) / (right - left));
-        out[3, 1] = -((top + bottom) / (top - bottom));
-        out[3, 2] = -T { 1 };
+        return orthographique(left, right, top, bottom, near, far);
     }
 
     ////////////////////////////////////////
