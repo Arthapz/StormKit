@@ -15,7 +15,7 @@ target("textured_cube", function()
     add_files("src/*.cpp", "src/*.cppm", "../common/app.cppm", "shaders/*.nzsl")
 
     if get_config("devmode") then
-        add_defines(format('RESOURCE_DIR="%s"', path.unix(path.join(os.projectdir(), "gpu/textured_cube"))))
+        add_defines(format('RESOURCE_DIR="%s"', path.unix(path.join(os.projectdir(), "examples/gpu/textured_cube"))))
         add_defines(format('SHADER_DIR="%s"', path.unix("$(builddir)/shaders")))
     end
     add_embeddirs("$(builddir)/shaders")
