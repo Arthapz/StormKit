@@ -173,11 +173,11 @@ export namespace stormkit { inline namespace core { namespace math {
     /* graphics */
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
-    constexpr auto orthographique(T left, T right, T top, T bottom, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void;
+    constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void;
 
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
-    constexpr auto orthographique(T left, T right, T top, T bottom, SquareMatrixSpan<T, 4> out) noexcept -> void;
+    constexpr auto orthographique(T left, T right, T bottom, T top, SquareMatrixSpan<T, 4> out) noexcept -> void;
 
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
@@ -658,10 +658,10 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto orthographique(T left, T right, T top, T bottom, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void {
-        out[0, 0] = T { 2 } / (right - left);
-        out[1, 1] = T { 2 } / (top - bottom);
-        out[2, 2] = T { 1 } / (far - near);
+    constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void {
+        out[0, 0] = core::as<T>(2) / (right - left);
+        out[1, 1] = core::as<T>(2) / (top - bottom);
+        out[2, 2] = core::as<T>(1) / (far - near);
 
         out[0, 3] = -(right + left) / (right - left);
         out[1, 3] = -(top + bottom) / (top - bottom);
@@ -673,11 +673,11 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto orthographique(T left, T right, T top, T bottom, SquareMatrixSpan<T, 4> out) noexcept -> void {
-        constexpr auto far  = T { 100 };
-        constexpr auto near = T { 0.1 };
+    constexpr auto orthographique(T left, T right, T bottom, T top, SquareMatrixSpan<T, 4> out) noexcept -> void {
+        constexpr auto far  = core::as<T>(100);
+        constexpr auto near = core::narrow<T>(0.1);
 
-        return orthographique(left, right, top, bottom, near, far);
+        return orthographique(left, right, bottom, top, near, far, out);
     }
 
     ////////////////////////////////////////

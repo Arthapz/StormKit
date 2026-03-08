@@ -204,11 +204,11 @@ export {
 
             template<core::meta::IsArithmetic T>
             [[nodiscard]]
-            constexpr auto orthographique(T left, T right, T top, T bottom, T near, T far) noexcept -> mat4x4<T>;
+            constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far) noexcept -> mat4x4<T>;
 
             template<core::meta::IsArithmetic T>
             [[nodiscard]]
-            constexpr auto orthographique(T left, T right, T top, T bottom) noexcept -> mat4x4<T>;
+            constexpr auto orthographique(T left, T right, T bottom, T top) noexcept -> mat4x4<T>;
 
             template<core::meta::IsArithmetic T>
             [[nodiscard]]
@@ -509,7 +509,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto orthographique(T left, T right, T top, T bottom, T near, T far) noexcept -> mat4x4<T> {
+    constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far) noexcept -> mat4x4<T> {
         auto out = mat4x4<T>::identity();
 
         math::orthographique(left, right, top, bottom, near, far, as_mdspan_mut(out));
@@ -521,10 +521,10 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto orthographique(T left, T right, T top, T bottom) noexcept -> mat4x4<T> {
+    constexpr auto orthographique(T left, T right, T bottom, T top) noexcept -> mat4x4<T> {
         auto out = mat4x4<T>::identity();
 
-        math::orthographique(left, right, top, bottom, as_mdspan_mut(out));
+        math::orthographique(left, right, bottom, top, as_mdspan_mut(out));
 
         return out;
     }
