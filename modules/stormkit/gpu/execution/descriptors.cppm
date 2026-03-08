@@ -23,11 +23,11 @@ namespace stdv = std::views;
 
 export namespace stormkit::gpu {
     struct BufferDescriptor {
-        DescriptorType    type = DescriptorType::UNIFORM_BUFFER;
-        u32               binding;
-        Ref<const Buffer> buffer;
-        u32               range;
-        u32               offset = 0;
+        DescriptorType     type = DescriptorType::UNIFORM_BUFFER;
+        u32                binding;
+        Ref<const Buffer>  buffer;
+        std::optional<u32> range  = std::nullopt;
+        u32                offset = 0;
     };
 
     struct ImageDescriptor {
@@ -247,17 +247,14 @@ namespace stormkit::gpu {
             images.reserve(std::size(descriptors));
             writes.reserve(std::size(descriptors));
 
-            auto dst = 0u;
             std::ranges::for_each(descriptors,
                                   core::monadic::either(
-                                    [vk_handle = m_vk_handle,
-                                     &buffers,
-                                     &writes,
-                                     &dst](const BufferDescriptor& descriptor) mutable noexcept -> decltype(auto) {
+                                    [vk_handle = m_vk_handle, &buffers, &writes](const BufferDescriptor& descriptor) noexcept
+                                      -> decltype(auto) {
                                         buffers.push_back(VkDescriptorBufferInfo {
                                           .buffer = to_vk(descriptor.buffer),
                                           .offset = descriptor.offset,
-                                          .range  = descriptor.range,
+                                          .range  = descriptor.range.value_or(VK_WHOLE_SIZE),
                                         });
                                         const auto& buffer_descriptor = buffers.back();
 
@@ -265,19 +262,17 @@ namespace stormkit::gpu {
                                           .sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
                                           .pNext            = nullptr,
                                           .dstSet           = vk_handle,
-                                          .dstBinding       = dst++,
+                                          .dstBinding       = descriptor.binding,
                                           .dstArrayElement  = 0,
                                           .descriptorCount  = 1,
-                                          .descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                          .descriptorType   = to_vk<VkDescriptorType>(descriptor.type),
                                           .pImageInfo       = nullptr,
                                           .pBufferInfo      = &buffer_descriptor,
                                           .pTexelBufferView = nullptr,
                                         });
                                     },
-                                    [vk_handle = m_vk_handle,
-                                     &images,
-                                     &writes,
-                                     &dst](const ImageDescriptor& descriptor) mutable noexcept -> decltype(auto) {
+                                    [vk_handle = m_vk_handle, &images, &writes](const ImageDescriptor& descriptor) noexcept
+                                      -> decltype(auto) {
                                         images.push_back(VkDescriptorImageInfo {
                                           .sampler     = to_vk(descriptor.sampler),
                                           .imageView   = to_vk(descriptor.image_view),
@@ -289,10 +284,10 @@ namespace stormkit::gpu {
                                           .sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
                                           .pNext            = nullptr,
                                           .dstSet           = vk_handle,
-                                          .dstBinding       = dst++,
+                                          .dstBinding       = descriptor.binding,
                                           .dstArrayElement  = 0,
                                           .descriptorCount  = 1,
-                                          .descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                          .descriptorType   = to_vk<VkDescriptorType>(descriptor.type),
                                           .pImageInfo       = &image_descriptor,
                                           .pBufferInfo      = nullptr,
                                           .pTexelBufferView = nullptr,
