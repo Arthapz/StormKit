@@ -86,7 +86,6 @@ namespace stormkit::entities {
         EXPECTS(has_component(entity, type));
 
         auto it = stdr::find_if(m_components, [type](const auto& pair) noexcept { return pair.type == type; });
-        ENSURES(it == stdr::cend(m_components));
 
         auto& [_, size, entities, components, delete_func] = *it;
         auto component_it                                  = stdr::begin(components);
