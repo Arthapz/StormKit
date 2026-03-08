@@ -11,11 +11,14 @@ namespace stdr = std::ranges;
 namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
-    ThreadPool::ThreadPool(ThreadPool&& other) noexcept {
+    ThreadPool::ThreadPool(ThreadPool&& other) noexcept
+        : m_worker_count { other.m_worker_count }, m_running_task_counter { m_worker_count } {
+        wait_idle();
+        other.wait_idle();
+
         auto lock = std::scoped_lock { other.m_mutex };
 
-        m_worker_count = other.m_worker_count;
-        m_tasks        = std::move(other.m_tasks);
+        m_tasks = std::move(other.m_tasks);
 
         m_workers.reserve(m_worker_count);
         for (const auto i : range(m_worker_count)) {
@@ -29,6 +32,9 @@ namespace stormkit {
     auto ThreadPool::operator=(ThreadPool&& other) noexcept -> ThreadPool& {
         if (&other == this) [[unlikely]]
             return *this;
+
+        wait_idle();
+        other.wait_idle();
 
         auto lock1 = std::unique_lock { m_mutex, std::defer_lock };
         auto lock2 = std::unique_lock { other.m_mutex, std::defer_lock };
@@ -53,9 +59,36 @@ namespace stormkit {
     auto ThreadPool::join_all() noexcept -> void {
         for (const auto _ : range(m_worker_count)) post_task<void>(Task::Type::Terminate, [] {}, ThreadPool::NO_FUTURE);
 
-        for (auto& thread : m_workers) {
+        for (auto& thread : m_workers)
             if (thread.joinable()) thread.join();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto ThreadPool::wait_idle(bool cancel_tasks) noexcept -> void {
+        if (cancel_tasks) {
+            auto _ = std::unique_lock { m_mutex };
+            while (not stdr::empty(m_tasks)) m_tasks.pop();
         }
+
+        for (;;) {
+            {
+                auto _ = std::unique_lock { m_mutex };
+                if (stdr::empty(m_tasks)) break;
+            }
+            std::this_thread::yield();
+        }
+
+        auto count = worker_count();
+        for (;;) {
+            while (m_running_task_counter.try_acquire()) --count;
+
+            if (count == 0) break;
+
+            std::this_thread::yield();
+        }
+
+        for (auto _ : range(worker_count())) m_running_task_counter.release();
     }
 
     /////////////////////////////////////
@@ -72,7 +105,9 @@ namespace stormkit {
                 m_tasks.pop();
             }
 
+            m_running_task_counter.acquire();
             task.work();
+            m_running_task_counter.release();
 
             if (task.type == Task::Type::Terminate) return;
         }

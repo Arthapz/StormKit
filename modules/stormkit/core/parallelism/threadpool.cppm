@@ -49,6 +49,8 @@ export namespace stormkit { inline namespace core {
 
         auto join_all() noexcept -> void;
 
+        auto wait_idle(bool cancel_tasks = false) noexcept -> void;
+
         auto set_name(std::string_view name) noexcept -> void;
 
       private:
@@ -81,9 +83,10 @@ export namespace stormkit { inline namespace core {
 
         std::vector<std::jthread> m_workers;
 
-        mutable std::mutex      m_mutex;
-        std::condition_variable m_work_signal;
-        std::queue<Task>        m_tasks;
+        mutable std::mutex          m_mutex;
+        std::condition_variable     m_work_signal;
+        std::counting_semaphore<64> m_running_task_counter;
+        std::queue<Task>            m_tasks;
     };
 
     template<std::ranges::input_range Range, std::invocable<meta::RangeType<Range>&> F>
@@ -105,7 +108,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline ThreadPool::ThreadPool(u32 worker_count)
-        : m_worker_count { worker_count } {
+        : m_worker_count { worker_count }, m_running_task_counter { worker_count } {
         m_workers.reserve(m_worker_count);
 
         for (auto i : range(m_worker_count)) {
@@ -118,6 +121,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline ThreadPool::~ThreadPool() {
+        wait_idle();
         join_all();
     }
 
