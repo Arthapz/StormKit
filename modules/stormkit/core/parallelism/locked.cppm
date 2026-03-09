@@ -18,9 +18,9 @@ import :typesafe.ref;
 namespace stormkit { inline namespace core { namespace details {
     using DefaultMutex = std::mutex;
     template<typename Mutex>
-    using DefaultReadOnlyLock = std::lock_guard<Mutex>;
+    using DefaultReadOnlyLock = std::unique_lock<Mutex>;
     template<typename Mutex>
-    using DefaultReadWriteLock = std::lock_guard<Mutex>;
+    using DefaultReadWriteLock = std::unique_lock<Mutex>;
 }}} // namespace stormkit::core::details
 
 export namespace stormkit { inline namespace core {
