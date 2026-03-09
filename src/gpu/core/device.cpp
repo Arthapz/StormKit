@@ -204,6 +204,12 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    auto Device::wait_idle() const noexcept -> Expected<void> {
+        return vk_call(m_vk_device_table.vkDeviceWaitIdle, m_vk_handle).transform_error(core::monadic::narrow<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto Device::do_init(const Instance& instance, const Info& info) noexcept -> Expected<void> {
         const auto& queue_families = m_physical_device->queue_families();
 
