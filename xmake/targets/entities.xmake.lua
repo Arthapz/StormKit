@@ -10,6 +10,8 @@ target("entities", function()
 
     add_defines("STORMKIT_ENTITIES_BUILD", { public = false })
 
+    if get_config("lua") then add_packages("luau", "sol2_luau", { public = true }) end
+
     add_files(path.join(module_dir, "entities.cppm"), { public = true })
     add_files(path.join(src_entities_dir, "*.cpp"))
 

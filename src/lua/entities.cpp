@@ -22,12 +22,7 @@ namespace stormkit::lua::entities {
     using stormkit::entities::EntityManager;
     using stormkit::entities::System;
 
-    struct LuaComponent {
-        sol::table    data;
-        ComponentType _type;
-
-        auto type() const noexcept -> ComponentType { return _type; }
-    };
+    using stormkit::entities::lua::LuaComponent;
 
     ////////////////////////////////////////
     ////////////////////////////////////////

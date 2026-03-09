@@ -89,20 +89,18 @@ namespace stormkit::entities {
 
         auto& [_, size, entities, components, delete_func] = *it;
         auto component_it                                  = stdr::begin(components);
+
         for (;;) {
             auto e = *std::bit_cast<Entity*>(&*component_it);
-            if (e != entity) {
-                component_it += as<ioffset>(sizeof(Entity) + size);
-                continue;
-            }
 
-            component_it += sizeof(Entity);
+            if (e == entity) break;
 
-            break;
+            component_it += as<ioffset>(sizeof(Entity) + size);
         }
-        delete_func(&*component_it);
 
-        components.erase(component_it - as<ioffset>(sizeof(Entity)), component_it + as<ioffset>(size));
+        delete_func(&*component_it + sizeof(Entity));
+
+        components.erase(component_it, component_it + as<ioffset>(size));
 
         auto&& [begin, end] = stdr::remove(entities, entity);
         entities.erase(begin, end);
@@ -125,20 +123,37 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::step(fsecond delta) noexcept -> void {
-        for (auto entity : m_removed_entities) {
-            const auto components_types = components_types_of(entity);
+    auto EntityManager::flush() noexcept -> void {
+        if (not stdr::empty(m_removed_entities)) {
+            if (stdr::size(m_entities) == stdr::size(m_removed_entities)) {
+                for (auto& [_, size, entities, data, delete_func] : m_components) {
+                    for (auto component_it = stdr::data(data); component_it != stdr::data(data) + stdr::size(data);
+                         component_it += as<ioffset>(sizeof(Entity) + size))
+                        delete_func(component_it + sizeof(Entity));
 
-            for (auto t : components_types) destroy_component(entity, t);
+                    entities.clear();
+                    data.clear();
+                }
 
-            auto&& [begin, end] = stdr::remove(m_entities, entity);
-            m_entities.erase(begin, end);
+                merge(m_free_entities, m_entities);
+                m_entities.clear();
+                m_removed_entities.clear();
+            } else {
+                for (auto entity : m_removed_entities) {
+                    const auto components_types = components_types_of(entity);
 
-            remove_from_systems(entity);
+                    for (auto t : components_types) destroy_component(entity, t);
 
-            if (not stdr::any_of(m_added_entities, monadic::is_equal(entity))) m_free_entities.emplace_back(entity);
+                    auto&& [begin, end] = stdr::remove(m_entities, entity);
+                    m_entities.erase(begin, end);
+
+                    remove_from_systems(entity);
+
+                    if (not stdr::any_of(m_added_entities, monadic::is_equal(entity))) m_free_entities.emplace_back(entity);
+                }
+                m_removed_entities.clear();
+            }
         }
-        m_removed_entities.clear();
 
         stdr::for_each(m_added_entities, [this](auto&& entity) noexcept { m_entities.emplace_back(entity); });
         m_added_entities.clear();
@@ -150,7 +165,12 @@ namespace stormkit::entities {
             for (auto& system : m_systems) system.on_message_received(*this, m_message_bus.top());
             m_message_bus.pop();
         }
+    }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto EntityManager::step(fsecond delta) noexcept -> void {
+        flush();
         for (auto& system : m_systems) system.pre_update(*this);
         for (auto& system : m_systems) system.update(*this, delta);
         for (auto& system : m_systems) system.post_update(*this);
@@ -191,4 +211,5 @@ namespace stormkit::entities {
 
         stdr::for_each(entities() | stdv::filter(reliable_entity_filter), [&system](auto&& e) noexcept { system.add_entity(e); });
     }
+
 } // namespace stormkit::entities

@@ -10,6 +10,13 @@ module;
 
 #include <stormkit/entities/api.hpp>
 
+#include <string_view>
+
+#include <stormkit/core/config.hpp>
+#ifdef STORMKIT_LIB_LUA_ENABLED
+    #include <stormkit/lua/lua.hpp>
+#endif
+
 export module stormkit.entities;
 
 import std;
@@ -22,6 +29,22 @@ namespace stdv = std::views;
 namespace cmeta = stormkit::core::meta;
 
 export namespace stormkit::entities {
+    using ComponentType = u32;
+
+#ifdef STORMKIT_LIB_LUA_ENABLED
+    namespace lua {
+        struct LuaComponent {
+            sol::table    data;
+            ComponentType _type;
+
+            STORMKIT_FORCE_INLINE
+            inline auto   type() const noexcept -> ComponentType {
+                return _type;
+            }
+        };
+    } // namespace lua
+#endif
+
     using Entity   = u32;
     using Entities = std::vector<Entity>;
 
@@ -37,8 +60,6 @@ export namespace stormkit::entities {
         static auto operator()(Entity k) noexcept -> hash64;
 #endif
     };
-
-    using ComponentType = u32;
 
     namespace meta {
         template<typename T>
@@ -139,6 +160,7 @@ export namespace stormkit::entities {
 
     class STORMKIT_ENTITIES_API EntityManager {
       public:
+        using DeleteFunc                                = std::function<void(byte*)>;
         static constexpr auto ADDED_ENTITY_MESSAGE_ID   = 1;
         static constexpr auto REMOVED_ENTITY_MESSAGE_ID = 2;
 
@@ -157,7 +179,7 @@ export namespace stormkit::entities {
         auto has_entity(Entity entity) const noexcept -> bool;
 
         template<meta::IsComponentType T>
-        auto add_component(Entity entity, T&& component) noexcept -> T&;
+        auto add_component(Entity entity, T&& component) noexcept -> cmeta::ToPlainType<T>&;
 
         auto destroy_component(Entity entity, std::string_view name) noexcept -> void;
         auto destroy_component(Entity entity, ComponentType type) noexcept -> void;
@@ -199,25 +221,29 @@ export namespace stormkit::entities {
         template<class Self>
         auto get_system(this Self& self, std::string_view name) noexcept -> cmeta::ForwardConst<Self, System&>;
 
+        auto flush() noexcept -> void;
         auto step(fsecond delta) noexcept -> void;
 
         auto entity_count() const noexcept -> usize;
 
-        // void commit(Entity e);
+        auto add_raw_component(Entity                entity,
+                               ComponentType         type,
+                               std::span<const byte> component,
+                               DeleteFunc            delete_func) noexcept -> std::span<byte>;
 
-      private:
         template<class Self>
-        auto get_component(this Self& self, Entity entity, ComponentType type) noexcept
+        auto get_raw_component(this Self& self, Entity entity, ComponentType type) noexcept
           -> std::span<cmeta::ForwardConst<Self, byte>>;
 
+      private:
         using ComponentKey = u64;
 
         struct Store {
-            ComponentType              type;
-            usize                      size;
-            Entities                   entities;
-            std::vector<byte>          data;
-            std::function<void(byte*)> delete_func;
+            ComponentType     type;
+            usize             size;
+            Entities          entities;
+            std::vector<byte> data;
+            DeleteFunc        delete_func;
         };
 
         using ComponentStore = std::vector<Store>;
@@ -276,33 +302,15 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsComponentType T>
-    auto EntityManager::add_component(Entity entity, T&& component) noexcept -> T& {
+    auto EntityManager::add_component(Entity entity, T&& component) noexcept -> cmeta::ToPlainType<T>& {
         using PureT = cmeta::ToPlainType<T>;
-        EXPECTS(has_entity(entity));
-        EXPECTS(not has_component(entity, component.type()));
 
-        auto it = stdr::find_if(m_components, [type = component.type()](const auto& pair) noexcept { return pair.type == type; });
-        if (it == stdr::cend(m_components))
-            it = m_components.emplace(stdr::cend(m_components),
-                                      Store { component.type(), sizeof(PureT), {}, {}, [](auto ptr) static noexcept {
-                                                 std::bit_cast<PureT*>(ptr)->~PureT();
-                                             } });
+        auto _component = add_raw_component(entity,
+                                            component.type(),
+                                            as_bytes(std::forward<T>(component)),
+                                            [](auto ptr) static noexcept { std::bit_cast<PureT*>(ptr)->~PureT(); });
 
-        ENSURES(it != stdr::cend(m_components));
-
-        auto& [_, size, entities, components, _] = *it;
-        ENSURES(size == sizeof(PureT));
-
-        const auto old_size = stdr::size(components);
-        components.resize(old_size + sizeof(Entity) + size);
-        new (stdr::data(components) + old_size) Entity { entity };
-        auto* _component = new (stdr::data(components) + sizeof(Entity) + old_size) PureT { std::forward<T>(component) };
-
-        entities.emplace_back(entity);
-
-        m_updated_entities.emplace(entity);
-
-        return *_component;
+        return bytes_mut_as<PureT>(_component);
     }
 
     /////////////////////////////////////
@@ -358,9 +366,9 @@ namespace stormkit::entities {
     template<meta::IsComponentType T, class Self>
     auto EntityManager::get_component(this Self& self, Entity entity, ComponentType type) noexcept
       -> cmeta::ForwardConst<Self, T>& {
-        if constexpr (cmeta::IsConst<Self>) return bytes_as<T>(self.get_component(entity, type));
+        if constexpr (cmeta::IsConst<Self>) return bytes_as<T>(self.get_raw_component(entity, type));
         else
-            return bytes_mut_as<T>(self.get_component(entity, type));
+            return bytes_mut_as<T>(self.get_raw_component(entity, type));
     }
 
     /////////////////////////////////////
@@ -472,8 +480,43 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    auto EntityManager::add_raw_component(Entity                entity,
+                                          ComponentType         type,
+                                          std::span<const byte> component,
+                                          DeleteFunc            delete_func) noexcept -> std::span<byte> {
+        EXPECTS(has_entity(entity));
+        EXPECTS(not has_component(entity, type));
+
+        const auto _size = stdr::size(component);
+
+        auto it = stdr::find_if(m_components, [type = type](const auto& pair) noexcept { return pair.type == type; });
+        if (it == stdr::cend(m_components))
+            it = m_components
+                   .emplace(stdr::cend(m_components), Store { type, stdr::size(component), {}, {}, std::move(delete_func) });
+
+        ENSURES(it != stdr::cend(m_components));
+
+        auto& [_, size, entities, components, _] = *it;
+        ENSURES(size == _size);
+
+        const auto old_size = stdr::size(components);
+        components.resize(old_size + sizeof(Entity) + size);
+
+        new (stdr::data(components) + old_size) Entity { entity };
+        auto _component = std::span { stdr::data(components) + old_size + sizeof(Entity), _size };
+        stdr::copy(component, stdr::begin(_component));
+
+        entities.emplace_back(entity);
+
+        m_updated_entities.emplace(entity);
+
+        return _component;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<class Self>
-    auto EntityManager::get_component(this Self& self, Entity entity, ComponentType type) noexcept
+    auto EntityManager::get_raw_component(this Self& self, Entity entity, ComponentType type) noexcept
       -> std::span<cmeta::ForwardConst<Self, byte>> {
         EXPECTS(self.has_entity(entity));
         EXPECTS(self.has_component(entity, type));
