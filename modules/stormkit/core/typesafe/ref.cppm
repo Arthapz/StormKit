@@ -145,49 +145,49 @@ export {
 
             PointerType m_value;
 
-            template<meta::IsRawPointerOrLValueReference U>
-            friend constexpr auto as_ref(U&& value) noexcept -> decltype(auto);
+            template<bool RAW, meta::IsRawPointerOrLValueReference U>
+            friend constexpr auto as_ref(U&&) noexcept -> decltype(auto);
 
-            template<meta::IsRawPointerOrLValueReference U>
-            friend constexpr auto as_ref_mut(U&& value) noexcept -> decltype(auto);
+            template<bool RAW, meta::IsRawPointerOrLValueReference U>
+            friend constexpr auto as_ref_mut(U&&) noexcept -> decltype(auto);
 
-            template<meta::IsRawPointerOrLValueReference U>
-            friend constexpr auto as_ref_like(U&& value) noexcept -> decltype(auto);
+            template<bool RAW, meta::IsRawPointerOrLValueReference U>
+            friend constexpr auto as_ref_like(U&&) noexcept -> decltype(auto);
 
-            template<meta::IsRawPointerOrLValueReference U>
-            friend constexpr auto as_opt_ref(U&& value) noexcept -> decltype(auto);
+            template<bool RAW, meta::IsRawPointerOrLValueReference U>
+            friend constexpr auto as_opt_ref(U&&) noexcept -> decltype(auto);
 
-            template<meta::IsRawPointerOrLValueReference U>
-            friend constexpr auto as_opt_ref_mut(U&& value) noexcept -> decltype(auto);
+            template<bool RAW, meta::IsRawPointerOrLValueReference U>
+            friend constexpr auto as_opt_ref_mut(U&&) noexcept -> decltype(auto);
 
-            template<meta::IsRawPointerOrLValueReference U>
-            friend constexpr auto as_opt_ref_like(U&& value) noexcept -> decltype(auto);
+            template<bool RAW, meta::IsRawPointerOrLValueReference U>
+            friend constexpr auto as_opt_ref_like(U&&) noexcept -> decltype(auto);
         };
 
         template<typename T>
         using OptionalRef = Ref<T, true>;
 
-        template<meta::IsRawPointerOrLValueReference T>
+        template<bool RAW = false, meta::IsRawPointerOrLValueReference T>
         [[nodiscard]]
         constexpr auto as_ref(T&& value STORMKIT_LIFETIMEBOUND) noexcept -> decltype(auto);
 
-        template<meta::IsRawPointerOrLValueReference T>
+        template<bool RAW = false, meta::IsRawPointerOrLValueReference T>
         [[nodiscard]]
         constexpr auto as_ref_mut(T&& value STORMKIT_LIFETIMEBOUND) noexcept -> decltype(auto);
 
-        template<meta::IsRawPointerOrLValueReference T>
+        template<bool RAW = false, meta::IsRawPointerOrLValueReference T>
         [[nodiscard]]
         constexpr auto as_ref_like(T&& value STORMKIT_LIFETIMEBOUND) noexcept -> decltype(auto);
 
-        template<meta::IsRawPointerOrLValueReference T>
+        template<bool RAW = false, meta::IsRawPointerOrLValueReference T>
         [[nodiscard]]
         constexpr auto as_opt_ref(T&& value STORMKIT_LIFETIMEBOUND) noexcept -> decltype(auto);
 
-        template<meta::IsRawPointerOrLValueReference T>
+        template<bool RAW = false, meta::IsRawPointerOrLValueReference T>
         [[nodiscard]]
         constexpr auto as_opt_ref_mut(T&& value STORMKIT_LIFETIMEBOUND) noexcept -> decltype(auto);
 
-        template<meta::IsRawPointerOrLValueReference T>
+        template<bool RAW = false, meta::IsRawPointerOrLValueReference T>
         [[nodiscard]]
         constexpr auto as_opt_ref_like(T&& value STORMKIT_LIFETIMEBOUND) noexcept -> decltype(auto);
 
@@ -199,62 +199,62 @@ export {
         [[nodiscard]]
         constexpr auto unref_mut(const Ref<T>& value STORMKIT_LIFETIMEBOUND) noexcept -> T&;
 
-        template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+        template<template<typename, std::size_t> typename Out = std::array, bool RAW = false, typename... Args>
             requires(not std::ranges::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_refs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = std::vector, typename... Args>
+        template<template<typename...> typename Out = std::vector, bool RAW = false, typename... Args>
             requires(not std::ranges::range<Args> and ...)
         [[nodiscard]]
         constexpr auto to_refs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+        template<template<typename, std::size_t> typename Out = std::array, bool RAW = false, typename... Args>
             requires(not std::ranges::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_ref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = std::vector, typename... Args>
+        template<template<typename...> typename Out = std::vector, bool RAW = false, typename... Args>
             requires(not std::ranges::range<Args> and ...)
         [[nodiscard]]
         constexpr auto to_ref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = std::vector, std::ranges::range T>
+        template<template<typename...> class Out = std::vector, bool RAW = false, std::ranges::range T>
             requires(std::ranges::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_refs(const T& range) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = std::vector, std::ranges::range T>
+        template<template<typename...> class Out = std::vector, bool RAW = false, std::ranges::range T>
             requires(std::ranges::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto);
-        template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-            requires(not std::ranges::range<Args> and ...)
 
+        template<template<typename, std::size_t> typename Out = std::array, bool RAW = false, typename... Args>
+            requires(not std::ranges::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_opt_refs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = std::vector, typename... Args>
+        template<template<typename...> typename Out = std::vector, bool RAW = false, typename... Args>
             requires(not std::ranges::range<Args> and ...)
         [[nodiscard]]
         constexpr auto to_opt_refs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+        template<template<typename, std::size_t> typename Out = std::array, bool RAW = false, typename... Args>
             requires(not std::ranges::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_opt_ref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = std::vector, typename... Args>
+        template<template<typename...> typename Out = std::vector, bool RAW = false, typename... Args>
             requires(not std::ranges::range<Args> and ...)
         [[nodiscard]]
         constexpr auto to_opt_ref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = std::vector, std::ranges::range T>
+        template<template<typename...> class Out = std::vector, bool RAW = false, std::ranges::range T>
             requires(std::ranges::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_opt_refs(const T& range) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = std::vector, std::ranges::range T>
+        template<template<typename...> class Out = std::vector, bool RAW = false, std::ranges::range T>
             requires(std::ranges::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_mut_opt_refs(T& range) noexcept -> decltype(auto);
@@ -605,14 +605,14 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsRawPointerOrLValueReference T>
+    template<bool RAW, meta::IsRawPointerOrLValueReference T>
     STORMKIT_FORCE_INLINE
     constexpr auto as_ref(T&& value) noexcept -> decltype(auto) {
         using TValue = meta::CanonicalType<T>;
-        if constexpr (meta::IsPointer<TValue>) {
+        if constexpr (not RAW and meta::IsPointer<TValue>) {
             EXPECTS(value != nullptr);
             return Ref<const meta::ElementType<TValue>> { std::to_address(value) };
-        } else if constexpr (meta::IsContainedSemantics<TValue>) {
+        } else if constexpr (not RAW and meta::IsContainedSemantics<TValue>) {
             EXPECTS(value.operator bool());
             return Ref<const meta::UnderlyingType<TValue>> { &(value.operator*()) };
         } else {
@@ -622,18 +622,17 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    // template<typename T>
-    template<meta::IsRawPointerOrLValueReference T>
+    template<bool RAW, meta::IsRawPointerOrLValueReference T>
     STORMKIT_FORCE_INLINE
     constexpr auto as_ref_mut(T&& value) noexcept -> decltype(auto) {
-        using TValue                    = std::remove_reference_t<T>;
+        using TValue                    = meta::CanonicalType<T>;
         static constexpr auto error_msg = "as_ref_mut can't take a reference of a const object"sv;
-        if constexpr (meta::IsPointer<TValue>) {
+        if constexpr (not RAW and meta::IsPointer<TValue>) {
             using PointedType = meta::ElementType<TValue>;
             static_assert(meta::IsNotConst<PointedType>, error_msg);
             EXPECTS(value != nullptr);
             return Ref<meta::ElementType<TValue>> { std::to_address(value) };
-        } else if constexpr (meta::IsContainedSemantics<TValue>) {
+        } else if constexpr (not RAW and meta::IsContainedSemantics<TValue>) {
             using UnderlyingType = meta::UnderlyingType<TValue>;
             static_assert(meta::IsNotConst<UnderlyingType>, error_msg);
             EXPECTS(value.operator bool());
@@ -646,15 +645,14 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    // template<typename T>
-    template<meta::IsRawPointerOrLValueReference T>
+    template<bool RAW, meta::IsRawPointerOrLValueReference T>
     STORMKIT_FORCE_INLINE
     constexpr auto as_ref_like(T&& value) noexcept -> decltype(auto) {
         using TValue = meta::CanonicalType<T>;
-        if constexpr (meta::IsPointer<TValue>) {
+        if constexpr (not RAW and meta::IsPointer<TValue>) {
             EXPECTS(value != nullptr);
             return Ref<meta::ElementType<TValue>> { std::to_address(value) };
-        } else if constexpr (meta::IsContainedSemantics<T>) {
+        } else if constexpr (not RAW and meta::IsContainedSemantics<T>) {
             EXPECTS(value.operator bool());
             return Ref<meta::UnderlyingType<TValue>> { &(value.operator*()) };
         } else {
@@ -664,14 +662,13 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    // template<typename T>
-    template<meta::IsRawPointerOrLValueReference T>
+    template<bool RAW, meta::IsRawPointerOrLValueReference T>
     STORMKIT_FORCE_INLINE
     constexpr auto as_opt_ref(T&& value) noexcept -> decltype(auto) {
         using TValue = meta::CanonicalType<T>;
-        if constexpr (meta::IsPointer<TValue>) {
+        if constexpr (not RAW and meta::IsPointer<TValue>) {
             return OptionalRef<const meta::ElementType<TValue>> { std::to_address(value) };
-        } else if constexpr (meta::IsContainedSemantics<TValue>) {
+        } else if constexpr (not RAW and meta::IsContainedSemantics<TValue>) {
             return OptionalRef<const meta::UnderlyingType<TValue>> { &(value.operator*()) };
         } else {
             return OptionalRef<const TValue> { &value };
@@ -680,17 +677,16 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    // template<typename T>
-    template<meta::IsRawPointerOrLValueReference T>
+    template<bool RAW, meta::IsRawPointerOrLValueReference T>
     STORMKIT_FORCE_INLINE
     constexpr auto as_opt_ref_mut(T&& value) noexcept -> decltype(auto) {
-        using TValue                    = std::remove_reference_t<T>;
+        using TValue                    = meta::CanonicalType<T>;
         static constexpr auto error_msg = "as_ref_mut can't take a reference of a const object"sv;
-        if constexpr (meta::IsPointer<TValue>) {
+        if constexpr (not RAW and meta::IsPointer<TValue>) {
             using PointedType = meta::ElementType<TValue>;
             static_assert(meta::IsNotConst<PointedType>, error_msg);
             return OptionalRef<meta::ElementType<TValue>> { std::to_address(value) };
-        } else if constexpr (meta::IsContainedSemantics<TValue>) {
+        } else if constexpr (not RAW and meta::IsContainedSemantics<TValue>) {
             using UnderlyingType = meta::UnderlyingType<TValue>;
             static_assert(meta::IsNotConst<UnderlyingType>, error_msg);
             return OptionalRef<UnderlyingType> { &(value.operator*()) };
@@ -702,14 +698,14 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    // template<typename T>
-    template<meta::IsRawPointerOrLValueReference T>
+    // template<bool RAW = false, typename T>
+    template<bool RAW, meta::IsRawPointerOrLValueReference T>
     STORMKIT_FORCE_INLINE
     constexpr auto as_opt_ref_like(T&& value) noexcept -> decltype(auto) {
         using TValue = meta::CanonicalType<T>;
-        if constexpr (meta::IsPointer<TValue>) {
+        if constexpr (not RAW and meta::IsPointer<TValue>) {
             return OptionalRef<meta::ElementType<TValue>> { std::to_address(value) };
-        } else if constexpr (meta::IsContainedSemantics<T>) {
+        } else if constexpr (not RAW and meta::IsContainedSemantics<T>) {
             return OptionalRef<meta::UnderlyingType<TValue>> { &(value.get()) };
         } else {
             return OptionalRef<TValue> { &value };
@@ -734,124 +730,124 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out, typename... Args>
+    template<template<typename, std::size_t> typename Out, bool RAW, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_refs(Args&&... args) noexcept -> decltype(auto) {
-        return Out { as_ref(std::forward<Args>(args))... };
+        return Out { as_ref<RAW>(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> typename Out, typename... Args>
+    template<template<typename...> typename Out, bool RAW, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto to_refs(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_ref(std::forward<Args>(args))... } };
+        return Out { { as_ref<RAW>(std::forward<Args>(args))... } };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out, typename... Args>
+    template<template<typename, std::size_t> typename Out, bool RAW, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_ref_muts(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_ref_mut(std::forward<Args>(args))... } };
+        return Out { { as_ref_mut<RAW>(std::forward<Args>(args))... } };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> typename Out, typename... Args>
+    template<template<typename...> typename Out, bool RAW, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto to_ref_muts(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_ref_mut(std::forward<Args>(args))... } };
+        return Out { { as_ref_mut<RAW>(std::forward<Args>(args))... } };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out, std::ranges::range T>
+    template<template<typename...> class Out, bool RAW, std::ranges::range T>
         requires(std::ranges::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
     constexpr auto to_refs(const T& range) noexcept -> decltype(auto) {
         return range
                | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
-                     return as_ref(std::forward<U>(val));
+                     return as_ref<RAW>(std::forward<U>(val));
                  })
                | std::ranges::to<Out>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out, std::ranges::range T>
+    template<template<typename...> class Out, bool RAW, std::ranges::range T>
         requires(std::ranges::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
     constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto) {
         return range
                | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
-                     return as_ref_mut(std::forward<U>(val));
+                     return as_ref_mut<RAW>(std::forward<U>(val));
                  })
                | std::ranges::to<Out>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out, typename... Args>
+    template<template<typename, std::size_t> typename Out, bool RAW, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_opt_refs(Args&&... args) noexcept -> decltype(auto) {
-        return Out { as_opt_ref(std::forward<Args>(args))... };
+        return Out { as_opt_ref<RAW>(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> typename Out, typename... Args>
+    template<template<typename...> typename Out, bool RAW, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto to_opt_refs(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_opt_ref(std::forward<Args>(args))... } };
+        return Out { { as_opt_ref<RAW>(std::forward<Args>(args))... } };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out, typename... Args>
+    template<template<typename, std::size_t> typename Out, bool RAW, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_opt_ref_muts(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_opt_ref_mut(std::forward<Args>(args))... } };
+        return Out { { as_opt_ref_mut<RAW>(std::forward<Args>(args))... } };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> typename Out, typename... Args>
+    template<template<typename...> typename Out, bool RAW, typename... Args>
         requires(not std::ranges::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto to_opt_ref_muts(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_opt_ref_mut(std::forward<Args>(args))... } };
+        return Out { { as_opt_ref_mut<RAW>(std::forward<Args>(args))... } };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out, std::ranges::range T>
+    template<template<typename...> class Out, bool RAW, std::ranges::range T>
         requires(std::ranges::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
     constexpr auto to_opt_refs(const T& range) noexcept -> decltype(auto) {
         return range
                | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
-                     return as_opt_ref(std::forward<U>(val));
+                     return as_opt_ref<RAW>(std::forward<U>(val));
                  })
                | std::ranges::to<Out>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out, std::ranges::range T>
+    template<template<typename...> class Out, bool RAW, std::ranges::range T>
         requires(std::ranges::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
     constexpr auto to_mut_opt_refs(T& range) noexcept -> decltype(auto) {
         return range
                | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
-                     return as_opt_ref_mut(std::forward<U>(val));
+                     return as_opt_ref_mut<RAW>(std::forward<U>(val));
                  })
                | std::ranges::to<Out>();
     }
