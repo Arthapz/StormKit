@@ -156,6 +156,13 @@ export namespace stormkit::entities {
         friend class EntityManager;
     };
 
+    namespace meta {
+        template<typename T>
+        concept IsUsableAsSystem = requires(T& value) {
+            value.update(std::declval<EntityManager&>(), std::declval<fsecond>(), std::declval<Entities>());
+        };
+    } // namespace meta
+
     struct ComponentStore {};
 
     class STORMKIT_ENTITIES_API EntityManager {
@@ -211,6 +218,8 @@ export namespace stormkit::entities {
 
         auto components_types_of(Entity entity) const noexcept -> std::vector<ComponentType>;
 
+        template<meta::IsUsableAsSystem T>
+        auto add_system(std::string name, System::ComponentTypes types, T& system) noexcept -> System&;
         auto add_system(std::string name, System::ComponentTypes types, System::Closures&& closures) noexcept -> System&;
         auto has_system(std::string_view name) const noexcept -> bool;
         auto remove_system(std::string_view name) noexcept -> void;
@@ -423,6 +432,36 @@ namespace stormkit::entities {
                 }
         }
         return out;
+    }
+
+    namespace meta {
+        template<typename T>
+        concept HasPreUpdate = requires(T& value) { value.pre_update(std::declval<EntityManager&>()); };
+
+        template<typename T>
+        concept HasPostUpdate = requires(T& value) { value.post_update(std::declval<EntityManager&>()); };
+
+        template<typename T>
+        concept HasOnMessageReceived = requires(T& value) {
+            value.on_message_received(std::declval<EntityManager&>(),
+                                      std::declval<const Message&>(),
+                                      std::declval<const Entities&>());
+        };
+    } // namespace meta
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsUsableAsSystem T>
+    inline auto EntityManager::add_system(std::string name, System::ComponentTypes types, T& system) noexcept -> System& {
+        auto closures = System::Closures {
+            .update = bind_front(&T::update, &system),
+        };
+
+        if constexpr (meta::HasPreUpdate<T>) closures.pre_update = bind_front(&T::pre_update, &system);
+        if constexpr (meta::HasPostUpdate<T>) closures.post_update = bind_front(&T::post_update, &system);
+        if constexpr (meta::HasOnMessageReceived<T>) closures.on_message_received = bind_front(&T::on_message_received, &system);
+
+        return add_system(std::move(name), std::move(types), std::move(closures));
     }
 
     /////////////////////////////////////
