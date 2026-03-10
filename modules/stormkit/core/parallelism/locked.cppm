@@ -123,8 +123,8 @@ export namespace stormkit { inline namespace core {
             RefContainerType m_value;
         };
 
-        mutable Mutex m_mutex;
-        ValueType     m_value;
+        mutable Mutex     m_mutex;
+        ValueType m_value STORMKIT_GUARDED_BY(m_mutex);
     };
 
     template<typename T>

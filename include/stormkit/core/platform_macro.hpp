@@ -97,6 +97,12 @@
     #define STORMKIT_LIFETIMEBOUND
 #endif
 
+#if __has_cpp_attribute(clang::guarded_by)
+    #define STORMKIT_GUARDED_BY(x) [[clang::guarded_by(x)]]
+#else
+    #define STORMKIT_GUARDED_BY(_)
+#endif
+
 #if __has_cpp_attribute(gnu::pure)
     #define STORMKIT_PURE [[gnu::pure]]
 #else
