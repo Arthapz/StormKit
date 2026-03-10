@@ -47,14 +47,37 @@ namespace stormkit { inline namespace core { namespace meta {
         struct UnderlyingType<T> {
             using Type = std::underlying_type_t<T>;
         };
+
+        template<typename T>
+        struct PointedType {
+            using Type = RemoveReferencesType<T>;
+        };
+
+        template<IsContainedSemantics T>
+        struct PointedType<T> {
+            using Type = UnderlyingType<T>::Type;
+        };
+
+        template<IsPointer T>
+        struct PointedType<T> {
+            using Type = typename std::pointer_traits<T>::element_type;
+        };
     } // namespace details
 
     export {
+        template<typename T>
+        using UnderlyingType = details::UnderlyingType<T>::Type;
+
         template<typename T>
         using ElementType = typename std::pointer_traits<T>::element_type;
 
         template<typename T>
         using PointerType = typename std::pointer_traits<T>::pointer;
+
+        // clang-format off
+        template<typename T>
+        using PointedType = details::PointedType<T>::Type;
+        // clang-format on
 
         template<stdr::range Range>
         using IteratorType = stdr::iterator_t<Range>;
@@ -73,9 +96,6 @@ namespace stormkit { inline namespace core { namespace meta {
 
         template<IsArithmetic T, IsArithmetic V>
         using SafeNarrowHelperOtherType = Select<is_greater<T, V>(), V, T>;
-
-        template<typename T>
-        using UnderlyingType = details::UnderlyingType<T>::Type;
 
         template<IsArithmetic T>
         using ArithmeticOrderingType = Select<IsIntegral<T>, std::strong_ordering, std::partial_ordering>;
