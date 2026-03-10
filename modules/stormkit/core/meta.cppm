@@ -23,7 +23,7 @@ export namespace stormkit { inline namespace core {
     namespace meta {
         template<class Type, class... Args>
         consteval auto find_type_index_of() noexcept -> std::size_t {
-            static_assert(IsOneOf<Type, Args...>);
+            static_assert(IsAnyOf<Type, Args...>);
             auto i = 0u;
             ((not Is<Type, Args> and ++i) and ...);
             return i;
