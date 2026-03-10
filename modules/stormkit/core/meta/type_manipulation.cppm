@@ -32,6 +32,9 @@ namespace stormkit { inline namespace core { namespace meta {
         template<typename T>
         using AddConst = std::add_const_t<T>;
 
+        template<bool VALUE, typename T>
+        using AddConstIf = If<VALUE, AddConst<T>, T>;
+
         template<typename T>
         using AddVolatile = std::add_volatile_t<T>;
 
