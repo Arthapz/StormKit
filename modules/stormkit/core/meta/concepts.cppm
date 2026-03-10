@@ -55,14 +55,14 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<class T, class U>
     concept IsNot = not Is<T, U>;
 
-    // template<typename T, template<typename> concept C>
-    // concept Not = not C<T>;
+    template<typename T, template<typename> concept C>
+    concept Not = not C<T>;
 
-    // template<typename T, template<typename> concept... C>
-    // concept AllOf = (C<T> and ...);
+    template<typename T, template<typename> concept... C>
+    concept AllOf = (C<T> and ...);
 
-    // template<typename T, template<typename> concept... C>
-    // concept AnyOf = (C<T> or ...);
+    template<typename T, template<typename> concept... C>
+    concept AnyOf = (C<T> or ...);
 
     template<class From, typename To>
     concept ConvertibleTo = std::convertible_to<From, To>;
@@ -86,13 +86,10 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept Are = (Is<T, U> and ...);
 
     template<class T, class... U>
-    concept AnyOf = (Is<T, U> or ...);
+    concept IsAnyOf = (Is<T, U> or ...);
 
     template<class T, class... U>
-    concept IsOneOf = (Is<T, U> or ...);
-
-    template<class T, class... U>
-    concept SameAsOneOf = (SameAs<T, U> or ...);
+    concept SameAsAnyOf = (SameAs<T, U> or ...);
 
     template<class T>
     concept IsByte = IsStrict<T, std::byte>;
@@ -286,13 +283,13 @@ export namespace stormkit { inline namespace core { namespace meta {
                                   // val); };
 
     template<class T>
-    concept IsCharacter = IsOneOf<T, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
+    concept IsCharacter = IsAnyOf<T, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
 
     template<class T>
-    concept IsCharType = IsOneOf<T, char, wchar_t, char8_t, char16_t, char32_t>;
+    concept IsCharType = IsAnyOf<T, char, wchar_t, char8_t, char16_t, char32_t>;
 
     template<class T>
-    concept IsColorComponent = IsOneOf<T,
+    concept IsColorComponent = IsAnyOf<T,
                                        float,
                                        std::uint8_t
 #ifdef __STDCPP_FLOAT32_T__
@@ -309,10 +306,10 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsConst = std::is_const_v<T>;
 
     template<class T>
-    concept IsVolatile = std::is_volatile_v<T>;
+    concept IsNotConst = not IsConst<T>;
 
     template<class T>
-    concept IsNotConst = not IsConst<T>;
+    concept IsVolatile = std::is_volatile_v<T>;
 
     template<class From, typename To>
     concept IsBraceInitializableTo = requires(From&& from) { To { std::forward<From>(from) }; };

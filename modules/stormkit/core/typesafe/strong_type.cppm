@@ -82,10 +82,10 @@ export {
             concept HasCapability = DerivedFrom<T, Capability>;
 
             template<typename... Capabilities>
-            concept HasArithmeticCapability = AnyOf<ArithmeticTag, Capabilities...>;
+            concept HasArithmeticCapability = IsAnyOf<ArithmeticTag, Capabilities...>;
 
             template<typename... Capabilities>
-            concept HasImplicitConvertionCapability = AnyOf<ImplicitConvertionTag, Capabilities...>;
+            concept HasImplicitConvertionCapability = IsAnyOf<ImplicitConvertionTag, Capabilities...>;
         } // namespace meta
 
         template<typename T>

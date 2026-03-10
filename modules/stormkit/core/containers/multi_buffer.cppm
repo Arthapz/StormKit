@@ -128,7 +128,7 @@ namespace stormkit { inline namespace core {
     template<typename... T>
     template<typename U, stdr::input_range V>
     constexpr auto MultiBuffer<T...>::init_range(V&& init_data) noexcept -> std::span<U> {
-        static_assert(meta::IsOneOf<U, T...>, "U should be a type contained by MultiBuffer");
+        static_assert(meta::IsAnyOf<U, T...>, "U should be a type contained by MultiBuffer");
         static_assert(meta::Is<U, stdr::range_value_t<V>>, "range V should be of type U");
         static constexpr auto TYPE_INDEX = meta::find_type_index_of<U, T...>();
         return init_range<TYPE_INDEX>(std::forward<V>(init_data));
@@ -156,7 +156,7 @@ namespace stormkit { inline namespace core {
     template<typename... T>
     template<typename U, typename Self>
     constexpr auto MultiBuffer<T...>::range(this Self& self) noexcept -> std::span<meta::ForwardConst<Self, U>> {
-        static_assert(meta::IsOneOf<U, T...>, "U should be a type contained by MultiBuffer");
+        static_assert(meta::IsAnyOf<U, T...>, "U should be a type contained by MultiBuffer");
         static constexpr auto TYPE_INDEX = meta::find_type_index_of<U, T...>();
         return self.template range<TYPE_INDEX>();
     }

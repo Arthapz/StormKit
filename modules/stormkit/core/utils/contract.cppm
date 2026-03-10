@@ -59,7 +59,7 @@ export namespace stormkit { inline namespace core {
     constexpr auto ensures(bool cond, const std::source_location& location = std::source_location::current()) noexcept -> void;
 
     namespace casts::core {
-        template<meta::SameAsOneOf<std::string, std::string_view> To>
+        template<meta::SameAsAnyOf<std::string, std::string_view> To>
         [[nodiscard]]
         constexpr auto as(AssertType t) noexcept -> To;
     }

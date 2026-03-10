@@ -221,7 +221,7 @@ namespace stormkit::gpu {
         auto out  = Out { std::in_place };
 
         const auto result = [&] noexcept {
-            if constexpr (core::meta::IsOneOf<T, void>) return std::invoke(func, std::forward<Args>(args)...);
+            if constexpr (core::meta::IsAnyOf<T, void>) return std::invoke(func, std::forward<Args>(args)...);
             else if constexpr (core::meta::Is<T, VkResult>) {
                 const auto _result = std::invoke(func, std::forward<Args>(args)...);
                 out                = _result;

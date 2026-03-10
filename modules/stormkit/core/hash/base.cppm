@@ -18,7 +18,7 @@ export namespace stormkit { inline namespace core {
 
     namespace meta {
         template<typename T>
-        concept HashType = meta::IsOneOf<T, hash32, hash64>;
+        concept HashType = meta::IsAnyOf<T, hash32, hash64>;
     }
 
     template<meta::HashType Ret = hash32, typename T>
