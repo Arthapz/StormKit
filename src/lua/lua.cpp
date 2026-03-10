@@ -48,22 +48,32 @@ LOGGER("stormkit.lua")
 namespace stormkit::lua {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto Engine::load(stdfs::path&& file, Modules&& modules, InitUserLibrariesClosure&& init_user_libraries) noexcept -> void {
-        auto global_state = sol::state {};
-
-        init_libraries(std::move(modules), global_state);
-        init_user_libraries(global_state);
-
-        const auto code     = TryAssert(io::read_text<io::Mode::AINSI>(file), std::format("Failed to load {}", file.string()));
-        const auto script   = global_state.load(std::string_view { stdr::data(code), stdr::size(code) });
-        const auto function = sol::protected_function { script };
-
-        luacall(function);
+    Engine::Engine(Modules&& modules, InitUserLibrariesClosure&& closure) noexcept
+        : m_modules { std::move(modules) }, m_init_user_libraries { std::move(closure) } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto Engine::init_libraries(Modules&& modules, sol::state& global_state) noexcept -> void {
+    auto Engine::load(stdfs::path&& file) noexcept -> void {
+        m_script = TryAssert(io::read_text<io::Mode::AINSI>(file), std::format("Failed to load {}", file.string()));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    auto Engine::run() noexcept -> sol::state {
+        auto state = sol::state {};
+
+        init_libraries(state);
+        m_init_user_libraries(state);
+
+        state.do_string(std::string_view { stdr::data(m_script), stdr::size(m_script) });
+
+        return state;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    auto Engine::init_libraries(sol::state& global_state) noexcept -> void {
         for (auto lib : {
                sol::lib::base,
                sol::lib::bit32,
@@ -128,7 +138,7 @@ namespace stormkit::lua {
         };
 
         core::init_lua(global_state);
-        if (modules.log) {
+        if (m_modules.log) {
 #if STORMKIT_LIB_LOG_ENABLED
             dlog("Log module enabled");
             log::init_lua(global_state);
@@ -136,7 +146,7 @@ namespace stormkit::lua {
             elog("Trying to bind log module while disabled in this stormkit distribution!");
 #endif
         }
-        if (modules.entities) {
+        if (m_modules.entities) {
 #if STORMKIT_LIB_ENTITIES_ENABLED
             dlog("Entities module enabled");
             entities::init_lua(global_state);
@@ -144,7 +154,7 @@ namespace stormkit::lua {
             elog("Trying to bind entities module while disabled in this stormkit distribution!");
 #endif
         }
-        if (modules.image) {
+        if (m_modules.image) {
 #if STORMKIT_LIB_IMAGE_ENABLED
             dlog("Image module enabled");
             image::init_lua(global_state);
@@ -152,7 +162,7 @@ namespace stormkit::lua {
             elog("Trying to bind image module while disabled in this stormkit distribution!");
 #endif
         }
-        if (modules.wsi) {
+        if (m_modules.wsi) {
 #if STORMKIT_LIB_WSI_ENABLED
             dlog("Wsi module enabled");
             wsi::init_lua(global_state);
@@ -160,7 +170,7 @@ namespace stormkit::lua {
             elog("Trying to bind wsi module while disabled in this stormkit distribution!");
 #endif
         }
-        if (modules.gpu) {
+        if (m_modules.gpu) {
 #if STORMKIT_LIB_GPU_ENABLED
             dlog("Gpu module enabled");
             gpu::init_lua(global_state);

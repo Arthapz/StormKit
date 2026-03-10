@@ -30,7 +30,8 @@ export namespace stormkit::lua {
 
     class STORMKIT_LUA_API Engine {
       public:
-        using InitUserLibrariesClosure = FunctionRef<void(sol::state&)>;
+        using InitUserLibrariesClosure = std::function<void(sol::state&)>;
+
         ~Engine() noexcept;
 
         Engine(const Engine&)                    = delete;
@@ -39,16 +40,26 @@ export namespace stormkit::lua {
         Engine(Engine&& other) noexcept;
         auto operator=(Engine&& other) noexcept -> Engine&;
 
+        static auto load_from_file(stdfs::path              path,
+                                   Modules                  modules             = {},
+                                   InitUserLibrariesClosure init_user_libraries = monadic::noop()) noexcept -> Engine;
+        auto        run() noexcept -> sol::state;
+
         static auto run(stdfs::path              file,
                         Modules                  modules             = {},
-                        InitUserLibrariesClosure init_user_libraries = monadic::noop()) noexcept -> Engine;
+                        InitUserLibrariesClosure init_user_libraries = monadic::noop()) noexcept -> void;
 
       private:
-        Engine() noexcept;
+        Engine(Modules&&, InitUserLibrariesClosure&&) noexcept;
 
-        auto load(stdfs::path&&, Modules&&, InitUserLibrariesClosure&&) noexcept -> void;
+        auto load(stdfs::path&&) noexcept -> void;
 
-        auto init_libraries(Modules&&, sol::state&) noexcept -> void;
+        auto init_libraries(sol::state&) noexcept -> void;
+
+        Modules                  m_modules;
+        InitUserLibrariesClosure m_init_user_libraries;
+
+        std::vector<char> m_script;
     };
 
     template<typename... Args>
@@ -62,26 +73,34 @@ export namespace stormkit::lua {
 namespace stormkit::lua {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline Engine::Engine() noexcept = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline Engine::Engine(Engine&& other) noexcept = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto Engine::operator=(Engine&& other) noexcept -> Engine& = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline Engine::~Engine() noexcept = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline auto Engine::run(stdfs::path file, Modules modules, InitUserLibrariesClosure init_user_libraries) noexcept -> Engine {
-        auto engine = Engine {};
-        engine.load(std::move(file), std::move(modules), std::move(init_user_libraries));
+    STORMKIT_FORCE_INLINE
+    inline auto Engine::load_from_file(stdfs::path file, Modules modules, InitUserLibrariesClosure init_user_libraries) noexcept
+      -> Engine {
+        auto engine = Engine { std::move(modules), std::move(init_user_libraries) };
+        engine.load(std::move(file));
         return engine;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Engine::run(stdfs::path file, Modules modules, InitUserLibrariesClosure init_user_libraries) noexcept -> void {
+        Engine::load_from_file(std::move(file), std::move(modules), std::move(init_user_libraries)).run();
     }
 
     ////////////////////////////////////////
