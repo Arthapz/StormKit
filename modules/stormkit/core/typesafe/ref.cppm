@@ -156,7 +156,8 @@ export {
             template<bool RAW, typename U>
             friend constexpr auto as_ref(const U&) noexcept -> Ref<const meta::PointedType<U>>;
 
-            template<bool RAW, meta::IsNotConst U>
+            template<bool RAW, typename U>
+                requires meta::IsNotConst<meta::PointedType<U>>
             friend constexpr auto as_ref_mut(U&) noexcept -> Ref<meta::PointedType<U>>;
 
             template<bool RAW, typename U>
@@ -165,7 +166,8 @@ export {
             template<bool RAW, typename U>
             friend constexpr auto as_opt_ref(const U&) noexcept -> OptionalRef<const meta::PointedType<U>>;
 
-            template<bool RAW, meta::IsNotConst U>
+            template<bool RAW, typename U>
+                requires meta::IsNotConst<meta::PointedType<U>>
             friend constexpr auto as_opt_ref_mut(U&) noexcept -> OptionalRef<const meta::PointedType<U>>;
 
             template<bool RAW, typename U>
@@ -177,7 +179,8 @@ export {
         [[nodiscard]]
         constexpr auto as_ref(const T& value STORMKIT_LIFETIMEBOUND) noexcept -> Ref<const meta::PointedType<T>>;
 
-        template<bool RAW = false, meta::IsNotConst T>
+        template<bool RAW = false, typename T>
+            requires meta::IsNotConst<meta::PointedType<T>>
         [[nodiscard]]
         constexpr auto as_ref_mut(T& value STORMKIT_LIFETIMEBOUND) noexcept -> Ref<meta::PointedType<T>>;
 
@@ -190,7 +193,8 @@ export {
         [[nodiscard]]
         constexpr auto as_opt_ref(const T& value STORMKIT_LIFETIMEBOUND) noexcept -> OptionalRef<const meta::PointedType<T>>;
 
-        template<bool RAW = false, meta::IsNotConst T>
+        template<bool RAW = false, typename T>
+            requires meta::IsNotConst<meta::PointedType<T>>
         [[nodiscard]]
         constexpr auto as_opt_ref_mut(T& value STORMKIT_LIFETIMEBOUND) noexcept -> OptionalRef<const meta::PointedType<T>>;
 
@@ -620,7 +624,7 @@ namespace stormkit { inline namespace core {
 
         if constexpr (not RAW and meta::IsPointer<T>) {
             EXPECTS(value != nullptr);
-            return OutRef { unref(value) };
+            return OutRef { std::addressof(*value) };
         } else if constexpr (not RAW and meta::IsContainedSemantics<T>) {
             EXPECTS(value.operator bool());
             return OutRef { &(value.operator*()) };
@@ -631,14 +635,15 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<bool RAW, meta::IsNotConst T>
+    template<bool RAW, typename T>
+        requires meta::IsNotConst<meta::PointedType<T>> 
     STORMKIT_FORCE_INLINE
     constexpr auto as_ref_mut(T& value) noexcept -> Ref<meta::PointedType<T>> {
         using OutRef = Ref<meta::PointedType<T>>;
 
         if constexpr (not RAW and meta::IsPointer<T>) {
             EXPECTS(value != nullptr);
-            return OutRef { unref(value) };
+            return OutRef { std::addressof(*value) };
         } else if constexpr (not RAW and meta::IsContainedSemantics<T>) {
             EXPECTS(value.operator bool());
             return OutRef { &(value.operator*()) };
@@ -656,7 +661,7 @@ namespace stormkit { inline namespace core {
 
         if constexpr (not RAW and meta::IsPointer<T>) {
             EXPECTS(value != nullptr);
-            return OutRef { unref(value) };
+            return OutRef { std::addressof(*value) };
         } else if constexpr (not RAW and meta::IsContainedSemantics<T>) {
             EXPECTS(value.operator bool());
             return OutRef { &(value.operator*()) };
@@ -673,7 +678,7 @@ namespace stormkit { inline namespace core {
         using OutRef = OptionalRef<const meta::PointedType<T>>;
 
         if constexpr (not RAW and meta::IsPointer<T>) {
-            return OutRef { unref(value) };
+            return OutRef { std::addressof(*value) };
         } else if constexpr (not RAW and meta::IsContainedSemantics<T>) {
             return OutRef { &(value.operator*()) };
         } else {
@@ -683,13 +688,14 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<bool RAW, meta::IsNotConst T>
+    template<bool RAW, typename T>
+        requires meta::IsNotConst<meta::PointedType<T>> 
     STORMKIT_FORCE_INLINE
     constexpr auto as_opt_ref_mut(T& value) noexcept -> OptionalRef<meta::PointedType<T>> {
         using OutRef = OptionalRef<meta::PointedType<T>>;
 
         if constexpr (not RAW and meta::IsPointer<T>) {
-            return OutRef { unref(value) };
+            return OutRef { std::addressof(*value) };
         } else if constexpr (not RAW and meta::IsContainedSemantics<T>) {
             return OutRef { &(value.operator*()) };
         } else {
@@ -704,20 +710,11 @@ namespace stormkit { inline namespace core {
     constexpr auto as_opt_ref_like(T& value) noexcept -> OptionalRef<meta::AddConstIf<meta::IsConst<T>, meta::PointedType<T>>> {
         using OutRef = OptionalRef<meta::AddConstIf<meta::IsConst<T>, meta::PointedType<T>>>;
         if constexpr (not RAW and meta::IsPointer<T>) {
-            return OutRef { unref(value) };
+            return OutRef { std::addressof(*value) };
         } else if constexpr (not RAW and meta::IsContainedSemantics<T>) {
             return OutRef { &(value.operator*()) };
         } else {
             return OutRef { std::addressof(value) };
-        }
-
-        using TValue = meta::CanonicalType<T>;
-        if constexpr (not RAW and meta::IsPointer<TValue>) {
-            return OptionalRef<meta::ElementType<TValue>> { std::to_address(value) };
-        } else if constexpr (not RAW and meta::IsContainedSemantics<T>) {
-            return OptionalRef<meta::UnderlyingType<TValue>> { &(value.get()) };
-        } else {
-            return OptionalRef<TValue> { &value };
         }
     }
 
