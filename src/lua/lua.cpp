@@ -66,7 +66,8 @@ namespace stormkit::lua {
         init_libraries(state);
         m_init_user_libraries(state);
 
-        state.do_string(std::string_view { stdr::data(m_script), stdr::size(m_script) });
+        auto result = state.do_string(std::string_view { stdr::data(m_script), stdr::size(m_script) });
+        if (not result.valid()) elog("lua error!\n{}", sol::error { result }.what());
 
         return state;
     }
@@ -140,7 +141,7 @@ namespace stormkit::lua {
         core::init_lua(global_state);
         if (m_modules.log) {
 #if STORMKIT_LIB_LOG_ENABLED
-            dlog("Log module enabled");
+            dlog("Log module enabled.");
             log::init_lua(global_state);
 #else
             elog("Trying to bind log module while disabled in this stormkit distribution!");
@@ -148,7 +149,7 @@ namespace stormkit::lua {
         }
         if (m_modules.entities) {
 #if STORMKIT_LIB_ENTITIES_ENABLED
-            dlog("Entities module enabled");
+            dlog("Entities module enabled.");
             entities::init_lua(global_state);
 #else
             elog("Trying to bind entities module while disabled in this stormkit distribution!");
@@ -156,7 +157,7 @@ namespace stormkit::lua {
         }
         if (m_modules.image) {
 #if STORMKIT_LIB_IMAGE_ENABLED
-            dlog("Image module enabled");
+            dlog("Image module enabled.");
             image::init_lua(global_state);
 #else
             elog("Trying to bind image module while disabled in this stormkit distribution!");
@@ -164,7 +165,7 @@ namespace stormkit::lua {
         }
         if (m_modules.wsi) {
 #if STORMKIT_LIB_WSI_ENABLED
-            dlog("Wsi module enabled");
+            dlog("Wsi module enabled.");
             wsi::init_lua(global_state);
 #else
             elog("Trying to bind wsi module while disabled in this stormkit distribution!");
@@ -172,7 +173,7 @@ namespace stormkit::lua {
         }
         if (m_modules.gpu) {
 #if STORMKIT_LIB_GPU_ENABLED
-            dlog("Gpu module enabled");
+            dlog("Gpu module enabled.");
             gpu::init_lua(global_state);
 #else
             elog("Trying to bind gpu module while disabled in this stormkit distribution!");
