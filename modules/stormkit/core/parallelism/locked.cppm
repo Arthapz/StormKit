@@ -32,7 +32,7 @@ export namespace stormkit { inline namespace core {
     template<meta::IsNotRawIndirection T, class Mutex = details::DefaultMutex>
     class STORMKIT_CORE_API Locked {
       public:
-        using ValueType          = T;
+        using ValueType          = meta::PointedType<T>;
         using ReferenceType      = ValueType&;
         using ConstReferenceType = const ValueType&;
         using PointerType        = ValueType*;
@@ -90,7 +90,7 @@ export namespace stormkit { inline namespace core {
                     LockArgs&&... lock_args) noexcept(noexcept(std::is_nothrow_assignable_v<ValueType, ValueType&&>)) -> void;
 
         template<typename Self>
-        auto unsafe(this Self& self) noexcept -> meta::ForwardConst<Self, ValueType>&;
+        auto unsafe(this Self& self) noexcept -> meta::ForwardConst<Self, T>&;
 
         auto mutex() const noexcept -> const MutexType&;
 
@@ -123,8 +123,8 @@ export namespace stormkit { inline namespace core {
             RefContainerType m_value;
         };
 
-        mutable Mutex     m_mutex;
-        ValueType m_value STORMKIT_GUARDED_BY(m_mutex);
+        mutable Mutex m_mutex;
+        T m_value     STORMKIT_GUARDED_BY(m_mutex);
     };
 
     template<typename T>
@@ -248,7 +248,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsNotRawIndirection T, class Mutex>
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    auto Locked<T, Mutex>::unsafe(this Self& self) noexcept -> meta::ForwardConst<Self, ValueType>& {
+    auto Locked<T, Mutex>::unsafe(this Self& self) noexcept -> meta::ForwardConst<Self, T>& {
         return std::forward_like<Self&>(self.m_value);
     }
 
