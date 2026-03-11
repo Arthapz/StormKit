@@ -109,7 +109,7 @@ export namespace stormkit::entities {
         using ComponentTypes = std::vector<ComponentType>;
 
         using PreUpdateClosure  = std::function<void(EntityManager&, const Entities&)>;
-        using UpdateClosure     = std::function<void(EntityManager&, fsecond delta, const Entities&)>;
+        using UpdateClosure     = std::function<void(EntityManager&, fsecond, const Entities&)>;
         using PostUpdateClosure = std::function<void(EntityManager&, const Entities&)>;
         using OnMessageReceived = std::function<void(EntityManager&, const Message&, const Entities&)>;
 
