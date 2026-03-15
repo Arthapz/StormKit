@@ -48,8 +48,8 @@ namespace stormkit { inline namespace core { namespace monadic {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto assert(std::optional<std::string> message, std::source_location location) noexcept -> decltype(auto) {
-        return [message = std::move(message), location = std::move(location)] NORETURN_LAMBDA() -> T {
-            if (message.has_value()) core::assert(false, *message, std::move(location));
+        return [message = std::move(message), location = std::move(location)]<typename E> NORETURN_LAMBDA(const E& error) -> T {
+            if (message.has_value()) core::assert(false, std::format("{} ({})", *message, error), std::move(location));
             else
                 core::assert(false, std::move(location));
 
