@@ -56,7 +56,7 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto as_bytes(const T* const ptr, usize size = 1) noexcept -> std::span<const byte>;
 
-    template<std::ranges::range Range>
+    template<stdr::range Range>
     [[nodiscard]]
     constexpr auto as_bytes(const Range& range) noexcept -> std::span<const byte>;
 
@@ -73,7 +73,7 @@ export namespace stormkit { inline namespace core {
     constexpr auto as_bytes_mut(std::span<T, EXTENT> container) noexcept
       -> std::span<byte, get_byte_extent_value_of<T, EXTENT>()>;
 
-    template<std::ranges::range Range>
+    template<stdr::range Range>
     [[nodiscard]]
     constexpr auto as_bytes_mut(Range& range) noexcept -> std::span<byte>;
 
@@ -85,11 +85,16 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto as_bytes_mut(T& value) noexcept -> std::span<byte, sizeof(T)>;
 
-    template<class T, usize EXTENT>
+    template<class T, usize EXTENT = std::dynamic_extent>
     [[nodiscard]]
     constexpr auto bytes_as(std::span<const byte, EXTENT> bytes) noexcept -> const T&;
 
-    template<typename T, usize EXTENT>
+    template<typename T, stdr::range Range>
+        requires(meta::SameAs<meta::ToPlainType<meta::ElementType<Range>>, byte>)
+    [[nodiscard]]
+    constexpr auto bytes_as_span(const Range& bytes) noexcept -> std::span<const T>;
+
+    template<typename T, usize EXTENT = std::dynamic_extent>
     [[nodiscard]]
     constexpr auto bytes_as_span(std::span<const byte, EXTENT> bytes) noexcept
       -> std::span<const T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)>;
@@ -97,6 +102,11 @@ export namespace stormkit { inline namespace core {
     template<class T, usize EXTENT>
     [[nodiscard]]
     constexpr auto bytes_mut_as(std::span<byte, EXTENT> bytes) noexcept -> T&;
+
+    template<typename T, stdr::range Range>
+        requires(meta::SameAs<meta::ElementType<Range>, byte> and not meta::IsConst<Range>)
+    [[nodiscard]]
+    constexpr auto bytes_mut_as_span(Range& range) noexcept -> std::span<const T>;
 
     template<typename T, usize EXTENT>
     [[nodiscard]]
@@ -181,7 +191,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::ranges::range Range>
+    template<stdr::range Range>
     STORMKIT_FORCE_INLINE
     constexpr auto as_bytes(const Range& range) noexcept -> std::span<const byte> {
         return as_bytes(std::span { range });
@@ -212,7 +222,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::ranges::range Range>
+    template<stdr::range Range>
     STORMKIT_FORCE_INLINE
     constexpr auto as_bytes_mut(Range& range) noexcept -> std::span<byte> {
         return as_bytes_mut(std::span { range });
@@ -246,6 +256,15 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    template<typename T, stdr::range Range>
+        requires(meta::SameAs<meta::ToPlainType<meta::ElementType<Range>>, byte>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto bytes_as_span(const Range& bytes) noexcept -> std::span<const T> {
+        return std::span { std::bit_cast<const T* const>(stdr::data(bytes)), stdr::size(bytes) / sizeof(T) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<typename T, usize EXTENT>
     STORMKIT_FORCE_INLINE
     constexpr auto bytes_as_span(std::span<const byte, EXTENT> bytes) noexcept
@@ -265,6 +284,15 @@ namespace stormkit { inline namespace core {
         if constexpr (EXTENT != std::dynamic_extent) EXPECTS(EXTENT == sizeof(T));
         EXPECTS(stdr::size(bytes) == sizeof(T));
         return *std::bit_cast<T* const>(stdr::data(bytes));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, stdr::range Range>
+        requires(meta::SameAs<meta::ElementType<Range>, byte> and not meta::IsConst<Range>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto bytes_mut_as_span(Range& bytes) noexcept -> std::span<T> {
+        return std::span { std::bit_cast<T* const>(stdr::data(bytes)), stdr::size(bytes) / sizeof(T) };
     }
 
     /////////////////////////////////////
