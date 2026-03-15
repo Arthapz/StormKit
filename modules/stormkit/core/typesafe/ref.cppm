@@ -23,6 +23,11 @@ import :hash;
 
 export {
     namespace stormkit { inline namespace core {
+        namespace meta {
+            template<class T, class U>
+            concept ContainedOrPointerOf = (IsContainedSemantics<T> or IsPointer<T>) and SameAs<U, PointedType<T>>;
+        }
+
         template<typename T>
         using ptr = T*;
         template<typename T>
