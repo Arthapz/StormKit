@@ -223,6 +223,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsContainedSemantics = requires(T& val) {
         typename T::value_type;
         { val.operator*() } -> IsReferenceTo<typename T::value_type>;
+        { val.operator->() } -> IsReferenceTo<typename T::value_type*>;
     };
 
     template<typename S, template<typename...> class T>
