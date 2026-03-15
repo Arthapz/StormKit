@@ -170,10 +170,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
     constexpr auto into_array_of(Args&&... args) noexcept -> std::array<T, sizeof...(Args)> {
-        static_assert((not meta::IsLValueReference<Args> and ...),
-                      "lvalue reference can't be passed to into_ functions as it take "
-                      "ownership");
-        return std::array<T, sizeof...(Args)> { std::move(args)... };
+        return std::array<T, sizeof...(Args)> { T { std::move(args) }... };
     }
 
     /////////////////////////////////////
@@ -194,10 +191,7 @@ namespace stormkit { inline namespace core {
         requires(sizeof...(Args) > 0)
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto into_dyn_array_of(Args&&... args) noexcept -> std::vector<T> {
-        static_assert((not meta::IsLValueReference<Args> and ...),
-                      "lvalue reference can't be passed to into_ functions as it take "
-                      "ownership");
-        return std::vector<T> { std::move(args)... };
+        return std::vector<T> { T { std::move(args) }... };
     }
 
     /////////////////////////////////////
