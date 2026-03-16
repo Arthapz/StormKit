@@ -25,7 +25,7 @@ export namespace stormkit::gpu {
     struct BufferDescriptor {
         DescriptorType     type = DescriptorType::UNIFORM_BUFFER;
         u32                binding;
-        Ref<const Buffer>  buffer;
+        view::Buffer         buffer;
         std::optional<u32> range  = std::nullopt;
         u32                offset = 0;
     };
@@ -120,10 +120,10 @@ export namespace stormkit::gpu {
 
         std::vector<DescriptorSetLayoutBinding> m_bindings;
 
-        hash64                              m_hash      = 0;
-        VkDevice                            m_vk_device = nullptr;
-        Ref<const VolkDeviceTable>          m_vk_device_table;
-        VkRAIIHandle<VkDescriptorSetLayout> m_vk_handle;
+        hash64                           m_hash      = 0;
+        VkDevice                         m_vk_device = nullptr;
+        Ref<const VolkDeviceTable>       m_vk_device_table;
+        vk::Owned<VkDescriptorSetLayout> m_vk_handle;
     };
 
     class STORMKIT_GPU_API DescriptorPool {
@@ -164,12 +164,12 @@ export namespace stormkit::gpu {
       private:
         auto do_init(std::span<const Size>, u32) noexcept -> Expected<void>;
 
-        auto create_vk_descriptor_sets(usize, const DescriptorSetLayout&) const -> VulkanExpected<std::vector<VkDescriptorSet>>;
+        auto        create_vk_descriptor_sets(usize, const DescriptorSetLayout&) const -> Expected<std::vector<VkDescriptorSet>>;
         static auto delete_vk_descriptor_set(VkDescriptorSet) -> void;
 
-        VkDevice                       m_vk_device = nullptr;
-        Ref<const VolkDeviceTable>     m_vk_device_table;
-        VkRAIIHandle<VkDescriptorPool> m_vk_handle;
+        VkDevice                    m_vk_device = nullptr;
+        Ref<const VolkDeviceTable>  m_vk_device_table;
+        vk::Owned<VkDescriptorPool> m_vk_handle;
     };
 
     template<core::meta::HashType Ret = hash32>
@@ -252,7 +252,7 @@ namespace stormkit::gpu {
                                     [vk_handle = m_vk_handle, &buffers, &writes](const BufferDescriptor& descriptor) noexcept
                                       -> decltype(auto) {
                                         buffers.push_back(VkDescriptorBufferInfo {
-                                          .buffer = to_vk(descriptor.buffer),
+                                          .buffer = descriptor.buffer,
                                           .offset = descriptor.offset,
                                           .range  = descriptor.range.value_or(VK_WHOLE_SIZE),
                                         });
@@ -265,7 +265,7 @@ namespace stormkit::gpu {
                                           .dstBinding       = descriptor.binding,
                                           .dstArrayElement  = 0,
                                           .descriptorCount  = 1,
-                                          .descriptorType   = to_vk<VkDescriptorType>(descriptor.type),
+                                          .descriptorType   = vk::to_vk<VkDescriptorType>(descriptor.type),
                                           .pImageInfo       = nullptr,
                                           .pBufferInfo      = &buffer_descriptor,
                                           .pTexelBufferView = nullptr,
@@ -274,8 +274,10 @@ namespace stormkit::gpu {
                                     [vk_handle = m_vk_handle, &images, &writes](const ImageDescriptor& descriptor) noexcept
                                       -> decltype(auto) {
                                         images.push_back(VkDescriptorImageInfo {
-                                          .sampler     = to_vk(descriptor.sampler),
-                                          .imageView   = to_vk(descriptor.image_view),
+                                          // .sampler     = descriptor.sampler,
+                                          // .imageView   = descriptor.image_view,
+                                          .sampler     = descriptor.sampler->native_handle(),
+                                          .imageView   = descriptor.image_view->native_handle(),
                                           .imageLayout = narrow<VkImageLayout>(descriptor.layout),
                                         });
                                         const auto& image_descriptor = images.back();
@@ -287,7 +289,7 @@ namespace stormkit::gpu {
                                           .dstBinding       = descriptor.binding,
                                           .dstArrayElement  = 0,
                                           .descriptorCount  = 1,
-                                          .descriptorType   = to_vk<VkDescriptorType>(descriptor.type),
+                                          .descriptorType   = vk::to_vk<VkDescriptorType>(descriptor.type),
                                           .pImageInfo       = &image_descriptor,
                                           .pBufferInfo      = nullptr,
                                           .pTexelBufferView = nullptr,
@@ -297,7 +299,7 @@ namespace stormkit::gpu {
             return std::tuple { std::move(buffers), std::move(images), std::move(writes) };
         }();
 
-        vk_call(m_vk_device_table->vkUpdateDescriptorSets, m_vk_device, stdr::size(_writes), stdr::data(_writes), 0, nullptr);
+        vk::call(m_vk_device_table->vkUpdateDescriptorSets, m_vk_device, stdr::size(_writes), stdr::data(_writes), 0, nullptr);
     }
 
     /////////////////////////////////////
@@ -390,9 +392,9 @@ namespace stormkit::gpu {
                                  | std::views::transform([](const DescriptorSetLayoutBinding& binding) static noexcept {
                                        return VkDescriptorSetLayoutBinding {
                                            .binding            = binding.binding,
-                                           .descriptorType     = to_vk<VkDescriptorType>(binding.type),
+                                           .descriptorType     = vk::to_vk<VkDescriptorType>(binding.type),
                                            .descriptorCount    = as<u32>(binding.descriptor_count),
-                                           .stageFlags         = to_vk<VkShaderStageFlags>(binding.stages),
+                                           .stageFlags         = vk::to_vk<VkShaderStageFlags>(binding.stages),
                                            .pImmutableSamplers = nullptr,
                                        };
                                    })
@@ -406,9 +408,11 @@ namespace stormkit::gpu {
             .pBindings    = std::ranges::data(vk_bindings)
         };
 
-        return vk_call<VkDescriptorSetLayout>(m_vk_device_table->vkCreateDescriptorSetLayout, m_vk_device, &create_info, nullptr)
-          .transform(core::monadic::set(m_vk_handle))
-          .transform_error(monadic::from_vk<Result>());
+        return vk::call_checked<VkDescriptorSetLayout>(m_vk_device_table->vkCreateDescriptorSetLayout,
+                                                       m_vk_device,
+                                                       &create_info,
+                                                       nullptr)
+          .transform(core::monadic::set(m_vk_handle));
     }
 
     /////////////////////////////////////
@@ -468,20 +472,18 @@ namespace stormkit::gpu {
     inline auto DescriptorPool::create_descriptor_sets(usize count, const DescriptorSetLayout& layout) const noexcept
       -> Expected<std::vector<DescriptorSet>> {
         auto tag = DescriptorSet::PrivateFuncTag {};
-        return create_vk_descriptor_sets(count, layout)
-          .transform([this, &tag](std::vector<VkDescriptorSet>&& sets) noexcept {
-              return std::move(sets)
-                     | stdv::as_rvalue
-                     | stdv::transform([this, &tag](VkDescriptorSet&& set) noexcept -> decltype(auto) {
-                           return DescriptorSet { m_vk_device,
-                                                  *m_vk_device_table,
-                                                  std::move(set),
-                                                  DescriptorPool::delete_vk_descriptor_set,
-                                                  tag };
-                       })
-                     | stdr::to<std::vector>();
-          })
-          .transform_error(monadic::from_vk<Result>());
+        return create_vk_descriptor_sets(count, layout).transform([this, &tag](std::vector<VkDescriptorSet>&& sets) noexcept {
+            return std::move(sets)
+                   | stdv::as_rvalue
+                   | stdv::transform([this, &tag](VkDescriptorSet&& set) noexcept -> decltype(auto) {
+                         return DescriptorSet { m_vk_device,
+                                                *m_vk_device_table,
+                                                std::move(set),
+                                                DescriptorPool::delete_vk_descriptor_set,
+                                                tag };
+                     })
+                   | stdr::to<std::vector>();
+        });
     }
 
     /////////////////////////////////////
@@ -498,20 +500,18 @@ namespace stormkit::gpu {
     inline auto DescriptorPool::allocate_descriptor_sets(usize count, const DescriptorSetLayout& layout) const noexcept
       -> Expected<std::vector<Heap<DescriptorSet>>> {
         auto tag = DescriptorSet::PrivateFuncTag {};
-        return create_vk_descriptor_sets(count, layout)
-          .transform([this, &tag](std::vector<VkDescriptorSet>&& sets) noexcept {
-              return std::move(sets)
-                     | stdv::as_rvalue
-                     | stdv::transform([this, &tag](VkDescriptorSet&& set) noexcept -> decltype(auto) {
-                           return core::allocate_unsafe<DescriptorSet>(m_vk_device,
-                                                                       *m_vk_device_table,
-                                                                       std::move(set),
-                                                                       DescriptorPool::delete_vk_descriptor_set,
-                                                                       tag);
-                       })
-                     | stdr::to<std::vector>();
-          })
-          .transform_error(monadic::from_vk<Result>());
+        return create_vk_descriptor_sets(count, layout).transform([this, &tag](std::vector<VkDescriptorSet>&& sets) noexcept {
+            return std::move(sets)
+                   | stdv::as_rvalue
+                   | stdv::transform([this, &tag](VkDescriptorSet&& set) noexcept -> decltype(auto) {
+                         return core::allocate_unsafe<DescriptorSet>(m_vk_device,
+                                                                     *m_vk_device_table,
+                                                                     std::move(set),
+                                                                     DescriptorPool::delete_vk_descriptor_set,
+                                                                     tag);
+                     })
+                   | stdr::to<std::vector>();
+        });
     }
 
     /////////////////////////////////////
@@ -528,7 +528,7 @@ namespace stormkit::gpu {
         const auto pool_sizes = sizes
                                 | std::views::transform([](const Size& size) static noexcept {
                                       return VkDescriptorPoolSize {
-                                          .type            = to_vk<VkDescriptorType>(size.type),
+                                          .type            = vk::to_vk<VkDescriptorType>(size.type),
                                           .descriptorCount = size.descriptor_count,
                                       };
                                   })
@@ -543,16 +543,15 @@ namespace stormkit::gpu {
             .pPoolSizes    = std::ranges::data(pool_sizes),
         };
 
-        return vk_call<VkDescriptorPool>(m_vk_device_table->vkCreateDescriptorPool, m_vk_device, &create_info, nullptr)
-          .transform(core::monadic::set(m_vk_handle))
-          .transform_error(monadic::from_vk<Result>());
+        return vk::call_checked<VkDescriptorPool>(m_vk_device_table->vkCreateDescriptorPool, m_vk_device, &create_info, nullptr)
+          .transform(core::monadic::set(m_vk_handle));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto DescriptorPool::create_vk_descriptor_sets(usize count, const DescriptorSetLayout& layout) const
-      -> VulkanExpected<std::vector<VkDescriptorSet>> {
-        const auto vk_layout     = to_vk(layout);
+      -> Expected<std::vector<VkDescriptorSet>> {
+        const auto vk_layout     = vk::to_vk(layout);
         const auto allocate_info = VkDescriptorSetAllocateInfo {
             .sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
             .pNext              = nullptr,
@@ -561,7 +560,10 @@ namespace stormkit::gpu {
             .pSetLayouts        = &vk_layout,
         };
 
-        return vk_allocate<VkDescriptorSet>(count, m_vk_device_table->vkAllocateDescriptorSets, m_vk_device, &allocate_info);
+        return vk::allocate_checked<VkDescriptorSet>(count,
+                                                     m_vk_device_table->vkAllocateDescriptorSets,
+                                                     m_vk_device,
+                                                     &allocate_info);
     }
 
     /////////////////////////////////////

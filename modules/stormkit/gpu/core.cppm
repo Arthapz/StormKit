@@ -4,9 +4,13 @@
 
 export module stormkit.gpu.core;
 
+export import :base;
 export import :loader;
-export import :device;
+export import :physical_device;
 export import :instance;
+export import :debug_callback;
+export import :surface;
+export import :device;
 export import :structs;
 export import :sync;
 export import :vulkan;

@@ -222,6 +222,7 @@ export {
            COMMAND_BUFFER = VK_OBJECT_TYPE_COMMAND_BUFFER,
            COMMAND_POOL = VK_OBJECT_TYPE_COMMAND_POOL,
            DEBUG_REPORT_CALLBACK = VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT,
+           DEBUG_UTILS_MESSENGER = VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT,
            DESCRIPTOR_POOL = VK_OBJECT_TYPE_DESCRIPTOR_POOL,
            DESCRIPTOR_SET = VK_OBJECT_TYPE_DESCRIPTOR_SET,
            DESCRIPTOR_SET_LAYOUT = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT,
@@ -796,15 +797,17 @@ export {
         inline constexpr auto details::IS_VULKAN_ENUMERATION<VertexInputRate> = true;
         
 
-        template<typename T = VkFlags, meta::IsVulkanEnumeration U>
-            requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
-        [[nodiscard]]
-        constexpr auto to_vk(U value) noexcept -> T;
+        namespace vk {
+            template<typename T = VkFlags, meta::IsVulkanEnumeration U>
+                requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
+            [[nodiscard]]
+            constexpr auto to_vk(U value) noexcept -> T;
 
-        template<meta::IsVulkanEnumeration T, typename U>
-            requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
-        [[nodiscard]]
-        constexpr auto from_vk(U value) noexcept -> T;
+            template<meta::IsVulkanEnumeration T, typename U>
+                requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
+            [[nodiscard]]
+            constexpr auto from_vk(U value) noexcept -> T;
+        }
 
         [[nodiscard]]
         constexpr auto from_image(image::Image::Format format) -> PixelFormat;
@@ -1445,6 +1448,7 @@ export {
            stormkit::gpu::DebugObjectType::COMMAND_BUFFER,
            stormkit::gpu::DebugObjectType::COMMAND_POOL,
            stormkit::gpu::DebugObjectType::DEBUG_REPORT_CALLBACK,
+           stormkit::gpu::DebugObjectType::DEBUG_UTILS_MESSENGER,
            stormkit::gpu::DebugObjectType::DESCRIPTOR_POOL,
            stormkit::gpu::DebugObjectType::DESCRIPTOR_SET,
            stormkit::gpu::DebugObjectType::DESCRIPTOR_SET_LAYOUT,
@@ -1483,6 +1487,7 @@ export {
            case stormkit::gpu::DebugObjectType::COMMAND_BUFFER: return "DebugObjectType::COMMAND_BUFFER";
            case stormkit::gpu::DebugObjectType::COMMAND_POOL: return "DebugObjectType::COMMAND_POOL";
            case stormkit::gpu::DebugObjectType::DEBUG_REPORT_CALLBACK: return "DebugObjectType::DEBUG_REPORT_CALLBACK";
+           case stormkit::gpu::DebugObjectType::DEBUG_UTILS_MESSENGER: return "DebugObjectType::DEBUG_UTILS_MESSENGER";
            case stormkit::gpu::DebugObjectType::DESCRIPTOR_POOL: return "DebugObjectType::DESCRIPTOR_POOL";
            case stormkit::gpu::DebugObjectType::DESCRIPTOR_SET: return "DebugObjectType::DESCRIPTOR_SET";
            case stormkit::gpu::DebugObjectType::DESCRIPTOR_SET_LAYOUT: return "DebugObjectType::DESCRIPTOR_SET_LAYOUT";
@@ -1521,6 +1526,7 @@ export {
            case stormkit::gpu::DebugObjectType::COMMAND_BUFFER: return "DebugObjectType::COMMAND_BUFFER";
            case stormkit::gpu::DebugObjectType::COMMAND_POOL: return "DebugObjectType::COMMAND_POOL";
            case stormkit::gpu::DebugObjectType::DEBUG_REPORT_CALLBACK: return "DebugObjectType::DEBUG_REPORT_CALLBACK";
+           case stormkit::gpu::DebugObjectType::DEBUG_UTILS_MESSENGER: return "DebugObjectType::DEBUG_UTILS_MESSENGER";
            case stormkit::gpu::DebugObjectType::DESCRIPTOR_POOL: return "DebugObjectType::DESCRIPTOR_POOL";
            case stormkit::gpu::DebugObjectType::DESCRIPTOR_SET: return "DebugObjectType::DESCRIPTOR_SET";
            case stormkit::gpu::DebugObjectType::DESCRIPTOR_SET_LAYOUT: return "DebugObjectType::DESCRIPTOR_SET_LAYOUT";
@@ -3538,26 +3544,28 @@ namespace stormkit::gpu {
         return 0u;
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T = VkFlags, meta::IsVulkanEnumeration U>
-        requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
-    STORMKIT_FORCE_INLINE
-	STORMKIT_CONST
-    STORMKIT_INTRINSIC
-    constexpr auto to_vk(U value) noexcept -> T{
-        return narrow<T>(value);
-    }
+    namespace vk {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T = VkFlags, meta::IsVulkanEnumeration U>
+            requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
+        STORMKIT_FORCE_INLINE
+    	STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto to_vk(U value) noexcept -> T{
+            return narrow<T>(value);
+        }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsVulkanEnumeration T, typename U>
-        requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
-    STORMKIT_FORCE_INLINE
-	STORMKIT_CONST
-    STORMKIT_INTRINSIC
-    constexpr auto from_vk(U value) noexcept -> T {
-        return narrow<T>(value);
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<meta::IsVulkanEnumeration T, typename U>
+            requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
+        STORMKIT_FORCE_INLINE
+    	STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto from_vk(U value) noexcept -> T {
+            return narrow<T>(value);
+        }
     }
 
     /////////////////////////////////////
@@ -3637,416 +3645,416 @@ namespace stormkit::gpu {
 
 
     template
-    stormkit::gpu::AccessFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::AccessFlag, VkFlags>(VkFlags);
+    stormkit::gpu::AccessFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::AccessFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::AccessFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::AccessFlag, VkAccessFlagBits>(VkAccessFlagBits);
+    stormkit::gpu::AccessFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::AccessFlag, VkAccessFlagBits>(VkAccessFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::AccessFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::AccessFlag);
     template
-    VkAccessFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkAccessFlagBits>(stormkit::gpu::AccessFlag);
+    VkAccessFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkAccessFlagBits>(stormkit::gpu::AccessFlag);
 
     template
-    stormkit::gpu::AttachmentLoadOperation STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::AttachmentLoadOperation, VkFlags>(VkFlags);
+    stormkit::gpu::AttachmentLoadOperation STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::AttachmentLoadOperation, VkFlags>(VkFlags);
     template
-    stormkit::gpu::AttachmentLoadOperation STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::AttachmentLoadOperation, VkAttachmentLoadOp>(VkAttachmentLoadOp);
+    stormkit::gpu::AttachmentLoadOperation STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::AttachmentLoadOperation, VkAttachmentLoadOp>(VkAttachmentLoadOp);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::AttachmentLoadOperation);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::AttachmentLoadOperation);
     template
-    VkAttachmentLoadOp STORMKIT_GPU_API stormkit::gpu::to_vk<VkAttachmentLoadOp>(stormkit::gpu::AttachmentLoadOperation);
+    VkAttachmentLoadOp STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkAttachmentLoadOp>(stormkit::gpu::AttachmentLoadOperation);
 
     template
-    stormkit::gpu::AttachmentStoreOperation STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::AttachmentStoreOperation, VkFlags>(VkFlags);
+    stormkit::gpu::AttachmentStoreOperation STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::AttachmentStoreOperation, VkFlags>(VkFlags);
     template
-    stormkit::gpu::AttachmentStoreOperation STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::AttachmentStoreOperation, VkAttachmentStoreOp>(VkAttachmentStoreOp);
+    stormkit::gpu::AttachmentStoreOperation STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::AttachmentStoreOperation, VkAttachmentStoreOp>(VkAttachmentStoreOp);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::AttachmentStoreOperation);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::AttachmentStoreOperation);
     template
-    VkAttachmentStoreOp STORMKIT_GPU_API stormkit::gpu::to_vk<VkAttachmentStoreOp>(stormkit::gpu::AttachmentStoreOperation);
+    VkAttachmentStoreOp STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkAttachmentStoreOp>(stormkit::gpu::AttachmentStoreOperation);
 
     template
-    stormkit::gpu::BlendFactor STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::BlendFactor, VkFlags>(VkFlags);
+    stormkit::gpu::BlendFactor STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::BlendFactor, VkFlags>(VkFlags);
     template
-    stormkit::gpu::BlendFactor STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::BlendFactor, VkBlendFactor>(VkBlendFactor);
+    stormkit::gpu::BlendFactor STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::BlendFactor, VkBlendFactor>(VkBlendFactor);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BlendFactor);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::BlendFactor);
     template
-    VkBlendFactor STORMKIT_GPU_API stormkit::gpu::to_vk<VkBlendFactor>(stormkit::gpu::BlendFactor);
+    VkBlendFactor STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkBlendFactor>(stormkit::gpu::BlendFactor);
 
     template
-    stormkit::gpu::BlendOperation STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::BlendOperation, VkFlags>(VkFlags);
+    stormkit::gpu::BlendOperation STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::BlendOperation, VkFlags>(VkFlags);
     template
-    stormkit::gpu::BlendOperation STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::BlendOperation, VkBlendOp>(VkBlendOp);
+    stormkit::gpu::BlendOperation STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::BlendOperation, VkBlendOp>(VkBlendOp);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BlendOperation);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::BlendOperation);
     template
-    VkBlendOp STORMKIT_GPU_API stormkit::gpu::to_vk<VkBlendOp>(stormkit::gpu::BlendOperation);
+    VkBlendOp STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkBlendOp>(stormkit::gpu::BlendOperation);
 
     template
-    stormkit::gpu::BorderColor STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::BorderColor, VkFlags>(VkFlags);
+    stormkit::gpu::BorderColor STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::BorderColor, VkFlags>(VkFlags);
     template
-    stormkit::gpu::BorderColor STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::BorderColor, VkBorderColor>(VkBorderColor);
+    stormkit::gpu::BorderColor STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::BorderColor, VkBorderColor>(VkBorderColor);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BorderColor);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::BorderColor);
     template
-    VkBorderColor STORMKIT_GPU_API stormkit::gpu::to_vk<VkBorderColor>(stormkit::gpu::BorderColor);
+    VkBorderColor STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkBorderColor>(stormkit::gpu::BorderColor);
 
     template
-    stormkit::gpu::BufferUsageFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::BufferUsageFlag, VkFlags>(VkFlags);
+    stormkit::gpu::BufferUsageFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::BufferUsageFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::BufferUsageFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::BufferUsageFlag, VkBufferUsageFlagBits>(VkBufferUsageFlagBits);
+    stormkit::gpu::BufferUsageFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::BufferUsageFlag, VkBufferUsageFlagBits>(VkBufferUsageFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::BufferUsageFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::BufferUsageFlag);
     template
-    VkBufferUsageFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkBufferUsageFlagBits>(stormkit::gpu::BufferUsageFlag);
+    VkBufferUsageFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkBufferUsageFlagBits>(stormkit::gpu::BufferUsageFlag);
 
     template
-    stormkit::gpu::ColorComponentFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ColorComponentFlag, VkFlags>(VkFlags);
+    stormkit::gpu::ColorComponentFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ColorComponentFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ColorComponentFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ColorComponentFlag, VkColorComponentFlagBits>(VkColorComponentFlagBits);
+    stormkit::gpu::ColorComponentFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ColorComponentFlag, VkColorComponentFlagBits>(VkColorComponentFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ColorComponentFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ColorComponentFlag);
     template
-    VkColorComponentFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkColorComponentFlagBits>(stormkit::gpu::ColorComponentFlag);
+    VkColorComponentFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkColorComponentFlagBits>(stormkit::gpu::ColorComponentFlag);
 
     template
-    stormkit::gpu::ColorSpace STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ColorSpace, VkFlags>(VkFlags);
+    stormkit::gpu::ColorSpace STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ColorSpace, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ColorSpace STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ColorSpace, VkColorSpaceKHR>(VkColorSpaceKHR);
+    stormkit::gpu::ColorSpace STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ColorSpace, VkColorSpaceKHR>(VkColorSpaceKHR);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ColorSpace);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ColorSpace);
     template
-    VkColorSpaceKHR STORMKIT_GPU_API stormkit::gpu::to_vk<VkColorSpaceKHR>(stormkit::gpu::ColorSpace);
+    VkColorSpaceKHR STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkColorSpaceKHR>(stormkit::gpu::ColorSpace);
 
     template
-    stormkit::gpu::CommandBufferLevel STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::CommandBufferLevel, VkFlags>(VkFlags);
+    stormkit::gpu::CommandBufferLevel STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::CommandBufferLevel, VkFlags>(VkFlags);
     template
-    stormkit::gpu::CommandBufferLevel STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::CommandBufferLevel, VkCommandBufferLevel>(VkCommandBufferLevel);
+    stormkit::gpu::CommandBufferLevel STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::CommandBufferLevel, VkCommandBufferLevel>(VkCommandBufferLevel);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::CommandBufferLevel);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::CommandBufferLevel);
     template
-    VkCommandBufferLevel STORMKIT_GPU_API stormkit::gpu::to_vk<VkCommandBufferLevel>(stormkit::gpu::CommandBufferLevel);
+    VkCommandBufferLevel STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkCommandBufferLevel>(stormkit::gpu::CommandBufferLevel);
 
     template
-    stormkit::gpu::CompareOperation STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::CompareOperation, VkFlags>(VkFlags);
+    stormkit::gpu::CompareOperation STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::CompareOperation, VkFlags>(VkFlags);
     template
-    stormkit::gpu::CompareOperation STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::CompareOperation, VkCompareOp>(VkCompareOp);
+    stormkit::gpu::CompareOperation STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::CompareOperation, VkCompareOp>(VkCompareOp);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::CompareOperation);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::CompareOperation);
     template
-    VkCompareOp STORMKIT_GPU_API stormkit::gpu::to_vk<VkCompareOp>(stormkit::gpu::CompareOperation);
+    VkCompareOp STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkCompareOp>(stormkit::gpu::CompareOperation);
 
     template
-    stormkit::gpu::CullModeFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::CullModeFlag, VkFlags>(VkFlags);
+    stormkit::gpu::CullModeFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::CullModeFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::CullModeFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::CullModeFlag, VkCullModeFlagBits>(VkCullModeFlagBits);
+    stormkit::gpu::CullModeFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::CullModeFlag, VkCullModeFlagBits>(VkCullModeFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::CullModeFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::CullModeFlag);
     template
-    VkCullModeFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkCullModeFlagBits>(stormkit::gpu::CullModeFlag);
+    VkCullModeFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkCullModeFlagBits>(stormkit::gpu::CullModeFlag);
 
     template
-    stormkit::gpu::DebugObjectType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::DebugObjectType, VkFlags>(VkFlags);
+    stormkit::gpu::DebugObjectType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::DebugObjectType, VkFlags>(VkFlags);
     template
-    stormkit::gpu::DebugObjectType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::DebugObjectType, VkObjectType>(VkObjectType);
+    stormkit::gpu::DebugObjectType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::DebugObjectType, VkObjectType>(VkObjectType);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DebugObjectType);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::DebugObjectType);
     template
-    VkObjectType STORMKIT_GPU_API stormkit::gpu::to_vk<VkObjectType>(stormkit::gpu::DebugObjectType);
+    VkObjectType STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkObjectType>(stormkit::gpu::DebugObjectType);
 
     template
-    stormkit::gpu::DependencyFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::DependencyFlag, VkFlags>(VkFlags);
+    stormkit::gpu::DependencyFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::DependencyFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::DependencyFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::DependencyFlag, VkDependencyFlagBits>(VkDependencyFlagBits);
+    stormkit::gpu::DependencyFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::DependencyFlag, VkDependencyFlagBits>(VkDependencyFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DependencyFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::DependencyFlag);
     template
-    VkDependencyFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkDependencyFlagBits>(stormkit::gpu::DependencyFlag);
+    VkDependencyFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkDependencyFlagBits>(stormkit::gpu::DependencyFlag);
 
     template
-    stormkit::gpu::DescriptorType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::DescriptorType, VkFlags>(VkFlags);
+    stormkit::gpu::DescriptorType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::DescriptorType, VkFlags>(VkFlags);
     template
-    stormkit::gpu::DescriptorType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::DescriptorType, VkDescriptorType>(VkDescriptorType);
+    stormkit::gpu::DescriptorType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::DescriptorType, VkDescriptorType>(VkDescriptorType);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DescriptorType);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::DescriptorType);
     template
-    VkDescriptorType STORMKIT_GPU_API stormkit::gpu::to_vk<VkDescriptorType>(stormkit::gpu::DescriptorType);
+    VkDescriptorType STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkDescriptorType>(stormkit::gpu::DescriptorType);
 
     template
-    stormkit::gpu::DynamicState STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::DynamicState, VkFlags>(VkFlags);
+    stormkit::gpu::DynamicState STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::DynamicState, VkFlags>(VkFlags);
     template
-    stormkit::gpu::DynamicState STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::DynamicState, VkDynamicState>(VkDynamicState);
+    stormkit::gpu::DynamicState STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::DynamicState, VkDynamicState>(VkDynamicState);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::DynamicState);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::DynamicState);
     template
-    VkDynamicState STORMKIT_GPU_API stormkit::gpu::to_vk<VkDynamicState>(stormkit::gpu::DynamicState);
+    VkDynamicState STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkDynamicState>(stormkit::gpu::DynamicState);
 
     template
-    stormkit::gpu::Filter STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::Filter, VkFlags>(VkFlags);
+    stormkit::gpu::Filter STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::Filter, VkFlags>(VkFlags);
     template
-    stormkit::gpu::Filter STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::Filter, VkFilter>(VkFilter);
+    stormkit::gpu::Filter STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::Filter, VkFilter>(VkFilter);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::Filter);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::Filter);
     template
-    VkFilter STORMKIT_GPU_API stormkit::gpu::to_vk<VkFilter>(stormkit::gpu::Filter);
+    VkFilter STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFilter>(stormkit::gpu::Filter);
 
     template
-    stormkit::gpu::FormatFeatureFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::FormatFeatureFlag, VkFlags>(VkFlags);
+    stormkit::gpu::FormatFeatureFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::FormatFeatureFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::FormatFeatureFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::FormatFeatureFlag, VkFormatFeatureFlagBits>(VkFormatFeatureFlagBits);
+    stormkit::gpu::FormatFeatureFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::FormatFeatureFlag, VkFormatFeatureFlagBits>(VkFormatFeatureFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::FormatFeatureFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::FormatFeatureFlag);
     template
-    VkFormatFeatureFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkFormatFeatureFlagBits>(stormkit::gpu::FormatFeatureFlag);
+    VkFormatFeatureFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFormatFeatureFlagBits>(stormkit::gpu::FormatFeatureFlag);
 
     template
-    stormkit::gpu::FrontFace STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::FrontFace, VkFlags>(VkFlags);
+    stormkit::gpu::FrontFace STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::FrontFace, VkFlags>(VkFlags);
     template
-    stormkit::gpu::FrontFace STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::FrontFace, VkFrontFace>(VkFrontFace);
+    stormkit::gpu::FrontFace STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::FrontFace, VkFrontFace>(VkFrontFace);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::FrontFace);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::FrontFace);
     template
-    VkFrontFace STORMKIT_GPU_API stormkit::gpu::to_vk<VkFrontFace>(stormkit::gpu::FrontFace);
+    VkFrontFace STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFrontFace>(stormkit::gpu::FrontFace);
 
     template
-    stormkit::gpu::GeometryFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::GeometryFlag, VkFlags>(VkFlags);
+    stormkit::gpu::GeometryFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::GeometryFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::GeometryFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::GeometryFlag, VkGeometryFlagBitsKHR>(VkGeometryFlagBitsKHR);
+    stormkit::gpu::GeometryFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::GeometryFlag, VkGeometryFlagBitsKHR>(VkGeometryFlagBitsKHR);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::GeometryFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::GeometryFlag);
     template
-    VkGeometryFlagBitsKHR STORMKIT_GPU_API stormkit::gpu::to_vk<VkGeometryFlagBitsKHR>(stormkit::gpu::GeometryFlag);
+    VkGeometryFlagBitsKHR STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkGeometryFlagBitsKHR>(stormkit::gpu::GeometryFlag);
 
     template
-    stormkit::gpu::GeometryType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::GeometryType, VkFlags>(VkFlags);
+    stormkit::gpu::GeometryType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::GeometryType, VkFlags>(VkFlags);
     template
-    stormkit::gpu::GeometryType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::GeometryType, VkGeometryTypeKHR>(VkGeometryTypeKHR);
+    stormkit::gpu::GeometryType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::GeometryType, VkGeometryTypeKHR>(VkGeometryTypeKHR);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::GeometryType);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::GeometryType);
     template
-    VkGeometryTypeKHR STORMKIT_GPU_API stormkit::gpu::to_vk<VkGeometryTypeKHR>(stormkit::gpu::GeometryType);
+    VkGeometryTypeKHR STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkGeometryTypeKHR>(stormkit::gpu::GeometryType);
 
     template
-    stormkit::gpu::ImageAspectFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageAspectFlag, VkFlags>(VkFlags);
+    stormkit::gpu::ImageAspectFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageAspectFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ImageAspectFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageAspectFlag, VkImageAspectFlagBits>(VkImageAspectFlagBits);
+    stormkit::gpu::ImageAspectFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageAspectFlag, VkImageAspectFlagBits>(VkImageAspectFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageAspectFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageAspectFlag);
     template
-    VkImageAspectFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkImageAspectFlagBits>(stormkit::gpu::ImageAspectFlag);
+    VkImageAspectFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageAspectFlagBits>(stormkit::gpu::ImageAspectFlag);
 
     template
-    stormkit::gpu::ImageCreateFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageCreateFlag, VkFlags>(VkFlags);
+    stormkit::gpu::ImageCreateFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageCreateFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ImageCreateFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageCreateFlag, VkImageCreateFlagBits>(VkImageCreateFlagBits);
+    stormkit::gpu::ImageCreateFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageCreateFlag, VkImageCreateFlagBits>(VkImageCreateFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageCreateFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageCreateFlag);
     template
-    VkImageCreateFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkImageCreateFlagBits>(stormkit::gpu::ImageCreateFlag);
+    VkImageCreateFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageCreateFlagBits>(stormkit::gpu::ImageCreateFlag);
 
     template
-    stormkit::gpu::ImageLayout STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageLayout, VkFlags>(VkFlags);
+    stormkit::gpu::ImageLayout STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageLayout, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ImageLayout STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageLayout, VkImageLayout>(VkImageLayout);
+    stormkit::gpu::ImageLayout STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageLayout, VkImageLayout>(VkImageLayout);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageLayout);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageLayout);
     template
-    VkImageLayout STORMKIT_GPU_API stormkit::gpu::to_vk<VkImageLayout>(stormkit::gpu::ImageLayout);
+    VkImageLayout STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageLayout>(stormkit::gpu::ImageLayout);
 
     template
-    stormkit::gpu::ImageTiling STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageTiling, VkFlags>(VkFlags);
+    stormkit::gpu::ImageTiling STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageTiling, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ImageTiling STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageTiling, VkImageTiling>(VkImageTiling);
+    stormkit::gpu::ImageTiling STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageTiling, VkImageTiling>(VkImageTiling);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageTiling);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageTiling);
     template
-    VkImageTiling STORMKIT_GPU_API stormkit::gpu::to_vk<VkImageTiling>(stormkit::gpu::ImageTiling);
+    VkImageTiling STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageTiling>(stormkit::gpu::ImageTiling);
 
     template
-    stormkit::gpu::ImageType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageType, VkFlags>(VkFlags);
+    stormkit::gpu::ImageType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageType, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ImageType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageType, VkImageType>(VkImageType);
+    stormkit::gpu::ImageType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageType, VkImageType>(VkImageType);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageType);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageType);
     template
-    VkImageType STORMKIT_GPU_API stormkit::gpu::to_vk<VkImageType>(stormkit::gpu::ImageType);
+    VkImageType STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageType>(stormkit::gpu::ImageType);
 
     template
-    stormkit::gpu::ImageUsageFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageUsageFlag, VkFlags>(VkFlags);
+    stormkit::gpu::ImageUsageFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageUsageFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ImageUsageFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageUsageFlag, VkImageUsageFlagBits>(VkImageUsageFlagBits);
+    stormkit::gpu::ImageUsageFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageUsageFlag, VkImageUsageFlagBits>(VkImageUsageFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageUsageFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageUsageFlag);
     template
-    VkImageUsageFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkImageUsageFlagBits>(stormkit::gpu::ImageUsageFlag);
+    VkImageUsageFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageUsageFlagBits>(stormkit::gpu::ImageUsageFlag);
 
     template
-    stormkit::gpu::ImageViewType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageViewType, VkFlags>(VkFlags);
+    stormkit::gpu::ImageViewType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageViewType, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ImageViewType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ImageViewType, VkImageViewType>(VkImageViewType);
+    stormkit::gpu::ImageViewType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageViewType, VkImageViewType>(VkImageViewType);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ImageViewType);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageViewType);
     template
-    VkImageViewType STORMKIT_GPU_API stormkit::gpu::to_vk<VkImageViewType>(stormkit::gpu::ImageViewType);
+    VkImageViewType STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageViewType>(stormkit::gpu::ImageViewType);
 
     template
-    stormkit::gpu::LogicOperation STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::LogicOperation, VkFlags>(VkFlags);
+    stormkit::gpu::LogicOperation STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::LogicOperation, VkFlags>(VkFlags);
     template
-    stormkit::gpu::LogicOperation STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::LogicOperation, VkLogicOp>(VkLogicOp);
+    stormkit::gpu::LogicOperation STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::LogicOperation, VkLogicOp>(VkLogicOp);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::LogicOperation);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::LogicOperation);
     template
-    VkLogicOp STORMKIT_GPU_API stormkit::gpu::to_vk<VkLogicOp>(stormkit::gpu::LogicOperation);
+    VkLogicOp STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkLogicOp>(stormkit::gpu::LogicOperation);
 
     template
-    stormkit::gpu::MemoryPropertyFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::MemoryPropertyFlag, VkFlags>(VkFlags);
+    stormkit::gpu::MemoryPropertyFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::MemoryPropertyFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::MemoryPropertyFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::MemoryPropertyFlag, VkMemoryPropertyFlagBits>(VkMemoryPropertyFlagBits);
+    stormkit::gpu::MemoryPropertyFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::MemoryPropertyFlag, VkMemoryPropertyFlagBits>(VkMemoryPropertyFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::MemoryPropertyFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::MemoryPropertyFlag);
     template
-    VkMemoryPropertyFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkMemoryPropertyFlagBits>(stormkit::gpu::MemoryPropertyFlag);
+    VkMemoryPropertyFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkMemoryPropertyFlagBits>(stormkit::gpu::MemoryPropertyFlag);
 
     template
-    stormkit::gpu::PhysicalDeviceType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PhysicalDeviceType, VkFlags>(VkFlags);
+    stormkit::gpu::PhysicalDeviceType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PhysicalDeviceType, VkFlags>(VkFlags);
     template
-    stormkit::gpu::PhysicalDeviceType STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PhysicalDeviceType, VkPhysicalDeviceType>(VkPhysicalDeviceType);
+    stormkit::gpu::PhysicalDeviceType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PhysicalDeviceType, VkPhysicalDeviceType>(VkPhysicalDeviceType);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PhysicalDeviceType);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PhysicalDeviceType);
     template
-    VkPhysicalDeviceType STORMKIT_GPU_API stormkit::gpu::to_vk<VkPhysicalDeviceType>(stormkit::gpu::PhysicalDeviceType);
+    VkPhysicalDeviceType STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPhysicalDeviceType>(stormkit::gpu::PhysicalDeviceType);
 
     template
-    stormkit::gpu::PipelineBindPoint STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PipelineBindPoint, VkFlags>(VkFlags);
+    stormkit::gpu::PipelineBindPoint STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PipelineBindPoint, VkFlags>(VkFlags);
     template
-    stormkit::gpu::PipelineBindPoint STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PipelineBindPoint, VkPipelineBindPoint>(VkPipelineBindPoint);
+    stormkit::gpu::PipelineBindPoint STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PipelineBindPoint, VkPipelineBindPoint>(VkPipelineBindPoint);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PipelineBindPoint);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PipelineBindPoint);
     template
-    VkPipelineBindPoint STORMKIT_GPU_API stormkit::gpu::to_vk<VkPipelineBindPoint>(stormkit::gpu::PipelineBindPoint);
+    VkPipelineBindPoint STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPipelineBindPoint>(stormkit::gpu::PipelineBindPoint);
 
     template
-    stormkit::gpu::PipelineStageFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PipelineStageFlag, VkFlags>(VkFlags);
+    stormkit::gpu::PipelineStageFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PipelineStageFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::PipelineStageFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PipelineStageFlag, VkPipelineStageFlagBits>(VkPipelineStageFlagBits);
+    stormkit::gpu::PipelineStageFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PipelineStageFlag, VkPipelineStageFlagBits>(VkPipelineStageFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PipelineStageFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PipelineStageFlag);
     template
-    VkPipelineStageFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkPipelineStageFlagBits>(stormkit::gpu::PipelineStageFlag);
+    VkPipelineStageFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPipelineStageFlagBits>(stormkit::gpu::PipelineStageFlag);
 
     template
-    stormkit::gpu::PixelFormat STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PixelFormat, VkFlags>(VkFlags);
+    stormkit::gpu::PixelFormat STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PixelFormat, VkFlags>(VkFlags);
     template
-    stormkit::gpu::PixelFormat STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PixelFormat, VkFormat>(VkFormat);
+    stormkit::gpu::PixelFormat STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PixelFormat, VkFormat>(VkFormat);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PixelFormat);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PixelFormat);
     template
-    VkFormat STORMKIT_GPU_API stormkit::gpu::to_vk<VkFormat>(stormkit::gpu::PixelFormat);
+    VkFormat STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFormat>(stormkit::gpu::PixelFormat);
 
     template
-    stormkit::gpu::PolygonMode STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PolygonMode, VkFlags>(VkFlags);
+    stormkit::gpu::PolygonMode STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PolygonMode, VkFlags>(VkFlags);
     template
-    stormkit::gpu::PolygonMode STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PolygonMode, VkPolygonMode>(VkPolygonMode);
+    stormkit::gpu::PolygonMode STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PolygonMode, VkPolygonMode>(VkPolygonMode);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PolygonMode);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PolygonMode);
     template
-    VkPolygonMode STORMKIT_GPU_API stormkit::gpu::to_vk<VkPolygonMode>(stormkit::gpu::PolygonMode);
+    VkPolygonMode STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPolygonMode>(stormkit::gpu::PolygonMode);
 
     template
-    stormkit::gpu::PresentMode STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PresentMode, VkFlags>(VkFlags);
+    stormkit::gpu::PresentMode STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PresentMode, VkFlags>(VkFlags);
     template
-    stormkit::gpu::PresentMode STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PresentMode, VkPresentModeKHR>(VkPresentModeKHR);
+    stormkit::gpu::PresentMode STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PresentMode, VkPresentModeKHR>(VkPresentModeKHR);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PresentMode);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PresentMode);
     template
-    VkPresentModeKHR STORMKIT_GPU_API stormkit::gpu::to_vk<VkPresentModeKHR>(stormkit::gpu::PresentMode);
+    VkPresentModeKHR STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPresentModeKHR>(stormkit::gpu::PresentMode);
 
     template
-    stormkit::gpu::PrimitiveTopology STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PrimitiveTopology, VkFlags>(VkFlags);
+    stormkit::gpu::PrimitiveTopology STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PrimitiveTopology, VkFlags>(VkFlags);
     template
-    stormkit::gpu::PrimitiveTopology STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::PrimitiveTopology, VkPrimitiveTopology>(VkPrimitiveTopology);
+    stormkit::gpu::PrimitiveTopology STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PrimitiveTopology, VkPrimitiveTopology>(VkPrimitiveTopology);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::PrimitiveTopology);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PrimitiveTopology);
     template
-    VkPrimitiveTopology STORMKIT_GPU_API stormkit::gpu::to_vk<VkPrimitiveTopology>(stormkit::gpu::PrimitiveTopology);
+    VkPrimitiveTopology STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPrimitiveTopology>(stormkit::gpu::PrimitiveTopology);
 
     template
-    stormkit::gpu::QueueFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::QueueFlag, VkFlags>(VkFlags);
+    stormkit::gpu::QueueFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::QueueFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::QueueFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::QueueFlag, VkQueueFlagBits>(VkQueueFlagBits);
+    stormkit::gpu::QueueFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::QueueFlag, VkQueueFlagBits>(VkQueueFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::QueueFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::QueueFlag);
     template
-    VkQueueFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkQueueFlagBits>(stormkit::gpu::QueueFlag);
+    VkQueueFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkQueueFlagBits>(stormkit::gpu::QueueFlag);
 
     template
-    stormkit::gpu::ResolveModeFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ResolveModeFlag, VkFlags>(VkFlags);
+    stormkit::gpu::ResolveModeFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ResolveModeFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ResolveModeFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ResolveModeFlag, VkResolveModeFlagBits>(VkResolveModeFlagBits);
+    stormkit::gpu::ResolveModeFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ResolveModeFlag, VkResolveModeFlagBits>(VkResolveModeFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ResolveModeFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ResolveModeFlag);
     template
-    VkResolveModeFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkResolveModeFlagBits>(stormkit::gpu::ResolveModeFlag);
+    VkResolveModeFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkResolveModeFlagBits>(stormkit::gpu::ResolveModeFlag);
 
     template
-    stormkit::gpu::Result STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::Result, VkFlags>(VkFlags);
+    stormkit::gpu::Result STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::Result, VkFlags>(VkFlags);
     template
-    stormkit::gpu::Result STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::Result, VkResult>(VkResult);
+    stormkit::gpu::Result STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::Result, VkResult>(VkResult);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::Result);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::Result);
     template
-    VkResult STORMKIT_GPU_API stormkit::gpu::to_vk<VkResult>(stormkit::gpu::Result);
+    VkResult STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkResult>(stormkit::gpu::Result);
 
     template
-    stormkit::gpu::SampleCountFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::SampleCountFlag, VkFlags>(VkFlags);
+    stormkit::gpu::SampleCountFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::SampleCountFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::SampleCountFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::SampleCountFlag, VkSampleCountFlagBits>(VkSampleCountFlagBits);
+    stormkit::gpu::SampleCountFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::SampleCountFlag, VkSampleCountFlagBits>(VkSampleCountFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::SampleCountFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::SampleCountFlag);
     template
-    VkSampleCountFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkSampleCountFlagBits>(stormkit::gpu::SampleCountFlag);
+    VkSampleCountFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkSampleCountFlagBits>(stormkit::gpu::SampleCountFlag);
 
     template
-    stormkit::gpu::SamplerAddressMode STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::SamplerAddressMode, VkFlags>(VkFlags);
+    stormkit::gpu::SamplerAddressMode STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::SamplerAddressMode, VkFlags>(VkFlags);
     template
-    stormkit::gpu::SamplerAddressMode STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::SamplerAddressMode, VkSamplerAddressMode>(VkSamplerAddressMode);
+    stormkit::gpu::SamplerAddressMode STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::SamplerAddressMode, VkSamplerAddressMode>(VkSamplerAddressMode);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::SamplerAddressMode);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::SamplerAddressMode);
     template
-    VkSamplerAddressMode STORMKIT_GPU_API stormkit::gpu::to_vk<VkSamplerAddressMode>(stormkit::gpu::SamplerAddressMode);
+    VkSamplerAddressMode STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkSamplerAddressMode>(stormkit::gpu::SamplerAddressMode);
 
     template
-    stormkit::gpu::SamplerMipmapMode STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::SamplerMipmapMode, VkFlags>(VkFlags);
+    stormkit::gpu::SamplerMipmapMode STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::SamplerMipmapMode, VkFlags>(VkFlags);
     template
-    stormkit::gpu::SamplerMipmapMode STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::SamplerMipmapMode, VkSamplerMipmapMode>(VkSamplerMipmapMode);
+    stormkit::gpu::SamplerMipmapMode STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::SamplerMipmapMode, VkSamplerMipmapMode>(VkSamplerMipmapMode);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::SamplerMipmapMode);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::SamplerMipmapMode);
     template
-    VkSamplerMipmapMode STORMKIT_GPU_API stormkit::gpu::to_vk<VkSamplerMipmapMode>(stormkit::gpu::SamplerMipmapMode);
+    VkSamplerMipmapMode STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkSamplerMipmapMode>(stormkit::gpu::SamplerMipmapMode);
 
     template
-    stormkit::gpu::ShaderStageFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ShaderStageFlag, VkFlags>(VkFlags);
+    stormkit::gpu::ShaderStageFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ShaderStageFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::ShaderStageFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::ShaderStageFlag, VkShaderStageFlagBits>(VkShaderStageFlagBits);
+    stormkit::gpu::ShaderStageFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ShaderStageFlag, VkShaderStageFlagBits>(VkShaderStageFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::ShaderStageFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ShaderStageFlag);
     template
-    VkShaderStageFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkShaderStageFlagBits>(stormkit::gpu::ShaderStageFlag);
+    VkShaderStageFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkShaderStageFlagBits>(stormkit::gpu::ShaderStageFlag);
 
     template
-    stormkit::gpu::StencilFaceFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::StencilFaceFlag, VkFlags>(VkFlags);
+    stormkit::gpu::StencilFaceFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::StencilFaceFlag, VkFlags>(VkFlags);
     template
-    stormkit::gpu::StencilFaceFlag STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::StencilFaceFlag, VkStencilFaceFlagBits>(VkStencilFaceFlagBits);
+    stormkit::gpu::StencilFaceFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::StencilFaceFlag, VkStencilFaceFlagBits>(VkStencilFaceFlagBits);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::StencilFaceFlag);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::StencilFaceFlag);
     template
-    VkStencilFaceFlagBits STORMKIT_GPU_API stormkit::gpu::to_vk<VkStencilFaceFlagBits>(stormkit::gpu::StencilFaceFlag);
+    VkStencilFaceFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkStencilFaceFlagBits>(stormkit::gpu::StencilFaceFlag);
 
     template
-    stormkit::gpu::VertexInputRate STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::VertexInputRate, VkFlags>(VkFlags);
+    stormkit::gpu::VertexInputRate STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::VertexInputRate, VkFlags>(VkFlags);
     template
-    stormkit::gpu::VertexInputRate STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::VertexInputRate, VkVertexInputRate>(VkVertexInputRate);
+    stormkit::gpu::VertexInputRate STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::VertexInputRate, VkVertexInputRate>(VkVertexInputRate);
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::VertexInputRate);
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::VertexInputRate);
     template
-    VkVertexInputRate STORMKIT_GPU_API stormkit::gpu::to_vk<VkVertexInputRate>(stormkit::gpu::VertexInputRate);
+    VkVertexInputRate STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkVertexInputRate>(stormkit::gpu::VertexInputRate);
 

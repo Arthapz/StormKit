@@ -24,7 +24,9 @@ export namespace stormkit { inline namespace core {
         struct PrivateFuncTag {};
 
       public:
-        using value_type = Byte;
+        using ValueType = byte;
+
+        using value_type = ValueType;
 
         enum class Access : u8 {
             READ  = 1,

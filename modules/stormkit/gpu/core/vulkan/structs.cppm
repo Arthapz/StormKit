@@ -14,14 +14,12 @@ import :structs;
 
 import :vulkan.volk;
 
-export namespace stormkit::gpu {
+export namespace stormkit::gpu::vk {
     template<typename T>
         requires(
           requires { std::declval<T>().native_handle(); } or requires { std::declval<T>()->native_handle(); })
     [[nodiscard]]
     auto to_vk(const T& value) noexcept -> decltype(auto);
-
-    struct ToVec;
 
     template<typename Out>
     [[nodiscard]]
@@ -72,9 +70,9 @@ export namespace stormkit::gpu {
     template<math::meta::IsExtent3 Out = math::uextent3>
     [[nodiscard]]
     constexpr auto from_vk(const VkExtent3D& viewport) noexcept -> Out;
-} // namespace stormkit::gpu
+} // namespace stormkit::gpu::vk
 
-namespace stormkit::gpu {
+namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -221,4 +219,4 @@ namespace stormkit::gpu {
         using T = typename Out::ElementType;
         return Out { .width = as<T>(extent.width), .height = as<T>(extent.height) };
     }
-} // namespace stormkit::gpu
+} // namespace stormkit::gpu::vk

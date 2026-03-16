@@ -6,6 +6,7 @@ module;
 
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
+#include <stormkit/core/try_expected.hpp>
 
 #include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
@@ -17,186 +18,113 @@ import std;
 import stormkit.core;
 import stormkit.wsi;
 
+import :base;
 import :vulkan;
 import :structs;
-import :device;
 
-export {
-    namespace stormkit::gpu {
-        class PhysicalDevice;
+export namespace stormkit::gpu {
+    class PhysicalDevice;
 
-        class STORMKIT_GPU_API Instance {
-            struct PrivateFuncTag {};
+    class Instance;
+    class InstanceObject;
 
-          public:
+    namespace view {
+        using Instance = View<Instance>;
+    }
+
+    namespace meta {
+        template<>
+        struct ObjectInfo<Instance> {
+            using Of          = Instance;
+            using ElementType = VkInstance;
+            using DeleterType = PFN_vkDestroyInstance;
+            using ViewType    = view::Instance;
+
             static constexpr auto DEBUG_TYPE = DebugObjectType::INSTANCE;
-
-            [[nodiscard]]
-            static auto create(std::string app_name = "", bool verbose = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
-              -> Expected<Instance>;
-            [[nodiscard]]
-            static auto allocate(std::string app_name = "", bool verbose = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
-              -> Expected<Heap<Instance>>;
-            ~Instance();
-
-            Instance(const Instance&)                    = delete;
-            auto operator=(const Instance&) -> Instance& = delete;
-
-            Instance(Instance&&) noexcept;
-            auto operator=(Instance&&) noexcept -> Instance&;
-
-            [[nodiscard]]
-            auto physical_devices() const noexcept -> const std::vector<PhysicalDevice>&;
-
-            [[nodiscard]]
-            auto native_handle() const noexcept -> VkInstance;
-
-            constexpr Instance(std::string app_name, bool verbose, PrivateFuncTag) noexcept;
-
-          private:
-            auto do_init() noexcept -> Expected<void>;
-            auto do_load_instance() noexcept -> VulkanExpected<void>;
-            auto do_init_debug_report_callback() noexcept -> VulkanExpected<void>;
-            auto do_retrieve_physical_devices() noexcept -> VulkanExpected<void>;
-
-            std::string m_app_name;
-            bool        m_validation_layers_enabled;
-
-            std::vector<std::string>    m_extensions;
-            std::vector<PhysicalDevice> m_physical_devices;
-
-            VkRAIIHandle<VkInstance> m_vk_handle = { [](auto handle) static noexcept { vkDestroyInstance(handle, nullptr); } };
-            VkRAIIHandle<VkDebugUtilsMessengerEXT> m_vk_debug_utils_handle = { [](auto) static noexcept {} };
         };
+    } // namespace meta
+
+    class STORMKIT_GPU_API Instance: public Owned<Instance> {
+      public:
+        ~Instance();
+
+        Instance(const Instance&)                    = delete;
+        auto operator=(const Instance&) -> Instance& = delete;
+
+        Instance(Instance&&) noexcept;
+        auto operator=(Instance&&) noexcept -> Instance&;
 
         [[nodiscard]]
-        STORMKIT_GPU_API auto score_physical_device(const PhysicalDevice& physical_device) noexcept -> u64;
+        auto physical_devices() const noexcept -> const std::vector<PhysicalDevice>&;
 
-        class STORMKIT_GPU_API PhysicalDevice {
+        // clang-format off
+   // private:
+        // clang-format on
+        explicit Instance(PrivateTag) noexcept;
+        auto do_init(PrivateTag, std::string = "", bool = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept -> Expected<void>;
+
+      private:
+        auto do_load_instance() noexcept -> Expected<void>;
+        auto do_retrieve_physical_devices() noexcept -> Expected<void>;
+
+        std::vector<std::string>    m_extensions;
+        std::vector<PhysicalDevice> m_physical_devices;
+    };
+
+    namespace view {
+        template<typename T>
+        class InstanceObject: public View<T> {
           public:
-            static constexpr auto DEBUG_TYPE = DebugObjectType::PHYSICAL_DEVICE;
+            using ObjectInfo  = typename meta::ObjectInfo<T>;
+            using ElementType = ObjectInfo::ElementType;
+            using ViewType    = ObjectInfo::ViewType;
 
-            ~PhysicalDevice();
+            InstanceObject(const T& child) noexcept;
+            template<cmeta::ContainedOrPointerOf<T> U>
+            InstanceObject(const U& child) noexcept;
+            ~InstanceObject() noexcept;
 
-            PhysicalDevice(const PhysicalDevice&)                    = delete;
-            auto operator=(const PhysicalDevice&) -> PhysicalDevice& = delete;
+            InstanceObject(const InstanceObject&) noexcept;
+            auto operator=(const InstanceObject&) noexcept -> InstanceObject&;
 
-            PhysicalDevice(PhysicalDevice&&) noexcept;
-            auto operator=(PhysicalDevice&&) noexcept -> PhysicalDevice&;
-
-            [[nodiscard]]
-            auto check_extension_support(std::string_view extension) const noexcept -> bool;
-            [[nodiscard]]
-            auto check_extension_support(std::span<const std::string_view> extensions) const noexcept -> bool;
-            [[nodiscard]]
-            auto check_extension_support(std::span<const CZString> extensions) const noexcept -> bool;
+            InstanceObject(InstanceObject&&) noexcept;
+            auto operator=(InstanceObject&&) noexcept -> InstanceObject&;
 
             [[nodiscard]]
-            auto info() const noexcept -> const PhysicalDeviceInfo&;
-            [[nodiscard]]
-            auto capabilities() const noexcept -> const RenderCapabilities&;
-            [[nodiscard]]
-            auto memory_types() const noexcept -> const std::vector<MemoryPropertyFlag>&;
+            auto instance() const noexcept -> const Instance&;
 
-            [[nodiscard]]
-            auto queue_families() const noexcept -> const std::vector<QueueFamily>&;
-
-            [[nodiscard]]
-            auto extensions() const noexcept -> const std::vector<std::string>&;
-
-            [[nodiscard]]
-            auto formats_properties() const noexcept -> const std::vector<std::pair<PixelFormat, FormatProperties>>&;
-
-            [[nodiscard]]
-            auto native_handle() const noexcept -> VkPhysicalDevice;
-
-          private:
-            explicit PhysicalDevice(VkPhysicalDevice physical_device) noexcept;
-
-            PhysicalDeviceInfo              m_device_info;
-            RenderCapabilities              m_capabilities;
-            std::vector<MemoryPropertyFlag> m_memory_types;
-
-            std::vector<QueueFamily>                              m_queue_families;
-            std::vector<std::string>                              m_extensions;
-            std::vector<std::pair<PixelFormat, FormatProperties>> m_format_properties;
-
-            VkPhysicalDevice m_vk_handle = nullptr;
-            friend class Instance;
+          protected:
+            Instance m_instance;
         };
+    } // namespace view
 
-        class STORMKIT_GPU_API Surface {
-            struct PrivateFuncTag {};
+    template<typename T>
+    class OwnedByInstance: public Owned<T> {
+      public:
+        using ObjectInfo  = typename meta::ObjectInfo<T>;
+        using ElementType = ObjectInfo::ElementType;
+        using DeleterType = ObjectInfo::DeleterType;
+        using ViewType    = ObjectInfo::ViewType;
 
-          public:
-            static constexpr auto DEBUG_TYPE = DebugObjectType::SURFACE;
+        ~OwnedByInstance() noexcept;
 
-            ~Surface();
+        OwnedByInstance(const OwnedByInstance&)                    = delete;
+        auto operator=(const OwnedByInstance&) -> OwnedByInstance& = delete;
 
-            Surface(const Surface&)                    = delete;
-            auto operator=(const Surface&) -> Surface& = delete;
+        OwnedByInstance(OwnedByInstance&&) noexcept;
+        auto operator=(OwnedByInstance&&) noexcept -> OwnedByInstance&;
 
-            Surface(Surface&&) noexcept;
-            auto operator=(Surface&&) noexcept -> Surface&;
+        [[nodiscard]]
+        auto instance() const noexcept -> const view::Instance&;
 
-#if false
-            [[nodiscard]]
-            static auto create_offscreen(const Instance& instance) noexcept -> Expected<Surface>;
-            [[nodiscard]]
-            static auto allocate_offscreen(const Instance& instance) noexcept
-                -> Expected<Heap<Surface>>;
-#endif
+      protected:
+        using Parent = Owned<T>;
 
-            [[nodiscard]]
-            static auto create_from_window(const Instance& instance, const wsi::Window& window) noexcept -> Expected<Surface>;
-            [[nodiscard]]
-            static auto allocate_from_window(const Instance& instance, const wsi::Window& window) noexcept
-              -> Expected<Heap<Surface>>;
+        OwnedByInstance(view::Instance&&, DeleterType&&) noexcept;
 
-            [[nodiscard]]
-            auto native_handle() const noexcept -> VkSurfaceKHR;
-
-            constexpr explicit Surface(PrivateFuncTag) noexcept;
-
-          private:
-            auto do_init_offscreen(const Instance&) noexcept -> Expected<void>;
-            auto do_init_from_window(const Instance&, const wsi::Window&) noexcept -> Expected<void>;
-
-            VkInstance                 m_vk_instance = nullptr;
-            VkRAIIHandle<VkSurfaceKHR> m_vk_handle   = { [](auto) static noexcept {} };
-        };
-    } // namespace stormkit::gpu
-
-    namespace std {
-        template<class CharT>
-        struct formatter<stormkit::gpu::PhysicalDevice, CharT> {
-            template<class ParseContext>
-            STORMKIT_FORCE_INLINE
-            constexpr auto parse(ParseContext& ctx) -> decltype(auto) {
-                return ctx.begin();
-            }
-
-            template<class FormatContext>
-            STORMKIT_FORCE_INLINE
-            auto format(const stormkit::gpu::PhysicalDevice& device, FormatContext& ctx) const -> decltype(auto) {
-                auto&&      out  = ctx.out();
-                const auto& info = device.info();
-                return format_to(out,
-                                 "[name: {}, vendor: {}, id: {}, vulkan: {}.{}.{}, driver version: "
-                                 "{}.{}.{}]",
-                                 info.device_name,
-                                 info.vendor_name,
-                                 info.device_id,
-                                 info.api_major_version,
-                                 info.api_minor_version,
-                                 info.api_patch_version,
-                                 info.driver_major_version,
-                                 info.driver_minor_version,
-                                 info.driver_patch_version);
-            }
-        };
-    } // namespace std
-}
+        view::Instance m_instance;
+    };
+} // namespace stormkit::gpu
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
@@ -206,168 +134,105 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr Instance::Instance(std::string app_name, bool enable_validation, PrivateFuncTag) noexcept
-        : m_app_name { std::move(app_name) }, m_validation_layers_enabled { enable_validation } {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Instance::create(std::string app_name, bool enable_validation) noexcept -> Expected<Instance> {
-        auto instance = Instance { std::move(app_name), enable_validation, PrivateFuncTag {} };
-        return instance.do_init().transform(core::monadic::consume(instance));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Instance::allocate(std::string app_name, bool enable_validation) noexcept -> Expected<Heap<Instance>> {
-        auto instance = core::allocate_unsafe<Instance>(std::move(app_name), enable_validation, PrivateFuncTag {});
-        return instance->do_init().transform(core::monadic::consume(instance));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline Instance::~Instance() = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline Instance::Instance(Instance&&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Instance::operator=(Instance&&) noexcept -> Instance& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
     inline auto Instance::physical_devices() const noexcept -> const std::vector<PhysicalDevice>& {
         return m_physical_devices;
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
+    namespace view {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+        STORMKIT_FORCE_INLINE
+        inline InstanceObject<T>::InstanceObject(const T& child) noexcept
+            : View<T> { child }, m_instance { child.instance() } {
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+        template<cmeta::ContainedOrPointerOf<T> U>
+        STORMKIT_FORCE_INLINE
+        inline InstanceObject<T>::InstanceObject(const U& child) noexcept
+            : View<T> { child }, m_instance { child->instance() } {
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+        STORMKIT_FORCE_INLINE
+        inline InstanceObject<T>::~InstanceObject() noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+        STORMKIT_FORCE_INLINE
+        inline InstanceObject<T>::InstanceObject(const InstanceObject&) noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto Instance::native_handle() const noexcept -> VkInstance {
-        EXPECTS(m_vk_handle);
-        return m_vk_handle;
+        inline auto InstanceObject<T>::operator=(const InstanceObject&) noexcept -> InstanceObject& = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+        STORMKIT_FORCE_INLINE
+        inline InstanceObject<T>::InstanceObject(InstanceObject&&) noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+    STORMKIT_FORCE_INLINE
+        inline auto InstanceObject<T>::operator=(InstanceObject&&) noexcept -> InstanceObject& = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+    STORMKIT_FORCE_INLINE
+        inline auto InstanceObject<T>::instance() const noexcept -> const view::Instance& {
+            return m_instance;
+        }
+    } // namespace view
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    STORMKIT_FORCE_INLINE
+    inline OwnedByInstance<T>::OwnedByInstance(view::Instance&& instance, DeleterType&& deleter_ptr) noexcept
+        : Parent { std::move(deleter_ptr) }, m_instance { std::move(instance) } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto PhysicalDevice::info() const noexcept -> const PhysicalDeviceInfo& {
-        return m_device_info;
+    inline OwnedByInstance<T>::~OwnedByInstance() noexcept {
+        if constexpr (cmeta::SameAs<DeleterType, void (*)(VkInstance, ElementType, const VkAllocationCallbacks*)>) {
+            auto& vk_handle   = Parent::m_vk_handle;
+            auto& deleter_ptr = Parent::m_deleter_ptr;
+            if (deleter_ptr != nullptr and vk_handle != VK_NULL_HANDLE) vk::call(deleter_ptr, m_instance, vk_handle, nullptr);
+            vk_handle = VK_NULL_HANDLE;
+        }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto PhysicalDevice::capabilities() const noexcept -> const RenderCapabilities& {
-        return m_capabilities;
-    }
+    inline OwnedByInstance<T>::OwnedByInstance(OwnedByInstance&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
+    template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto PhysicalDevice::memory_types() const noexcept -> const std::vector<MemoryPropertyFlag>& {
-        return m_memory_types;
-    }
+    inline auto OwnedByInstance<T>::operator=(OwnedByInstance&&) noexcept -> OwnedByInstance& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
+    template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto PhysicalDevice::queue_families() const noexcept -> const std::vector<QueueFamily>& {
-        return m_queue_families;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto PhysicalDevice::extensions() const noexcept -> const std::vector<std::string>& {
-        return m_extensions;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto PhysicalDevice::formats_properties() const noexcept
-      -> const std::vector<std::pair<PixelFormat, FormatProperties>>& {
-        return m_format_properties;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto PhysicalDevice::native_handle() const noexcept -> VkPhysicalDevice {
-        EXPECTS(m_vk_handle);
-        return m_vk_handle;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr Surface::Surface(PrivateFuncTag) noexcept {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline Surface::~Surface() = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline Surface::Surface(Surface&&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Surface::operator=(Surface&&) noexcept -> Surface& = default;
-
-#if false
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE inline auto Surface::create_offscreen(const Instance& instance) noexcept
-        -> Expected<Surface> {
-        auto surface = Surface { PrivateFuncTag {} };
-        return surface.do_init_offscreen(instance).transform(core::monadic::consume(instance));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE inline auto Surface::allocate_offscreen(const Instance& instance) noexcept
-        -> Expected<Heap<Surface>> {
-        auto surface = core::allocate_unsafe<Surface>(PrivateFuncTag {});
-        return surface->do_init_offscreen(instance).transform(core::monadic::consume(instance));
-    }
-#endif
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Surface::create_from_window(const Instance& instance, const wsi::Window& window) noexcept -> Expected<Surface> {
-        auto surface = Surface { PrivateFuncTag {} };
-        return surface.do_init_from_window(instance, window).transform(core::monadic::consume(surface));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Surface::allocate_from_window(const Instance& instance, const wsi::Window& window) noexcept
-      -> Expected<Heap<Surface>> {
-        auto surface = core::allocate_unsafe<Surface>(PrivateFuncTag {});
-        return surface->do_init_from_window(instance, window).transform(core::monadic::consume(surface));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Surface::native_handle() const noexcept -> VkSurfaceKHR {
-        EXPECTS(m_vk_handle);
-        return m_vk_handle;
+    inline auto OwnedByInstance<T>::instance() const noexcept -> const view::Instance& {
+        return m_instance;
     }
 } // namespace stormkit::gpu

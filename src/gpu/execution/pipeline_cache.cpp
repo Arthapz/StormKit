@@ -21,6 +21,8 @@ import stormkit.gpu.core;
 
 namespace stdr = std::ranges;
 
+using namespace stormkit::literals;
+
 LOGGER("stormkit.gpu")
 
 namespace stormkit::gpu {
@@ -65,8 +67,10 @@ namespace stormkit::gpu {
             .pInitialData    = nullptr,
         };
 
-        m_vk_handle = Try(vk_call<VkPipelineCache>(m_vk_device_table->vkCreatePipelineCache, m_vk_device, &create_info, nullptr)
-                            .transform_error(monadic::from_vk<Result>())
+        m_vk_handle = Try(vk::call_checked<VkPipelineCache>(m_vk_device_table->vkCreatePipelineCache,
+                                                            m_vk_device,
+                                                            &create_info,
+                                                            nullptr)
                             .transform_error(result_to_load_error));
 
         Return {};
@@ -129,8 +133,10 @@ namespace stormkit::gpu {
             .pInitialData    = stdr::data(data),
         };
 
-        m_vk_handle = Try(vk_call<VkPipelineCache>(m_vk_device_table->vkCreatePipelineCache, m_vk_device, &create_info, nullptr)
-                            .transform_error(monadic::from_vk<Result>())
+        m_vk_handle = Try(vk::call_checked<VkPipelineCache>(m_vk_device_table->vkCreatePipelineCache,
+                                                            m_vk_device,
+                                                            &create_info,
+                                                            nullptr)
                             .transform_error(result_to_load_error));
 
         Return {};
@@ -139,9 +145,23 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto PipelineCache::save_cache() noexcept -> LoadSaveExpected<void> {
-        auto data = Try((vk_enumerate<Byte, usize>(m_vk_device_table->vkGetPipelineCacheData, m_vk_device, m_vk_handle)
-                           .transform_error(monadic::from_vk<Result>())
-                           .transform_error(result_to_load_error)));
+        auto size = 0_usize;
+        {
+            const auto
+              result = vk::call_checked(m_vk_device_table->vkGetPipelineCacheData, m_vk_device, m_vk_handle, &size, nullptr);
+            if (not result) Return std::unexpected { result_to_load_error(result.error()) };
+        }
+        auto data = std::vector<byte> {};
+        data.resize(size, 0_b);
+        {
+            const auto result = vk::call_checked(m_vk_device_table->vkGetPipelineCacheData,
+                                                 m_vk_device,
+                                                 m_vk_handle,
+                                                 &size,
+                                                 stdr::data(data));
+            if (not result) Return std::unexpected { result_to_load_error(result.error()) };
+        }
+
         m_serialized.guard.data_size = stdr::size(data);
         m_serialized.guard.data_hash = 0u;
 

@@ -4,6 +4,8 @@
 
 module;
 
+#include <stormkit/core/try_expected.hpp>
+
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.resource;
@@ -16,6 +18,28 @@ import stormkit.gpu.core;
 ;
 
 namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Shader::do_init(PrivateTag, std::vector<SpirvID> data, ShaderStageFlag type) -> Expected<void> {
+        m_source = std::move(data);
+        m_type   = type;
+
+        const auto create_info = VkShaderModuleCreateInfo {
+            .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+            .pNext    = nullptr,
+            .flags    = 0,
+            .codeSize = stdr::size(m_source) * sizeof(SpirvID),
+            .pCode    = stdr::data(m_source)
+        };
+
+        const auto& device = this->device();
+        m_vk_handle        = Try(vk::call_checked<VkShaderModule>(device.device_table().vkCreateShaderModule,
+                                                                  device,
+                                                                  &create_info,
+                                                                  nullptr));
+        Return {};
+    }
+
     /////////////////////////////////////
     /////////////////////////////////////
     auto Shader::reflect() noexcept -> void {

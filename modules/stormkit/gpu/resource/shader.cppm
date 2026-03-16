@@ -6,6 +6,7 @@ module;
 
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
+#include <stormkit/core/try_expected.hpp>
 
 #include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
@@ -18,35 +19,55 @@ import stormkit.core;
 import stormkit.gpu.core;
 
 namespace stdr = std::ranges;
+namespace stdv = std::views;
+
+namespace cmeta = stormkit::core::meta;
 
 export namespace stormkit::gpu {
-    class STORMKIT_GPU_API Shader {
-        struct PrivateFuncTag {};
+    class Shader;
 
+    namespace view {
+        class Shader;
+    } // namespace view
+
+    namespace meta {
+        template<>
+        struct ObjectInfo<Shader> {
+            using Of          = Shader;
+            using ElementType = VkShaderModule;
+            using DeleterType = PFN_vkDestroyShaderModule VolkDeviceTable::*;
+            using ViewType    = view::Shader;
+            using OwnedBy     = Device;
+
+            static constexpr auto DEBUG_TYPE = DebugObjectType::SHADER_MODULE;
+        };
+    } // namespace meta
+
+    class STORMKIT_GPU_API Shader: public OwnedByDevice<Shader> {
       public:
         enum class Error {
             INVALID_SPIRV,
         };
+
         using LoadError = std::variant<core::SystemError, Result, Error>;
         template<typename T>
-        using LoadExpected               = std::expected<T, LoadError>;
-        static constexpr auto DEBUG_TYPE = DebugObjectType::SHADER_MODULE;
+        using LoadExpected = std::expected<T, LoadError>;
 
-        static auto load_from_file(const Device& device, const std::filesystem::path& filepath, ShaderStageFlag type) noexcept
+        static auto load_from_file(view::Device device, const std::filesystem::path& filepath, ShaderStageFlag type) noexcept
           -> LoadExpected<Shader>;
-        static auto load_from_bytes(const Device& device, std::span<const Byte> data, ShaderStageFlag type) noexcept
+        static auto load_from_bytes(view::Device device, std::span<const byte> data, ShaderStageFlag type) noexcept
           -> Expected<Shader>;
-        static auto load_from_spirvid(const Device& device, std::span<const SpirvID> data, ShaderStageFlag type) noexcept
+        static auto load_from_spirv(view::Device device, std::span<const SpirvID> data, ShaderStageFlag type) noexcept
           -> Expected<Shader>;
 
-        static auto allocate_and_load_from_file(const Device&                device,
+        static auto allocate_and_load_from_file(view::Device                 device,
                                                 const std::filesystem::path& filepath,
-                                                ShaderStageFlag type) noexcept -> LoadExpected<std::unique_ptr<Shader>>;
-        static auto allocate_and_load_from_bytes(const Device& device, std::span<const Byte> data, ShaderStageFlag type) noexcept
-          -> Expected<std::unique_ptr<Shader>>;
-        static auto allocate_and_load_from_spirvid(const Device&            device,
-                                                   std::span<const SpirvID> data,
-                                                   ShaderStageFlag          type) noexcept -> Expected<std::unique_ptr<Shader>>;
+                                                ShaderStageFlag              type) noexcept -> LoadExpected<Heap<Shader>>;
+        static auto allocate_and_load_from_bytes(view::Device device, std::span<const byte> data, ShaderStageFlag type) noexcept
+          -> Expected<Heap<Shader>>;
+        static auto allocate_and_load_from_spirv(view::Device             device,
+                                                 std::span<const SpirvID> data,
+                                                 ShaderStageFlag          type) noexcept -> Expected<Heap<Shader>>;
         ~Shader();
 
         Shader(const Shader&)                    = delete;
@@ -60,24 +81,46 @@ export namespace stormkit::gpu {
         [[nodiscard]]
         auto source() const noexcept -> const std::vector<SpirvID>&;
         [[nodiscard]]
-        auto source_as_bytes() const noexcept -> std::span<const Byte>;
+        auto source_as_bytes() const noexcept -> std::span<const byte>;
 
-        [[nodiscard]]
-        auto native_handle() const noexcept -> VkShaderModule;
-
-        Shader(const Device&, std::vector<SpirvID>, ShaderStageFlag, PrivateFuncTag) noexcept;
+        // clang-format off
+  // private:
+        // clang-format on
+        Shader(PrivateTag, view::Device) noexcept;
+        auto do_init(PrivateTag, std::vector<SpirvID>, ShaderStageFlag) -> Expected<void>;
 
       private:
-        auto do_init() -> Expected<void>;
         auto reflect() noexcept -> void;
 
         ShaderStageFlag      m_type   = ShaderStageFlag::NONE;
         std::vector<SpirvID> m_source = {};
-
-        VkDevice                     m_vk_device = nullptr;
-        Ref<const VolkDeviceTable>   m_vk_device_table;
-        VkRAIIHandle<VkShaderModule> m_vk_handle;
     };
+
+    namespace view {
+        class STORMKIT_GPU_API Shader: public view::DeviceObject<gpu::Shader> {
+          public:
+            using ObjectInfo  = typename meta::ObjectInfo<gpu::Shader>;
+            using ElementType = ObjectInfo::ElementType;
+            using ViewType    = ObjectInfo::ViewType;
+
+            Shader(const gpu::Shader& of) noexcept;
+            template<cmeta::ContainedOrPointerOf<gpu::Shader> T>
+            Shader(const T& of) noexcept;
+            ~Shader() noexcept;
+
+            Shader(const Shader&) noexcept;
+            auto operator=(const Shader&) noexcept -> Shader&;
+
+            Shader(Shader&&) noexcept;
+            auto operator=(Shader&&) noexcept -> Shader&;
+
+            [[nodiscard]]
+            auto type() const noexcept -> ShaderStageFlag;
+
+          private:
+            ShaderStageFlag m_type = ShaderStageFlag::NONE;
+        };
+    } // namespace view
 } // namespace stormkit::gpu
 
 ////////////////////////////////////////////////////////////////////
@@ -102,31 +145,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Shader::do_init() -> Expected<void> {
-        const auto create_info = VkShaderModuleCreateInfo {
-            .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-            .pNext    = nullptr,
-            .flags    = 0,
-            .codeSize = stdr::size(m_source) * sizeof(SpirvID),
-            .pCode    = stdr::data(m_source)
-        };
-
-        return vk_call<VkShaderModule>(m_vk_device_table->vkCreateShaderModule, m_vk_device, &create_info, nullptr)
-          .transform(core::monadic::set(m_vk_handle))
-          .transform_error(monadic::from_vk<Result>());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline Shader::Shader(const Device& device, std::vector<SpirvID> data, ShaderStageFlag type, PrivateFuncTag) noexcept
-        : m_type { type },
-          m_source { std::move(data) },
-          m_vk_device { device.native_handle() },
-          m_vk_device_table { as_ref(device.device_table()) },
-          m_vk_handle { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto&& handle) noexcept {
-              vk_device_table.vkDestroyShaderModule(vk_device, handle, nullptr);
-          } } {
+    inline Shader::Shader(PrivateTag, view::Device device) noexcept
+        : OwnedByDevice<Shader> { std::move(device), &VolkDeviceTable::vkDestroyShaderModule } {
     }
 
     /////////////////////////////////////
@@ -147,87 +167,64 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Shader::load_from_file(const Device& device, const std::filesystem::path& filepath, ShaderStageFlag type) noexcept
+    inline auto Shader::load_from_file(view::Device device, const std::filesystem::path& filepath, ShaderStageFlag type) noexcept
       -> LoadExpected<Shader> {
-        return io::File::open(filepath, io::Access::READ)
-          .transform_error(sys_to_load_error)
-          .and_then([](auto&& file) static noexcept -> LoadExpected<std::vector<SpirvID>> {
-              const auto size = file.size();
-              if (size % sizeof(SpirvID) != 0) return std::unexpected { LoadError { Error::INVALID_SPIRV } };
-              auto spirv = std::vector<SpirvID>(size / sizeof(SpirvID));
-              return file.read_to(as_bytes_mut(spirv))
-                .transform(core::monadic::consume(spirv))
-                .transform_error(sys_to_load_error);
-          })
-          .and_then([&type, &device](auto&& spirv) noexcept {
-              auto shader = Shader { device, std::move(spirv), type, PrivateFuncTag {} };
-              return shader.do_init().transform_error(result_to_load_error).transform(core::monadic::consume(shader));
-          });
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Shader::load_from_bytes(const Device& device, std::span<const Byte> data, ShaderStageFlag type) noexcept
-      -> Expected<Shader> {
-        auto shader = Shader { device, bytes_as_span<const SpirvID>(data) | stdr::to<std::vector>(), type, PrivateFuncTag {} };
-        return shader.do_init().transform(core::monadic::consume(shader));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Shader::load_from_spirvid(const Device& device, std::span<const SpirvID> data, ShaderStageFlag type) noexcept
-      -> Expected<Shader> {
-        auto shader = Shader { device, data | stdr::to<std::vector>(), type, PrivateFuncTag {} };
-        return shader.do_init().transform(core::monadic::consume(shader));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Shader::allocate_and_load_from_file(const Device&                device,
-                                                    const std::filesystem::path& filepath,
-                                                    ShaderStageFlag type) noexcept -> LoadExpected<std::unique_ptr<Shader>> {
         expects(std::filesystem::is_regular_file(filepath), std::format("{} is not a file", filepath.string()));
 
-        return io::File::open(filepath, io::Access::READ)
-          .transform_error(sys_to_load_error)
-          .and_then([](auto&& file) static noexcept {
-              const auto size = file.size();
-
-              auto spirv = std::vector<SpirvID>(size / sizeof(SpirvID));
-              return file.read_to(as_bytes_mut(spirv))
-                .transform(core::monadic::consume(spirv))
-                .transform_error(sys_to_load_error);
-          })
-          .and_then([&type, &device](auto&& spirv) noexcept {
-              auto shader = std::make_unique<Shader>(device, std::move(spirv), type, PrivateFuncTag {});
-              return shader->do_init().transform(core::monadic::consume(shader)).transform_error(result_to_load_error);
-          });
+        const auto data  = TryTransformError(io::read(filepath), sys_to_load_error);
+        const auto spirv = std::vector<SpirvID> { std::from_range, bytes_as_span<SpirvID>(data) };
+        Return     TryTransformError(create(std::move(device), std::move(spirv), type), result_to_load_error);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Shader::allocate_and_load_from_bytes(const Device&         device,
-                                                     std::span<const Byte> data,
-                                                     ShaderStageFlag       type) noexcept -> Expected<std::unique_ptr<Shader>> {
-        auto shader = std::make_unique<Shader>(device,
-                                               bytes_as_span<const SpirvID>(data) | stdr::to<std::vector>(),
-                                               type,
-                                               PrivateFuncTag {});
-        return shader->do_init().transform(core::monadic::consume(shader));
+    inline auto Shader::load_from_bytes(view::Device device, std::span<const byte> data, ShaderStageFlag type) noexcept
+      -> Expected<Shader> {
+        const auto spirv = std::vector<SpirvID> { std::from_range, bytes_as_span<SpirvID>(data) };
+        return create(std::move(device), std::move(spirv), type);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Shader::allocate_and_load_from_spirvid(const Device&            device,
-                                                       std::span<const SpirvID> data,
-                                                       ShaderStageFlag type) noexcept -> Expected<std::unique_ptr<Shader>> {
-        auto shader = std::make_unique<Shader>(device, data | stdr::to<std::vector>(), type, PrivateFuncTag {});
-        return shader->do_init().transform(core::monadic::consume(shader));
+    inline auto Shader::load_from_spirv(view::Device device, std::span<const SpirvID> data, ShaderStageFlag type) noexcept
+      -> Expected<Shader> {
+        const auto spirv = std::vector<SpirvID> { std::from_range, data };
+        return create(std::move(device), std::move(spirv), type);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Shader::allocate_and_load_from_file(view::Device                 device,
+                                                    const std::filesystem::path& filepath,
+                                                    ShaderStageFlag              type) noexcept -> LoadExpected<Heap<Shader>> {
+        expects(std::filesystem::is_regular_file(filepath), std::format("{} is not a file", filepath.string()));
+
+        const auto data  = TryTransformError(io::read(filepath), sys_to_load_error);
+        const auto spirv = std::vector<SpirvID> { std::from_range, bytes_as_span<SpirvID>(data) };
+        Return     TryTransformError(allocate(std::move(device), std::move(spirv), type), result_to_load_error);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Shader::allocate_and_load_from_bytes(view::Device          device,
+                                                     std::span<const byte> data,
+                                                     ShaderStageFlag       type) noexcept -> Expected<Heap<Shader>> {
+        const auto spirv = std::vector<SpirvID> { std::from_range, bytes_as_span<SpirvID>(data) };
+        return allocate(std::move(device), std::move(spirv), type);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Shader::allocate_and_load_from_spirv(view::Device             device,
+                                                     std::span<const SpirvID> data,
+                                                     ShaderStageFlag          type) noexcept -> Expected<Heap<Shader>> {
+        const auto spirv = std::vector<SpirvID> { std::from_range, data };
+        return allocate(std::move(device), std::move(spirv), type);
     }
 
     /////////////////////////////////////
@@ -247,14 +244,56 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Shader::source_as_bytes() const noexcept -> std::span<const Byte> {
+    inline auto Shader::source_as_bytes() const noexcept -> std::span<const byte> {
         return as_bytes(m_source);
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Shader::native_handle() const noexcept -> VkShaderModule {
-        return m_vk_handle;
-    }
+    namespace view {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline Shader::Shader(const gpu::Shader& of) noexcept
+            : view::DeviceObject<gpu::Shader> { of }, m_type { of.type() } {
+        }
+
+        ///////////////////////////////////
+        ///////////////////////////////////
+        template<cmeta::ContainedOrPointerOf<gpu::Shader> T>
+        STORMKIT_FORCE_INLINE
+        inline Shader::Shader(const T& of) noexcept
+            : view::DeviceObject<gpu::Shader> { of }, m_type { of->type() } {
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline Shader::~Shader() noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline Shader::Shader(const Shader& other) noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto Shader::operator=(const Shader& other) noexcept -> Shader& = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline Shader::Shader(Shader&&) noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto Shader::operator=(Shader&&) noexcept -> Shader& = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto Shader::type() const noexcept -> ShaderStageFlag {
+            return m_type;
+        }
+    } // namespace view
 } // namespace stormkit::gpu

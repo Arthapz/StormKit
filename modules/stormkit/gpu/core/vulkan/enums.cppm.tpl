@@ -45,15 +45,17 @@ export {
         inline constexpr auto details::IS_VULKAN_ENUMERATION<{% outfile:write(name) %}> = true;
         {% end %}
 
-        template<typename T = VkFlags, meta::IsVulkanEnumeration U>
-            requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
-        [[nodiscard]]
-        constexpr auto to_vk(U value) noexcept -> T;
+        namespace vk {
+            template<typename T = VkFlags, meta::IsVulkanEnumeration U>
+                requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
+            [[nodiscard]]
+            constexpr auto to_vk(U value) noexcept -> T;
 
-        template<meta::IsVulkanEnumeration T, typename U>
-            requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
-        [[nodiscard]]
-        constexpr auto from_vk(U value) noexcept -> T;
+            template<meta::IsVulkanEnumeration T, typename U>
+                requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
+            [[nodiscard]]
+            constexpr auto from_vk(U value) noexcept -> T;
+        }
 
         [[nodiscard]]
         constexpr auto from_image(image::Image::Format format) -> PixelFormat;
@@ -300,26 +302,28 @@ namespace stormkit::gpu {
         return 0u;
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T = VkFlags, meta::IsVulkanEnumeration U>
-        requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
-    STORMKIT_FORCE_INLINE
-	STORMKIT_CONST
-    STORMKIT_INTRINSIC
-    constexpr auto to_vk(U value) noexcept -> T{
-        return narrow<T>(value);
-    }
+    namespace vk {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T = VkFlags, meta::IsVulkanEnumeration U>
+            requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
+        STORMKIT_FORCE_INLINE
+    	STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto to_vk(U value) noexcept -> T{
+            return narrow<T>(value);
+        }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsVulkanEnumeration T, typename U>
-        requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
-    STORMKIT_FORCE_INLINE
-	STORMKIT_CONST
-    STORMKIT_INTRINSIC
-    constexpr auto from_vk(U value) noexcept -> T {
-        return narrow<T>(value);
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<meta::IsVulkanEnumeration T, typename U>
+            requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
+        STORMKIT_FORCE_INLINE
+    	STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto from_vk(U value) noexcept -> T {
+            return narrow<T>(value);
+        }
     }
 
     /////////////////////////////////////
@@ -399,11 +403,11 @@ namespace stormkit::gpu {
 
 {% for name, enumeration in table.orderpairs(json_data) do %}
     template
-    stormkit::gpu::{% outfile:write(name) %} STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::{% outfile:write(name) %}, VkFlags>(VkFlags);
+    stormkit::gpu::{% outfile:write(name) %} STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::{% outfile:write(name) %}, VkFlags>(VkFlags);
     template
-    stormkit::gpu::{% outfile:write(name) %} STORMKIT_GPU_API stormkit::gpu::from_vk<stormkit::gpu::{% outfile:write(name) %}, {% outfile:write(enumeration.vktype) %}>({% outfile:write(enumeration.vktype) %});
+    stormkit::gpu::{% outfile:write(name) %} STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::{% outfile:write(name) %}, {% outfile:write(enumeration.vktype) %}>({% outfile:write(enumeration.vktype) %});
     template
-    VkFlags STORMKIT_GPU_API stormkit::gpu::to_vk<VkFlags>(stormkit::gpu::{% outfile:write(name) %});
+    VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::{% outfile:write(name) %});
     template
-    {% outfile:write(enumeration.vktype) %} STORMKIT_GPU_API stormkit::gpu::to_vk<{% outfile:write(enumeration.vktype) %}>(stormkit::gpu::{% outfile:write(name) %});
+    {% outfile:write(enumeration.vktype) %} STORMKIT_GPU_API stormkit::gpu::vk::to_vk<{% outfile:write(enumeration.vktype) %}>(stormkit::gpu::{% outfile:write(name) %});
 {% end %}

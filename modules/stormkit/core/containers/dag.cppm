@@ -49,6 +49,8 @@ export namespace stormkit { inline namespace core {
         using ColorizeClosure    = FunctionRef<std::string(const VertexValue&)>;
         using FormatValueClosure = FunctionRef<std::string(const VertexValue&)>;
 
+        using ValueType = Vertex;
+
         struct Closures {
             std::optional<ColorizeClosure>    colorize     = std::nullopt;
             std::optional<FormatValueClosure> format_value = []() static noexcept -> std::optional<FormatValueClosure> {

@@ -92,13 +92,13 @@ class Application: public base::Application {
                                                         "signal semaphore") });
 
             auto& transition_cmb = transition_cmbs[image_index];
-            TryAssertDiscard(transition_cmb.begin(true), "Failed to begin texture transition command buffer");
+            TryDiscardAssert(transition_cmb.begin(true), "Failed to begin texture transition command buffer");
 
             transition_cmb.begin_debug_region(std::format("transition image {}", image_index))
               .transition_image_layout(swap_image, gpu::ImageLayout::UNDEFINED, gpu::ImageLayout::PRESENT_SRC)
               .end_debug_region();
 
-            TryAssertDiscard(transition_cmb.end(),
+            TryDiscardAssert(transition_cmb.end(),
                              "Failed to begin texture transition command "
                              "buffer");
 
@@ -123,7 +123,7 @@ class Application: public base::Application {
         io.DisplaySize.x = m_window->extent().to<f32>().width;
         io.DisplaySize.y = m_window->extent().to<f32>().height;
 
-        const auto format = to_vk<VkFormat>(m_swapchain->pixel_format());
+        const auto format = gpu::vk::to_vk<VkFormat>(m_swapchain->pixel_format());
         /*const*/ auto init_info = ImGui_ImplVulkan_InitInfo {
             .ApiVersion                  = VK_API_VERSION_1_3,
             .Instance                    = m_instance->native_handle(),
@@ -155,13 +155,13 @@ class Application: public base::Application {
             .Allocator                   = nullptr,
             .CheckVkResultFn =
               [](auto result) static noexcept {
-                  if (result != VK_SUCCESS) elog("{}", gpu::from_vk<gpu::Result>(result));
+                  if (result != VK_SUCCESS) elog("{}", gpu::vk::from_vk<gpu::Result>(result));
               },
             .MinAllocationSize = 1024 * 1024,
             .CustomShaderVertCreateInfo = {},
             .CustomShaderFragCreateInfo = {},
         };
-        ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_1, gpu::imgui_vk_loader, &*m_device);
+        ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_1, gpu::vk::imgui_vk_loader, &*m_device);
         ImGui_ImplVulkan_Init(&init_info);
 
         m_window
@@ -234,8 +234,8 @@ class Application: public base::Application {
 
         // render in it
         auto& render_cmb = submission_resource.render_cmb;
-        TryAssertDiscard(render_cmb.reset(), "Failed to reset render command buffer");
-        TryAssertDiscard(render_cmb.begin(), "Failed to begin render command buffer");
+        TryDiscardAssert(render_cmb.reset(), "Failed to reset render command buffer");
+        TryDiscardAssert(render_cmb.begin(), "Failed to begin render command buffer");
 
         render_cmb
           .transition_image_layout(swapchain_image_resource.image,
@@ -252,12 +252,12 @@ class Application: public base::Application {
                                    gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                    gpu::ImageLayout::PRESENT_SRC);
 
-        TryAssertDiscard(render_cmb.end(), "Failed to end render command buffer");
-        TryAssertDiscard(render_cmb.submit(m_raster_queue, as_refs(wait), PIPELINE_FLAGS, as_refs(signal), as_ref(in_flight)),
+        TryDiscardAssert(render_cmb.end(), "Failed to end render command buffer");
+        TryDiscardAssert(render_cmb.submit(m_raster_queue, as_refs(wait), PIPELINE_FLAGS, as_refs(signal), as_ref(in_flight)),
                          "Failed to submit render command buffer");
 
         // present it
-        TryAssertDiscard(m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index)),
+        TryDiscardAssert(m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index)),
                          "Failed to present swapchain image");
 
         if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;

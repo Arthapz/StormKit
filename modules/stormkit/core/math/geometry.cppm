@@ -20,13 +20,15 @@ import :math.linear.vector;
 export namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
     struct rect {
-        T           x      = T { 0 };
-        T           y      = T { 0 };
-        Positive<T> width  = T { 0 };
-        Positive<T> height = T { 0 };
+        using ValueType = T;
 
-        constexpr auto position() const noexcept -> vec2<T>;
-        constexpr auto extent() const noexcept -> extent2<T>;
+        ValueType           x      = ValueType { 0 };
+        ValueType           y      = ValueType { 0 };
+        Positive<ValueType> width  = ValueType { 0 };
+        Positive<ValueType> height = ValueType { 0 };
+
+        constexpr auto position() const noexcept -> vec2<ValueType>;
+        constexpr auto extent() const noexcept -> extent2<ValueType>;
 
         template<core::meta::IsArithmetic U>
         constexpr auto to() const noexcept -> rect<U>;
@@ -41,13 +43,15 @@ export namespace stormkit { inline namespace core { namespace math {
 
     template<core::meta::IsArithmetic T>
     struct bounding_rect {
-        T left   = T { 0 };
-        T top    = T { 0 };
-        T right  = T { 0 };
-        T bottom = T { 0 };
+        using ValueType = T;
 
-        constexpr auto topleft() const noexcept -> vec2<T>;
-        constexpr auto bottomright() const noexcept -> vec2<T>;
+        ValueType left   = ValueType { 0 };
+        ValueType top    = ValueType { 0 };
+        ValueType right  = ValueType { 0 };
+        ValueType bottom = ValueType { 0 };
+
+        constexpr auto topleft() const noexcept -> vec2<ValueType>;
+        constexpr auto bottomright() const noexcept -> vec2<ValueType>;
 
         template<core::meta::IsArithmetic U>
         constexpr auto to() const noexcept -> rect<U>;

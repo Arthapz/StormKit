@@ -565,8 +565,9 @@
     "COMMAND_POOL":           { "vulkan": "VK_OBJECT_TYPE_COMMAND_POOL",              "webgpu": "" },
     "SURFACE":                { "vulkan": "VK_OBJECT_TYPE_SURFACE_KHR",               "webgpu": "" },
     "SWAPCHAIN":              { "vulkan": "VK_OBJECT_TYPE_SWAPCHAIN_KHR",             "webgpu": "" },
+    "DISPLAY":                { "vulkan": "VK_OBJECT_TYPE_DISPLAY_KHR",               "webgpu": "" },
     "DEBUG_REPORT_CALLBACK":  { "vulkan": "VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT", "webgpu": "" },
-    "DISPLAY":                { "vulkan": "VK_OBJECT_TYPE_DISPLAY_KHR",               "webgpu": "" }
+    "DEBUG_UTILS_MESSENGER":  { "vulkan": "VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT", "webgpu": "" }
     }
   },
   "AccessFlag": {

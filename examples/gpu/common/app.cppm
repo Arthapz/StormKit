@@ -4,7 +4,12 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/try_expected.hpp>
+
+#include <stormkit/log/log_macro.hpp>
+
+#include <stormkit/gpu/vulkan.hpp>
 
 export module gpu_app;
 
@@ -17,6 +22,26 @@ using namespace stormkit;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
+
+NAMED_LOGGER(vulkan_logger, "vulkan")
+
+extern "C" auto debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+                               VkDebugUtilsMessageTypeFlagsEXT,
+                               const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+                               void*) noexcept -> u32 {
+    EXPECTS(callback_data);
+    auto message = std::format("{}", callback_data->pMessage);
+
+    if (check_flag_bit(severity, VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)) vulkan_logger.ilog("{}", message);
+    else if (check_flag_bit(severity, VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT))
+        vulkan_logger.dlog("{}", message);
+    else if (check_flag_bit(severity, VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT))
+        vulkan_logger.elog("{}", message);
+    else if (check_flag_bit(severity, VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT))
+        vulkan_logger.wlog("{}", message);
+
+    return 0;
+}
 
 export namespace base {
     class Application {
@@ -36,21 +61,22 @@ export namespace base {
 
             self.m_window->event_loop([&self] noexcept { self.run_example(); });
 
-            TryAssertDiscard(self.m_raster_queue->wait_idle(), "Failed to wait for raster queue");
+            TryDiscardAssert(self.m_raster_queue->wait_idle(), "Failed to wait for raster queue");
             self.m_device->wait_idle();
 
             if constexpr (requires { self.deinit(); }) self.deinit();
         }
 
       protected:
-        DeferInit<wsi::Window>                 m_window;
-        DeferInit<gpu::Instance>               m_instance;
-        DeferInit<gpu::Surface>                m_surface;
-        OptionalRef<const gpu::PhysicalDevice> m_physical_device;
-        DeferInit<gpu::Device>                 m_device;
-        DeferInit<gpu::SwapChain>              m_swapchain;
-        DeferInit<gpu::Queue>                  m_raster_queue;
-        DeferInit<gpu::CommandPool>            m_command_pool;
+        DeferInit<wsi::Window>             m_window;
+        DeferInit<gpu::Instance>           m_instance;
+        DeferInit<gpu::DebugCallback>      m_debug_callback;
+        DeferInit<gpu::Surface>            m_surface;
+        DeferInit<gpu::view::PhysicalDevice> m_physical_device;
+        DeferInit<gpu::Device>             m_device;
+        DeferInit<gpu::SwapChain>          m_swapchain;
+        DeferInit<gpu::Queue>              m_raster_queue;
+        DeferInit<gpu::CommandPool>        m_command_pool;
 
       private:
         auto init_window(std::string_view example_name) noexcept -> void {
@@ -64,11 +90,14 @@ export namespace base {
 
         auto init_gpu(std::string_view example_name) noexcept -> void {
             // initialize gpu backend (vulkan or webgpu depending the platform)
-            TryAssertDiscard(gpu::initialize_backend(), "Failed to initialize gpu backend");
+            TryDiscardAssert(gpu::initialize_backend(), "Failed to initialize gpu backend");
 
             // create gpu instance and attach surface to window
             m_instance = TryAssert(gpu::Instance::create(std::string { example_name }, true),
                                    "Failed to initialize gpu instance");
+
+            m_debug_callback = TryAssert(gpu::DebugCallback::create(m_instance, debug_callback),
+                                         "Failed to initialize gpu instance");
 
             m_surface = TryAssert(gpu::Surface::create_from_window(m_instance, m_window),
                                   "Failed to initialize window gpu surface");
@@ -81,13 +110,13 @@ export namespace base {
             }
             ilog("Physical devices: {}", physical_devices);
 
-            m_physical_device = as_opt_ref(physical_devices.front());
+            m_physical_device = physical_devices.front();
             auto score        = gpu::score_physical_device(*m_physical_device);
             for (auto i : range(1_u32, stdr::size(physical_devices))) {
                 const auto& d       = physical_devices[i];
                 const auto  d_score = gpu::score_physical_device(d);
                 if (d_score > score) {
-                    m_physical_device = as_opt_ref(d);
+                    m_physical_device = d;
                     score             = d_score;
                 }
             }
@@ -95,13 +124,17 @@ export namespace base {
             ilog("Picked gpu: {}", *m_physical_device);
 
             // create gpu device
-            m_device = TryAssert(gpu::Device::create(*m_physical_device, m_instance), "Failed to initialize gpu device");
+            m_device = TryAssert(gpu::Device::create(m_physical_device), "Failed to initialize gpu device");
 
             // create swapchain
             const auto window_extent = m_window->extent();
             m_swapchain = TryAssert(gpu::SwapChain::create(m_device, m_surface, window_extent), "Failed to create swapchain");
 
-            m_raster_queue = gpu::Queue::create(m_device, m_device->raster_queue_entry());
+            const auto queue_entries = m_device->queue_entries();
+            const auto it            = stdr::find_if(queue_entries, gpu::monadic::find_queue<gpu::QueueFlag::GRAPHICS>());
+            ensures(it != stdr::cend(queue_entries), "No raster queue found!");
+
+            m_raster_queue = gpu::Queue::create(m_device, *it);
 
             m_command_pool = TryAssert(gpu::CommandPool::create(m_device),
                                        "Failed to create raster queue "

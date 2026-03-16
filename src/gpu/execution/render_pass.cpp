@@ -23,7 +23,7 @@ namespace stormkit::gpu {
             return [](auto&& attachment_ref) noexcept -> VkAttachmentReference {
                 return VkAttachmentReference {
                     .attachment = attachment_ref.attachment_id,
-                    .layout     = to_vk<VkImageLayout>(attachment_ref.layout),
+                    .layout     = vk::to_vk<VkImageLayout>(attachment_ref.layout),
                 };
             };
         }
@@ -31,22 +31,22 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto RenderPass::do_init() noexcept -> Expected<void> {
-        const auto attachments = m_description.attachments
-                                 | stdv::transform([](auto&& attachment) static noexcept {
-                                       return VkAttachmentDescription {
-                                           .flags          = 0,
-                                           .format         = to_vk<VkFormat>(attachment.format),
-                                           .samples        = to_vk<VkSampleCountFlagBits>(attachment.samples),
-                                           .loadOp         = to_vk<VkAttachmentLoadOp>(attachment.load_op),
-                                           .storeOp        = to_vk<VkAttachmentStoreOp>(attachment.store_op),
-                                           .stencilLoadOp  = to_vk<VkAttachmentLoadOp>(attachment.stencil_load_op),
-                                           .stencilStoreOp = to_vk<VkAttachmentStoreOp>(attachment.stencil_store_op),
-                                           .initialLayout  = to_vk<VkImageLayout>(attachment.source_layout),
-                                           .finalLayout    = to_vk<VkImageLayout>(attachment.destination_layout),
-                                       };
-                                   })
-                                 | stdr::to<std::vector>();
+    auto RenderPass::do_init(PrivateTag, const RenderPassDescription& description) noexcept -> Expected<void> {
+        m_description = description;
+
+        const auto attachments = transform(m_description.attachments, [](auto&& attachment) static noexcept {
+            return VkAttachmentDescription {
+                .flags          = 0,
+                .format         = vk::to_vk<VkFormat>(attachment.format),
+                .samples        = vk::to_vk<VkSampleCountFlagBits>(attachment.samples),
+                .loadOp         = vk::to_vk<VkAttachmentLoadOp>(attachment.load_op),
+                .storeOp        = vk::to_vk<VkAttachmentStoreOp>(attachment.store_op),
+                .stencilLoadOp  = vk::to_vk<VkAttachmentLoadOp>(attachment.stencil_load_op),
+                .stencilStoreOp = vk::to_vk<VkAttachmentStoreOp>(attachment.stencil_store_op),
+                .initialLayout  = vk::to_vk<VkImageLayout>(attachment.source_layout),
+                .finalLayout    = vk::to_vk<VkImageLayout>(attachment.destination_layout),
+            };
+        });
 
         auto color_attachment_refs   = std::vector<std::vector<VkAttachmentReference>> {};
         auto depth_attachment_ref    = std::optional<VkAttachmentReference> {};
@@ -60,17 +60,15 @@ namespace stormkit::gpu {
         subpasses_deps.reserve(stdr::size(m_description.subpasses));
 
         for (const auto& subpass : m_description.subpasses) {
-            auto& color_attachment_ref   = color_attachment_refs.emplace_back(subpass.color_attachment_refs
-                                                                            | stdv::transform(monadic::vk_ref())
-                                                                            | stdr::to<std::vector>());
-            auto& resolve_attachment_ref = resolve_attachment_refs.emplace_back(subpass.resolve_attachment_refs
-                                                                                | stdv::transform(monadic::vk_ref())
-                                                                                | stdr::to<std::vector>());
+            auto& color_attachment_ref   = color_attachment_refs.emplace_back(transform(subpass.color_attachment_refs,
+                                                                              monadic::vk_ref());
+            auto& resolve_attachment_ref = resolve_attachment_refs.emplace_back(transform(subpass.resolve_attachment_refs,
+                                                                                monadic::vk_ref());
             if (subpass.depth_attachment_ref) depth_attachment_ref = monadic::vk_ref()(*subpass.depth_attachment_ref);
 
             subpasses.emplace_back(VkSubpassDescription {
               .flags                   = 0,
-              .pipelineBindPoint       = to_vk<VkPipelineBindPoint>(subpass.bind_point),
+              .pipelineBindPoint       = vk::to_vk<VkPipelineBindPoint>(subpass.bind_point),
               .inputAttachmentCount    = 0,
               .pInputAttachments       = nullptr,
               .colorAttachmentCount    = as<u32>(stdr::size(color_attachment_ref)),
@@ -104,9 +102,11 @@ namespace stormkit::gpu {
             .pDependencies   = stdr::data(subpasses_deps),
         };
 
-        return vk_call<VkRenderPass>(m_vk_device_table->vkCreateRenderPass, m_vk_device, &create_info, nullptr)
-          .transform(core::monadic::set(m_vk_handle))
-          .transform_error(monadic::from_vk<Result>());
+        const auto& device       = device();
+        const auto& device_table = device.device_table();
+
+        m_vk_handle = Try(vk::call_checked<VkRenderPass>(device_table.vkCreateRenderPass, device, &create_info, nullptr));
+        Return {};
     }
 
     /////////////////////////////////////

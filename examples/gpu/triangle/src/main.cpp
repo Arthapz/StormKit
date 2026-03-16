@@ -29,9 +29,9 @@ struct SubmissionResource {
 };
 
 struct SwapchainImageResource {
-    Ref<const gpu::Image> image;
-    gpu::ImageView        view;
-    gpu::Semaphore        render_finished;
+    gpu::view::Image image;
+    gpu::ImageView   view;
+    gpu::Semaphore   render_finished;
 };
 
 namespace {
@@ -116,20 +116,20 @@ class Application: public base::Application {
             auto view = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view");
 
             m_image_resources
-              .push_back({ .image           = as_ref(swap_image),
+              .push_back({ .image           = swap_image,
                            .view            = std::move(view),
                            .render_finished = TryAssert(gpu::Semaphore::create(m_device),
                                                         "Failed to create render "
                                                         "signal semaphore") });
 
             auto& transition_cmb = transition_cmbs[image_index];
-            TryAssertDiscard(transition_cmb.begin(true), "Failed to begin texture transition command buffer");
+            TryDiscardAssert(transition_cmb.begin(true), "Failed to begin texture transition command buffer");
 
             transition_cmb.begin_debug_region(std::format("transition image {}", image_index))
               .transition_image_layout(swap_image, gpu::ImageLayout::UNDEFINED, gpu::ImageLayout::PRESENT_SRC)
               .end_debug_region();
 
-            TryAssertDiscard(transition_cmb.end(),
+            TryDiscardAssert(transition_cmb.end(),
                              "Failed to begin texture transition command "
                              "buffer");
 
@@ -177,8 +177,8 @@ class Application: public base::Application {
 
         // render in it
         auto& render_cmb = submission_resource.render_cmb;
-        TryAssertDiscard(render_cmb.reset(), "Failed to reset render command buffer");
-        TryAssertDiscard(render_cmb.begin(), "Failed to begin render command buffer");
+        TryDiscardAssert(render_cmb.reset(), "Failed to reset render command buffer");
+        TryDiscardAssert(render_cmb.begin(), "Failed to begin render command buffer");
 
         render_cmb
           .transition_image_layout(swapchain_image_resource.image,
@@ -194,12 +194,12 @@ class Application: public base::Application {
                                    gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                    gpu::ImageLayout::PRESENT_SRC);
 
-        TryAssertDiscard(render_cmb.end(), "Failed to end render command buffer");
-        TryAssertDiscard(render_cmb.submit(m_raster_queue, as_refs(wait), PIPELINE_FLAGS, as_refs(signal), as_ref(in_flight)),
+        TryDiscardAssert(render_cmb.end(), "Failed to end render command buffer");
+        TryDiscardAssert(render_cmb.submit(m_raster_queue, as_refs(wait), PIPELINE_FLAGS, as_refs(signal), as_ref(in_flight)),
                          "Failed to submit render command buffer");
 
         // present it
-        TryAssertDiscard(m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index)),
+        TryDiscardAssert(m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index)),
                          "Failed to present swapchain image");
 
         if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;

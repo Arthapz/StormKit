@@ -197,7 +197,7 @@ namespace stormkit::wsi::linux::wayland {
     auto Window::clear(const ucolor_rgb& color) noexcept -> void {
         const auto value = (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
 
-        auto view = std::span<i32> { std::bit_cast<i32*>(m_shm_buffer.get().begin()), m_shm_buffer->size() / sizeof(i32) };
+        auto view = std::span<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
         stdr::fill(view, value);
 
         const auto [width, height] = extent().to<i32>();
@@ -208,7 +208,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void {
-        auto view = std::span<i32> { std::bit_cast<i32*>(m_shm_buffer.get().begin()), m_shm_buffer->size() / sizeof(i32) };
+        auto view = std::span<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
         stdr::copy(colors | stdv::transform([](const auto& color) static noexcept {
                        return (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
                    }),
@@ -606,7 +606,7 @@ namespace stormkit::wsi::linux::wayland {
         auto old_pixel_buffer = DeferInit<wl::Buffer> {};
 
         const auto [width, height] = extent.to<i32>();
-        if (not m_shm_buffer or stdr::size(m_shm_buffer.get()) < size) {
+        if (not m_shm_buffer or stdr::size(m_shm_buffer.value()) < size) {
             old_shm_buffer   = std::move(m_shm_buffer);
             old_shm_pool     = std::move(m_shm_pool);
             old_pixel_buffer = std::move(m_pixel_buffer);
