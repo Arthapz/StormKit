@@ -302,15 +302,18 @@ export namespace stormkit::gpu {
             auto allocation() const noexcept -> vk::Observer<VmaAllocation>;
 
           private:
-            math::uextent3  m_extent     = { 0, 0, 0 };
-            PixelFormat     m_format     = {};
-            u32             m_layers     = 0;
-            u32             m_faces      = 0;
-            u32             m_mip_levels = 0;
-            ImageType       m_type       = {};
-            ImageCreateFlag m_flags      = {};
-            SampleCountFlag m_samples    = {};
-            ImageUsageFlag  m_usages     = {};
+            math::uextent3 m_extent     = { 0, 0, 0 };
+            PixelFormat    m_format     = {};
+            u32            m_layers     = 0;
+            u32            m_faces      = 0;
+            u32            m_mip_levels = 0;
+            ImageType      m_type       = {};
+            STORMKIT_PUSH_WARNINGS
+#pragma clang diagnostic ignored "-Wunused-private-field"
+            ImageCreateFlag m_flags = {};
+            STORMKIT_POP_WARNINGS
+            SampleCountFlag m_samples = {};
+            ImageUsageFlag  m_usages  = {};
 
             vk::Observer<VmaAllocation> m_vma_allocation = VK_NULL_HANDLE;
         };
