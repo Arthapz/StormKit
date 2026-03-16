@@ -125,7 +125,7 @@ namespace {
     };
 
     constexpr auto VERTICES_SIZE   = sizeof(Vertex) * stdr::size(VERTICES);
-    constexpr auto BUFFERING_COUNT = 2;
+    constexpr auto BUFFERING_COUNT = 2_u32;
     constexpr auto POOL_SIZES      = to_array<gpu::DescriptorPool::Size>({
       {
        .type             = gpu::DescriptorType::UNIFORM_BUFFER,
@@ -145,14 +145,14 @@ class Application: public base::Application {
   public:
     auto init_example() {
         m_descriptor_pool = TryAssert(gpu::DescriptorPool::create(m_device, POOL_SIZES, BUFFERING_COUNT * 2),
-                                      "Failed to create descriptor pool");
+                                      "Failed to create descriptor pool!");
 
         // load shaders
         m_vertex_shader = TryAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::VERTEX),
-                                    std::format("Failed to load vertex shader {}", SHADER.string()));
+                                    std::format("Failed to load vertex shader {}!", SHADER.string()));
 
         m_fragment_shader = TryAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::FRAGMENT),
-                                      std::format("Failed to load fragment shader {}", SHADER.string()));
+                                      std::format("Failed to load fragment shader {}!", SHADER.string()));
 
         m_descriptor_set_layout = TryAssert(gpu::DescriptorSetLayout::
                                               create(m_device,
@@ -162,11 +162,13 @@ class Application: public base::Application {
                                                                       gpu::DescriptorType::COMBINED_IMAGE_SAMPLER,
                                                                       gpu::ShaderStageFlag::FRAGMENT,
                                                                       1 })),
-                                            "Failed to create descriptor set layout");
+                                            "Failed to create descriptor set layout!");
 
-        m_pipeline_layout = TryAssert(gpu::PipelineLayout::create(m_device,
-                                                                  { .descriptor_set_layouts = to_refs(m_descriptor_set_layout) }),
-                                      "Failed to create pipeline layout");
+        m_pipeline_layout = TryAssert(gpu::PipelineLayout::
+                                        create(m_device,
+                                               gpu::RasterPipelineLayout {
+                                                 .descriptor_set_layouts = gpu::to_views(m_descriptor_set_layout) }),
+                                      "Failed to create pipeline layout!");
         // initialize render pass
         const auto depth_format = [this] {
             const auto formats_properties = m_physical_device->formats_properties();
@@ -185,7 +187,7 @@ class Application: public base::Application {
                 }
             }
 
-            ensures(false, "No supported depth format found !");
+            ensures(false, "No supported depth format found!");
             std::unreachable();
         }();
 
@@ -222,7 +224,7 @@ class Application: public base::Application {
                                    .src_alpha_blend_factor = gpu::BlendFactor::SRC_ALPHA,
                                    .dst_alpha_blend_factor = gpu::BlendFactor::ONE_MINUS_SRC_ALPHA,
                                    .alpha_blend_operation  = gpu::BlendOperation::ADD, }, }, },
-            .shader_state  = to_refs(m_vertex_shader, m_fragment_shader),
+            .shader_state  = to_views(m_vertex_shader, m_fragment_shader),
             .vertex_input_state = {
                 .binding_descriptions = into_dyn_array(Vertex::binding_description()),
                 .input_attribute_descriptions = to_dyn_array(Vertex::attribute_descriptions()),
@@ -239,11 +241,11 @@ class Application: public base::Application {
         };
 
         m_pipeline = TryAssert(gpu::Pipeline::create(m_device, state, m_pipeline_layout, rendering_info),
-                               "Failed to create raster pipeline");
+                               "Failed to create raster pipeline!");
 
         // load texture
         auto image = image::Image {};
-        TryAssert(image.load_from_file(TEXTURE), std::format("Failed to load texture file {}", TEXTURE.string()));
+        TryAssert(image.load_from_file(TEXTURE), std::format("Failed to load texture file {}!", TEXTURE.string()));
 
         m_texture = TryAssert(gpu::Image::create(m_device,
                                                  gpu::Image::CreateInfo {
@@ -251,64 +253,68 @@ class Application: public base::Application {
                                                    .format     = gpu::PixelFormat::RGBA8_UNORM,
                                                    .usages     = gpu::ImageUsageFlag::SAMPLED | gpu::ImageUsageFlag::TRANSFER_DST,
                                                    .properties = gpu::MemoryPropertyFlag::DEVICE_LOCAL }),
-                              "Failed to allocate texture");
+                              "Failed to allocate texture!");
 
         {
-            auto cpy_fence      = TryAssert(gpu::Fence::create(m_device), "Failed to create copy texture buffer fence");
+            auto cpy_fence      = TryAssert(gpu::Fence::create(m_device), "Failed to create copy texture buffer fence!");
             auto staging_buffer = TryAssert(gpu::Buffer::create(m_device,
                                                                 gpu::Buffer::CreateInfo {
                                                                   .usages = gpu::BufferUsageFlag::TRANSFER_SRC,
                                                                   .size   = image.size() }),
-                                            "Failed to allocate gpu texture staging buffer");
-            TryAssert(staging_buffer.upload(image.data()), "Failed to upload texture data to staging buffer");
+                                            "Failed to allocate gpu texture staging buffer!");
+            TryAssert(staging_buffer.upload(image.data()), "Failed to upload texture data to staging buffer!");
 
-            const auto copy = std::array {
-                gpu::BufferImageCopy {
-                                      .buffer_offset       = 0,
-                                      .buffer_row_length   = 0,
-                                      .buffer_image_height = 0,
-                                      .subresource_layers  = {},
-                                      .offset              = {},
-                                      .extent              = image.extent() }
-            };
             auto copy_cmb = TryAssert(m_command_pool->create_command_buffer(), "Failed to allocate copy texture buffer");
+            TryDiscardAssert((copy_cmb.record([&](auto cmb) noexcept {
+                                 const auto copy = std::array {
+                                     gpu::BufferImageCopy {
+                                                           .buffer_offset       = 0,
+                                                           .buffer_row_length   = 0,
+                                                           .buffer_image_height = 0,
+                                                           .subresource_layers  = {},
+                                                           .offset              = {},
+                                                           .extent              = image.extent() }
+                                 };
 
-            TryAssert(copy_cmb.begin(), "Failed to begin texture upload command buffer");
+                                 cmb.begin_debug_region("Upload texture data")
+                                   .transition_image_layout(m_texture,
+                                                            gpu::ImageLayout::UNDEFINED,
+                                                            gpu::ImageLayout::TRANSFER_DST_OPTIMAL)
+                                   .copy_buffer_to_image(staging_buffer, m_texture, as_view(copy))
+                                   .end_debug_region()
+                                   .begin_debug_region("Transition texture data")
+                                   .transition_image_layout(m_texture,
+                                                            gpu::ImageLayout::TRANSFER_DST_OPTIMAL,
+                                                            gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL)
+                                   .end_debug_region();
+                             })),
+                             "Failed to record texture upload and transition cmb!");
 
-            copy_cmb.begin_debug_region("Upload texture data")
-              .transition_image_layout(m_texture, gpu::ImageLayout::UNDEFINED, gpu::ImageLayout::TRANSFER_DST_OPTIMAL)
-              .copy_buffer_to_image(staging_buffer, m_texture, as_view(copy))
-              .transition_image_layout(m_texture,
-                                       gpu::ImageLayout::TRANSFER_DST_OPTIMAL,
-                                       gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL)
-              .end_debug_region();
+            TryDiscardAssert(copy_cmb.submit(m_raster_queue, {}, {}, {}, cpy_fence),
+                             "Failed to submit texture upload command buffer!");
 
-            TryDiscardAssert(copy_cmb.end(), "Failed to end texture upload command buffer");
-            TryDiscardAssert(copy_cmb.submit(m_raster_queue, {}, {}, {}, as_ref(cpy_fence)),
-                             "Failed to submit texture upload command buffer");
-
-            TryDiscardAssert(cpy_fence.wait(), "Failed to create texture view");
+            TryDiscardAssert(cpy_fence.wait(), "Failed to create texture view!");
         }
 
-        m_texture_view         = TryAssert(gpu::ImageView::create(m_device, m_texture), "Failed to create texture view");
-        m_sampler              = TryAssert(gpu::Sampler::create(m_device, gpu::Sampler::Settings {}), "Failed to create sampler");
+        m_texture_view = TryAssert(gpu::ImageView::create(m_device, m_texture), "Failed to create texture view!");
+        m_sampler      = TryAssert(gpu::Sampler::create(m_device, gpu::Sampler::Settings {}), "Failed to create sampler!");
         m_submission_resources = std::vector<SubmissionResource> {};
         m_submission_resources.reserve(BUFFERING_COUNT);
 
         for (auto _ : range(BUFFERING_COUNT)) {
             m_submission_resources
-              .push_back({ .in_flight = TryAssert(gpu::Fence::create_signaled(m_device), "Failed to create swapchain image"),
-                           .image_available = TryAssert(gpu::Semaphore::create(m_device), "Failed to create present image"),
-                           .render_cmb      = TryAssert(m_command_pool->create_command_buffer(), "Failed to create buffers"),
+              .push_back({ .in_flight = TryAssert(gpu::Fence::create_signaled(m_device), "Failed to create swapchain image!"),
+                           .image_available = TryAssert(gpu::Semaphore::create(m_device), "Failed to create present image!"),
+                           .render_cmb      = TryAssert(m_command_pool->create_command_buffer(), "Failed to create buffers!"),
                            .viewer_buffer   = TryAssert(gpu::Buffer::create(m_device,
                                                                             gpu::Buffer::CreateInfo {
                                                                               .usages              = gpu::BufferUsageFlag::UNIFORM,
                                                                               .size                = sizeof(ViewerData),
                                                                               .persistently_mapped = true,
                                                                             }),
-                                                        "Failed to allocate gpu viewer buffer"),
+                                                        "Failed to allocate gpu viewer buffer!"),
                            .descriptor_set  = TryAssert(m_descriptor_pool->create_descriptor_set(m_descriptor_set_layout),
-                                                        "Failed to create descriptor set") });
+                                                        "Failed to create descriptor set!") });
             auto&      res  = m_submission_resources.back();
             const auto sets = std::array<gpu::Descriptor, 2> {
                 gpu::BufferDescriptor {
@@ -320,8 +326,8 @@ class Application: public base::Application {
                 gpu::ImageDescriptor {
                                        .binding    = 1,
                                        .layout     = gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
-                                       .image_view = as_ref(m_texture_view),
-                                       .sampler    = as_ref(m_sampler),
+                                       .image_view = gpu::as_view(m_texture_view),
+                                       .sampler    = gpu::as_view(m_sampler),
                                        }
             };
             res.descriptor_set.update(sets);
@@ -331,58 +337,61 @@ class Application: public base::Application {
 
         const auto image_count     = stdr::size(images);
         auto       transition_cmbs = TryAssert(m_command_pool->create_command_buffers(image_count),
-                                               "Failed to create transition command buffers");
+                                               "Failed to create transition command buffers!");
 
         m_image_resources = std::vector<SwapchainImageResource> {};
         m_image_resources.reserve(stdr::size(images));
 
         auto image_index = 0u;
         for (const auto& swap_image : images) {
-            auto view        = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view");
+            auto view        = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view!");
             auto depth_image = TryAssert(gpu::Image::create(m_device,
                                                             gpu::Image::CreateInfo {
                                                               .extent     = swap_image.extent(),
                                                               .format     = depth_format,
                                                               .usages     = gpu::ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT,
                                                               .properties = gpu::MemoryPropertyFlag::DEVICE_LOCAL }),
-                                         "Failed to create depth image");
+                                         "Failed to create depth image!");
 
             auto depth_view = TryAssert(gpu::ImageView::create(m_device,
                                                                depth_image,
                                                                gpu::ImageViewType::T2D,
                                                                gpu::ImageSubresourceRange { .aspect_mask = depth_aspect_flag }),
-                                        "Failed to create depth image view");
+                                        "Failed to create depth image view!");
 
             m_image_resources
               .push_back({ .image           = as_ref(swap_image),
                            .view            = std::move(view),
                            .depth_image     = std::move(depth_image),
                            .depth_view      = std::move(depth_view),
-                           .render_finished = TryAssert(gpu::Semaphore::create(m_device), "Failed to create render") });
+                           .render_finished = TryAssert(gpu::Semaphore::create(m_device), "Failed to create render!") });
 
             const auto& resources = m_image_resources.back();
 
             auto& transition_cmb = transition_cmbs[image_index];
-            TryDiscardAssert(transition_cmb.begin(true), "Failed to begin texture transition command buffer");
-
-            transition_cmb.begin_debug_region(std::format("transition image {}", image_index))
-              .transition_image_layout(swap_image, gpu::ImageLayout::UNDEFINED, gpu::ImageLayout::PRESENT_SRC)
-              .transition_image_layout(resources.depth_image,
-                                       gpu::ImageLayout::UNDEFINED,
-                                       gpu::ImageLayout::ATTACHMENT_OPTIMAL,
-                                       { .aspect_mask = depth_aspect_flag })
-              .end_debug_region();
-
-            TryDiscardAssert(transition_cmb.end(), "Failed to begin texture transition command buffer");
+            TryDiscardAssert((transition_cmb.record([&](auto cmb) noexcept {
+                                 cmb.begin_debug_region(std::format("Transition image {}", image_index))
+                                   .transition_image_layout(swap_image,
+                                                            gpu::ImageLayout::UNDEFINED,
+                                                            gpu::ImageLayout::PRESENT_SRC)
+                                   .end_debug_region()
+                                   .begin_debug_region(std::format("Transition depth image {}", image_index))
+                                   .transition_image_layout(resources.depth_image,
+                                                            gpu::ImageLayout::UNDEFINED,
+                                                            gpu::ImageLayout::ATTACHMENT_OPTIMAL,
+                                                            { .aspect_mask = depth_aspect_flag })
+                                   .end_debug_region();
+                             })),
+                             std::format("Failed to record transition cmb {}!", image_index));
 
             ++image_index;
         }
 
-        const auto fence = TryAssert(gpu::Fence::create(m_device), "Failed to create transition fence");
+        const auto fence = TryAssert(gpu::Fence::create(m_device), "Failed to create transition fence!");
 
-        const auto cmbs = to_refs(transition_cmbs);
-        TryDiscardAssert(m_raster_queue->submit({ .command_buffers = cmbs }, as_ref(fence)),
-                         "Failed to submit texture transition command buffers");
+        const auto cmbs = to_views(transition_cmbs);
+        TryDiscardAssert(m_raster_queue->submit({ .command_buffers = cmbs }, fence),
+                         "Failed to submit texture transition command buffers!");
 
         // setup vertex buffer
         m_vertex_buffer = TryAssert(gpu::Buffer::create(m_device,
@@ -391,18 +400,18 @@ class Application: public base::Application {
                                                                         | gpu::BufferUsageFlag::TRANSFER_DST,
                                                           .size       = VERTICES_SIZE,
                                                           .properties = gpu::MemoryPropertyFlag::DEVICE_LOCAL }),
-                                    "Failed to allocate gpu vertex buffer");
+                                    "Failed to allocate gpu vertex buffer!");
 
         {
             auto staging_buffer = TryAssert(gpu::Buffer::create(m_device,
                                                                 gpu::Buffer::CreateInfo {
                                                                   .usages = gpu::BufferUsageFlag::TRANSFER_SRC,
                                                                   .size   = VERTICES_SIZE }),
-                                            "Failed to allocate gpu vertex staging buffer");
+                                            "Failed to allocate gpu vertex staging buffer!");
 
-            TryAssert(staging_buffer.upload(VERTICES), "Failed to upload vertex data to staging buffer");
+            TryAssert(staging_buffer.upload(VERTICES), "Failed to upload vertex data to staging buffer!");
 
-            auto cpy_fence = TryAssert(gpu::Fence::create(m_device), "Failed to create copy vertex buffer fence");
+            auto cpy_fence = TryAssert(gpu::Fence::create(m_device), "Failed to create copy vertex buffer fence!");
 
             auto copy_cmb = TryAssert(m_command_pool->create_command_buffer(), "Failed to allocate copy vertex buffer");
             TryAssert(copy_cmb.begin(), "Failed to begin vertices upload command buffer");
@@ -412,9 +421,9 @@ class Application: public base::Application {
               .end_debug_region();
 
             TryDiscardAssert(copy_cmb.end(), "Failed to begin vertices upload command buffer");
-            TryDiscardAssert(copy_cmb.submit(m_raster_queue, {}, {}, {}, as_ref(cpy_fence)),
-                             "Failed to submit vertices upload command buffer");
-            TryAssert(cpy_fence.wait(), "Failed to acquire next swapchain image");
+            TryDiscardAssert(copy_cmb.submit(m_raster_queue, {}, {}, {}, cpy_fence),
+                             "Failed to submit vertices upload command buffer!");
+            TryAssert(cpy_fence.wait(), "Failed to acquire next swapchain image!");
         }
 
         TryAssert(fence.wait(), "");
@@ -442,11 +451,11 @@ class Application: public base::Application {
         const auto& wait      = submission_resource.image_available;
         auto&       in_flight = submission_resource.in_flight;
 
-        TryAssert(in_flight.wait(), "Failed to wait in_flight fence");
-        TryAssert(in_flight.reset(), "Failed to reset in_flight fence");
+        TryAssert(in_flight.wait(), "Failed to wait in_flight fence!");
+        TryAssert(in_flight.reset(), "Failed to reset in_flight fence!");
 
         const auto&& [_, image_index] = TryAssert(m_swapchain->acquire_next_image(100ms, wait),
-                                                  "Failed to acquire next swapchain image");
+                                                  "Failed to acquire next swapchain image!");
 
         const auto& swapchain_image_resource = m_image_resources[image_index];
         const auto& signal                   = swapchain_image_resource.render_finished;
@@ -457,7 +466,7 @@ class Application: public base::Application {
           .model = math::rotate(math::fmat4::identity(), time * math::angle::radians(90.f), math::fvec3 { 0.f, 1.f, 0.f });
 
         auto& viewer_buffer = submission_resource.viewer_buffer;
-        TryAssert(viewer_buffer.upload(viewer_data), "Failed to upload texture to gpu");
+        TryAssert(viewer_buffer.upload(viewer_data), "Failed to upload texture to gpu!");
 
         const auto rendering_info = gpu::RenderingInfo {
             .render_area = { .x = 0, .y = 0, .width = window_extent.to<i32>().width, .height = window_extent.to<i32>().height },
@@ -473,32 +482,31 @@ class Application: public base::Application {
         auto&       render_cmb     = submission_resource.render_cmb;
         const auto& descriptor_set = submission_resource.descriptor_set;
 
-        TryDiscardAssert(render_cmb.reset(), "Failed to reset render command buffer");
-        TryDiscardAssert(render_cmb.begin(), "Failed to begin render command buffer");
-
-        render_cmb
-          .transition_image_layout(swapchain_image_resource.image,
-                                   gpu::ImageLayout::PRESENT_SRC,
-                                   gpu::ImageLayout::ATTACHMENT_OPTIMAL)
-          .begin_debug_region("Render textured cube")
-          .begin_rendering(rendering_info)
-          .bind_pipeline(m_pipeline)
-          .bind_vertex_buffers(to_refs(m_vertex_buffer), OFFSETS)
-          .bind_descriptor_sets(m_pipeline, m_pipeline_layout, as_refs(descriptor_set), {})
-          .draw(stdr::size(VERTICES))
-          .end_rendering()
-          .end_debug_region()
-          .transition_image_layout(swapchain_image_resource.image,
-                                   gpu::ImageLayout::ATTACHMENT_OPTIMAL,
-                                   gpu::ImageLayout::PRESENT_SRC);
-
-        TryDiscardAssert(render_cmb.end(), "Failed to end render command buffer");
-        TryDiscardAssert(render_cmb.submit(m_raster_queue, as_refs(wait), PIPELINE_FLAGS, as_refs(signal), as_ref(in_flight)),
-                         "Failed to submit render command buffer");
+        TryAssert(render_cmb.reset(), std::format("Failed to reset render cmb {}!", image_index));
+        TryDiscardAssert((render_cmb.record([&](auto cmb) noexcept {
+                             cmb
+                               .transition_image_layout(gpu::as_view(swapchain_image_resource.image),
+                                                        gpu::ImageLayout::PRESENT_SRC,
+                                                        gpu::ImageLayout::ATTACHMENT_OPTIMAL)
+                               .begin_debug_region("Render cube")
+                               .begin_rendering(rendering_info)
+                               .bind_pipeline(m_pipeline)
+                               .bind_vertex_buffers(gpu::as_views(m_vertex_buffer), OFFSETS)
+                               .bind_descriptor_sets(m_pipeline, m_pipeline_layout, gpu::as_views(descriptor_set), {})
+                               .draw(stdr::size(VERTICES))
+                               .end_rendering()
+                               .end_debug_region()
+                               .transition_image_layout(gpu::as_view(swapchain_image_resource.image),
+                                                        gpu::ImageLayout::ATTACHMENT_OPTIMAL,
+                                                        gpu::ImageLayout::PRESENT_SRC);
+                         })),
+                         std::format("Failed to record render cmb {}!", image_index));
+        TryDiscardAssert(render_cmb.submit(m_raster_queue, gpu::as_views(wait), PIPELINE_FLAGS, gpu::as_views(signal), in_flight),
+                         "Failed to submit render command buffer!");
 
         // present it
-        TryAssert(m_raster_queue->present(as_refs(m_swapchain), as_refs(signal), as_view(image_index)),
-                  "Failed to present swapchain image");
+        TryAssert(m_raster_queue->present(gpu::as_views(m_swapchain), gpu::as_views(signal), as_view(image_index)),
+                  "Failed to present swapchain image!");
 
         if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
     }

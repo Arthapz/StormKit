@@ -31,17 +31,17 @@ namespace stormkit::gpu {
             template<meta::IsOwnedOrView QueueType>
             static auto wait_idle(const QueueType& queue) noexcept -> Expected<void> {
                 const auto& device       = queue.device();
-                const auto& device_table = queue.device_table();
+                const auto& device_table = device.device_table();
 
-                return vk::call_checked(device_table->vkQueueWaitIdle, queue);
+                return vk::call_checked(device_table.vkQueueWaitIdle, queue);
             }
 
             /////////////////////////////////////
             /////////////////////////////////////
             template<meta::IsOwnedOrView QueueType>
-            static auto submit(const QueueType&                   queue,
-                               std::span<const SubmitInfo>&&      submit_infos,
-                               std::optional<const view::Fence>&& fence) noexcept -> Expected<void> {
+            static auto submit(const QueueType&                     queue,
+                               std::span<const Queue::SubmitInfo>&& submit_infos,
+                               std::optional<const view::Fence>&&   fence) noexcept -> Expected<void> {
                 struct SubmitInfoRange {
                     std::span<const VkSemaphore>          wait_semaphores;
                     std::span<const VkPipelineStageFlags> wait_dst_stages;
@@ -131,7 +131,7 @@ namespace stormkit::gpu {
                                                })
                                              | stdr::to<std::vector>();
 
-                const auto vk_fence = core::either(fence, vk::monadic::to_vk(), core::monadic::init<VkFence>(nullptr));
+                const auto vk_fence = either(fence, vk::monadic::to_vk(), core::monadic::init<VkFence>(VK_NULL_HANDLE));
 
                 const auto& device       = queue.device();
                 const auto& device_table = device.device_table();
@@ -204,14 +204,14 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Queue::submit(std::span<const SubmitInfo> submit_infos, std::optional<const view::Fence> fence) const noexcept
+    auto Queue::submit(std::span<const SubmitInfo> submit_infos, std::optional<view::Fence> fence) const noexcept
       -> Expected<void> {
         return QueueAPI::submit(*this, std::move(submit_infos), std::move(fence));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Queue::do_init(const Device::QueueEntry& entry) -> void {
+    auto Queue::do_init(PrivateTag, const Device::QueueEntry& entry) -> void {
         m_entry = entry;
 
         const auto& device       = this->device();
@@ -236,7 +236,7 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto Queue::submit(std::span<const SubmitInfo> submit_infos, std::optional<const view::Fence> fence) const noexcept
+        auto Queue::submit(std::span<const gpu::Queue::SubmitInfo> submit_infos, std::optional<Fence> fence) const noexcept
           -> Expected<void> {
             return QueueAPI::submit(*this, std::move(submit_infos), std::move(fence));
         }

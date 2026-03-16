@@ -101,7 +101,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             FrameBuffer(const gpu::FrameBuffer& of) noexcept;
-            template<cmeta::ContainedOrPointerOf<gpu::FrameBuffer> T>
+            template<cmeta::IsContainerOrPointerOf<gpu::FrameBuffer> T>
             FrameBuffer(const T& of) noexcept;
             ~FrameBuffer() noexcept;
 
@@ -205,7 +205,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             // RenderPass(const gpu::RenderPass& of) noexcept;
-            // template<cmeta::ContainedOrPointerOf<gpu::RenderPass> T>
+            // template<cmeta::IsContainerOrPointerOf<gpu::RenderPass> T>
             // RenderPass(const T& of) noexcept;
             using DeviceObject<gpu::RenderPass>::DeviceObject;
             ~RenderPass() noexcept;
@@ -310,7 +310,7 @@ namespace stormkit::gpu {
 
         ///////////////////////////////////
         ///////////////////////////////////
-        template<cmeta::ContainedOrPointerOf<gpu::FrameBuffer> T>
+        template<cmeta::IsContainerOrPointerOf<gpu::FrameBuffer> T>
         STORMKIT_FORCE_INLINE
         inline FrameBuffer::FrameBuffer(const T& of) noexcept
             : DeviceObject<gpu::FrameBuffer> { of }, m_extent { of->extent() }, m_attachments { of->attachments() } {

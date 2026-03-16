@@ -80,6 +80,8 @@ export namespace stormkit::gpu {
         template<typename T>
         auto map_as(ioffset offset) noexcept -> Expected<Ref<T>>;
 
+        bool mapped() const noexcept;
+
         template<typename Self>
         [[nodiscard]]
         auto data(this Self& self) noexcept -> cmeta::ForwardConst<Self, byte>*;
@@ -136,7 +138,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             Buffer(const gpu::Buffer& of) noexcept;
-            template<cmeta::ContainedOrPointerOf<gpu::Buffer> T>
+            template<cmeta::IsContainerOrPointerOf<gpu::Buffer> T>
             Buffer(const T& of) noexcept;
             ~Buffer() noexcept;
 
@@ -160,6 +162,8 @@ export namespace stormkit::gpu {
 
             template<typename T>
             auto map_as(ioffset offset) noexcept -> Expected<Ref<T>>;
+
+            bool mapped() const noexcept;
 
             template<typename Self>
             [[nodiscard]]
@@ -301,6 +305,13 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::mapped() const noexcept -> bool {
+        return m_mapped_pointer != nullptr;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<typename Self>
     STORMKIT_FORCE_INLINE
     inline auto Buffer::data(this Self& self) noexcept -> cmeta::ForwardConst<Self, byte>* {
@@ -363,13 +374,14 @@ namespace stormkit::gpu {
               m_size { of.size() },
               m_memory_properties { of.memory_properties() },
               m_is_persistently_mapped { of.is_persistently_mapped() },
-              m_mapped_pointer { std::bit_cast<byte*>(of.data()) },
+              m_mapped_pointer { nullptr },
               m_vma_allocation { of.allocation() } {
+            if (of.is_persistently_mapped()) m_mapped_pointer = std::bit_cast<byte*>(of.data());
         }
 
         ///////////////////////////////////
         ///////////////////////////////////
-        template<cmeta::ContainedOrPointerOf<gpu::Buffer> T>
+        template<cmeta::IsContainerOrPointerOf<gpu::Buffer> T>
         STORMKIT_FORCE_INLINE
         inline Buffer::Buffer(const T& of) noexcept
             : DeviceObject<gpu::Buffer> { of },
@@ -377,8 +389,9 @@ namespace stormkit::gpu {
               m_size { of->size() },
               m_memory_properties { of->memory_properties() },
               m_is_persistently_mapped { of->is_persistently_mapped() },
-              m_mapped_pointer { std::bit_cast<byte*>(of->data()) },
+              m_mapped_pointer { nullptr },
               m_vma_allocation { of->allocation() } {
+            if (of->is_persistently_mapped()) m_mapped_pointer = std::bit_cast<byte*>(of->data());
         }
 
         /////////////////////////////////////
@@ -452,6 +465,13 @@ namespace stormkit::gpu {
 
             const auto ptr = Try(map(offset));
             Return     from_bytes_mut<T>(ptr);
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto Buffer::mapped() const noexcept -> bool {
+            return m_mapped_pointer != nullptr;
         }
 
         /////////////////////////////////////

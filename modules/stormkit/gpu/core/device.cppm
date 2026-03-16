@@ -111,7 +111,7 @@ export namespace stormkit::gpu {
         class STORMKIT_GPU_API Device: public PhysicalDeviceObject<gpu::Device> {
           public:
             Device(const gpu::Device& of) noexcept;
-            template<cmeta::ContainedOrPointerOf<gpu::Device> T>
+            template<cmeta::IsContainerOrPointerOf<gpu::Device> T>
             Device(const T& of) noexcept;
             ~Device() noexcept;
 
@@ -163,7 +163,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             DeviceObject(const T& child) noexcept;
-            template<cmeta::ContainedOrPointerOf<T> U>
+            template<cmeta::IsContainerOrPointerOf<T> U>
             DeviceObject(const U& child) noexcept;
             ~DeviceObject() noexcept;
 
@@ -298,7 +298,7 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<cmeta::ContainedOrPointerOf<gpu::Device> T>
+        template<cmeta::IsContainerOrPointerOf<gpu::Device> T>
         STORMKIT_FORCE_INLINE
         inline Device::Device(const T& of) noexcept
             : PhysicalDeviceObject<gpu::Device> { of },
@@ -375,7 +375,7 @@ namespace stormkit::gpu {
         ///////////////////////////////////
         ///////////////////////////////////
         template<typename T>
-        template<cmeta::ContainedOrPointerOf<T> U>
+        template<cmeta::IsContainerOrPointerOf<T> U>
         STORMKIT_FORCE_INLINE
         inline DeviceObject<T>::DeviceObject(const U& child) noexcept
             : PhysicalDeviceObject<T> { child }, m_device { child->device() } {

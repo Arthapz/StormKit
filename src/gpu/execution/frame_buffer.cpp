@@ -4,6 +4,8 @@
 
 module;
 
+#include <stormkit/core/try_expected.hpp>
+
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.execution;
@@ -22,18 +24,18 @@ using namespace std::literals;
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto FrameBuffer::do_init(view::RenderPass&& render_pass,
-                              const math::uextent2&,
-                              std::vector<view::ImageView> attachments) noexcept -> Expected<void> {
+    auto FrameBuffer::do_init(view::RenderPass&&             render_pass,
+                              const math::uextent2&          extent,
+                              std::vector<view::ImageView>&& attachments) noexcept -> Expected<void> {
         m_extent                  = extent;
         m_attachments             = std::move(attachments);
-        const auto vk_attachments = transform(m_attachments, , vk::monadic::to_vk());
+        const auto vk_attachments = transform(m_attachments, vk::monadic::to_vk());
 
         const auto create_info = VkFramebufferCreateInfo {
             .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .pNext           = nullptr,
             .flags           = 0,
-            .renderPass      = vk::to_vk(render_pass),
+            .renderPass      = render_pass,
             .attachmentCount = as<u32>(std::ranges::size(vk_attachments)),
             .pAttachments    = std::ranges::data(vk_attachments),
             .width           = m_extent.width,
@@ -41,7 +43,7 @@ namespace stormkit::gpu {
             .layers          = 1,
         };
 
-        const auto& device       = device();
+        const auto& device       = this->device();
         const auto& device_table = device.device_table();
 
         m_vk_handle = Try(vk::call_checked<VkFramebuffer>(device_table.vkCreateFramebuffer, device, &create_info, nullptr));

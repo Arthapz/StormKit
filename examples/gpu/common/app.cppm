@@ -68,15 +68,15 @@ export namespace base {
         }
 
       protected:
-        DeferInit<wsi::Window>             m_window;
-        DeferInit<gpu::Instance>           m_instance;
-        DeferInit<gpu::DebugCallback>      m_debug_callback;
-        DeferInit<gpu::Surface>            m_surface;
+        DeferInit<wsi::Window>               m_window;
+        DeferInit<gpu::Instance>             m_instance;
+        DeferInit<gpu::DebugCallback>        m_debug_callback;
+        DeferInit<gpu::Surface>              m_surface;
         DeferInit<gpu::view::PhysicalDevice> m_physical_device;
-        DeferInit<gpu::Device>             m_device;
-        DeferInit<gpu::SwapChain>          m_swapchain;
-        DeferInit<gpu::Queue>              m_raster_queue;
-        DeferInit<gpu::CommandPool>        m_command_pool;
+        DeferInit<gpu::Device>               m_device;
+        DeferInit<gpu::SwapChain>            m_swapchain;
+        DeferInit<gpu::Queue>                m_raster_queue;
+        DeferInit<gpu::CommandPool>          m_command_pool;
 
       private:
         auto init_window(std::string_view example_name) noexcept -> void {

@@ -67,7 +67,8 @@ export namespace stormkit::gpu {
   // private:
         // clang-format on
         SwapChain(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, view::Surface&&, const math::uextent2&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, view::Surface&&, const math::uextent2&, VkSwapchainKHR = VK_NULL_HANDLE) noexcept
+          -> Expected<void>;
 
       private:
         math::uextent2 m_extent;
@@ -85,7 +86,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             SwapChain(const gpu::SwapChain& of) noexcept;
-            template<cmeta::ContainedOrPointerOf<gpu::SwapChain> T>
+            template<cmeta::IsContainerOrPointerOf<gpu::SwapChain> T>
             SwapChain(const T& of) noexcept;
             ~SwapChain() noexcept;
 
@@ -161,7 +162,7 @@ namespace stormkit::gpu {
 
         ///////////////////////////////////
         ///////////////////////////////////
-        template<cmeta::ContainedOrPointerOf<gpu::SwapChain> T>
+        template<cmeta::IsContainerOrPointerOf<gpu::SwapChain> T>
         STORMKIT_FORCE_INLINE
         inline SwapChain::SwapChain(const T& of) noexcept
             : view::DeviceObject<gpu::SwapChain> { of }, m_pixel_format { of->pixel_format() }, m_images { of->images() } {

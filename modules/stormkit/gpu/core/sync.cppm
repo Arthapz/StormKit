@@ -185,14 +185,14 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto Device::wait_for_fence(view::Fence fence, const std::chrono::milliseconds& timeout) const noexcept
       -> Expected<Result> {
-        return wait_for_fences(to_views<std::array>(std::move(fence)), true, timeout);
+        return wait_for_fences(as_views(std::move(fence)), true, timeout);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto Device::reset_fence(view::Fence fence) const noexcept -> Expected<void> {
-        return reset_fences(to_views<std::array>(std::move(fence)));
+        return reset_fences(as_views(std::move(fence)));
     }
 
     namespace view {
@@ -201,14 +201,14 @@ namespace stormkit::gpu {
         STORMKIT_FORCE_INLINE
         inline auto Device::wait_for_fence(view::Fence fence, const std::chrono::milliseconds& timeout) const noexcept
           -> Expected<Result> {
-            return wait_for_fences(to_views<std::array>(std::move(fence)), true, timeout);
+            return wait_for_fences(as_views(std::move(fence)), true, timeout);
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
         inline auto Device::reset_fence(view::Fence fence) const noexcept -> Expected<void> {
-            return reset_fences(to_views<std::array>(std::move(fence)));
+            return reset_fences(as_views(std::move(fence)));
         }
     } // namespace view
 } // namespace stormkit::gpu

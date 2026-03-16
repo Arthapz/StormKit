@@ -104,7 +104,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             Shader(const gpu::Shader& of) noexcept;
-            template<cmeta::ContainedOrPointerOf<gpu::Shader> T>
+            template<cmeta::IsContainerOrPointerOf<gpu::Shader> T>
             Shader(const T& of) noexcept;
             ~Shader() noexcept;
 
@@ -258,7 +258,7 @@ namespace stormkit::gpu {
 
         ///////////////////////////////////
         ///////////////////////////////////
-        template<cmeta::ContainedOrPointerOf<gpu::Shader> T>
+        template<cmeta::IsContainerOrPointerOf<gpu::Shader> T>
         STORMKIT_FORCE_INLINE
         inline Shader::Shader(const T& of) noexcept
             : view::DeviceObject<gpu::Shader> { of }, m_type { of->type() } {

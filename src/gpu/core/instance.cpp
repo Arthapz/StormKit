@@ -168,7 +168,7 @@ namespace stormkit::gpu {
     auto Instance::do_retrieve_physical_devices() noexcept -> Expected<void> {
         m_physical_devices = transform(Try(vk::enumerate_checked<VkPhysicalDevice>(vkEnumeratePhysicalDevices, m_vk_handle)),
                                        [this](auto physical_device) noexcept {
-                                           return PhysicalDevice::create(*this, physical_device);
+                                           return PhysicalDevice::create(*this, std::move(physical_device));
                                        });
         Return {};
     }

@@ -19,6 +19,9 @@ import stormkit.core;
 import :structs;
 import :vulkan;
 
+namespace stdr = std::ranges;
+namespace stdv = std::views;
+
 namespace cmeta = stormkit::core::meta;
 
 export namespace stormkit::gpu {
@@ -30,18 +33,19 @@ export namespace stormkit::gpu {
         struct ObjectInfo;
 
         template<typename T>
-        concept HasRequiresInfo = requires(ObjectInfo<T> value) { value; };
+        concept HasRequiresInfo = requires(ObjectInfo<cmeta::CanonicalType<T>> value) { value; };
 
         template<typename T>
         concept CreateAllocateDisabled = HasRequiresInfo<T> and requires() {
-            { ObjectInfo<T>::DISABLE_CREATE_ALLOCATE } -> cmeta::IsBooleanTestable;
-        } and ObjectInfo<T>::DISABLE_CREATE_ALLOCATE;
+            { ObjectInfo<cmeta::CanonicalType<T>>::DISABLE_CREATE_ALLOCATE } -> cmeta::IsBooleanTestable;
+        } and ObjectInfo<cmeta::CanonicalType<T>>::DISABLE_CREATE_ALLOCATE;
 
         template<typename T>
-        concept IsOwnedByOther = HasRequiresInfo<T> and requires(T) { typename ObjectInfo<T>::OwnedBy; };
+        concept IsOwnedByOther = HasRequiresInfo<T> and requires(T) { typename ObjectInfo<cmeta::CanonicalType<T>>::OwnedBy; };
 
         template<typename T>
-        concept IsOwned = HasRequiresInfo<T>;
+        concept IsOwned = HasRequiresInfo<T>
+                          and std::derived_from<cmeta::CanonicalType<T>, Owned<typename ObjectInfo<cmeta::CanonicalType<T>>::Of>>;
     } // namespace meta
 
     template<typename T>
@@ -49,10 +53,10 @@ export namespace stormkit::gpu {
 
     namespace meta {
         template<typename T>
-        concept IsView = not IsOwned<T> and requires(const T& value) {
-            typename T::ElementType;
-            typename T::ViewType;
-            { value.native_handle() } -> cmeta::Is<typename T::ElementType>;
+        concept IsView = not IsOwned<cmeta::CanonicalType<T>> and requires(T value) {
+            typename cmeta::CanonicalType<T>::ElementType;
+            typename cmeta::CanonicalType<T>::ViewType;
+            { value.native_handle() } -> cmeta::Is<typename cmeta::CanonicalType<T>::ElementType>;
         };
 
         template<typename T>
@@ -60,11 +64,11 @@ export namespace stormkit::gpu {
 
         template<typename T, typename... Args>
         concept DoInitReturnExpected = requires(T& foo, Args&&... args) {
-            { foo.do_init(T::PRIVATE, std::forward<Args>(args)...) } -> cmeta::SameAs<Expected<void>>;
+            { foo.do_init(cmeta::CanonicalType<T>::PRIVATE, std::forward<Args>(args)...) } -> cmeta::SameAs<Expected<void>>;
         };
         template<typename T, typename... Args>
         concept DoInitReturnVoid = requires(T& foo, Args&&... args) {
-            { foo.do_init(T::PRIVATE, std::forward<Args>(args)...) } -> cmeta::SameAs<void>;
+            { foo.do_init(cmeta::CanonicalType<T>::PRIVATE, std::forward<Args>(args)...) } -> cmeta::SameAs<void>;
         };
     } // namespace meta
 
@@ -79,7 +83,7 @@ export namespace stormkit::gpu {
         using ViewType    = ObjectInfo::ViewType;
 
         View(const T& of) noexcept;
-        template<cmeta::ContainedOrPointerOf<T> U>
+        template<cmeta::IsContainerOrPointerOf<T> U>
         View(const U& of) noexcept;
         ~View() noexcept;
 
@@ -105,6 +109,7 @@ export namespace stormkit::gpu {
         using ElementType = ObjectInfo::ElementType;
         using DeleterType = ObjectInfo::DeleterType;
         using ViewType    = ObjectInfo::ViewType;
+
         ~Owned() noexcept;
 
         Owned(const Owned&)                             = delete;
@@ -113,14 +118,52 @@ export namespace stormkit::gpu {
         Owned(Owned&&) noexcept;
         auto operator=(Owned&&) noexcept -> Owned&;
 
-        template<typename... Args>
+        template<typename Owner, typename... Args>
+            requires(meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
         [[nodiscard]]
-        static auto create(Args&&... args) noexcept -> decltype(auto)
+        static auto create(Owner&& owner, Args&&... args) noexcept -> Expected<T>
+            requires(not meta::CreateAllocateDisabled<T>);
+
+        template<typename Owner, typename... Args>
+            requires(meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
+        [[nodiscard]]
+        static auto create(Owner&& owner, Args&&... args) noexcept -> T
             requires(not meta::CreateAllocateDisabled<T>);
 
         template<typename... Args>
+            requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
         [[nodiscard]]
-        static auto allocate(Args&&... args) noexcept -> decltype(auto)
+        static auto create(Args&&... args) noexcept -> Expected<T>
+            requires(not meta::CreateAllocateDisabled<T>);
+
+        template<typename... Args>
+            requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
+        [[nodiscard]]
+        static auto create(Args&&... args) noexcept -> T
+            requires(not meta::CreateAllocateDisabled<T>);
+
+        template<typename Owner, typename... Args>
+            requires(meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
+        [[nodiscard]]
+        static auto allocate(Owner&& owner, Args&&... args) noexcept -> Expected<Heap<T>>
+            requires(not meta::CreateAllocateDisabled<T>);
+
+        template<typename Owner, typename... Args>
+            requires(meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
+        [[nodiscard]]
+        static auto allocate(Owner&& owner, Args&&... args) noexcept -> Heap<T>
+            requires(not meta::CreateAllocateDisabled<T>);
+
+        template<typename... Args>
+            requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
+        [[nodiscard]]
+        static auto allocate(Args&&... args) noexcept -> Expected<Heap<T>>
+            requires(not meta::CreateAllocateDisabled<T>);
+
+        template<typename... Args>
+            requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
+        [[nodiscard]]
+        static auto allocate(Args&&... args) noexcept -> Heap<T>
             requires(not meta::CreateAllocateDisabled<T>);
 
         [[nodiscard]]
@@ -139,19 +182,30 @@ export namespace stormkit::gpu {
     };
 
     template<meta::IsView T>
-    auto to_view(T value) noexcept -> T;
+    auto as_view(T&& value) noexcept -> T;
 
     template<meta::IsOwned T>
-    auto to_view(const T& value) noexcept -> typename T::ViewType;
+    auto as_view(const T& value) noexcept -> typename meta::ObjectInfo<cmeta::CanonicalType<T>>::ViewType;
 
-    template<meta::IsOwnedOrView T, cmeta::ContainedOrPointerOf<T> U>
-    auto to_view(const U& value) noexcept -> typename T::ViewType;
+    template<cmeta::IsPointer T>
+    auto as_view(const T& value) noexcept -> typename meta::ObjectInfo<cmeta::CanonicalType<cmeta::PointedType<T>>>::ViewType;
+
+    template<cmeta::IsContainer T>
+    auto as_view(const T& value) noexcept -> typename meta::ObjectInfo<cmeta::CanonicalType<cmeta::ContainedType<T>>>::ViewType;
 
     template<template<typename, std::size_t> class Out = std::array, typename... Args>
-    auto to_views(const Args&... args) noexcept -> decltype(auto);
+        requires(not stdr::range<Args> and ...)
+    auto as_views(Args&&... args) noexcept -> decltype(auto);
 
     template<template<typename...> class Out = std::vector, typename... Args>
-    auto to_views(const Args&... args) noexcept -> decltype(auto);
+        requires(not stdr::range<Args> and ...)
+    auto to_views(Args&&... args) noexcept -> decltype(auto);
+
+    template<template<typename...> class Out = std::vector, stdr::range Range>
+    auto to_views(const Range& range) noexcept -> decltype(auto);
+
+    template<meta::IsOwned T, typename FormatContext>
+    auto format_as(const T& object, FormatContext& ctx) noexcept -> decltype(ctx.out());
 } // namespace stormkit::gpu
 
 ////////////////////////////////////////////////////////////////////
@@ -164,7 +218,7 @@ namespace stormkit::gpu {
     template<typename T>
     STORMKIT_FORCE_INLINE
     inline Owned<T>::Owned(DeleterType&& deleter_ptr) noexcept
-        : m_deleter_ptr { std::move(deleter_ptr) } {
+        : m_vk_handle { VK_NULL_HANDLE }, m_deleter_ptr { std::move(deleter_ptr) } {
     }
 
     /////////////////////////////////////
@@ -182,8 +236,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline Owned<T>::Owned(Owned&& other) noexcept
-        : m_vk_handle { std::exchange(other.m_vk_handle, VK_NULL_HANDLE) }, m_deleter_ptr { std::move(other.m_deleter_ptr) } {
+    inline Owned<T>::Owned(Owned<T>&& other) noexcept
+        : m_vk_handle { std::exchange(other.m_vk_handle, VK_NULL_HANDLE) },
+          m_deleter_ptr { std::exchange(other.m_deleter_ptr, {}) } {
     }
 
     /////////////////////////////////////
@@ -195,7 +250,7 @@ namespace stormkit::gpu {
             return *this;
 
         m_vk_handle   = std::exchange(other.m_vk_handle, VK_NULL_HANDLE);
-        m_deleter_ptr = std::move(other.m_deleter_ptr);
+        m_deleter_ptr = std::exchange(other.m_deleter_ptr, {});
 
         return *this;
     }
@@ -220,79 +275,113 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    template<typename... Args>
+    template<typename Owner, typename... Args>
+        requires(meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
         STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::create(Args&&... args) noexcept -> decltype(auto)
+    inline auto Owned<T>::create(Owner&& owner, Args&&... args) noexcept -> Expected<T>
         requires(not meta::CreateAllocateDisabled<T>)
     {
-        if constexpr (meta::IsOwnedByOther<T>) {
-            auto out = T { PRIVATE, std::forward<Args...[0]>(args...[0]) };
-            return []<typename... Args2>(auto&& out, auto&&, Args2&&... args2) static noexcept -> decltype(auto) {
-                if constexpr (meta::DoInitReturnExpected<T, Args2...>) {
-                    auto out_expected = Expected<T> { std::in_place, std::move(out) };
-                    if (auto result = out.do_init(PRIVATE, std::forward<Args2>(args2)...); not result)
-                        out_expected = std::unexpected { std::move(result).error() };
+        auto out = T { PRIVATE, std::forward<Owner>(owner) };
+        Try(out.do_init(PRIVATE, std::forward<Args>(args)...));
+        Return out;
+    }
 
-                    return out_expected;
-                } else if constexpr (meta::DoInitReturnVoid<T, Args2...>) {
-                    out.do_init(PRIVATE, std::forward<Args2>(args2)...);
-                    return out;
-                }
-            }(std::move(out), std::forward<Args>(args)...);
-        } else {
-            auto out = T { PRIVATE };
-            if constexpr (meta::DoInitReturnExpected<T, Args...>) {
-                auto out_expected = Expected<T> { std::in_place, std::move(out) };
-                if (auto result = out.do_init(PRIVATE, std::forward<Args>(args)...); not result)
-                    out_expected = std::unexpected { std::move(result).error() };
-
-                return out_expected;
-            } else if constexpr (meta::DoInitReturnVoid<T, Args...>) {
-                out.do_init(PRIVATE, std::forward<Args>(args)...);
-                return out;
-            }
-        }
-
-        std::unreachable();
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    template<typename Owner, typename... Args>
+        requires(meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
+        STORMKIT_FORCE_INLINE
+    inline auto Owned<T>::create(Owner&& owner, Args&&... args) noexcept -> T
+        requires(not meta::CreateAllocateDisabled<T>)
+    {
+        auto out = T { PRIVATE, std::forward<Owner>(owner) };
+        out.do_init(PRIVATE, std::forward<Args>(args)...);
+        return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
     template<typename... Args>
+        requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
         STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::allocate(Args&&... args) noexcept -> decltype(auto)
+    inline auto Owned<T>::create(Args&&... args) noexcept -> Expected<T>
         requires(not meta::CreateAllocateDisabled<T>)
     {
-        if constexpr (meta::IsOwnedByOther<T>) {
-            auto out = core::allocate_unsafe<T>(PRIVATE, std::forward<Args...[0]>(args...[0]));
-            return []<typename... Args2>(auto&& out, auto&&, Args2&&... args2) static noexcept -> Expected<Heap<T>> {
-                if constexpr (meta::DoInitReturnExpected<T, Args2...>) {
-                    auto out_expected = Expected<Heap<T>> { std::in_place, std::move(out) };
-                    if (auto result = out->do_init(PRIVATE, std::forward<Args2>(args2)...); not result)
-                        out_expected = std::unexpected { std::move(result).error() };
+        auto out = T { PRIVATE };
+        Try(out.do_init(PRIVATE, std::forward<Args>(args)...));
+        Return out;
+    }
 
-                    return out_expected;
-                } else if constexpr (meta::DoInitReturnVoid<T, Args2...>) {
-                    out->do_init(PRIVATE, std::forward<Args2>(args2)...);
-                    return out;
-                }
-            }(std::move(out), std::forward<Args>(args)...);
-        } else {
-            auto out = core::allocate_unsafe(PRIVATE);
-            if constexpr (meta::DoInitReturnExpected<T, Args...>) {
-                auto out_expected = Expected<Heap<T>> { std::in_place, std::move(out) };
-                if (auto result = out.do_init(PRIVATE, std::forward<Args>(args)...); not result)
-                    out_expected = std::unexpected { std::move(result).error() };
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    template<typename... Args>
+        requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
+        STORMKIT_FORCE_INLINE
+    inline auto Owned<T>::create(Args&&... args) noexcept -> T
+        requires(not meta::CreateAllocateDisabled<T>)
+    {
+        auto out = T { PRIVATE };
+        out.do_init(PRIVATE, std::forward<Args>(args)...);
+        return out;
+    }
 
-                return out_expected;
-            } else if constexpr (meta::DoInitReturnVoid<T, Args...>) {
-                out->do_init(PRIVATE, std::forward<Args>(args)...);
-                return out;
-            }
-        }
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    template<typename Owner, typename... Args>
+        requires(meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
+        STORMKIT_FORCE_INLINE
+    inline auto Owned<T>::allocate(Owner&& owner, Args&&... args) noexcept -> Expected<Heap<T>>
+        requires(not meta::CreateAllocateDisabled<T>)
+    {
+        auto out = core::allocate_unsafe<T>(PRIVATE, std::forward<Owner>(owner));
+        Try(out->do_init(PRIVATE, std::forward<Args>(args)...));
+        Return out;
+    }
 
-        std::unreachable();
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    template<typename Owner, typename... Args>
+        requires(meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
+        STORMKIT_FORCE_INLINE
+    inline auto Owned<T>::allocate(Owner&& owner, Args&&... args) noexcept -> Heap<T>
+        requires(not meta::CreateAllocateDisabled<T>)
+    {
+        auto out = core::allocate_unsafe<T>(PRIVATE, std::forward<Owner>(owner));
+        out->do_init(PRIVATE, std::forward<Args>(args)...);
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    template<typename... Args>
+        requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
+        STORMKIT_FORCE_INLINE
+    inline auto Owned<T>::allocate(Args&&... args) noexcept -> Expected<Heap<T>>
+        requires(not meta::CreateAllocateDisabled<T>)
+    {
+        auto out = core::allocate_unsafe<T>(PRIVATE);
+        Try(out->do_init(PRIVATE, std::forward<Args>(args)...));
+        Return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    template<typename... Args>
+        requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
+        STORMKIT_FORCE_INLINE
+    inline auto Owned<T>::allocate(Args&&... args) noexcept -> Heap<T>
+        requires(not meta::CreateAllocateDisabled<T>)
+    {
+        auto out = core::allocate_unsafe<T>(PRIVATE);
+        out->do_init(PRIVATE, std::forward<Args>(args)...);
+        return out;
     }
 
     /////////////////////////////////////
@@ -307,7 +396,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    template<cmeta::ContainedOrPointerOf<T> U>
+    template<cmeta::IsContainerOrPointerOf<T> U>
     STORMKIT_FORCE_INLINE
     inline View<T>::View(const U& object) noexcept
         : m_vk_handle { object->native_handle() } {
@@ -365,7 +454,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<meta::IsView T>
     STORMKIT_FORCE_INLINE
-    inline auto to_view(T&& value) noexcept -> T {
+    inline auto as_view(T&& value) noexcept -> T {
         return std::forward<T>(value);
     }
 
@@ -373,31 +462,61 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<meta::IsOwned T>
     STORMKIT_FORCE_INLINE
-    inline auto to_view(const T& value) noexcept -> typename T::ViewType {
-        return typename T::ViewType { value };
+    inline auto as_view(const T& value) noexcept -> typename meta::ObjectInfo<cmeta::CanonicalType<T>>::ViewType {
+        return typename meta::ObjectInfo<T>::ViewType { value };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsOwnedOrView T, cmeta::ContainedOrPointerOf<T> U>
+    template<cmeta::IsPointer T>
     STORMKIT_FORCE_INLINE
-    inline auto to_view(const U& value) noexcept -> typename T::ViewType {
-        return to_view(*value);
+    inline auto as_view(const T& value) noexcept ->
+      typename meta::ObjectInfo<cmeta::CanonicalType<cmeta::PointedType<T>>>::ViewType {
+        return as_view(unref(value));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> class Out = std::array, typename... Args>
+    template<cmeta::IsContainer T>
     STORMKIT_FORCE_INLINE
-    inline auto to_views(Args&&... args) noexcept -> decltype(auto) {
-        return Out { to_view(std::forward<Args>(args))... };
+    inline auto as_view(const T& value) noexcept ->
+      typename meta::ObjectInfo<cmeta::CanonicalType<cmeta::ContainedType<T>>>::ViewType {
+        return as_view(value.value());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<typename, std::size_t> class Out, typename... Args>
+        requires(not stdr::range<Args> and ...)
+    STORMKIT_FORCE_INLINE
+    inline auto as_views(Args&&... args) noexcept -> decltype(auto) {
+        return Out { gpu::as_view(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename...> class Out = std::vector, typename... Args>
+        requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
-    inline auto to_views(const Args&... args) noexcept -> decltype(auto) {
-        return Out { to_view(std::forward<Args>(args))... };
+    inline auto to_views(Args&&... args) noexcept -> decltype(auto) {
+        return Out { gpu::as_view(std::forward<Args>(args))... };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<typename...> class Out, stdr::range Range>
+    STORMKIT_FORCE_INLINE
+    inline auto to_views(const Range& range) noexcept -> decltype(auto) {
+        return range
+               | stdv::transform([]<typename T>(T&& val) static noexcept { return gpu::as_view(std::forward<T>(val)); })
+               | stdr::to<Out>();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsOwned T, typename FormatContext>
+    STORMKIT_FORCE_INLINE
+    inline auto format_as(const T& object, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
+        return format_as(as_view(object), ctx);
     }
 } // namespace stormkit::gpu

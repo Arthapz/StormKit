@@ -89,7 +89,7 @@ export namespace stormkit::gpu {
     };
 
     using RasterPipelineDynamicState = std::vector<DynamicState>;
-    using RasterPipelineShaderState  = std::vector<Ref<const Shader>>;
+    using RasterPipelineShaderState  = std::vector<view::Shader>;
 
     struct RasterPipelineDepthStencilState {
         bool depth_test_enable  = false;
@@ -111,8 +111,8 @@ export namespace stormkit::gpu {
     };
 
     struct RasterPipelineLayout {
-        std::vector<Ref<const DescriptorSetLayout>> descriptor_set_layouts = {};
-        std::vector<PushConstantRange>              push_constant_ranges   = {};
+        std::vector<view::DescriptorSetLayout> descriptor_set_layouts = {};
+        std::vector<PushConstantRange>         push_constant_ranges   = {};
     };
 
     struct RasterPipelineState {

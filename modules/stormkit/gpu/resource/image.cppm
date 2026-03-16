@@ -123,7 +123,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             Sampler(const gpu::Sampler& of) noexcept;
-            template<cmeta::ContainedOrPointerOf<gpu::Sampler> T>
+            template<cmeta::IsContainerOrPointerOf<gpu::Sampler> T>
             Sampler(const T& of) noexcept;
             ~Sampler() noexcept;
 
@@ -176,7 +176,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             ImageView(const gpu::ImageView& of) noexcept;
-            template<cmeta::ContainedOrPointerOf<gpu::ImageView> T>
+            template<cmeta::IsContainerOrPointerOf<gpu::ImageView> T>
             ImageView(const T& of) noexcept;
             ~ImageView() noexcept;
 
@@ -272,7 +272,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             Image(const gpu::Image& of) noexcept;
-            template<cmeta::ContainedOrPointerOf<gpu::Image> T>
+            template<cmeta::IsContainerOrPointerOf<gpu::Image> T>
             Image(const T& of) noexcept;
             ~Image() noexcept;
 
@@ -378,7 +378,7 @@ namespace stormkit::gpu {
 
         ///////////////////////////////////
         ///////////////////////////////////
-        template<cmeta::ContainedOrPointerOf<gpu::Sampler> T>
+        template<cmeta::IsContainerOrPointerOf<gpu::Sampler> T>
         STORMKIT_FORCE_INLINE
         inline Sampler::Sampler(const T& of) noexcept
             : view::DeviceObject<gpu::Sampler> { of }, m_settings { of->settings() } {
@@ -463,7 +463,7 @@ namespace stormkit::gpu {
 
         ///////////////////////////////////
         ///////////////////////////////////
-        template<cmeta::ContainedOrPointerOf<gpu::ImageView> T>
+        template<cmeta::IsContainerOrPointerOf<gpu::ImageView> T>
         STORMKIT_FORCE_INLINE
         inline ImageView::ImageView(const T& of) noexcept
             : view::DeviceObject<gpu::ImageView> { of }, m_type { of.type() }, m_subresource_range { of.subresource_range() } {
@@ -644,7 +644,7 @@ namespace stormkit::gpu {
 
         ///////////////////////////////////
         ///////////////////////////////////
-        template<cmeta::ContainedOrPointerOf<gpu::Image> T>
+        template<cmeta::IsContainerOrPointerOf<gpu::Image> T>
         STORMKIT_FORCE_INLINE
         inline Image::Image(const T& of) noexcept
             : view::DeviceObject<gpu::Image> { of },

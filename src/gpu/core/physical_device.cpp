@@ -370,7 +370,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto score_physical_device(const view::PhysicalDevice& physical_device) noexcept -> u64 {
+    auto score_physical_device(view::PhysicalDevice physical_device) noexcept -> u64 {
         const auto support_raytracing = physical_device.check_extension_support(RAYTRACING_EXTENSIONS);
 
         auto score = u64 { 0u };
@@ -421,55 +421,18 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PhysicalDevice::info() const noexcept -> const PhysicalDeviceInfo& {
-        if (stdr::empty(m_device_info.device_name)) m_device_info = PhysicalDeviceAPI::info(*this);
+    auto PhysicalDevice::do_init(PrivateTag, VkPhysicalDevice&& physical_device) noexcept -> void {
+        m_vk_handle = std::move(physical_device);
 
-        return m_device_info;
-    }
+        m_data = core::allocate_unsafe<Data>(Data {
+          .device_info  = PhysicalDeviceAPI::info(*this),
+          .capabilities = PhysicalDeviceAPI::capabilities(*this),
+        });
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto PhysicalDevice::capabilities() const noexcept -> const RenderCapabilities& {
-        if (m_capabilities.limits.max_image_dimension_2D == 0) [[unlikely]]
-            m_capabilities = PhysicalDeviceAPI::capabilities(*this);
-
-        return m_capabilities;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto PhysicalDevice::memory_types() const noexcept -> const std::vector<MemoryPropertyFlag>& {
-        if (stdr::empty(m_memory_types)) [[unlikely]]
-            m_memory_types = PhysicalDeviceAPI::memory_types(*this);
-
-        return m_memory_types;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto PhysicalDevice::queue_families() const noexcept -> const std::vector<QueueFamily>& {
-        if (stdr::empty(m_queue_families)) [[unlikely]]
-            m_queue_families = PhysicalDeviceAPI::queue_families(*this);
-
-        return m_queue_families;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto PhysicalDevice::extensions() const noexcept -> const std::vector<std::string>& {
-        if (stdr::empty(m_extensions)) [[unlikely]]
-            m_extensions = PhysicalDeviceAPI::extensions(*this);
-
-        return m_extensions;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto PhysicalDevice::formats_properties() const noexcept -> const std::vector<std::pair<PixelFormat, FormatProperties>>& {
-        if (stdr::empty(m_format_properties)) [[unlikely]]
-            m_format_properties = PhysicalDeviceAPI::formats_properties(*this);
-
-        return m_format_properties;
+        m_memory_types      = PhysicalDeviceAPI::memory_types(*this);
+        m_extensions        = PhysicalDeviceAPI::extensions(*this);
+        m_queue_families    = PhysicalDeviceAPI::queue_families(*this);
+        m_format_properties = PhysicalDeviceAPI::formats_properties(*this);
     }
 
     namespace view {
@@ -489,59 +452,6 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         auto PhysicalDevice::check_extension_support(std::span<const CZString> extensions) const noexcept -> bool {
             return PhysicalDeviceAPI::check_extension_support(*this, std::move(extensions));
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto PhysicalDevice::info() const noexcept -> const PhysicalDeviceInfo& {
-            if (stdr::empty(m_device_info.device_name)) m_device_info = PhysicalDeviceAPI::info(*this);
-
-            return m_device_info;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto PhysicalDevice::capabilities() const noexcept -> const RenderCapabilities& {
-            if (m_capabilities.limits.max_image_dimension_2D == 0) [[unlikely]]
-                m_capabilities = PhysicalDeviceAPI::capabilities(*this);
-
-            return m_capabilities;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto PhysicalDevice::memory_types() const noexcept -> const std::vector<MemoryPropertyFlag>& {
-            if (stdr::empty(m_memory_types)) [[unlikely]]
-                m_memory_types = PhysicalDeviceAPI::memory_types(*this);
-
-            return m_memory_types;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto PhysicalDevice::queue_families() const noexcept -> const std::vector<QueueFamily>& {
-            if (stdr::empty(m_queue_families)) [[unlikely]]
-                m_queue_families = PhysicalDeviceAPI::queue_families(*this);
-
-            return m_queue_families;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto PhysicalDevice::extensions() const noexcept -> const std::vector<std::string>& {
-            if (stdr::empty(m_extensions)) [[unlikely]]
-                m_extensions = PhysicalDeviceAPI::extensions(*this);
-
-            return m_extensions;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto PhysicalDevice::formats_properties() const noexcept -> const std::vector<std::pair<PixelFormat, FormatProperties>>& {
-            if (stdr::empty(m_format_properties)) [[unlikely]]
-                m_format_properties = PhysicalDeviceAPI::formats_properties(*this);
-
-            return m_format_properties;
         }
     } // namespace view
 } // namespace stormkit::gpu

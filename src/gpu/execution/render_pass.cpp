@@ -4,6 +4,8 @@
 
 module;
 
+#include <stormkit/core/try_expected.hpp>
+
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.execution;
@@ -60,10 +62,10 @@ namespace stormkit::gpu {
         subpasses_deps.reserve(stdr::size(m_description.subpasses));
 
         for (const auto& subpass : m_description.subpasses) {
-            auto& color_attachment_ref   = color_attachment_refs.emplace_back(transform(subpass.color_attachment_refs,
-                                                                              monadic::vk_ref());
-            auto& resolve_attachment_ref = resolve_attachment_refs.emplace_back(transform(subpass.resolve_attachment_refs,
-                                                                                monadic::vk_ref());
+            auto& color_attachment_ref   = color_attachment_refs
+                                             .emplace_back(transform(subpass.color_attachment_refs, monadic::vk_ref()));
+            auto& resolve_attachment_ref = resolve_attachment_refs
+                                             .emplace_back(transform(subpass.resolve_attachment_refs, monadic::vk_ref()));
             if (subpass.depth_attachment_ref) depth_attachment_ref = monadic::vk_ref()(*subpass.depth_attachment_ref);
 
             subpasses.emplace_back(VkSubpassDescription {
@@ -102,7 +104,7 @@ namespace stormkit::gpu {
             .pDependencies   = stdr::data(subpasses_deps),
         };
 
-        const auto& device       = device();
+        const auto& device       = this->device();
         const auto& device_table = device.device_table();
 
         m_vk_handle = Try(vk::call_checked<VkRenderPass>(device_table.vkCreateRenderPass, device, &create_info, nullptr));

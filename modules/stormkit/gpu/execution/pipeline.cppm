@@ -32,21 +32,22 @@ export namespace stormkit::gpu {
     class PipelineLayout;
 
     namespace view {
-        class PipelineCache;
+        using PipelineCache  = DeviceObject<PipelineCache>;
+        using PipelineLayout = DeviceObject<PipelineLayout>;
         class Pipeline;
-        class PipelineLayout;
     } // namespace view
 
     namespace meta {
         template<>
         struct ObjectInfo<PipelineCache> {
             using Of          = PipelineCache;
-            using ElementType = VkFramebuffer;
-            using DeleterType = PFN_vkDestroyFramebuffer VolkDeviceTable::*;
+            using ElementType = VkPipelineCache;
+            using DeleterType = PFN_vkDestroyPipelineCache VolkDeviceTable::*;
             using ViewType    = view::PipelineCache;
             using OwnedBy     = Device;
 
-            static constexpr auto DEBUG_TYPE = DebugObjectType::PIPELINE_CACHE;
+            static constexpr auto DISABLE_CREATE_ALLOCATE = true;
+            static constexpr auto DEBUG_TYPE              = DebugObjectType::PIPELINE_CACHE;
         };
 
         template<>
@@ -72,13 +73,15 @@ export namespace stormkit::gpu {
         };
     } // namespace meta
 
-    class STORMKIT_GPU_API PipelineCache: public OwnedByDevice<Device> {
+    class STORMKIT_GPU_API PipelineCache: public OwnedByDevice<PipelineCache> {
       public:
         using LoadSaveError = DecoratedError<std::variant<core::SystemError, Result>>;
         template<typename T>
         using LoadSaveExpected = core::Expected<T, LoadSaveError>;
 
-        static auto load_from_file(const Device& device, stdfs::path cache_path) noexcept -> LoadSaveExpected<PipelineCache>;
+        static auto load_from_file(view::Device device, stdfs::path cache_path) noexcept -> LoadSaveExpected<PipelineCache>;
+        static auto allocate_load_from_file(view::Device device, stdfs::path cache_path) noexcept
+          -> LoadSaveExpected<Heap<PipelineCache>>;
         ~PipelineCache() noexcept;
 
         PipelineCache(const PipelineCache&)                    = delete;
@@ -87,12 +90,15 @@ export namespace stormkit::gpu {
         PipelineCache(PipelineCache&&) noexcept;
         auto operator=(PipelineCache&&) noexcept -> PipelineCache&;
 
+        // clang-format off
+  // private:
+        // clang-format on
         PipelineCache(PrivateTag, view::Device&&) noexcept;
         auto do_init(PrivateTag, stdfs::path&&) noexcept -> LoadSaveExpected<void>;
 
       private:
-        auto create_new_pipeline_cache(const Device&) noexcept -> LoadSaveExpected<void>;
-        auto read_pipeline_cache(const Device&) noexcept -> LoadSaveExpected<void>;
+        auto create_new_pipeline_cache() noexcept -> LoadSaveExpected<void>;
+        auto read_pipeline_cache() noexcept -> LoadSaveExpected<void>;
         auto save_cache() noexcept -> LoadSaveExpected<void>;
 
         static constexpr auto MAGIC   = u32 { 0xDEADBEEF };
@@ -119,11 +125,7 @@ export namespace stormkit::gpu {
         stdfs::path m_path;
     };
 
-    namespace view {
-        using PipelineCache = DeviceObject<PipelineCache>;
-    }
-
-    class STORMKIT_GPU_API PipelineLayout {
+    class STORMKIT_GPU_API PipelineLayout: public OwnedByDevice<PipelineLayout> {
       public:
         ~PipelineLayout() noexcept;
 
@@ -139,18 +141,14 @@ export namespace stormkit::gpu {
         // clang-format off
   // private:
         // clang-format on
-        PipelineLayout(view::Device&& device) noexcept;
+        PipelineLayout(PrivateTag, view::Device&& device) noexcept;
         auto do_init(PrivateTag, const RasterPipelineLayout&) noexcept -> Expected<void>;
 
       private:
         RasterPipelineLayout m_layout;
     };
 
-    namespace view {
-        using PipelineLayout = DeviceObject<PipelineLayout>;
-    }
-
-    class STORMKIT_GPU_API Pipeline {
+    class STORMKIT_GPU_API Pipeline: public OwnedByDevice<Pipeline> {
       public:
         enum class Type {
             RASTER,
@@ -177,19 +175,46 @@ export namespace stormkit::gpu {
         Pipeline(PrivateTag, view::Device&&) noexcept;
         auto do_init(PrivateTag,
                      const RasterPipelineState&,
-                     const PipelineLayout&,
-                     std::optional<RasterPipelineRenderingInfo>,
-                     std::optional<view::PipelineCache>) noexcept -> Expected<void>;
+                     view::PipelineLayout&&,
+                     const RasterPipelineRenderingInfo&,
+                     std::optional<view::PipelineCache>&& = std::nullopt) noexcept -> Expected<void>;
         auto do_init(PrivateTag,
                      const RasterPipelineState&,
-                     const PipelineLayout&,
-                     std::optional<view::RenderPass>,
-                     std::optional<view::PipelineCache>) noexcept -> Expected<void>;
+                     view::PipelineLayout&&,
+                     view::RenderPass&&,
+                     std::optional<view::PipelineCache>&& = std::nullopt) noexcept -> Expected<void>;
 
       private:
         Type                              m_type;
         std::variant<RasterPipelineState> m_state;
     };
+
+    namespace view {
+        class STORMKIT_GPU_API Pipeline: public DeviceObject<gpu::Pipeline> {
+          public:
+            using ObjectInfo  = typename meta::ObjectInfo<gpu::Pipeline>;
+            using ElementType = ObjectInfo::ElementType;
+            using ViewType    = ObjectInfo::ViewType;
+
+            Pipeline(const gpu::Pipeline& of) noexcept;
+            template<cmeta::IsContainerOrPointerOf<gpu::Pipeline> T>
+            Pipeline(const T& of) noexcept;
+            ~Pipeline() noexcept;
+
+            Pipeline(const Pipeline&) noexcept;
+            auto operator=(const Pipeline&) noexcept -> Pipeline&;
+
+            Pipeline(Pipeline&&) noexcept;
+            auto operator=(Pipeline&&) noexcept -> Pipeline&;
+
+            [[nodiscard]]
+            auto type() const noexcept -> gpu::Pipeline::Type;
+
+          private:
+            gpu::Pipeline::Type m_type;
+        };
+    } // namespace view
+
 } // namespace stormkit::gpu
 
 ////////////////////////////////////////////////////////////////////
@@ -200,13 +225,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline PipelineCache::PipelineCache(const Device& device, stdfs::path path, PrivateFuncTag) noexcept
-        : m_path { std::move(path) },
-          m_vk_device { device.native_handle() },
-          m_vk_device_table { as_ref(device.device_table()) },
-          m_vk_handle { { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto handle) noexcept {
-              vk_device_table.vkDestroyPipelineCache(vk_device, handle, nullptr);
-          } } } {
+    inline PipelineCache::PipelineCache(PrivateTag, view::Device&& device) noexcept
+        : OwnedByDevice<PipelineCache> { std::move(device), &VolkDeviceTable::vkDestroyPipelineCache } {
     }
 
     /////////////////////////////////////
@@ -222,37 +242,28 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto PipelineCache::load_from_file(const Device& device, stdfs::path cache_path) noexcept
+    inline auto PipelineCache::load_from_file(view::Device device, stdfs::path cache_path) noexcept
       -> LoadSaveExpected<PipelineCache> {
-        auto cache = PipelineCache { device, std::move(cache_path), PrivateFuncTag {} };
-        Try(cache.do_init(device));
+        auto cache = PipelineCache { PRIVATE, std::move(device) };
+        Try(cache.do_init(PRIVATE, std::move(cache_path)));
         Return cache;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto PipelineCache::native_handle() const noexcept -> VkPipelineCache {
-        return m_vk_handle;
+    inline auto PipelineCache::allocate_load_from_file(view::Device device, stdfs::path cache_path) noexcept
+      -> LoadSaveExpected<Heap<PipelineCache>> {
+        auto cache = core::allocate_unsafe<PipelineCache>(PRIVATE, std::move(device));
+        Try(cache->do_init(PRIVATE, std::move(cache_path)));
+        Return cache;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto PipelineCache::do_init(const Device& device) noexcept -> LoadSaveExpected<void> {
-        Return read_pipeline_cache(device);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline PipelineLayout::PipelineLayout(const Device& device, const RasterPipelineLayout& layout, PrivateFuncTag) noexcept
-        : m_layout { layout },
-          m_vk_device { device.native_handle() },
-          m_vk_device_table { as_ref(device.device_table()) },
-          m_vk_handle { { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto handle) noexcept {
-              vk_device_table.vkDestroyPipelineLayout(vk_device, handle, nullptr);
-          } } } {
+    inline PipelineLayout::PipelineLayout(PrivateTag, view::Device&& device) noexcept
+        : OwnedByDevice<PipelineLayout> { std::move(device), &VolkDeviceTable::vkDestroyPipelineLayout } {
     }
 
     /////////////////////////////////////
@@ -263,104 +274,18 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline PipelineLayout::PipelineLayout(PipelineLayout&& other) noexcept = default;
+    inline PipelineLayout::PipelineLayout(PipelineLayout&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto PipelineLayout::operator=(PipelineLayout&& other) noexcept -> PipelineLayout& = default;
+    inline auto PipelineLayout::operator=(PipelineLayout&&) noexcept -> PipelineLayout& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto PipelineLayout::create(const Device& device, const RasterPipelineLayout& layout) noexcept
-      -> Expected<PipelineLayout> {
-        auto pipeline_layout = PipelineLayout { device, layout, PrivateFuncTag {} };
-        Try(pipeline_layout.do_init());
-        Return pipeline_layout;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto PipelineLayout::native_handle() const noexcept -> VkPipelineLayout {
-        return m_vk_handle;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto PipelineLayout::do_init() noexcept -> Expected<void> {
-        namespace stdv         = std::views;
-        namespace stdr         = std::ranges;
-        const auto set_layouts = m_layout.descriptor_set_layouts
-                                 | stdv::transform(core::monadic::unref())
-                                 | stdv::transform(vk::monadic::to_vk())
-                                 | stdr::to<std::vector>();
-
-        const auto push_constant_ranges = transform(m_layout.push_constant_ranges, [](auto&& push_constant_range) noexcept {
-            return VkPushConstantRange {
-                .stageFlags = vk::to_vk<VkShaderStageFlags>(push_constant_range.stages),
-                .offset     = push_constant_range.offset,
-                .size       = as<u32>(push_constant_range.size),
-            };
-        });
-
-        const auto create_info = VkPipelineLayoutCreateInfo {
-            .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-            .pNext                  = nullptr,
-            .flags                  = 0,
-            .setLayoutCount         = as<u32>(stdr::size(set_layouts)),
-            .pSetLayouts            = stdr::data(set_layouts),
-            .pushConstantRangeCount = as<u32>(stdr::size(push_constant_ranges)),
-            .pPushConstantRanges    = stdr::data(push_constant_ranges),
-        };
-
-        m_vk_handle = Try(vk::call_checked<VkPipelineLayout>(m_vk_device_table->vkCreatePipelineLayout,
-                                                             m_vk_device,
-                                                             &create_info,
-                                                             nullptr));
-
-        Return {};
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline Pipeline::Pipeline(const Device& device, const RasterPipelineState& state, PrivateFuncTag) noexcept
-        : m_type { Type::RASTER },
-          m_state { state },
-          m_vk_device { device.native_handle() },
-          m_vk_device_table { as_ref(device.device_table()) },
-          m_vk_handle { { [vk_device_table = *m_vk_device_table, vk_device = m_vk_device](auto handle) noexcept {
-              vk_device_table.vkDestroyPipeline(vk_device, handle, nullptr);
-          } } } {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Pipeline::create(const Device&                    device,
-                                 const RasterPipelineState&       state,
-                                 const PipelineLayout&            layout,
-                                 const RenderPass&                render_pass,
-                                 OptionalRef<const PipelineCache> cache) noexcept -> Expected<Pipeline> {
-        auto pipeline = Pipeline { device, state, PrivateFuncTag {} };
-        Try(pipeline.do_init(layout, as_opt_ref(render_pass), std::nullopt, std::move(cache)));
-        Return pipeline;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Pipeline::create(const Device&                      device,
-                                 const RasterPipelineState&         state,
-                                 const PipelineLayout&              layout,
-                                 const RasterPipelineRenderingInfo& rendering_info,
-                                 OptionalRef<const PipelineCache>   cache) noexcept -> Expected<Pipeline> {
-        auto pipeline = Pipeline { device, state, PrivateFuncTag {} };
-        Try(pipeline.do_init(layout, std::nullopt, as_opt_ref(rendering_info), std::move(cache)));
-        Return pipeline;
+    inline Pipeline::Pipeline(PrivateTag, view::Device&& device) noexcept
+        : OwnedByDevice<Pipeline> { std::move(device), &VolkDeviceTable::vkDestroyPipeline } {
     }
 
     /////////////////////////////////////
@@ -394,10 +319,52 @@ namespace stormkit::gpu {
         return as<RasterPipelineState>(m_state);
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Pipeline::native_handle() const noexcept -> VkPipeline {
-        return m_vk_handle;
-    }
+    namespace view {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline Pipeline::Pipeline(const gpu::Pipeline& of) noexcept
+            : DeviceObject<gpu::Pipeline> { of }, m_type { of.type() } {
+        }
+
+        ///////////////////////////////////
+        ///////////////////////////////////
+        template<cmeta::IsContainerOrPointerOf<gpu::Pipeline> T>
+        STORMKIT_FORCE_INLINE
+        inline Pipeline::Pipeline(const T& of) noexcept
+            : DeviceObject<gpu::Pipeline> { of }, m_type { of->type() } {
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline Pipeline::~Pipeline() noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline Pipeline::Pipeline(const Pipeline& other) noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto Pipeline::operator=(const Pipeline& other) noexcept -> Pipeline& = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline Pipeline::Pipeline(Pipeline&&) noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto Pipeline::operator=(Pipeline&&) noexcept -> Pipeline& = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto Pipeline::type() const noexcept -> gpu::Pipeline::Type {
+            return m_type;
+        }
+    } // namespace view
 } // namespace stormkit::gpu

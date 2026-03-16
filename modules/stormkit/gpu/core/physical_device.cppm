@@ -64,38 +64,40 @@ export namespace stormkit::gpu {
         [[nodiscard]]
         auto capabilities() const noexcept -> const RenderCapabilities&;
         [[nodiscard]]
-        auto memory_types() const noexcept -> const std::vector<MemoryPropertyFlag>&;
-
+        auto memory_types() const noexcept -> std::span<const MemoryPropertyFlag>;
         [[nodiscard]]
-        auto queue_families() const noexcept -> const std::vector<QueueFamily>&;
-
+        auto queue_families() const noexcept -> std::span<const QueueFamily>;
         [[nodiscard]]
-        auto extensions() const noexcept -> const std::vector<std::string>&;
-
+        auto extensions() const noexcept -> std::span<const std::string>;
         [[nodiscard]]
-        auto formats_properties() const noexcept -> const std::vector<std::pair<PixelFormat, FormatProperties>>&;
+        auto formats_properties() const noexcept -> std::span<const std::pair<PixelFormat, FormatProperties>>;
 
         // clang-format off
    // private:
         // clang-format on
-        explicit PhysicalDevice(PrivateTag, view::Instance) noexcept;
-        auto do_init(PrivateTag, VkPhysicalDevice) noexcept -> void;
+        PhysicalDevice(PrivateTag, view::Instance&&) noexcept;
+        auto do_init(PrivateTag, VkPhysicalDevice&&) noexcept -> void;
 
       private:
-        mutable PhysicalDeviceInfo              m_device_info;
-        mutable RenderCapabilities              m_capabilities;
-        mutable std::vector<MemoryPropertyFlag> m_memory_types;
+        struct Data {
+            PhysicalDeviceInfo device_info;
+            RenderCapabilities capabilities;
+        };
 
-        mutable std::vector<QueueFamily>                              m_queue_families;
-        mutable std::vector<std::string>                              m_extensions;
-        mutable std::vector<std::pair<PixelFormat, FormatProperties>> m_format_properties;
+        Heap<Data>                                            m_data;
+        std::vector<MemoryPropertyFlag>                       m_memory_types;
+        std::vector<QueueFamily>                              m_queue_families;
+        std::vector<std::string>                              m_extensions;
+        std::vector<std::pair<PixelFormat, FormatProperties>> m_format_properties;
+
+        friend class view::PhysicalDevice;
     };
 
     namespace view {
         class STORMKIT_GPU_API PhysicalDevice: public InstanceObject<gpu::PhysicalDevice> {
           public:
             PhysicalDevice(const gpu::PhysicalDevice& of) noexcept;
-            template<cmeta::ContainedOrPointerOf<gpu::PhysicalDevice> T>
+            template<cmeta::IsContainerOrPointerOf<gpu::PhysicalDevice> T>
             PhysicalDevice(const T& of) noexcept;
             ~PhysicalDevice() noexcept;
 
@@ -117,25 +119,21 @@ export namespace stormkit::gpu {
             [[nodiscard]]
             auto capabilities() const noexcept -> const RenderCapabilities&;
             [[nodiscard]]
-            auto memory_types() const noexcept -> const std::vector<MemoryPropertyFlag>&;
-
+            auto memory_types() const noexcept -> std::span<const MemoryPropertyFlag>;
             [[nodiscard]]
-            auto queue_families() const noexcept -> const std::vector<QueueFamily>&;
-
+            auto queue_families() const noexcept -> std::span<const QueueFamily>;
             [[nodiscard]]
-            auto extensions() const noexcept -> const std::vector<std::string>&;
-
+            auto extensions() const noexcept -> std::span<const std::string>;
             [[nodiscard]]
-            auto formats_properties() const noexcept -> const std::vector<std::pair<PixelFormat, FormatProperties>>&;
+            auto formats_properties() const noexcept -> std::span<const std::pair<PixelFormat, FormatProperties>>;
 
           private:
-            mutable PhysicalDeviceInfo              m_device_info;
-            mutable RenderCapabilities              m_capabilities;
-            mutable std::vector<MemoryPropertyFlag> m_memory_types;
+            Ref<const gpu::PhysicalDevice::Data> m_data;
+            std::span<const MemoryPropertyFlag>  m_memory_types;
 
-            mutable std::vector<QueueFamily>                              m_queue_families;
-            mutable std::vector<std::string>                              m_extensions;
-            mutable std::vector<std::pair<PixelFormat, FormatProperties>> m_format_properties;
+            std::span<const QueueFamily>                              m_queue_families;
+            std::span<const std::string>                              m_extensions;
+            std::span<const std::pair<PixelFormat, FormatProperties>> m_format_properties;
         };
 
         template<typename T>
@@ -146,7 +144,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             PhysicalDeviceObject(const T& child) noexcept;
-            template<cmeta::ContainedOrPointerOf<T> U>
+            template<cmeta::IsContainerOrPointerOf<T> U>
             PhysicalDeviceObject(const U& child) noexcept;
             ~PhysicalDeviceObject() noexcept;
 
@@ -196,9 +194,6 @@ export namespace stormkit::gpu {
 
     template<typename FormatContext>
     auto format_as(view::PhysicalDevice physical_device, FormatContext& ctx) noexcept -> decltype(ctx.out());
-
-    template<typename FormatContext>
-    auto format_as(const PhysicalDevice& physical_device, FormatContext& ctx) noexcept -> decltype(ctx.out());
 } // namespace stormkit::gpu
 
 ////////////////////////////////////////////////////////////////////
@@ -209,7 +204,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline PhysicalDevice::PhysicalDevice(PrivateTag, view::Instance instance) noexcept
+    inline PhysicalDevice::PhysicalDevice(PrivateTag, view::Instance&& instance) noexcept
         : OwnedByInstance<PhysicalDevice> { std::move(instance), monadic::noop() } {
     }
 
@@ -221,18 +216,53 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline PhysicalDevice::PhysicalDevice(PhysicalDevice&& other) noexcept = default;
+    inline PhysicalDevice::PhysicalDevice(PhysicalDevice&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto PhysicalDevice::operator=(PhysicalDevice&& other) noexcept -> PhysicalDevice& = default;
+    inline auto PhysicalDevice::operator=(PhysicalDevice&&) noexcept -> PhysicalDevice& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto PhysicalDevice::do_init(PrivateTag, VkPhysicalDevice physical_device) noexcept -> void {
-        m_vk_handle = physical_device;
+    inline auto PhysicalDevice::info() const noexcept -> const PhysicalDeviceInfo& {
+        return m_data->device_info;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::capabilities() const noexcept -> const RenderCapabilities& {
+        return m_data->capabilities;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::memory_types() const noexcept -> std::span<const MemoryPropertyFlag> {
+        return m_memory_types;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::queue_families() const noexcept -> std::span<const QueueFamily> {
+        return m_queue_families;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::extensions() const noexcept -> std::span<const std::string> {
+        return m_extensions;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::formats_properties() const noexcept -> std::span<const std::pair<PixelFormat, FormatProperties>> {
+        return m_format_properties;
     }
 
     namespace view {
@@ -240,15 +270,25 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
         inline PhysicalDevice::PhysicalDevice(const gpu::PhysicalDevice& of) noexcept
-            : InstanceObject<gpu::PhysicalDevice> { of } {
+            : InstanceObject<gpu::PhysicalDevice> { of },
+              m_data { as_ref(of.m_data) },
+              m_memory_types { of.m_memory_types },
+              m_queue_families { of.m_queue_families },
+              m_extensions { of.m_extensions },
+              m_format_properties { of.m_format_properties } {
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<cmeta::ContainedOrPointerOf<gpu::PhysicalDevice> T>
+        template<cmeta::IsContainerOrPointerOf<gpu::PhysicalDevice> T>
         STORMKIT_FORCE_INLINE
         inline PhysicalDevice::PhysicalDevice(const T& of) noexcept
-            : InstanceObject<gpu::PhysicalDevice> { of } {
+            : InstanceObject<gpu::PhysicalDevice> { of },
+              m_data { as_ref(of->m_data) },
+              m_memory_types { of->m_memory_types },
+              m_queue_families { of->m_queue_families },
+              m_extensions { of->m_extensions },
+              m_format_properties { of->m_format_properties } {
         }
 
         /////////////////////////////////////
@@ -264,7 +304,20 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto PhysicalDevice::operator=(const PhysicalDevice&) noexcept -> PhysicalDevice& = default;
+        inline auto PhysicalDevice::operator=(const PhysicalDevice& other) noexcept -> PhysicalDevice& {
+            if (&other == this) [[unlikely]]
+                return *this;
+
+            m_data              = as_ref(other.m_data);
+            m_memory_types      = other.m_memory_types;
+            m_queue_families    = other.m_queue_families;
+            m_extensions        = other.m_extensions;
+            m_format_properties = other.m_format_properties;
+
+            InstanceObject<gpu::PhysicalDevice>::operator=(other);
+
+            return *this;
+        }
 
         /////////////////////////////////////
         /////////////////////////////////////
@@ -278,6 +331,49 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto PhysicalDevice::info() const noexcept -> const PhysicalDeviceInfo& {
+            return m_data->device_info;
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto PhysicalDevice::capabilities() const noexcept -> const RenderCapabilities& {
+            return m_data->capabilities;
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto PhysicalDevice::memory_types() const noexcept -> std::span<const MemoryPropertyFlag> {
+            return m_memory_types;
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto PhysicalDevice::queue_families() const noexcept -> std::span<const QueueFamily> {
+            return m_queue_families;
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto PhysicalDevice::extensions() const noexcept -> std::span<const std::string> {
+            return m_extensions;
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto PhysicalDevice::formats_properties() const noexcept
+          -> std::span<const std::pair<PixelFormat, FormatProperties>> {
+            return m_format_properties;
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
         template<typename T>
         STORMKIT_FORCE_INLINE
         inline PhysicalDeviceObject<T>::PhysicalDeviceObject(const T& child) noexcept
@@ -287,7 +383,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         /////////////////////////////////////
         template<typename T>
-        template<cmeta::ContainedOrPointerOf<T> U>
+        template<cmeta::IsContainerOrPointerOf<T> U>
         STORMKIT_FORCE_INLINE
         inline PhysicalDeviceObject<T>::PhysicalDeviceObject(const U& child) noexcept
             : InstanceObject<T> { child }, m_physical_device { child->physical_device() } {
@@ -337,7 +433,7 @@ namespace stormkit::gpu {
     template<typename T>
     STORMKIT_FORCE_INLINE
     inline OwnedByPhysicalDevice<T>::OwnedByPhysicalDevice(view::PhysicalDevice&& physical_device,
-                                                                   DeleterType&&          deleter_ptr) noexcept
+                                                           DeleterType&&          deleter_ptr) noexcept
         : Parent { clone(physical_device.instance()), std::move(deleter_ptr) }, m_physical_device { std::move(physical_device) } {
     }
 
@@ -357,8 +453,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto OwnedByPhysicalDevice<T>::operator=(OwnedByPhysicalDevice&&) noexcept
-      -> OwnedByPhysicalDevice& = default;
+    inline auto OwnedByPhysicalDevice<T>::operator=(OwnedByPhysicalDevice&&) noexcept -> OwnedByPhysicalDevice& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -371,29 +466,10 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename FormatContext>
-    inline auto format_as(const view::PhysicalDevice& physical_device, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
+    inline auto format_as(view::PhysicalDevice physical_device, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         const auto& info = physical_device.info();
         return std::format_to(ctx.out(),
-                              "[name: {}, vendor: {}, id: {}, vulkan: {}.{}.{}, driver version: "
-                              "{}.{}.{}]",
-                              info.device_name,
-                              info.vendor_name,
-                              info.device_id,
-                              info.api_major_version,
-                              info.api_minor_version,
-                              info.api_patch_version,
-                              info.driver_major_version,
-                              info.driver_minor_version,
-                              info.driver_patch_version);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename FormatContext>
-    inline auto format_as(const PhysicalDevice& physical_device, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
-        const auto& info = physical_device.info();
-        return std::format_to(ctx.out(),
-                              "[name: {}, vendor: {}, id: {}, vulkan: {}.{}.{}, driver version: "
+                              "PhysicalDevice[name: {}, vendor: {}, id: {}, vulkan: {}.{}.{}, driver version: "
                               "{}.{}.{}]",
                               info.device_name,
                               info.vendor_name,

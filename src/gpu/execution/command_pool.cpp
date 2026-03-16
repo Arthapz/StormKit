@@ -4,6 +4,8 @@
 
 module;
 
+#include <stormkit/core/try_expected.hpp>
+
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.execution;
@@ -25,9 +27,9 @@ namespace stormkit::gpu {
             /////////////////////////////////////
             /////////////////////////////////////
             template<meta::IsOwnedOrView CommandPoolType>
-            static auto create_vk_command_buffers(const CommandPoolType& pool, usize count, CommandBufferLevel level)
-              const noexcept -> Expected<std::vector<VkCommandBuffer>> {
-                const auto& device       = cmb.device();
+            static auto create_vk_command_buffers(const CommandPoolType& pool, usize count, CommandBufferLevel level) noexcept
+              -> Expected<std::vector<VkCommandBuffer>> {
+                const auto& device       = pool.device();
                 const auto& device_table = device.device_table();
 
                 const auto allocate_info = VkCommandBufferAllocateInfo {
@@ -46,9 +48,10 @@ namespace stormkit::gpu {
 
             /////////////////////////////////////
             /////////////////////////////////////
-            static auto delete_vk_command_buffers(Device          device,
-                                                  CommandPool     command_pool,
-                                                  VkCommandBuffer command_buffer) noexcept -> void {
+            static auto delete_vk_command_buffers(view::Device      device,
+                                                  view::CommandPool command_pool,
+                                                  VkCommandBuffer   command_buffer) noexcept -> void {
+                const auto& device_table = device.device_table();
                 vk::call(device_table.vkFreeCommandBuffers, device, command_pool, 1, &command_buffer);
             }
         };
@@ -56,8 +59,8 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto CommandPool::do_init() noexcept -> Expected<void> {
-        const auto& device       = device();
+    auto CommandPool::do_init(PrivateTag) noexcept -> Expected<void> {
+        const auto& device       = this->device();
         const auto& device_table = device.device_table();
 
         const auto create_info = VkCommandPoolCreateInfo {
@@ -80,8 +83,9 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto CommandPool::delete_vk_command_buffers(Device device, CommandPool pool, VkCommandBuffer cmb) noexcept -> void {
-        return CommandPoolAPI::create_vk_command_buffers(std::move(device), std::move(pool), cmb);
+    auto CommandPool::delete_vk_command_buffers(view::Device device, view::CommandPool pool, VkCommandBuffer cmb) noexcept
+      -> void {
+        CommandPoolAPI::delete_vk_command_buffers(std::move(device), std::move(pool), cmb);
     }
 
     namespace view {
@@ -95,7 +99,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         /////////////////////////////////////
         auto CommandPool::delete_vk_command_buffers(Device device, CommandPool pool, VkCommandBuffer cmb) noexcept -> void {
-            return CommandPoolAPI::create_vk_command_buffers(std::move(device), std::move(pool), cmb);
+            CommandPoolAPI::delete_vk_command_buffers(std::move(device), std::move(pool), cmb);
         }
     } // namespace view
 } // namespace stormkit::gpu

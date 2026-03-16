@@ -232,7 +232,7 @@ namespace stormkit::gpu {
                 const auto& device_table = device.device_table();
 
                 const auto _fences = transform(fences, vk::monadic::to_vk());
-                Try(vk::call_checked(table.vkResetFences, device, stdr::size(_fences), stdr::data(_fences)));
+                Try(vk::call_checked(device_table.vkResetFences, device, stdr::size(_fences), stdr::data(_fences)));
                 Return {};
             }
 
@@ -243,8 +243,7 @@ namespace stormkit::gpu {
                                         std::string_view  name) noexcept -> Expected<void> {
                 if (not vkSetDebugUtilsObjectNameEXT) return {};
 
-                const auto& handle = device.native_handle();
-                const auto  info   = VkDebugUtilsObjectNameInfoEXT {
+                const auto info = VkDebugUtilsObjectNameInfoEXT {
                     .sType        = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
                     .pNext        = nullptr,
                     .objectType   = vk::to_vk<VkObjectType>(type),
@@ -293,7 +292,7 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto Device::wait_for_fences(std::span<const gpu::Fence>      fences,
+        auto Device::wait_for_fences(std::span<const Fence>           fences,
                                      bool                             wait_all,
                                      const std::chrono::milliseconds& timeout) const noexcept -> Expected<Result> {
             return DeviceAPI::wait_for_fences(*this, std::move(fences), wait_all, timeout);
@@ -301,7 +300,7 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto Device::reset_fences(std::span<const gpu::Fence> fences) const noexcept -> Expected<void> {
+        auto Device::reset_fences(std::span<const Fence> fences) const noexcept -> Expected<void> {
             return DeviceAPI::reset_fences(*this, std::move(fences));
         }
 

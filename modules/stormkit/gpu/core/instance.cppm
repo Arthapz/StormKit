@@ -80,7 +80,7 @@ export namespace stormkit::gpu {
             using ViewType    = ObjectInfo::ViewType;
 
             InstanceObject(const T& child) noexcept;
-            template<cmeta::ContainedOrPointerOf<T> U>
+            template<cmeta::IsContainerOrPointerOf<T> U>
             InstanceObject(const U& child) noexcept;
             ~InstanceObject() noexcept;
 
@@ -150,7 +150,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         /////////////////////////////////////
         template<typename T>
-        template<cmeta::ContainedOrPointerOf<T> U>
+        template<cmeta::IsContainerOrPointerOf<T> U>
         STORMKIT_FORCE_INLINE
         inline InstanceObject<T>::InstanceObject(const U& child) noexcept
             : View<T> { child }, m_instance { child->instance() } {
