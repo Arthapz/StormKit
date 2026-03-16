@@ -228,11 +228,11 @@ export {
         ////////////////////////////////////////////////////////////////////
         ///                          STL                                 ///
         ////////////////////////////////////////////////////////////////////
-        template<typename T, meta::IsVariantType U>
+        template<typename T, meta::IsStdVariant U>
         [[nodiscard]]
         constexpr auto is_impl(const U& value) noexcept -> bool;
 
-        template<typename T, meta::IsVariantType U>
+        template<typename T, meta::IsStdVariant U>
         [[nodiscard]]
         constexpr auto as_impl(U&& value, const std::source_location&) noexcept -> meta::ForwardLike<U, T>;
     }} // namespace stormkit::core
@@ -511,7 +511,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////////////////////////////////
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, meta::IsVariantType U>
+    template<typename T, meta::IsStdVariant U>
     STORMKIT_FORCE_INLINE
     constexpr auto is_impl(const U& value) noexcept -> bool {
         return std::holds_alternative<T>(value);
@@ -519,7 +519,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, meta::IsVariantType U>
+    template<typename T, meta::IsStdVariant U>
     STORMKIT_FORCE_INLINE
     constexpr auto as_impl(U&& value, const std::source_location&) noexcept -> meta::ForwardLike<U, T> {
         return std::forward_like<U>(std::get<T>(value));

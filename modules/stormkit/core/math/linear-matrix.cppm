@@ -37,6 +37,11 @@ export {
                 using SizeType    = usize;
                 using ExtentType  = u8;
 
+                using value_type   = ValueType;
+                using storage_type = StorageType;
+                using size_type    = SizeType;
+                using extent_type  = ExtentType;
+
                 static constexpr auto EXTENTS = std::array<ExtentType, 2> { M, N };
 
                 StorageType values;
@@ -149,7 +154,7 @@ export {
             concept IsSquareMat = IsMat<T> and T::EXTENTS[0] == T::EXTENTS[1];
 
             template<typename T, typename U>
-            concept HasOneMatType = not(core::meta::IsMdspanType<T> and core::meta::IsMdspanType<U>)
+            concept HasOneMatType = not(core::meta::IsStdMdspan<T> and core::meta::IsStdMdspan<U>)
                                     or meta::IsMat<T>
                                     or meta::IsMat<U>;
         } // namespace meta

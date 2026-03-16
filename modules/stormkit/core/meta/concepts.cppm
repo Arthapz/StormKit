@@ -128,19 +128,19 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsStringLike = std::convertible_to<T, std::string_view>;
 
     template<class T>
-    concept IsOptionalType = IsSpecializationOf<T, std::optional>;
+    concept IsStdOptional = IsSpecializationOf<T, std::optional>;
 
     template<class T>
-    concept IsExpectedType = IsSpecializationOf<T, std::expected>;
+    concept IsStdExpected = IsSpecializationOf<T, std::expected>;
 
     template<class T>
-    concept IsVariantType = IsSpecializationOf<T, std::variant>;
+    concept IsStdVariant = IsSpecializationOf<T, std::variant>;
 
     template<class T>
-    concept IsMdspanType = IsSpecializationOf<T, std::mdspan>;
+    concept IsStdMdspan = IsSpecializationOf<T, std::mdspan>;
 
     template<class T>
-    concept IsArrayType = IsSpecializationWithNTTPOf<T, std::array>;
+    concept IsStdArray = IsSpecializationWithNTTPOf<T, std::array>;
 
     template<typename T>
     concept IsStdReferenceWrapper = IsSpecializationOf<T, std::reference_wrapper>;

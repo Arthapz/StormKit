@@ -30,6 +30,10 @@ export namespace stormkit { inline namespace core { namespace math {
             using SizeType   = usize;
             using ExtentType = u8;
 
+            using value_type  = ValueType;
+            using size_type   = SizeType;
+            using extent_type = ExtentType;
+
             static constexpr auto EXTENT = std::array<ExtentType, 1> { 2uz };
 
             ValueType x;
@@ -51,6 +55,10 @@ export namespace stormkit { inline namespace core { namespace math {
             using ValueType  = T;
             using SizeType   = usize;
             using ExtentType = u8;
+
+            using value_type  = ValueType;
+            using size_type   = SizeType;
+            using extent_type = ExtentType;
 
             static constexpr auto EXTENT = std::array<ExtentType, 1> { 3uz };
 
@@ -74,6 +82,10 @@ export namespace stormkit { inline namespace core { namespace math {
             using ValueType  = T;
             using SizeType   = usize;
             using ExtentType = u8;
+
+            using value_type  = ValueType;
+            using size_type   = SizeType;
+            using extent_type = ExtentType;
 
             static constexpr auto EXTENT = std::array<ExtentType, 1> { 4uz };
 
@@ -107,7 +119,7 @@ export namespace stormkit { inline namespace core { namespace math {
         concept IsVec = IsVec2<T> || IsVec3<T> || IsVec4<T>;
 
         template<typename T, typename U>
-        concept HasOneVecType = not(core::meta::IsMdspanType<T> and core::meta::IsMdspanType<U>)
+        concept HasOneVecType = not(core::meta::IsStdMdspan<T> and core::meta::IsStdMdspan<U>)
                                 or meta::IsVec<T>
                                 or meta::IsVec<U>;
     } // namespace meta
