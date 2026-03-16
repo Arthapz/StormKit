@@ -82,7 +82,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename... T>
-    STORMKIT_FORCE_INLINE constexpr MultiBuffer<T...>::MultiBuffer(const MultiBuffer&) = default;
+    STORMKIT_FORCE_INLINE
+    constexpr MultiBuffer<T...>::MultiBuffer(const MultiBuffer&) = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -93,7 +94,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename... T>
-    STORMKIT_FORCE_INLINE constexpr MultiBuffer<T...>::MultiBuffer(MultiBuffer&&) noexcept = default;
+    STORMKIT_FORCE_INLINE
+    constexpr MultiBuffer<T...>::MultiBuffer(MultiBuffer&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -104,7 +106,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename... T>
-    STORMKIT_FORCE_INLINE constexpr MultiBuffer<T...>::~MultiBuffer() = default;
+    STORMKIT_FORCE_INLINE
+    constexpr MultiBuffer<T...>::~MultiBuffer() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

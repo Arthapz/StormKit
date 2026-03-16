@@ -34,7 +34,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<FrameBuffer> {
             using Of          = FrameBuffer;
-            using ValueType = VkFramebuffer;
+            using ValueType   = VkFramebuffer;
             using DeleterType = PFN_vkDestroyFramebuffer VolkDeviceTable::*;
             using ViewType    = view::FrameBuffer;
             using OwnedBy     = Device;
@@ -46,7 +46,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<RenderPass> {
             using Of          = RenderPass;
-            using ValueType = VkRenderPass;
+            using ValueType   = VkRenderPass;
             using DeleterType = PFN_vkDestroyRenderPass VolkDeviceTable::*;
             using ViewType    = view::RenderPass;
             using OwnedBy     = Device;
@@ -96,9 +96,9 @@ export namespace stormkit::gpu {
     namespace view {
         class STORMKIT_GPU_API FrameBuffer: public DeviceObject<gpu::FrameBuffer> {
           public:
-            using ObjectInfo  = typename meta::ObjectInfo<gpu::FrameBuffer>;
-            using ValueType = ObjectInfo::ValueType;
-            using ViewType    = ObjectInfo::ViewType;
+            using ObjectInfo = typename meta::ObjectInfo<gpu::FrameBuffer>;
+            using ValueType  = ObjectInfo::ValueType;
+            using ViewType   = ObjectInfo::ViewType;
 
             FrameBuffer(const gpu::FrameBuffer& of) noexcept;
             template<cmeta::IsContainerOrPointerOf<gpu::FrameBuffer> T>
@@ -200,9 +200,9 @@ export namespace stormkit::gpu {
     namespace view {
         class STORMKIT_GPU_API RenderPass: public DeviceObject<gpu::RenderPass> {
           public:
-            using ObjectInfo  = typename meta::ObjectInfo<gpu::RenderPass>;
-            using ValueType = ObjectInfo::ValueType;
-            using ViewType    = ObjectInfo::ViewType;
+            using ObjectInfo = typename meta::ObjectInfo<gpu::RenderPass>;
+            using ValueType  = ObjectInfo::ValueType;
+            using ViewType   = ObjectInfo::ViewType;
 
             // RenderPass(const gpu::RenderPass& of) noexcept;
             // template<cmeta::IsContainerOrPointerOf<gpu::RenderPass> T>

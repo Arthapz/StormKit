@@ -38,7 +38,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Buffer> {
             using Of          = Buffer;
-            using ValueType = VkBuffer;
+            using ValueType   = VkBuffer;
             using DeleterType = PFN_vkDestroyBuffer VolkDeviceTable::*;
             using ViewType    = view::Buffer;
             using OwnedBy     = Device;
@@ -133,9 +133,9 @@ export namespace stormkit::gpu {
     namespace view {
         class STORMKIT_GPU_API Buffer: public DeviceObject<gpu::Buffer> {
           public:
-            using ObjectInfo  = typename meta::ObjectInfo<gpu::Buffer>;
-            using ValueType = ObjectInfo::ValueType;
-            using ViewType    = ObjectInfo::ViewType;
+            using ObjectInfo = typename meta::ObjectInfo<gpu::Buffer>;
+            using ValueType  = ObjectInfo::ValueType;
+            using ViewType   = ObjectInfo::ViewType;
 
             Buffer(const gpu::Buffer& of) noexcept;
             template<cmeta::IsContainerOrPointerOf<gpu::Buffer> T>

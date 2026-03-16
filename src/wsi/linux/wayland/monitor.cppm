@@ -22,8 +22,8 @@ namespace stormkit::wsi::linux::wayland {
         if (update or stdr::empty(monitors)) {
             auto& globals = wl::get_globals();
             monitors      = globals.monitors
-                       | stdv::transform([](const wl::WaylandMonitor& pair) static noexcept { return pair.monitor; })
-                       | stdr::to<std::vector>();
+                            | stdv::transform([](const wl::WaylandMonitor& pair) static noexcept { return pair.monitor; })
+                            | stdr::to<std::vector>();
         }
 
         return monitors;

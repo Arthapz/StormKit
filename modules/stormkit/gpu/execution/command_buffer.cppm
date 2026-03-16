@@ -44,7 +44,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Queue> {
             using Of          = Queue;
-            using ValueType = VkQueue;
+            using ValueType   = VkQueue;
             using DeleterType = decltype(cmonadic::noop());
             using ViewType    = view::Queue;
             using OwnedBy     = Device;
@@ -55,7 +55,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<CommandBuffer> {
             using Of          = CommandBuffer;
-            using ValueType = VkCommandBuffer;
+            using ValueType   = VkCommandBuffer;
             using DeleterType = decltype(cmonadic::noop());
             using ViewType    = view::CommandBuffer;
             using OwnedBy     = Device;
@@ -67,7 +67,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<CommandPool> {
             using Of          = CommandPool;
-            using ValueType = VkCommandPool;
+            using ValueType   = VkCommandPool;
             using DeleterType = PFN_vkDestroyCommandPool VolkDeviceTable::*;
             using ViewType    = view::CommandPool;
             using OwnedBy     = Device;
@@ -122,9 +122,9 @@ export namespace stormkit::gpu {
     namespace view {
         class Queue: public DeviceObject<gpu::Queue> {
           public:
-            using ObjectInfo  = typename meta::ObjectInfo<gpu::Queue>;
-            using ValueType = ObjectInfo::ValueType;
-            using ViewType    = ObjectInfo::ViewType;
+            using ObjectInfo = typename meta::ObjectInfo<gpu::Queue>;
+            using ValueType  = ObjectInfo::ValueType;
+            using ViewType   = ObjectInfo::ViewType;
 
             Queue(const gpu::Queue& of) noexcept;
             template<cmeta::IsContainerOrPointerOf<gpu::Queue> T>
@@ -529,9 +529,9 @@ export namespace stormkit::gpu {
     namespace view {
         class CommandPool: public DeviceObject<gpu::CommandPool> {
           public:
-            using ObjectInfo  = typename meta::ObjectInfo<gpu::CommandPool>;
-            using ValueType = ObjectInfo::ValueType;
-            using ViewType    = ObjectInfo::ViewType;
+            using ObjectInfo = typename meta::ObjectInfo<gpu::CommandPool>;
+            using ValueType  = ObjectInfo::ValueType;
+            using ViewType   = ObjectInfo::ViewType;
 
             using DeviceObject<gpu::CommandPool>::DeviceObject;
             ~CommandPool() noexcept;

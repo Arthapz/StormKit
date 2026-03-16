@@ -126,14 +126,12 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Window::~Window() noexcept
-      = default;
+    inline Window::~Window() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Window::Window(Window&&) noexcept
-      = default;
+    inline Window::Window(Window&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

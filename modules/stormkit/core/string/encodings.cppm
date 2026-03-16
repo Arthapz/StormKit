@@ -81,20 +81,16 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     inline auto ascii_to_wide(std::string_view input) -> std::wstring {
         [[maybe_unused]]
-        auto state
-          = std::mbstate_t {};
+        auto state  = std::mbstate_t {};
         auto output = std::wstring {};
         output.resize(stdr::size(input));
 
         [[maybe_unused]]
-        auto len
-          = 0ull;
+        auto len = 0ull;
         [[maybe_unused]]
-        auto input_it
-          = stdr::data(input);
+        auto input_it = stdr::data(input);
         [[maybe_unused]]
-        auto i
-          = 0;
+        auto i = 0;
 #if defined(STORMKIT_COMPILER_MSVC)
         while ((len = std::mbrtoc16(std::bit_cast<char16_t*>(stdr::data(output)) + i++, input_it, MB_CUR_MAX, &state)) > 0u)
             input_it += len;
@@ -112,11 +108,9 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     inline auto wide_to_ascii(std::wstring_view input) -> std::string {
         [[maybe_unused]]
-        auto state
-          = std::mbstate_t {};
+        auto state = std::mbstate_t {};
         [[maybe_unused]]
-        auto output
-          = std::string {};
+        auto output = std::string {};
         output.resize(stdr::size(input));
 
 #if defined(STORMKIT_COMPILER_MSVC)
@@ -134,8 +128,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     inline auto ascii_to_utf8(std::string_view input) -> std::u8string {
         [[maybe_unused]]
-        auto output
-          = std::u8string {};
+        auto output = std::u8string {};
         output.resize(stdr::size(input) * narrow<usize>(MB_LEN_MAX));
 
 #if defined(STORMKIT_COMPILER_MSVC)
@@ -160,8 +153,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     inline auto utf8_to_ascii(std::u8string_view input) -> std::string {
         [[maybe_unused]]
-        auto output
-          = std::string {};
+        auto output = std::string {};
         output.resize(stdr::size(input));
 
 #if defined(STORMKIT_COMPILER_MSVC)

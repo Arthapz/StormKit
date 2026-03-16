@@ -24,19 +24,17 @@ export namespace stormkit::wsi::common {
             m_keyboard_states.push_back({ .id = GLOBAL_KEYBOARD_ID });
         }
 
-        WindowBase(const WindowBase&)                    = delete;
-        auto operator=(const WindowBase&) -> WindowBase& = delete;
+        WindowBase(const WindowBase&)                               = delete;
+        auto operator=(const WindowBase&) -> WindowBase&            = delete;
 
         STORMKIT_FORCE_INLINE
-        inline WindowBase(WindowBase&&) noexcept
-          = default;
+        inline WindowBase(WindowBase&&) noexcept                    = default;
 
         STORMKIT_FORCE_INLINE
         inline auto operator=(WindowBase&&) noexcept -> WindowBase& = default;
 
         STORMKIT_FORCE_INLINE
-        inline ~WindowBase() noexcept
-          = default;
+        inline ~WindowBase() noexcept                               = default;
 
         auto set_open(bool open) noexcept -> void;
         [[nodiscard]]
@@ -95,14 +93,14 @@ export namespace stormkit::wsi::common {
 
       protected:
         struct {
-            bool                       open       = false;
-            bool                       minimized  = false;
-            bool                       active     = false;
-            bool                       fullscreen = false;
-            bool                       visible    = false;
-            math::uextent2         extent;
+            bool                  open       = false;
+            bool                  minimized  = false;
+            bool                  active     = false;
+            bool                  fullscreen = false;
+            bool                  visible    = false;
+            math::uextent2        extent;
             optref<const Monitor> current_monitor;
-            std::string                title;
+            std::string           title;
 
             f32 dpi = 1.f;
 

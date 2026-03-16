@@ -72,12 +72,10 @@ namespace stormkit::wsi::linux::x11::xcb {
         auto it = atoms.find(name);
         if (it != stdr::end(atoms)) out = it->second;
         else {
-            const auto cookie = xcb_intern_atom(globals.connection,
-                                                (only_if_exists) ? 1 : 0,
-                                                as<u16>(stdr::size(name)),
-                                                stdr::data(name));
-            auto       error  = xcb::GenericError::empty();
-            const auto reply  = xcb::InternAtomReply::create(globals.connection, cookie, &error.handle());
+            const auto
+              cookie = xcb_intern_atom(globals.connection, (only_if_exists) ? 1 : 0, as<u16>(stdr::size(name)), stdr::data(name));
+            auto       error = xcb::GenericError::empty();
+            const auto reply = xcb::InternAtomReply::create(globals.connection, cookie, &error.handle());
 
             if (error or not reply.handle()) out = std::unexpected<Error> { std::in_place, get_error(as_ref_mut(*error)) };
             else {

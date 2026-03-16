@@ -154,8 +154,7 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Window::Window(Window&&) noexcept
-      = default;
+    inline Window::Window(Window&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

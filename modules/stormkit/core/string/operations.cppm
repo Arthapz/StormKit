@@ -40,18 +40,15 @@ export namespace stormkit { inline namespace core {
 
     template<typename T>
     [[nodiscard]]
-    constexpr auto as_string(T) noexcept -> std::string_view
-      = delete;
+    constexpr auto as_string(T) noexcept -> std::string_view = delete;
 
     template<typename T>
     [[nodiscard]]
-    constexpr auto to_string(T) noexcept -> std::string
-      = delete;
+    constexpr auto to_string(T) noexcept -> std::string = delete;
 
     template<typename T>
     [[nodiscard]]
-    constexpr auto from_string(std::string_view) noexcept -> T
-      = delete;
+    constexpr auto from_string(std::string_view) noexcept -> T = delete;
 
     template<typename T>
         requires(as_string(std::declval<T>()))
