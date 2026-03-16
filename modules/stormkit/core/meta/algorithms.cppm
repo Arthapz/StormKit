@@ -12,9 +12,24 @@ import std;
 
 import :meta.concepts;
 
+namespace stormkit { inline namespace core { namespace meta::details {
+    template<bool Cond, typename IfRes, typename ElseRes>
+    struct If;
+
+    template<typename IfRes, typename ElseRes>
+    struct If<true, IfRes, ElseRes> {
+        using Type = IfRes;
+    };
+
+    template<typename IfRes, typename ElseRes>
+    struct If<false, IfRes, ElseRes> {
+        using Type = ElseRes;
+    };
+}}} // namespace stormkit::core::meta::details
+
 export namespace stormkit { inline namespace core { namespace meta {
     template<bool Cond, typename IfRes, typename ElseRes>
-    using If = std::conditional_t<Cond, IfRes, ElseRes>;
+    using If = details::If<Cond, IfRes, ElseRes>::Type;
 
     template<bool Cond, typename True, typename False>
     using Select = std::conditional_t<Cond, True, False>;

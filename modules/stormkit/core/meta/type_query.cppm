@@ -86,6 +86,15 @@ namespace stormkit { inline namespace core { namespace meta {
         struct ContainedType<T> {
             using Type = typename T::value_type;
         };
+
+        template<typename T>
+        struct ContainedOrPointedType;
+
+        template<IsContainer T>
+        struct ContainedOrPointedType<T>: ContainedType<T> {};
+
+        template<IsPointer T>
+        struct ContainedOrPointedType<T>: PointedType<T> {};
     } // namespace details
 
     export {
@@ -102,7 +111,7 @@ namespace stormkit { inline namespace core { namespace meta {
         using ContainedType = details::ContainedType<T>::Type;
 
         template<typename T>
-        using ContainedOrPointedType = If<IsContainer<T>, ContainedType<T>, PointedType<T>>;
+        using ContainedOrPointedType = details::ContainedOrPointedType<T>::Type;
 
         template<stdr::range Range>
         using IteratorType = stdr::iterator_t<Range>;

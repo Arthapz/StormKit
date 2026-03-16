@@ -90,7 +90,7 @@ export namespace stormkit { inline namespace core {
     constexpr auto bytes_as(std::span<const byte, EXTENT> bytes) noexcept -> const T&;
 
     template<typename T, stdr::range Range>
-        requires(meta::SameAs<meta::ContainedType<Range>, byte>)
+        requires(meta::SameAs<meta::ToPlainType<meta::ContainedType<Range>>, byte>)
     [[nodiscard]]
     constexpr auto bytes_as_span(const Range& bytes) noexcept -> std::span<const T>;
 

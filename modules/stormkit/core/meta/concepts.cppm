@@ -184,7 +184,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsNotPointer = not IsPointer<T>;
 
     template<class T, class U>
-    concept IsPointerOf = IsPointer<T> and SameAs<typename T::value_type, U>;
+    concept IsPointerOf = IsPointer<T> and SameAs<typename std::pointer_traits<T>::element_type, U>;
 
     template<class T>
     concept IsMovedOwningPointer = IsOwningPointer<T> and IsRValueReference<T>;
