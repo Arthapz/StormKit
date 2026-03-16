@@ -44,7 +44,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Queue> {
             using Of          = Queue;
-            using ElementType = VkQueue;
+            using ValueType = VkQueue;
             using DeleterType = decltype(cmonadic::noop());
             using ViewType    = view::Queue;
             using OwnedBy     = Device;
@@ -55,7 +55,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<CommandBuffer> {
             using Of          = CommandBuffer;
-            using ElementType = VkCommandBuffer;
+            using ValueType = VkCommandBuffer;
             using DeleterType = decltype(cmonadic::noop());
             using ViewType    = view::CommandBuffer;
             using OwnedBy     = Device;
@@ -67,7 +67,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<CommandPool> {
             using Of          = CommandPool;
-            using ElementType = VkCommandPool;
+            using ValueType = VkCommandPool;
             using DeleterType = PFN_vkDestroyCommandPool VolkDeviceTable::*;
             using ViewType    = view::CommandPool;
             using OwnedBy     = Device;
@@ -123,7 +123,7 @@ export namespace stormkit::gpu {
         class Queue: public DeviceObject<gpu::Queue> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::Queue>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             Queue(const gpu::Queue& of) noexcept;
@@ -530,7 +530,7 @@ export namespace stormkit::gpu {
         class CommandPool: public DeviceObject<gpu::CommandPool> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::CommandPool>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             using DeviceObject<gpu::CommandPool>::DeviceObject;

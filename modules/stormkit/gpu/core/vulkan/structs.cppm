@@ -206,7 +206,7 @@ namespace stormkit::gpu::vk {
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
     constexpr auto from_vk(const VkExtent2D& extent) noexcept -> Out {
-        using T = typename Out::ElementType;
+        using T = typename Out::ValueType;
         return Out { .width = as<T>(extent.width), .height = as<T>(extent.height) };
     }
 
@@ -216,7 +216,7 @@ namespace stormkit::gpu::vk {
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
     constexpr auto from_vk(const VkExtent3D& extent) noexcept -> Out {
-        using T = typename Out::ElementType;
+        using T = typename Out::ValueType;
         return Out { .width = as<T>(extent.width), .height = as<T>(extent.height) };
     }
 } // namespace stormkit::gpu::vk

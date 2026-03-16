@@ -39,7 +39,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Device> {
             using Of          = Device;
-            using ElementType = VkDevice;
+            using ValueType   = VkDevice;
             using DeleterType = PFN_vkDestroyDevice VolkDeviceTable::*;
             using ViewType    = view::Device;
             using OwnedBy     = PhysicalDevice;
@@ -158,9 +158,9 @@ export namespace stormkit::gpu {
         template<typename T>
         class DeviceObject: public PhysicalDeviceObject<T> {
           public:
-            using ObjectInfo  = typename meta::ObjectInfo<T>;
-            using ElementType = ObjectInfo::ElementType;
-            using ViewType    = ObjectInfo::ViewType;
+            using ObjectInfo = typename meta::ObjectInfo<T>;
+            using ValueType  = ObjectInfo::ValueType;
+            using ViewType   = ObjectInfo::ViewType;
 
             DeviceObject(const T& child) noexcept;
             template<cmeta::IsContainerOrPointerOf<T> U>
@@ -185,7 +185,7 @@ export namespace stormkit::gpu {
     class OwnedByDevice: public OwnedByPhysicalDevice<T> {
       public:
         using ObjectInfo  = typename meta::ObjectInfo<T>;
-        using ElementType = ObjectInfo::ElementType;
+        using ValueType   = ObjectInfo::ValueType;
         using DeleterType = ObjectInfo::DeleterType;
         using ViewType    = ObjectInfo::ViewType;
 
@@ -433,7 +433,7 @@ namespace stormkit::gpu {
     template<typename T>
     STORMKIT_FORCE_INLINE
     inline OwnedByDevice<T>::~OwnedByDevice() noexcept {
-        if constexpr (cmeta::SameAs<DeleterType, void (*)(VkDevice, ElementType, const VkAllocationCallbacks*)>) {
+        if constexpr (cmeta::SameAs<DeleterType, void (*)(VkDevice, ValueType, const VkAllocationCallbacks*)>) {
             const auto& device_table = device().device_table();
             auto&       vk_handle    = Parent::m_vk_handle;
             auto&       deleter_ptr  = Parent::m_deleter_ptr;

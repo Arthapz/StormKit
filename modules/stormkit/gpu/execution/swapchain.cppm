@@ -30,7 +30,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<SwapChain> {
             using Of          = SwapChain;
-            using ElementType = VkSwapchainKHR;
+            using ValueType = VkSwapchainKHR;
             using DeleterType = PFN_vkDestroySwapchainKHR VolkDeviceTable::*;
             using ViewType    = view::SwapChain;
             using OwnedBy     = Device;
@@ -82,7 +82,7 @@ export namespace stormkit::gpu {
         class STORMKIT_GPU_API SwapChain: public DeviceObject<gpu::SwapChain> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::SwapChain>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             SwapChain(const gpu::SwapChain& of) noexcept;

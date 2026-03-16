@@ -40,7 +40,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<DescriptorSet> {
             using Of          = DescriptorSet;
-            using ElementType = VkDescriptorSet;
+            using ValueType = VkDescriptorSet;
             using DeleterType = decltype(cmonadic::noop());
             using ViewType    = view::DescriptorSet;
             using OwnedBy     = Device;
@@ -52,7 +52,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<DescriptorSetLayout> {
             using Of          = DescriptorSetLayout;
-            using ElementType = VkDescriptorSetLayout;
+            using ValueType = VkDescriptorSetLayout;
             using DeleterType = PFN_vkDestroyDescriptorSetLayout VolkDeviceTable::*;
             using ViewType    = view::DescriptorSetLayout;
             using OwnedBy     = Device;
@@ -63,7 +63,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<DescriptorPool> {
             using Of          = DescriptorPool;
-            using ElementType = VkDescriptorPool;
+            using ValueType = VkDescriptorPool;
             using DeleterType = PFN_vkDestroyDescriptorPool VolkDeviceTable::*;
             using ViewType    = view::DescriptorPool;
             using OwnedBy     = Device;
@@ -130,7 +130,7 @@ export namespace stormkit::gpu {
         class DescriptorSet: public DeviceObject<gpu::DescriptorSet> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::DescriptorSet>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             using DeviceObject<gpu::DescriptorSet>::DeviceObject;
@@ -173,7 +173,7 @@ export namespace stormkit::gpu {
         class DescriptorSetLayout: public DeviceObject<gpu::DescriptorSetLayout> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::DescriptorSetLayout>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             DescriptorSetLayout(const gpu::DescriptorSetLayout& of) noexcept;
@@ -236,7 +236,7 @@ export namespace stormkit::gpu {
         class DescriptorPool: public DeviceObject<gpu::DescriptorPool> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::DescriptorPool>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             using DeviceObject<gpu::DescriptorPool>::DeviceObject;

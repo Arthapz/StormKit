@@ -41,7 +41,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<PipelineCache> {
             using Of          = PipelineCache;
-            using ElementType = VkPipelineCache;
+            using ValueType = VkPipelineCache;
             using DeleterType = PFN_vkDestroyPipelineCache VolkDeviceTable::*;
             using ViewType    = view::PipelineCache;
             using OwnedBy     = Device;
@@ -53,7 +53,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Pipeline> {
             using Of          = Pipeline;
-            using ElementType = VkPipeline;
+            using ValueType = VkPipeline;
             using DeleterType = PFN_vkDestroyPipeline VolkDeviceTable::*;
             using ViewType    = view::Pipeline;
             using OwnedBy     = Device;
@@ -64,7 +64,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<PipelineLayout> {
             using Of          = PipelineLayout;
-            using ElementType = VkPipelineLayout;
+            using ValueType = VkPipelineLayout;
             using DeleterType = PFN_vkDestroyPipelineLayout VolkDeviceTable::*;
             using ViewType    = view::PipelineLayout;
             using OwnedBy     = Device;
@@ -193,7 +193,7 @@ export namespace stormkit::gpu {
         class STORMKIT_GPU_API Pipeline: public DeviceObject<gpu::Pipeline> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::Pipeline>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             Pipeline(const gpu::Pipeline& of) noexcept;

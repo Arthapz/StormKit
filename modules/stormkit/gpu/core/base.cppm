@@ -54,9 +54,9 @@ export namespace stormkit::gpu {
     namespace meta {
         template<typename T>
         concept IsView = not IsOwned<cmeta::CanonicalType<T>> and requires(T value) {
-            typename cmeta::CanonicalType<T>::ElementType;
+            typename cmeta::CanonicalType<T>::ValueType;
             typename cmeta::CanonicalType<T>::ViewType;
-            { value.native_handle() } -> cmeta::Is<typename cmeta::CanonicalType<T>::ElementType>;
+            { value.native_handle() } -> cmeta::Is<typename cmeta::CanonicalType<T>::ValueType>;
         };
 
         template<typename T>
@@ -78,9 +78,9 @@ export namespace stormkit::gpu {
     template<typename T>
     class View {
       public:
-        using ObjectInfo  = typename meta::ObjectInfo<T>;
-        using ElementType = ObjectInfo::ElementType;
-        using ViewType    = ObjectInfo::ViewType;
+        using ObjectInfo = typename meta::ObjectInfo<T>;
+        using ValueType  = ObjectInfo::ValueType;
+        using ViewType   = ObjectInfo::ViewType;
 
         View(const T& of) noexcept;
         template<cmeta::IsContainerOrPointerOf<T> U>
@@ -94,19 +94,19 @@ export namespace stormkit::gpu {
         auto operator=(View&&) noexcept -> View&;
 
         [[nodiscard]]
-        auto native_handle() const noexcept -> ElementType;
+        auto native_handle() const noexcept -> ValueType;
 
-        operator ElementType() const noexcept;
+        operator ValueType() const noexcept;
 
       protected:
-        ElementType m_vk_handle;
+        ValueType m_vk_handle;
     };
 
     template<typename T>
     class Owned {
       public:
         using ObjectInfo  = typename meta::ObjectInfo<T>;
-        using ElementType = ObjectInfo::ElementType;
+        using ValueType   = ObjectInfo::ValueType;
         using DeleterType = ObjectInfo::DeleterType;
         using ViewType    = ObjectInfo::ViewType;
 
@@ -167,9 +167,9 @@ export namespace stormkit::gpu {
             requires(not meta::CreateAllocateDisabled<T>);
 
         [[nodiscard]]
-        auto native_handle() const noexcept -> ElementType;
+        auto native_handle() const noexcept -> ValueType;
 
-        operator ElementType() const noexcept;
+        operator ValueType() const noexcept;
 
       protected:
         static constexpr struct PrivateTag {
@@ -177,7 +177,7 @@ export namespace stormkit::gpu {
 
         explicit Owned(DeleterType&& deleter_ptr) noexcept;
 
-        ElementType m_vk_handle;
+        ValueType   m_vk_handle;
         DeleterType m_deleter_ptr;
     };
 
@@ -226,7 +226,7 @@ namespace stormkit::gpu {
     template<typename T>
     STORMKIT_FORCE_INLINE
     inline Owned<T>::~Owned() noexcept {
-        if constexpr (cmeta::SameAs<DeleterType, void (*)(ElementType, const VkAllocationCallbacks*)>) {
+        if constexpr (cmeta::SameAs<DeleterType, void (*)(ValueType, const VkAllocationCallbacks*)>) {
             if (m_deleter_ptr != nullptr and m_vk_handle != VK_NULL_HANDLE) vk::call(m_deleter_ptr, m_vk_handle, nullptr);
             m_vk_handle = VK_NULL_HANDLE;
         }
@@ -259,7 +259,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::native_handle() const noexcept -> ElementType {
+    inline auto Owned<T>::native_handle() const noexcept -> ValueType {
         EXPECTS(m_vk_handle != VK_NULL_HANDLE);
         return m_vk_handle;
     }
@@ -268,7 +268,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline Owned<T>::operator ElementType() const noexcept {
+    inline Owned<T>::operator ValueType() const noexcept {
         return native_handle();
     }
 
@@ -437,7 +437,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto View<T>::native_handle() const noexcept -> ElementType {
+    inline auto View<T>::native_handle() const noexcept -> ValueType {
         EXPECTS(m_vk_handle != VK_NULL_HANDLE);
         return m_vk_handle;
     }
@@ -446,7 +446,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline View<T>::operator ElementType() const noexcept {
+    inline View<T>::operator ValueType() const noexcept {
         return native_handle();
     }
 

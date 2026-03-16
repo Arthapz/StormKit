@@ -34,7 +34,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<FrameBuffer> {
             using Of          = FrameBuffer;
-            using ElementType = VkFramebuffer;
+            using ValueType = VkFramebuffer;
             using DeleterType = PFN_vkDestroyFramebuffer VolkDeviceTable::*;
             using ViewType    = view::FrameBuffer;
             using OwnedBy     = Device;
@@ -46,7 +46,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<RenderPass> {
             using Of          = RenderPass;
-            using ElementType = VkRenderPass;
+            using ValueType = VkRenderPass;
             using DeleterType = PFN_vkDestroyRenderPass VolkDeviceTable::*;
             using ViewType    = view::RenderPass;
             using OwnedBy     = Device;
@@ -97,7 +97,7 @@ export namespace stormkit::gpu {
         class STORMKIT_GPU_API FrameBuffer: public DeviceObject<gpu::FrameBuffer> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::FrameBuffer>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             FrameBuffer(const gpu::FrameBuffer& of) noexcept;
@@ -201,7 +201,7 @@ export namespace stormkit::gpu {
         class STORMKIT_GPU_API RenderPass: public DeviceObject<gpu::RenderPass> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::RenderPass>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             // RenderPass(const gpu::RenderPass& of) noexcept;

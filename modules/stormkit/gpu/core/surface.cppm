@@ -34,7 +34,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Surface> {
             using Of          = Surface;
-            using ElementType = VkSurfaceKHR;
+            using ValueType = VkSurfaceKHR;
             using DeleterType = PFN_vkDestroySurfaceKHR;
             using ViewType    = view::Surface;
             using OwnedBy     = Instance;

@@ -34,7 +34,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Fence> {
             using Of          = Fence;
-            using ElementType = VkFence;
+            using ValueType = VkFence;
             using DeleterType = PFN_vkDestroyFence VolkDeviceTable::*;
             using ViewType    = view::Fence;
             using OwnedBy     = Device;
@@ -45,7 +45,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Semaphore> {
             using Of          = Semaphore;
-            using ElementType = VkSemaphore;
+            using ValueType = VkSemaphore;
             using DeleterType = PFN_vkDestroySemaphore VolkDeviceTable::*;
             using ViewType    = view::Semaphore;
             using OwnedBy     = Device;
@@ -87,7 +87,7 @@ export namespace stormkit::gpu {
         class STORMKIT_GPU_API Fence: public view::DeviceObject<gpu::Fence> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::Fence>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             using view::DeviceObject<gpu::Fence>::DeviceObject;

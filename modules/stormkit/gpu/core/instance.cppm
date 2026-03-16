@@ -36,7 +36,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Instance> {
             using Of          = Instance;
-            using ElementType = VkInstance;
+            using ValueType   = VkInstance;
             using DeleterType = PFN_vkDestroyInstance;
             using ViewType    = view::Instance;
 
@@ -75,9 +75,9 @@ export namespace stormkit::gpu {
         template<typename T>
         class InstanceObject: public View<T> {
           public:
-            using ObjectInfo  = typename meta::ObjectInfo<T>;
-            using ElementType = ObjectInfo::ElementType;
-            using ViewType    = ObjectInfo::ViewType;
+            using ObjectInfo = typename meta::ObjectInfo<T>;
+            using ValueType  = ObjectInfo::ValueType;
+            using ViewType   = ObjectInfo::ViewType;
 
             InstanceObject(const T& child) noexcept;
             template<cmeta::IsContainerOrPointerOf<T> U>
@@ -102,7 +102,7 @@ export namespace stormkit::gpu {
     class OwnedByInstance: public Owned<T> {
       public:
         using ObjectInfo  = typename meta::ObjectInfo<T>;
-        using ElementType = ObjectInfo::ElementType;
+        using ValueType   = ObjectInfo::ValueType;
         using DeleterType = ObjectInfo::DeleterType;
         using ViewType    = ObjectInfo::ViewType;
 
@@ -208,7 +208,7 @@ namespace stormkit::gpu {
     template<typename T>
     STORMKIT_FORCE_INLINE
     inline OwnedByInstance<T>::~OwnedByInstance() noexcept {
-        if constexpr (cmeta::SameAs<DeleterType, void (*)(VkInstance, ElementType, const VkAllocationCallbacks*)>) {
+        if constexpr (cmeta::SameAs<DeleterType, void (*)(VkInstance, ValueType, const VkAllocationCallbacks*)>) {
             auto& vk_handle   = Parent::m_vk_handle;
             auto& deleter_ptr = Parent::m_deleter_ptr;
             if (deleter_ptr != nullptr and vk_handle != VK_NULL_HANDLE) vk::call(deleter_ptr, m_instance, vk_handle, nullptr);

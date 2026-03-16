@@ -36,7 +36,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Sampler> {
             using Of          = Sampler;
-            using ElementType = VkSampler;
+            using ValueType   = VkSampler;
             using DeleterType = PFN_vkDestroySampler VolkDeviceTable::*;
             using ViewType    = view::Sampler;
             using OwnedBy     = Device;
@@ -47,7 +47,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<ImageView> {
             using Of          = ImageView;
-            using ElementType = VkImageView;
+            using ValueType   = VkImageView;
             using DeleterType = PFN_vkDestroyImageView VolkDeviceTable::*;
             using ViewType    = view::ImageView;
             using OwnedBy     = Device;
@@ -58,7 +58,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Image> {
             using Of          = Image;
-            using ElementType = VkImage;
+            using ValueType   = VkImage;
             using DeleterType = PFN_vkDestroyImage VolkDeviceTable::*;
             using ViewType    = view::Image;
             using OwnedBy     = Device;
@@ -118,9 +118,9 @@ export namespace stormkit::gpu {
     namespace view {
         class STORMKIT_GPU_API Sampler: public view::DeviceObject<gpu::Sampler> {
           public:
-            using ObjectInfo  = typename meta::ObjectInfo<gpu::Sampler>;
-            using ElementType = ObjectInfo::ElementType;
-            using ViewType    = ObjectInfo::ViewType;
+            using ObjectInfo = typename meta::ObjectInfo<gpu::Sampler>;
+            using ValueType  = ObjectInfo::ValueType;
+            using ViewType   = ObjectInfo::ViewType;
 
             Sampler(const gpu::Sampler& of) noexcept;
             template<cmeta::IsContainerOrPointerOf<gpu::Sampler> T>
@@ -171,9 +171,9 @@ export namespace stormkit::gpu {
     namespace view {
         class STORMKIT_GPU_API ImageView: public view::DeviceObject<gpu::ImageView> {
           public:
-            using ObjectInfo  = typename meta::ObjectInfo<gpu::ImageView>;
-            using ElementType = ObjectInfo::ElementType;
-            using ViewType    = ObjectInfo::ViewType;
+            using ObjectInfo = typename meta::ObjectInfo<gpu::ImageView>;
+            using ValueType  = ObjectInfo::ValueType;
+            using ViewType   = ObjectInfo::ViewType;
 
             ImageView(const gpu::ImageView& of) noexcept;
             template<cmeta::IsContainerOrPointerOf<gpu::ImageView> T>
@@ -267,9 +267,9 @@ export namespace stormkit::gpu {
     namespace view {
         class STORMKIT_GPU_API Image: public view::DeviceObject<gpu::Image> {
           public:
-            using ObjectInfo  = typename meta::ObjectInfo<gpu::Image>;
-            using ElementType = ObjectInfo::ElementType;
-            using ViewType    = ObjectInfo::ViewType;
+            using ObjectInfo = typename meta::ObjectInfo<gpu::Image>;
+            using ValueType  = ObjectInfo::ValueType;
+            using ViewType   = ObjectInfo::ViewType;
 
             Image(const gpu::Image& of) noexcept;
             template<cmeta::IsContainerOrPointerOf<gpu::Image> T>

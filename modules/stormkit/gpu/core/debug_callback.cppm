@@ -31,7 +31,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<DebugCallback> {
             using Of          = DebugCallback;
-            using ElementType = VkDebugUtilsMessengerEXT;
+            using ValueType = VkDebugUtilsMessengerEXT;
             using DeleterType = PFN_vkDestroyDebugUtilsMessengerEXT;
             using ViewType    = view::DebugCallback;
             using OwnedBy     = Instance;

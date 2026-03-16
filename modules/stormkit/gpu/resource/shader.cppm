@@ -34,7 +34,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<Shader> {
             using Of          = Shader;
-            using ElementType = VkShaderModule;
+            using ValueType = VkShaderModule;
             using DeleterType = PFN_vkDestroyShaderModule VolkDeviceTable::*;
             using ViewType    = view::Shader;
             using OwnedBy     = Device;
@@ -100,7 +100,7 @@ export namespace stormkit::gpu {
         class STORMKIT_GPU_API Shader: public view::DeviceObject<gpu::Shader> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<gpu::Shader>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             Shader(const gpu::Shader& of) noexcept;

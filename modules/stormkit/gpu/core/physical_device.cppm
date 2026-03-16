@@ -33,7 +33,7 @@ export namespace stormkit::gpu {
         template<>
         struct ObjectInfo<PhysicalDevice> {
             using Of          = PhysicalDevice;
-            using ElementType = VkPhysicalDevice;
+            using ValueType = VkPhysicalDevice;
             using DeleterType = decltype(monadic::noop());
             using ViewType    = view::PhysicalDevice;
             using OwnedBy     = Instance;
@@ -140,7 +140,7 @@ export namespace stormkit::gpu {
         class PhysicalDeviceObject: public InstanceObject<T> {
           public:
             using ObjectInfo  = typename meta::ObjectInfo<T>;
-            using ElementType = ObjectInfo::ElementType;
+            using ValueType = ObjectInfo::ValueType;
             using ViewType    = ObjectInfo::ViewType;
 
             PhysicalDeviceObject(const T& child) noexcept;
@@ -166,7 +166,7 @@ export namespace stormkit::gpu {
     class OwnedByPhysicalDevice: public OwnedByInstance<T> {
       public:
         using ObjectInfo  = typename meta::ObjectInfo<T>;
-        using ElementType = ObjectInfo::ElementType;
+        using ValueType = ObjectInfo::ValueType;
         using DeleterType = ObjectInfo::DeleterType;
         using ViewType    = ObjectInfo::ViewType;
 
