@@ -15,7 +15,7 @@ namespace {
     auto _ = test::TestSuite {
         "Core.typesafe",
         {
-          { "Ref.to_refs.std_vector.all_ref",
+          { "ref.to_refs.std_vector.all_ref",
             [] static noexcept {
                 auto a = 0;
                 auto b = 1;
@@ -29,7 +29,7 @@ namespace {
                 auto i = 0;
                 for (auto&& ref : refs) EXPECTS(*ref == i++);
             } },
-          { "Ref.as_refs.std_array.all_ref",
+          { "ref.as_refs.std_array.all_ref",
             [] static noexcept {
                 auto a = 0;
                 auto b = 1;
@@ -43,7 +43,7 @@ namespace {
                 auto i = 0;
                 for (auto&& ref : refs) EXPECTS(*ref == i++);
             } },
-          { "Ref.as_refs.default.all_ref",
+          { "ref.as_refs.default.all_ref",
             [] static noexcept {
                 auto a = 0;
                 auto b = 1;
@@ -57,7 +57,7 @@ namespace {
                 auto i = 0;
                 for (auto&& ref : refs) EXPECTS(*ref == i++);
             } },
-          { "Ref.to_refs.std_vector.all_ptr",
+          { "ref.to_refs.std_vector.all_ptr",
             [] static noexcept {
                 auto a = std::make_unique<int>(0);
                 auto b = std::make_unique<int>(1);
@@ -74,7 +74,7 @@ namespace {
                 delete d;
                 delete e;
             } },
-          { "Ref.as_refs.std_array.all_ptr",
+          { "ref.as_refs.std_array.all_ptr",
             [] static noexcept {
                 auto a = std::make_unique<int>(0);
                 auto b = std::make_unique<int>(1);
@@ -91,7 +91,7 @@ namespace {
                 delete d;
                 delete e;
             } },
-          { "Ref.as_refs.default.all_ptr",
+          { "ref.as_refs.default.all_ptr",
             [] static noexcept {
                 auto a = std::make_unique<int>(0);
                 auto b = std::make_unique<int>(1);
@@ -108,7 +108,7 @@ namespace {
                 delete d;
                 delete e;
             } },
-          { "Ref.to_refs.std_set",
+          { "ref.to_refs.std_set",
             [] static noexcept {
                 auto vec  = std::vector { 1, 3, 5, 6, 9 };
                 auto refs = to_refs<std::set>(vec);
@@ -116,7 +116,7 @@ namespace {
                 auto i = 0u;
                 for (auto&& ref : refs) EXPECTS(*ref == vec[i++]);
             } },
-          { "Ref.to_refs.default",
+          { "ref.to_refs.default",
             [] static noexcept {
                 constexpr auto vec  = std::array { 1, 3, 5, 6, 9 };
                 auto           refs = to_refs(vec);

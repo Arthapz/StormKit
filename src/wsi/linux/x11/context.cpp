@@ -107,7 +107,7 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_error(Ref<xcb_generic_error_t> error) -> std::string {
+    auto get_error(ref<xcb_generic_error_t> error) -> std::string {
         auto guard = xcb::GenericError::take(error);
 
         const auto major = xcb_errors_get_name_for_major_code(globals.error_context, error->major_code);
@@ -125,8 +125,8 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<Ref<xcb_input_xi_device_info_t>, Error> {
-        auto out = std::expected<Ref<xcb_input_xi_device_info_t>, Error> { std::unexpect };
+    auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<ref<xcb_input_xi_device_info_t>, Error> {
+        auto out = std::expected<ref<xcb_input_xi_device_info_t>, Error> { std::unexpect };
 
         const auto cookie = xcb_input_xi_query_device(globals.connection, device_id);
         auto       error  = xcb::GenericError::empty();

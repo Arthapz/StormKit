@@ -209,12 +209,12 @@ export namespace stormkit::entities {
         auto get_component(this Self& self, Entity entity, std::string_view) noexcept -> cmeta::ForwardConst<Self, T>&;
 
         template<meta::ComponentWithStaticType T, class Self>
-        auto components_of_type(this Self& self) noexcept -> std::vector<Ref<cmeta::ForwardConst<Self, T>>>;
+        auto components_of_type(this Self& self) noexcept -> std::vector<ref<cmeta::ForwardConst<Self, T>>>;
         template<meta::IsComponentType T, class Self>
-        auto components_of_type(this Self& self, ComponentType type) noexcept -> std::vector<Ref<cmeta::ForwardConst<Self, T>>>;
+        auto components_of_type(this Self& self, ComponentType type) noexcept -> std::vector<ref<cmeta::ForwardConst<Self, T>>>;
         template<meta::IsComponentType T, class Self>
         auto components_of_type(this Self& self, std::string_view name) noexcept
-          -> std::vector<Ref<cmeta::ForwardConst<Self, T>>>;
+          -> std::vector<ref<cmeta::ForwardConst<Self, T>>>;
 
         auto components_types_of(Entity entity) const noexcept -> std::vector<ComponentType>;
 
@@ -225,7 +225,7 @@ export namespace stormkit::entities {
         auto remove_system(std::string_view name) noexcept -> void;
 
         template<class Self>
-        auto systems(this Self& self) noexcept -> std::vector<Ref<cmeta::ForwardConst<Self, System>>>;
+        auto systems(this Self& self) noexcept -> std::vector<ref<cmeta::ForwardConst<Self, System>>>;
 
         template<class Self>
         auto get_system(this Self& self, std::string_view name) noexcept -> cmeta::ForwardConst<Self, System&>;
@@ -391,7 +391,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::ComponentWithStaticType T, class Self>
-    auto EntityManager::components_of_type(this Self& self) noexcept -> std::vector<Ref<cmeta::ForwardConst<Self, T>>> {
+    auto EntityManager::components_of_type(this Self& self) noexcept -> std::vector<ref<cmeta::ForwardConst<Self, T>>> {
         return self.template components_of_type<T>(T::type());
     }
 
@@ -399,7 +399,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<meta::IsComponentType T, class Self>
     auto EntityManager::components_of_type(this Self& self, ComponentType type) noexcept
-      -> std::vector<Ref<cmeta::ForwardConst<Self, T>>> {
+      -> std::vector<ref<cmeta::ForwardConst<Self, T>>> {
         // clang-format off
         return self.m_entities 
                | stdv::filter([&self, type](auto entity) noexcept { return self.has_component(entity, type); })
@@ -414,7 +414,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<meta::IsComponentType T, class Self>
     auto EntityManager::components_of_type(this Self& self, std::string_view name) noexcept
-      -> std::vector<Ref<cmeta::ForwardConst<Self, T>>> {
+      -> std::vector<ref<cmeta::ForwardConst<Self, T>>> {
         return self.template components_of_type<T>(hash(name));
     }
 
@@ -491,7 +491,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Self>
-    auto EntityManager::systems(this Self& self) noexcept -> std::vector<Ref<cmeta::ForwardConst<Self, System>>> {
+    auto EntityManager::systems(this Self& self) noexcept -> std::vector<ref<cmeta::ForwardConst<Self, System>>> {
         constexpr auto as_refer = [] {
             if constexpr (cmeta::IsConst<Self>) return monadic::as_ref();
             else

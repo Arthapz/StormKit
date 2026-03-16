@@ -182,7 +182,7 @@ export namespace stormkit::gpu {
                 gpu::ImageLayout     layout = ImageLayout::ATTACHMENT_OPTIMAL;
             };
 
-            Ref<const gpu::ImageView> image_view;
+            ref<const gpu::ImageView> image_view;
             gpu::ImageLayout          layout = ImageLayout::ATTACHMENT_OPTIMAL;
 
             std::optional<Resolve> resolve = std::nullopt;

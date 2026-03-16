@@ -78,7 +78,7 @@ export namespace stormkit::gpu {
         auto map(ioffset offset, usize size) noexcept -> Expected<std::span<byte>>;
 
         template<typename T>
-        auto map_as(ioffset offset) noexcept -> Expected<Ref<T>>;
+        auto map_as(ioffset offset) noexcept -> Expected<ref<T>>;
 
         bool mapped() const noexcept;
 
@@ -92,7 +92,7 @@ export namespace stormkit::gpu {
 
         template<typename T>
         [[nodiscard]]
-        auto data_as(this auto& self) noexcept -> Ref<T>;
+        auto data_as(this auto& self) noexcept -> ref<T>;
 
         auto flush(ioffset offset, usize size) noexcept -> Expected<void>;
         auto unmap() noexcept -> void;
@@ -161,7 +161,7 @@ export namespace stormkit::gpu {
             auto map(ioffset offset, usize size) noexcept -> Expected<std::span<byte>>;
 
             template<typename T>
-            auto map_as(ioffset offset) noexcept -> Expected<Ref<T>>;
+            auto map_as(ioffset offset) noexcept -> Expected<ref<T>>;
 
             bool mapped() const noexcept;
 
@@ -175,7 +175,7 @@ export namespace stormkit::gpu {
 
             template<typename T>
             [[nodiscard]]
-            auto data_as(this auto& self) noexcept -> Ref<T>;
+            auto data_as(this auto& self) noexcept -> ref<T>;
 
             auto flush(ioffset offset, usize size) noexcept -> Expected<void>;
             auto unmap() noexcept -> void;
@@ -296,7 +296,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto Buffer::map_as(ioffset offset) noexcept -> Expected<Ref<T>> {
+    inline auto Buffer::map_as(ioffset offset) noexcept -> Expected<ref<T>> {
         EXPECTS(m_vma_allocation and m_vk_handle);
 
         const auto ptr = Try(map(offset));
@@ -339,7 +339,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T, typename Self>
     STORMKIT_FORCE_INLINE
-    inline auto Buffer::data_as(this Self& self) noexcept -> Ref<T> {
+    inline auto Buffer::data_as(this Self& self) noexcept -> ref<T> {
         EXPECTS(self.m_vma_allocation and self.m_vk_handle);
         EXPECTS(self.m_mapped_pointer);
 
@@ -460,7 +460,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         template<typename T>
     STORMKIT_FORCE_INLINE
-        inline auto Buffer::map_as(ioffset offset) noexcept -> Expected<Ref<T>> {
+        inline auto Buffer::map_as(ioffset offset) noexcept -> Expected<ref<T>> {
             EXPECTS(m_vma_allocation and m_vk_handle);
 
             const auto ptr = Try(map(offset));
@@ -503,7 +503,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         template<typename T, typename Self>
     STORMKIT_FORCE_INLINE
-        inline auto Buffer::data_as(this Self& self) noexcept -> Ref<T> {
+        inline auto Buffer::data_as(this Self& self) noexcept -> ref<T> {
             EXPECTS(self.m_vma_allocation and self.m_vk_handle);
             EXPECTS(self.m_mapped_pointer);
 

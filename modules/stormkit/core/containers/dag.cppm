@@ -105,7 +105,7 @@ export namespace stormkit { inline namespace core {
         constexpr auto topological_sort() const noexcept -> std::expected<std::vector<dag::VertexID>, std::vector<dag::VertexID>>;
         constexpr auto find_cycle() const noexcept -> std::optional<std::vector<dag::VertexID>>;
 
-        constexpr auto reverse_view() const noexcept -> DAG<Ref<const VertexValue>>;
+        constexpr auto reverse_view() const noexcept -> DAG<ref<const VertexValue>>;
         constexpr auto reverse_clone() const noexcept -> DAG<VertexValue>;
 
         constexpr auto dump(Closures closures = {}) const noexcept -> std::string;
@@ -487,8 +487,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename VertexValue>
-    constexpr auto DAG<VertexValue>::reverse_view() const noexcept -> DAG<Ref<const VertexValue>> {
-        return DAG<Ref<const VertexValue>>::template reverse_from<DAG<VertexValue>, true>(m_next_id, m_vertices, m_edges);
+    constexpr auto DAG<VertexValue>::reverse_view() const noexcept -> DAG<ref<const VertexValue>> {
+        return DAG<ref<const VertexValue>>::template reverse_from<DAG<VertexValue>, true>(m_next_id, m_vertices, m_edges);
     }
 
     ////////////////////////////////////////

@@ -99,7 +99,7 @@ export namespace stormkit { inline namespace core {
         class Access {
           public:
             using AccessValueType  = std::conditional_t<Mode == LockAccessMode::READ_ONLY, const ValueType, ValueType>;
-            using RefContainerType = std::conditional_t<Mode == LockAccessMode::READ_ONLY, Ref<const ValueType>, Ref<ValueType>>;
+            using RefContainerType = std::conditional_t<Mode == LockAccessMode::READ_ONLY, ref<const ValueType>, ref<ValueType>>;
 
             template<typename... LockArgs>
             Access(ReferenceType value, MutexType& mutex, LockArgs&&... args) noexcept;

@@ -29,59 +29,59 @@ export {
         using owned_ptr = T*;
 
         template<typename T, bool Optional = false>
-        class Ref;
+        class ref;
 
         template<typename T>
-        using OptionalRef = Ref<T, true>;
+        using optref = ref<T, true>;
 
         inline constexpr struct Raw {
         } RAW;
 
         template<typename T, bool Optional = false>
-        class Ref {
+        class ref {
           public:
             using ElementType   = T;
-            using ReferenceType = ElementType&;
+            using referenceType = ElementType&;
             using PointerType   = ElementType*;
 
             // STL compatible
             using element_type = ElementType;
             using pointer      = PointerType;
 
-            constexpr Ref(std::nullopt_t) noexcept
+            constexpr ref(std::nullopt_t) noexcept
                 requires(Optional == true);
-            constexpr Ref(std::nullptr_t) noexcept
+            constexpr ref(std::nullptr_t) noexcept
                 requires(Optional == true);
-            constexpr Ref() noexcept
+            constexpr ref() noexcept
                 requires(Optional == true);
-            constexpr ~Ref() noexcept;
+            constexpr ~ref() noexcept;
 
             template<meta::IsCanonical<T> U, bool OptionalU>
                 requires(not(meta::IsConst<U> and not meta::IsConst<T>))
-            constexpr Ref(const Ref<U, OptionalU>&) noexcept;
+            constexpr ref(const ref<U, OptionalU>&) noexcept;
             template<meta::IsCanonical<T> U, bool OptionalU>
                 requires(not(meta::IsConst<U> and not meta::IsConst<T>))
-            constexpr Ref(Ref<U, OptionalU>&&) noexcept;
+            constexpr ref(ref<U, OptionalU>&&) noexcept;
 
-            constexpr auto operator=(const Ref&) noexcept -> Ref& = delete;
+            constexpr auto operator=(const ref&) noexcept -> ref& = delete;
 
             template<meta::IsCanonical<T> U, bool OptionalU>
                 requires(not(meta::IsConst<U> and not meta::IsConst<T>))
-            constexpr auto operator=(Ref<U, OptionalU>&& other) noexcept -> decltype(auto);
+            constexpr auto operator=(ref<U, OptionalU>&& other) noexcept -> decltype(auto);
 
             [[nodiscard]]
             constexpr auto get() const noexcept STORMKIT_LIFETIMEBOUND -> PointerType;
             [[nodiscard]]
             constexpr auto operator->() const noexcept STORMKIT_LIFETIMEBOUND->PointerType;
             [[nodiscard]]
-            constexpr auto operator*() const noexcept STORMKIT_LIFETIMEBOUND->ReferenceType;
+            constexpr auto operator*() const noexcept STORMKIT_LIFETIMEBOUND->referenceType;
 
             constexpr explicit operator bool() const noexcept;
             [[nodiscard]]
             constexpr auto has_value() const noexcept -> Boolean;
 
             [[nodiscard]]
-            constexpr operator ReferenceType() const noexcept STORMKIT_LIFETIMEBOUND;
+            constexpr operator referenceType() const noexcept STORMKIT_LIFETIMEBOUND;
             [[nodiscard]]
             constexpr operator PointerType() const noexcept STORMKIT_LIFETIMEBOUND;
 
@@ -97,8 +97,8 @@ export {
             constexpr auto operator>=(std::nullptr_t) const noexcept -> bool;
             [[nodiscard]]
             constexpr auto operator<=>(std::nullptr_t) const noexcept
-              -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
-                requires std::three_way_comparable<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
+              -> std::compare_three_way_result_t<typename ref<T, Optional>::PointerType, typename ref<T, Optional>::PointerType>
+                requires std::three_way_comparable<typename ref<T, Optional>::PointerType, typename ref<T, Optional>::PointerType>
             ;
 
             [[nodiscard]]
@@ -118,175 +118,175 @@ export {
                 requires(Optional == true);
             [[nodiscard]]
             constexpr auto operator<=>(std::nullopt_t) const noexcept
-              -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
-                requires(std::three_way_comparable<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
+              -> std::compare_three_way_result_t<typename ref<T, Optional>::PointerType, typename ref<T, Optional>::PointerType>
+                requires(std::three_way_comparable<typename ref<T, Optional>::PointerType, typename ref<T, Optional>::PointerType>
                          and Optional == true);
 
             template<typename U, bool OptionalU>
             [[nodiscard]]
-            constexpr auto operator==(const Ref<U, OptionalU>&) const noexcept -> bool;
+            constexpr auto operator==(const ref<U, OptionalU>&) const noexcept -> bool;
             template<typename U, bool OptionalU>
             [[nodiscard]]
-            constexpr auto operator<(const Ref<U, OptionalU>&) const noexcept -> bool;
+            constexpr auto operator<(const ref<U, OptionalU>&) const noexcept -> bool;
             template<typename U, bool OptionalU>
             [[nodiscard]]
-            constexpr auto operator<=(const Ref<U, OptionalU>&) const noexcept -> bool;
+            constexpr auto operator<=(const ref<U, OptionalU>&) const noexcept -> bool;
             template<typename U, bool OptionalU>
             [[nodiscard]]
-            constexpr auto operator>(const Ref<U, OptionalU>&) const noexcept -> bool;
+            constexpr auto operator>(const ref<U, OptionalU>&) const noexcept -> bool;
             template<typename U, bool OptionalU>
             [[nodiscard]]
-            constexpr auto operator>=(const Ref<U, OptionalU>&) const noexcept -> bool;
+            constexpr auto operator>=(const ref<U, OptionalU>&) const noexcept -> bool;
             template<typename U, bool OptionalU>
-                requires std::three_way_comparable<typename Ref<T, Optional>::PointerType,
-                                                   typename Ref<U, OptionalU>::PointerType>
+                requires std::three_way_comparable<typename ref<T, Optional>::PointerType,
+                                                   typename ref<U, OptionalU>::PointerType>
             [[nodiscard]]
-            constexpr auto operator<=>(const Ref<U>& other) const noexcept
-              -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<U, OptionalU>::PointerType>;
+            constexpr auto operator<=>(const ref<U>& other) const noexcept
+              -> std::compare_three_way_result_t<typename ref<T, Optional>::PointerType, typename ref<U, OptionalU>::PointerType>;
 
             [[nodiscard]]
             constexpr operator std::reference_wrapper<T>() const noexcept;
 
           private:
-            constexpr Ref(ReferenceType value STORMKIT_LIFETIMEBOUND) noexcept;
-            constexpr Ref(PointerType value STORMKIT_LIFETIMEBOUND) noexcept;
+            constexpr ref(referenceType value STORMKIT_LIFETIMEBOUND) noexcept;
+            constexpr ref(PointerType value STORMKIT_LIFETIMEBOUND) noexcept;
 
-            friend class Ref<T, not Optional>;
-            friend class Ref<meta::If<meta::IsConst<T>, T, const T>, not Optional>;
+            friend class ref<T, not Optional>;
+            friend class ref<meta::If<meta::IsConst<T>, T, const T>, not Optional>;
 
             PointerType m_value;
 
             template<typename U>
-            friend constexpr auto as_ref_raw(const U&) noexcept -> Ref<const U>;
+            friend constexpr auto as_ref_raw(const U&) noexcept -> ref<const U>;
 
             template<typename U>
                 requires(not meta::IsConst<U>)
-            friend constexpr auto as_ref_mut_raw(U&) noexcept -> Ref<U>;
+            friend constexpr auto as_ref_mut_raw(U&) noexcept -> ref<U>;
 
             template<typename U>
-            friend constexpr auto as_ref_like_raw(U&) noexcept -> Ref<U>;
+            friend constexpr auto as_ref_like_raw(U&) noexcept -> ref<U>;
 
             template<typename U>
-            friend constexpr auto as_optref_raw(const U&) noexcept -> OptionalRef<const U>;
+            friend constexpr auto as_optref_raw(const U&) noexcept -> optref<const U>;
 
             template<typename U>
                 requires(not meta::IsConst<U>)
-            friend constexpr auto as_optref_mut_raw(U&) noexcept -> OptionalRef<U>;
+            friend constexpr auto as_optref_mut_raw(U&) noexcept -> optref<U>;
 
             template<typename U>
-            friend constexpr auto as_optref_like_raw(U&) noexcept -> OptionalRef<U>;
+            friend constexpr auto as_optref_like_raw(U&) noexcept -> optref<U>;
         };
 
         template<typename T>
         [[nodiscard]]
-        constexpr auto as_ref_raw(const T& value) noexcept -> Ref<const T>;
+        constexpr auto as_ref_raw(const T& value) noexcept -> ref<const T>;
 
         template<typename T>
             requires(not meta::IsContainerOrPointer<T>)
         [[nodiscard]]
-        constexpr auto as_ref(const T& value) noexcept -> Ref<const T>;
+        constexpr auto as_ref(const T& value) noexcept -> ref<const T>;
 
         template<meta::IsPointer T>
         [[nodiscard]]
-        constexpr auto as_ref(const T& value) noexcept -> Ref<const meta::PointedType<T>>;
+        constexpr auto as_ref(const T& value) noexcept -> ref<const meta::PointedType<T>>;
 
         template<meta::IsContainer T>
         [[nodiscard]]
-        constexpr auto as_ref(const T& value) noexcept -> Ref<const meta::ContainedType<T>>;
+        constexpr auto as_ref(const T& value) noexcept -> ref<const meta::ContainedType<T>>;
 
         template<typename T>
         [[nodiscard]]
-        constexpr auto as_ref_mut_raw(const T& value) noexcept -> Ref<const T>;
+        constexpr auto as_ref_mut_raw(const T& value) noexcept -> ref<const T>;
 
         template<typename T>
             requires(not meta::IsContainerOrPointer<T> and not meta::IsConst<T>)
         [[nodiscard]]
-        constexpr auto as_ref_mut(T& value) noexcept -> Ref<T>;
+        constexpr auto as_ref_mut(T& value) noexcept -> ref<T>;
 
         template<meta::IsPointer T>
             requires(not meta::IsConst<meta::PointedType<T>>)
         [[nodiscard]]
-        constexpr auto as_ref_mut(T& value) noexcept -> Ref<meta::PointedType<T>>;
+        constexpr auto as_ref_mut(T& value) noexcept -> ref<meta::PointedType<T>>;
 
         template<meta::IsContainer T>
             requires(not meta::IsConst<meta::ContainedType<T>>)
         [[nodiscard]]
-        constexpr auto as_ref_mut(T& value) noexcept -> Ref<meta::ContainedType<T>>;
+        constexpr auto as_ref_mut(T& value) noexcept -> ref<meta::ContainedType<T>>;
 
         template<typename T>
         [[nodiscard]]
-        constexpr auto as_ref_mut_like(const T& value) noexcept -> Ref<const T>;
+        constexpr auto as_ref_mut_like(const T& value) noexcept -> ref<const T>;
 
         template<typename T>
         [[nodiscard]]
-        constexpr auto as_ref_like_raw(T& value) noexcept -> Ref<T>;
-
-        template<typename T>
-            requires(not meta::IsContainerOrPointer<T>)
-        [[nodiscard]]
-        constexpr auto as_ref_like(T& value) noexcept -> Ref<T>;
-
-        template<meta::IsPointer T>
-        [[nodiscard]]
-        constexpr auto as_ref_like(T& value) noexcept -> Ref<meta::PointedType<T>>;
-
-        template<meta::IsContainer T>
-        [[nodiscard]]
-        constexpr auto as_ref_like(T& value) noexcept -> Ref<meta::ContainedType<T>>;
-
-        template<typename T>
-        [[nodiscard]]
-        constexpr auto as_optref_raw(const T& value) noexcept -> OptionalRef<const T>;
+        constexpr auto as_ref_like_raw(T& value) noexcept -> ref<T>;
 
         template<typename T>
             requires(not meta::IsContainerOrPointer<T>)
         [[nodiscard]]
-        constexpr auto as_optref(const T& value) noexcept -> OptionalRef<const T>;
+        constexpr auto as_ref_like(T& value) noexcept -> ref<T>;
 
         template<meta::IsPointer T>
         [[nodiscard]]
-        constexpr auto as_optref(const T& value) noexcept -> OptionalRef<const meta::PointedType<T>>;
+        constexpr auto as_ref_like(T& value) noexcept -> ref<meta::PointedType<T>>;
 
         template<meta::IsContainer T>
         [[nodiscard]]
-        constexpr auto as_optref(const T& value) noexcept -> OptionalRef<const meta::ContainedType<T>>;
+        constexpr auto as_ref_like(T& value) noexcept -> ref<meta::ContainedType<T>>;
+
+        template<typename T>
+        [[nodiscard]]
+        constexpr auto as_optref_raw(const T& value) noexcept -> optref<const T>;
+
+        template<typename T>
+            requires(not meta::IsContainerOrPointer<T>)
+        [[nodiscard]]
+        constexpr auto as_optref(const T& value) noexcept -> optref<const T>;
+
+        template<meta::IsPointer T>
+        [[nodiscard]]
+        constexpr auto as_optref(const T& value) noexcept -> optref<const meta::PointedType<T>>;
+
+        template<meta::IsContainer T>
+        [[nodiscard]]
+        constexpr auto as_optref(const T& value) noexcept -> optref<const meta::ContainedType<T>>;
 
         template<typename T>
             requires(not meta::IsConst<T>)
         [[nodiscard]]
-        constexpr auto as_optref_mut_raw(T& value) noexcept -> OptionalRef<T>;
+        constexpr auto as_optref_mut_raw(T& value) noexcept -> optref<T>;
 
         template<typename T>
             requires(not meta::IsContainerOrPointer<T> and not meta::IsConst<T>)
         [[nodiscard]]
-        constexpr auto as_optref_mut(T& value) noexcept -> OptionalRef<T>;
+        constexpr auto as_optref_mut(T& value) noexcept -> optref<T>;
 
         template<meta::IsPointer T>
             requires(not meta::IsConst<meta::PointedType<T>>)
         [[nodiscard]]
-        constexpr auto as_optref_mut(T& value) noexcept -> OptionalRef<meta::PointedType<T>>;
+        constexpr auto as_optref_mut(T& value) noexcept -> optref<meta::PointedType<T>>;
 
         template<meta::IsContainer T>
             requires(not meta::IsConst<meta::ContainedType<T>>)
         [[nodiscard]]
-        constexpr auto as_optref_mut(T& value) noexcept -> OptionalRef<meta::ContainedType<T>>;
+        constexpr auto as_optref_mut(T& value) noexcept -> optref<meta::ContainedType<T>>;
 
         template<typename T>
         [[nodiscard]]
-        constexpr auto as_optref_like_raw(T& value) noexcept -> OptionalRef<T>;
+        constexpr auto as_optref_like_raw(T& value) noexcept -> optref<T>;
 
         template<typename T>
             requires(not meta::IsContainerOrPointer<T>)
         [[nodiscard]]
-        constexpr auto as_optref_like(T& value) noexcept -> OptionalRef<T>;
+        constexpr auto as_optref_like(T& value) noexcept -> optref<T>;
 
         template<meta::IsPointer T>
         [[nodiscard]]
-        constexpr auto as_optref_like(T& value) noexcept -> OptionalRef<meta::PointedType<T>>;
+        constexpr auto as_optref_like(T& value) noexcept -> optref<meta::PointedType<T>>;
 
         template<meta::IsContainer T>
         [[nodiscard]]
-        constexpr auto as_optref_like(T& value) noexcept -> OptionalRef<meta::ContainedType<T>>;
+        constexpr auto as_optref_like(T& value) noexcept -> optref<meta::ContainedType<T>>;
 
         template<meta::IsPointer T>
         [[nodiscard]]
@@ -358,16 +358,16 @@ export {
         constexpr auto to_mut_opt_refs(T& range) noexcept -> decltype(auto);
 
         template<meta::HashType Ret = hash32, typename T>
-        constexpr auto hasher(const Ref<T>& value) noexcept -> Ret;
+        constexpr auto hasher(const ref<T>& value) noexcept -> Ret;
 
         template<typename T, bool Optional, typename FormatContext>
-        auto format_as(const Ref<T, Optional>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
+        auto format_as(const ref<T, Optional>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
     }} // namespace stormkit::core
 
     template<typename T>
-    struct std::pointer_traits<stormkit::Ref<T>> {
-        using pointer         = typename stormkit::Ref<T>::PointerType;
-        using element_type    = typename stormkit::Ref<T>::ElementType;
+    struct std::pointer_traits<stormkit::ref<T>> {
+        using pointer         = typename stormkit::ref<T>::PointerType;
+        using element_type    = typename stormkit::ref<T>::ElementType;
         using difference_type = std::ptrdiff_t;
     };
 }
@@ -381,7 +381,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::Ref() noexcept
+    constexpr ref<T, Optional>::ref() noexcept
         requires(Optional == true)
         : m_value { nullptr } {
     }
@@ -390,7 +390,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::Ref(std::nullopt_t) noexcept
+    constexpr ref<T, Optional>::ref(std::nullopt_t) noexcept
         requires(Optional == true)
         : m_value { nullptr } {
     }
@@ -399,7 +399,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::Ref(std::nullptr_t) noexcept
+    constexpr ref<T, Optional>::ref(std::nullptr_t) noexcept
         requires(Optional == true)
         : m_value { nullptr } {
     }
@@ -408,7 +408,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::Ref(ReferenceType value) noexcept
+    constexpr ref<T, Optional>::ref(referenceType value) noexcept
         : m_value { &value } {
     }
 
@@ -416,7 +416,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::Ref(PointerType value) noexcept
+    constexpr ref<T, Optional>::ref(PointerType value) noexcept
         : m_value { value } {
         EXPECTS(m_value != nullptr);
     }
@@ -425,7 +425,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::~Ref() noexcept = default;
+    constexpr ref<T, Optional>::~ref() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -433,7 +433,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsCanonical<T> U, bool OptionalU>
         requires(not(meta::IsConst<U> and not meta::IsConst<T>))
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::Ref(const Ref<U, OptionalU>& other) noexcept
+    constexpr ref<T, Optional>::ref(const ref<U, OptionalU>& other) noexcept
         : m_value { other.m_value } {
     }
 
@@ -443,7 +443,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsCanonical<T> U, bool OptionalU>
         requires(not(meta::IsConst<U> and not meta::IsConst<T>))
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::Ref(Ref<U, OptionalU>&& other) noexcept
+    constexpr ref<T, Optional>::ref(ref<U, OptionalU>&& other) noexcept
         : m_value { std::exchange(other.m_value, nullptr) } {
     }
 
@@ -452,7 +452,7 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<meta::IsCanonical<T> U, bool OptionalU>
         requires(not(meta::IsConst<U> and not meta::IsConst<T>))
-    constexpr auto Ref<T, Optional>::operator=(Ref<U, OptionalU>&& other) noexcept -> decltype(auto) {
+    constexpr auto ref<T, Optional>::operator=(ref<U, OptionalU>&& other) noexcept -> decltype(auto) {
         if constexpr (meta::SameAs<T, U> and Optional == OptionalU)
             if (&other == this) return *this;
 
@@ -465,7 +465,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::get() const noexcept -> PointerType {
+    constexpr auto ref<T, Optional>::get() const noexcept -> PointerType {
         return m_value;
     }
 
@@ -473,7 +473,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator->() const noexcept -> PointerType {
+    constexpr auto ref<T, Optional>::operator->() const noexcept -> PointerType {
         EXPECTS(m_value != nullptr);
         return get();
     }
@@ -482,7 +482,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator*() const noexcept -> ReferenceType {
+    constexpr auto ref<T, Optional>::operator*() const noexcept -> referenceType {
         EXPECTS(m_value != nullptr);
         return *get();
     }
@@ -491,7 +491,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::operator bool() const noexcept {
+    constexpr ref<T, Optional>::operator bool() const noexcept {
         return m_value != nullptr;
     }
 
@@ -499,7 +499,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::has_value() const noexcept -> Boolean {
+    constexpr auto ref<T, Optional>::has_value() const noexcept -> Boolean {
         return operator bool();
     }
 
@@ -507,7 +507,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::operator ReferenceType() const noexcept {
+    constexpr ref<T, Optional>::operator referenceType() const noexcept {
         EXPECTS(m_value != nullptr);
         return *m_value;
     }
@@ -516,7 +516,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::operator PointerType() const noexcept {
+    constexpr ref<T, Optional>::operator PointerType() const noexcept {
         return m_value;
     }
 
@@ -524,7 +524,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator==(std::nullptr_t) const noexcept -> bool {
+    constexpr auto ref<T, Optional>::operator==(std::nullptr_t) const noexcept -> bool {
         return !m_value;
     }
 
@@ -532,15 +532,15 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<(std::nullptr_t) const noexcept -> bool {
-        return std::less<Ref<T, Optional>::pointer> {}(m_value, nullptr);
+    constexpr auto ref<T, Optional>::operator<(std::nullptr_t) const noexcept -> bool {
+        return std::less<ref<T, Optional>::pointer> {}(m_value, nullptr);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<=(std::nullptr_t) const noexcept -> bool {
+    constexpr auto ref<T, Optional>::operator<=(std::nullptr_t) const noexcept -> bool {
         return !(nullptr < *this);
     }
 
@@ -548,7 +548,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator>(std::nullptr_t) const noexcept -> bool {
+    constexpr auto ref<T, Optional>::operator>(std::nullptr_t) const noexcept -> bool {
         return nullptr < *this;
     }
 
@@ -556,7 +556,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator>=(std::nullptr_t) const noexcept -> bool {
+    constexpr auto ref<T, Optional>::operator>=(std::nullptr_t) const noexcept -> bool {
         return !(*this < nullptr);
     }
 
@@ -564,19 +564,19 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<=>(std::nullptr_t) const noexcept
-      -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
-        requires std::three_way_comparable<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
+    constexpr auto ref<T, Optional>::operator<=>(std::nullptr_t) const noexcept
+      -> std::compare_three_way_result_t<typename ref<T, Optional>::PointerType, typename ref<T, Optional>::PointerType>
+        requires std::three_way_comparable<typename ref<T, Optional>::PointerType, typename ref<T, Optional>::PointerType>
 
     {
-        return std::compare_three_way {}(m_value, static_cast<typename Ref<T, Optional>::pointer>(nullptr));
+        return std::compare_three_way {}(m_value, static_cast<typename ref<T, Optional>::pointer>(nullptr));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator==(std::nullopt_t) const noexcept -> bool
+    constexpr auto ref<T, Optional>::operator==(std::nullopt_t) const noexcept -> bool
         requires(Optional == true)
     {
         return !m_value;
@@ -586,17 +586,17 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<(std::nullopt_t) const noexcept -> bool
+    constexpr auto ref<T, Optional>::operator<(std::nullopt_t) const noexcept -> bool
         requires(Optional == true)
     {
-        return std::less<Ref<T, Optional>::pointer> {}(m_value, std::nullopt);
+        return std::less<ref<T, Optional>::pointer> {}(m_value, std::nullopt);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<=(std::nullopt_t) const noexcept -> bool
+    constexpr auto ref<T, Optional>::operator<=(std::nullopt_t) const noexcept -> bool
         requires(Optional == true)
     {
         return !(std::nullopt < *this);
@@ -606,7 +606,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator>(std::nullopt_t) const noexcept -> bool
+    constexpr auto ref<T, Optional>::operator>(std::nullopt_t) const noexcept -> bool
         requires(Optional == true)
     {
         return std::nullopt < *this;
@@ -616,7 +616,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator>=(std::nullopt_t) const noexcept -> bool
+    constexpr auto ref<T, Optional>::operator>=(std::nullopt_t) const noexcept -> bool
         requires(Optional == true)
     {
         return !(*this < std::nullopt);
@@ -626,12 +626,12 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<=>(std::nullopt_t) const noexcept
-      -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
-        requires(std::three_way_comparable<typename Ref<T, Optional>::PointerType, typename Ref<T, Optional>::PointerType>
+    constexpr auto ref<T, Optional>::operator<=>(std::nullopt_t) const noexcept
+      -> std::compare_three_way_result_t<typename ref<T, Optional>::PointerType, typename ref<T, Optional>::PointerType>
+        requires(std::three_way_comparable<typename ref<T, Optional>::PointerType, typename ref<T, Optional>::PointerType>
                  and Optional == true)
     {
-        return std::compare_three_way {}(m_value, static_cast<typename Ref<T, Optional>::pointer>(std::nullopt));
+        return std::compare_three_way {}(m_value, static_cast<typename ref<T, Optional>::pointer>(std::nullopt));
     }
 
     /////////////////////////////////////
@@ -639,7 +639,7 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator==(const Ref<U, OptionalU>& other) const noexcept -> bool {
+    constexpr auto ref<T, Optional>::operator==(const ref<U, OptionalU>& other) const noexcept -> bool {
         return m_value == other.m_value;
     }
 
@@ -648,9 +648,9 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<(const Ref<U, OptionalU>& other) const noexcept -> bool {
+    constexpr auto ref<T, Optional>::operator<(const ref<U, OptionalU>& other) const noexcept -> bool {
         return std::less<
-          std::common_type_t<Ref<T, Optional>::PointerType, typename Ref<U, OptionalU>::PointerType>> {}(m_value, other.m_value);
+          std::common_type_t<ref<T, Optional>::PointerType, typename ref<U, OptionalU>::PointerType>> {}(m_value, other.m_value);
     }
 
     /////////////////////////////////////
@@ -658,7 +658,7 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<=(const Ref<U, OptionalU>& other) const noexcept -> bool {
+    constexpr auto ref<T, Optional>::operator<=(const ref<U, OptionalU>& other) const noexcept -> bool {
         return !(other < *this);
     }
 
@@ -667,7 +667,7 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator>(const Ref<U, OptionalU>& other) const noexcept -> bool {
+    constexpr auto ref<T, Optional>::operator>(const ref<U, OptionalU>& other) const noexcept -> bool {
         return other < *this;
     }
 
@@ -676,7 +676,7 @@ namespace stormkit { inline namespace core {
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator>=(const Ref<U, OptionalU>& other) const noexcept -> bool {
+    constexpr auto ref<T, Optional>::operator>=(const ref<U, OptionalU>& other) const noexcept -> bool {
         return !(*this < other);
     }
 
@@ -684,10 +684,10 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     template<typename U, bool OptionalU>
-        requires std::three_way_comparable<typename Ref<T, Optional>::PointerType, typename Ref<U, OptionalU>::PointerType>
+        requires std::three_way_comparable<typename ref<T, Optional>::PointerType, typename ref<U, OptionalU>::PointerType>
     STORMKIT_FORCE_INLINE
-    constexpr auto Ref<T, Optional>::operator<=>(const Ref<U>& other) const noexcept
-      -> std::compare_three_way_result_t<typename Ref<T, Optional>::PointerType, typename Ref<U, OptionalU>::PointerType> {
+    constexpr auto ref<T, Optional>::operator<=>(const ref<U>& other) const noexcept
+      -> std::compare_three_way_result_t<typename ref<T, Optional>::PointerType, typename ref<U, OptionalU>::PointerType> {
         return m_value <=> other.m_value;
     }
 
@@ -695,7 +695,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr Ref<T, Optional>::operator std::reference_wrapper<T>() const noexcept {
+    constexpr ref<T, Optional>::operator std::reference_wrapper<T>() const noexcept {
         if constexpr (meta::IsConst<T>) return std::cref(*m_value);
         else
             return std::ref(*m_value);
@@ -705,7 +705,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_raw(const T& value) noexcept -> Ref<const T> {
+    constexpr auto as_ref_raw(const T& value) noexcept -> ref<const T> {
         return { std::addressof(value) };
     }
 
@@ -714,7 +714,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
         requires(not meta::IsContainerOrPointer<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref(const T& value) noexcept -> Ref<const T> {
+    constexpr auto as_ref(const T& value) noexcept -> ref<const T> {
         return as_ref_raw(value);
     }
 
@@ -722,7 +722,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPointer T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref(const T& value) noexcept -> Ref<const meta::PointedType<T>> {
+    constexpr auto as_ref(const T& value) noexcept -> ref<const meta::PointedType<T>> {
         EXPECTS(value != nullptr);
         return as_ref(unref(value));
     }
@@ -731,7 +731,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsContainer T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref(const T& value) noexcept -> Ref<const meta::ContainedType<T>> {
+    constexpr auto as_ref(const T& value) noexcept -> ref<const meta::ContainedType<T>> {
         EXPECTS(value.operator bool());
         return as_ref(value.value());
     }
@@ -741,7 +741,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
         requires(not meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_mut_raw(T& value) noexcept -> Ref<T> {
+    constexpr auto as_ref_mut_raw(T& value) noexcept -> ref<T> {
         return { std::addressof(value) };
     }
 
@@ -750,7 +750,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
         requires(not meta::IsContainerOrPointer<T> and not meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_mut(T& value) noexcept -> Ref<T> {
+    constexpr auto as_ref_mut(T& value) noexcept -> ref<T> {
         return as_ref_mut_raw(value);
     }
 
@@ -759,7 +759,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsPointer T>
         requires(not meta::IsConst<meta::PointedType<T>>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_mut(T& value) noexcept -> Ref<meta::PointedType<T>> {
+    constexpr auto as_ref_mut(T& value) noexcept -> ref<meta::PointedType<T>> {
         EXPECTS(value != nullptr);
         return as_ref_mut(unref_mut(value));
     }
@@ -769,7 +769,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsContainer T>
         requires(not meta::IsConst<meta::ContainedType<T>>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_mut(T& value) noexcept -> Ref<meta::ContainedType<T>> {
+    constexpr auto as_ref_mut(T& value) noexcept -> ref<meta::ContainedType<T>> {
         if constexpr (requires { value.has_value(); }) EXPECTS(value.has_value());
         return as_ref_mut(value.value());
     }
@@ -778,7 +778,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_like_raw(T& value) noexcept -> Ref<T> {
+    constexpr auto as_ref_like_raw(T& value) noexcept -> ref<T> {
         return { std::addressof(value) };
     }
 
@@ -787,7 +787,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
         requires(not meta::IsContainerOrPointer<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_like(T& value, Raw) noexcept -> Ref<T> {
+    constexpr auto as_ref_like(T& value, Raw) noexcept -> ref<T> {
         return as_ref_like_raw(value);
     }
 
@@ -795,7 +795,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPointer T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_like(T& value) noexcept -> Ref<meta::PointedType<T>> {
+    constexpr auto as_ref_like(T& value) noexcept -> ref<meta::PointedType<T>> {
         EXPECTS(value != nullptr);
         if (meta::IsConst<meta::PointedType<T>>) return as_ref_like(unref(value));
         else
@@ -806,7 +806,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsContainer T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_like(T& value) noexcept -> Ref<meta::ContainedType<T>> {
+    constexpr auto as_ref_like(T& value) noexcept -> ref<meta::ContainedType<T>> {
         if constexpr (requires { value.has_value(); }) EXPECTS(value.has_value());
         return as_ref_like(value.value());
     }
@@ -815,7 +815,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_raw(const T& value) noexcept -> OptionalRef<const T> {
+    constexpr auto as_optref_raw(const T& value) noexcept -> optref<const T> {
         return { std::addressof(value) };
     }
 
@@ -824,7 +824,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
         requires(not meta::IsContainerOrPointer<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref(const T& value) noexcept -> OptionalRef<const T> {
+    constexpr auto as_optref(const T& value) noexcept -> optref<const T> {
         return as_optref_raw(value);
     }
 
@@ -832,7 +832,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPointer T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref(const T& value) noexcept -> OptionalRef<const meta::PointedType<T>> {
+    constexpr auto as_optref(const T& value) noexcept -> optref<const meta::PointedType<T>> {
         EXPECTS(value != nullptr);
         return as_optref(unref(value));
     }
@@ -841,7 +841,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsContainer T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref(const T& value) noexcept -> OptionalRef<const meta::ContainedType<T>> {
+    constexpr auto as_optref(const T& value) noexcept -> optref<const meta::ContainedType<T>> {
         EXPECTS(value.operator bool());
         return as_optref(value.value());
     }
@@ -851,7 +851,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
         requires(not meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_mut_raw(T& value) noexcept -> OptionalRef<T> {
+    constexpr auto as_optref_mut_raw(T& value) noexcept -> optref<T> {
         return { std::addressof(value) };
     }
 
@@ -860,7 +860,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
         requires(not meta::IsContainerOrPointer<T> and not meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_mut(T& value) noexcept -> OptionalRef<T> {
+    constexpr auto as_optref_mut(T& value) noexcept -> optref<T> {
         return as_optref_mut(value);
     }
 
@@ -869,7 +869,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsPointer T>
         requires(not meta::IsConst<meta::PointedType<T>>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_mut(T& value) noexcept -> OptionalRef<meta::PointedType<T>> {
+    constexpr auto as_optref_mut(T& value) noexcept -> optref<meta::PointedType<T>> {
         EXPECTS(value != nullptr);
         return as_optref_mut(unref_mut(value));
     }
@@ -879,7 +879,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsContainer T>
         requires(not meta::IsConst<meta::ContainedType<T>>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_mut(T& value) noexcept -> OptionalRef<meta::ContainedType<T>> {
+    constexpr auto as_optref_mut(T& value) noexcept -> optref<meta::ContainedType<T>> {
         if constexpr (requires { value.has_value(); }) EXPECTS(value.has_value());
         return as_optref_mut(value.value());
     }
@@ -888,7 +888,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_like_raw(T& value) noexcept -> OptionalRef<T> {
+    constexpr auto as_optref_like_raw(T& value) noexcept -> optref<T> {
         return { std::addressof(value) };
     }
 
@@ -897,7 +897,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
         requires(not meta::IsContainerOrPointer<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_like(T& value) noexcept -> OptionalRef<T> {
+    constexpr auto as_optref_like(T& value) noexcept -> optref<T> {
         return as_optref_like_raw(value);
     }
 
@@ -905,7 +905,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsPointer T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_like(T& value) noexcept -> OptionalRef<meta::PointedType<T>> {
+    constexpr auto as_optref_like(T& value) noexcept -> optref<meta::PointedType<T>> {
         EXPECTS(value != nullptr);
         if (meta::IsConst<meta::PointedType<T>>) return as_optref_like(unref(value));
         else
@@ -916,7 +916,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsContainer T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_like(T& value) noexcept -> OptionalRef<meta::ContainedType<T>> {
+    constexpr auto as_optref_like(T& value) noexcept -> optref<meta::ContainedType<T>> {
         if constexpr (requires { value.has_value(); }) EXPECTS(value.has_value());
         return as_optref_like(value.value());
     }
@@ -1066,14 +1066,14 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, meta::HashType Ret>
     STORMKIT_FORCE_INLINE
-    constexpr auto hasher(const Ref<T>& value) noexcept -> Ret {
+    constexpr auto hasher(const ref<T>& value) noexcept -> Ret {
         return hash<Ret>(value.get());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, bool Optional, typename FormatContext>
-    inline auto format_as(const Ref<T, Optional>& value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
+    inline auto format_as(const ref<T, Optional>& value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         if constexpr (Optional) {
             if (value == nullptr) return std::format_to(ctx.out(), "[ref value: null]");
             else

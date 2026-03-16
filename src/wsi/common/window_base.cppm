@@ -101,7 +101,7 @@ export namespace stormkit::wsi::common {
             bool                       fullscreen = false;
             bool                       visible    = false;
             math::uextent2         extent;
-            OptionalRef<const Monitor> current_monitor;
+            optref<const Monitor> current_monitor;
             std::string                title;
 
             f32 dpi = 1.f;

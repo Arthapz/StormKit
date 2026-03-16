@@ -128,7 +128,7 @@ export namespace stormkit::gpu {
             auto formats_properties() const noexcept -> std::span<const std::pair<PixelFormat, FormatProperties>>;
 
           private:
-            Ref<const gpu::PhysicalDevice::Data> m_data;
+            ref<const gpu::PhysicalDevice::Data> m_data;
             std::span<const MemoryPropertyFlag>  m_memory_types;
 
             std::span<const QueueFamily>                              m_queue_families;

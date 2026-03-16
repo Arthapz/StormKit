@@ -41,7 +41,7 @@ struct SubmissionResource {
 };
 
 struct SwapchainImageResource {
-    Ref<const gpu::Image> image;
+    ref<const gpu::Image> image;
     gpu::ImageView        view;
     gpu::Image            depth_image;
     gpu::ImageView        depth_view;
