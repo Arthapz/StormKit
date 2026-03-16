@@ -14,7 +14,7 @@
         constexpr auto parse(ParseContext& ctx) noexcept -> decltype(ctx.begin());       \
                                                                                          \
         template<typename FormatContext, typename U>                                     \
-            requires(stormkit::meta::IsStrict<T, stormkit::meta::CanonicalType<U>>)      \
+            requires(stormkit::meta::SameAs<T, stormkit::meta::CanonicalType<U>>)      \
         auto format(U&& data, FormatContext& ctx) const noexcept -> decltype(ctx.out()); \
     };
 
@@ -26,21 +26,21 @@
 #define FORMATTER_DEFINE_FORMAT(_From)                                          \
     template<_From T, typename CharT>                                           \
     template<typename FormatContext, typename U>                                \
-        requires(stormkit::meta::IsStrict<T, stormkit::meta::CanonicalType<U>>) \
+        requires(stormkit::meta::SameAs<T, stormkit::meta::CanonicalType<U>>) \
     inline auto std::formatter<T, CharT>::format(U&& data, FormatContext& ctx) const noexcept -> decltype(ctx.out())
 
 #define FORMATTER_INHERIT_DECLARE(_Parent, _From)                                        \
     template<_From T, typename CharT>                                                    \
     struct std::formatter<T, CharT>: std::formatter<_Parent, CharT> {                    \
         template<typename FormatContext, typename U>                                     \
-            requires(stormkit::meta::IsStrict<T, stormkit::meta::CanonicalType<U>>)      \
+            requires(stormkit::meta::SameAs<T, stormkit::meta::CanonicalType<U>>)      \
         auto format(U&& data, FormatContext& ctx) const noexcept -> decltype(ctx.out()); \
     };
 
 #define FORMATTER_INHERIT_DEFINE_FORMAT(_From)                                  \
     template<_From T, typename CharT>                                           \
     template<typename FormatContext, typename U>                                \
-        requires(stormkit::meta::IsStrict<T, stormkit::meta::CanonicalType<U>>) \
+        requires(stormkit::meta::SameAs<T, stormkit::meta::CanonicalType<U>>) \
     inline auto std::formatter<T, CharT>::format(U&& data, FormatContext& ctx) const noexcept -> decltype(ctx.out())
 
 #define FORMATTER_INHERIT_DEFINE_FORMAT_AS_STRING(_Parent, _From)                                        \

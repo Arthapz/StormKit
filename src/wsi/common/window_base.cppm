@@ -151,7 +151,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto WindowBase::set_current_monitor(const Monitor& monitor) noexcept -> void {
-        m_state.current_monitor = as_opt_ref(monitor);
+        m_state.current_monitor = as_optref(monitor);
     }
 
     /////////////////////////////////////

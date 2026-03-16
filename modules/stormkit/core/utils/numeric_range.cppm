@@ -244,7 +244,7 @@ namespace stormkit { inline namespace core {
             Type m_step;
         };
 
-        constexpr explicit Range(meta::IsStrict<T> auto&& range) : m_range { std::forward<decltype(range)>(range) } {}
+        constexpr explicit Range(meta::SameAs<T> auto&& range) : m_range { std::forward<decltype(range)>(range) } {}
 
         constexpr auto begin() const noexcept -> Iterator { return { m_range.begin, m_range.step }; }
 

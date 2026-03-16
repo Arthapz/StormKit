@@ -11,6 +11,7 @@ export module stormkit.core:functional.utils;
 import std;
 
 import :meta;
+import :typesafe.ref;
 
 namespace stormkit { inline namespace core { namespace details {
     struct EitherFunc {
@@ -19,15 +20,15 @@ namespace stormkit { inline namespace core { namespace details {
           -> decltype(false_());
 
         template<typename T>
-        using ForwardArg = meta::ForwardLike<T, meta::UnderlyingType<meta::ToPlainType<T>>>;
+        using ForwardArg = meta::ForwardLike<T, meta::ContainedType<meta::ToPlainType<T>>>;
 
         template<meta::IsPointer T>
         [[nodiscard]]
         static constexpr auto operator()(T                                            value,
-                                         std::invocable<meta::ElementType<T>&> auto&& true_,
+                                         std::invocable<meta::PointedType<T>&> auto&& true_,
                                          std::invocable auto&&                        false_) noexcept -> decltype(false_());
 
-        template<meta::IsContainedSemantics T>
+        template<meta::IsContainer T>
             requires(meta::IsConvertibleTo<bool, T>)
         [[nodiscard]]
         static constexpr auto operator()(T&&                                  value,
@@ -68,21 +69,21 @@ namespace stormkit { inline namespace core {
         template<meta::IsPointer T>
         STORMKIT_FORCE_INLINE
         constexpr auto EitherFunc::operator()(T                                            value,
-                                              std::invocable<meta::ElementType<T>&> auto&& true_,
+                                              std::invocable<meta::PointedType<T>&> auto&& true_,
                                               std::invocable auto&& false_) noexcept -> decltype(false_()) {
-            if (static_cast<bool>(value)) return true_(*value);
+            if (static_cast<bool>(value)) return true_(unref(value));
             return false_();
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<meta::IsContainedSemantics T>
+        template<meta::IsContainer T>
             requires(meta::IsConvertibleTo<bool, T>)
         STORMKIT_FORCE_INLINE
         constexpr auto EitherFunc::operator()(T&&                                  value,
                                               std::invocable<ForwardArg<T>> auto&& true_,
                                               std::invocable auto&&                false_) noexcept -> decltype(false_()) {
-            if (static_cast<bool>(value)) return true_(std::forward_like<T>(*value));
+            if (static_cast<bool>(value)) return true_(std::forward_like<T>(unref(value)));
             return false_();
         }
     } // namespace details

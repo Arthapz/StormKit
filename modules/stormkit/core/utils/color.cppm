@@ -19,7 +19,7 @@ import :meta;
 export namespace stormkit { inline namespace core {
     namespace meta {
         template<class T>
-        concept ColorComponentStorageType = IsStrict<T, f32> or IsStrict<T, u8>;
+        concept ColorComponentStorageType = SameAs<T, f32> or SameAs<T, u8>;
     }
 
     enum class ColorLayout {
@@ -376,7 +376,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::ColorComponentStorageType U, ColorLayout LAYOUT_T, meta::ColorComponentStorageType T>
     constexpr auto to_storage(const color<LAYOUT_T, T>& in) noexcept -> stormkit::color<LAYOUT_T, U> {
-        if constexpr (meta::IsStrict<T, U>) return in;
+        if constexpr (meta::SameAs<T, U>) return in;
         else {
             using OutColor = color<LAYOUT_T, U>;
             auto out       = OutColor {};
@@ -420,7 +420,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::ColorComponentStorageType T>
     constexpr auto ColorComponent<T>::max() noexcept -> T {
-        if constexpr (meta::IsStrict<T, f32>) return 1.f;
+        if constexpr (meta::SameAs<T, f32>) return 1.f;
         else
             return 255u;
     }
@@ -429,7 +429,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::ColorComponentStorageType To, meta::ColorComponentStorageType From>
     constexpr auto as_impl(ColorComponent<From> component) noexcept -> ColorComponent<To> {
-        if constexpr (meta::IsStrict<To, f32>) return ColorComponent<To> { as<f32>(component.value) / 255.f };
+        if constexpr (meta::SameAs<To, f32>) return ColorComponent<To> { as<f32>(component.value) / 255.f };
         else
             return ColorComponent<To> { as<u8>(component.value) * 255.f };
     }

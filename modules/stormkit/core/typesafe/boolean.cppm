@@ -41,7 +41,7 @@ export {
 
     }} // namespace stormkit::core
 
-    FORMATTER_INHERIT_DECLARE(bool, stormkit::meta::IsStrict<stormkit::core::Boolean>)
+    FORMATTER_INHERIT_DECLARE(bool, stormkit::meta::SameAs<stormkit::core::Boolean>)
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,6 +106,6 @@ namespace stormkit { inline namespace core {
 
 /////////////////////////////////////
 /////////////////////////////////////
-FORMATTER_INHERIT_DEFINE_FORMAT(stormkit::meta::IsStrict<stormkit::core::Boolean>) {
+FORMATTER_INHERIT_DEFINE_FORMAT(stormkit::meta::SameAs<stormkit::core::Boolean>) {
     return formatter<bool, CharT>::format(static_cast<bool>(data), ctx);
 }

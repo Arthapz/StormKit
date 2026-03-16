@@ -194,22 +194,22 @@ export {
         ///                       ENUMERATION                            ///
         ////////////////////////////////////////////////////////////////////
         template<meta::IsEnumeration T, meta::IsEnumeration U>
-            requires(meta::Same<T, U>)
+            requires(meta::SameAs<T, U>)
         [[nodiscard]]
         constexpr auto is_impl(T first, U second) noexcept -> bool;
 
         template<typename T, meta::IsEnumeration U>
-            requires(meta::Same<T, Underlying>)
+            requires(meta::SameAs<T, Underlying>)
         [[nodiscard]]
         constexpr auto as_impl(U value, const std::source_location&) noexcept -> meta::UnderlyingType<U>;
 
         template<meta::IsEnumeration T, meta::IsArithmetic U>
-            requires(meta::Same<meta::UnderlyingType<T>, U>)
+            requires(meta::SameAs<meta::UnderlyingType<T>, U>)
         [[nodiscard]]
         constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
 
         template<meta::IsArithmetic T, meta::IsEnumeration U>
-            requires(meta::Same<T, meta::UnderlyingType<U>>)
+            requires(meta::SameAs<T, meta::UnderlyingType<U>>)
         [[nodiscard]]
         constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
 
@@ -447,7 +447,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsEnumeration T, meta::IsEnumeration U>
-        requires(meta::Same<T, U>)
+        requires(meta::SameAs<T, U>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_impl(T first, U second) noexcept -> bool {
         return first == second;
@@ -456,7 +456,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, meta::IsEnumeration U>
-        requires(meta::Same<T, Underlying>)
+        requires(meta::SameAs<T, Underlying>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_impl(U value, const std::source_location&) noexcept -> meta::UnderlyingType<U> {
         // TODO WHEN REFLEXION IS IMPLEMENTED, CHECK IF `value` IS A VALID ENUMERATION VALUE
@@ -466,7 +466,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsEnumeration T, meta::IsArithmetic U>
-        requires(meta::Same<meta::UnderlyingType<T>, U>)
+        requires(meta::SameAs<meta::UnderlyingType<T>, U>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_impl(U value, const std::source_location&) noexcept -> T {
         // TODO WHEN REFLEXION IS IMPLEMENTED, CHECK IF `value` IS A VALID ENUMERATION VALUE
@@ -476,7 +476,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsArithmetic T, meta::IsEnumeration U>
-        requires(meta::Same<T, meta::UnderlyingType<U>>)
+        requires(meta::SameAs<T, meta::UnderlyingType<U>>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_impl(U value, const std::source_location&) noexcept -> T {
         return narrow<meta::UnderlyingType<U>>(value);

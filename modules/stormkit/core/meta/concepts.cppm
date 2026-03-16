@@ -38,12 +38,6 @@ namespace stormkit { inline namespace core { namespace meta::details {
 
 export namespace stormkit { inline namespace core { namespace meta {
     template<class T, class U>
-    concept IsStrict = std::same_as<T, U>;
-
-    template<class T, class U>
-    concept Same = std::same_as<T, U>;
-
-    template<class T, class U>
     concept SameAs = std::same_as<T, U>;
 
     template<typename T, typename U>
@@ -64,6 +58,36 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T, template<typename> concept... C>
     concept AnyOf = (C<T> or ...);
 
+    template<class T>
+    concept IsBooleanTestable = details::IsBooleanTestable<T> && requires(T&& t) {
+        { not std::forward<T>(t) } -> details::IsBooleanTestable;
+    };
+
+    template<typename S, template<typename...> class T>
+    concept IsSpecializationOf = requires(S&& s) {
+        { details::is_specialization_of_helper<T>(std::forward<S>(s)) } -> SameAs<std::true_type>;
+    };
+
+    template<typename S, template<class, auto...> typename T>
+    concept IsSpecializationOfNTTP_TV = requires(S&& s) {
+        { details::is_specialization_of_helper_nttp_tv<T>(std::forward<S>(s)) } -> SameAs<std::true_type>;
+    };
+
+    template<typename S, template<class, class, auto> typename T>
+    concept IsSpecializationOfNTTP_TTV = requires(S&& s) {
+        { details::is_specialization_of_helper_nttp_ttv<T>(std::forward<S>(s)) } -> SameAs<std::true_type>;
+    };
+
+    template<typename S, template<class, class, auto, class...> typename T>
+    concept IsSpecializationOfNTTP_TTVTs = requires(S&& s) {
+        { details::is_specialization_of_helper_nttp_ttvts<T>(std::forward<S>(s)) } -> SameAs<std::true_type>;
+    };
+
+    template<typename S, template<typename, auto...> class T>
+    concept IsSpecializationWithNTTPOf = requires(S&& s) {
+        { details::is_specialization_of_with_nttp_helper<T>(std::forward<S>(s)) } -> SameAs<std::true_type>;
+    };
+
     template<class From, typename To>
     concept ConvertibleTo = std::convertible_to<From, To>;
 
@@ -74,7 +98,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept HasStdHashSpecialization = requires(T&& a) { std::hash<std::remove_cvref_t<T>> {}(std::forward<T>(a)); };
 
     template<class T, class U>
-    concept IsCanonical = IsStrict<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+    concept IsCanonical = SameAs<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
 
     template<typename T, typename U>
     concept PlainIs = Is<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
@@ -92,7 +116,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept SameAsAnyOf = (SameAs<T, U> or ...);
 
     template<class T>
-    concept IsByte = IsStrict<T, std::byte>;
+    concept IsByte = SameAs<T, std::byte>;
 
     template<class T>
     concept IsByteSized = sizeof(T) == sizeof(std::byte);
@@ -104,27 +128,22 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsStringLike = std::convertible_to<T, std::string_view>;
 
     template<class T>
-    concept IsRawPointer = std::is_pointer_v<T>;
+    concept IsOptionalType = IsSpecializationOf<T, std::optional>;
 
     template<class T>
-    concept IsNonOwningPointer = IsRawPointer<T> or (requires {
-        typename T::element_type;
-    } and requires(T a) {
-        { a.operator->() } -> std::convertible_to<decltype(&*a)>;
-        { a.operator*() };
-        { static_cast<bool>(a) };
-    });
+    concept IsExpectedType = IsSpecializationOf<T, std::expected>;
 
     template<class T>
-    concept IsOwningPointer = IsNonOwningPointer<T> and requires(T a) {
-        { a.reset() };
-    };
+    concept IsVariantType = IsSpecializationOf<T, std::variant>;
 
     template<class T>
-    concept IsPointer = IsNonOwningPointer<T> or IsOwningPointer<T>;
+    concept IsMdspanType = IsSpecializationOf<T, std::mdspan>;
 
     template<class T>
-    concept IsNotPointer = not IsPointer<T>;
+    concept IsArrayType = IsSpecializationWithNTTPOf<T, std::array>;
+
+    template<typename T>
+    concept IsStdReferenceWrapper = IsSpecializationOf<T, std::reference_wrapper>;
 
     template<class T>
     concept IsLValueReference = std::is_lvalue_reference_v<T>;
@@ -142,6 +161,32 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsReferenceTo = IsReference<T> and Is<std::remove_reference_t<T>, U>;
 
     template<class T>
+    concept IsRawPointer = std::is_pointer_v<T>;
+
+    template<class T>
+    concept IsNonOwningPointer = IsRawPointer<T> or (requires {
+        typename std::pointer_traits<T>::element_type;
+    } and requires(T a) {
+        { a.operator->() } -> std::convertible_to<decltype(&*a)>;
+        { a.operator*() };
+        { a == nullptr } -> IsBooleanTestable;
+    }) or IsStdReferenceWrapper<T>;
+
+    template<class T>
+    concept IsOwningPointer = IsNonOwningPointer<T> and requires(T a) {
+        { a.reset() };
+    };
+
+    template<class T>
+    concept IsPointer = IsNonOwningPointer<T> or IsOwningPointer<T>;
+
+    template<class T>
+    concept IsNotPointer = not IsPointer<T>;
+
+    template<class T, class U>
+    concept IsPointerOf = IsPointer<T> and SameAs<typename T::value_type, U>;
+
+    template<class T>
     concept IsMovedOwningPointer = IsOwningPointer<T> and IsRValueReference<T>;
 
     template<class T>
@@ -155,7 +200,23 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsIndirection = IsLValueReference<T> or IsPointer<T>;
 
     template<class... T>
-    concept AreIndirections = ((IsLValueReference<T> or IsPointer<T>) && ...);
+    concept AreIndirections = ((IsLValueReference<T> or IsPointer<T>) and ...);
+
+    template<class T>
+    concept IsContainer = requires(T& val) {
+        typename T::value_type;
+        { val.operator*() } -> IsReferenceTo<typename T::value_type>;
+        { val.operator->() } -> IsReferenceTo<typename T::value_type*>;
+    };
+
+    template<class T, class U>
+    concept IsContainerOf = IsContainer<T> and SameAs<typename T::value_type, U>;
+
+    template<class T>
+    concept IsContainerOrPointer = IsContainer<T> or IsPointer<T>;
+
+    template<class T, class U>
+    concept IsContainerOrPointerOf = IsContainerOf<T, U> or IsPointerOf<T, U>;
 
     template<class T>
     concept IsPolymorphic = std::is_polymorphic_v<T>;
@@ -188,7 +249,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsEnumeration = std::is_enum_v<T> and IsNotByte<T>;
 
     template<typename T>
-    concept IsIntegral = (std::integral<T> and not IsStrict<T, bool> and not IsByte<T>)
+    concept IsIntegral = (std::integral<T> and not SameAs<T, bool> and not IsByte<T>)
                          or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
                          or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<unsigned long long, unsigned long long>>>
 #if defined(STORMKIT_COMPILER_MSVC)
@@ -213,58 +274,6 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<class T>
     concept IsPreIncrementable = requires(T& a) { a.operator--(); };
-
-    template<class T>
-    concept IsBooleanTestable = details::IsBooleanTestable<T> && requires(T&& t) {
-        { not std::forward<T>(t) } -> details::IsBooleanTestable;
-    };
-
-    template<class T>
-    concept IsContainedSemantics = requires(T& val) {
-        typename T::value_type;
-        { val.operator*() } -> IsReferenceTo<typename T::value_type>;
-        { val.operator->() } -> IsReferenceTo<typename T::value_type*>;
-    };
-
-    template<typename S, template<typename...> class T>
-    concept IsSpecializationOf = requires(S&& s) {
-        { details::is_specialization_of_helper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
-    };
-
-    template<typename S, template<class, auto...> typename T>
-    concept IsSpecializationOfNTTP_TV = requires(S&& s) {
-        { details::is_specialization_of_helper_nttp_tv<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
-    };
-
-    template<typename S, template<class, class, auto> typename T>
-    concept IsSpecializationOfNTTP_TTV = requires(S&& s) {
-        { details::is_specialization_of_helper_nttp_ttv<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
-    };
-
-    template<typename S, template<class, class, auto, class...> typename T>
-    concept IsSpecializationOfNTTP_TTVTs = requires(S&& s) {
-        { details::is_specialization_of_helper_nttp_ttvts<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
-    };
-
-    template<typename S, template<typename, auto...> class T>
-    concept IsSpecializationWithNTTPOf = requires(S&& s) {
-        { details::is_specialization_of_with_nttp_helper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
-    };
-
-    template<class T>
-    concept IsOptionalType = IsSpecializationOf<T, std::optional>;
-
-    template<class T>
-    concept IsExpectedType = IsSpecializationOf<T, std::expected>;
-
-    template<class T>
-    concept IsVariantType = IsSpecializationOf<T, std::variant>;
-
-    template<class T>
-    concept IsMdspanType = IsSpecializationOf<T, std::mdspan>;
-
-    template<class T>
-    concept IsArrayType = IsSpecializationWithNTTPOf<T, std::array>;
 
     template<class T, class... Args>
     concept IsPredicate = std::predicate<T, Args...>;

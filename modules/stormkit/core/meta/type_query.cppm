@@ -49,18 +49,42 @@ namespace stormkit { inline namespace core { namespace meta {
         };
 
         template<typename T>
-        struct PointedType {
-            using Type = RemoveReferencesType<T>;
+        struct PointerType;
+
+        template<IsPointer T>
+        struct PointerType<T> {
+            using Type = typename std::pointer_traits<T>::pointer;
         };
 
-        template<IsContainedSemantics T>
-        struct PointedType<T> {
-            using Type = UnderlyingType<T>::Type;
+        template<typename T>
+        struct PointerType<std::reference_wrapper<T>> {
+            using Type = std::reference_wrapper<T>::type*;
         };
+
+        template<typename T>
+        struct PointedType;
 
         template<IsPointer T>
         struct PointedType<T> {
             using Type = typename std::pointer_traits<T>::element_type;
+        };
+
+        template<typename T>
+        struct PointedType<std::reference_wrapper<T>> {
+            using Type = std::reference_wrapper<T>::type;
+        };
+
+        template<typename T>
+        struct ContainedType;
+
+        template<IsContainer T>
+        struct ContainedType<T> {
+            using Type = typename T::value_type;
+        };
+
+        template<stdr::range T>
+        struct ContainedType<T> {
+            using Type = typename T::value_type;
         };
     } // namespace details
 
@@ -69,15 +93,16 @@ namespace stormkit { inline namespace core { namespace meta {
         using UnderlyingType = details::UnderlyingType<T>::Type;
 
         template<typename T>
-        using ElementType = typename std::pointer_traits<T>::element_type;
+        using PointerType = details::PointerType<T>::Type;
 
-        template<typename T>
-        using PointerType = typename std::pointer_traits<T>::pointer;
-
-        // clang-format off
         template<typename T>
         using PointedType = details::PointedType<T>::Type;
-        // clang-format on
+
+        template<typename T>
+        using ContainedType = details::ContainedType<T>::Type;
+
+        template<typename T>
+        using ContainedOrPointedType = If<IsContainer<T>, ContainedType<T>, PointedType<T>>;
 
         template<stdr::range Range>
         using IteratorType = stdr::iterator_t<Range>;
