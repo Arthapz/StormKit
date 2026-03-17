@@ -14,6 +14,7 @@ export import :functional;
 export import :errors;
 export import :hash;
 export import :meta;
+export import :named_constructors;
 export import :math;
 export import :parallelism;
 export import :string;

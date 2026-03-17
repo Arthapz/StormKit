@@ -27,10 +27,10 @@ namespace stormkit { inline namespace core {
 
     namespace meta {
         template<typename T>
-        concept IsCheckedValueArithmetic = meta::IsArithmetic<meta::UnderlyingType<meta::ToPlainType<T>>>;
+        concept IsCheckedValueArithmetic = meta::IsArithmetic<meta::ValueType<meta::ToPlainType<T>>>;
 
         template<typename T, typename U>
-        concept IsCheckedValueValueType = meta::PlainIs<T, meta::UnderlyingType<meta::ToPlainType<U>>>;
+        concept IsCheckedValueValueType = meta::PlainIs<T, meta::ValueType<meta::ToPlainType<U>>>;
     } // namespace meta
 }} // namespace stormkit::core
 

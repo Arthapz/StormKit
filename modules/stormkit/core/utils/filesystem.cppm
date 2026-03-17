@@ -37,6 +37,7 @@ import :utils.contract;
 import :typesafe;
 import :functional;
 import :meta;
+import :named_constructors;
 // import :containers;
 
 namespace stdfs = std::filesystem;
@@ -59,75 +60,85 @@ namespace stormkit { inline namespace core { namespace io::meta {
 }}} // namespace stormkit::core::io::meta
 
 export {
-    namespace stormkit { inline namespace core { namespace io {
-        template<typename T>
-        using Expected = std::expected<T, SystemError>;
+    namespace stormkit { inline namespace core {
+        namespace io {
+            template<typename T>
+            using Expected = std::expected<T, SystemError>;
 
-        enum class Access {
-            READ,
-            WRITE,
-        };
+            enum class Access {
+                READ,
+                WRITE,
+            };
 
-        template<Mode mode>
-        class Descriptor {
-            struct PrivateFuncTag {};
+            template<Mode mode>
+            class Descriptor;
+        } // namespace io
 
-          public:
-            static auto open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor>;
-            auto        close() noexcept;
+        namespace io {
+            template<Mode mode>
+            class Descriptor final: TemplatedNamedConstructorHelper,
+                                    protected UseNamedConstructors<Descriptor<mode>, Expected<void>> {
+              public:
+                static auto open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor>;
+                static auto allocate_and_open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor>;
 
-            ~Descriptor() noexcept;
+                ~Descriptor() noexcept;
 
-            Descriptor(Descriptor&)                    = delete;
-            auto operator=(Descriptor&) -> Descriptor& = delete;
+                Descriptor(Descriptor&)                    = delete;
+                auto operator=(Descriptor&) -> Descriptor& = delete;
 
-            Descriptor(Descriptor&&) noexcept;
-            auto operator=(Descriptor&&) noexcept -> Descriptor&;
+                Descriptor(Descriptor&&) noexcept;
+                auto operator=(Descriptor&&) noexcept -> Descriptor&;
 
-            auto read_to(std::span<Byte> out) noexcept -> Expected<usize>;
-            auto read_to(std::span<char> out) noexcept -> Expected<usize>
-                requires(mode == Mode::UTF8 or mode == Mode::AINSI);
-            auto read_to(std::span<wchar> out) noexcept -> Expected<usize>
-                requires(mode == Mode::WIDE);
+                auto close() noexcept;
 
-            auto write(std::span<const Byte> bytes) noexcept -> Expected<usize>;
-            auto write(std::span<const char> bytes) noexcept -> Expected<usize>
-                requires(mode == Mode::UTF8 or mode == Mode::AINSI);
-            auto write(std::span<const wchar> bytes) noexcept -> Expected<usize>
-                requires(mode == Mode::WIDE);
+                auto read_to(std::span<Byte> out) noexcept -> Expected<usize>;
+                auto read_to(std::span<char> out) noexcept -> Expected<usize>
+                    requires(mode == Mode::UTF8 or mode == Mode::AINSI);
+                auto read_to(std::span<wchar> out) noexcept -> Expected<usize>
+                    requires(mode == Mode::WIDE);
 
-            auto flush() noexcept -> void;
+                auto write(std::span<const Byte> bytes) noexcept -> Expected<usize>;
+                auto write(std::span<const char> bytes) noexcept -> Expected<usize>
+                    requires(mode == Mode::UTF8 or mode == Mode::AINSI);
+                auto write(std::span<const wchar> bytes) noexcept -> Expected<usize>
+                    requires(mode == Mode::WIDE);
 
-            auto position() const noexcept -> usize;
-            auto size() const noexcept -> usize;
+                auto flush() noexcept -> void;
 
-            auto native_descriptor() const noexcept -> int;
+                auto position() const noexcept -> usize;
+                auto size() const noexcept -> usize;
 
-            Descriptor(PrivateFuncTag, int descriptor) noexcept;
+                auto native_descriptor() const noexcept -> int;
 
-          private:
-            int m_descriptor = 0;
+                Descriptor(PrivateTag) noexcept;
+                auto do_init(PrivateTag, const stdfs::path&, Access) noexcept -> Expected<void>;
 
-            mutable std::atomic<usize> m_size = 0;
-        };
+              private:
+                int m_descriptor = 0;
 
-        using File = Descriptor<Mode::BINARY>;
-        template<Mode mode = Mode::UTF8>
-            requires(mode != Mode::BINARY)
-        using TextFile = Descriptor<mode>;
+                mutable std::atomic<usize> m_size = 0;
+            };
 
-        template<Mode mode = Mode::UTF8>
-        auto read_text_to(const stdfs::path& path, std::span<meta::ModeToCharType<mode>> output) noexcept -> Expected<usize>;
-        template<Mode mode = Mode::UTF8>
-        auto read_text(const stdfs::path& path) noexcept -> Expected<std::vector<meta::ModeToCharType<mode>>>;
+            using File = Descriptor<Mode::BINARY>;
+            template<Mode mode = Mode::UTF8>
+                requires(mode != Mode::BINARY)
+            using TextFile = Descriptor<mode>;
 
-        auto read_to(const stdfs::path& path, std::span<Byte> output) noexcept -> Expected<usize>;
-        auto read(const stdfs::path& path) noexcept -> Expected<std::vector<Byte>>;
+            template<Mode mode = Mode::UTF8>
+            auto read_text_to(const stdfs::path& path, std::span<meta::ModeToCharType<mode>> output) noexcept -> Expected<usize>;
+            template<Mode mode = Mode::UTF8>
+            auto read_text(const stdfs::path& path) noexcept -> Expected<std::vector<meta::ModeToCharType<mode>>>;
 
-        template<Mode mode = Mode::UTF8>
-        auto write_text(const stdfs::path& path, std::span<const meta::ModeToCharType<mode>> data) noexcept -> Expected<usize>;
-        auto write(const stdfs::path& path, std::span<const Byte> data) noexcept -> Expected<usize>;
-    }}} // namespace stormkit::core::io
+            auto read_to(const stdfs::path& path, std::span<Byte> output) noexcept -> Expected<usize>;
+            auto read(const stdfs::path& path) noexcept -> Expected<std::vector<Byte>>;
+
+            template<Mode mode = Mode::UTF8>
+            auto write_text(const stdfs::path& path, std::span<const meta::ModeToCharType<mode>> data) noexcept
+              -> Expected<usize>;
+            auto write(const stdfs::path& path, std::span<const Byte> data) noexcept -> Expected<usize>;
+        } // namespace io
+    }} // namespace stormkit::core
 
     FLAG_ENUM(stormkit::core::io::Access);
 } // namespace stormkit::core::io
@@ -142,72 +153,8 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<Mode mode>
-    inline auto Descriptor<mode>::open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor<mode>> {
-        if (access == Access::READ and not stdfs::exists(path))
-            return std::unexpected { SystemError { .code = std::errc::no_such_file_or_directory } };
-        if (stdfs::is_directory(path)) return std::unexpected { SystemError { .code = std::errc::is_a_directory } };
-
-        const auto posix_access = [&access]() noexcept {
-#ifdef STORMKIT_OS_WINDOWS
-            if (access == Access::READ) return _O_RDONLY;
-            else if (access == Access::WRITE)
-                return (_O_WRONLY | _O_CREAT);
-            else
-                return _O_RDWR;
-#else
-            if (access == Access::READ) return O_RDONLY;
-            else if (access == Access::WRITE)
-                return O_WRONLY | O_CREAT;
-            else
-                return O_RDWR;
-#endif
-            std::unreachable();
-        }();
-
-#ifdef STORMKIT_OS_WINDOWS
-        const auto text_mode = []() noexcept {
-            switch (mode) {
-    #ifdef STORMKIT_OS_WINDOWS
-                case Mode::BINARY: return _O_BINARY;
-                case Mode::AINSI: [[fallthrough]];
-                case Mode::UTF8: return _O_TEXT;
-                case Mode::WIDE: return _O_WTEXT;
-                default: break;
-    #else
-                default: return 0;
-    #endif
-            };
-            std::unreachable();
-        }();
-
-        auto ret = 0;
-        auto str = path.string();
-        const auto //
-          err = _sopen_s(&ret, str.c_str(), posix_access | text_mode, _SH_DENYNO, _S_IREAD);
-        if (err != 0) return std::unexpected { SystemError::from_errno() };
-#else
-        const auto ret = ::open(path.c_str(), posix_access);
-        if (ret == -1) return std::unexpected { SystemError::from_errno() };
-#endif
-        return Expected<Descriptor<mode>> { std::in_place, PrivateFuncTag {}, ret };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::close() noexcept {
-        if (m_descriptor != 0) {
-            flush();
-#ifdef STORMKIT_OS_WINDOWS
-            _close
-#else
-            ::close
-#endif
-              (m_descriptor);
-            m_descriptor = 0;
-            m_size       = 0;
-        }
+    inline Descriptor<mode>::Descriptor(PrivateTag) noexcept {
     }
 
     ////////////////////////////////////////
@@ -239,6 +186,44 @@ namespace stormkit { inline namespace core { namespace io {
         m_descriptor = std::exchange(other.m_descriptor, 0);
         m_size       = other.m_size.load();
         other.m_size.store(0);
+
+        return *this;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<Mode mode>
+    STORMKIT_FORCE_INLINE
+    inline auto Descriptor<mode>::open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor<mode>> {
+        auto   descriptor = Try(Descriptor<mode>::create(path, access));
+        Return descriptor;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<Mode mode>
+    STORMKIT_FORCE_INLINE
+    inline auto Descriptor<mode>::allocate_and_open(const stdfs::path& path, Access access) noexcept
+      -> Expected<Descriptor<mode>> {
+        Return Try(Descriptor<mode>::allocate(path, access));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<Mode mode>
+    STORMKIT_FORCE_INLINE
+    inline auto Descriptor<mode>::close() noexcept {
+        if (m_descriptor != 0) {
+            flush();
+#ifdef STORMKIT_OS_WINDOWS
+            _close
+#else
+            ::close
+#endif
+              (m_descriptor);
+            m_descriptor = 0;
+            m_size       = 0;
+        }
     }
 
     ////////////////////////////////////////
@@ -353,7 +338,6 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<Mode mode>
-    STORMKIT_FORCE_INLINE
     inline auto Descriptor<mode>::size() const noexcept -> usize {
         EXPECTS(m_descriptor != 0);
         if (m_size == 0) {
@@ -384,9 +368,55 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<Mode mode>
-    STORMKIT_FORCE_INLINE
-    inline Descriptor<mode>::Descriptor(PrivateFuncTag, int descriptor) noexcept
-        : m_descriptor { descriptor } {
+    inline auto Descriptor<mode>::do_init(PrivateTag, const stdfs::path& path, Access access) noexcept -> Expected<void> {
+        if (access == Access::READ and not stdfs::exists(path))
+            return std::unexpected { SystemError { .code = std::errc::no_such_file_or_directory } };
+        if (stdfs::is_directory(path)) return std::unexpected { SystemError { .code = std::errc::is_a_directory } };
+
+        const auto posix_access = [&access]() noexcept {
+#ifdef STORMKIT_OS_WINDOWS
+            if (access == Access::READ) return _O_RDONLY;
+            else if (access == Access::WRITE)
+                return (_O_WRONLY | _O_CREAT);
+            else
+                return _O_RDWR;
+#else
+            if (access == Access::READ) return O_RDONLY;
+            else if (access == Access::WRITE)
+                return O_WRONLY | O_CREAT;
+            else
+                return O_RDWR;
+#endif
+            std::unreachable();
+        }();
+
+#ifdef STORMKIT_OS_WINDOWS
+        const auto text_mode = []() noexcept {
+            switch (mode) {
+    #ifdef STORMKIT_OS_WINDOWS
+                case Mode::BINARY: return _O_BINARY;
+                case Mode::AINSI: [[fallthrough]];
+                case Mode::UTF8: return _O_TEXT;
+                case Mode::WIDE: return _O_WTEXT;
+                default: break;
+    #else
+                default: return 0;
+    #endif
+            };
+            std::unreachable();
+        }();
+
+        auto ret = 0;
+        auto str = path.string();
+        const auto //
+          err = _sopen_s(&ret, str.c_str(), posix_access | text_mode, _SH_DENYNO, _S_IREAD);
+        if (err != 0) return std::unexpected { SystemError::from_errno() };
+#else
+        const auto ret = ::open(path.c_str(), posix_access);
+        if (ret == -1) return std::unexpected { SystemError::from_errno() };
+#endif
+        m_descriptor = ret;
+        return {};
     }
 
     ////////////////////////////////////////

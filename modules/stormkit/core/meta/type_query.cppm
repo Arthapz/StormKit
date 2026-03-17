@@ -27,28 +27,6 @@ namespace stormkit { inline namespace core { namespace meta {
         struct UnderlyingType;
 
         template<typename T>
-        concept HasValueType = requires() { typename T::ValueType; };
-
-        template<typename T>
-        concept HasStdValueType = requires() { typename T::value_type; };
-
-        template<HasValueType T>
-        struct UnderlyingType<T> {
-            using Type = typename T::ValueType;
-        };
-
-        template<HasStdValueType T>
-            requires(not HasValueType<T>)
-        struct UnderlyingType<T> {
-            using Type = typename T::value_type;
-        };
-
-        template<IsEnumeration T>
-        struct UnderlyingType<T> {
-            using Type = std::underlying_type_t<T>;
-        };
-
-        template<typename T>
         struct PointerType;
 
         template<IsPointer T>
@@ -95,11 +73,64 @@ namespace stormkit { inline namespace core { namespace meta {
 
         template<IsPointer T>
         struct ContainedOrPointedType<T>: PointedType<T> {};
+
+        template<typename>
+        struct ReturnType;
+
+        template<typename R, typename... Args>
+        struct ReturnType<R(Args...)> {
+            using Type = R;
+        };
+
+        template<typename C, typename R, typename... Args>
+        struct ReturnType<R (C::*)(Args...)> {
+            using Type = R;
+        };
+
+        template<typename T>
+        concept HasStdValueType = requires() { typename T::value_type; };
+
+        template<typename T>
+        concept HasValueType = requires() { typename T::ValueType; };
+
+        template<typename T>
+        struct ValueType;
+
+        template<HasValueType T>
+        struct ValueType<T> {
+            using Type = typename T::ValueType;
+        };
+
+        template<HasStdValueType T>
+            requires(not HasValueType<T>)
+        struct ValueType<T> {
+            using Type = typename T::value_type;
+        };
+
+        template<typename T>
+        concept HasStdElementType = requires() { typename T::element_type; };
+
+        template<typename T>
+        concept HasElementType = requires() { typename T::ElementType; };
+
+        template<typename T>
+        struct ElementType;
+
+        template<HasElementType T>
+        struct ElementType<T> {
+            using Type = typename T::ElementType;
+        };
+
+        template<HasStdElementType T>
+            requires(not HasElementType<T>)
+        struct ElementType<T> {
+            using Type = typename T::element_type;
+        };
     } // namespace details
 
     export {
         template<typename T>
-        using UnderlyingType = details::UnderlyingType<T>::Type;
+        using UnderlyingType = std::underlying_type_t<T>;
 
         template<typename T>
         using PointerType = details::PointerType<T>::Type;
@@ -112,6 +143,18 @@ namespace stormkit { inline namespace core { namespace meta {
 
         template<typename T>
         using ContainedOrPointedType = details::ContainedOrPointedType<T>::Type;
+
+        template<typename T>
+        using ReturnType = details::ReturnType<T>::Type;
+
+        template<HasExpectedType T>
+        using ExpectedType = typename T::ExpectedType;
+
+        template<HasValueType T>
+        using ElementType = details::ElementType<T>::Type;
+
+        template<HasValueType T>
+        using ValueType = details::ValueType<T>::Type;
 
         template<stdr::range Range>
         using IteratorType = stdr::iterator_t<Range>;

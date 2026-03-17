@@ -20,7 +20,8 @@ import :math.linear.vector;
 export namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>
     struct rect {
-        using ValueType = T;
+        using ValueType  = T;
+        using value_type = T;
 
         ValueType           x      = ValueType { 0 };
         ValueType           y      = ValueType { 0 };
@@ -43,7 +44,8 @@ export namespace stormkit { inline namespace core { namespace math {
 
     template<core::meta::IsArithmetic T>
     struct bounding_rect {
-        using ValueType = T;
+        using ValueType  = T;
+        using value_type = T;
 
         ValueType left   = ValueType { 0 };
         ValueType top    = ValueType { 0 };

@@ -18,25 +18,15 @@ import :typesafe.integer;
 import :typesafe.byte;
 import :functional.monadic;
 import :utils.contract;
+import :named_constructors;
+import :utils.filesystem;
 
 export namespace stormkit { inline namespace core {
-    class STORMKIT_CORE_API SHMBuffer {
-        struct PrivateFuncTag {};
-
+    class STORMKIT_CORE_API SHMBuffer: public UseNamedConstructors<SHMBuffer, std::expected<void, std::error_code>> {
       public:
         using ValueType = byte;
 
         using value_type = ValueType;
-
-        enum class Access : u8 {
-            READ  = 1,
-            WRITE = 2,
-        };
-
-        static auto create(usize size, std::string name) noexcept -> std::expected<SHMBuffer, std::error_code>;
-
-        static auto create_with_access(usize size, std::string name, Access access) noexcept
-          -> std::expected<SHMBuffer, std::error_code>;
 
         ~SHMBuffer();
 
@@ -55,55 +45,36 @@ export namespace stormkit { inline namespace core {
         auto cend() const noexcept -> decltype(auto);
 
         template<typename Self>
-        auto operator[](this Self&, usize index) noexcept -> meta::ForwardConst<Self, Byte>&;
+        auto operator[](this Self&, usize index) noexcept -> meta::ForwardConst<Self, ValueType>&;
         template<typename Self>
-        auto at(this Self&, usize index) noexcept -> meta::ForwardConst<Self, Byte>&;
+        auto at(this Self&, usize index) noexcept -> meta::ForwardConst<Self, ValueType>&;
 
         auto size() const noexcept -> usize;
         template<typename Self>
-        auto data(this Self&) noexcept -> meta::ForwardConst<Self, Byte>*;
+        auto data(this Self&) noexcept -> std::span<meta::ForwardConst<Self, ValueType>>;
         template<typename Self>
         auto native_handle(this Self&) noexcept -> meta::ForwardConst<Self, void>*;
-        auto name() const noexcept -> const std::string&;
-        auto access() const noexcept -> Access;
+        auto name() const noexcept -> std::string_view;
+        auto access() const noexcept -> io::Access;
 
-        constexpr SHMBuffer(usize size, std::string name, Access access, PrivateFuncTag) noexcept;
+        constexpr SHMBuffer(PrivateTag) noexcept;
+        auto do_init(PrivateTag, usize, std::string, io::Access = io::Access::READ | io::Access::WRITE) noexcept
+          -> std::expected<void, std::error_code>;
 
       private:
-        auto allocate_buffer() noexcept -> std::expected<void, std::error_code>;
-
-        Access          m_access;
-        void*           m_handle = nullptr;
-        usize           m_size;
-        std::string     m_name;
-        std::span<Byte> m_data;
+        io::Access           m_access;
+        void*                m_handle = nullptr;
+        usize                m_size;
+        std::string          m_name;
+        std::span<ValueType> m_data;
     };
-
-    FLAG_ENUM(SHMBuffer::Access);
 }} // namespace stormkit::core
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto SHMBuffer::create(usize size, std::string name) noexcept -> std::expected<SHMBuffer, std::error_code> {
-        return create_with_access(size, std::move(name), Access::READ | Access::WRITE);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto SHMBuffer::create_with_access(usize size, std::string name, Access access) noexcept
-      -> std::expected<SHMBuffer, std::error_code> {
-        auto buffer = SHMBuffer { size, std::move(name), access, PrivateFuncTag {} };
-        return buffer.allocate_buffer().transform(core::monadic::consume(buffer));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr SHMBuffer::SHMBuffer(usize size, std::string name, Access access, PrivateFuncTag) noexcept
-        : m_access { access }, m_size { size }, m_name { std::move(name) } {
+    constexpr SHMBuffer::SHMBuffer(PrivateTag) noexcept {
     }
 
     /////////////////////////////////////
@@ -136,7 +107,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE
     inline auto SHMBuffer::begin(this Self& self) noexcept -> decltype(auto) {
         EXPECTS(self.m_handle);
         return stdr::begin(std::forward<Self&>(self).m_data);
@@ -144,7 +115,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE
     inline auto SHMBuffer::cbegin() const noexcept -> decltype(auto) {
         EXPECTS(m_handle);
         return stdr::cbegin(m_data);
@@ -153,7 +124,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE
     inline auto SHMBuffer::end(this Self& self) noexcept -> decltype(auto) {
         EXPECTS(self.m_handle);
         return stdr::end(std::forward<Self&>(self).m_data);
@@ -161,7 +132,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE
     inline auto SHMBuffer::cend() const noexcept -> decltype(auto) {
         EXPECTS(m_handle);
         return stdr::cend(m_data);
@@ -170,8 +141,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
-    inline auto SHMBuffer::operator[](this Self& self, usize index) noexcept -> meta::ForwardConst<Self, Byte>& {
+    STORMKIT_FORCE_INLINE
+    inline auto SHMBuffer::operator[](this Self& self, usize index) noexcept -> meta::ForwardConst<Self, ValueType>& {
         EXPECTS(self.m_handle);
         EXPECTS(index < self.m_size);
         return std::forward<Self&>(self).m_data[index];
@@ -180,8 +151,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
-    inline auto SHMBuffer::at(this Self& self, usize index) noexcept -> meta::ForwardConst<Self, Byte>& {
+    STORMKIT_FORCE_INLINE
+    inline auto SHMBuffer::at(this Self& self, usize index) noexcept -> meta::ForwardConst<Self, ValueType>& {
         EXPECTS(self.m_handle);
         EXPECTS(index < self.m_size);
         return std::forward<Self&>(self).m_data.at(index);
@@ -189,7 +160,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE
     inline auto SHMBuffer::size() const noexcept -> usize {
         return m_size;
     }
@@ -197,31 +168,31 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
-    inline auto SHMBuffer::data(this Self& self) noexcept -> meta::ForwardConst<Self, Byte>* {
+    STORMKIT_FORCE_INLINE
+    inline auto SHMBuffer::data(this Self& self) noexcept -> std::span<meta::ForwardConst<Self, ValueType>> {
         EXPECTS(self.m_handle);
-        return stdr::data(std::forward<Self&>(self).m_data);
+        return std::forward<Self&>(self).m_data;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Self>
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE
     inline auto SHMBuffer::native_handle(this Self& self) noexcept -> meta::ForwardConst<Self, void>* {
         return std::forward<Self&>(self).m_handle;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
-    inline auto SHMBuffer::name() const noexcept -> const std::string& {
+    STORMKIT_FORCE_INLINE
+    inline auto SHMBuffer::name() const noexcept -> std::string_view {
         return m_name;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_PURE STORMKIT_FORCE_INLINE
-    inline auto SHMBuffer::access() const noexcept -> Access {
+    STORMKIT_FORCE_INLINE
+    inline auto SHMBuffer::access() const noexcept -> io::Access {
         return m_access;
     }
 }} // namespace stormkit::core

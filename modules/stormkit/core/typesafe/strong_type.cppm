@@ -18,7 +18,7 @@ export {
     namespace stormkit { inline namespace core {
         struct ArithmeticTag {
             template<typename T>
-            using Type = meta::UnderlyingType<meta::ToPlainType<T>>;
+            using Type = meta::ValueType<meta::ToPlainType<T>>;
 
             template<typename Self>
             constexpr auto operator+(this Self&& self, meta::PlainIs<Type<Self>> auto&& other) noexcept

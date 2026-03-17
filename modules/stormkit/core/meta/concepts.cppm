@@ -202,9 +202,17 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<class... T>
     concept AreIndirections = ((IsLValueReference<T> or IsPointer<T>) and ...);
 
+    template<typename T>
+    concept HasElementType = requires() { typename T::ElementType; } or requires() { typename T::element_type; };
+
+    template<typename T>
+    concept HasValueType = requires() { typename T::ValueType; } or requires() { typename T::value_type; };
+
+    template<typename T>
+    concept HasExpectedType = requires() { typename T::ExpectedType; } and IsStdExpected<typename T::ExpectedType>;
+
     template<class T>
-    concept IsContainer = requires(T& val) {
-        typename T::value_type;
+    concept IsContainer = HasValueType<T> and requires(T& val) {
         { val.operator*() } -> IsReferenceTo<typename T::value_type>;
         { val.operator->() } -> IsReferenceTo<typename T::value_type*>;
     };

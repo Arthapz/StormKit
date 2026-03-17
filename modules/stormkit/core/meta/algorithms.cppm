@@ -13,26 +13,49 @@ import std;
 import :meta.concepts;
 
 namespace stormkit { inline namespace core { namespace meta::details {
-    template<bool Cond, typename IfRes, typename ElseRes>
+    // template<bool, template<class> class Then, class Arg, class Else>
+    // struct LazyEvaluation final {
+    //     using type = Else;
+    // };
+
+    // template<template<class> class Then, class Arg, class Else>
+    // struct LazyEvaluation<true, Then, Arg, Else> final {
+    //     using type = Then<Arg>;
+    // };
+
+    // /*
+    //     LazyEvaluationType permet de choisir un type basé sur une condition sans instancier préventivement la branche 'Then'.
+    //     Contrairement à std::conditional<Condition, A, B>::type, qui force l'instanciation de A ET B même si Condition est
+    //     fausse (pouvant causer des erreurs de compilation si une branche est invalide pour les types donnés),
+    //     LazyEvaluationType n'instancie Then<Arg> que si la condition est vraie.
+    // */
+    // template<bool Condition, template<class> class Then, class Arg, class Else>
+    // using LazyEvaluationType = typename LazyEvaluation<Condition, Then, Arg, Else>::type;
+
+    template<class T>
+    struct LazyType {
+        using Type = T;
+    };
+    template<bool, template<class...> typename, typename, typename>
     struct If;
 
-    template<typename IfRes, typename ElseRes>
-    struct If<true, IfRes, ElseRes> {
-        using Type = IfRes;
+    template<template<class...> typename LazyType, typename Then, typename OrElse>
+    struct If<false, LazyType, Then, OrElse> {
+        using Type = LazyType<OrElse>::Type;
     };
 
-    template<typename IfRes, typename ElseRes>
-    struct If<false, IfRes, ElseRes> {
-        using Type = ElseRes;
+    template<template<class...> typename LazyType, typename Then, typename OrElse>
+    struct If<true, LazyType, Then, OrElse> {
+        using Type = LazyType<Then>::Type;
     };
 }}} // namespace stormkit::core::meta::details
 
 export namespace stormkit { inline namespace core { namespace meta {
-    template<bool Cond, typename IfRes, typename ElseRes>
-    using If = details::If<Cond, IfRes, ElseRes>::Type;
+    template<bool Cond, typename Then, typename OrElse>
+    using If = details::If<Cond, details::LazyType, Then, OrElse>::Type;
 
-    template<bool Cond, typename True, typename False>
-    using Select = std::conditional_t<Cond, True, False>;
+    template<bool Cond, typename Then, typename OrElse>
+    using Select = std::conditional_t<Cond, Then, OrElse>;
 
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
     constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept -> std::size_t;
