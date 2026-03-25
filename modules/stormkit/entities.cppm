@@ -317,7 +317,7 @@ namespace stormkit::entities {
         auto _component = add_raw_component(entity,
                                             component.type(),
                                             as_bytes(std::forward<T>(component)),
-                                            [](auto ptr) static noexcept { std::bit_cast<PureT*>(ptr)->~PureT(); });
+                                            [](auto ptr) static noexcept { std::launder(std::bit_cast<PureT*>(ptr))->~PureT(); });
 
         return bytes_mut_as<PureT>(_component);
     }
@@ -567,7 +567,7 @@ namespace stormkit::entities {
 
         auto component_it = stdr::data(components);
         for (;;) {
-            auto e = *std::bit_cast<Entity*>(component_it);
+            auto e = *std::launder(std::bit_cast<Entity*>(component_it));
             if (e != entity) {
                 component_it += sizeof(Entity) + size;
                 continue;

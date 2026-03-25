@@ -91,7 +91,7 @@ namespace stormkit::entities {
         auto component_it                                  = stdr::begin(components);
 
         for (;;) {
-            auto e = *std::bit_cast<Entity*>(&*component_it);
+            auto e = *std::launder(std::bit_cast<Entity*>(&*component_it));
 
             if (e == entity) break;
 
