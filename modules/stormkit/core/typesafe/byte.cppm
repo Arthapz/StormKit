@@ -177,7 +177,7 @@ namespace stormkit { inline namespace core {
 
             stdr::reverse(repr);
 
-            return std::bit_cast<T>(repr);
+            return std::launder(std::bit_cast<T>(repr));
         }
     }
 
@@ -251,7 +251,7 @@ namespace stormkit { inline namespace core {
     constexpr auto bytes_as(std::span<const byte, EXTENT> bytes) noexcept -> const T& {
         if constexpr (EXTENT != std::dynamic_extent) EXPECTS(EXTENT == sizeof(T));
         EXPECTS(stdr::size(bytes) == sizeof(T));
-        return *std::bit_cast<const T* const>(stdr::data(bytes));
+        return *std::launder(std::bit_cast<const T* const>(stdr::data(bytes)));
     }
 
     /////////////////////////////////////
@@ -260,7 +260,7 @@ namespace stormkit { inline namespace core {
         requires(meta::SameAs<meta::ToPlainType<meta::ContainedType<Range>>, byte>)
     STORMKIT_FORCE_INLINE
     constexpr auto bytes_as_span(const Range& bytes) noexcept -> std::span<const T> {
-        return std::span { std::bit_cast<const T* const>(stdr::data(bytes)), stdr::size(bytes) / sizeof(T) };
+        return std::span { std::launder(std::bit_cast<const T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
     }
 
     /////////////////////////////////////
@@ -273,7 +273,7 @@ namespace stormkit { inline namespace core {
             return std::span<const T, EXTENT / sizeof(T)> { std::bit_cast<const T* const>(stdr::data(bytes)),
                                                             EXTENT / sizeof(T) };
         else
-            return std::span { std::bit_cast<const T* const>(stdr::data(bytes)), stdr::size(bytes) / sizeof(T) };
+            return std::span { std::launder(std::bit_cast<const T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
     }
 
     /////////////////////////////////////
@@ -283,7 +283,7 @@ namespace stormkit { inline namespace core {
     constexpr auto bytes_mut_as(std::span<byte, EXTENT> bytes) noexcept -> T& {
         if constexpr (EXTENT != std::dynamic_extent) EXPECTS(EXTENT == sizeof(T));
         EXPECTS(stdr::size(bytes) == sizeof(T));
-        return *std::bit_cast<T* const>(stdr::data(bytes));
+        return *std::launder(std::bit_cast<T* const>(stdr::data(bytes)));
     }
 
     /////////////////////////////////////
@@ -292,7 +292,7 @@ namespace stormkit { inline namespace core {
         requires(meta::SameAs<meta::ContainedType<Range>, byte> and not meta::IsConst<Range>)
     STORMKIT_FORCE_INLINE
     constexpr auto bytes_mut_as_span(Range& bytes) noexcept -> std::span<T> {
-        return std::span { std::bit_cast<T* const>(stdr::data(bytes)), stdr::size(bytes) / sizeof(T) };
+        return std::span { std::launder(std::bit_cast<T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
     }
 
     /////////////////////////////////////
@@ -304,7 +304,7 @@ namespace stormkit { inline namespace core {
         if constexpr (EXTENT != std::dynamic_extent)
             return std::span<T, EXTENT / sizeof(T)> { std::bit_cast<T* const>(stdr::data(bytes)), EXTENT / sizeof(T) };
         else
-            return std::span { std::bit_cast<T* const>(stdr::data(bytes)), stdr::size(bytes) / sizeof(T) };
+            return std::span { std::launder(std::bit_cast<T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
     }
 
     /////////////////////////////////////
