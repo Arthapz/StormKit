@@ -74,18 +74,62 @@ namespace stormkit { inline namespace core { namespace meta {
         template<IsPointer T>
         struct ContainedOrPointedType<T>: PointedType<T> {};
 
-        template<typename>
-        struct ReturnType;
+        template<class T>
+        struct CallableTrait;
 
-        template<typename R, typename... Args>
-        struct ReturnType<R(Args...)> {
-            using Type = R;
+        template<class Return, class... Args>
+        struct SignatureTrait {
+            using ReturnType = Return;
+            // using ArgumentsTypes = std::tuple<Args...>;
         };
 
-        template<typename C, typename R, typename... Args>
-        struct ReturnType<R (C::*)(Args...)> {
-            using Type = R;
-        };
+        template<class Return, class... Args>
+        struct CallableTrait<Return(Args...)>: SignatureTrait<Return, Args...> {};
+
+        template<class Return, class... Args>
+        struct CallableTrait<Return(Args...) noexcept>: SignatureTrait<Return, Args...> {};
+
+        template<class Return, class... Args>
+        struct CallableTrait<Return (*)(Args...)>: CallableTrait<Return(Args...)> {};
+
+        template<class Return, class... Args>
+        struct CallableTrait<Return (*)(Args...) noexcept>: CallableTrait<Return(Args...) noexcept> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...)>: CallableTrait<Return(Args...)> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) const>: CallableTrait<Return(Args...)> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) &>: CallableTrait<Return(Args...)> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) const &>: CallableTrait<Return(Args...)> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) &&>: CallableTrait<Return(Args...)> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) const &&>: CallableTrait<Return(Args...)> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) noexcept>: CallableTrait<Return(Args...) noexcept> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) const noexcept>: CallableTrait<Return(Args...) noexcept> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) & noexcept>: CallableTrait<Return(Args...) noexcept> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) const & noexcept>: CallableTrait<Return(Args...) noexcept> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) && noexcept>: CallableTrait<Return(Args...) noexcept> {};
+
+        template<class Object, class Return, class... Args>
+        struct CallableTrait<Return (Object::*)(Args...) const && noexcept>: CallableTrait<Return(Args...) noexcept> {};
 
         template<typename T>
         concept HasStdValueType = requires() { typename T::value_type; };
@@ -145,7 +189,7 @@ namespace stormkit { inline namespace core { namespace meta {
         using ContainedOrPointedType = details::ContainedOrPointedType<T>::Type;
 
         template<typename T>
-        using ReturnType = details::ReturnType<T>::Type;
+        using ReturnType = details::CallableTrait<T>::ReturnType;
 
         template<HasExpectedType T>
         using ExpectedType = typename T::ExpectedType;
