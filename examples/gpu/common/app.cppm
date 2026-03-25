@@ -128,7 +128,8 @@ export namespace base {
 
             // create swapchain
             const auto window_extent = m_window->extent();
-            m_swapchain = TryAssert(gpu::SwapChain::create(m_device, m_surface, window_extent), "Failed to create swapchain");
+            m_swapchain              = TryAssert(gpu::SwapChain::create(m_device, gpu::as_view(m_surface), window_extent),
+                                                 "Failed to create swapchain");
 
             const auto queue_entries = m_device->queue_entries();
             const auto it            = stdr::find_if(queue_entries, gpu::monadic::find_queue<gpu::QueueFlag::GRAPHICS>());

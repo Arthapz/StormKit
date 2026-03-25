@@ -15,6 +15,7 @@ module;
     #include <stormkit/core/platform/windows.hpp>
 #endif
 
+#include <stormkit/gpu/api.hpp>
 #define STORMKIT_DEFINE_VK_PLATFORM
 #include <stormkit/gpu/vulkan.hpp>
 
@@ -26,18 +27,22 @@ import stormkit.core;
 import stormkit.wsi;
 
 namespace stormkit::gpu {
+    template class SurfaceInterface<SurfaceImplementation>;
+    template class SurfaceInterface<view::SurfaceImplementation>;
+
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Surface::do_init(PrivateTag) noexcept -> Expected<void> {
+    auto SurfaceImplementation::do_init(PrivateTag) noexcept -> Expected<void> {
         assert(false, "not implemented yet");
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Surface::do_init(PrivateTag, const wsi::Window& window) noexcept -> Expected<void> {
+    auto SurfaceImplementation::do_init(PrivateTag, const wsi::Window& window) noexcept -> Expected<void> {
         EXPECTS(window.is_open());
-        const auto instance = m_instance;
+        const auto instance = owner();
+
 #if defined(STORMKIT_OS_WINDOWS)
         const auto create_surface = [&window, &instance] {
             const auto create_info = VkWin32SurfaceCreateInfoKHR {

@@ -30,9 +30,9 @@ struct SubmissionResource {
 };
 
 struct SwapchainImageResource {
-    ref<const gpu::Image> image;
-    gpu::ImageView        view;
-    gpu::Semaphore        render_finished;
+    gpu::view::Image image;
+    gpu::ImageView   view;
+    gpu::Semaphore   render_finished;
 };
 
 namespace {
@@ -85,7 +85,7 @@ class Application: public base::Application {
             auto view = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view!");
 
             m_image_resources
-              .push_back({ .image           = as_ref(swap_image),
+              .push_back({ .image           = swap_image,
                            .view            = std::move(view),
                            .render_finished = TryAssert(gpu::Semaphore::create(m_device),
                                                         "Failed to create render "
@@ -226,7 +226,7 @@ class Application: public base::Application {
         const auto window_extent  = m_window->extent().to<i32>();
         const auto rendering_info = gpu::RenderingInfo {
             .render_area       = { .x = 0, .y = 0, .width = window_extent.width, .height = window_extent.height },
-            .color_attachments = { { .image_view  = as_ref(swapchain_image_resource.view),
+            .color_attachments = { { .image_view  = swapchain_image_resource.view,
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                      .clear_value = gpu::ClearColor { .color = colors::SILVER<f32> } } }
         };
@@ -236,7 +236,7 @@ class Application: public base::Application {
         TryAssert(render_cmb.reset(), std::format("Failed to reset render cmb {}!", image_index));
         TryDiscardAssert((render_cmb.record([&](auto cmb) noexcept {
                              cmb
-                               .transition_image_layout(gpu::as_view(swapchain_image_resource.image),
+                               .transition_image_layout(swapchain_image_resource.image,
                                                         gpu::ImageLayout::PRESENT_SRC,
                                                         gpu::ImageLayout::ATTACHMENT_OPTIMAL)
                                .begin_debug_region("Render imgui")
@@ -247,7 +247,7 @@ class Application: public base::Application {
                              cmb
                                .end_rendering() //
                                .end_debug_region()
-                               .transition_image_layout(gpu::as_view(swapchain_image_resource.image),
+                               .transition_image_layout(swapchain_image_resource.image,
                                                         gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                                         gpu::ImageLayout::PRESENT_SRC);
                          })),

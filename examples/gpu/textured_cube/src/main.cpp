@@ -41,11 +41,11 @@ struct SubmissionResource {
 };
 
 struct SwapchainImageResource {
-    ref<const gpu::Image> image;
-    gpu::ImageView        view;
-    gpu::Image            depth_image;
-    gpu::ImageView        depth_view;
-    gpu::Semaphore        render_finished;
+    gpu::view::Image image;
+    gpu::ImageView   view;
+    gpu::Image       depth_image;
+    gpu::ImageView   depth_view;
+    gpu::Semaphore   render_finished;
 };
 
 struct Vertex {
@@ -280,7 +280,7 @@ class Application: public base::Application {
                                    .transition_image_layout(m_texture,
                                                             gpu::ImageLayout::UNDEFINED,
                                                             gpu::ImageLayout::TRANSFER_DST_OPTIMAL)
-                                   .copy_buffer_to_image(staging_buffer, m_texture, as_view(copy))
+                                   .copy_buffer_to_image(staging_buffer, m_texture, copy)
                                    .end_debug_region()
                                    .begin_debug_region("Transition texture data")
                                    .transition_image_layout(m_texture,
@@ -326,8 +326,8 @@ class Application: public base::Application {
                 gpu::ImageDescriptor {
                                        .binding    = 1,
                                        .layout     = gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
-                                       .image_view = gpu::as_view(m_texture_view),
-                                       .sampler    = gpu::as_view(m_sampler),
+                                       .image_view = m_texture_view,
+                                       .sampler    = m_sampler,
                                        }
             };
             res.descriptor_set.update(sets);
@@ -360,7 +360,7 @@ class Application: public base::Application {
                                         "Failed to create depth image view!");
 
             m_image_resources
-              .push_back({ .image           = as_ref(swap_image),
+              .push_back({ .image           = swap_image,
                            .view            = std::move(view),
                            .depth_image     = std::move(depth_image),
                            .depth_view      = std::move(depth_view),
@@ -470,10 +470,10 @@ class Application: public base::Application {
 
         const auto rendering_info = gpu::RenderingInfo {
             .render_area = { .x = 0, .y = 0, .width = window_extent.to<i32>().width, .height = window_extent.to<i32>().height },
-            .color_attachments = { { .image_view  = as_ref(swapchain_image_resource.view),
+            .color_attachments = { { .image_view  = swapchain_image_resource.view,
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                      .clear_value = gpu::ClearColor { .color = colors::SILVER<f32> } } },
-            .depth_attachment  = { { .image_view  = as_ref(swapchain_image_resource.depth_view),
+            .depth_attachment  = { { .image_view  = swapchain_image_resource.depth_view,
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                      .clear_value = gpu::ClearDepthStencil {} } }
         };
@@ -485,7 +485,7 @@ class Application: public base::Application {
         TryAssert(render_cmb.reset(), std::format("Failed to reset render cmb {}!", image_index));
         TryDiscardAssert((render_cmb.record([&](auto cmb) noexcept {
                              cmb
-                               .transition_image_layout(gpu::as_view(swapchain_image_resource.image),
+                               .transition_image_layout(swapchain_image_resource.image,
                                                         gpu::ImageLayout::PRESENT_SRC,
                                                         gpu::ImageLayout::ATTACHMENT_OPTIMAL)
                                .begin_debug_region("Render cube")
@@ -496,7 +496,7 @@ class Application: public base::Application {
                                .draw(stdr::size(VERTICES))
                                .end_rendering()
                                .end_debug_region()
-                               .transition_image_layout(gpu::as_view(swapchain_image_resource.image),
+                               .transition_image_layout(swapchain_image_resource.image,
                                                         gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                                         gpu::ImageLayout::PRESENT_SRC);
                          })),

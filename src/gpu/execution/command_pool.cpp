@@ -22,45 +22,42 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 namespace stormkit::gpu {
-    namespace {
-        struct CommandPoolAPI {
-            /////////////////////////////////////
-            /////////////////////////////////////
-            template<meta::IsOwnedOrView CommandPoolType>
-            static auto create_vk_command_buffers(const CommandPoolType& pool, usize count, CommandBufferLevel level) noexcept
-              -> Expected<std::vector<VkCommandBuffer>> {
-                const auto& device       = pool.device();
-                const auto& device_table = device.device_table();
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    auto CommandPoolInterface<Base>::create_vk_command_buffers(usize count, CommandBufferLevel level) const noexcept
+      -> Expected<std::vector<VkCommandBuffer>> {
+        const auto& device       = Base::owner();
+        const auto& device_table = device.device_table();
 
-                const auto allocate_info = VkCommandBufferAllocateInfo {
-                    .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-                    .pNext              = nullptr,
-                    .commandPool        = pool,
-                    .level              = vk::to_vk<VkCommandBufferLevel>(level),
-                    .commandBufferCount = as<u32>(count)
-                };
-
-                return vk::allocate_checked<VkCommandBuffer>(count,
-                                                             device_table.vkAllocateCommandBuffers,
-                                                             device,
-                                                             &allocate_info);
-            }
-
-            /////////////////////////////////////
-            /////////////////////////////////////
-            static auto delete_vk_command_buffers(view::Device      device,
-                                                  view::CommandPool command_pool,
-                                                  VkCommandBuffer   command_buffer) noexcept -> void {
-                const auto& device_table = device.device_table();
-                vk::call(device_table.vkFreeCommandBuffers, device, command_pool, 1, &command_buffer);
-            }
+        const auto allocate_info = VkCommandBufferAllocateInfo {
+            .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .pNext              = nullptr,
+            .commandPool        = *this,
+            .level              = vk::to_vk<VkCommandBufferLevel>(level),
+            .commandBufferCount = as<u32>(count)
         };
-    } // namespace
+
+        return vk::allocate_checked<VkCommandBuffer>(count, device_table.vkAllocateCommandBuffers, device, &allocate_info);
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto CommandPool::do_init(PrivateTag) noexcept -> Expected<void> {
-        const auto& device       = this->device();
+    template<typename Base>
+    auto CommandPoolInterface<Base>::delete_vk_command_buffers(view::Device      device,
+                                                               view::CommandPool pool,
+                                                               VkCommandBuffer   cmb) noexcept -> void {
+        const auto& device_table = device.device_table();
+        vk::call(device_table.vkFreeCommandBuffers, device, pool, 1, &cmb);
+    }
+
+    template class CommandPoolInterface<CommandPoolImplementation>;
+    template class CommandPoolInterface<view::CommandPoolImplementation>;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto CommandPoolImplementation::do_init(PrivateTag) noexcept -> Expected<void> {
+        const auto& device       = owner();
         const auto& device_table = device.device_table();
 
         const auto create_info = VkCommandPoolCreateInfo {
@@ -73,33 +70,4 @@ namespace stormkit::gpu {
         m_vk_handle = Try(vk::call_checked<VkCommandPool>(device_table.vkCreateCommandPool, device, &create_info, nullptr));
         Return {};
     }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto CommandPool::create_vk_command_buffers(usize count, CommandBufferLevel level) const noexcept
-      -> Expected<std::vector<VkCommandBuffer>> {
-        return CommandPoolAPI::create_vk_command_buffers(*this, count, level);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto CommandPool::delete_vk_command_buffers(view::Device device, view::CommandPool pool, VkCommandBuffer cmb) noexcept
-      -> void {
-        CommandPoolAPI::delete_vk_command_buffers(std::move(device), std::move(pool), cmb);
-    }
-
-    namespace view {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto CommandPool::create_vk_command_buffers(usize count, CommandBufferLevel level) const noexcept
-          -> Expected<std::vector<VkCommandBuffer>> {
-            return CommandPoolAPI::create_vk_command_buffers(*this, count, level);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto CommandPool::delete_vk_command_buffers(Device device, CommandPool pool, VkCommandBuffer cmb) noexcept -> void {
-            CommandPoolAPI::delete_vk_command_buffers(std::move(device), std::move(pool), cmb);
-        }
-    } // namespace view
 } // namespace stormkit::gpu

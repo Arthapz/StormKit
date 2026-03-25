@@ -18,108 +18,89 @@ import stormkit.core;
 import stormkit.gpu.core;
 
 namespace stormkit::gpu {
-    struct BufferAPI {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<meta::IsOwnedOrView BufferType>
-        static auto map(BufferType& buffer, ioffset offset) noexcept -> Expected<byte*> {
-            EXPECTS(buffer.allocation() and buffer.native_handle());
-            EXPECTS(offset < as<ioffset>(buffer.size()));
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    auto BufferInterface<Base>::map(ioffset offset) noexcept -> Expected<byte*> {
+        EXPECTS(allocation() and Base::native_handle());
+        EXPECTS(offset < as<ioffset>(size()));
 
-            const auto& device     = buffer.device();
-            const auto& allocator  = device.allocator();
-            const auto& allocation = buffer.allocation();
+        const auto& device     = Base::owner();
+        const auto& allocator  = device.allocator();
+        const auto& allocation = this->allocation();
 
-            auto ptr = Try(vk::call_checked<void*>(vmaMapMemory, allocator, allocation));
+        auto ptr = Try(vk::call_checked<void*>(vmaMapMemory, allocator, allocation));
 
-            buffer.m_mapped_pointer = std::bit_cast<byte*>(ptr);
-            buffer.m_mapped_pointer += offset;
-            return buffer.m_mapped_pointer;
-        }
+        Base::m_mapped_pointer = std::bit_cast<byte*>(ptr);
+        Base::m_mapped_pointer += offset;
+        return Base::m_mapped_pointer;
+    }
 
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<meta::IsOwnedOrView BufferType>
-        static auto flush(const BufferType& buffer, ioffset offset, usize size) noexcept -> Expected<void> {
-            EXPECTS(buffer.allocation() and buffer.native_handle());
-            EXPECTS(offset <= as<ioffset>(buffer.size()));
-            EXPECTS(size <= buffer.size());
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    auto BufferInterface<Base>::flush(ioffset offset, usize size) const noexcept -> Expected<void> {
+        EXPECTS(allocation() and Base::native_handle());
+        EXPECTS(offset <= as<ioffset>(this->size()));
+        EXPECTS(size <= this->size());
 
-            const auto& device     = buffer.device();
-            const auto& allocator  = device.allocator();
-            const auto& allocation = buffer.allocation();
+        const auto& device     = Base::owner();
+        const auto& allocator  = device.allocator();
+        const auto& allocation = this->allocation();
 
-            return vk::call_checked(vmaFlushAllocation, allocator, allocation, offset, size);
-        }
+        return vk::call_checked(vmaFlushAllocation, allocator, allocation, offset, size);
+    }
 
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<meta::IsOwnedOrView BufferType>
-        static auto unmap(BufferType& buffer) noexcept -> void {
-            EXPECTS(buffer.allocation() and buffer.native_handle());
-            // expects(buffer.is_persistently_mapped(), "unmapping persistent buffer !");
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    auto BufferInterface<Base>::unmap() noexcept -> void {
+        if (not mapped()) return;
 
-            const auto& device     = buffer.device();
-            const auto& allocator  = device.allocator();
-            const auto& allocation = buffer.allocation();
+        if constexpr (cmeta::SameAs<Base, view::BufferImplementation>)
+            if (is_persistently_mapped()) return;
 
-            vk::call(vmaUnmapMemory, allocator, allocation);
+        EXPECTS(allocation() and Base::native_handle());
 
-            buffer.m_mapped_pointer = nullptr;
-        }
+        const auto& device     = Base::owner();
+        const auto& allocator  = device.allocator();
+        const auto& allocation = this->allocation();
 
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<meta::IsOwnedOrView BufferType>
-        static auto upload(BufferType& buffer, std::span<const byte> data, ioffset offset) noexcept -> Expected<void> {
-            EXPECTS(stdr::size(data) <= buffer.size());
+        vk::call(vmaUnmapMemory, allocator, allocation);
 
-            if (buffer.is_persistently_mapped()) {
-                stdr::copy(data, buffer.m_mapped_pointer);
-                Return {};
-            }
+        Base::m_mapped_pointer = nullptr;
+    }
 
-            auto gpu_data = Try(buffer.map(offset, stdr::size(data)));
-            stdr::copy(data, stdr::begin(gpu_data));
-            buffer.unmap();
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    auto BufferInterface<Base>::upload(std::span<const byte> data, ioffset offset) noexcept -> Expected<void> {
+        EXPECTS(stdr::size(data) <= this->size());
 
+        if (is_persistently_mapped()) {
+            stdr::copy(data, Base::m_mapped_pointer);
             Return {};
         }
-    };
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Buffer::map(ioffset offset) noexcept -> Expected<byte*> {
-        return BufferAPI::map(*this, offset);
+        auto gpu_data = Try(map(offset, stdr::size(data)));
+        stdr::copy(data, stdr::begin(gpu_data));
+        unmap();
+
+        Return {};
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Buffer::flush(ioffset offset, usize size) noexcept -> Expected<void> {
-        return BufferAPI::flush(*this, offset, size);
-    }
+    template class BufferInterface<BufferImplementation>;
+    template class BufferInterface<view::BufferImplementation>;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Buffer::unmap() noexcept -> void {
-        return BufferAPI::unmap(*this);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Buffer::upload(std::span<const byte> data, ioffset offset) noexcept -> Expected<void> {
-        return BufferAPI::upload(*this, std::move(data), offset);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Buffer::do_init(PrivateTag, const CreateInfo& _create_info) noexcept -> Expected<void> {
+    auto BufferImplementation::do_init(PrivateTag, const CreateInfo& _create_info) noexcept -> Expected<void> {
         m_usages                 = _create_info.usages;
         m_size                   = _create_info.size;
         m_memory_properties      = _create_info.properties;
         m_is_persistently_mapped = _create_info.persistently_mapped;
 
-        const auto& device       = this->device();
+        const auto& device       = owner();
         const auto& device_table = device.device_table();
         const auto  create_info  = VkBufferCreateInfo {
             .sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -152,50 +133,27 @@ namespace stormkit::gpu {
         m_vma_allocation = std::move(out);
         Try(vk::call_checked(vmaBindBufferMemory, allocator, m_vma_allocation, m_vk_handle));
 
-        if (m_is_persistently_mapped) Try(map(0u));
+        if (m_is_persistently_mapped) {
+            auto ptr         = Try(vk::call_checked<void*>(vmaMapMemory, allocator, m_vma_allocation));
+            m_mapped_pointer = std::bit_cast<byte*>(ptr);
+        }
 
         Return {};
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Buffer::find_memory_type(u32                                     type_filter,
-                                  VkMemoryPropertyFlagBits                properties,
-                                  const VkPhysicalDeviceMemoryProperties& mem_properties,
-                                  const VkMemoryRequirements&) noexcept -> u32 {
-        for (const auto i : range(mem_properties.memoryTypeCount)) {
-            if ((type_filter & (1 << i))
-                and (check_flag_bit(static_cast<VkMemoryPropertyFlagBits>(mem_properties.memoryTypes[i].propertyFlags),
-                                    properties)))
-                return i;
-        }
+    // /////////////////////////////////////
+    // /////////////////////////////////////
+    // auto BufferImplementation::find_memory_type(u32                                     type_filter,
+    //                                             VkMemoryPropertyFlagBits                properties,
+    //                                             const VkPhysicalDeviceMemoryProperties& mem_properties,
+    //                                             const VkMemoryRequirements&) noexcept -> u32 {
+    //     for (const auto i : range(mem_properties.memoryTypeCount)) {
+    //         if ((type_filter & (1 << i))
+    //             and (check_flag_bit(static_cast<VkMemoryPropertyFlagBits>(mem_properties.memoryTypes[i].propertyFlags),
+    //                                 properties)))
+    //             return i;
+    //     }
 
-        return 0;
-    }
-
-    namespace view {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto Buffer::map(ioffset offset) noexcept -> Expected<byte*> {
-            return BufferAPI::map(*this, offset);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto Buffer::flush(ioffset offset, usize size) noexcept -> Expected<void> {
-            return BufferAPI::flush(*this, offset, size);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto Buffer::unmap() noexcept -> void {
-            return BufferAPI::unmap(*this);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto Buffer::upload(std::span<const byte> data, ioffset offset) noexcept -> Expected<void> {
-            return BufferAPI::upload(*this, std::move(data), offset);
-        }
-    } // namespace view
+    //    return 0;
+    // }
 } // namespace stormkit::gpu

@@ -65,13 +65,6 @@ class Application: public base::Application {
             .extent = window_extent,
         };
 
-        static_assert(meta::SameAs<decltype(gpu::as_view(m_vertex_shader)), gpu::view::Shader>);
-        static_assert(meta::SameAs<decltype(std::vector { gpu::as_view(m_vertex_shader), gpu::as_view(m_fragment_shader) }),
-                                   std::vector<gpu::view::Shader>>);
-        static_assert(meta::SameAs<decltype(gpu::as_views(m_vertex_shader, m_fragment_shader)),
-                                   std::array<gpu::view::Shader, 2>>);
-        static_assert(meta::SameAs<decltype(gpu::to_views(m_vertex_shader, m_fragment_shader)), std::vector<gpu::view::Shader>>);
-
         const auto state = gpu::RasterPipelineState {
             .input_assembly_state = { .topology = gpu::PrimitiveTopology::TRIANGLE_LIST, },
             .viewport_state       = { .viewports = { window_viewport },
@@ -177,7 +170,7 @@ class Application: public base::Application {
         const auto window_extent  = m_window->extent().to<i32>();
         const auto rendering_info = gpu::RenderingInfo {
             .render_area       = { .x = 0, .y = 0, .width = window_extent.width, .height = window_extent.height },
-            .color_attachments = { { .image_view  = as_ref(swapchain_image_resource.view),
+            .color_attachments = { { .image_view  = swapchain_image_resource.view,
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                      .clear_value = gpu::ClearColor { .color = colors::SILVER<f32> } } }
         };
@@ -187,7 +180,7 @@ class Application: public base::Application {
         TryAssert(render_cmb.reset(), std::format("Failed to reset render cmb {}!", image_index));
         TryDiscardAssert((render_cmb.record([&](auto cmb) noexcept {
                              cmb
-                               .transition_image_layout(gpu::as_view(swapchain_image_resource.image),
+                               .transition_image_layout(swapchain_image_resource.image,
                                                         gpu::ImageLayout::PRESENT_SRC,
                                                         gpu::ImageLayout::ATTACHMENT_OPTIMAL)
                                .begin_debug_region("Render triangle")
@@ -196,7 +189,7 @@ class Application: public base::Application {
                                .draw(3)
                                .end_rendering()
                                .end_debug_region()
-                               .transition_image_layout(gpu::as_view(swapchain_image_resource.image),
+                               .transition_image_layout(swapchain_image_resource.image,
                                                         gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                                         gpu::ImageLayout::PRESENT_SRC);
                          })),

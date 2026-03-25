@@ -10,6 +10,7 @@ module;
 
 #include <stormkit/log/log_macro.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.core;
@@ -197,124 +198,73 @@ namespace {
 } // namespace
 
 namespace stormkit::gpu {
-    namespace {
-        struct DeviceAPI {
-            template<meta::IsOwnedOrView DeviceType>
-            static auto wait_idle(const DeviceType& device) noexcept -> Expected<void> {
-                const auto& table  = device.device_table();
-                const auto& handle = device.native_handle();
-                Try(vk::call_checked(table.vkDeviceWaitIdle, handle));
-                Return {};
-            }
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    auto DeviceInterface<Base>::wait_idle() const noexcept -> Expected<void> {
+        const auto device_table = this->device_table();
+        Try(vk::call_checked(device_table.vkDeviceWaitIdle, *this));
+        Return {};
+    }
 
-            template<meta::IsOwnedOrView DeviceType>
-            static auto wait_for_fences(const DeviceType&                device,
-                                        std::span<const view::Fence>     fences,
-                                        bool                             wait_all = true,
-                                        const std::chrono::milliseconds& timeout  = std::chrono::milliseconds::max()) noexcept
-              -> Expected<Result> {
-                const auto& device_table = device.device_table();
-                const auto  _fences      = transform(fences, vk::monadic::to_vk());
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    auto DeviceInterface<Base>::wait_for_fences(std::span<const view::Fence>     fences,
+                                                bool                             wait_all,
+                                                const std::chrono::milliseconds& timeout) const noexcept -> Expected<Result> {
+        const auto device_table = this->device_table();
+        const auto _fences      = transform(fences, vk::monadic::to_vk());
 
-                const auto result = Try((vk::call_checked<VkResult, VK_SUCCESS, VK_NOT_READY>(device_table.vkWaitForFences,
-                                                                                              device,
-                                                                                              stdr::size(_fences),
-                                                                                              stdr::data(_fences),
-                                                                                              wait_all,
-                                                                                              std::chrono::duration_cast<
-                                                                                                std::chrono::nanoseconds>(timeout)
-                                                                                                .count())));
-                return vk::from_vk<Result>(result);
-            }
+        const auto result = Try((vk::call_checked<VkResult, VK_SUCCESS, VK_NOT_READY>(device_table.vkWaitForFences,
+                                                                                      *this,
+                                                                                      stdr::size(_fences),
+                                                                                      stdr::data(_fences),
+                                                                                      wait_all,
+                                                                                      std::chrono::duration_cast<
+                                                                                        std::chrono::nanoseconds>(timeout)
+                                                                                        .count())));
+        return vk::from_vk<Result>(result);
+    }
 
-            template<meta::IsOwnedOrView DeviceType>
-            static auto reset_fences(const DeviceType& device, std::span<const view::Fence> fences) noexcept -> Expected<void> {
-                const auto& device_table = device.device_table();
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    auto DeviceInterface<Base>::reset_fences(std::span<const view::Fence> fences) const noexcept -> Expected<void> {
+        const auto device_table = this->device_table();
 
-                const auto _fences = transform(fences, vk::monadic::to_vk());
-                Try(vk::call_checked(device_table.vkResetFences, device, stdr::size(_fences), stdr::data(_fences)));
-                Return {};
-            }
+        const auto _fences = transform(fences, vk::monadic::to_vk());
+        Try(vk::call_checked(device_table.vkResetFences, *this, stdr::size(_fences), stdr::data(_fences)));
+        Return {};
+    }
 
-            template<meta::IsOwnedOrView DeviceType>
-            static auto set_object_name(const DeviceType& device,
-                                        u64               object,
-                                        DebugObjectType   type,
-                                        std::string_view  name) noexcept -> Expected<void> {
-                if (not vkSetDebugUtilsObjectNameEXT) return {};
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    auto DeviceInterface<Base>::set_object_name(u64 object, DebugObjectType type, std::string_view name) const noexcept
+      -> Expected<void> {
+        if (not vkSetDebugUtilsObjectNameEXT) return {};
 
-                const auto info = VkDebugUtilsObjectNameInfoEXT {
-                    .sType        = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-                    .pNext        = nullptr,
-                    .objectType   = vk::to_vk<VkObjectType>(type),
-                    .objectHandle = object,
-                    .pObjectName  = stdr::data(name),
-                };
-
-                Try(vk::call_checked(vkSetDebugUtilsObjectNameEXT, device, &info));
-                Return {};
-            }
+        const auto info = VkDebugUtilsObjectNameInfoEXT {
+            .sType        = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+            .pNext        = nullptr,
+            .objectType   = vk::to_vk<VkObjectType>(type),
+            .objectHandle = object,
+            .pObjectName  = stdr::data(name),
         };
-    } // namespace
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Device::wait_idle() const noexcept -> Expected<void> {
-        return DeviceAPI::wait_idle(*this);
+        Try(vk::call_checked(vkSetDebugUtilsObjectNameEXT, *this, &info));
+        Return {};
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Device::wait_for_fences(std::span<const view::Fence>     fences,
-                                 bool                             wait_all,
-                                 const std::chrono::milliseconds& timeout) const noexcept -> Expected<Result> {
-        return DeviceAPI::wait_for_fences(*this, std::move(fences), wait_all, timeout);
-    }
+    template class DeviceInterface<DeviceImplementation>;
+    template class DeviceInterface<view::DeviceImplementation>;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Device::reset_fences(std::span<const view::Fence> fences) const noexcept -> Expected<void> {
-        return DeviceAPI::reset_fences(*this, std::move(fences));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Device::set_object_name(u64 object, DebugObjectType type, std::string_view name) const -> Expected<void> {
-        return DeviceAPI::set_object_name(*this, object, type, std::move(name));
-    }
-
-    namespace view {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto Device::wait_idle() const noexcept -> Expected<void> {
-            return DeviceAPI::wait_idle(*this);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto Device::wait_for_fences(std::span<const Fence>           fences,
-                                     bool                             wait_all,
-                                     const std::chrono::milliseconds& timeout) const noexcept -> Expected<Result> {
-            return DeviceAPI::wait_for_fences(*this, std::move(fences), wait_all, timeout);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto Device::reset_fences(std::span<const Fence> fences) const noexcept -> Expected<void> {
-            return DeviceAPI::reset_fences(*this, std::move(fences));
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto Device::set_object_name(u64 object, DebugObjectType type, std::string_view name) const -> Expected<void> {
-            return DeviceAPI::set_object_name(*this, object, type, std::move(name));
-        }
-    } // namespace view
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Device::do_init(PrivateTag, const CreateInfo& info) noexcept -> Expected<void> {
-        const auto& queue_families = m_physical_device.queue_families();
+    auto DeviceImplementation::do_init(PrivateTag, const CreateInfo& info) noexcept -> Expected<void> {
+        const auto  physical_device = owner();
+        const auto& queue_families  = physical_device.queue_families();
 
         auto i          = 0_u32;
         auto priorities = std::vector<std::vector<f32>> {};
@@ -339,7 +289,7 @@ namespace stormkit::gpu {
             };
         });
 
-        // const auto& capabilities         = m_physical_device.capabilities();
+        // const auto& capabilities         = physical_device.capabilities();
         const auto enabled_1_0_features = init_by<VkPhysicalDeviceFeatures>([](auto& out) static noexcept {
             out.multiDrawIndirect = true;
             out.samplerAnisotropy = true;
@@ -359,7 +309,7 @@ namespace stormkit::gpu {
             out.dynamicRendering = true;
         });
 
-        const auto device_extensions = m_physical_device.extensions();
+        const auto device_extensions = physical_device.extensions();
 
         const auto swapchain_available = [&] {
             for (const auto& ext : SWAPCHAIN_EXTENSIONS)
@@ -416,11 +366,10 @@ namespace stormkit::gpu {
             .pEnabledFeatures        = &enabled_1_0_features,
         };
 
-        m_vk_handle = Try(vk::call_checked<VkDevice>(vkCreateDevice, m_physical_device.native_handle(), &create_info, nullptr));
+        m_vk_handle = Try(vk::call_checked<VkDevice>(vkCreateDevice, physical_device.native_handle(), &create_info, nullptr));
         volkLoadDeviceTable(&m_vk_device_table, m_vk_handle);
 
-        const auto physical_device       = this->physical_device();
-        auto       allocator_create_info = VmaAllocatorCreateInfo {
+        auto allocator_create_info = VmaAllocatorCreateInfo {
             .flags                          = 0,
             .physicalDevice                 = physical_device,
             .device                         = m_vk_handle,
@@ -429,7 +378,7 @@ namespace stormkit::gpu {
             .pDeviceMemoryCallbacks         = nullptr,
             .pHeapSizeLimit                 = nullptr,
             .pVulkanFunctions               = nullptr,
-            .instance                       = instance(),
+            .instance                       = physical_device.instance(),
             .vulkanApiVersion               = vk::make_version<i32>(1, 4, 0),
             .pTypeExternalMemoryHandleTypes = nullptr,
         };
@@ -441,7 +390,19 @@ namespace stormkit::gpu {
 
         m_vma_allocator = Try(vk::call_checked<VmaAllocator>(vmaCreateAllocator, &allocator_create_info));
 
-        Try(set_object_name(*this, std::format("StormKit:device ({})", physical_device.info().device_name)));
+        const auto name = std::format("StormKit:device ({})", physical_device.info().device_name);
+        if (not vkSetDebugUtilsObjectNameEXT) Return {};
+
+        const auto vk_object  = native_handle();
+        const auto debug_info = VkDebugUtilsObjectNameInfoEXT {
+            .sType        = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+            .pNext        = nullptr,
+            .objectType   = vk::to_vk<VkObjectType>(trait::GpuObject<DeviceTag>::DEBUG_TYPE),
+            .objectHandle = as<u64>(std::bit_cast<uptr>(vk_object)),
+            .pObjectName  = stdr::data(name),
+        };
+
+        Try(vk::call_checked(vkSetDebugUtilsObjectNameEXT, *this, &debug_info));
 
         Return {};
     }
@@ -452,7 +413,7 @@ namespace stormkit::gpu {
         auto imgui_vk_loader(const char* _func_name, void* user_data) noexcept -> PFN_vkVoidFunction {
             const auto  func_name    = std::string_view { _func_name };
             const auto& device       = *std::bit_cast<const Device*>(user_data);
-            const auto& device_table = device.device_table();
+            const auto  device_table = device.device_table();
 
             if (func_name == "vkAllocateCommandBuffers")
                 return std::bit_cast<PFN_vkVoidFunction>(device_table.vkAllocateCommandBuffers);

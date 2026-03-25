@@ -8,6 +8,7 @@ module;
 #include <stormkit/core/platform_macro.hpp>
 #include <stormkit/core/try_expected.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #define STORMKIT_DEFINE_VK_PLATFORM
 #include <stormkit/gpu/vulkan.hpp>
 
@@ -83,26 +84,13 @@ namespace stormkit::gpu {
         }
     } // namespace
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    Instance::Instance(PrivateTag) noexcept : Owned<Instance> { auto(vkDestroyInstance) } {
-    }
+    template class InstanceInterface<InstanceImplementation>;
+    template class InstanceInterface<view::InstanceImplementation>;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Instance::~Instance() = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    Instance::Instance(Instance&&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Instance::operator=(Instance&&) noexcept -> Instance& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Instance::do_init(PrivateTag, std::string app_name, bool validation_layers_enabled) noexcept -> Expected<void> {
+    auto InstanceImplementation::do_init(PrivateTag, std::string app_name, bool validation_layers_enabled) noexcept
+      -> Expected<void> {
         const auto exts = Try(vk::enumerate_checked<VkExtensionProperties>(vkEnumerateInstanceExtensionProperties, nullptr));
         m_extensions    = transform(exts, [](const auto& ext) static noexcept { return std::string { ext.extensionName }; });
         const auto validation_layers = validation_layers_enabled
@@ -158,17 +146,17 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Instance::do_load_instance() noexcept -> Expected<void> {
+    auto InstanceImplementation::do_load_instance() noexcept -> Expected<void> {
         volkLoadInstanceOnly(m_vk_handle);
         Return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Instance::do_retrieve_physical_devices() noexcept -> Expected<void> {
+    auto InstanceImplementation::do_retrieve_physical_devices() noexcept -> Expected<void> {
         m_physical_devices = transform(Try(vk::enumerate_checked<VkPhysicalDevice>(vkEnumeratePhysicalDevices, m_vk_handle)),
                                        [this](auto physical_device) noexcept {
-                                           return PhysicalDevice::create(*this, std::move(physical_device));
+                                           return PhysicalDevice::create(view::Instance { *this }, std::move(physical_device));
                                        });
         Return {};
     }

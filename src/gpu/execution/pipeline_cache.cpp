@@ -26,32 +26,31 @@ namespace stormkit::gpu {
     namespace {
         /////////////////////////////////////
         /////////////////////////////////////
-        auto sys_to_load_error(SystemError error) noexcept -> PipelineCache::LoadSaveError {
-            return PipelineCache::LoadSaveError { { error } };
+        auto sys_to_load_error(SystemError error) noexcept -> LoadSaveError {
+            return LoadSaveError { { error } };
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto result_to_load_error(Result error) noexcept -> PipelineCache::LoadSaveError {
-            return PipelineCache::LoadSaveError { { error } };
+        auto result_to_load_error(Result error) noexcept -> LoadSaveError {
+            return LoadSaveError { { error } };
         }
     } // namespace
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    PipelineCache::~PipelineCache() noexcept = default;
+    template class PipelineCacheInterface<PipelineCacheImplementation>;
+    template class PipelineCacheInterface<view::PipelineCacheImplementation>;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineCache::do_init(PrivateTag, stdfs::path&& path) noexcept -> LoadSaveExpected<void> {
+    auto PipelineCacheImplementation::do_init(PrivateTag, stdfs::path&& path) noexcept -> LoadSaveExpected<void> {
         m_path = std::move(path);
         Return read_pipeline_cache();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineCache::create_new_pipeline_cache() noexcept -> LoadSaveExpected<void> {
-        const auto& device                = this->device();
+    auto PipelineCacheImplementation::create_new_pipeline_cache() noexcept -> LoadSaveExpected<void> {
+        const auto& device                = owner();
         const auto& device_table          = device.device_table();
         const auto& physical_device_infos = device.physical_device().info();
 
@@ -84,10 +83,10 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineCache::read_pipeline_cache() noexcept -> LoadSaveExpected<void> {
+    auto PipelineCacheImplementation::read_pipeline_cache() noexcept -> LoadSaveExpected<void> {
         if (not stdfs::exists(m_path)) Return create_new_pipeline_cache();
 
-        const auto& device                = this->device();
+        const auto& device                = owner();
         const auto& device_table          = device.device_table();
         const auto& physical_device_infos = device.physical_device().info();
 
@@ -127,8 +126,8 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineCache::save_cache() noexcept -> LoadSaveExpected<void> {
-        const auto& device       = this->device();
+    auto PipelineCacheImplementation::save_cache() noexcept -> LoadSaveExpected<void> {
+        const auto& device       = owner();
         const auto& device_table = device.device_table();
 
         auto size = 0_usize;

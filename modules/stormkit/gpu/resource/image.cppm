@@ -18,57 +18,13 @@ import stormkit.core;
 import stormkit.image;
 import stormkit.gpu.core;
 
+import :objects;
+
 namespace cmeta    = stormkit::core::meta;
 namespace cmonadic = stormkit::core::monadic;
 
-export namespace stormkit::gpu {
-    class Sampler;
-    class ImageView;
-    class Image;
-
-    namespace view {
-        class Sampler;
-        class ImageView;
-        class Image;
-    } // namespace view
-
-    namespace meta {
-        template<>
-        struct ObjectInfo<Sampler> {
-            using Of          = Sampler;
-            using ValueType   = VkSampler;
-            using DeleterType = PFN_vkDestroySampler VolkDeviceTable::*;
-            using ViewType    = view::Sampler;
-            using OwnedBy     = Device;
-
-            static constexpr auto DEBUG_TYPE = DebugObjectType::SAMPLER;
-        };
-
-        template<>
-        struct ObjectInfo<ImageView> {
-            using Of          = ImageView;
-            using ValueType   = VkImageView;
-            using DeleterType = PFN_vkDestroyImageView VolkDeviceTable::*;
-            using ViewType    = view::ImageView;
-            using OwnedBy     = Device;
-
-            static constexpr auto DEBUG_TYPE = DebugObjectType::IMAGE_VIEW;
-        };
-
-        template<>
-        struct ObjectInfo<Image> {
-            using Of          = Image;
-            using ValueType   = VkImage;
-            using DeleterType = PFN_vkDestroyImage VolkDeviceTable::*;
-            using ViewType    = view::Image;
-            using OwnedBy     = Device;
-
-            static constexpr auto DEBUG_TYPE = DebugObjectType::IMAGE;
-        };
-    } // namespace meta
-
-    class STORMKIT_GPU_API Sampler: public OwnedByDevice<Sampler> {
-      public:
+namespace stormkit::gpu {
+    struct SamplerInterfaceBase {
         struct Settings {
             Filter mag_filter = Filter::LINEAR;
             Filter min_filter = Filter::LINEAR;
@@ -93,194 +49,26 @@ export namespace stormkit::gpu {
             f32 min_lod = 0.f;
             f32 max_lod = 0.f;
         };
-
-        ~Sampler();
-
-        Sampler(const Sampler&)                    = delete;
-        auto operator=(const Sampler&) -> Sampler& = delete;
-
-        Sampler(Sampler&&) noexcept;
-        auto operator=(Sampler&&) noexcept -> Sampler&;
-
-        [[nodiscard]]
-        auto settings() const noexcept -> const Settings&;
-
-        // clang-format off
-  // private:
-        // clang-format on
-        Sampler(PrivateTag, view::Device) noexcept;
-        auto do_init(PrivateTag, const Settings&) noexcept -> Expected<void>;
-
-      private:
-        Settings m_settings = {};
     };
 
-    namespace view {
-        class STORMKIT_GPU_API Sampler: public view::DeviceObject<gpu::Sampler> {
+    export {
+        template<typename Base>
+        class SamplerInterface: public DeviceObject<Base>, public SamplerInterfaceBase {
           public:
-            using ObjectInfo = typename meta::ObjectInfo<gpu::Sampler>;
-            using ValueType  = ObjectInfo::ValueType;
-            using ViewType   = ObjectInfo::ViewType;
-
-            Sampler(const gpu::Sampler& of) noexcept;
-            template<cmeta::IsContainerOrPointerOf<gpu::Sampler> T>
-            Sampler(const T& of) noexcept;
-            ~Sampler() noexcept;
-
-            Sampler(const Sampler&) noexcept;
-            auto operator=(const Sampler&) noexcept -> Sampler&;
-
-            Sampler(Sampler&&) noexcept;
-            auto operator=(Sampler&&) noexcept -> Sampler&;
+            using DeviceObject<Base>::DeviceObject;
+            using DeviceObject<Base>::operator=;
+            using TagType = SamplerTag;
 
             [[nodiscard]]
-            auto settings() const noexcept -> const gpu::Sampler::Settings&;
-
-          private:
-            gpu::Sampler::Settings m_settings;
+            auto settings() const noexcept -> const Settings&;
         };
-    } // namespace view
 
-    class STORMKIT_GPU_API ImageView: public OwnedByDevice<ImageView> {
-      public:
-        ~ImageView();
-
-        ImageView(const ImageView&)                    = delete;
-        auto operator=(const ImageView&) -> ImageView& = delete;
-
-        ImageView(ImageView&&) noexcept;
-        auto operator=(ImageView&&) noexcept -> ImageView&;
-
-        [[nodiscard]]
-        auto type() const noexcept -> ImageViewType;
-        [[nodiscard]]
-        auto subresource_range() const noexcept -> const ImageSubresourceRange&;
-
-        // clang-format off
-  // private:
-        // clang-format on
-        ImageView(PrivateTag, view::Device) noexcept;
-        auto do_init(PrivateTag, view::Image, ImageViewType = ImageViewType::T2D, const ImageSubresourceRange& = {}) noexcept
-          -> Expected<void>;
-
-      private:
-        ImageViewType         m_type              = {};
-        ImageSubresourceRange m_subresource_range = {};
-    };
-
-    namespace view {
-        class STORMKIT_GPU_API ImageView: public view::DeviceObject<gpu::ImageView> {
+        template<typename Base>
+        class ImageInterface: public DeviceObject<Base> {
           public:
-            using ObjectInfo = typename meta::ObjectInfo<gpu::ImageView>;
-            using ValueType  = ObjectInfo::ValueType;
-            using ViewType   = ObjectInfo::ViewType;
-
-            ImageView(const gpu::ImageView& of) noexcept;
-            template<cmeta::IsContainerOrPointerOf<gpu::ImageView> T>
-            ImageView(const T& of) noexcept;
-            ~ImageView() noexcept;
-
-            ImageView(const ImageView&) noexcept;
-            auto operator=(const ImageView&) noexcept -> ImageView&;
-
-            ImageView(ImageView&&) noexcept;
-            auto operator=(ImageView&&) noexcept -> ImageView&;
-
-            [[nodiscard]]
-            auto type() const noexcept -> ImageViewType;
-            [[nodiscard]]
-            auto subresource_range() const noexcept -> const ImageSubresourceRange&;
-
-          private:
-            ImageViewType         m_type              = {};
-            ImageSubresourceRange m_subresource_range = {};
-        };
-    } // namespace view
-
-    class STORMKIT_GPU_API Image: public OwnedByDevice<Image> {
-      public:
-        struct CreateInfo {
-            math::uextent3     extent;
-            PixelFormat        format     = PixelFormat::RGBA8_UNORM;
-            u32                layers     = 1u;
-            u32                mip_levels = 1u;
-            ImageType          type       = ImageType::T2D;
-            ImageCreateFlag    flags      = ImageCreateFlag::NONE;
-            SampleCountFlag    samples    = SampleCountFlag::C1;
-            ImageUsageFlag     usages     = ImageUsageFlag::SAMPLED | ImageUsageFlag::TRANSFER_DST | ImageUsageFlag::TRANSFER_SRC;
-            ImageTiling        tiling     = ImageTiling::OPTIMAL;
-            MemoryPropertyFlag properties = MemoryPropertyFlag::DEVICE_LOCAL;
-        };
-
-        static auto from_existing(view::Device device, const CreateInfo& create_info, VkImage image) noexcept -> Image;
-        ~Image();
-
-        Image(const Image&)                    = delete;
-        auto operator=(const Image&) -> Image& = delete;
-
-        Image(Image&&) noexcept;
-        auto operator=(Image&&) noexcept -> Image&;
-
-        [[nodiscard]]
-        auto extent() const noexcept -> const math::uextent3&;
-        [[nodiscard]]
-        auto format() const noexcept -> PixelFormat;
-        [[nodiscard]]
-        auto type() const noexcept -> ImageType;
-        [[nodiscard]]
-        auto samples() const noexcept -> SampleCountFlag;
-        [[nodiscard]]
-        auto layers() const noexcept -> u32;
-        [[nodiscard]]
-        auto faces() const noexcept -> u32;
-        [[nodiscard]]
-        auto mip_levels() const noexcept -> u32;
-        [[nodiscard]]
-        auto usages() const noexcept -> ImageUsageFlag;
-        [[nodiscard]]
-        auto allocation() const noexcept -> vk::Observer<VmaAllocation>;
-
-        // clang-format off
-  // private:
-        // clang-format on
-        Image(PrivateTag, view::Device) noexcept;
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
-
-      private:
-        bool m_no_delete = false;
-
-        math::uextent3  m_extent     = { 0, 0, 0 };
-        PixelFormat     m_format     = {};
-        u32             m_layers     = 0;
-        u32             m_faces      = 0;
-        u32             m_mip_levels = 0;
-        ImageType       m_type       = {};
-        ImageCreateFlag m_flags      = {};
-        SampleCountFlag m_samples    = {};
-        ImageUsageFlag  m_usages     = {};
-
-        vk::Owned<VmaAllocation> m_vma_allocation = { cmonadic::discard() };
-
-        friend class view::Image;
-    };
-
-    namespace view {
-        class STORMKIT_GPU_API Image: public view::DeviceObject<gpu::Image> {
-          public:
-            using ObjectInfo = typename meta::ObjectInfo<gpu::Image>;
-            using ValueType  = ObjectInfo::ValueType;
-            using ViewType   = ObjectInfo::ViewType;
-
-            Image(const gpu::Image& of) noexcept;
-            template<cmeta::IsContainerOrPointerOf<gpu::Image> T>
-            Image(const T& of) noexcept;
-            ~Image() noexcept;
-
-            Image(const Image&) noexcept;
-            auto operator=(const Image&) noexcept -> Image&;
-
-            Image(Image&&) noexcept;
-            auto operator=(Image&&) noexcept -> Image&;
+            using DeviceObject<Base>::DeviceObject;
+            using DeviceObject<Base>::operator=;
+            using TagType = ImageTag;
 
             [[nodiscard]]
             auto extent() const noexcept -> const math::uextent3&;
@@ -300,8 +88,121 @@ export namespace stormkit::gpu {
             auto usages() const noexcept -> ImageUsageFlag;
             [[nodiscard]]
             auto allocation() const noexcept -> vk::Observer<VmaAllocation>;
+        };
 
-          private:
+        template<typename Base>
+        class ImageViewInterface: public DeviceObject<Base> {
+          public:
+            using DeviceObject<Base>::DeviceObject;
+            using DeviceObject<Base>::operator=;
+            using TagType = ImageViewTag;
+
+            [[nodiscard]]
+            auto type() const noexcept -> ImageViewType;
+            [[nodiscard]]
+            auto subresource_range() const noexcept -> const ImageSubresourceRange&;
+        };
+    }
+
+    class STORMKIT_GPU_API SamplerImplementation: public GpuObjectImplementation<SamplerTag> {
+      public:
+        using Settings = SamplerInterfaceBase::Settings;
+
+        SamplerImplementation(PrivateTag, view::Device&&) noexcept;
+        auto do_init(PrivateTag, const Settings&) noexcept -> Expected<void>;
+        ~SamplerImplementation() noexcept;
+
+        SamplerImplementation(const SamplerImplementation&) noexcept                    = delete;
+        auto operator=(const SamplerImplementation&) noexcept -> SamplerImplementation& = delete;
+
+        SamplerImplementation(SamplerImplementation&&) noexcept;
+        auto operator=(SamplerImplementation&&) noexcept -> SamplerImplementation&;
+
+      protected:
+        Settings m_settings = {};
+    };
+
+    namespace view {
+        class SamplerImplementation: public GpuObjectViewImplementation<SamplerTag> {
+          public:
+            using Settings = SamplerInterfaceBase::Settings;
+
+            SamplerImplementation(const gpu::Sampler&) noexcept;
+            template<cmeta::IsContainerOrPointerOf<gpu::Sampler> TContainerOrPointer>
+            SamplerImplementation(const TContainerOrPointer&) noexcept;
+            ~SamplerImplementation() noexcept;
+
+            SamplerImplementation(const SamplerImplementation&) noexcept;
+            auto operator=(const SamplerImplementation&) noexcept -> SamplerImplementation&;
+
+            SamplerImplementation(SamplerImplementation&&) noexcept;
+            auto operator=(SamplerImplementation&&) noexcept -> SamplerImplementation&;
+
+          protected:
+            Settings m_settings;
+        };
+    } // namespace view
+
+    class STORMKIT_GPU_API ImageImplementation: public GpuObjectImplementation<ImageTag> {
+      public:
+        struct CreateInfo {
+            math::uextent3     extent;
+            PixelFormat        format     = PixelFormat::RGBA8_UNORM;
+            u32                layers     = 1u;
+            u32                mip_levels = 1u;
+            ImageType          type       = ImageType::T2D;
+            ImageCreateFlag    flags      = ImageCreateFlag::NONE;
+            SampleCountFlag    samples    = SampleCountFlag::C1;
+            ImageUsageFlag     usages     = ImageUsageFlag::SAMPLED | ImageUsageFlag::TRANSFER_DST | ImageUsageFlag::TRANSFER_SRC;
+            ImageTiling        tiling     = ImageTiling::OPTIMAL;
+            MemoryPropertyFlag properties = MemoryPropertyFlag::DEVICE_LOCAL;
+        };
+
+        ImageImplementation(PrivateTag, view::Device&&) noexcept;
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
+        ~ImageImplementation() noexcept;
+
+        ImageImplementation(const ImageImplementation&) noexcept                    = delete;
+        auto operator=(const ImageImplementation&) noexcept -> ImageImplementation& = delete;
+
+        ImageImplementation(ImageImplementation&&) noexcept;
+        auto operator=(ImageImplementation&&) noexcept -> ImageImplementation&;
+
+        static auto from_existing(view::Device device, const CreateInfo& create_info, VkImage image) noexcept -> Image;
+
+      protected:
+        bool m_no_delete = false;
+
+        math::uextent3  m_extent     = { 0, 0, 0 };
+        PixelFormat     m_format     = {};
+        u32             m_layers     = 0;
+        u32             m_faces      = 0;
+        u32             m_mip_levels = 0;
+        ImageType       m_type       = {};
+        ImageCreateFlag m_flags      = {};
+        SampleCountFlag m_samples    = {};
+        ImageUsageFlag  m_usages     = {};
+
+        vk::Owned<VmaAllocation> m_vma_allocation = { cmonadic::discard() };
+
+        friend class view::ImageImplementation;
+    };
+
+    namespace view {
+        class ImageImplementation: public GpuObjectViewImplementation<ImageTag> {
+          public:
+            ImageImplementation(const gpu::Image&) noexcept;
+            template<cmeta::IsContainerOrPointerOf<gpu::Image> TContainerOrPointer>
+            ImageImplementation(const TContainerOrPointer&) noexcept;
+            ~ImageImplementation() noexcept;
+
+            ImageImplementation(const ImageImplementation&) noexcept;
+            auto operator=(const ImageImplementation&) noexcept -> ImageImplementation&;
+
+            ImageImplementation(ImageImplementation&&) noexcept;
+            auto operator=(ImageImplementation&&) noexcept -> ImageImplementation&;
+
+          protected:
             math::uextent3 m_extent     = { 0, 0, 0 };
             PixelFormat    m_format     = {};
             u32            m_layers     = 0;
@@ -319,7 +220,45 @@ export namespace stormkit::gpu {
         };
     } // namespace view
 
-    struct ImageMemoryBarrier {
+    class STORMKIT_GPU_API ImageViewImplementation: public GpuObjectImplementation<ImageViewTag> {
+      public:
+        ImageViewImplementation(PrivateTag, view::Device&&) noexcept;
+        auto do_init(PrivateTag, view::Image, ImageViewType = ImageViewType::T2D, const ImageSubresourceRange& = {}) noexcept
+          -> Expected<void>;
+        ~ImageViewImplementation() noexcept;
+
+        ImageViewImplementation(const ImageViewImplementation&) noexcept                    = delete;
+        auto operator=(const ImageViewImplementation&) noexcept -> ImageViewImplementation& = delete;
+
+        ImageViewImplementation(ImageViewImplementation&&) noexcept;
+        auto operator=(ImageViewImplementation&&) noexcept -> ImageViewImplementation&;
+
+      protected:
+        ImageViewType         m_type              = {};
+        ImageSubresourceRange m_subresource_range = {};
+    };
+
+    namespace view {
+        class ImageViewImplementation: public GpuObjectViewImplementation<ImageViewTag> {
+          public:
+            ImageViewImplementation(const gpu::ImageView&) noexcept;
+            template<cmeta::IsContainerOrPointerOf<gpu::ImageView> TContainerOrPointer>
+            ImageViewImplementation(const TContainerOrPointer&) noexcept;
+            ~ImageViewImplementation() noexcept;
+
+            ImageViewImplementation(const ImageViewImplementation&) noexcept;
+            auto operator=(const ImageViewImplementation&) noexcept -> ImageViewImplementation&;
+
+            ImageViewImplementation(ImageViewImplementation&&) noexcept;
+            auto operator=(ImageViewImplementation&&) noexcept -> ImageViewImplementation&;
+
+          protected:
+            ImageViewType         m_type              = {};
+            ImageSubresourceRange m_subresource_range = {};
+        };
+    } // namespace view
+
+    export struct ImageMemoryBarrier {
         AccessFlag src;
         AccessFlag dst;
 
@@ -329,7 +268,7 @@ export namespace stormkit::gpu {
         u32 src_queue_family_index = QUEUE_FAMILY_IGNORED;
         u32 dst_queue_family_index = QUEUE_FAMILY_IGNORED;
 
-        const Image&          image;
+        view::Image           image;
         ImageSubresourceRange range;
     };
 
@@ -344,272 +283,195 @@ export namespace stormkit::gpu {
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
+    template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline Sampler::Sampler(PrivateTag, view::Device device) noexcept
-        : OwnedByDevice<Sampler> { std::move(device), &VolkDeviceTable::vkDestroySampler } {
+    inline auto SamplerInterface<Base>::settings() const noexcept -> const Settings& {
+        return Base::m_settings;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageInterface<Base>::extent() const noexcept -> const math::uextent3& {
+        return Base::m_extent;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageInterface<Base>::format() const noexcept -> PixelFormat {
+        return Base::m_format;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageInterface<Base>::type() const noexcept -> ImageType {
+        return Base::m_type;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageInterface<Base>::samples() const noexcept -> SampleCountFlag {
+        return Base::m_samples;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageInterface<Base>::layers() const noexcept -> u32 {
+        return Base::m_layers;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageInterface<Base>::faces() const noexcept -> u32 {
+        return Base::m_faces;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageInterface<Base>::mip_levels() const noexcept -> u32 {
+        return Base::m_mip_levels;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageInterface<Base>::usages() const noexcept -> ImageUsageFlag {
+        return Base::m_usages;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageInterface<Base>::allocation() const noexcept -> vk::Observer<VmaAllocation> {
+        EXPECTS(Base::m_vma_allocation != VK_NULL_HANDLE);
+        return Base::m_vma_allocation;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageViewInterface<Base>::type() const noexcept -> ImageViewType {
+        return Base::m_type;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto ImageViewInterface<Base>::subresource_range() const noexcept -> const ImageSubresourceRange& {
+        return Base::m_subresource_range;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Sampler::~Sampler() = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline Sampler::Sampler(Sampler&&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Sampler::operator=(Sampler&&) noexcept -> Sampler& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Sampler::settings() const noexcept -> const Settings& {
-        return m_settings;
+    inline SamplerImplementation::SamplerImplementation(PrivateTag, view::Device&& device) noexcept
+        : GpuObjectImplementation { std::move(device), &VolkDeviceTable::vkDestroySampler } {
     }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline SamplerImplementation::~SamplerImplementation() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline SamplerImplementation::SamplerImplementation(SamplerImplementation&&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto SamplerImplementation::operator=(SamplerImplementation&&) noexcept -> SamplerImplementation& = default;
 
     namespace view {
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline Sampler::Sampler(const gpu::Sampler& of) noexcept
-            : view::DeviceObject<gpu::Sampler> { of }, m_settings { of.settings() } {
-        }
-
-        ///////////////////////////////////
-        ///////////////////////////////////
-        template<cmeta::IsContainerOrPointerOf<gpu::Sampler> T>
-        STORMKIT_FORCE_INLINE
-        inline Sampler::Sampler(const T& of) noexcept
-            : view::DeviceObject<gpu::Sampler> { of }, m_settings { of->settings() } {
+        inline SamplerImplementation::SamplerImplementation(const gpu::Sampler& of) noexcept
+            : GpuObjectViewImplementation { of }, m_settings { of.settings() } {
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
+        template<cmeta::IsContainerOrPointerOf<gpu::Sampler> TContainerOrPointer>
         STORMKIT_FORCE_INLINE
-        inline Sampler::~Sampler() noexcept = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline Sampler::Sampler(const Sampler&) noexcept = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto Sampler::operator=(const Sampler&) noexcept -> Sampler& = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline Sampler::Sampler(Sampler&&) noexcept = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto Sampler::operator=(Sampler&&) noexcept -> Sampler& = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto Sampler::settings() const noexcept -> const gpu::Sampler::Settings& {
-            return m_settings;
+        inline SamplerImplementation::SamplerImplementation(const TContainerOrPointer& of) noexcept
+            : SamplerImplementation { *of } {
         }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline SamplerImplementation::~SamplerImplementation() noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline SamplerImplementation::SamplerImplementation(const SamplerImplementation&) noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto SamplerImplementation::operator=(const SamplerImplementation&) noexcept -> SamplerImplementation& = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline SamplerImplementation::SamplerImplementation(SamplerImplementation&&) noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto SamplerImplementation::operator=(SamplerImplementation&&) noexcept -> SamplerImplementation& = default;
     } // namespace view
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ImageView::ImageView(PrivateTag, view::Device device) noexcept
-        : OwnedByDevice<ImageView> { std::move(device), &VolkDeviceTable::vkDestroyImageView } {
+    inline ImageImplementation::ImageImplementation(PrivateTag, view::Device&& device) noexcept
+        : GpuObjectImplementation { std::move(device), &VolkDeviceTable::vkDestroyImage } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ImageView::~ImageView() = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline ImageView::ImageView(ImageView&&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto ImageView::operator=(ImageView&&) noexcept -> ImageView& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto ImageView::type() const noexcept -> ImageViewType {
-        return m_type;
+    inline ImageImplementation::~ImageImplementation() noexcept {
+        if (m_no_delete) [[unlikely]]
+            m_vk_handle = VK_NULL_HANDLE;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto ImageView::subresource_range() const noexcept -> const ImageSubresourceRange& {
-        return m_subresource_range;
-    }
-
-    namespace view {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline ImageView::ImageView(const gpu::ImageView& of) noexcept
-            : view::DeviceObject<gpu::ImageView> { of }, m_type { of.type() }, m_subresource_range { of.subresource_range() } {
-        }
-
-        ///////////////////////////////////
-        ///////////////////////////////////
-        template<cmeta::IsContainerOrPointerOf<gpu::ImageView> T>
-        STORMKIT_FORCE_INLINE
-        inline ImageView::ImageView(const T& of) noexcept
-            : view::DeviceObject<gpu::ImageView> { of }, m_type { of.type() }, m_subresource_range { of.subresource_range() } {
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline ImageView::~ImageView() noexcept = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline ImageView::ImageView(const ImageView&) noexcept = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto ImageView::operator=(const ImageView&) noexcept -> ImageView& = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline ImageView::ImageView(ImageView&&) noexcept = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto ImageView::operator=(ImageView&&) noexcept -> ImageView& = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto ImageView::type() const noexcept -> ImageViewType {
-            return m_type;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto ImageView::subresource_range() const noexcept -> const ImageSubresourceRange& {
-            return m_subresource_range;
-        }
-    } // namespace view
+    inline ImageImplementation::ImageImplementation(ImageImplementation&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Image::Image(PrivateTag, view::Device device) noexcept
-        : OwnedByDevice<Image> { std::move(device), &VolkDeviceTable::vkDestroyImage } {
-    }
+    inline auto ImageImplementation::operator=(ImageImplementation&&) noexcept -> ImageImplementation& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline Image::~Image() {
-        if (not m_no_delete) [[unlikely]]
-            if (m_vk_handle != VK_NULL_HANDLE) {
-                const auto& device = this->device();
-                vk::call(device.device_table().*m_deleter_ptr, device, m_vk_handle, nullptr);
-            }
-
-        m_vk_handle = VK_NULL_HANDLE;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline Image::Image(Image&&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Image::operator=(Image&&) noexcept -> Image& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Image::extent() const noexcept -> const math::uextent3& {
-        return m_extent;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Image::format() const noexcept -> PixelFormat {
-        return m_format;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Image::type() const noexcept -> ImageType {
-        return m_type;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Image::samples() const noexcept -> SampleCountFlag {
-        return m_samples;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Image::layers() const noexcept -> u32 {
-        return m_layers;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Image::faces() const noexcept -> u32 {
-        return m_faces;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Image::mip_levels() const noexcept -> u32 {
-        return m_mip_levels;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Image::usages() const noexcept -> ImageUsageFlag {
-        return m_usages;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Image::allocation() const noexcept -> vk::Observer<VmaAllocation> {
-        EXPECTS(m_vma_allocation != VK_NULL_HANDLE);
-        return m_vma_allocation;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline auto Image::from_existing(view::Device device, const CreateInfo& create_info, VkImage vk_image) noexcept -> Image {
-        auto image         = Image { PrivateTag {}, std::move(device) };
+    inline auto ImageImplementation::from_existing(view::Device device, const CreateInfo& create_info, VkImage vk_image) noexcept
+      -> Image {
+        auto image         = Image { UseNamedConstructors::PRIVATE, std::move(device) };
         image.m_extent     = create_info.extent;
         image.m_format     = create_info.format;
         image.m_layers     = create_info.layers;
@@ -631,8 +493,8 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline Image::Image(const gpu::Image& of) noexcept
-            : view::DeviceObject<gpu::Image> { of },
+        inline ImageImplementation::ImageImplementation(const gpu::Image& of) noexcept
+            : GpuObjectViewImplementation { of },
               m_extent { of.extent() },
               m_format { of.format() },
               m_layers { of.layers() },
@@ -645,113 +507,103 @@ namespace stormkit::gpu {
             if (not of.m_no_delete) m_vma_allocation = of.allocation();
         }
 
-        ///////////////////////////////////
-        ///////////////////////////////////
-        template<cmeta::IsContainerOrPointerOf<gpu::Image> T>
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<cmeta::IsContainerOrPointerOf<gpu::Image> TContainerOrPointer>
         STORMKIT_FORCE_INLINE
-        inline Image::Image(const T& of) noexcept
-            : view::DeviceObject<gpu::Image> { of },
-              m_extent { of->extent() },
-              m_format { of->format() },
-              m_layers { of->layers() },
-              m_faces { of->faces() },
-              m_mip_levels { of->mip_levels() },
-              m_type { of->type() },
-              m_flags { of->m_flags },
-              m_samples { of->samples() },
-              m_usages { of->usages() },
-              m_vma_allocation { of->allocation() } {
-            if (not of->m_no_delete) m_vma_allocation = of->allocation();
+        inline ImageImplementation::ImageImplementation(const TContainerOrPointer& of) noexcept
+            : ImageImplementation { *of } {
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline Image::~Image() noexcept = default;
+        inline ImageImplementation::~ImageImplementation() noexcept = default;
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline Image::Image(const Image&) noexcept = default;
+        inline ImageImplementation::ImageImplementation(const ImageImplementation&) noexcept = default;
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto Image::operator=(const Image&) noexcept -> Image& = default;
+        inline auto ImageImplementation::operator=(const ImageImplementation&) noexcept -> ImageImplementation& = default;
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline Image::Image(Image&&) noexcept = default;
+        inline ImageImplementation::ImageImplementation(ImageImplementation&&) noexcept = default;
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto Image::operator=(Image&&) noexcept -> Image& = default;
+        inline auto ImageImplementation::operator=(ImageImplementation&&) noexcept -> ImageImplementation& = default;
+    } // namespace view
 
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline ImageViewImplementation::ImageViewImplementation(PrivateTag, view::Device&& device) noexcept
+        : GpuObjectImplementation { std::move(device), &VolkDeviceTable::vkDestroyImageView } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline ImageViewImplementation::~ImageViewImplementation() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline ImageViewImplementation::ImageViewImplementation(ImageViewImplementation&&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto ImageViewImplementation::operator=(ImageViewImplementation&&) noexcept -> ImageViewImplementation& = default;
+
+    namespace view {
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto Image::extent() const noexcept -> const math::uextent3& {
-            return m_extent;
+        inline ImageViewImplementation::ImageViewImplementation(const gpu::ImageView& of) noexcept
+            : GpuObjectViewImplementation { of }, m_type { of.type() }, m_subresource_range { of.subresource_range() } {
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<cmeta::IsContainerOrPointerOf<gpu::ImageView> TContainerOrPointer>
+        STORMKIT_FORCE_INLINE
+        inline ImageViewImplementation::ImageViewImplementation(const TContainerOrPointer& of) noexcept
+            : ImageViewImplementation { *of } {
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto Image::format() const noexcept -> PixelFormat {
-            return m_format;
-        }
+        inline ImageViewImplementation::~ImageViewImplementation() noexcept = default;
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto Image::type() const noexcept -> ImageType {
-            return m_type;
-        }
+        inline ImageViewImplementation::ImageViewImplementation(const ImageViewImplementation&) noexcept = default;
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto Image::samples() const noexcept -> SampleCountFlag {
-            return m_samples;
-        }
+        inline auto ImageViewImplementation::operator=(const ImageViewImplementation&) noexcept
+          -> ImageViewImplementation& = default;
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto Image::layers() const noexcept -> u32 {
-            return m_layers;
-        }
+        inline ImageViewImplementation::ImageViewImplementation(ImageViewImplementation&&) noexcept = default;
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto Image::faces() const noexcept -> u32 {
-            return m_faces;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto Image::mip_levels() const noexcept -> u32 {
-            return m_mip_levels;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto Image::usages() const noexcept -> ImageUsageFlag {
-            return m_usages;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto Image::allocation() const noexcept -> vk::Observer<VmaAllocation> {
-            EXPECTS(m_vma_allocation != VK_NULL_HANDLE);
-            return m_vma_allocation;
-        }
+        inline auto ImageViewImplementation::operator=(ImageViewImplementation&&) noexcept -> ImageViewImplementation& = default;
     } // namespace view
 
     /////////////////////////////////////

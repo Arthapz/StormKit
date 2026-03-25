@@ -17,20 +17,24 @@ import std;
 
 import stormkit.core;
 
+import :vulkan;
+
 namespace stormkit::gpu {
+    template class SemaphoreInterface<SemaphoreImplementation>;
+    template class SemaphoreInterface<view::SemaphoreImplementation>;
+
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Semaphore::do_init(PrivateTag) noexcept -> Expected<void> {
+    auto SemaphoreImplementation::do_init(PrivateTag) noexcept -> Expected<void> {
         const auto create_info = VkSemaphoreCreateInfo {
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
         };
 
-        m_vk_handle = Try(vk::call_checked<VkSemaphore>(m_device.device_table().vkCreateSemaphore,
-                                                        m_device,
-                                                        &create_info,
-                                                        nullptr));
+        const auto& device       = owner();
+        const auto& device_table = device.device_table();
+        m_vk_handle = Try(vk::call_checked<VkSemaphore>(device_table.vkCreateSemaphore, device, &create_info, nullptr));
 
         Return {};
     }

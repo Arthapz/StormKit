@@ -69,39 +69,38 @@ namespace stormkit::gpu {
 
             return image_count;
         }
-
-        struct SwapChainAPI {
-            /////////////////////////////////////
-            /////////////////////////////////////
-            template<meta::IsOwnedOrView SwapChainType>
-            static auto acquire_next_image(const SwapChainType&     swapchain,
-                                           std::chrono::nanoseconds wait,
-                                           view::Semaphore&&        image_available) noexcept -> Expected<SwapChain::NextImage> {
-                const auto& device       = swapchain.device();
-                const auto& device_table = device.device_table();
-
-                auto id = u32 { 0 };
-                const auto
-                  result = Try((vk::call_checked<VkResult, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR>(device_table
-                                                                                                          .vkAcquireNextImageKHR,
-                                                                                                        device,
-                                                                                                        swapchain,
-                                                                                                        wait.count(),
-                                                                                                        image_available,
-                                                                                                        nullptr,
-                                                                                                        &id)));
-                Return SwapChain::NextImage { .result = vk::from_vk<Result>(result), .id = id };
-            }
-        };
     } // namespace
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SwapChain::do_init(PrivateTag,
-                            view::Surface&&       surface,
-                            const math::uextent2& extent,
-                            VkSwapchainKHR        old_swapchain) noexcept -> Expected<void> {
-        const auto& device          = this->device();
+    template<typename Base>
+    auto SwapChainInterface<Base>::acquire_next_image(std::chrono::nanoseconds wait,
+                                                      view::Semaphore image_available) const noexcept -> Expected<NextImage> {
+        const auto& device       = Base::owner();
+        const auto& device_table = device.device_table();
+
+        auto       id     = u32 { 0 };
+        const auto result = Try((vk::call_checked<VkResult, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR>(device_table
+                                                                                                           .vkAcquireNextImageKHR,
+                                                                                                         device,
+                                                                                                         *this,
+                                                                                                         wait.count(),
+                                                                                                         image_available,
+                                                                                                         nullptr,
+                                                                                                         &id)));
+        Return     SwapChain::NextImage { .result = vk::from_vk<Result>(result), .id = id };
+    }
+
+    template class SwapChainInterface<SwapChainImplementation>;
+    template class SwapChainInterface<view::SwapChainImplementation>;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto SwapChainImplementation::do_init(PrivateTag,
+                                          view::Surface         surface,
+                                          const math::uextent2& extent,
+                                          VkSwapchainKHR        old_swapchain) noexcept -> Expected<void> {
+        const auto& device          = owner();
         const auto& device_table    = device.device_table();
         const auto& physical_device = device.physical_device();
 
@@ -163,20 +162,4 @@ namespace stormkit::gpu {
 
         Return {};
     }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto SwapChain::acquire_next_image(std::chrono::nanoseconds wait, view::Semaphore image_available) const noexcept
-      -> Expected<NextImage> {
-        return SwapChainAPI::acquire_next_image(*this, std::move(wait), std::move(image_available));
-    }
-
-    namespace view {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto SwapChain::acquire_next_image(std::chrono::nanoseconds wait, Semaphore image_available) const noexcept
-          -> Expected<gpu::SwapChain::NextImage> {
-            return SwapChainAPI::acquire_next_image(*this, std::move(wait), std::move(image_available));
-        }
-    } // namespace view
 } // namespace stormkit::gpu

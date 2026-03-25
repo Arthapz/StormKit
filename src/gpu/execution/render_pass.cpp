@@ -31,12 +31,15 @@ namespace stormkit::gpu {
         }
     } // namespace monadic
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto RenderPass::do_init(PrivateTag, const RenderPassDescription& description) noexcept -> Expected<void> {
-        m_description = description;
+    template class RenderPassInterface<RenderPassImplementation>;
+    template class RenderPassInterface<view::RenderPassImplementation>;
 
-        const auto attachments = transform(m_description.attachments, [](auto&& attachment) static noexcept {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto RenderPassImplementation::do_init(PrivateTag, const RenderPassDescription& description) noexcept -> Expected<void> {
+        m_description = core::allocate_unsafe<RenderPassDescription>(description);
+
+        const auto attachments = transform(m_description->attachments, [](auto&& attachment) static noexcept {
             return VkAttachmentDescription {
                 .flags          = 0,
                 .format         = vk::to_vk<VkFormat>(attachment.format),
@@ -56,12 +59,12 @@ namespace stormkit::gpu {
         auto subpasses               = std::vector<VkSubpassDescription> {};
         auto subpasses_deps          = std::vector<VkSubpassDependency> {};
 
-        color_attachment_refs.reserve(stdr::size(m_description.subpasses));
-        resolve_attachment_refs.reserve(stdr::size(m_description.subpasses));
-        subpasses.reserve(stdr::size(m_description.subpasses));
-        subpasses_deps.reserve(stdr::size(m_description.subpasses));
+        color_attachment_refs.reserve(stdr::size(m_description->subpasses));
+        resolve_attachment_refs.reserve(stdr::size(m_description->subpasses));
+        subpasses.reserve(stdr::size(m_description->subpasses));
+        subpasses_deps.reserve(stdr::size(m_description->subpasses));
 
-        for (const auto& subpass : m_description.subpasses) {
+        for (const auto& subpass : m_description->subpasses) {
             auto& color_attachment_ref   = color_attachment_refs
                                              .emplace_back(transform(subpass.color_attachment_refs, monadic::vk_ref()));
             auto& resolve_attachment_ref = resolve_attachment_refs
@@ -104,7 +107,7 @@ namespace stormkit::gpu {
             .pDependencies   = stdr::data(subpasses_deps),
         };
 
-        const auto& device       = this->device();
+        const auto& device       = owner();
         const auto& device_table = device.device_table();
 
         m_vk_handle = Try(vk::call_checked<VkRenderPass>(device_table.vkCreateRenderPass, device, &create_info, nullptr));

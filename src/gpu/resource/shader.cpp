@@ -18,9 +18,12 @@ import stormkit.gpu.core;
 ;
 
 namespace stormkit::gpu {
+    template class ShaderInterface<ShaderImplementation>;
+    template class ShaderInterface<view::ShaderImplementation>;
+
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Shader::do_init(PrivateTag, std::vector<SpirvID> data, ShaderStageFlag type) -> Expected<void> {
+    auto ShaderImplementation::do_init(PrivateTag, std::vector<SpirvID>&& data, ShaderStageFlag type) -> Expected<void> {
         m_source = std::move(data);
         m_type   = type;
 
@@ -32,46 +35,11 @@ namespace stormkit::gpu {
             .pCode    = stdr::data(m_source)
         };
 
-        const auto& device = this->device();
+        const auto& device = owner();
         m_vk_handle        = Try(vk::call_checked<VkShaderModule>(device.device_table().vkCreateShaderModule,
                                                                   device,
                                                                   &create_info,
                                                                   nullptr));
         Return {};
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Shader::reflect() noexcept -> void {
-#ifdef STORMKIT_ENABLE_SPIRV_INTROSPECT
-        auto ir = std::vector<SpirvID> {};
-        ir.resize(std::size(m_source) / sizeof(SpirvID));
-        std::memcpy(std::data(ir), std::data(m_source), std::size(m_source));
-
-        auto       compiler     = spirv_cross::CompilerGLSL { std::move(ir) };
-        const auto add_bindings = [this, &compiler](span<const spirv_cross::resource> resources, gpu::DescriptorType type) {
-            for (const auto& resource : resources) {
-                /*const auto set =
-                    spvc_compiler_get_decoration(compiler, resources[i].id,
-                   SpvDecorationDescriptorSet);*/
-                const auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-                // const auto name = spvc_compiler_get_name(compiler, resources[i].id);
-
-                m_descriptor_set_layout
-                  .addBinding({ binding,
-                                type,
-                                gpu::ShaderStageFlag::Vertex | gpu::ShaderStageFlag::Fragment | gpu::ShaderStageFlag::Compute,
-                                1 });
-            }
-        };
-
-        auto resources = compiler.get_shader_resources();
-        add_bindings(resources.uniform_buffers, DescriptorType::Uniform_Buffer);
-        add_bindings(resources.storage_buffers, DescriptorType::Storage_Buffer);
-        add_bindings(resources.sampled_images, DescriptorType::Sampled_Image);
-        add_bindings(resources.storage_images, DescriptorType::Storage_Image);
-
-#endif
-        // m_descriptor_set_layout.bake();
     }
 } // namespace stormkit::gpu

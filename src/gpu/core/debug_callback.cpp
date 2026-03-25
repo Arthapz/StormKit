@@ -6,6 +6,7 @@ module;
 
 #include <stormkit/core/try_expected.hpp>
 
+#include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.core;
@@ -19,9 +20,12 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 namespace stormkit::gpu {
+    template class DebugCallbackInterface<DebugCallbackImplementation>;
+    template class DebugCallbackInterface<view::DebugCallbackImplementation>;
+
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DebugCallback::do_init(PrivateTag, Closure closure, void* user_data) noexcept -> Expected<void> {
+    auto DebugCallbackImplementation::do_init(PrivateTag, Closure closure, void* user_data) noexcept -> Expected<void> {
         constexpr auto severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
                                   | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
                                   | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -41,7 +45,7 @@ namespace stormkit::gpu {
         };
 
         m_vk_handle = Try(vk::call_checked<VkDebugUtilsMessengerEXT>(vkCreateDebugUtilsMessengerEXT,
-                                                                     instance(),
+                                                                     owner(),
                                                                      &create_info,
                                                                      nullptr));
         Return {};

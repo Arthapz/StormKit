@@ -82,9 +82,12 @@ namespace stormkit::gpu {
         // }
     } // namespace
 
+    template class ImageInterface<ImageImplementation>;
+    template class ImageInterface<view::ImageImplementation>;
+
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::do_init(PrivateTag, const CreateInfo& _create_info) noexcept -> Expected<void> {
+    auto ImageImplementation::do_init(PrivateTag, const CreateInfo& _create_info) noexcept -> Expected<void> {
         m_extent     = _create_info.extent;
         m_format     = _create_info.format;
         m_layers     = _create_info.layers;
@@ -114,7 +117,7 @@ namespace stormkit::gpu {
             .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED,
         };
 
-        const auto& device = this->device();
+        const auto& device = owner();
 
         m_vk_handle = Try(vk::call_checked<VkImage>(device.device_table().vkCreateImage, device, &create_info, nullptr));
 

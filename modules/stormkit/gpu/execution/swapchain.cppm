@@ -17,44 +17,29 @@ import stormkit.core;
 import stormkit.gpu.core;
 import stormkit.gpu.resource;
 
+import :objects;
+
 namespace cmeta = stormkit::core::meta;
 
-export namespace stormkit::gpu {
-    class SwapChain;
-
-    namespace view {
-        class SwapChain;
-    } // namespace view
-
-    namespace meta {
-        template<>
-        struct ObjectInfo<SwapChain> {
-            using Of          = SwapChain;
-            using ValueType   = VkSwapchainKHR;
-            using DeleterType = PFN_vkDestroySwapchainKHR VolkDeviceTable::*;
-            using ViewType    = view::SwapChain;
-            using OwnedBy     = Device;
-
-            static constexpr auto DEBUG_TYPE = DebugObjectType::SWAPCHAIN;
-        };
-    } // namespace meta
-
-    class STORMKIT_GPU_API SwapChain: public OwnedByDevice<SwapChain> {
-      public:
+namespace stormkit::gpu {
+    struct SwapChainInterfaceBase {
         using ImageID = u32;
 
         struct NextImage {
             Result  result;
             ImageID id;
         };
+    };
 
-        ~SwapChain() noexcept;
+    export template<typename Base>
+    class STORMKIT_GPU_API SwapChainInterface final: public DeviceObject<Base>, public SwapChainInterfaceBase {
+      public:
+        using DeviceObject<Base>::DeviceObject;
+        using DeviceObject<Base>::operator=;
+        using TagType = SwapChainTag;
 
-        SwapChain(const SwapChain&)                    = delete;
-        auto operator=(const SwapChain&) -> SwapChain& = delete;
-
-        SwapChain(SwapChain&&) noexcept;
-        auto operator=(SwapChain&&) noexcept -> SwapChain&;
+        using SwapChainInterfaceBase::ImageID;
+        using SwapChainInterfaceBase::NextImage;
 
         [[nodiscard]]
         auto pixel_format() const noexcept -> PixelFormat;
@@ -62,15 +47,25 @@ export namespace stormkit::gpu {
         auto images() const noexcept -> std::span<const Image>;
         auto acquire_next_image(std::chrono::nanoseconds wait, view::Semaphore image_available) const noexcept
           -> Expected<NextImage>;
+    };
 
-        // clang-format off
-  // private:
-        // clang-format on
-        SwapChain(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, view::Surface&&, const math::uextent2&, VkSwapchainKHR = VK_NULL_HANDLE) noexcept
+    class STORMKIT_GPU_API SwapChainImplementation: public GpuObjectImplementation<SwapChainTag> {
+      public:
+        using ImageID   = SwapChainInterfaceBase::ImageID;
+        using NextImage = SwapChainInterfaceBase::NextImage;
+
+        SwapChainImplementation(PrivateTag, view::Device&&) noexcept;
+        auto do_init(PrivateTag, view::Surface, const math::uextent2&, VkSwapchainKHR = VK_NULL_HANDLE) noexcept
           -> Expected<void>;
+        ~SwapChainImplementation() noexcept;
 
-      private:
+        SwapChainImplementation(const SwapChainImplementation&)                    = delete;
+        auto operator=(const SwapChainImplementation&) -> SwapChainImplementation& = delete;
+
+        SwapChainImplementation(SwapChainImplementation&&) noexcept;
+        auto operator=(SwapChainImplementation&&) noexcept -> SwapChainImplementation&;
+
+      protected:
         math::uextent2 m_extent;
         PixelFormat    m_pixel_format;
         u32            m_image_count;
@@ -79,31 +74,23 @@ export namespace stormkit::gpu {
     };
 
     namespace view {
-        class STORMKIT_GPU_API SwapChain: public DeviceObject<gpu::SwapChain> {
+        class SwapChainImplementation: public GpuObjectViewImplementation<SwapChainTag> {
           public:
-            using ObjectInfo = typename meta::ObjectInfo<gpu::SwapChain>;
-            using ValueType  = ObjectInfo::ValueType;
-            using ViewType   = ObjectInfo::ViewType;
+            using ImageID   = SwapChainInterfaceBase::ImageID;
+            using NextImage = SwapChainInterfaceBase::NextImage;
 
-            SwapChain(const gpu::SwapChain& of) noexcept;
-            template<cmeta::IsContainerOrPointerOf<gpu::SwapChain> T>
-            SwapChain(const T& of) noexcept;
-            ~SwapChain() noexcept;
+            SwapChainImplementation(const gpu::SwapChain& of) noexcept;
+            template<cmeta::IsContainerOrPointerOf<gpu::SwapChain> TContainerOrPointer>
+            SwapChainImplementation(const TContainerOrPointer&) noexcept;
+            ~SwapChainImplementation() noexcept;
 
-            SwapChain(const SwapChain&) noexcept;
-            auto operator=(const SwapChain&) noexcept -> SwapChain&;
+            SwapChainImplementation(const SwapChainImplementation&) noexcept;
+            auto operator=(const SwapChainImplementation&) noexcept -> SwapChainImplementation&;
 
-            SwapChain(SwapChain&&) noexcept;
-            auto operator=(SwapChain&&) noexcept -> SwapChain&;
+            SwapChainImplementation(SwapChainImplementation&&) noexcept;
+            auto operator=(SwapChainImplementation&&) noexcept -> SwapChainImplementation&;
 
-            [[nodiscard]]
-            auto pixel_format() const noexcept -> PixelFormat;
-            [[nodiscard]]
-            auto images() const noexcept -> std::span<const gpu::Image>;
-            auto acquire_next_image(std::chrono::nanoseconds wait, Semaphore image_available) const noexcept
-              -> Expected<gpu::SwapChain::NextImage>;
-
-          private:
+          protected:
             math::uextent2 m_extent;
             PixelFormat    m_pixel_format;
             u32            m_image_count;
@@ -118,93 +105,82 @@ export namespace stormkit::gpu {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline SwapChain::SwapChain(PrivateTag, view::Device&& device) noexcept
-        : OwnedByDevice<SwapChain> { std::move(device), &VolkDeviceTable::vkDestroySwapchainKHR } {
+    inline auto SwapChainInterface<Base>::pixel_format() const noexcept -> PixelFormat {
+        return Base::m_pixel_format;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Base>
+    STORMKIT_FORCE_INLINE
+    inline auto SwapChainInterface<Base>::images() const noexcept -> std::span<const Image> {
+        return Base::m_images;
+    }
+
+    STORMKIT_FORCE_INLINE
+    inline SwapChainImplementation::SwapChainImplementation(PrivateTag, view::Device&& device) noexcept
+        : GpuObjectImplementation { std::move(device), &VolkDeviceTable::vkDestroySwapchainKHR } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline SwapChain::~SwapChain() noexcept = default;
+    inline SwapChainImplementation::~SwapChainImplementation() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline SwapChain::SwapChain(SwapChain&&) noexcept = default;
+    inline SwapChainImplementation::SwapChainImplementation(SwapChainImplementation&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto SwapChain::operator=(SwapChain&&) noexcept -> SwapChain& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto SwapChain::pixel_format() const noexcept -> PixelFormat {
-        return m_pixel_format;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto SwapChain::images() const noexcept -> std::span<const Image> {
-        return m_images;
-    }
+    inline auto SwapChainImplementation::operator=(SwapChainImplementation&&) noexcept -> SwapChainImplementation& = default;
 
     namespace view {
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline SwapChain::SwapChain(const gpu::SwapChain& of) noexcept
-            : view::DeviceObject<gpu::SwapChain> { of }, m_pixel_format { of.pixel_format() }, m_images { of.images() } {
-        }
-
-        ///////////////////////////////////
-        ///////////////////////////////////
-        template<cmeta::IsContainerOrPointerOf<gpu::SwapChain> T>
-        STORMKIT_FORCE_INLINE
-        inline SwapChain::SwapChain(const T& of) noexcept
-            : view::DeviceObject<gpu::SwapChain> { of }, m_pixel_format { of->pixel_format() }, m_images { of->images() } {
+        inline SwapChainImplementation::SwapChainImplementation(const gpu::SwapChain& of) noexcept
+            : GpuObjectViewImplementation { of }, m_pixel_format { of.pixel_format() }, m_images { of.images() } {
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
+        template<cmeta::IsContainerOrPointerOf<gpu::SwapChain> TContainerOrPointer>
         STORMKIT_FORCE_INLINE
-        inline SwapChain::~SwapChain() noexcept = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline SwapChain::SwapChain(const SwapChain&) noexcept = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto SwapChain::operator=(const SwapChain&) noexcept -> SwapChain& = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline SwapChain::SwapChain(SwapChain&&) noexcept = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto SwapChain::operator=(SwapChain&&) noexcept -> SwapChain& = default;
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        inline auto SwapChain::pixel_format() const noexcept -> PixelFormat {
-            return m_pixel_format;
+        inline SwapChainImplementation::SwapChainImplementation(const TContainerOrPointer& of) noexcept
+            : SwapChainImplementation { *of } {
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto SwapChain::images() const noexcept -> std::span<const gpu::Image> {
-            return m_images;
-        }
+        inline SwapChainImplementation::~SwapChainImplementation() noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline SwapChainImplementation::SwapChainImplementation(const SwapChainImplementation&) noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto SwapChainImplementation::operator=(const SwapChainImplementation&) noexcept
+          -> SwapChainImplementation& = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline SwapChainImplementation::SwapChainImplementation(SwapChainImplementation&&) noexcept = default;
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto SwapChainImplementation::operator=(SwapChainImplementation&&) noexcept -> SwapChainImplementation& = default;
     } // namespace view
 } // namespace stormkit::gpu

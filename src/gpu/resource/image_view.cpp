@@ -18,12 +18,15 @@ import stormkit.core;
 import stormkit.gpu.core;
 
 namespace stormkit::gpu {
+    template class ImageViewInterface<ImageViewImplementation>;
+    template class ImageViewInterface<view::ImageViewImplementation>;
+
     /////////////////////////////////////
     /////////////////////////////////////
-    auto ImageView::do_init(PrivateTag,
-                            view::Image                  image,
-                            ImageViewType                type,
-                            const ImageSubresourceRange& subresource_range) noexcept -> Expected<void> {
+    auto ImageViewImplementation::do_init(PrivateTag,
+                                          view::Image                  image,
+                                          ImageViewType                type,
+                                          const ImageSubresourceRange& subresource_range) noexcept -> Expected<void> {
         m_type              = type;
         m_subresource_range = subresource_range;
 
@@ -49,7 +52,7 @@ namespace stormkit::gpu {
             .subresourceRange = vk_subresource_range,
         };
 
-        const auto& device = this->device();
+        const auto device = owner();
 
         m_vk_handle = Try(vk::call_checked<VkImageView>(device.device_table().vkCreateImageView, device, &create_info, nullptr));
         Return {};

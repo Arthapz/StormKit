@@ -22,11 +22,15 @@ namespace stdv = std::views;
 using namespace std::literals;
 
 namespace stormkit::gpu {
+    template class FrameBufferInterface<FrameBufferImplementation>;
+    template class FrameBufferInterface<view::FrameBufferImplementation>;
+
     /////////////////////////////////////
     /////////////////////////////////////
-    auto FrameBuffer::do_init(view::RenderPass&&             render_pass,
-                              const math::uextent2&          extent,
-                              std::vector<view::ImageView>&& attachments) noexcept -> Expected<void> {
+    auto FrameBufferImplementation::do_init(PrivateTag,
+                                            view::RenderPass&&             render_pass,
+                                            const math::uextent2&          extent,
+                                            std::vector<view::ImageView>&& attachments) noexcept -> Expected<void> {
         m_extent                  = extent;
         m_attachments             = std::move(attachments);
         const auto vk_attachments = transform(m_attachments, vk::monadic::to_vk());
@@ -43,7 +47,7 @@ namespace stormkit::gpu {
             .layers          = 1,
         };
 
-        const auto& device       = this->device();
+        const auto& device       = owner();
         const auto& device_table = device.device_table();
 
         m_vk_handle = Try(vk::call_checked<VkFramebuffer>(device_table.vkCreateFramebuffer, device, &create_info, nullptr));

@@ -201,17 +201,20 @@ namespace stormkit::gpu {
         }
     } // namespace
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Pipeline::do_init(PrivateTag,
-                           const RasterPipelineState&           _state,
-                           view::PipelineLayout&&               layout,
-                           const RasterPipelineRenderingInfo&   rendering_info,
-                           std::optional<view::PipelineCache>&& pipeline_cache) noexcept -> Expected<void> {
-        m_type  = Type::RASTER;
-        m_state = _state;
+    template class PipelineInterface<PipelineImplementation>;
+    template class PipelineInterface<view::PipelineImplementation>;
 
-        const auto& state = as<RasterPipelineState>(m_state);
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto PipelineImplementation::do_init(PrivateTag,
+                                         const RasterPipelineState&           _state,
+                                         view::PipelineLayout                 layout,
+                                         const RasterPipelineRenderingInfo&   rendering_info,
+                                         std::optional<view::PipelineCache>&& pipeline_cache) noexcept -> Expected<void> {
+        m_type  = Type::RASTER;
+        m_state = core::allocate_unsafe<StateVariant>(_state);
+
+        const auto& state = as<RasterPipelineState>(*m_state);
 
         const auto [binding_descriptions,
                     attribute_descriptions,
@@ -275,7 +278,7 @@ namespace stormkit::gpu {
 
         const auto vk_pipeline_cache = either(pipeline_cache, vk::monadic::to_vk(), cmonadic::init<VkPipelineCache>(nullptr));
 
-        const auto& device       = this->device();
+        const auto& device       = owner();
         const auto& device_table = device.device_table();
 
         m_vk_handle = Try(vk::call_checked<VkPipeline>(device_table.vkCreateGraphicsPipelines,
@@ -289,15 +292,15 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Pipeline::do_init(PrivateTag,
-                           const RasterPipelineState&           _state,
-                           view::PipelineLayout&&               layout,
-                           view::RenderPass&&                   render_pass,
-                           std::optional<view::PipelineCache>&& pipeline_cache) noexcept -> Expected<void> {
+    auto PipelineImplementation::do_init(PrivateTag,
+                                         const RasterPipelineState&           _state,
+                                         view::PipelineLayout                 layout,
+                                         view::RenderPass                     render_pass,
+                                         std::optional<view::PipelineCache>&& pipeline_cache) noexcept -> Expected<void> {
         m_type  = Type::RASTER;
-        m_state = _state;
+        m_state = core::allocate_unsafe<StateVariant>(_state);
 
-        const auto& state = as<RasterPipelineState>(m_state);
+        const auto& state = as<RasterPipelineState>(*m_state);
 
         const auto [binding_descriptions,
                     attribute_descriptions,
@@ -339,7 +342,7 @@ namespace stormkit::gpu {
 
         const auto vk_pipeline_cache = either(pipeline_cache, vk::monadic::to_vk(), cmonadic::init<VkPipelineCache>(nullptr));
 
-        const auto& device       = this->device();
+        const auto& device       = owner();
         const auto& device_table = device.device_table();
 
         m_vk_handle = Try(vk::call_checked<VkPipeline>(device_table.vkCreateGraphicsPipelines,

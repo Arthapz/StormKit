@@ -17,9 +17,12 @@ import stormkit.core;
 import stormkit.gpu.core;
 
 namespace stormkit::gpu {
+    template class SamplerInterface<SamplerImplementation>;
+    template class SamplerInterface<view::SamplerImplementation>;
+
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Sampler::do_init(PrivateTag, const Settings& settings) noexcept -> Expected<void> {
+    auto SamplerImplementation::do_init(PrivateTag, const Settings& settings) noexcept -> Expected<void> {
         m_settings             = settings;
         const auto create_info = VkSamplerCreateInfo {
             .sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -41,7 +44,7 @@ namespace stormkit::gpu {
             .borderColor             = vk::to_vk<VkBorderColor>(m_settings.border_color),
             .unnormalizedCoordinates = m_settings.unnormalized_coordinates
         };
-        const auto& device = this->device();
+        const auto& device = owner();
 
         m_vk_handle = Try(vk::call_checked<VkSampler>(device.device_table().vkCreateSampler, device, &create_info, nullptr));
         Return {};

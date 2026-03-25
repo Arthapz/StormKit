@@ -22,14 +22,17 @@ namespace stdv = std::views;
 using namespace std::literals;
 
 namespace stormkit::gpu {
+    template class PipelineLayoutInterface<PipelineLayoutImplementation>;
+    template class PipelineLayoutInterface<view::PipelineLayoutImplementation>;
+
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineLayout::do_init(PrivateTag, const RasterPipelineLayout& layout) noexcept -> Expected<void> {
-        m_layout = layout;
+    auto PipelineLayoutImplementation::do_init(PrivateTag, const RasterPipelineLayout& layout) noexcept -> Expected<void> {
+        m_layout = core::allocate_unsafe<RasterPipelineLayout>(layout);
 
-        const auto set_layouts = transform(m_layout.descriptor_set_layouts, vk::monadic::to_vk());
+        const auto set_layouts = transform(m_layout->descriptor_set_layouts, vk::monadic::to_vk());
 
-        const auto push_constant_ranges = transform(m_layout.push_constant_ranges, [](const auto& push_constant_range) noexcept {
+        const auto push_constant_ranges = transform(m_layout->push_constant_ranges, [](const auto& push_constant_range) noexcept {
             return VkPushConstantRange {
                 .stageFlags = vk::to_vk<VkShaderStageFlags>(push_constant_range.stages),
                 .offset     = push_constant_range.offset,
@@ -47,7 +50,7 @@ namespace stormkit::gpu {
             .pPushConstantRanges    = stdr::data(push_constant_ranges),
         };
 
-        const auto& device       = this->device();
+        const auto& device       = owner();
         const auto& device_table = device.device_table();
 
         m_vk_handle = Try(vk::call_checked<VkPipelineLayout>(device_table.vkCreatePipelineLayout, device, &create_info, nullptr));

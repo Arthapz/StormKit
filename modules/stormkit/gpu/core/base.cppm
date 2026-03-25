@@ -16,6 +16,7 @@ import std;
 
 import stormkit.core;
 
+import :meta;
 import :structs;
 import :vulkan;
 
@@ -25,173 +26,205 @@ namespace stdv = std::views;
 namespace cmeta = stormkit::core::meta;
 
 export namespace stormkit::gpu {
-    template<typename T>
-    class Owned;
-
-    namespace meta {
-        template<typename T>
-        struct ObjectInfo;
-
-        template<typename T>
-        concept HasRequiresInfo = requires(ObjectInfo<cmeta::CanonicalType<T>> value) { value; };
-
-        template<typename T>
-        concept CreateAllocateDisabled = HasRequiresInfo<T> and requires() {
-            { ObjectInfo<cmeta::CanonicalType<T>>::DISABLE_CREATE_ALLOCATE } -> cmeta::IsBooleanTestable;
-        } and ObjectInfo<cmeta::CanonicalType<T>>::DISABLE_CREATE_ALLOCATE;
-
-        template<typename T>
-        concept IsOwnedByOther = HasRequiresInfo<T> and requires(T) { typename ObjectInfo<cmeta::CanonicalType<T>>::OwnedBy; };
-
-        template<typename T>
-        concept IsOwned = HasRequiresInfo<T>
-                          and std::derived_from<cmeta::CanonicalType<T>, Owned<typename ObjectInfo<cmeta::CanonicalType<T>>::Of>>;
-    } // namespace meta
-
-    template<typename T>
-    class View;
-
-    namespace meta {
-        template<typename T>
-        concept IsView = not IsOwned<cmeta::CanonicalType<T>> and requires(T value) {
-            typename cmeta::CanonicalType<T>::ValueType;
-            typename cmeta::CanonicalType<T>::ViewType;
-            { value.native_handle() } -> cmeta::Is<typename cmeta::CanonicalType<T>::ValueType>;
-        };
-
-        template<typename T>
-        concept IsOwnedOrView = IsOwned<T> or IsView<T>;
-
-        template<typename T, typename... Args>
-        concept DoInitReturnExpected = requires(T& foo, Args&&... args) {
-            { foo.do_init(cmeta::CanonicalType<T>::PRIVATE, std::forward<Args>(args)...) } -> cmeta::SameAs<Expected<void>>;
-        };
-        template<typename T, typename... Args>
-        concept DoInitReturnVoid = requires(T& foo, Args&&... args) {
-            { foo.do_init(cmeta::CanonicalType<T>::PRIVATE, std::forward<Args>(args)...) } -> cmeta::SameAs<void>;
-        };
-    } // namespace meta
-
     STORMKIT_GPU_API
     auto initialize_backend() -> Expected<void>;
 
-    template<typename T>
-    class View {
+    template<meta::GpuObjectHasTraitDefined>
+    class GpuObjectViewImplementation;
+
+    template<meta::GpuObjectHasTraitDefined Tag>
+    class GpuObjectBase {
       public:
-        using ObjectInfo = typename meta::ObjectInfo<T>;
-        using ValueType  = ObjectInfo::ValueType;
-        using ViewType   = ObjectInfo::ViewType;
+        using TagType    = Tag;
+        using TraitType  = trait::GpuObject<TagType>;
+        using ValueType  = TraitType::ValueType;
+        using ObjectType = TraitType::ObjectType;
+        using ViewType   = TraitType::ViewType;
 
-        View(const T& of) noexcept;
-        template<cmeta::IsContainerOrPointerOf<T> U>
-        View(const U& of) noexcept;
-        ~View() noexcept;
+        ~GpuObjectBase() noexcept;
 
-        View(const View&) noexcept;
-        auto operator=(const View&) noexcept -> View&;
+        GpuObjectBase(const GpuObjectBase&) noexcept;
+        auto operator=(const GpuObjectBase&) noexcept -> GpuObjectBase&;
 
-        View(View&&) noexcept;
-        auto operator=(View&&) noexcept -> View&;
+        GpuObjectBase(GpuObjectBase&&) noexcept;
+        auto operator=(GpuObjectBase&&) noexcept -> GpuObjectBase&;
 
         [[nodiscard]]
         auto native_handle() const noexcept -> ValueType;
 
+        [[nodiscard]]
         operator ValueType() const noexcept;
 
       protected:
-        ValueType m_vk_handle;
+        GpuObjectBase() noexcept;
+
+        ValueType m_vk_handle = VK_NULL_HANDLE;
+
+        friend class GpuObjectViewImplementation<Tag>;
     };
 
-    template<typename T>
-    class Owned {
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    class GpuObjectBase<Tag> {
       public:
-        using ObjectInfo  = typename meta::ObjectInfo<T>;
-        using ValueType   = ObjectInfo::ValueType;
-        using DeleterType = ObjectInfo::DeleterType;
-        using ViewType    = ObjectInfo::ViewType;
+        using TagType       = Tag;
+        using TraitType     = trait::GpuObject<TagType>;
+        using ValueType     = TraitType::ValueType;
+        using ObjectType    = TraitType::ObjectType;
+        using ViewType      = TraitType::ViewType;
+        using OwnerType     = TraitType::OwnerType;
+        using OwnerViewType = typename OwnerType::ViewType;
 
-        ~Owned() noexcept;
+        ~GpuObjectBase() noexcept;
 
-        Owned(const Owned&)                             = delete;
-        auto operator=(const Owned&) noexcept -> Owned& = delete;
+        GpuObjectBase(const GpuObjectBase&) noexcept;
+        auto operator=(const GpuObjectBase&) noexcept -> GpuObjectBase&;
 
-        Owned(Owned&&) noexcept;
-        auto operator=(Owned&&) noexcept -> Owned&;
-
-        template<typename Owner, typename... Args>
-            requires(meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
-        [[nodiscard]]
-        static auto create(Owner&& owner, Args&&... args) noexcept -> Expected<T>
-            requires(not meta::CreateAllocateDisabled<T>);
-
-        template<typename Owner, typename... Args>
-            requires(meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
-        [[nodiscard]]
-        static auto create(Owner&& owner, Args&&... args) noexcept -> T
-            requires(not meta::CreateAllocateDisabled<T>);
-
-        template<typename... Args>
-            requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
-        [[nodiscard]]
-        static auto create(Args&&... args) noexcept -> Expected<T>
-            requires(not meta::CreateAllocateDisabled<T>);
-
-        template<typename... Args>
-            requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
-        [[nodiscard]]
-        static auto create(Args&&... args) noexcept -> T
-            requires(not meta::CreateAllocateDisabled<T>);
-
-        template<typename Owner, typename... Args>
-            requires(meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
-        [[nodiscard]]
-        static auto allocate(Owner&& owner, Args&&... args) noexcept -> Expected<Heap<T>>
-            requires(not meta::CreateAllocateDisabled<T>);
-
-        template<typename Owner, typename... Args>
-            requires(meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
-        [[nodiscard]]
-        static auto allocate(Owner&& owner, Args&&... args) noexcept -> Heap<T>
-            requires(not meta::CreateAllocateDisabled<T>);
-
-        template<typename... Args>
-            requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
-        [[nodiscard]]
-        static auto allocate(Args&&... args) noexcept -> Expected<Heap<T>>
-            requires(not meta::CreateAllocateDisabled<T>);
-
-        template<typename... Args>
-            requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
-        [[nodiscard]]
-        static auto allocate(Args&&... args) noexcept -> Heap<T>
-            requires(not meta::CreateAllocateDisabled<T>);
+        GpuObjectBase(GpuObjectBase&&) noexcept;
+        auto operator=(GpuObjectBase&&) noexcept -> GpuObjectBase&;
 
         [[nodiscard]]
         auto native_handle() const noexcept -> ValueType;
 
+        [[nodiscard]]
         operator ValueType() const noexcept;
 
+        [[nodiscard]]
+        auto owner() const noexcept -> OwnerViewType;
+
       protected:
-        static constexpr struct PrivateTag {
-        } PRIVATE;
+        GpuObjectBase(OwnerViewType&&) noexcept;
 
-        explicit Owned(DeleterType&& deleter_ptr) noexcept;
+        ValueType     m_vk_handle = VK_NULL_HANDLE;
+        OwnerViewType m_owner;
 
-        ValueType   m_vk_handle;
+        friend class GpuObjectViewImplementation<Tag>;
+    };
+
+    template<meta::GpuObjectHasTraitDefined>
+    class GpuObjectImplementation;
+
+    template<meta::GpuObjectHasTraitDefined Tag>
+    class GpuObjectViewImplementation: public GpuObjectBase<Tag> {
+        using Base = GpuObjectBase<Tag>;
+
+      public:
+        using TagType    = Base::TagType;
+        using TraitType  = Base::TraitType;
+        using ValueType  = Base::ValueType;
+        using ObjectType = Base::ObjectType;
+        using ViewType   = Base::ViewType;
+
+        GpuObjectViewImplementation(const GpuObjectImplementation<Tag>&) noexcept;
+        template<cmeta::IsContainerOrPointerOf<GpuObjectImplementation<Tag>> TContainerOrPointer>
+        GpuObjectViewImplementation(const TContainerOrPointer&) noexcept;
+        ~GpuObjectViewImplementation() noexcept;
+
+        GpuObjectViewImplementation(const GpuObjectViewImplementation&) noexcept;
+        auto operator=(const GpuObjectViewImplementation&) noexcept -> GpuObjectViewImplementation&;
+
+        GpuObjectViewImplementation(GpuObjectViewImplementation&&) noexcept;
+        auto operator=(GpuObjectViewImplementation&&) noexcept -> GpuObjectViewImplementation&;
+    };
+
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    class GpuObjectViewImplementation<Tag>: public GpuObjectBase<Tag> {
+        using Base = GpuObjectBase<Tag>;
+
+      public:
+        using TagType       = Base::TagType;
+        using TraitType     = Base::TraitType;
+        using ValueType     = Base::ValueType;
+        using ObjectType    = Base::ObjectType;
+        using ViewType      = Base::ViewType;
+        using OwnerType     = Base::OwnerType;
+        using OwnerViewType = Base::OwnerViewType;
+
+        GpuObjectViewImplementation(const GpuObjectImplementation<Tag>&) noexcept;
+        template<cmeta::IsContainerOrPointerOf<GpuObjectImplementation<Tag>> TContainerOrPointer>
+        GpuObjectViewImplementation(const TContainerOrPointer&) noexcept;
+        ~GpuObjectViewImplementation() noexcept;
+
+        GpuObjectViewImplementation(const GpuObjectViewImplementation&) noexcept;
+        auto operator=(const GpuObjectViewImplementation&) noexcept -> GpuObjectViewImplementation&;
+
+        GpuObjectViewImplementation(GpuObjectViewImplementation&&) noexcept;
+        auto operator=(GpuObjectViewImplementation&&) noexcept -> GpuObjectViewImplementation&;
+    };
+
+    template<meta::GpuObjectHasTraitDefined Tag>
+    class GpuObjectImplementation
+        : public GpuObjectBase<Tag>,
+          public UseNamedConstructors<typename trait::GpuObject<Tag>::ObjectType, meta::GpuObjectDoInitReturnType<Tag>> {
+        using Base = GpuObjectBase<Tag>;
+
+      public:
+        using TagType     = Base::TagType;
+        using TraitType   = Base::TraitType;
+        using ValueType   = Base::ValueType;
+        using ObjectType  = Base::ObjectType;
+        using ViewType    = Base::ViewType;
+        using DeleterType = TraitType::DeleterType;
+
+        GpuObjectImplementation(DeleterType&&) noexcept;
+        ~GpuObjectImplementation() noexcept;
+
+        GpuObjectImplementation(const GpuObjectImplementation&) noexcept                    = delete;
+        auto operator=(const GpuObjectImplementation&) noexcept -> GpuObjectImplementation& = delete;
+
+        GpuObjectImplementation(GpuObjectImplementation&&) noexcept;
+        auto operator=(GpuObjectImplementation&&) noexcept -> GpuObjectImplementation&;
+
+      protected:
         DeleterType m_deleter_ptr;
     };
 
-    template<meta::IsView T>
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    class GpuObjectImplementation<Tag>
+        : public GpuObjectBase<Tag>,
+          public UseNamedConstructors<typename trait::GpuObject<Tag>::ObjectType,
+                                      meta::GpuObjectDoInitReturnType<Tag>,
+                                      typename trait::GpuObject<Tag>::OwnerType::ViewType> {
+        using Base = GpuObjectBase<Tag>;
+
+      public:
+        using TagType       = Base::TagType;
+        using TraitType     = Base::TraitType;
+        using ValueType     = Base::ValueType;
+        using ObjectType    = Base::ObjectType;
+        using ViewType      = Base::ViewType;
+        using DeleterType   = TraitType::DeleterType;
+        using OwnerType     = Base::OwnerType;
+        using OwnerViewType = Base::OwnerViewType;
+
+        GpuObjectImplementation(OwnerViewType&&, DeleterType&&) noexcept;
+        ~GpuObjectImplementation() noexcept;
+
+        GpuObjectImplementation(const GpuObjectImplementation&) noexcept                    = delete;
+        auto operator=(const GpuObjectImplementation&) noexcept -> GpuObjectImplementation& = delete;
+
+        GpuObjectImplementation(GpuObjectImplementation&&) noexcept;
+        auto operator=(GpuObjectImplementation&&) noexcept -> GpuObjectImplementation&;
+
+      protected:
+        DeleterType m_deleter_ptr;
+    };
+
+    template<meta::IsGpuView T>
     auto as_view(T&& value) noexcept -> T;
 
-    template<meta::IsOwned T>
-    auto as_view(const T& value) noexcept -> typename meta::ObjectInfo<cmeta::CanonicalType<T>>::ViewType;
+    template<meta::IsGpuObject T>
+    auto as_view(const T& value) noexcept -> trait::GpuObject<typename T::TagType>::ViewType;
 
     template<cmeta::IsPointer T>
-    auto as_view(const T& value) noexcept -> typename meta::ObjectInfo<cmeta::CanonicalType<cmeta::PointedType<T>>>::ViewType;
+    auto as_view(const T& value) noexcept
+      -> trait::GpuObject<typename cmeta::CanonicalType<cmeta::PointedType<T>>::TagType>::ViewType;
 
     template<cmeta::IsContainer T>
-    auto as_view(const T& value) noexcept -> typename meta::ObjectInfo<cmeta::CanonicalType<cmeta::ContainedType<T>>>::ViewType;
+    auto as_view(const T& value) noexcept
+      -> trait::GpuObject<typename cmeta::CanonicalType<cmeta::ContainedType<T>>::TagType>::ViewType;
 
     template<template<typename, std::size_t> class Out = std::array, typename... Args>
         requires(not stdr::range<Args> and ...)
@@ -204,7 +237,7 @@ export namespace stormkit::gpu {
     template<template<typename...> class Out = std::vector, stdr::range Range>
     auto to_views(const Range& range) noexcept -> decltype(auto);
 
-    template<meta::IsOwned T, typename FormatContext>
+    template<meta::IsGpuObject T, typename FormatContext>
     auto format_as(const T& object, FormatContext& ctx) noexcept -> decltype(ctx.out());
 } // namespace stormkit::gpu
 
@@ -215,41 +248,307 @@ export namespace stormkit::gpu {
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
+    template<meta::GpuObjectHasTraitDefined Tag>
     STORMKIT_FORCE_INLINE
-    inline Owned<T>::Owned(DeleterType&& deleter_ptr) noexcept
-        : m_vk_handle { VK_NULL_HANDLE }, m_deleter_ptr { std::move(deleter_ptr) } {
+    inline GpuObjectBase<Tag>::GpuObjectBase() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectBase<Tag>::~GpuObjectBase() noexcept {
+        m_vk_handle = VK_NULL_HANDLE;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
+    template<meta::GpuObjectHasTraitDefined Tag>
     STORMKIT_FORCE_INLINE
-    inline Owned<T>::~Owned() noexcept {
-        if constexpr (cmeta::SameAs<DeleterType, void (*)(ValueType, const VkAllocationCallbacks*)>) {
-            if (m_deleter_ptr != nullptr and m_vk_handle != VK_NULL_HANDLE) vk::call(m_deleter_ptr, m_vk_handle, nullptr);
-            m_vk_handle = VK_NULL_HANDLE;
-        }
+    inline GpuObjectBase<Tag>::GpuObjectBase(const GpuObjectBase&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        STORMKIT_FORCE_INLINE
+    inline auto GpuObjectBase<Tag>::operator=(const GpuObjectBase&) noexcept -> GpuObjectBase& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectBase<Tag>::GpuObjectBase(GpuObjectBase&& other) noexcept
+        : m_vk_handle { std::exchange(other.m_vk_handle, VK_NULL_HANDLE) } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
+    template<meta::GpuObjectHasTraitDefined Tag>
     STORMKIT_FORCE_INLINE
-    inline Owned<T>::Owned(Owned<T>&& other) noexcept
-        : m_vk_handle { std::exchange(other.m_vk_handle, VK_NULL_HANDLE) },
-          m_deleter_ptr { std::exchange(other.m_deleter_ptr, {}) } {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::operator=(Owned&& other) noexcept -> Owned& {
+    inline auto GpuObjectBase<Tag>::operator=(GpuObjectBase&& other) noexcept -> GpuObjectBase& {
         if (&other == this) [[unlikely]]
             return *this;
 
-        m_vk_handle   = std::exchange(other.m_vk_handle, VK_NULL_HANDLE);
+        m_vk_handle = std::exchange(other.m_vk_handle, VK_NULL_HANDLE);
+
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline auto GpuObjectBase<Tag>::native_handle() const noexcept -> ValueType {
+        EXPECTS(m_vk_handle != VK_NULL_HANDLE);
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectBase<Tag>::operator ValueType() const noexcept {
+        return native_handle();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectBase<Tag>::GpuObjectBase(OwnerViewType&& owner) noexcept
+        : m_owner { std::move(owner) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectBase<Tag>::~GpuObjectBase() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectBase<Tag>::GpuObjectBase(const GpuObjectBase&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+        STORMKIT_FORCE_INLINE
+    inline auto GpuObjectBase<Tag>::operator=(const GpuObjectBase&) noexcept -> GpuObjectBase& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectBase<Tag>::GpuObjectBase(GpuObjectBase&& other) noexcept
+        : m_vk_handle { std::exchange(other.m_vk_handle, VK_NULL_HANDLE) }, m_owner { std::move(other.m_owner) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline auto GpuObjectBase<Tag>::operator=(GpuObjectBase&& other) noexcept -> GpuObjectBase& {
+        if (&other == this) [[unlikely]]
+            return *this;
+
+        m_vk_handle = std::exchange(other.m_vk_handle, VK_NULL_HANDLE);
+        m_owner     = std::move(other.m_owner);
+
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline auto GpuObjectBase<Tag>::native_handle() const noexcept -> ValueType {
+        EXPECTS(m_vk_handle != VK_NULL_HANDLE);
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectBase<Tag>::operator ValueType() const noexcept {
+        return native_handle();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline auto GpuObjectBase<Tag>::owner() const noexcept -> OwnerViewType {
+        return m_owner;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const GpuObjectImplementation<Tag>& object) noexcept
+        : GpuObjectBase<Tag> {} {
+        GpuObjectBase<Tag>::m_vk_handle = object.m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    template<cmeta::IsContainerOrPointerOf<GpuObjectImplementation<Tag>> TContainerOrPointer>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const TContainerOrPointer& object) noexcept
+        : GpuObjectBase<Tag> {} {
+        GpuObjectBase<Tag>::m_vk_handle = (*object).m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const GpuObjectViewImplementation&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline auto GpuObjectViewImplementation<Tag>::operator=(const GpuObjectViewImplementation&) noexcept
+      -> GpuObjectViewImplementation& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(GpuObjectViewImplementation&& other) noexcept
+        : GpuObjectBase<Tag> {} {
+        GpuObjectBase<Tag>::m_vk_handle = other.m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline auto GpuObjectViewImplementation<Tag>::operator=(GpuObjectViewImplementation&& other) noexcept
+      -> GpuObjectViewImplementation& {
+        if (this == &other) [[unlikely]]
+            return *this;
+
+        GpuObjectBase<Tag>::m_vk_handle = other.m_vk_handle;
+
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::~GpuObjectViewImplementation() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const GpuObjectImplementation<Tag>& object) noexcept
+        : GpuObjectBase<Tag> { object.owner() } {
+        GpuObjectBase<Tag>::m_vk_handle = object.m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    template<cmeta::IsContainerOrPointerOf<GpuObjectImplementation<Tag>> TContainerOrPointer>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const TContainerOrPointer& object) noexcept
+        : GpuObjectBase<Tag> { (*object).owner() } {
+        GpuObjectBase<Tag>::m_vk_handle = (*object).m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const GpuObjectViewImplementation&
+                                                                           other) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline auto GpuObjectViewImplementation<Tag>::operator=(const GpuObjectViewImplementation&) noexcept
+      -> GpuObjectViewImplementation& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(GpuObjectViewImplementation&& other) noexcept
+        : GpuObjectBase<Tag> { other.owner() } {
+        GpuObjectBase<Tag>::m_vk_handle = other.m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline auto GpuObjectViewImplementation<Tag>::operator=(GpuObjectViewImplementation&& other) noexcept
+      -> GpuObjectViewImplementation& {
+        if (this == &other) [[unlikely]]
+            return *this;
+
+        GpuObjectBase<Tag>::m_vk_handle = other.m_vk_handle;
+        GpuObjectBase<Tag>::m_owner     = other.m_owner;
+
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::~GpuObjectViewImplementation() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectImplementation<Tag>::GpuObjectImplementation(DeleterType&& deleter_ptr) noexcept
+        : GpuObjectBase<Tag> {}, m_deleter_ptr { std::move(deleter_ptr) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectImplementation<Tag>::GpuObjectImplementation(GpuObjectImplementation&& other) noexcept
+        : GpuObjectBase<Tag> { std::move(other) }, m_deleter_ptr { std::exchange(other.m_deleter_ptr, {}) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline auto GpuObjectImplementation<Tag>::operator=(GpuObjectImplementation&& other) noexcept -> GpuObjectImplementation& {
+        if (&other == this) [[unlikely]]
+            return *this;
+
+        GpuObjectBase<Tag>::operator=(std::move(other));
+
         m_deleter_ptr = std::exchange(other.m_deleter_ptr, {});
 
         return *this;
@@ -257,202 +556,73 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
+    template<meta::GpuObjectHasTraitDefined Tag>
     STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::native_handle() const noexcept -> ValueType {
-        EXPECTS(m_vk_handle != VK_NULL_HANDLE);
-        return m_vk_handle;
+    inline GpuObjectImplementation<Tag>::~GpuObjectImplementation() noexcept {
+        if constexpr (cmeta::SameAs<DeleterType, void (*)(ValueType, const VkAllocationCallbacks*)>) {
+            if (m_deleter_ptr != nullptr and Base::m_vk_handle != VK_NULL_HANDLE)
+                vk::call(m_deleter_ptr, Base::m_vk_handle, nullptr);
+        }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
     STORMKIT_FORCE_INLINE
-    inline Owned<T>::operator ValueType() const noexcept {
-        return native_handle();
+    inline GpuObjectImplementation<Tag>::GpuObjectImplementation(OwnerViewType&& owner, DeleterType&& deleter_ptr) noexcept
+        : GpuObjectBase<Tag> { std::move(owner) }, m_deleter_ptr { std::move(deleter_ptr) } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-    template<typename Owner, typename... Args>
-        requires(meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
-        STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::create(Owner&& owner, Args&&... args) noexcept -> Expected<T>
-        requires(not meta::CreateAllocateDisabled<T>)
-    {
-        auto out = T { PRIVATE, std::forward<Owner>(owner) };
-        Try(out.do_init(PRIVATE, std::forward<Args>(args)...));
-        Return out;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<typename Owner, typename... Args>
-        requires(meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
-        STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::create(Owner&& owner, Args&&... args) noexcept -> T
-        requires(not meta::CreateAllocateDisabled<T>)
-    {
-        auto out = T { PRIVATE, std::forward<Owner>(owner) };
-        out.do_init(PRIVATE, std::forward<Args>(args)...);
-        return out;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<typename... Args>
-        requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
-        STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::create(Args&&... args) noexcept -> Expected<T>
-        requires(not meta::CreateAllocateDisabled<T>)
-    {
-        auto out = T { PRIVATE };
-        Try(out.do_init(PRIVATE, std::forward<Args>(args)...));
-        Return out;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<typename... Args>
-        requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
-        STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::create(Args&&... args) noexcept -> T
-        requires(not meta::CreateAllocateDisabled<T>)
-    {
-        auto out = T { PRIVATE };
-        out.do_init(PRIVATE, std::forward<Args>(args)...);
-        return out;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<typename Owner, typename... Args>
-        requires(meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
-        STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::allocate(Owner&& owner, Args&&... args) noexcept -> Expected<Heap<T>>
-        requires(not meta::CreateAllocateDisabled<T>)
-    {
-        auto out = core::allocate_unsafe<T>(PRIVATE, std::forward<Owner>(owner));
-        Try(out->do_init(PRIVATE, std::forward<Args>(args)...));
-        Return out;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<typename Owner, typename... Args>
-        requires(meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
-        STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::allocate(Owner&& owner, Args&&... args) noexcept -> Heap<T>
-        requires(not meta::CreateAllocateDisabled<T>)
-    {
-        auto out = core::allocate_unsafe<T>(PRIVATE, std::forward<Owner>(owner));
-        out->do_init(PRIVATE, std::forward<Args>(args)...);
-        return out;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<typename... Args>
-        requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnExpected<T, Args...>)
-        STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::allocate(Args&&... args) noexcept -> Expected<Heap<T>>
-        requires(not meta::CreateAllocateDisabled<T>)
-    {
-        auto out = core::allocate_unsafe<T>(PRIVATE);
-        Try(out->do_init(PRIVATE, std::forward<Args>(args)...));
-        Return out;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<typename... Args>
-        requires(not meta::IsOwnedByOther<T> and meta::DoInitReturnVoid<T, Args...>)
-        STORMKIT_FORCE_INLINE
-    inline auto Owned<T>::allocate(Args&&... args) noexcept -> Heap<T>
-        requires(not meta::CreateAllocateDisabled<T>)
-    {
-        auto out = core::allocate_unsafe<T>(PRIVATE);
-        out->do_init(PRIVATE, std::forward<Args>(args)...);
-        return out;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
     STORMKIT_FORCE_INLINE
-    inline View<T>::View(const T& of) noexcept
-        : m_vk_handle { of.native_handle() } {
-        ENSURES(m_vk_handle != VK_NULL_HANDLE);
+    inline GpuObjectImplementation<Tag>::GpuObjectImplementation(GpuObjectImplementation&& other) noexcept
+        : GpuObjectBase<Tag> { std::move(other) }, m_deleter_ptr { std::exchange(other.m_deleter_ptr, {}) } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-    template<cmeta::IsContainerOrPointerOf<T> U>
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
     STORMKIT_FORCE_INLINE
-    inline View<T>::View(const U& object) noexcept
-        : m_vk_handle { object->native_handle() } {
-        ENSURES(m_vk_handle != VK_NULL_HANDLE);
+    inline auto GpuObjectImplementation<Tag>::operator=(GpuObjectImplementation&& other) noexcept -> GpuObjectImplementation& {
+        if (&other == this) [[unlikely]]
+            return *this;
+
+        GpuObjectBase<Tag>::operator=(std::move(other));
+
+        m_deleter_ptr = std::exchange(other.m_deleter_ptr, {});
+
+        return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
     STORMKIT_FORCE_INLINE
-    inline View<T>::~View() noexcept = default;
+    inline GpuObjectImplementation<Tag>::~GpuObjectImplementation() noexcept {
+        using OwnerValueType = OwnerType::ValueType;
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE
-    inline View<T>::View(const View&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE
-    inline auto View<T>::operator=(const View&) noexcept -> View& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE
-    inline View<T>::View(View&&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE
-    inline auto View<T>::operator=(View&&) noexcept -> View& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE
-    inline auto View<T>::native_handle() const noexcept -> ValueType {
-        EXPECTS(m_vk_handle != VK_NULL_HANDLE);
-        return m_vk_handle;
+        if constexpr (cmeta::SameAs<DeleterType, void (*)(OwnerValueType, ValueType, const VkAllocationCallbacks*)>) {
+            if constexpr (cmeta::SameAs<OwnerValueType, VkInstance>) {
+                if (m_deleter_ptr != nullptr and Base::m_vk_handle != VK_NULL_HANDLE)
+                    vk::call(m_deleter_ptr, Base::m_owner, Base::m_vk_handle, nullptr);
+            } else {
+                const auto& device       = this->device();
+                const auto& device_table = device.device_table();
+                if (m_deleter_ptr != nullptr and Base::m_vk_handle != VK_NULL_HANDLE)
+                    vk::call(device_table.*m_deleter_ptr, device, Base::m_vk_handle, nullptr);
+            }
+        }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE
-    inline View<T>::operator ValueType() const noexcept {
-        return native_handle();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsView T>
+    template<meta::IsGpuView T>
     STORMKIT_FORCE_INLINE
     inline auto as_view(T&& value) noexcept -> T {
         return std::forward<T>(value);
@@ -460,18 +630,19 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsOwned T>
+    template<meta::IsGpuObject T>
     STORMKIT_FORCE_INLINE
-    inline auto as_view(const T& value) noexcept -> typename meta::ObjectInfo<cmeta::CanonicalType<T>>::ViewType {
-        return typename meta::ObjectInfo<T>::ViewType { value };
+    inline auto as_view(const T& value) noexcept -> trait::GpuObject<typename T::TagType>::ViewType {
+        using Out = trait::GpuObject<typename T::TagType>::ViewType;
+        return Out { value };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<cmeta::IsPointer T>
     STORMKIT_FORCE_INLINE
-    inline auto as_view(const T& value) noexcept ->
-      typename meta::ObjectInfo<cmeta::CanonicalType<cmeta::PointedType<T>>>::ViewType {
+    inline auto as_view(const T& value) noexcept
+      -> trait::GpuObject<typename cmeta::CanonicalType<cmeta::PointedType<T>>::TagType>::ViewType {
         return as_view(unref(value));
     }
 
@@ -479,8 +650,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<cmeta::IsContainer T>
     STORMKIT_FORCE_INLINE
-    inline auto as_view(const T& value) noexcept ->
-      typename meta::ObjectInfo<cmeta::CanonicalType<cmeta::ContainedType<T>>>::ViewType {
+    inline auto as_view(const T& value) noexcept
+      -> trait::GpuObject<typename cmeta::CanonicalType<cmeta::ContainedType<T>>::TagType>::ViewType {
         return as_view(value.value());
     }
 
@@ -514,7 +685,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsOwned T, typename FormatContext>
+    template<meta::IsGpuObject T, typename FormatContext>
     STORMKIT_FORCE_INLINE
     inline auto format_as(const T& object, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         return format_as(as_view(object), ctx);
