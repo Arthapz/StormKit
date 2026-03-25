@@ -76,8 +76,7 @@ export {
 
         namespace io {
             template<Mode mode>
-            class Descriptor final: TemplatedNamedConstructorHelper,
-                                    protected UseNamedConstructors<Descriptor<mode>, Expected<void>> {
+            class Descriptor final: protected UseNamedConstructors<Descriptor<mode>, Expected<void>> {
               public:
                 static auto open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor>;
                 static auto allocate_and_open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor>;
