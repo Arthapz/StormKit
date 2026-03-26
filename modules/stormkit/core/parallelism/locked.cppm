@@ -15,13 +15,27 @@ import :meta;
 import :typesafe.integer;
 import :typesafe.ref;
 
-namespace stormkit { inline namespace core { namespace details {
-    using DefaultMutex = std::mutex;
-    template<typename Mutex>
-    using DefaultReadOnlyLock = std::unique_lock<Mutex>;
-    template<typename Mutex>
-    using DefaultReadWriteLock = std::unique_lock<Mutex>;
-}}} // namespace stormkit::core::details
+namespace stormkit { inline namespace core {
+    namespace meta { namespace details {
+        template<typename T>
+        struct LockedValueType {
+            using Type = T;
+        };
+
+        template<meta::IsContainerOrPointer T>
+        struct LockedValueType<T> {
+            using Type = meta::ContainedOrPointedType<T>;
+        };
+    }} // namespace meta::details
+
+    namespace details {
+        using DefaultMutex = std::mutex;
+        template<typename Mutex>
+        using DefaultReadOnlyLock = std::unique_lock<Mutex>;
+        template<typename Mutex>
+        using DefaultReadWriteLock = std::unique_lock<Mutex>;
+    } // namespace details
+}} // namespace stormkit::core
 
 export namespace stormkit { inline namespace core {
     enum class LockAccessMode : core::u8 {
@@ -32,7 +46,7 @@ export namespace stormkit { inline namespace core {
     template<meta::IsNotRawIndirection T, class Mutex = details::DefaultMutex>
     class STORMKIT_CORE_API Locked {
       public:
-        using ValueType          = meta::PointedType<T>;
+        using ValueType          = meta::details::LockedValueType<T>::Type;
         using ReferenceType      = ValueType&;
         using ConstReferenceType = const ValueType&;
         using PointerType        = ValueType*;
@@ -129,6 +143,10 @@ export namespace stormkit { inline namespace core {
 
     template<typename T>
     Locked(T) -> Locked<T>;
+
+    template class Locked<int>;
+    template class Locked<std::unique_ptr<int>>;
+    template class Locked<std::queue<int>>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
