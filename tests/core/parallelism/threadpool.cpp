@@ -68,7 +68,7 @@ namespace {
                 thread_pool.post_task<void>(
                   [&val, &thread_pool] noexcept {
                       thread_pool.post_task<void>(
-                        [&val, &thread_pool] noexcept {
+                        [&val] noexcept {
                             std::println("Hello from a thread!");
                             val = 8;
                         },
@@ -88,7 +88,7 @@ namespace {
 
                 auto thread = std::jthread { [&val, &thread_pool] noexcept {
                     thread_pool.post_task<void>(
-                      [&val, &thread_pool] noexcept {
+                      [&val] noexcept {
                           std::println("Hello from a thread!");
                           val = 8;
                       },

@@ -14,6 +14,7 @@ import std;
 import :parallelism.threadutils;
 
 import :meta;
+import :functional;
 
 import :utils.std23_functional;
 import :utils.numeric_range;
@@ -77,7 +78,9 @@ export namespace stormkit { inline namespace core {
         template<class T>
         auto post_task(Task::Type type, Closure<T> task, NoFutureType) noexcept -> void;
 
-        auto worker_main() noexcept -> void;
+        auto worker_main(i32 id) noexcept -> void;
+
+        auto spawn_workers() noexcept -> void;
 
         u32 m_worker_count = 0;
 
@@ -109,12 +112,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     inline ThreadPool::ThreadPool(u32 worker_count)
         : m_worker_count { worker_count }, m_running_task_counter { worker_count } {
-        m_workers.reserve(m_worker_count);
-
-        for (auto i : range(m_worker_count)) {
-            auto& worker = m_workers.emplace_back([this] { worker_main(); });
-            set_thread_name(worker, std::format("stormkit:worker_thread:{}", i));
-        }
+        spawn_workers();
     }
 
     /////////////////////////////////////
@@ -217,7 +215,7 @@ namespace stormkit { inline namespace core {
             if (end >= (chunk_count * size)) end = size;
 
             out.emplace_back(pool.post_task<void>([&f, &range, start, end] mutable noexcept {
-                auto it = std::begin(range) + start;
+                auto it = std::begin(range) + as<ioffset>(start);
                 for (auto _ : stormkit::range(start, end)) {
                     f(*it);
                     ++it;

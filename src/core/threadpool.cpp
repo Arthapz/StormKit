@@ -20,11 +20,8 @@ namespace stormkit {
 
         m_tasks = std::move(other.m_tasks);
 
-        m_workers.reserve(m_worker_count);
-        for (const auto i : range(m_worker_count)) {
-            auto& thread = m_workers.emplace_back([this] { worker_main(); });
-            set_thread_name(thread, std::format("stormkit:worker_thread:{}", i));
-        }
+        m_workers.clear();
+        spawn_workers();
     }
 
     /////////////////////////////////////
@@ -45,11 +42,8 @@ namespace stormkit {
         m_worker_count = other.m_worker_count;
         m_tasks        = std::move(other.m_tasks);
 
-        m_workers.reserve(m_worker_count);
-        for (const auto i : range(m_worker_count)) {
-            auto& thread = m_workers.emplace_back([this] { worker_main(); });
-            set_thread_name(thread, std::format("stormkit:worker_thread:{}", i));
-        }
+        m_workers.clear();
+        spawn_workers();
 
         return *this;
     }
@@ -93,7 +87,8 @@ namespace stormkit {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto ThreadPool::worker_main() noexcept -> void {
+    auto ThreadPool::worker_main(i32 id) noexcept -> void {
+        set_current_thread_name(std::format("stormkit:worker_thread:{}", id));
         for (;;) {
             auto task = Task {};
 
@@ -110,5 +105,13 @@ namespace stormkit {
 
             if (task.type == Task::Type::Terminate) return;
         }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto ThreadPool::spawn_workers() noexcept -> void {
+        m_workers.reserve(m_worker_count);
+
+        for (auto i : range(m_worker_count)) m_workers.emplace_back(bind_front(&ThreadPool::worker_main, this, i));
     }
 } // namespace stormkit
