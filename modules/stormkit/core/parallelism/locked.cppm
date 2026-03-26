@@ -59,6 +59,9 @@ export namespace stormkit { inline namespace core {
         using MutexType = Mutex;
 
       private:
+        template<LockAccessMode Mode>
+        using AccessClosureInvokeParameter = meta::If<Mode == LockAccessMode::READ_ONLY, ConstReferenceType, ReferenceType>;
+
         template<template<class> class Lock, LockAccessMode Mode>
         class Access;
 
@@ -85,11 +88,29 @@ export namespace stormkit { inline namespace core {
         template<LockAccessMode Mode, template<class> class Lock, typename... LockArgs, class Self>
         auto access(this Self& self, LockArgs&&... lock_args) noexcept -> Access<Lock, Mode>;
 
+        template<LockAccessMode                                     Mode,
+                 std::invocable<AccessClosureInvokeParameter<Mode>> Closure,
+                 template<class> class Lock,
+                 typename... LockArgs,
+                 class Self>
+        auto access(this Self& self, Closure&& closure, LockArgs&&... lock_args) noexcept
+          -> std::invoke_result_t<Closure, AccessClosureInvokeParameter<Mode>>;
+
         template<template<class> class Lock = details::DefaultReadOnlyLock, typename... LockArgs>
         auto read(LockArgs&&... lock_args) const noexcept -> ReadAccess<Lock>;
 
+        template<std::invocable<ConstReferenceType> Closure,
+                 template<class> class Lock = details::DefaultReadOnlyLock,
+                 typename... LockArgs>
+        auto read(Closure&& closure, LockArgs&&... lock_args) const noexcept -> std::invoke_result_t<Closure, ConstReferenceType>;
+
         template<template<class> class Lock = details::DefaultReadWriteLock, typename... LockArgs>
         auto write(LockArgs&&... lock_args) noexcept -> WriteAccess<Lock>;
+
+        template<std::invocable<ReferenceType> Closure,
+                 template<class> class Lock = details::DefaultReadWriteLock,
+                 typename... LockArgs>
+        auto write(Closure&& closure, LockArgs&&... lock_args) noexcept -> std::invoke_result_t<Closure, ReferenceType>;
 
         template<template<class> class Lock = details::DefaultReadOnlyLock, typename... LockArgs>
         auto copy(LockArgs&&... lock_args) const noexcept -> ValueType;
@@ -213,6 +234,24 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsNotRawIndirection T, class Mutex>
+    template<LockAccessMode                                                                         Mode,
+             std::invocable<typename Locked<T, Mutex>::template AccessClosureInvokeParameter<Mode>> Closure,
+             template<class> class Lock,
+             typename... LockArgs,
+             class Self>
+    STORMKIT_FORCE_INLINE
+    auto Locked<T, Mutex>::access(this Self& self, Closure&& closure, LockArgs&&... lock_args) noexcept
+      -> std::invoke_result_t<Closure, AccessClosureInvokeParameter<Mode>> {
+        static_assert(not(Mode == LockAccessMode::READ_ONLY and not std::is_const_v<meta::RemoveIndirectionsType<Self>>),
+                      "can't get read access on const Locked<T>");
+        using AccessType = Access<Lock, Mode>;
+        auto access_     = AccessType { std::forward<Self&>(self), std::forward<LockArgs>(lock_args)... };
+        return std::invoke(std::forward<Closure>(closure), *access_);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, typename... LockArgs>
     STORMKIT_FORCE_INLINE
     auto Locked<T, Mutex>::read(LockArgs&&... lock_args) const noexcept -> ReadAccess<Lock> {
@@ -222,10 +261,34 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsNotRawIndirection T, class Mutex>
+    template<std::invocable<typename Locked<T, Mutex>::ConstReferenceType> Closure,
+             template<class> class Lock,
+             typename... LockArgs>
+    STORMKIT_FORCE_INLINE
+    auto Locked<T, Mutex>::read(Closure&& closure, LockArgs&&... lock_args) const noexcept
+      -> std::invoke_result_t<Closure, ConstReferenceType> {
+        return access<LockAccessMode::READ_ONLY, Closure, Lock>(std::forward<Closure>(closure),
+                                                                std::forward<LockArgs>(lock_args)...);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, typename... LockArgs>
     STORMKIT_FORCE_INLINE
     auto Locked<T, Mutex>::write(LockArgs&&... lock_args) noexcept -> WriteAccess<Lock> {
         return access<LockAccessMode::READ_WRITE, Lock>(std::forward<LockArgs>(lock_args)...);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsNotRawIndirection T, class Mutex>
+    template<std::invocable<typename Locked<T, Mutex>::ReferenceType> Closure, template<class> class Lock, typename... LockArgs>
+    STORMKIT_FORCE_INLINE
+    auto Locked<T, Mutex>::write(Closure&& closure, LockArgs&&... lock_args) noexcept
+      -> std::invoke_result_t<Closure, ReferenceType> {
+        return access<LockAccessMode::READ_WRITE, Closure, Lock>(std::forward<Closure>(closure),
+                                                                 std::forward<LockArgs>(lock_args)...);
     }
 
     ////////////////////////////////////////

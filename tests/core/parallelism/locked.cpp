@@ -34,6 +34,24 @@ namespace {
 
                 EXPECTS(locked_int.unsafe() == (ITERATIONS * 2));
             } },
+          { "Locked.write_closure",
+            [] static noexcept {
+                static constexpr auto ITERATIONS = 1'000'000;
+                auto                  locked_int = Locked { 0 };
+                const auto            func       = [&locked_int] noexcept {
+                    for (auto foo = 0; foo != ITERATIONS; ++foo) {
+                        locked_int.write([](auto& value) static noexcept { value += 1; });
+                    }
+                };
+
+                auto future_1 = std::async(std::launch::async, func);
+                auto future_2 = std::async(std::launch::async, func);
+
+                future_1.wait();
+                future_2.wait();
+
+                EXPECTS(locked_int.unsafe() == (ITERATIONS * 2));
+            } },
           { "Locked.move",
             [] static noexcept {
                 auto locked_int = Locked { 0 };
