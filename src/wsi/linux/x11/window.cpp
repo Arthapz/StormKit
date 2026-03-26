@@ -77,28 +77,32 @@ namespace stormkit::wsi::linux::x11 {
         [[maybe_unused]]
         constexpr auto _NET_WM_STATE_TOGGLE = 2; // toggle property
 
-        constexpr auto MOUSE_RAW_EVENTS    = u32 { XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_PRESS
-                                                   | XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_RELEASE
-                                                   | XCB_INPUT_XI_EVENT_MASK_RAW_MOTION };
-        constexpr auto KEYBOARD_RAW_EVENTS = u32 { XCB_INPUT_XI_EVENT_MASK_RAW_KEY_PRESS
-                                                   | XCB_INPUT_XI_EVENT_MASK_RAW_KEY_RELEASE };
-        constexpr auto KEYBOARD_EVENTS     = u32 { XCB_INPUT_XI_EVENT_MASK_KEY_PRESS | XCB_INPUT_XI_EVENT_MASK_KEY_RELEASE };
+        constexpr auto MOUSE_RAW_EVENTS = u32 {
+            XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_PRESS
+            | XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_RELEASE
+            | XCB_INPUT_XI_EVENT_MASK_RAW_MOTION
+        };
+        constexpr auto KEYBOARD_RAW_EVENTS = u32 {
+            XCB_INPUT_XI_EVENT_MASK_RAW_KEY_PRESS | XCB_INPUT_XI_EVENT_MASK_RAW_KEY_RELEASE
+        };
+        constexpr auto KEYBOARD_EVENTS = u32 { XCB_INPUT_XI_EVENT_MASK_KEY_PRESS | XCB_INPUT_XI_EVENT_MASK_KEY_RELEASE };
 
         constexpr auto XINPUT_MASK_MODIFIERS = u32 { XCB_INPUT_MODIFIER_MASK_ANY };
 
-        constexpr const auto EVENTS = XCB_EVENT_MASK_FOCUS_CHANGE
-                                      | XCB_EVENT_MASK_BUTTON_PRESS
-                                      | XCB_EVENT_MASK_BUTTON_RELEASE
-                                      | XCB_EVENT_MASK_BUTTON_MOTION
-                                      | XCB_EVENT_MASK_POINTER_MOTION
-                                      | XCB_EVENT_MASK_KEY_PRESS
-                                      | XCB_EVENT_MASK_KEY_RELEASE
-                                      | XCB_EVENT_MASK_STRUCTURE_NOTIFY
-                                      | XCB_EVENT_MASK_ENTER_WINDOW
-                                      | XCB_EVENT_MASK_LEAVE_WINDOW
-                                      | XCB_EVENT_MASK_VISIBILITY_CHANGE
-                                      | XCB_EVENT_MASK_PROPERTY_CHANGE
-                                      | XCB_EVENT_MASK_EXPOSURE;
+        constexpr const auto
+          EVENTS = XCB_EVENT_MASK_FOCUS_CHANGE
+                   | XCB_EVENT_MASK_BUTTON_PRESS
+                   | XCB_EVENT_MASK_BUTTON_RELEASE
+                   | XCB_EVENT_MASK_BUTTON_MOTION
+                   | XCB_EVENT_MASK_POINTER_MOTION
+                   | XCB_EVENT_MASK_KEY_PRESS
+                   | XCB_EVENT_MASK_KEY_RELEASE
+                   | XCB_EVENT_MASK_STRUCTURE_NOTIFY
+                   | XCB_EVENT_MASK_ENTER_WINDOW
+                   | XCB_EVENT_MASK_LEAVE_WINDOW
+                   | XCB_EVENT_MASK_VISIBILITY_CHANGE
+                   | XCB_EVENT_MASK_PROPERTY_CHANGE
+                   | XCB_EVENT_MASK_EXPOSURE;
 
         constexpr auto REQUIRED_MAP_PARTS = u16 {
             XCB_XKB_MAP_PART_KEY_TYPES
@@ -791,10 +795,8 @@ namespace stormkit::wsi::linux::x11 {
 
         const auto device_id = xkb_x11_get_core_keyboard_device_id(globals.connection);
 
-        m_keymap = common::xkb::Keymap::take(xkb_x11_keymap_new_from_device(globals.xkb_context,
-                                                                            globals.connection,
-                                                                            device_id,
-                                                                            XKB_KEYMAP_COMPILE_NO_FLAGS));
+        m_keymap = common::xkb::Keymap::
+          take(xkb_x11_keymap_new_from_device(globals.xkb_context, globals.connection, device_id, XKB_KEYMAP_COMPILE_NO_FLAGS));
         if (not m_keymap) {
             elog("Failed to compile a keymap");
             return;

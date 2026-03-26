@@ -50,10 +50,8 @@ namespace stormkit::gpu {
 
         const auto& device       = owner();
         const auto& device_table = device.device_table();
-        m_vk_handle              = Try(vk::call_checked<VkDescriptorSetLayout>(device_table.vkCreateDescriptorSetLayout,
-                                                                               device,
-                                                                               &create_info,
-                                                                               nullptr));
+        m_vk_handle = Try(vk::call_checked<
+                          VkDescriptorSetLayout>(device_table.vkCreateDescriptorSetLayout, device, &create_info, nullptr));
 
         Return {};
     }

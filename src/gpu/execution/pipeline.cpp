@@ -55,17 +55,17 @@ namespace stormkit::gpu {
                                                      };
                                                  });
 
-            out
-              .input_attribute_descriptions = transform(state.vertex_input_state.input_attribute_descriptions,
-                                                        [](auto&& input_attribute_description) static noexcept {
-                                                            return VkVertexInputAttributeDescription {
-                                                                .location = input_attribute_description.location,
-                                                                .binding  = input_attribute_description.binding,
-                                                                .format = vk::to_vk<VkFormat>(input_attribute_description.format),
-                                                                .offset = input_attribute_description.offset
-                                                            };
-                                                        });
-            out.vertex_input_info           = VkPipelineVertexInputStateCreateInfo {
+            out.input_attribute_descriptions = transform(state.vertex_input_state.input_attribute_descriptions,
+                                                         [](auto&& input_attribute_description) static noexcept {
+                                                             return VkVertexInputAttributeDescription {
+                                                                 .location = input_attribute_description.location,
+                                                                 .binding  = input_attribute_description.binding,
+                                                                 .format   = vk::to_vk<
+                                                                   VkFormat>(input_attribute_description.format),
+                                                                 .offset = input_attribute_description.offset
+                                                             };
+                                                         });
+            out.vertex_input_info            = VkPipelineVertexInputStateCreateInfo {
                 .sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
                 .pNext                           = nullptr,
                 .flags                           = 0,

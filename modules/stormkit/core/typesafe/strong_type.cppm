@@ -223,15 +223,15 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::~StrongType() noexcept(meta::IsNoexceptDestructible<
-                                                                                ValueType>) = default;
+    constexpr StrongType<T, Tag, Name, Capabilities...>::
+      ~StrongType() noexcept(meta::IsNoexceptDestructible<ValueType>) = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::StrongType(const StrongType&) noexcept(meta::IsNoexceptCopyConstructible<
-                                                                                                ValueType>)
+    constexpr StrongType<T, Tag, Name, Capabilities...>::
+      StrongType(const StrongType&) noexcept(meta::IsNoexceptCopyConstructible<ValueType>)
         requires(meta::IsCopyConstructible<ValueType>)
     = default;
 
@@ -248,8 +248,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::StrongType(StrongType&&) noexcept(meta::IsNoexceptMoveConstructible<
-                                                                                           ValueType>)
+    constexpr StrongType<T, Tag, Name, Capabilities...>::
+      StrongType(StrongType&&) noexcept(meta::IsNoexceptMoveConstructible<ValueType>)
         requires(meta::IsMoveConstructible<ValueType>)
     = default;
 
@@ -257,8 +257,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
     STORMKIT_FORCE_INLINE
-    constexpr auto StrongType<T, Tag, Name, Capabilities...>::operator=(StrongType&&) noexcept(meta::IsNoexceptMoveAssignable<
-                                                                                               ValueType>) -> StrongType&
+    constexpr auto StrongType<T, Tag, Name, Capabilities...>::
+      operator=(StrongType&&) noexcept(meta::IsNoexceptMoveAssignable<ValueType>) -> StrongType&
         requires(meta::IsMoveAssignable<ValueType>)
     = default;
 

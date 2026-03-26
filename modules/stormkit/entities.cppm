@@ -530,8 +530,8 @@ namespace stormkit::entities {
 
         auto it = stdr::find_if(m_components, [type = type](const auto& pair) noexcept { return pair.type == type; });
         if (it == stdr::cend(m_components))
-            it = m_components
-                   .emplace(stdr::cend(m_components), Store { type, stdr::size(component), {}, {}, std::move(delete_func) });
+            it = m_components.emplace(stdr::cend(m_components),
+                                      Store { type, stdr::size(component), {}, {}, std::move(delete_func) });
 
         ENSURES(it != stdr::cend(m_components));
 

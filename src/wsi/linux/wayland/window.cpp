@@ -261,11 +261,8 @@ namespace stormkit::wsi::linux::wayland {
 
         if (confined) {
             if (not check_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) {
-                state.confined_pointer = wl::ConfinedPointer ::create(globals.pointer_constraints,
-                                                                      m_surface,
-                                                                      pointer,
-                                                                      nullptr,
-                                                                      ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
+                state.confined_pointer = wl::ConfinedPointer ::
+                  create(globals.pointer_constraints, m_surface, pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
 
                 zwp_confined_pointer_v1_add_listener(state.confined_pointer, &wl::g_confined_pointer_listener, &state);
                 state.flags |= wl::PointerState::Flag::CONFINED;

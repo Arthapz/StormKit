@@ -216,14 +216,13 @@ namespace stormkit::gpu {
         const auto device_table = this->device_table();
         const auto _fences      = transform(fences, vk::monadic::to_vk());
 
-        const auto result = Try((vk::call_checked<VkResult, VK_SUCCESS, VK_NOT_READY>(device_table.vkWaitForFences,
-                                                                                      *this,
-                                                                                      stdr::size(_fences),
-                                                                                      stdr::data(_fences),
-                                                                                      wait_all,
-                                                                                      std::chrono::duration_cast<
-                                                                                        std::chrono::nanoseconds>(timeout)
-                                                                                        .count())));
+        const auto result = Try((vk::call_checked<VkResult, VK_SUCCESS, VK_NOT_READY>(
+          device_table.vkWaitForFences,
+          *this,
+          stdr::size(_fences),
+          stdr::data(_fences),
+          wait_all,
+          std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count())));
         return vk::from_vk<Result>(result);
     }
 

@@ -80,22 +80,22 @@ namespace stormkit::gpu {
             auto vec = stdp::vector<SubmitInfoRange> { &memory_resource };
             vec.reserve(stdr::size(submit_infos));
             for (auto&& submit_info : submit_infos) {
-                auto& wait_semaphores = wait_semaphores_buf
-                                          .emplace_back(std::from_range,
-                                                        submit_info.wait_semaphores | stdv::transform(vk::monadic::to_vk()));
+                auto& wait_semaphores = wait_semaphores_buf.emplace_back(std::from_range,
+                                                                         submit_info.wait_semaphores
+                                                                           | stdv::transform(vk::monadic::to_vk()));
 
-                auto& wait_dst_stages = wait_dst_stages_buf
-                                          .emplace_back(std::from_range,
-                                                        submit_info.wait_dst_stages
-                                                          | stdv::transform(vk::monadic::to_vk<VkPipelineStageFlagBits>()));
+                auto& wait_dst_stages = wait_dst_stages_buf.emplace_back(std::from_range,
+                                                                         submit_info.wait_dst_stages
+                                                                           | stdv::transform(vk::monadic::to_vk<
+                                                                                             VkPipelineStageFlagBits>()));
 
-                auto& command_buffers = command_buffers_buf
-                                          .emplace_back(std::from_range,
-                                                        submit_info.command_buffers | stdv::transform(vk::monadic::to_vk()));
+                auto& command_buffers = command_buffers_buf.emplace_back(std::from_range,
+                                                                         submit_info.command_buffers
+                                                                           | stdv::transform(vk::monadic::to_vk()));
 
-                auto& signal_semaphores = signal_semaphores_buf
-                                            .emplace_back(std::from_range,
-                                                          submit_info.signal_semaphores | stdv::transform(vk::monadic::to_vk()));
+                auto& signal_semaphores = signal_semaphores_buf.emplace_back(std::from_range,
+                                                                             submit_info.signal_semaphores
+                                                                               | stdv::transform(vk::monadic::to_vk()));
 
                 vec.emplace_back(SubmitInfoRange {
                   .wait_semaphores   = wait_semaphores,
@@ -152,12 +152,16 @@ namespace stormkit::gpu {
         const auto bytes_count     = swapchains_count * sizeof(VkSwapchainKHR) + wait_semaphores_count * sizeof(VkSemaphore);
         auto       memory_resource = stdp::monotonic_buffer_resource { bytes_count };
 
-        const auto vk_swapchains = stdp::vector<VkSwapchainKHR> { std::from_range,
-                                                                  swapchains | stdv::transform(vk::monadic::to_vk()),
-                                                                  &memory_resource };
-        const auto vk_semaphores = stdp::vector<VkSemaphore> { std::from_range,
-                                                               wait_semaphores | stdv::transform(vk::monadic::to_vk()),
-                                                               &memory_resource };
+        const auto vk_swapchains = stdp::vector<VkSwapchainKHR> {
+            std::from_range,
+            swapchains | stdv::transform(vk::monadic::to_vk()),
+            &memory_resource
+        };
+        const auto vk_semaphores = stdp::vector<VkSemaphore> {
+            std::from_range,
+            wait_semaphores | stdv::transform(vk::monadic::to_vk()),
+            &memory_resource
+        };
 
         const auto present_info = VkPresentInfoKHR {
             .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -172,11 +176,11 @@ namespace stormkit::gpu {
 
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
-        const auto  result = Try((vk::call_checked<VkResult, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR>(device_table
-                                                                                                            .vkQueuePresentKHR,
-                                                                                                          *this,
-                                                                                                          &present_info)));
-        Return      vk::from_vk<Result>(result);
+        const auto
+          result = Try((vk::call_checked<VkResult, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR>(device_table.vkQueuePresentKHR,
+                                                                                                *this,
+                                                                                                &present_info)));
+        Return vk::from_vk<Result>(result);
     }
 
     template class QueueInterface<QueueImplementation>;

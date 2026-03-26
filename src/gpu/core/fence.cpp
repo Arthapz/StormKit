@@ -41,13 +41,13 @@ namespace stormkit::gpu {
         const auto  handle       = Base::native_handle();
 
         const auto
-          result = Try((vk::call_checked<VkResult, VK_NOT_READY>(device_table.vkWaitForFences,
-                                                                 device,
-                                                                 1u,
-                                                                 &handle,
-                                                                 true,
-                                                                 std::chrono::duration_cast<std::chrono::nanoseconds>(wait_for)
-                                                                   .count())));
+          result = Try((vk::call_checked<VkResult,
+                                         VK_NOT_READY>(device_table.vkWaitForFences,
+                                                       device,
+                                                       1u,
+                                                       &handle,
+                                                       true,
+                                                       std::chrono::duration_cast<std::chrono::nanoseconds>(wait_for).count())));
 
         Return vk::from_vk<Result>(result);
     }
@@ -73,9 +73,11 @@ namespace stormkit::gpu {
     auto FenceImplementation::do_init(PrivateTag, bool signaled) noexcept -> Expected<void> {
         const auto flags = (signaled) ? VkFenceCreateFlags { VK_FENCE_CREATE_SIGNALED_BIT } : VkFenceCreateFlags {};
 
-        const auto create_info = VkFenceCreateInfo { .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-                                                     .pNext = nullptr,
-                                                     .flags = flags };
+        const auto create_info = VkFenceCreateInfo {
+            .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = flags
+        };
 
         const auto& device       = owner();
         const auto& device_table = device.device_table();

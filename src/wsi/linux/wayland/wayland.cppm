@@ -33,23 +33,25 @@ export namespace stormkit::wsi::linux::wayland::wl {
       RAIICapsule<wl_compositor*, monadic::noop(), wl_compositor_destroy, struct CompositorTag, nullptr>;
     using Output    = stormkit::RAIICapsule<wl_output*, monadic::noop(), wl_output_release, struct OutputTag, nullptr>;
     using XDGWmBase = stormkit::RAIICapsule<xdg_wm_base*, monadic::noop(), xdg_wm_base_destroy, struct XDGWmBaseTag, nullptr>;
-    using XDGDecorationManager = stormkit::RAIICapsule<zxdg_decoration_manager_v1*,
-                                                       monadic::noop(),
-                                                       zxdg_decoration_manager_v1_destroy,
-                                                       struct XDGDescorationManagerTag,
-                                                       nullptr>;
-    using Buffer               = stormkit::RAIICapsule<wl_buffer*, monadic::noop(), wl_buffer_destroy, struct BufferTag, nullptr>;
+    using XDGDecorationManager = stormkit::RAIICapsule<
+      zxdg_decoration_manager_v1*,
+      monadic::noop(),
+      zxdg_decoration_manager_v1_destroy,
+      struct XDGDescorationManagerTag,
+      nullptr>;
+    using Buffer   = stormkit::RAIICapsule<wl_buffer*, monadic::noop(), wl_buffer_destroy, struct BufferTag, nullptr>;
     using Keyboard = stormkit::RAIICapsule<wl_keyboard*, wl_seat_get_keyboard, wl_keyboard_release, struct KeyboardTag, nullptr>;
     using Pointer  = stormkit::RAIICapsule<wl_pointer*, wl_seat_get_pointer, wl_pointer_release, struct PointerTag, nullptr>;
     using Touch    = stormkit::RAIICapsule<wl_touch*, wl_seat_get_touch, wl_touch_release, struct TouchTag, nullptr>;
     using Shm      = stormkit::RAIICapsule<wl_shm*, monadic::noop(), wl_shm_release, struct ShmTag, nullptr>;
     using Seat     = stormkit::RAIICapsule<wl_seat*, monadic::noop(), wl_seat_release, struct SeatTag, nullptr>;
-    using SinglePixelBufferManager = stormkit::RAIICapsule<wp_single_pixel_buffer_manager_v1*,
-                                                           monadic::noop(),
-                                                           wp_single_pixel_buffer_manager_v1_destroy,
-                                                           struct SinglePixelBufferManagerTag,
-                                                           nullptr>;
-    using Viewporter               = stormkit::
+    using SinglePixelBufferManager = stormkit::RAIICapsule<
+      wp_single_pixel_buffer_manager_v1*,
+      monadic::noop(),
+      wp_single_pixel_buffer_manager_v1_destroy,
+      struct SinglePixelBufferManagerTag,
+      nullptr>;
+    using Viewporter = stormkit::
       RAIICapsule<wp_viewporter*, monadic::noop(), wp_viewporter_destroy, struct ViewporterTag, nullptr>;
     using ContentTypeManager = stormkit::RAIICapsule<wp_content_type_manager_v1*,
                                                      monadic::noop(),
@@ -77,11 +79,12 @@ export namespace stormkit::wsi::linux::wayland::wl {
                                                      nullptr>;
     using PointerWarp        = stormkit::
       RAIICapsule<wp_pointer_warp_v1*, monadic::noop(), wp_pointer_warp_v1_destroy, struct PointerWarpTag, nullptr>;
-    using RelativePointerManager = stormkit::RAIICapsule<zwp_relative_pointer_manager_v1*,
-                                                         monadic::noop(),
-                                                         zwp_relative_pointer_manager_v1_destroy,
-                                                         struct RelativePointerManagerTag,
-                                                         nullptr>;
+    using RelativePointerManager = stormkit::RAIICapsule<
+      zwp_relative_pointer_manager_v1*,
+      monadic::noop(),
+      zwp_relative_pointer_manager_v1_destroy,
+      struct RelativePointerManagerTag,
+      nullptr>;
 
     using Surface = stormkit::
       RAIICapsule<wl_surface*, wl_compositor_create_surface, wl_surface_destroy, struct SurfaceTag, nullptr>;
@@ -89,27 +92,28 @@ export namespace stormkit::wsi::linux::wayland::wl {
       RAIICapsule<xdg_surface*, xdg_wm_base_get_xdg_surface, xdg_surface_destroy, struct XDGSurfaceTag, nullptr>;
     using XDGTopLevel = stormkit::
       RAIICapsule<xdg_toplevel*, xdg_surface_get_toplevel, xdg_toplevel_destroy, struct XDGTopLevelTag, nullptr>;
-    using XDGTopLevelDecoration = stormkit::RAIICapsule<zxdg_toplevel_decoration_v1*,
-                                                        zxdg_decoration_manager_v1_get_toplevel_decoration,
-                                                        zxdg_toplevel_decoration_v1_destroy,
-                                                        struct XDGTopLevelDecorationTag,
-                                                        nullptr>;
-    using LockedPointer         = stormkit::RAIICapsule<zwp_locked_pointer_v1*,
-                                                        zwp_pointer_constraints_v1_lock_pointer,
-                                                        zwp_locked_pointer_v1_destroy,
-                                                        struct LockedPointerTag,
-                                                        nullptr>;
-    using ConfinedPointer       = stormkit::RAIICapsule<zwp_confined_pointer_v1*,
-                                                        zwp_pointer_constraints_v1_confine_pointer,
-                                                        zwp_confined_pointer_v1_destroy,
-                                                        struct ConfinedPointerTag,
-                                                        nullptr>;
-    using RelativePointer       = stormkit::RAIICapsule<zwp_relative_pointer_v1*,
-                                                        zwp_relative_pointer_manager_v1_get_relative_pointer,
-                                                        zwp_relative_pointer_v1_destroy,
-                                                        struct RelativePointerTag,
-                                                        nullptr>;
-    using Viewport              = stormkit::
+    using XDGTopLevelDecoration = stormkit::RAIICapsule<
+      zxdg_toplevel_decoration_v1*,
+      zxdg_decoration_manager_v1_get_toplevel_decoration,
+      zxdg_toplevel_decoration_v1_destroy,
+      struct XDGTopLevelDecorationTag,
+      nullptr>;
+    using LockedPointer   = stormkit::RAIICapsule<zwp_locked_pointer_v1*,
+                                                  zwp_pointer_constraints_v1_lock_pointer,
+                                                  zwp_locked_pointer_v1_destroy,
+                                                  struct LockedPointerTag,
+                                                  nullptr>;
+    using ConfinedPointer = stormkit::RAIICapsule<zwp_confined_pointer_v1*,
+                                                  zwp_pointer_constraints_v1_confine_pointer,
+                                                  zwp_confined_pointer_v1_destroy,
+                                                  struct ConfinedPointerTag,
+                                                  nullptr>;
+    using RelativePointer = stormkit::RAIICapsule<zwp_relative_pointer_v1*,
+                                                  zwp_relative_pointer_manager_v1_get_relative_pointer,
+                                                  zwp_relative_pointer_v1_destroy,
+                                                  struct RelativePointerTag,
+                                                  nullptr>;
+    using Viewport        = stormkit::
       RAIICapsule<wp_viewport*, wp_viewporter_get_viewport, wp_viewport_destroy, struct ViewportTag, nullptr>;
     using ContentType = stormkit::RAIICapsule<wp_content_type_v1*,
                                               wp_content_type_manager_v1_get_surface_content_type,

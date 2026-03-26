@@ -37,9 +37,8 @@ namespace stormkit::gpu {
         // constexpr auto VALIDATION_FEATURES = into_array_of<CZString>(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
         //                                                                      VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT);
 
-        constexpr auto STORMKIT_VK_VERSION = vk::make_version<i32>(STORMKIT_MAJOR_VERSION,
-                                                                   STORMKIT_MINOR_VERSION,
-                                                                   STORMKIT_PATCH_VERSION);
+        constexpr auto
+          STORMKIT_VK_VERSION = vk::make_version<i32>(STORMKIT_MAJOR_VERSION, STORMKIT_MINOR_VERSION, STORMKIT_PATCH_VERSION);
 
         constexpr auto BASE_EXTENSIONS = into_array_of<CZString>(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
 #ifdef STORMKIT_OS_APPLE

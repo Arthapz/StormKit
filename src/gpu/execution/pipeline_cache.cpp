@@ -72,10 +72,8 @@ namespace stormkit::gpu {
             .pInitialData    = nullptr,
         };
 
-        m_vk_handle = TryTransformError(vk::call_checked<VkPipelineCache>(device_table.vkCreatePipelineCache,
-                                                                          device,
-                                                                          &create_info,
-                                                                          nullptr),
+        m_vk_handle = TryTransformError(vk::call_checked<
+                                          VkPipelineCache>(device_table.vkCreatePipelineCache, device, &create_info, nullptr),
                                         result_to_load_error);
 
         Return {};
@@ -115,10 +113,8 @@ namespace stormkit::gpu {
             .pInitialData    = stdr::data(data),
         };
 
-        m_vk_handle = TryTransformError(vk::call_checked<VkPipelineCache>(device_table.vkCreatePipelineCache,
-                                                                          device,
-                                                                          &create_info,
-                                                                          nullptr),
+        m_vk_handle = TryTransformError(vk::call_checked<
+                                          VkPipelineCache>(device_table.vkCreatePipelineCache, device, &create_info, nullptr),
                                         result_to_load_error);
 
         Return {};

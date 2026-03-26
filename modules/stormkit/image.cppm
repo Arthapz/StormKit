@@ -682,8 +682,8 @@ namespace stormkit::image {
 
 template<class CharT>
 template<class FormatContext>
-auto std::formatter<stormkit::image::Image::Error, CharT>::format(const stormkit::image::Image::Error& error,
-                                                                  FormatContext& ctx) const noexcept -> decltype(ctx.out()) {
+auto std::formatter<stormkit::image::Image::Error, CharT>::format(const stormkit::image::Image::Error& error, FormatContext& ctx)
+  const noexcept -> decltype(ctx.out()) {
     auto&& out = ctx.out();
     return format_to(out, "{}", error.str_error);
 }

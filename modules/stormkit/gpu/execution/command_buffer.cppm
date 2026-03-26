@@ -438,7 +438,8 @@ namespace stormkit::gpu {
                                                      std::optional<view::Fence>         fence) noexcept -> Expected<void> {
         auto cmbs         = as_views(self);
         auto submit_infos = std::array {
-            Queue::SubmitInfo { .wait_semaphores   = wait_semaphores,
+            Queue::SubmitInfo {
+                               .wait_semaphores   = wait_semaphores,
                                .wait_dst_stages   = wait_dst_stages,
                                .command_buffers   = cmbs,
                                .signal_semaphores = signal_semaphores }

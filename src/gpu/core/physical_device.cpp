@@ -105,16 +105,16 @@ namespace stormkit::gpu {
             capabilities.limits.max_per_stage_descriptor_storage_buffers = properties.limits.maxPerStageDescriptorStorageBuffers;
             capabilities.limits.max_per_stage_descriptor_sampled_images  = properties.limits.maxPerStageDescriptorSampledImages;
             capabilities.limits.max_per_stage_descriptor_storage_images  = properties.limits.maxPerStageDescriptorStorageImages;
-            capabilities.limits
-              .max_per_stage_descriptor_input_attachments          = properties.limits.maxPerStageDescriptorInputAttachments;
+            capabilities.limits.max_per_stage_descriptor_input_attachments
+              = properties.limits.maxPerStageDescriptorInputAttachments;
             capabilities.limits.max_per_stage_resources            = properties.limits.maxPerStageResources;
             capabilities.limits.max_descriptor_set_samplers        = properties.limits.maxDescriptorSetSamplers;
             capabilities.limits.max_descriptor_set_uniform_buffers = properties.limits.maxDescriptorSetUniformBuffers;
-            capabilities.limits
-              .max_descriptor_set_uniform_buffers_dynamic          = properties.limits.maxDescriptorSetUniformBuffersDynamic;
+            capabilities.limits.max_descriptor_set_uniform_buffers_dynamic
+              = properties.limits.maxDescriptorSetUniformBuffersDynamic;
             capabilities.limits.max_descriptor_set_storage_buffers = properties.limits.maxDescriptorSetStorageBuffers;
-            capabilities.limits
-              .max_descriptor_set_storage_buffers_dynamic            = properties.limits.maxDescriptorSetStorageBuffersDynamic;
+            capabilities.limits.max_descriptor_set_storage_buffers_dynamic
+              = properties.limits.maxDescriptorSetStorageBuffersDynamic;
             capabilities.limits.max_descriptor_set_sampled_images    = properties.limits.maxDescriptorSetSampledImages;
             capabilities.limits.max_descriptor_set_storage_images    = properties.limits.maxDescriptorSetStorageImages;
             capabilities.limits.max_descriptor_set_input_attachments = properties.limits.maxDescriptorSetInputAttachments;
@@ -125,25 +125,22 @@ namespace stormkit::gpu {
             capabilities.limits.max_vertex_output_components         = properties.limits.maxVertexOutputComponents;
             capabilities.limits.max_tessellation_generation_level    = properties.limits.maxTessellationGenerationLevel;
             capabilities.limits.max_tessellation_patch_size          = properties.limits.maxTessellationPatchSize;
-            capabilities.limits
-              .max_tessellation_control_per_vertex_input_components = properties.limits
-                                                                        .maxTessellationControlPerVertexInputComponents;
-            capabilities.limits
-              .max_tessellation_control_per_vertex_output_components = properties.limits
-                                                                         .maxTessellationControlPerVertexOutputComponents;
-            capabilities.limits
-              .max_tessellation_control_per_patch_output_components = properties.limits
-                                                                        .maxTessellationControlPerPatchOutputComponents;
-            capabilities.limits
-              .max_tessellation_control_total_output_components = properties.limits.maxTessellationControlTotalOutputComponents;
-            capabilities.limits
-              .max_tessellation_evaluation_input_components = properties.limits.maxTessellationEvaluationInputComponents;
-            capabilities.limits
-              .max_tessellation_evaluation_output_components    = properties.limits.maxTessellationEvaluationOutputComponents;
-            capabilities.limits.max_geometry_shader_invocations = properties.limits.maxGeometryShaderInvocations;
-            capabilities.limits.max_geometry_input_components   = properties.limits.maxGeometryInputComponents;
-            capabilities.limits.max_geometry_output_components  = properties.limits.maxGeometryOutputComponents;
-            capabilities.limits.max_geometry_output_vertices    = properties.limits.maxGeometryOutputVertices;
+            capabilities.limits.max_tessellation_control_per_vertex_input_components
+              = properties.limits.maxTessellationControlPerVertexInputComponents;
+            capabilities.limits.max_tessellation_control_per_vertex_output_components
+              = properties.limits.maxTessellationControlPerVertexOutputComponents;
+            capabilities.limits.max_tessellation_control_per_patch_output_components
+              = properties.limits.maxTessellationControlPerPatchOutputComponents;
+            capabilities.limits.max_tessellation_control_total_output_components
+              = properties.limits.maxTessellationControlTotalOutputComponents;
+            capabilities.limits.max_tessellation_evaluation_input_components
+              = properties.limits.maxTessellationEvaluationInputComponents;
+            capabilities.limits.max_tessellation_evaluation_output_components
+              = properties.limits.maxTessellationEvaluationOutputComponents;
+            capabilities.limits.max_geometry_shader_invocations        = properties.limits.maxGeometryShaderInvocations;
+            capabilities.limits.max_geometry_input_components          = properties.limits.maxGeometryInputComponents;
+            capabilities.limits.max_geometry_output_components         = properties.limits.maxGeometryOutputComponents;
+            capabilities.limits.max_geometry_output_vertices           = properties.limits.maxGeometryOutputVertices;
             capabilities.limits.max_geometry_total_output_components   = properties.limits.maxGeometryTotalOutputComponents;
             capabilities.limits.max_fragment_input_components          = properties.limits.maxFragmentInputComponents;
             capabilities.limits.max_fragment_output_attachments        = properties.limits.maxFragmentOutputAttachments;
@@ -178,24 +175,23 @@ namespace stormkit::gpu {
             capabilities.limits.max_framebuffer_width               = properties.limits.maxFramebufferWidth;
             capabilities.limits.max_framebuffer_height              = properties.limits.maxFramebufferHeight;
             capabilities.limits.max_framebuffer_layers              = properties.limits.maxFramebufferLayers;
-            capabilities.limits
-              .framebuffer_color_sample_counts = narrow<SampleCountFlag>(properties.limits.framebufferColorSampleCounts);
-            capabilities.limits
-              .framebuffer_depth_sample_counts = narrow<SampleCountFlag>(properties.limits.framebufferDepthSampleCounts);
-            capabilities.limits
-              .framebuffer_stencil_sample_counts = narrow<SampleCountFlag>(properties.limits.framebufferStencilSampleCounts);
-            capabilities.limits
-              .framebuffer_no_attachments_sample_counts = narrow<SampleCountFlag>(properties.limits
-                                                                                    .framebufferNoAttachmentsSampleCounts);
-            capabilities.limits.max_color_attachments   = properties.limits.maxColorAttachments;
-            capabilities.limits
-              .sampled_image_color_sample_counts = narrow<SampleCountFlag>(properties.limits.sampledImageColorSampleCounts);
-            capabilities.limits
-              .sampled_image_integer_sample_counts = narrow<SampleCountFlag>(properties.limits.sampledImageIntegerSampleCounts);
-            capabilities.limits
-              .sampled_image_depth_sample_counts = narrow<SampleCountFlag>(properties.limits.sampledImageDepthSampleCounts);
-            capabilities.limits
-              .sampled_image_stencil_sample_counts = narrow<SampleCountFlag>(properties.limits.sampledImageStencilSampleCounts);
+            capabilities.limits.framebuffer_color_sample_counts     = narrow<
+              SampleCountFlag>(properties.limits.framebufferColorSampleCounts);
+            capabilities.limits.framebuffer_depth_sample_counts = narrow<
+              SampleCountFlag>(properties.limits.framebufferDepthSampleCounts);
+            capabilities.limits.framebuffer_stencil_sample_counts = narrow<
+              SampleCountFlag>(properties.limits.framebufferStencilSampleCounts);
+            capabilities.limits.framebuffer_no_attachments_sample_counts = narrow<
+              SampleCountFlag>(properties.limits.framebufferNoAttachmentsSampleCounts);
+            capabilities.limits.max_color_attachments             = properties.limits.maxColorAttachments;
+            capabilities.limits.sampled_image_color_sample_counts = narrow<
+              SampleCountFlag>(properties.limits.sampledImageColorSampleCounts);
+            capabilities.limits.sampled_image_integer_sample_counts = narrow<
+              SampleCountFlag>(properties.limits.sampledImageIntegerSampleCounts);
+            capabilities.limits.sampled_image_depth_sample_counts = narrow<
+              SampleCountFlag>(properties.limits.sampledImageDepthSampleCounts);
+            capabilities.limits.sampled_image_stencil_sample_counts = narrow<
+              SampleCountFlag>(properties.limits.sampledImageStencilSampleCounts);
             capabilities.limits.storage_image_sample_counts = narrow<SampleCountFlag>(properties.limits.storageImageSampleCounts);
             capabilities.limits.max_sample_mask_words       = properties.limits.maxSampleMaskWords;
             capabilities.limits.timestamp_compute_and_engine         = properties.limits.timestampComputeAndGraphics;
@@ -278,8 +274,9 @@ namespace stormkit::gpu {
             const auto  vk_memory_properties = vk::call<VkPhysicalDeviceMemoryProperties>(vkGetPhysicalDeviceMemoryProperties,
                                                                                           handle);
 
-            return transform(std::span { vk_memory_properties.memoryTypes, 32 },
-                             [](const auto& type) static noexcept { return narrow<MemoryPropertyFlag>(type.propertyFlags); });
+            return transform(std::span { vk_memory_properties.memoryTypes, 32 }, [](const auto& type) static noexcept {
+                return narrow<MemoryPropertyFlag>(type.propertyFlags);
+            });
         }
 
         auto queue_families(const PhysicalDeviceImplementation& physical_device) noexcept -> std::vector<QueueFamily> {

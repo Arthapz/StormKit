@@ -414,15 +414,14 @@ namespace stormkit::image {
         m_data.mip_levels        = 1u;
         m_data.format            = format;
 
-        m_data.data
-          .resize(m_data.extent.width
-                  * m_data.extent.height
-                  * m_data.extent.depth
-                  * m_data.layers
-                  * m_data.faces
-                  * m_data.mip_levels
-                  * m_data.channel_count
-                  * m_data.bytes_per_channel);
+        m_data.data.resize(m_data.extent.width
+                           * m_data.extent.height
+                           * m_data.extent.depth
+                           * m_data.layers
+                           * m_data.faces
+                           * m_data.mip_levels
+                           * m_data.channel_count
+                           * m_data.bytes_per_channel);
     }
 
     /////////////////////////////////////

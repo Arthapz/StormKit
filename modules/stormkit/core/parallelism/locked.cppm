@@ -305,10 +305,9 @@ namespace stormkit { inline namespace core {
     template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, typename... LockArgs>
     STORMKIT_FORCE_INLINE
-    auto Locked<T, Mutex>::assign(ConstReferenceType value,
-                                  LockArgs&&... lock_args) noexcept(noexcept(std::is_nothrow_assignable_v<ValueType,
-                                                                                                          ConstReferenceType>))
-      -> void {
+    auto Locked<T, Mutex>::
+      assign(ConstReferenceType value,
+             LockArgs&&... lock_args) noexcept(noexcept(std::is_nothrow_assignable_v<ValueType, ConstReferenceType>)) -> void {
         *write(std::forward<LockArgs>(lock_args)...) = value;
     }
 

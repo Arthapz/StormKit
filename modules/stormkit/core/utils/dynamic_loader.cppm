@@ -100,16 +100,18 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     inline auto DynamicLoader::allocate_and_load(std::filesystem::path filepath) noexcept
       -> Expected<std::unique_ptr<DynamicLoader>> {
-        return load(std::move(filepath))
-          .transform([](auto&& loader) { return std::make_unique<DynamicLoader>(std::move(loader)); });
+        return load(std::move(filepath)).transform([](auto&& loader) {
+            return std::make_unique<DynamicLoader>(std::move(loader));
+        });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Signature>
     inline auto DynamicLoader::func(std::string_view name) const noexcept -> Expected<std::function<Signature>> {
-        return c_func<Signature>(name)
-          .transform([]<typename T>(T&& value) { return std::function<Signature> { std::forward<T>(value) }; });
+        return c_func<Signature>(name).transform([]<typename T>(T&& value) {
+            return std::function<Signature> { std::forward<T>(value) };
+        });
     }
 
     /////////////////////////////////////
@@ -118,8 +120,9 @@ namespace stormkit { inline namespace core {
     inline auto DynamicLoader::c_func(std::string_view name) const noexcept -> Expected<Signature*> {
         EXPECTS(not std::empty(name));
 
-        return do_get_func(name)
-          .transform([]<typename T>(T&& value) { return std::bit_cast<Signature*>(std::forward<T>(value)); });
+        return do_get_func(name).transform([]<typename T>(T&& value) {
+            return std::bit_cast<Signature*>(std::forward<T>(value));
+        });
     }
 
     /////////////////////////////////////

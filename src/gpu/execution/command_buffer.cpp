@@ -127,14 +127,14 @@ namespace stormkit::gpu {
                   vk_rendering_inheritance_info.pColorAttachmentFormats = stdr::data(rendering_color_attachments);
 
                   if (inheritance_info.depth_attachment)
-                      vk_rendering_inheritance_info
-                        .depthAttachmentFormat = gpu::vk::to_vk<VkFormat>(*inheritance_info.depth_attachment);
+                      vk_rendering_inheritance_info.depthAttachmentFormat = gpu::vk::to_vk<
+                        VkFormat>(*inheritance_info.depth_attachment);
                   if (inheritance_info.stencil_attachment)
-                      vk_rendering_inheritance_info
-                        .stencilAttachmentFormat = gpu::vk::to_vk<VkFormat>(*inheritance_info.stencil_attachment);
+                      vk_rendering_inheritance_info.stencilAttachmentFormat = gpu::vk::to_vk<
+                        VkFormat>(*inheritance_info.stencil_attachment);
 
-                  vk_rendering_inheritance_info
-                    .rasterizationSamples = gpu::vk::to_vk<VkSampleCountFlagBits>(inheritance_info.rasterization_samples);
+                  vk_rendering_inheritance_info.rasterizationSamples = gpu::vk::to_vk<
+                    VkSampleCountFlagBits>(inheritance_info.rasterization_samples);
               }
               return info;
           }();
@@ -269,25 +269,22 @@ namespace stormkit::gpu {
                 attachment_info.resolveImageLayout = vk::to_vk<VkImageLayout>(resolve.layout);
             }
             if (attachment.clear_value) {
-                attachment_info
-                  .clearValue = std::visit(Overloaded {
-                                             [](const ClearColor& clear_color) static noexcept -> decltype(auto) {
-                                                 return VkClearValue {
-                                                     .color = VkClearColorValue { .float32 = { clear_color.color.r,
-                                                                                               clear_color.color.b,
-                                                                                               clear_color.color.g,
-                                                                                               clear_color.color.a } },
-                                                 };
-                                             },
-                                             [](const ClearDepthStencil& clear_depth_stencil) static noexcept -> decltype(auto) {
-                                                 return VkClearValue {
-                                                     .depthStencil = VkClearDepthStencilValue { .depth   = clear_depth_stencil
-                                                                                                             .depth,
-                                                                                               .stencil = clear_depth_stencil
-                                                                                                             .stencil },
-                                                 };
-                                             } },
-                                           *attachment.clear_value);
+                attachment_info.clearValue = std::
+                  visit(Overloaded { [](const ClearColor& clear_color) static noexcept -> decltype(auto) {
+                                        return VkClearValue {
+                                            .color = VkClearColorValue { .float32 = { clear_color.color.r,
+                                                                                      clear_color.color.b,
+                                                                                      clear_color.color.g,
+                                                                                      clear_color.color.a } },
+                                        };
+                                    },
+                                     [](const ClearDepthStencil& clear_depth_stencil) static noexcept -> decltype(auto) {
+                                         return VkClearValue {
+                                             .depthStencil = VkClearDepthStencilValue { .depth   = clear_depth_stencil.depth,
+                                                                                       .stencil = clear_depth_stencil.stencil },
+                                         };
+                                     } },
+                        *attachment.clear_value);
             }
 
             return attachment_info;
@@ -333,24 +330,23 @@ namespace stormkit::gpu {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        const auto
-          vk_clear_values = transform(clear_values,
-                                      cmonadic::either(
-                                        [](const ClearColor& clear_color) static noexcept -> decltype(auto) {
-                                            return VkClearValue {
-                                                .color = VkClearColorValue { .float32 = { clear_color.color.r,
-                                                                                          clear_color.color.b,
-                                                                                          clear_color.color.g,
-                                                                                          clear_color.color.a } },
-                                            };
-                                        },
-                                        [](const ClearDepthStencil& clear_depth_stencil) static noexcept -> decltype(auto) {
-                                            return VkClearValue {
-                                                .depthStencil = VkClearDepthStencilValue { .depth   = clear_depth_stencil.depth,
-                                                                                          .stencil = clear_depth_stencil
-                                                                                                        .stencil },
-                                            };
-                                        }));
+        const auto vk_clear_values = transform(
+          clear_values,
+          cmonadic::either(
+            [](const ClearColor& clear_color) static noexcept -> decltype(auto) {
+                return VkClearValue {
+                    .color = VkClearColorValue { .float32 = { clear_color.color.r,
+                                                              clear_color.color.b,
+                                                              clear_color.color.g,
+                                                              clear_color.color.a } },
+                };
+            },
+            [](const ClearDepthStencil& clear_depth_stencil) static noexcept -> decltype(auto) {
+                return VkClearValue {
+                    .depthStencil = VkClearDepthStencilValue { .depth   = clear_depth_stencil.depth,
+                                                              .stencil = clear_depth_stencil.stencil },
+                };
+            }));
 
         const auto begin_info = VkRenderPassBeginInfo {
             .sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -421,8 +417,9 @@ namespace stormkit::gpu {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        const auto bind_point = (pipeline.type() == Pipeline::Type::RASTER) ? VK_PIPELINE_BIND_POINT_GRAPHICS
-                                                                            : VK_PIPELINE_BIND_POINT_COMPUTE;
+        const auto bind_point = (pipeline.type() == Pipeline::Type::RASTER)
+                                  ? VK_PIPELINE_BIND_POINT_GRAPHICS
+                                  : VK_PIPELINE_BIND_POINT_COMPUTE;
 
         vk::call(device_table.vkCmdBindPipeline, *this, bind_point, pipeline);
         return *this;
@@ -602,11 +599,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::draw_indexed(u32 index_count,
-                                                    u32 instance_count,
-                                                    u32 first_index,
-                                                    i32 vertex_offset,
-                                                    u32 first_instance) const noexcept -> const CommandBufferInterface& {
+    auto CommandBufferInterface<Base>::
+      draw_indexed(u32 index_count, u32 instance_count, u32 first_index, i32 vertex_offset, u32 first_instance) const noexcept
+      -> const CommandBufferInterface& {
         EXPECTS(index_count > 0);
 
         const auto state = this->state();
@@ -656,9 +651,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::bind_vertex_buffers(std::span<const view::Buffer> buffers,
-                                                           std::span<const u64>          offsets) const noexcept
-      -> const CommandBufferInterface& {
+    auto CommandBufferInterface<Base>::bind_vertex_buffers(std::span<const view::Buffer> buffers, std::span<const u64> offsets)
+      const noexcept -> const CommandBufferInterface& {
         EXPECTS(not std::empty(buffers));
         EXPECTS(std::size(buffers) == std::size(offsets));
 
@@ -712,8 +706,9 @@ namespace stormkit::gpu {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        const auto bind_point = (pipeline.type() == Pipeline::Type::RASTER) ? VK_PIPELINE_BIND_POINT_GRAPHICS
-                                                                            : VK_PIPELINE_BIND_POINT_COMPUTE;
+        const auto bind_point = (pipeline.type() == Pipeline::Type::RASTER)
+                                  ? VK_PIPELINE_BIND_POINT_GRAPHICS
+                                  : VK_PIPELINE_BIND_POINT_COMPUTE;
 
         const auto vk_descriptor_sets = transform(descriptor_sets, vk::monadic::to_vk());
 
@@ -775,12 +770,14 @@ namespace stormkit::gpu {
                 .layerCount     = buffer_image_copy.subresource_layers.layer_count,
             };
 
-            return VkBufferImageCopy { .bufferOffset      = buffer_image_copy.buffer_offset,
-                                       .bufferRowLength   = buffer_image_copy.buffer_row_length,
-                                       .bufferImageHeight = buffer_image_copy.buffer_image_height,
-                                       .imageSubresource  = image_subresource,
-                                       .imageOffset       = vk::to_vk<VkOffset3D>(buffer_image_copy.offset),
-                                       .imageExtent       = vk::to_vk(buffer_image_copy.extent) };
+            return VkBufferImageCopy {
+                .bufferOffset      = buffer_image_copy.buffer_offset,
+                .bufferRowLength   = buffer_image_copy.buffer_row_length,
+                .bufferImageHeight = buffer_image_copy.buffer_image_height,
+                .imageSubresource  = image_subresource,
+                .imageOffset       = vk::to_vk<VkOffset3D>(buffer_image_copy.offset),
+                .imageExtent       = vk::to_vk(buffer_image_copy.extent)
+            };
         });
 
         vk::call(device_table.vkCmdCopyBufferToImage,
@@ -820,12 +817,14 @@ namespace stormkit::gpu {
                 .layerCount     = buffer_image_copy.subresource_layers.layer_count,
             };
 
-            return VkBufferImageCopy { .bufferOffset      = buffer_image_copy.buffer_offset,
-                                       .bufferRowLength   = buffer_image_copy.buffer_row_length,
-                                       .bufferImageHeight = buffer_image_copy.buffer_image_height,
-                                       .imageSubresource  = image_subresource,
-                                       .imageOffset       = vk::to_vk<VkOffset3D>(buffer_image_copy.offset),
-                                       .imageExtent       = vk::to_vk(buffer_image_copy.extent) };
+            return VkBufferImageCopy {
+                .bufferOffset      = buffer_image_copy.buffer_offset,
+                .bufferRowLength   = buffer_image_copy.buffer_row_length,
+                .bufferImageHeight = buffer_image_copy.buffer_image_height,
+                .imageSubresource  = image_subresource,
+                .imageOffset       = vk::to_vk<VkOffset3D>(buffer_image_copy.offset),
+                .imageExtent       = vk::to_vk(buffer_image_copy.extent)
+            };
         });
 
         vk::call(device_table.vkCmdCopyImageToBuffer,

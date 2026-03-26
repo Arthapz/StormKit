@@ -307,18 +307,19 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsCharType = IsAnyOf<T, char, wchar_t, char8_t, char16_t, char32_t>;
 
     template<class T>
-    concept IsColorComponent = IsAnyOf<T,
-                                       float,
-                                       std::uint8_t
+    concept IsColorComponent = IsAnyOf<
+      T,
+      float,
+      std::uint8_t
 #ifdef __STDCPP_FLOAT32_T__
-                                       ,
-                                       std::float32_t
+      ,
+      std::float32_t
 #endif
 #ifdef __STDCPP_FLOAT64_T__
-                                       ,
-                                       std::float64_t
+      ,
+      std::float64_t
 #endif
-                                       >;
+      >;
 
     template<class T>
     concept IsConst = std::is_const_v<T>;

@@ -480,8 +480,8 @@ namespace stormkit::gpu {
     template<meta::GpuObjectHasTraitDefined Tag>
         requires(meta::HasOwnerType<Tag>)
     STORMKIT_FORCE_INLINE
-    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const GpuObjectViewImplementation&
-                                                                           other) noexcept = default;
+    inline GpuObjectViewImplementation<
+      Tag>::GpuObjectViewImplementation(const GpuObjectViewImplementation& other) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

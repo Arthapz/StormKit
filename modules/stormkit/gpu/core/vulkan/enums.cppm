@@ -877,10 +877,9 @@ export {
     }
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation
-                                                                                       value) noexcept -> std::string_view {
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto stormkit::core::as_string<
+      stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation value) noexcept -> std::string_view {
         switch (value) {
             case stormkit::gpu::AttachmentLoadOperation::CLEAR: return "AttachmentLoadOperation::CLEAR";
             case stormkit::gpu::AttachmentLoadOperation::DONT_CARE: return "AttachmentLoadOperation::DONT_CARE";
@@ -891,8 +890,8 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation
-                                                                                       value) noexcept -> std::string {
+    constexpr auto stormkit::core::to_string<
+      stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation value) noexcept -> std::string {
         switch (value) {
             case stormkit::gpu::AttachmentLoadOperation::CLEAR: return "AttachmentLoadOperation::CLEAR";
             case stormkit::gpu::AttachmentLoadOperation::DONT_CARE: return "AttachmentLoadOperation::DONT_CARE";
@@ -914,10 +913,9 @@ export {
     }
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation
-                                                                                        value) noexcept -> std::string_view {
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto stormkit::core::as_string<
+      stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation value) noexcept -> std::string_view {
         switch (value) {
             case stormkit::gpu::AttachmentStoreOperation::DONT_CARE: return "AttachmentStoreOperation::DONT_CARE";
             case stormkit::gpu::AttachmentStoreOperation::STORE: return "AttachmentStoreOperation::STORE";
@@ -927,8 +925,8 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation
-                                                                                        value) noexcept -> std::string {
+    constexpr auto stormkit::core::to_string<
+      stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation value) noexcept -> std::string {
         switch (value) {
             case stormkit::gpu::AttachmentStoreOperation::DONT_CARE: return "AttachmentStoreOperation::DONT_CARE";
             case stormkit::gpu::AttachmentStoreOperation::STORE: return "AttachmentStoreOperation::STORE";

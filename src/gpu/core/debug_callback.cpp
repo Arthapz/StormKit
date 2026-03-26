@@ -44,10 +44,8 @@ namespace stormkit::gpu {
             .pUserData       = user_data,
         };
 
-        m_vk_handle = Try(vk::call_checked<VkDebugUtilsMessengerEXT>(vkCreateDebugUtilsMessengerEXT,
-                                                                     owner(),
-                                                                     &create_info,
-                                                                     nullptr));
+        m_vk_handle = Try(vk::call_checked<
+                          VkDebugUtilsMessengerEXT>(vkCreateDebugUtilsMessengerEXT, owner(), &create_info, nullptr));
         Return {};
     }
 } // namespace stormkit::gpu

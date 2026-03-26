@@ -80,14 +80,14 @@ namespace stormkit::gpu {
         const auto& device_table = device.device_table();
 
         auto       id     = u32 { 0 };
-        const auto result = Try((vk::call_checked<VkResult, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR>(device_table
-                                                                                                           .vkAcquireNextImageKHR,
-                                                                                                         device,
-                                                                                                         *this,
-                                                                                                         wait.count(),
-                                                                                                         image_available,
-                                                                                                         nullptr,
-                                                                                                         &id)));
+        const auto result = Try((vk::call_checked<VkResult, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR>(
+          device_table.vkAcquireNextImageKHR,
+          device,
+          *this,
+          wait.count(),
+          image_available,
+          nullptr,
+          &id)));
         Return     SwapChain::NextImage { .result = vk::from_vk<Result>(result), .id = id };
     }
 

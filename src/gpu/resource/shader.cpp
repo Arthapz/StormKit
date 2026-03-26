@@ -36,10 +36,8 @@ namespace stormkit::gpu {
         };
 
         const auto& device = owner();
-        m_vk_handle        = Try(vk::call_checked<VkShaderModule>(device.device_table().vkCreateShaderModule,
-                                                                  device,
-                                                                  &create_info,
-                                                                  nullptr));
+        m_vk_handle        = Try(vk::call_checked<
+                                 VkShaderModule>(device.device_table().vkCreateShaderModule, device, &create_info, nullptr));
         Return {};
     }
 } // namespace stormkit::gpu

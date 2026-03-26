@@ -226,8 +226,9 @@ namespace stormkit { inline namespace core {
       -> meta::ForwardLike<Self, VertexValue> {
         expects(self.has_vertex(id), std::format("Unknown DAG vertex id: {}!", id));
 
-        return std::forward_like<Self>(stdr::find_if(self.m_vertices, [id](const auto& other) noexcept { return other.id == id; })
-                                         ->value);
+        return std::forward_like<Self>(stdr::find_if(self.m_vertices, [id](const auto& other) noexcept {
+                                           return other.id == id;
+                                       })->value);
     }
 
     ////////////////////////////////////////
@@ -338,8 +339,9 @@ namespace stormkit { inline namespace core {
     constexpr auto DAG<VertexValue>::adjacent_edges(dag::VertexID id) const noexcept -> const std::vector<dag::Edge>& {
         expects(has_vertex(id), std::format("Unknown DAG vertex id: {}!", id));
 
-        const auto& adjacent_edges = stdr::find_if(m_adjacent_edges, [id](const auto& pair) noexcept { return pair.first == id; })
-                                       ->second;
+        const auto& adjacent_edges = stdr::find_if(m_adjacent_edges, [id](const auto& pair) noexcept {
+                                         return pair.first == id;
+                                     })->second;
         return adjacent_edges;
     }
 
@@ -502,10 +504,12 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename VertexValue>
     constexpr auto DAG<VertexValue>::dump(Closures closures) const noexcept -> std::string {
-        auto out = std::string { "digraph G {\n"
-                                 "    rankdir = LR\n"
-                                 "    bgcolor = black\n"
-                                 "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n" };
+        auto out = std::string {
+            "digraph G {\n"
+            "    rankdir = LR\n"
+            "    bgcolor = black\n"
+            "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n"
+        };
 
         if (closures.format_value)
             for (const auto& [id, value] : m_vertices) {

@@ -239,7 +239,8 @@ namespace stormkit::image::details {
         auto rows = std::vector<Byte*> { data.extent.height, nullptr };
         for (auto i : range(data.extent.height))
             rows[i] = const_cast<
-              Byte*>(&data.data[i * data.extent.width * data.channel_count * data.bytes_per_channel]); // TODO Fix this shit
+              Byte*>(&data.data[i * data.extent.width * data.channel_count * data.bytes_per_channel]); // TODO Fix
+                                                                                                       // this shit
 
         png_set_rows(png_ptr, info_ptr, std::bit_cast<png_bytepp>(std::data(rows)));
         png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, nullptr);

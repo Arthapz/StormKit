@@ -562,8 +562,10 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     template<meta::IsMat T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto as_view(const T& value) noexcept -> std::span<const typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
-        return std::span<const typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> { stdr::data(value),
-                                                                                       T::EXTENTS[0] * T::EXTENTS[1] };
+        return std::span<const typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
+            stdr::data(value),
+            T::EXTENTS[0] * T::EXTENTS[1]
+        };
     }
 
     ////////////////////////////////////////
@@ -571,8 +573,10 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     template<meta::IsMat T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto as_view_mut(T& value) noexcept -> std::span<typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
-        return std::span<typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> { stdr::data(value),
-                                                                                 T::EXTENTS[0] * T::EXTENTS[1] };
+        return std::span<typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
+            stdr::data(value),
+            T::EXTENTS[0] * T::EXTENTS[1]
+        };
     }
 
     ////////////////////////////////////////

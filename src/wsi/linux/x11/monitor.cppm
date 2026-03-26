@@ -61,10 +61,9 @@ namespace stormkit::wsi::linux::x11 {
                 auto outputs = xcb_randr_monitor_info_outputs(monitor_info);
 
                 for (auto j : range(len)) {
-                    auto output_cookie = xcb_randr_get_output_info(globals.connection,
-                                                                   outputs[j],
-                                                                   xcb_monitors.handle()->timestamp);
-                    auto output        = Output::create(globals.connection, output_cookie, nullptr);
+                    auto
+                      output_cookie = xcb_randr_get_output_info(globals.connection, outputs[j], xcb_monitors.handle()->timestamp);
+                    auto output     = Output::create(globals.connection, output_cookie, nullptr);
 
                     if (!output) continue;
                     if (output.handle()->connection != XCB_RANDR_CONNECTION_CONNECTED) continue;

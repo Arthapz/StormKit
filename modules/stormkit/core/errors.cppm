@@ -164,8 +164,8 @@ namespace std {
     template<typename T, class CharT>
     template<class FormatContext>
     STORMKIT_FORCE_INLINE
-    inline auto formatter<stormkit::core::Error<T>, CharT>::format(const stormkit::core::Error<T>& error,
-                                                                   FormatContext& ctx) const -> decltype(ctx.out()) {
+    inline auto formatter<stormkit::core::Error<T>, CharT>::format(const stormkit::core::Error<T>& error, FormatContext& ctx)
+      const -> decltype(ctx.out()) {
         return formatter<T>::format(error.code, ctx);
     }
 

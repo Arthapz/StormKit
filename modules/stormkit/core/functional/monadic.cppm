@@ -332,8 +332,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_PURE
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto either(meta::IsUnaryPredicate<T> auto&& predicate,
                           std::invocable<T> auto&&         true_,
                           std::invocable<T> auto&&         false_) noexcept -> decltype(auto) {
