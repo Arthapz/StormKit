@@ -23,7 +23,7 @@ namespace stormkit {
         m_workers.reserve(m_worker_count);
         for (const auto i : range(m_worker_count)) {
             auto& thread = m_workers.emplace_back([this] { worker_main(); });
-            set_thread_name(thread, std::format("StormKit:WorkerThread:{}", i));
+            set_thread_name(thread, std::format("stormkit:worker_thread:{}", i));
         }
     }
 
@@ -48,7 +48,7 @@ namespace stormkit {
         m_workers.reserve(m_worker_count);
         for (const auto i : range(m_worker_count)) {
             auto& thread = m_workers.emplace_back([this] { worker_main(); });
-            set_thread_name(thread, std::format("StormKit:WorkerThread:{}", i));
+            set_thread_name(thread, std::format("stormkit:worker_thread:{}", i));
         }
 
         return *this;

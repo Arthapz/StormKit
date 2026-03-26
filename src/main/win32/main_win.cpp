@@ -86,7 +86,7 @@ auto __stdcall main(int argc, char** argv) -> int {
     redirect_io_to_console(false);
 
     setup_signal_handler();
-    set_current_thread_name("MainThread");
+    set_current_thread_name("stormkit:main_thread");
 
     return user_main(args);
 }
@@ -103,7 +103,7 @@ auto __stdcall WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int {
     const auto has_allocated = redirect_io_to_console(false);
 
     setup_signal_handler();
-    set_current_thread_name("MainThread");
+    set_current_thread_name("stormkit:main_thread");
 
     const auto ret_value = user_main(args);
     if (has_allocated) ::FreeConsole();
