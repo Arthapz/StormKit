@@ -113,7 +113,7 @@ namespace stormkit { inline namespace core {
 
         for (auto i : range(m_worker_count)) {
             auto& worker = m_workers.emplace_back([this] { worker_main(); });
-            set_thread_name(worker, std::format("StormKit:WorkerThread:{}", i));
+            set_thread_name(worker, std::format("stormkit:worker_thread:{}", i));
         }
     }
 

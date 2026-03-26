@@ -1,6 +1,7 @@
 module;
 
 #include <pthread.h>
+#include <sys/prctl.h>
 
 module stormkit.core;
 
@@ -26,8 +27,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto set_current_thread_name(std::string_view name) noexcept -> void {
-        const auto id = pthread_self();
-        details::set_thread_name(id, name);
+        prctl(PR_SET_NAME, stdr::data(name), 0, 0, 0);
     }
 
     ////////////////////////////////////////
