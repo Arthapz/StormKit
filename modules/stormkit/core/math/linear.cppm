@@ -557,13 +557,13 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(translation.data_handle() != out.data_handle());
 
-        for (auto i = 0u; i < 3; ++i)
-            for (auto j = 0u; j < 3; ++j) out[i, j] = a[i, j];
-
-        out[3, 0] = a[0, 0] * translation[0] + a[1, 0] * translation[1] + a[2, 0] * translation[2] + a[3, 0];
-        out[3, 1] = a[0, 1] * translation[0] + a[1, 1] * translation[1] + a[2, 1] * translation[2] + a[3, 1];
-        out[3, 2] = a[0, 2] * translation[0] + a[1, 2] * translation[1] + a[2, 2] * translation[2] + a[3, 2];
-        out[3, 3] = a[0, 3] * translation[0] + a[1, 3] * translation[1] + a[2, 3] * translation[2] + a[3, 3];
+        out[0, 3] = a[0, 3]
+                    + translation[0]; // a[0, 0] * translation[0] + a[1, 0] * translation[1] + a[2, 0] * translation[2] + a[3, 0];
+        out[1, 3] = a[1, 3]
+                    + translation[1]; // a[0, 1] * translation[0] + a[1, 1] * translation[1] + a[2, 1] * translation[2] + a[3, 1];
+        out[2, 3] = a[2, 3]
+                    + translation[2]; // a[0, 2] * translation[0] + a[1, 2] * translation[1] + a[2, 2] * translation[2] + a[3, 2];
+        // out[3, 3] = a[0, 3] * translation[0] + a[1, 3] * translation[1] + a[2, 3] * translation[2] + a[3, 3];
     }
 
     ////////////////////////////////////////
@@ -576,23 +576,23 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(scale.data_handle() != out.data_handle());
 
         out[0, 0] = a[0, 0] * scale[0];
-        out[0, 1] = a[0, 1] * scale[0];
-        out[0, 2] = a[0, 2] * scale[0];
-        out[0, 3] = a[0, 3] * scale[0];
+        out[1, 0] = a[1, 0] * scale[0];
+        out[2, 0] = a[2, 0] * scale[0];
+        out[3, 0] = a[3, 0] * scale[0];
 
-        out[1, 0] = a[1, 0] * scale[1];
+        out[0, 1] = a[0, 1] * scale[1];
         out[1, 1] = a[1, 1] * scale[1];
-        out[1, 2] = a[1, 2] * scale[1];
-        out[1, 3] = a[1, 3] * scale[1];
+        out[2, 1] = a[2, 1] * scale[1];
+        out[3, 1] = a[3, 1] * scale[1];
 
-        out[2, 0] = a[2, 0] * scale[2];
-        out[2, 1] = a[2, 1] * scale[2];
+        out[0, 2] = a[0, 2] * scale[2];
+        out[1, 2] = a[1, 2] * scale[2];
         out[2, 2] = a[2, 2] * scale[2];
-        out[2, 3] = a[2, 3] * scale[2];
+        out[3, 2] = a[3, 2] * scale[2];
 
-        out[3, 0] = a[3, 0];
-        out[3, 1] = a[3, 1];
-        out[3, 2] = a[3, 2];
+        out[0, 3] = a[0, 3];
+        out[1, 3] = a[1, 3];
+        out[2, 3] = a[2, 3];
         out[3, 3] = a[3, 3];
     }
 
@@ -631,15 +631,15 @@ namespace stormkit { inline namespace core { namespace math {
         auto rotation_matrix_ = as_mdspan_mut<4, 4>(rotation_matrix);
 
         rotation_matrix_[0, 0] = cos + temp[0] * axis_norm[0];
-        rotation_matrix_[0, 1] = temp[0] * axis_norm[1] + sin * axis_norm[2];
-        rotation_matrix_[0, 2] = temp[0] * axis_norm[2] - sin * axis_norm[1];
+        rotation_matrix_[1, 0] = temp[0] * axis_norm[1] + sin * axis_norm[2];
+        rotation_matrix_[2, 0] = temp[0] * axis_norm[2] - sin * axis_norm[1];
 
-        rotation_matrix_[1, 0] = temp[1] * axis_norm[0] - sin * axis_norm[2];
+        rotation_matrix_[0, 1] = temp[1] * axis_norm[0] - sin * axis_norm[2];
         rotation_matrix_[1, 1] = cos + temp[1] * axis_norm[1];
-        rotation_matrix_[1, 2] = temp[1] * axis_norm[2] + sin * axis_norm[0];
+        rotation_matrix_[2, 1] = temp[1] * axis_norm[2] + sin * axis_norm[0];
 
-        rotation_matrix_[2, 0] = temp[2] * axis_norm[0] + sin * axis_norm[1];
-        rotation_matrix_[2, 1] = temp[2] * axis_norm[1] - sin * axis_norm[0];
+        rotation_matrix_[0, 2] = temp[2] * axis_norm[0] + sin * axis_norm[1];
+        rotation_matrix_[1, 2] = temp[2] * axis_norm[1] - sin * axis_norm[0];
         rotation_matrix_[2, 2] = cos + temp[2] * axis_norm[2];
 
         // TODO replace by mul when submdspan is available
@@ -647,9 +647,9 @@ namespace stormkit { inline namespace core { namespace math {
             for (auto j = 0u; j < 3; ++j)
                 for (auto k = 0u; k < 3; ++k) out[i, j] += a[i, k] * rotation_matrix_[k, j];
 
-        out[3, 0] = a[3, 0];
-        out[3, 1] = a[3, 1];
-        out[3, 2] = a[3, 2];
+        out[0, 3] = a[0, 3];
+        out[1, 3] = a[1, 3];
+        out[2, 3] = a[2, 3];
         out[3, 3] = a[3, 3];
     }
 

@@ -478,7 +478,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     template<typename T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto translate(const mat4x4<T>& mat, const vec3<T>& translation) noexcept -> mat4x4<T> {
-        auto out = mat4x4<T> {};
+        auto out = auto(mat);
 
         math::translate(as_mdspan(mat), as_mdspan(translation), as_mdspan_mut(out));
 
@@ -490,7 +490,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     template<typename T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto scale(const mat4x4<T>& mat, const vec3<T>& scale_factors) noexcept -> mat4x4<T> {
-        auto out = mat4x4<T> {};
+        auto out = auto(mat);
 
         math::scale(as_mdspan(mat), as_mdspan(scale_factors), as_mdspan_mut(out));
 
@@ -502,7 +502,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     template<typename T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto rotate(const mat4x4<T>& mat, angle::radian<T> angle, const vec3<T>& axis) noexcept -> mat4x4<T> {
-        auto out = mat4x4<T> {};
+        auto out = auto(mat);
 
         math::rotate(as_mdspan(mat), angle, as_mdspan(axis), as_mdspan_mut(out));
 
