@@ -99,7 +99,7 @@ namespace stormkit::gpu {
         };
 
         const auto create_surface =
-          [&window, &make_wayland_surface, &make_xcb_surface] noexcept -> FunctionRef<Expected<VkSurfaceKHR>()> {
+          [&window, &make_wayland_surface, &make_xcb_surface] noexcept -> std23::function_ref<Expected<VkSurfaceKHR>()> {
             const auto is_wayland = window.wm() == wsi::WM::WAYLAND;
 
             if (is_wayland) return make_wayland_surface;

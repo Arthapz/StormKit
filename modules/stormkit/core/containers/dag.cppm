@@ -19,7 +19,7 @@ import :typesafe.byte;
 import :typesafe.safecasts;
 import :utils.handle;
 import :utils.contract;
-import :utils.function_ref;
+import :utils.std23_functional;
 import :utils.filesystem;
 import :string.format;
 
@@ -46,8 +46,8 @@ export namespace stormkit { inline namespace core {
     class DAG {
       public:
         using Vertex             = dag::Vertex<VertexValue>;
-        using ColorizeClosure    = FunctionRef<std::string(const VertexValue&)>;
-        using FormatValueClosure = FunctionRef<std::string(const VertexValue&)>;
+        using ColorizeClosure    = std23::function_ref<std::string(const VertexValue&)>;
+        using FormatValueClosure = std23::function_ref<std::string(const VertexValue&)>;
 
         using ValueType = Vertex;
 

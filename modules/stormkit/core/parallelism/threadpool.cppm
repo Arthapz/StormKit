@@ -15,6 +15,7 @@ import :parallelism.threadutils;
 
 import :meta;
 
+import :utils.std23_functional;
 import :utils.numeric_range;
 import :typesafe.integer;
 
@@ -25,8 +26,7 @@ export namespace stormkit { inline namespace core {
         } NO_FUTURE = {};
 
         template<class T>
-        using Closure = std::function<T()>;
-        // using Closure = std::move_only_function<T()>;
+        using Closure = std23::move_only_function<T()>;
 
         explicit ThreadPool(u32 worker_count = std::thread::hardware_concurrency() / 2);
         ~ThreadPool();
@@ -62,13 +62,13 @@ export namespace stormkit { inline namespace core {
 
             Task() = default;
 
-            inline Task(Type _type, std::function<void()> _work) : type { _type }, work { std::move(_work) } {}
+            inline Task(Type _type, std23::move_only_function<void()>&& _work) : type { _type }, work { std::move(_work) } {}
 
             Task(Task&&) noexcept                    = default;
             auto operator=(Task&&) noexcept -> Task& = default;
 
-            Type                  type;
-            std::function<void()> work;
+            Type                              type;
+            std23::move_only_function<void()> work;
         };
 
         template<class T>
@@ -181,7 +181,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T>
     inline auto ThreadPool::post_task(Task::Type type, Closure<T> closure, NoFutureType) noexcept -> void {
-        auto task = Task { type, [task = std::move(closure)]() { task(); } };
+        auto task = Task { type, [task = std::move(closure)]() mutable noexcept { task(); } };
 
         {
             auto lock = std::unique_lock { m_mutex };

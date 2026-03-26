@@ -1,6 +1,6 @@
 add_requires("frozen", { system = false, configs = { modules = true, std_import = true, cpp = "latest" } })
 add_requires("unordered_dense", { system = false, configs = { modules = true, std_import = true } })
-add_requires("tl_function_ref", { system = false, configs = { modules = true, std_import = true } })
+add_requires("nontype_functional")
 
 local src_core_dir = path.join(src_dir, "core")
 local module_core_dir = path.join(module_dir, "core")
@@ -38,7 +38,7 @@ target("core", function()
     add_headerfiles(path.join(include_dir, "(stormkit/core/**.hpp)"), "$(builddir)/.gens/include/(stormkit/core/*.hpp)")
     add_includedirs(include_dir, { public = true })
 
-    add_packages("frozen", "unordered_dense", "tl_function_ref", { public = true })
+    add_packages("frozen", "unordered_dense", "nontype_functional", { public = true })
 
     on_config(function(target)
         local output, errors = os.iorunv("git", { "rev-parse", "--abbrev-ref", "HEAD" })

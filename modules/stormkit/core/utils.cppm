@@ -12,7 +12,7 @@ export import :utils.color;
 export import :utils.deferinit;
 export import :utils.dynamic_loader;
 export import :utils.filesystem;
-export import :utils.function_ref;
+export import :utils.std23_functional;
 export import :utils.handle;
 export import :utils.numeric_range;
 export import :utils.pimpl;

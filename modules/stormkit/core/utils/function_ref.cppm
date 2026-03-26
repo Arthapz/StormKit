@@ -1,12 +1,11 @@
 module;
 
-#include <tl/function_ref.hpp>
+#include <std23/function_ref.h>
+#include <std23/move_only_function.h>
 
-export module stormkit.core:utils.function_ref;
+export module stormkit.core:utils.std23_functional;
 
-export namespace stormkit { inline namespace core {
-    using tl::swap;
-
-    template<typename F>
-    using FunctionRef = tl::function_ref<F>;
-}} // namespace stormkit::core
+export namespace std23 {
+    using std23::function_ref;
+    using std23::move_only_function;
+} // namespace std23

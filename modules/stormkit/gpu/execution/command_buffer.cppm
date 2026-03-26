@@ -117,7 +117,7 @@ namespace stormkit::gpu {
             RECORDING,
             EXECUTABLE,
         };
-        using RecordClosure = FunctionRef<void(view::CommandBuffer)>;
+        using RecordClosure = std23::function_ref<void(view::CommandBuffer)>;
     };
 
     export {

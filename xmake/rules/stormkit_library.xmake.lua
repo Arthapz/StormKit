@@ -9,7 +9,7 @@ namespace("stormkit", function()
             local stormkit_components_set = hashset.from(stormkit_components)
 
             -- core --
-            target:add("packages", "frozen", "unordered_dense", "tl_function_ref")
+            target:add("packages", "frozen", "unordered_dense", "nontype_functional")
 
             if stormkit_components_set:has("image") then target:add("packages", "libktx", "libpng", "libjpeg-turbo") end
             if stormkit_components_set:has("wsi") then

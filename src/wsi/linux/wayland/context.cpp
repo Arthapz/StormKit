@@ -84,9 +84,9 @@ namespace stormkit::wsi::linux::wayland::wl {
 
         struct RegistryBinder {
             const wl_interface*                interface;
-            FunctionRef<void(Globals&, void*)> bind;
+            std23::function_ref<void(Globals&, void*)> bind;
             u32                                version    = 1;
-            FunctionRef<void(Globals&, void*)> after_bind = monadic::noop();
+            std23::function_ref<void(Globals&, void*)> after_bind = monadic::noop();
         };
 
         /////////////////////////////////////
