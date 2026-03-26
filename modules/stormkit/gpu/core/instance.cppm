@@ -24,6 +24,8 @@ import :base;
 import :structs;
 import :objects;
 
+namespace cmonadic = stormkit::core::monadic;
+
 namespace stormkit::gpu {
     export {
         template<typename Base>
@@ -36,9 +38,11 @@ namespace stormkit::gpu {
             [[nodiscard]]
             auto check_extension_support(std::string_view extension) const noexcept -> bool;
             [[nodiscard]]
-            auto check_extension_support(std::span<const std::string_view> extensions) const noexcept -> bool;
+            auto check_extension_support(std::span<const std::string_view> extensions) const noexcept
+              -> std::optional<HashSet<std::string_view>>;
             [[nodiscard]]
-            auto check_extension_support(std::span<const CZString> extensions) const noexcept -> bool;
+            auto check_extension_support(std::span<const CZString> extensions) const noexcept
+              -> std::optional<HashSet<std::string_view>>;
 
             [[nodiscard]]
             auto info() const noexcept -> const PhysicalDeviceInfo&;
@@ -198,24 +202,23 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     inline auto PhysicalDeviceInterface<Base>::check_extension_support(std::span<const std::string_view> extensions)
-      const noexcept -> bool {
+      const noexcept -> std::optional<HashSet<std::string_view>> {
         auto required_extensions = HashSet<std::string_view> { stdr::begin(extensions), stdr::end(extensions) };
 
         for (const auto& extension : this->extensions()) required_extensions.erase(extension);
 
-        return stdr::empty(required_extensions);
+        if (not required_extensions.empty()) return required_extensions;
+
+        return std::nullopt;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
     inline auto PhysicalDeviceInterface<Base>::check_extension_support(std::span<const CZString> extensions) const noexcept
-      -> bool {
-        auto required_extensions = HashSet<std::string_view> { stdr::begin(extensions), stdr::end(extensions) };
-
-        for (const auto& extension : this->extensions()) required_extensions.erase(extension);
-
-        return stdr::empty(required_extensions);
+      -> std::optional<HashSet<std::string_view>> {
+        const auto ext = transform(extensions, cmonadic::init<std::string_view>());
+        return check_extension_support(ext);
     }
 
     /////////////////////////////////////

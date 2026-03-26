@@ -258,22 +258,24 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    export struct ImageMemoryBarrier {
-        AccessFlag src;
-        AccessFlag dst;
+    export {
+        struct ImageMemoryBarrier {
+            AccessFlag src;
+            AccessFlag dst;
 
-        ImageLayout old_layout;
-        ImageLayout new_layout;
+            ImageLayout old_layout;
+            ImageLayout new_layout;
 
-        u32 src_queue_family_index = QUEUE_FAMILY_IGNORED;
-        u32 dst_queue_family_index = QUEUE_FAMILY_IGNORED;
+            u32 src_queue_family_index = QUEUE_FAMILY_IGNORED;
+            u32 dst_queue_family_index = QUEUE_FAMILY_IGNORED;
 
-        view::Image           image;
-        ImageSubresourceRange range;
-    };
+            view::Image           image;
+            ImageSubresourceRange range;
+        };
 
-    template<core::meta::HashType Ret = hash32>
-    constexpr auto hasher(const Image::CreateInfo& value) noexcept -> Ret;
+        template<core::meta::HashType Ret = hash32>
+        constexpr auto hasher(const Image::CreateInfo& value) noexcept -> Ret;
+    }
 } // namespace stormkit::gpu
 
 ////////////////////////////////////////////////////////////////////

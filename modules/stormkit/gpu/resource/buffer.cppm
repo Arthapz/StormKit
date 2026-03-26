@@ -141,17 +141,22 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    export struct BufferMemoryBarrier {
-        AccessFlag src;
-        AccessFlag dst;
+    export {
+        struct BufferMemoryBarrier {
+            AccessFlag src;
+            AccessFlag dst;
 
-        u32 src_queue_family_index = QUEUE_FAMILY_IGNORED;
-        u32 dst_queue_family_index = QUEUE_FAMILY_IGNORED;
+            u32 src_queue_family_index = QUEUE_FAMILY_IGNORED;
+            u32 dst_queue_family_index = QUEUE_FAMILY_IGNORED;
 
-        view::Buffer buffer;
-        usize        size;
-        u64          offset = 0;
-    };
+            view::Buffer buffer;
+            usize        size;
+            u64          offset = 0;
+        };
+
+        template<core::meta::HashType Ret = hash32>
+        constexpr auto hasher(const Buffer::CreateInfo& value) noexcept -> Ret;
+    }
 } // namespace stormkit::gpu
 
 ////////////////////////////////////////////////////////////////////
@@ -380,10 +385,10 @@ namespace stormkit::gpu {
         inline auto BufferImplementation::operator=(BufferImplementation&&) noexcept -> BufferImplementation& = default;
     } // namespace view
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    // template<cmeta::HashType Ret = hash32>
-    // constexpr auto hasher(const Buffer::CreateInfo& create_info) noexcept -> Ret {
-    //     return hash(create_info.usages, create_info.size, create_info.properties);
-    // }
+    ///////////////////////////////////
+    ///////////////////////////////////
+    template<cmeta::HashType Ret = hash32>
+    constexpr auto hasher(const Buffer::CreateInfo& create_info) noexcept -> Ret {
+        return hash(create_info.usages, create_info.size, create_info.properties);
+    }
 } // namespace stormkit::gpu

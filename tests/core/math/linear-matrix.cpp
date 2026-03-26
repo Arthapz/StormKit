@@ -154,9 +154,9 @@ namespace {
                 EXPECTS((result[0, 0] == 1));
                 EXPECTS((result[1, 1] == 1));
                 EXPECTS((result[2, 2] == 1));
-                EXPECTS((result[3, 0] == 3));
-                EXPECTS((result[3, 1] == 2));
-                EXPECTS((result[3, 2] == 3));
+                EXPECTS((result[0, 3] == 3));
+                EXPECTS((result[1, 3] == 2));
+                EXPECTS((result[2, 3] == 3));
                 EXPECTS((result[3, 3] == 1));
             },
           }, {

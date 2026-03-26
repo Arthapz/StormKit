@@ -23,6 +23,8 @@ namespace stdv = std::views;
 
 using namespace std::literals;
 
+namespace cmonadic = stormkit::core::monadic;
+
 namespace stormkit::gpu {
     namespace {
         constexpr auto VALIDATION_LAYERS = into_array_of<CZString>("VK_LAYER_KHRONOS_validation",
@@ -67,19 +69,22 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         /////////////////////////////////////
         auto check_extension_support(std::span<const std::string>      supported_extensions,
-                                     std::span<const std::string_view> extensions) noexcept -> bool {
+                                     std::span<const std::string_view> extensions) noexcept
+          -> std::optional<HashSet<std::string_view>> {
             auto required_extensions = HashSet<std::string_view> { stdr::begin(extensions), stdr::end(extensions) };
 
             for (const auto& extension : supported_extensions) required_extensions.erase(extension);
 
-            return required_extensions.empty();
+            if (not required_extensions.empty()) return required_extensions;
+
+            return std::nullopt;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         auto check_extension_support(std::span<const std::string> supported_extensions,
-                                     std::span<const CZString>    extensions) noexcept -> bool {
-            const auto ext = transform(extensions, core::monadic::init<std::string_view>());
+                                     std::span<const CZString> extensions) noexcept -> std::optional<HashSet<std::string_view>> {
+            const auto ext = transform(extensions, cmonadic::init<std::string_view>());
             return check_extension_support(supported_extensions, ext);
         }
     } // namespace
@@ -107,7 +112,8 @@ namespace stormkit::gpu {
             if (validation_layers_enabled) e.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             return e;
         }();
-        ensures(check_extension_support(m_extensions, instance_extensions), "Missing extensions!");
+        const auto result = check_extension_support(m_extensions, instance_extensions);
+        if (result.has_value()) ensures(true, std::format("Missing extensions! {}", result.value()));
 
         constexpr auto ENGINE_NAME = "StormKit";
 

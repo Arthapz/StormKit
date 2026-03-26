@@ -55,10 +55,10 @@ namespace stormkit::gpu {
         };
 
         template<typename Base>
-        class DescriptorSetInterface: public Base {
+        class DescriptorSetInterface final: public DeviceObject<Base> {
           public:
-            using Base::Base;
-            using Base::operator=;
+            using DeviceObject<Base>::DeviceObject;
+            using DeviceObject<Base>::operator=;
             using TagType = DescriptorSetTag;
 
             auto update(std::span<const Descriptor> descriptors) const noexcept -> void;
@@ -74,10 +74,10 @@ namespace stormkit::gpu {
 
     export {
         template<typename Base>
-        class DescriptorSetLayoutInterface: public Base, public DescriptorSetLayoutInterfaceBase {
+        class DescriptorSetLayoutInterface final: public DeviceObject<Base>, public DescriptorSetLayoutInterfaceBase {
           public:
-            using Base::Base;
-            using Base::operator=;
+            using DeviceObject<Base>::DeviceObject;
+            using DeviceObject<Base>::operator=;
             using TagType = DescriptorSetLayoutTag;
 
             using DescriptorSetLayoutInterfaceBase::Size;
@@ -87,10 +87,10 @@ namespace stormkit::gpu {
         };
 
         template<typename Base>
-        class DescriptorPoolInterface: public Base {
+        class DescriptorPoolInterface final: public DeviceObject<Base> {
           public:
-            using Base::Base;
-            using Base::operator=;
+            using DeviceObject<Base>::DeviceObject;
+            using DeviceObject<Base>::operator=;
             using TagType = DescriptorPoolTag;
 
             auto create_descriptor_set(this const auto&, view::DescriptorSetLayout layout) noexcept -> Expected<DescriptorSet>;

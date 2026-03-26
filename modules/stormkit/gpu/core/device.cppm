@@ -144,7 +144,9 @@ namespace stormkit::gpu {
         if (not vkSetDebugUtilsObjectNameEXT) return {};
 
         const auto vk_object = vk::to_vk(object);
-        return set_object_name(as<u64>(std::bit_cast<uptr>(vk_object)), trait::GpuObject<T>::DEBUG_TYPE, std::move(name));
+        return set_object_name(as<u64>(std::bit_cast<uptr>(vk_object)),
+                               trait::GpuObject<typename T::TagType>::DEBUG_TYPE,
+                               std::move(name));
     }
 
     /////////////////////////////////////

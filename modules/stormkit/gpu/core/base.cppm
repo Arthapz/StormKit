@@ -116,7 +116,7 @@ export namespace stormkit::gpu {
         using ViewType   = Base::ViewType;
 
         GpuObjectViewImplementation(const GpuObjectImplementation<Tag>&) noexcept;
-        template<cmeta::IsContainerOrPointerOf<GpuObjectImplementation<Tag>> TContainerOrPointer>
+        template<cmeta::IsContainerOrPointer TContainerOrPointer>
         GpuObjectViewImplementation(const TContainerOrPointer&) noexcept;
         ~GpuObjectViewImplementation() noexcept;
 
@@ -142,7 +142,7 @@ export namespace stormkit::gpu {
         using OwnerViewType = Base::OwnerViewType;
 
         GpuObjectViewImplementation(const GpuObjectImplementation<Tag>&) noexcept;
-        template<cmeta::IsContainerOrPointerOf<GpuObjectImplementation<Tag>> TContainerOrPointer>
+        template<cmeta::IsContainerOrPointer TContainerOrPointer>
         GpuObjectViewImplementation(const TContainerOrPointer&) noexcept;
         ~GpuObjectViewImplementation() noexcept;
 
@@ -212,8 +212,9 @@ export namespace stormkit::gpu {
         DeleterType m_deleter_ptr;
     };
 
-    template<meta::IsGpuView T>
-    auto as_view(T&& value) noexcept -> T;
+    template<typename T>
+        requires(meta::IsGpuView<cmeta::CanonicalType<T>>)
+    auto as_view(T&& value) noexcept -> decltype(auto);
 
     template<meta::IsGpuObject T>
     auto as_view(const T& value) noexcept -> trait::GpuObject<typename T::TagType>::ViewType;
@@ -404,7 +405,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::GpuObjectHasTraitDefined Tag>
-    template<cmeta::IsContainerOrPointerOf<GpuObjectImplementation<Tag>> TContainerOrPointer>
+    template<cmeta::IsContainerOrPointer TContainerOrPointer>
     STORMKIT_FORCE_INLINE
     inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const TContainerOrPointer& object) noexcept
         : GpuObjectBase<Tag> {} {
@@ -467,7 +468,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<meta::GpuObjectHasTraitDefined Tag>
         requires(meta::HasOwnerType<Tag>)
-    template<cmeta::IsContainerOrPointerOf<GpuObjectImplementation<Tag>> TContainerOrPointer>
+    template<cmeta::IsContainerOrPointer TContainerOrPointer>
     STORMKIT_FORCE_INLINE
     inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const TContainerOrPointer& object) noexcept
         : GpuObjectBase<Tag> { (*object).owner() } {
@@ -622,9 +623,10 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsGpuView T>
+    template<typename T>
+        requires(meta::IsGpuView<cmeta::CanonicalType<T>>)
     STORMKIT_FORCE_INLINE
-    inline auto as_view(T&& value) noexcept -> T {
+    inline auto as_view(T&& value) noexcept -> decltype(auto) {
         return std::forward<T>(value);
     }
 

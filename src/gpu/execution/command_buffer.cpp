@@ -1163,9 +1163,9 @@ namespace stormkit::gpu {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        const auto expects_secondary = [this](auto&&) noexcept -> decltype(auto) {
-            EXPECTS(level() == CommandBufferLevel::SECONDARY);
-            return *this;
+        const auto expects_secondary = [](auto&& cmb) static noexcept -> decltype(auto) {
+            EXPECTS(cmb.level() == CommandBufferLevel::SECONDARY);
+            return cmb;
         };
 
         const auto vk_command_buffers = transform(commandbuffers, cmonadic::map(expects_secondary, vk::monadic::to_vk()));
