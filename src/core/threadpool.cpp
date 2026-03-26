@@ -99,8 +99,7 @@ namespace stormkit {
 
             {
                 auto lock = std::unique_lock { m_mutex };
-                if (stdr::empty(m_tasks)) m_work_signal.wait(lock, [this] { return not std::empty(m_tasks); });
-
+                m_work_signal.wait(lock, [this] { return not std::empty(m_tasks); });
                 task = std::move(m_tasks.front());
                 m_tasks.pop();
             }

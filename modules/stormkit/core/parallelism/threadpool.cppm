@@ -153,7 +153,7 @@ namespace stormkit { inline namespace core {
     template<class T>
     STORMKIT_FORCE_INLINE
     inline auto ThreadPool::post_task(Closure<T> task, NoFutureType t) noexcept -> void {
-        auto _ = post_task<T>(Task::Type::Standard, std::move(task), t);
+        post_task<T>(Task::Type::Standard, std::move(task), t);
     }
 
     ////////////////////////////////////////
