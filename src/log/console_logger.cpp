@@ -41,7 +41,7 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto ConsoleLogger::write(Severity severity, const Module& module, CZString string) noexcept -> void {
+    auto ConsoleLogger::write(Severity severity, const Module& module, czstring str) noexcept -> void {
         const auto now      = LogClock::now();
         const auto time     = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time);
         const auto is_error = severity == Severity::ERROR or severity == Severity::FATAL;
@@ -54,13 +54,13 @@ namespace stormkit::log {
                 return std::format("[{}, {:%S}, {}]", severity_str, time, module.name);
         }();
 
-        const auto prefixed_string = [&header, string] noexcept {
+        const auto prefixed_string = [&header, str] noexcept {
             const auto header_length = stdr::size(header) + 1;
 
-            auto prefix = std::string {};
+            auto prefix = string {};
             prefix.resize(header_length + 1, ' ');
             prefix.front() = '\n';
-            return replace(string, "\n", prefix);
+            return replace(str, "\n", prefix);
         }();
 
         const auto styled_header = std::format("{} ", StyleMap.at(severity) | header);

@@ -59,7 +59,7 @@ export namespace stormkit::lua {
         Modules                  m_modules;
         InitUserLibrariesClosure m_init_user_libraries;
 
-        std::vector<char> m_script;
+        dyn_array<char> m_script;
     };
 
     template<typename... Args>

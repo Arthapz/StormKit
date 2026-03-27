@@ -17,14 +17,14 @@ import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_qoi(std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_qoi(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_qoi(const image::Image& image, const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto save_qoi(const image::Image& image) noexcept -> std::expected<std::vector<Byte>, image::Image::Error>;
+    auto save_qoi(const image::Image& image) noexcept -> std::expected<byte_dyn_array, image::Image::Error>;
 } // namespace stormkit::image::details
 
 using namespace std::literals;
@@ -38,19 +38,19 @@ namespace stormkit::image::details {
     using Reason     = image::Image::Error::Reason;
 
     struct QOIHeader {
-        std::array<Byte, 4> magic;
-        u32                 width;
-        u32                 height;
-        u8                  channels;
-        u8                  colorspace;
+        array<byte, 4> magic;
+        u32            width;
+        u32            height;
+        u8             channels;
+        u8             colorspace;
     };
 
     namespace {
         constexpr auto SIZE_OF_HEADER = 14;
 
-        constexpr auto CHANNELS_TO_FORMAT = frozen::make_unordered_map<i32, std::array<image::Image::Format, 2>>({
-          { 3, std::array { image::Image::Format::SRGB8, image::Image::Format::RGB8_UNORM }   },
-          { 4, std::array { image::Image::Format::SRGBA8, image::Image::Format::RGBA8_UNORM } }
+        constexpr auto CHANNELS_TO_FORMAT = frozen::make_unordered_map<i32, array<image::Image::Format, 2>>({
+          { 3, array { image::Image::Format::SRGB8, image::Image::Format::RGB8_UNORM }   },
+          { 4, array { image::Image::Format::SRGBA8, image::Image::Format::RGBA8_UNORM } }
         });
 
         constexpr auto END_OF_FILE = into_bytes({ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 });
@@ -75,7 +75,7 @@ namespace stormkit::image::details {
             u8 a = 0;
         } rgba;
 
-        std::array<u8, 4> data;
+        array<u8, 4> data;
     };
 
     /////////////////////////////////////
@@ -86,7 +86,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_qoi(std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error> {
+    auto load_qoi(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error> {
         const auto  raw_header = data.subspan(SIZE_OF_HEADER);
         const auto* header     = std::bit_cast<const QOIHeader*>(stdr::data(raw_header));
 
@@ -94,14 +94,14 @@ namespace stormkit::image::details {
         const auto channels = header->channels;
         const auto format   = CHANNELS_TO_FORMAT.at(header->channels)[header->colorspace];
 
-        auto pixel_cache = std::array<Pixel, PIXEL_CACHE_SIZE> {};
+        auto pixel_cache = array<Pixel, PIXEL_CACHE_SIZE> {};
 
-        const auto chunks = std::span { std::bit_cast<const u8*>(stdr::data(data)) + SIZE_OF_HEADER,
-                                        stdr::size(data) - SIZE_OF_HEADER };
+        const auto chunks = array_view { std::bit_cast<const u8*>(stdr::data(data)) + SIZE_OF_HEADER,
+                                         stdr::size(data) - SIZE_OF_HEADER };
 
         const auto output_size = extent.width * extent.height * channels;
 
-        auto output = std::vector<Byte> {};
+        auto output = byte_dyn_array {};
         output.reserve(output_size);
 
         auto previous_pixel = Pixel { .rgba = { .a = 255 } };
@@ -174,7 +174,7 @@ namespace stormkit::image::details {
             stdr::transform(stdr::begin(previous_pixel.data),
                             stdr::end(previous_pixel.data) - diff,
                             std::back_inserter(output),
-                            monadic::as<Byte>());
+                            monadic::as<byte>());
         }
 
         auto image_data = image::Image::ImageData {
@@ -202,7 +202,7 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     [[nodiscard]]
-    auto save_qoi(const image::Image&) noexcept -> std::expected<std::vector<Byte>, image::Image::Error> {
+    auto save_qoi(const image::Image&) noexcept -> std::expected<byte_dyn_array, image::Image::Error> {
         assert(false, "Not implemented yet !");
         return {};
     }

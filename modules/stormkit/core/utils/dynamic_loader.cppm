@@ -38,11 +38,11 @@ export namespace stormkit { inline namespace core {
 
         template<class Signature>
         [[nodiscard]]
-        auto func(std::string_view name) const noexcept -> Expected<std::function<Signature>>;
+        auto func(string_view name) const noexcept -> Expected<std::function<Signature>>;
 
         template<class Signature>
         [[nodiscard]]
-        auto c_func(std::string_view name) const noexcept -> Expected<Signature*>;
+        auto c_func(string_view name) const noexcept -> Expected<Signature*>;
 
         [[nodiscard]]
         auto filepath() const noexcept -> const std::filesystem::path&;
@@ -51,7 +51,7 @@ export namespace stormkit { inline namespace core {
         DynamicLoader() noexcept;
 
         auto do_load(std::filesystem::path filepath) -> Expected<void>;
-        auto do_get_func(std::string_view name) const -> Expected<void*>;
+        auto do_get_func(string_view name) const -> Expected<void*>;
 
         std::filesystem::path m_filepath;
         void*                 m_library_handle = nullptr;
@@ -108,7 +108,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Signature>
-    inline auto DynamicLoader::func(std::string_view name) const noexcept -> Expected<std::function<Signature>> {
+    inline auto DynamicLoader::func(string_view name) const noexcept -> Expected<std::function<Signature>> {
         return c_func<Signature>(name).transform([]<typename T>(T&& value) {
             return std::function<Signature> { std::forward<T>(value) };
         });
@@ -117,7 +117,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Signature>
-    inline auto DynamicLoader::c_func(std::string_view name) const noexcept -> Expected<Signature*> {
+    inline auto DynamicLoader::c_func(string_view name) const noexcept -> Expected<Signature*> {
         EXPECTS(not std::empty(name));
 
         return do_get_func(name).transform([]<typename T>(T&& value) {

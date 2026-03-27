@@ -20,6 +20,8 @@ export module stormkit.core:errors;
 
 import std;
 
+import :string.aliases;
+
 export {
     namespace stormkit { inline namespace core {
 #if (defined(__clang__) or defined(__GNUC__))
@@ -89,8 +91,8 @@ export {
 
         template<typename T>
         struct DecoratedError {
-            Error<T>    error;
-            std::string message = "<MISSING DESCRIPTION>";
+            Error<T> error;
+            string   message = "<MISSING DESCRIPTION>";
         };
 
         template<>
@@ -98,10 +100,10 @@ export {
             explicit DecoratedError(Error<std::errc> _error) noexcept;
 
             Error<std::errc> error;
-            std::string      message;
+            string           message;
         };
 
-        auto to_string(const SystemError& error) noexcept -> std::string;
+        auto to_string(const SystemError& error) noexcept -> string;
     }} // namespace stormkit::core
 
     namespace std {
@@ -146,12 +148,12 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto to_string(const SystemError& error) noexcept -> std::string {
+    inline auto to_string(const SystemError& error) noexcept -> string {
         const auto code = static_cast<int>(error.code);
 #ifdef STORMKIT_OS_WINDOWS
-        thread_local auto STRERROR_BUFFER = std::array<char, 512> {};
+        thread_local auto STRERROR_BUFFER = array<char, 512> {};
         strerror_s(stdr::data(STRERROR_BUFFER), stdr::size(STRERROR_BUFFER), code);
-        return std::string { stdr::data(STRERROR_BUFFER) };
+        return string { stdr::data(STRERROR_BUFFER) };
 #else
         return std::strerror(code);
 #endif

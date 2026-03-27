@@ -9,6 +9,7 @@ export import :containers.ringbuffer;
 export import :containers.tree;
 export import :containers.dag;
 export import :containers.utils;
+export import :containers.aliases;
 export import :containers.raii_capsule;
 export import :containers.shmbuffer;
 

@@ -44,7 +44,7 @@ namespace stormkit::gpu {
         [[nodiscard]]
         auto pixel_format() const noexcept -> PixelFormat;
         [[nodiscard]]
-        auto images() const noexcept -> std::span<const Image>;
+        auto images() const noexcept -> array_view<const Image>;
         auto acquire_next_image(std::chrono::nanoseconds wait, view::Semaphore image_available) const noexcept
           -> Expected<NextImage>;
     };
@@ -70,7 +70,7 @@ namespace stormkit::gpu {
         PixelFormat    m_pixel_format;
         u32            m_image_count;
 
-        std::vector<Image> m_images;
+        dyn_array<Image> m_images;
     };
 
     namespace view {
@@ -95,7 +95,7 @@ namespace stormkit::gpu {
             PixelFormat    m_pixel_format;
             u32            m_image_count;
 
-            std::span<const gpu::Image> m_images;
+            array_view<const gpu::Image> m_images;
         };
     } // namespace view
 } // namespace stormkit::gpu
@@ -117,7 +117,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto SwapChainInterface<Base>::images() const noexcept -> std::span<const Image> {
+    inline auto SwapChainInterface<Base>::images() const noexcept -> array_view<const Image> {
         return Base::m_images;
     }
 

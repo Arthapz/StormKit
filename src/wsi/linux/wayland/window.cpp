@@ -114,7 +114,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(std::string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
+    auto Window::open(string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
         auto& globals = wl::get_globals();
 
         m_surface = wl::Surface::create(globals.compositor);
@@ -197,7 +197,7 @@ namespace stormkit::wsi::linux::wayland {
     auto Window::clear(const ucolor_rgb& color) noexcept -> void {
         const auto value = (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
 
-        auto view = std::span<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
+        auto view = array_view<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
         stdr::fill(view, value);
 
         const auto [width, height] = extent().to<i32>();
@@ -207,8 +207,8 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void {
-        auto view = std::span<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
+    auto Window::fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void {
+        auto view = array_view<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
         stdr::copy(colors | stdv::transform([](const auto& color) static noexcept {
                        return (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
                    }),
@@ -221,7 +221,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(std::string title) noexcept -> void {
+    auto Window::set_title(string title) noexcept -> void {
         if (!m_state.open) return;
         m_title = std::move(title);
 
@@ -499,7 +499,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_xdg_top_level_configure(u32 width, u32 height, std::span<const xdg_toplevel_state> states) noexcept
+    auto Window::handle_xdg_top_level_configure(u32 width, u32 height, array_view<const xdg_toplevel_state> states) noexcept
       -> void {
         m_state.open = true;
 
@@ -660,7 +660,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_cursor(std::string_view name, wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
+    auto Window::set_cursor(string_view name, wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
         auto& globals = wl::get_globals();
 
         auto cursor_theme = globals.cursor_theme.handle();

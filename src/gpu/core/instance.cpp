@@ -27,32 +27,32 @@ namespace cmonadic = stormkit::core::monadic;
 
 namespace stormkit::gpu {
     namespace {
-        constexpr auto VALIDATION_LAYERS = into_array_of<CZString>("VK_LAYER_KHRONOS_validation",
+        constexpr auto VALIDATION_LAYERS = into_array_of<czstring>("VK_LAYER_KHRONOS_validation",
                                                                    // "VK_LAYER_LUNARG_api_dump",
                                                                    "VK_LAYER_LUNARG_monitor"
                                                                    // "VK_LAYER_MESA_overlay",
         );
 
         // [[maybe_unused]]
-        // constexpr auto VALIDATION_FEATURES = into_array_of<CZString>(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+        // constexpr auto VALIDATION_FEATURES = into_array_of<czstring>(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
         //                                                                      VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT);
 
         constexpr auto
           STORMKIT_VK_VERSION = vk::make_version<i32>(STORMKIT_MAJOR_VERSION, STORMKIT_MINOR_VERSION, STORMKIT_PATCH_VERSION);
 
-        constexpr auto BASE_EXTENSIONS = into_array_of<CZString>(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
+        constexpr auto BASE_EXTENSIONS = into_array_of<czstring>(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
 #ifdef STORMKIT_OS_APPLE
                                                                  ,
                                                                  VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 #endif
         );
 
-        constexpr auto SURFACE_EXTENSIONS = into_array_of<CZString>(VK_KHR_SURFACE_EXTENSION_NAME,
+        constexpr auto SURFACE_EXTENSIONS = into_array_of<czstring>(VK_KHR_SURFACE_EXTENSION_NAME,
                                                                     VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME
                                                                     // VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME,
         );
 
-        constexpr auto WSI_SURFACE_EXTENSIONS = into_array_of<CZString>(
+        constexpr auto WSI_SURFACE_EXTENSIONS = into_array_of<czstring>(
 #ifdef STORMKIT_OS_WINDOWS
           VK_KHR_WIN32_SURFACE_EXTENSION_NAME
 #elif defined(STORMKIT_OS_LINUX)
@@ -67,10 +67,9 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto check_extension_support(std::span<const std::string>      supported_extensions,
-                                     std::span<const std::string_view> extensions) noexcept
-          -> std::optional<HashSet<std::string_view>> {
-            auto required_extensions = HashSet<std::string_view> { stdr::begin(extensions), stdr::end(extensions) };
+        auto check_extension_support(array_view<const string>      supported_extensions,
+                                     array_view<const string_view> extensions) noexcept -> std::optional<hash_set<string_view>> {
+            auto required_extensions = hash_set<string_view> { stdr::begin(extensions), stdr::end(extensions) };
 
             for (const auto& extension : supported_extensions) required_extensions.erase(extension);
 
@@ -81,9 +80,9 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto check_extension_support(std::span<const std::string> supported_extensions,
-                                     std::span<const CZString> extensions) noexcept -> std::optional<HashSet<std::string_view>> {
-            const auto ext = transform(extensions, cmonadic::init<std::string_view>());
+        auto check_extension_support(array_view<const string>   supported_extensions,
+                                     array_view<const czstring> extensions) noexcept -> std::optional<hash_set<string_view>> {
+            const auto ext = transform(extensions, cmonadic::init<string_view>());
             return check_extension_support(supported_extensions, ext);
         }
     } // namespace
@@ -93,16 +92,15 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto InstanceImplementation::do_init(PrivateTag, std::string app_name, bool validation_layers_enabled) noexcept
-      -> Expected<void> {
+    auto InstanceImplementation::do_init(PrivateTag, string app_name, bool validation_layers_enabled) noexcept -> Expected<void> {
         const auto exts = Try(vk::enumerate_checked<VkExtensionProperties>(vkEnumerateInstanceExtensionProperties, nullptr));
-        m_extensions    = transform(exts, [](const auto& ext) static noexcept { return std::string { ext.extensionName }; });
+        m_extensions    = transform(exts, [](const auto& ext) static noexcept { return string { ext.extensionName }; });
         const auto validation_layers = validation_layers_enabled
-                                         ? std::vector<CZString>()
+                                         ? dyn_array<czstring>()
                                          : transform_if(
                                              Try(vk::enumerate_checked<VkLayerProperties>(vkEnumerateInstanceLayerProperties)),
                                              [](const auto& layer) static noexcept {
-                                                 return stdr::contains(VALIDATION_LAYERS, std::string_view { layer.layerName });
+                                                 return stdr::contains(VALIDATION_LAYERS, string_view { layer.layerName });
                                              },
                                              [](const auto& layer) static noexcept { return layer.layerName; });
 

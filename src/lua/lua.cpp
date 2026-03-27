@@ -66,7 +66,7 @@ namespace stormkit::lua {
         init_libraries(state);
         m_init_user_libraries(state);
 
-        auto result = state.do_string(std::string_view { stdr::data(m_script), stdr::size(m_script) });
+        auto result = state.do_string(string_view { stdr::data(m_script), stdr::size(m_script) });
         if (not result.valid()) elog("lua error!\n{}", sol::error { result }.what());
 
         return state;
@@ -88,12 +88,12 @@ namespace stormkit::lua {
 
         auto tostring            = sol::protected_function { global_state["tostring"] };
         global_state["tostring"] = [format = std::move(tostring)](sol::object v) noexcept {
-            if (not v.valid()) return std::string {};
+            if (not v.valid()) return string {};
             if (v.is<sol::lua_table>()) {
-                auto out = std::string { "[lua_table " };
+                auto out = string { "[lua_table " };
                 for (auto&& [key, value] : v.as<sol::table>()) {
-                    auto key_as_string   = sol::object { luacall(format, key) }.as<std::string>();
-                    auto value_as_string = sol::object { luacall(format, value) }.as<std::string>();
+                    auto key_as_string   = sol::object { luacall(format, key) }.as<string>();
+                    auto value_as_string = sol::object { luacall(format, value) }.as<string>();
                     out += key_as_string;
                     out += ": ";
                     out += value_as_string;
@@ -103,23 +103,23 @@ namespace stormkit::lua {
                 out += "]";
                 return out;
             }
-            return sol::object { luacall(format, v) }.as<std::string>();
+            return sol::object { luacall(format, v) }.as<string>();
         };
-        global_state["print"] = [&global_state](std::string_view str, sol::variadic_args args) noexcept {
+        global_state["print"] = [&global_state](string_view str, sol::variadic_args args) noexcept {
             const auto format = sol::protected_function { global_state["format"] };
             const auto result = luacall(format, str, std::move(args));
-            const auto out    = sol::object { result }.as<std::string>();
+            const auto out    = sol::object { result }.as<string>();
             std::println("{}", out);
         };
 
-        global_state["format"] = [&global_state](std::string_view str, sol::variadic_args args) noexcept {
+        global_state["format"] = [&global_state](string_view str, sol::variadic_args args) noexcept {
             auto slices = split(str, "{}");
             if (stdr::size(slices) == 1) { return std::format("{}", str); }
 
             expects(args.size() == stdr::size(slices) - 1,
                     std::format("Invalid count of args! should be {}, got {}", stdr::size(slices) - 1, args.size()));
 
-            auto out = std::string {};
+            auto out = string {};
             out.reserve(stdr::size(str));
             auto it = stdr::begin(slices);
             out += *it;
@@ -127,7 +127,7 @@ namespace stormkit::lua {
             for (auto v : args) {
                 auto       format = sol::protected_function { global_state["tostring"] };
                 const auto result = luacall(global_state["tostring"], v);
-                out += sol::object { result }.as<std::string>();
+                out += sol::object { result }.as<string>();
 
                 out += *it;
                 ++it;

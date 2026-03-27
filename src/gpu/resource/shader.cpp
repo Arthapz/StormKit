@@ -23,7 +23,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto ShaderImplementation::do_init(PrivateTag, std::vector<SpirvID>&& data, ShaderStageFlag type) -> Expected<void> {
+    auto ShaderImplementation::do_init(PrivateTag, dyn_array<SpirvID>&& data, ShaderStageFlag type) -> Expected<void> {
         m_source = std::move(data);
         m_type   = type;
 

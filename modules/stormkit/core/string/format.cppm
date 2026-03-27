@@ -149,7 +149,7 @@ template<class FormatContext>
 auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const -> decltype(ctx.out()) {
     auto&& out = ctx.out();
     if constexpr (requires {
-                      { as_string(value) } -> meta::Is<std::string_view>;
+                      { as_string(value) } -> meta::Is<string_view>;
                   }) {
         const auto strvalue = as_string(value);
         return format_to(out, "{}", strvalue);

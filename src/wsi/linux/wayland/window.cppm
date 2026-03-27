@@ -43,15 +43,15 @@ export {
             Window(Window&&) noexcept;
             auto operator=(Window&&) noexcept -> Window&;
 
-            auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
+            auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
             auto close() noexcept -> void;
 
             auto handle_events() noexcept -> void;
 
             auto clear(const ucolor_rgb& color) noexcept -> void;
-            auto fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void;
+            auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
-            auto set_title(std::string title) noexcept -> void;
+            auto set_title(string title) noexcept -> void;
             auto set_extent(const math::uextent2& extent) noexcept -> void;
             auto set_fullscreen(bool fullscreen) noexcept -> void;
 
@@ -87,7 +87,7 @@ export {
             auto handle_xdg_surface_configure(u32) noexcept -> void;
             auto handle_xdg_surface_close() noexcept -> void;
 
-            auto handle_xdg_top_level_configure(u32, u32, std::span<const xdg_toplevel_state>) noexcept -> void;
+            auto handle_xdg_top_level_configure(u32, u32, array_view<const xdg_toplevel_state>) noexcept -> void;
             auto handle_surface_enter(wl_surface*, wl_output*) noexcept -> void;
 
             auto handle_keyboard_key(Key, char, bool) noexcept -> void;
@@ -101,7 +101,7 @@ export {
             auto reallocate_pixel_buffer() noexcept -> void;
 
             auto hide_mouse(bool hidden, wl_pointer*, wl::PointerState&) noexcept -> void;
-            auto set_cursor(std::string_view, wl_pointer*, wl::PointerState&) noexcept -> void;
+            auto set_cursor(string_view, wl_pointer*, wl::PointerState&) noexcept -> void;
 
             auto handle_key_repeat() noexcept -> void;
 
@@ -112,7 +112,7 @@ export {
             WindowFlag m_flags;
             wl_output* m_current_output = nullptr;
 
-            std::string m_title;
+            string m_title;
 
             Handles m_handles;
 

@@ -227,15 +227,15 @@ export namespace stormkit::gpu {
     auto as_view(const T& value) noexcept
       -> trait::GpuObject<typename cmeta::CanonicalType<cmeta::ContainedType<T>>::TagType>::ViewType;
 
-    template<template<typename, std::size_t> class Out = std::array, typename... Args>
+    template<template<typename, std::size_t> class Out = array, typename... Args>
         requires(not stdr::range<Args> and ...)
     auto as_views(Args&&... args) noexcept -> decltype(auto);
 
-    template<template<typename...> class Out = std::vector, typename... Args>
+    template<template<typename...> class Out = dyn_array, typename... Args>
         requires(not stdr::range<Args> and ...)
     auto to_views(Args&&... args) noexcept -> decltype(auto);
 
-    template<template<typename...> class Out = std::vector, stdr::range Range>
+    template<template<typename...> class Out = dyn_array, stdr::range Range>
     auto to_views(const Range& range) noexcept -> decltype(auto);
 
     template<meta::IsGpuObject T, typename FormatContext>
@@ -663,16 +663,24 @@ namespace stormkit::gpu {
         requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     inline auto as_views(Args&&... args) noexcept -> decltype(auto) {
-        return Out { gpu::as_view(std::forward<Args>(args))... };
+        using ValueType = std::common_type_t<cmeta::ContainedOrPointedOrTType<cmeta::RemoveIndirectionsType<Args>>...>;
+        using TagType   = typename ValueType::TagType;
+        using ViewType  = trait::GpuObject<TagType>::ViewType;
+
+        return Out<ViewType, sizeof...(Args)> { gpu::as_view(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out = std::vector, typename... Args>
+    template<template<typename...> class Out, typename... Args>
         requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     inline auto to_views(Args&&... args) noexcept -> decltype(auto) {
-        return Out { gpu::as_view(std::forward<Args>(args))... };
+        using ValueType = std::common_type_t<cmeta::ContainedOrPointedOrTType<cmeta::RemoveIndirectionsType<Args>>...>;
+        using TagType   = typename ValueType::TagType;
+        using ViewType  = trait::GpuObject<TagType>::ViewType;
+
+        return Out<ViewType> { gpu::as_view(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
@@ -680,9 +688,13 @@ namespace stormkit::gpu {
     template<template<typename...> class Out, stdr::range Range>
     STORMKIT_FORCE_INLINE
     inline auto to_views(const Range& range) noexcept -> decltype(auto) {
+        using ValueType = stdr::range_value_t<Range>;
+        using TagType   = typename ValueType::TagType;
+        using ViewType  = trait::GpuObject<TagType>::ViewType;
+
         return range
                | stdv::transform([]<typename T>(T&& val) static noexcept { return gpu::as_view(std::forward<T>(val)); })
-               | stdr::to<Out>();
+               | stdr::to<Out<ViewType>>();
     }
 
     /////////////////////////////////////

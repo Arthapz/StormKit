@@ -26,42 +26,42 @@ import :meta.type_query;
 //    struct ArithmeticTraitInterface {
 //        template<typename... Ts>
 //        static auto add(Ts...) noexcept -> decltype(auto) {
-//            static_assert(false, std::string { "add not implemented for " } + name_of<T>());
+//            static_assert(false, string { "add not implemented for " } + name_of<T>());
 //        }
 
 //    template<typename... Ts>
 //    static auto add_eq(Ts...) noexcept -> decltype(auto) {
-//        static_assert(false, std::string { "add_eq not implemented for " } + name_of<T>());
+//        static_assert(false, string { "add_eq not implemented for " } + name_of<T>());
 //    }
 
 //    template<typename... Ts>
 //    static auto sub(Ts...) noexcept -> decltype(auto) {
-//        static_assert(false, std::string { "sub not implemented for " } + name_of<T>());
+//        static_assert(false, string { "sub not implemented for " } + name_of<T>());
 //    }
 
 //    template<typename... Ts>
 //    static auto sub_eq(Ts...) noexcept -> decltype(auto) {
-//        static_assert(false, std::string { "sub_eq not implemented for " } + name_of<T>());
+//        static_assert(false, string { "sub_eq not implemented for " } + name_of<T>());
 //    }
 
 //    template<typename... Ts>
 //    static auto div(Ts...) noexcept -> decltype(auto) {
-//        static_assert(false, std::string { "div not implemented for " } + name_of<T>());
+//        static_assert(false, string { "div not implemented for " } + name_of<T>());
 //    }
 
 //    template<typename... Ts>
 //    static auto div_eq(Ts...) noexcept -> decltype(auto) {
-//        static_assert(false, std::string { "div_eq not implemented for " } + name_of<T>());
+//        static_assert(false, string { "div_eq not implemented for " } + name_of<T>());
 //    }
 
 //    template<typename... Ts>
 //    static auto mul(Ts...) noexcept -> decltype(auto) {
-//        static_assert(false, std::string { "mul not implemented for " } + name_of<T>());
+//        static_assert(false, string { "mul not implemented for " } + name_of<T>());
 //    }
 
 //    template<typename... Ts>
 //    static auto mul_eq(Ts...) noexcept -> decltype(auto) {
-//        static_assert(false, std::string { "mul_eq not implemented for " } + name_of<T>());
+//        static_assert(false, string { "mul_eq not implemented for " } + name_of<T>());
 //    }
 // };
 

@@ -20,18 +20,19 @@ namespace {
         {
           { "topological_sort",
             [] {
-                using Edge           = std::pair<dag::VertexID, dag::VertexID>;
-                constexpr auto edges = into_array(Edge { 0, 5 },
-                                                  Edge { 0, 2 },
-                                                  Edge { 0, 1 },
-                                                  Edge { 3, 6 },
-                                                  Edge { 3, 5 },
-                                                  Edge { 3, 4 },
-                                                  Edge { 5, 4 },
-                                                  Edge { 6, 4 },
-                                                  Edge { 6, 0 },
-                                                  Edge { 3, 2 },
-                                                  Edge { 1, 4 });
+                using Edge = std::pair<dag::VertexID, dag::VertexID>;
+                constexpr auto
+                  edges = into_array(Edge { 0, 5 },
+                                     Edge { 0, 2 },
+                                     Edge { 0, 1 },
+                                     Edge { 3, 6 },
+                                     Edge { 3, 5 },
+                                     Edge { 3, 4 },
+                                     Edge { 5, 4 },
+                                     Edge { 6, 4 },
+                                     Edge { 6, 0 },
+                                     Edge { 3, 2 },
+                                     Edge { 1, 4 });
 
                 auto dag = DAG<i32> {};
                 for (auto i : range(7)) dag.add_vertex(i);
@@ -46,7 +47,7 @@ namespace {
 
                 auto ordered = std::move(*result);
 
-                auto orders = HashMap<dag::VertexID, u32> {};
+                auto orders = hash_map<dag::VertexID, u32> {};
                 {
                     auto i = 0;
                     for (auto id : ordered) orders.emplace(id, i++);
@@ -56,7 +57,7 @@ namespace {
             } },
           { "remove_edge_and_vertex",
             [] {
-                auto dag = DAG<std::string> {};
+                auto dag = DAG<string> {};
                 dag.emplace_vertex("a");
                 dag.emplace_vertex("b");
                 dag.emplace_vertex("c");
@@ -132,7 +133,7 @@ namespace {
             } },
           { "reverse_view",
             [] {
-                auto dag = DAG<std::string> {};
+                auto dag = DAG<string> {};
                 dag.emplace_vertex("a");
                 dag.emplace_vertex("b");
                 dag.emplace_vertex("c");
@@ -156,7 +157,7 @@ namespace {
             } },
           { "reverse_clone",
             [] {
-                auto dag = DAG<std::string> {};
+                auto dag = DAG<string> {};
                 dag.emplace_vertex("a");
                 dag.emplace_vertex("b");
                 dag.emplace_vertex("c");
@@ -180,7 +181,7 @@ namespace {
             } },
           { "dump",
             [] {
-                auto dag = DAG<std::string> {};
+                auto dag = DAG<string> {};
                 dag.emplace_vertex("a");
                 dag.emplace_vertex("b");
                 dag.emplace_vertex("c");

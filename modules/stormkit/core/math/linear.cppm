@@ -35,7 +35,7 @@ export namespace stormkit { inline namespace core { namespace math {
 
     template<core::meta::IsArithmetic T, usize... Sizes>
         requires(sizeof...(Sizes) >= 1)
-    using TensorSpan = std::mdspan<T, std::extents<u8, Sizes...>>;
+    using TensorSpan = mdarray_view<T, std::extents<u8, Sizes...>>;
 
     template<typename T, usize N>
     using VectorSpan = TensorSpan<T, N>;
@@ -53,17 +53,17 @@ export namespace stormkit { inline namespace core { namespace math {
 
     // template<core::meta::IsArithmetic T, usize... Sizes>
     // [[nodiscard]]
-    // constexpr auto as_span(TensorSpan<T, Sizes...>& tensor) noexcept -> std::span<T, (Sizes *
+    // constexpr auto as_span(TensorSpan<T, Sizes...>& tensor) noexcept -> array_view<T, (Sizes *
     // ...)>;
 
     template<typename T, usize... Sizes>
     [[nodiscard]]
-    constexpr auto as_span(const TensorSpan<const T, Sizes...>& tensor) noexcept -> std::span<const T, (Sizes * ...)>;
+    constexpr auto as_span(const TensorSpan<const T, Sizes...>& tensor) noexcept -> array_view<const T, (Sizes * ...)>;
 
     template<typename T, usize... Sizes>
         requires(not core::meta::IsConst<T>)
     [[nodiscard]]
-    constexpr auto as_span_mut(TensorSpan<T, Sizes...> tensor) noexcept -> std::span<T, (Sizes * ...)>;
+    constexpr auto as_span_mut(TensorSpan<T, Sizes...> tensor) noexcept -> array_view<T, (Sizes * ...)>;
 
     template<usize... Sizes, stdr::contiguous_range T>
         requires(core::meta::IsArithmetic<core::meta::RangeType<T>>)
@@ -210,12 +210,12 @@ namespace stormkit { inline namespace core { namespace math {
     } // namespace angle
 
     template<typename T, usize M, usize N>
-    using MatData = std::array<T, M * N>;
+    using MatData = array<T, M * N>;
     template<typename T, usize M>
     using SMatData = MatData<T, M, M>;
 
     template<typename T, usize N>
-    using VecData = std::array<T, N>;
+    using VecData = array<T, N>;
 
     template<typename T>
     using vec2data = VecData<T, 2>;
@@ -231,16 +231,16 @@ namespace stormkit { inline namespace core { namespace math {
     // template<core::meta::IsArithmetic T, usize... Sizes>
     // [[nodiscard]]
     // constexpr auto as_span(const TensorSpan<T, Sizes...>& tensor) noexcept
-    //   -> std::span<T, (Sizes * ...)> {
-    //     return std::span<T, (Sizes * ...)> { tensor.data_handle(), (Sizes * ...) };
+    //   -> array_view<T, (Sizes * ...)> {
+    //     return array_view<T, (Sizes * ...)> { tensor.data_handle(), (Sizes * ...) };
     // }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize... Sizes>
     [[nodiscard]]
-    constexpr auto as_span(const TensorSpan<const T, Sizes...>& tensor) noexcept -> std::span<const T, (Sizes * ...)> {
-        return std::span<const T, (Sizes * ...)> { tensor.data_handle(), (Sizes * ...) };
+    constexpr auto as_span(const TensorSpan<const T, Sizes...>& tensor) noexcept -> array_view<const T, (Sizes * ...)> {
+        return array_view<const T, (Sizes * ...)> { tensor.data_handle(), (Sizes * ...) };
     }
 
     ////////////////////////////////////////
@@ -248,8 +248,8 @@ namespace stormkit { inline namespace core { namespace math {
     template<typename T, usize... Sizes>
         requires(not core::meta::IsConst<T>)
     [[nodiscard]]
-    constexpr auto as_span_mut(TensorSpan<T, Sizes...> tensor) noexcept -> std::span<T, (Sizes * ...)> {
-        return std::span<T, (Sizes * ...)> { tensor.data_handle(), (Sizes * ...) };
+    constexpr auto as_span_mut(TensorSpan<T, Sizes...> tensor) noexcept -> array_view<T, (Sizes * ...)> {
+        return array_view<T, (Sizes * ...)> { tensor.data_handle(), (Sizes * ...) };
     }
 
     ////////////////////////////////////////

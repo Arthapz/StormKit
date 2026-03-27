@@ -143,9 +143,9 @@ export {
                 u32                  max_fragment_dual_src_attachments;
                 u32                  max_fragment_combined_output_resources;
                 u32                  max_compute_shared_memory_size;
-                std::array<u32, 3>   max_compute_work_group_count;
+                array<u32, 3>        max_compute_work_group_count;
                 u32                  max_compute_work_group_invocations;
-                std::array<u32, 3>   max_compute_work_group_size;
+                array<u32, 3>        max_compute_work_group_size;
                 std::optional<u32>   sub_pixel_precision_bits;
                 std::optional<u32>   sub_texel_precision_bits;
                 std::optional<u32>   mipmap_precision_bits;
@@ -154,8 +154,8 @@ export {
                 f32                  max_sampler_lod_bias;
                 f32                  max_sampler_anisotropy;
                 u32                  max_viewports;
-                std::array<u32, 2>   max_viewport_dimensions;
-                std::array<f32, 2>   viewport_bounds_range;
+                array<u32, 2>        max_viewport_dimensions;
+                array<f32, 2>        viewport_bounds_range;
                 std::optional<u32>   viewport_sub_pixel_bits;
                 std::optional<usize> min_memory_map_alignment;
                 std::optional<u64>   min_texel_buffer_offset_alignment;
@@ -188,8 +188,8 @@ export {
                 u32                  max_cull_distances;
                 u32                  max_combined_clip_and_cull_distances;
                 u32                  discrete_queue_priorities;
-                std::array<f32, 2>   point_size_range;
-                std::array<f32, 2>   line_width_range;
+                array<f32, 2>        point_size_range;
+                array<f32, 2>        line_width_range;
                 f32                  point_size_granularity;
                 f32                  line_width_granularity;
                 bool                 strict_lines;
@@ -289,10 +289,10 @@ export {
         };
 
         struct PhysicalDeviceInfo {
-            u64         device_id;
-            std::string device_name;
-            u64         vendor_id;
-            std::string vendor_name;
+            u64    device_id;
+            string device_name;
+            u64    vendor_id;
+            string vendor_name;
 
             u32 api_major_version;
             u32 api_minor_version;
@@ -302,7 +302,7 @@ export {
             u32 driver_minor_version;
             u32 driver_patch_version;
 
-            std::array<u8, 16> pipeline_cache_uuid;
+            array<u8, 16> pipeline_cache_uuid;
 
             PhysicalDeviceType type;
         };

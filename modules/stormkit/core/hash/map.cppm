@@ -14,11 +14,11 @@ export namespace stormkit { inline namespace core {
              class Hash                 = ankerl::unordered_dense::hash<Key>,
              class KeyEqual             = std::equal_to<Key>,
              class AllocatorOrContainer = std::allocator<std::pair<Key, T>>>
-    using HashMap = ankerl::unordered_dense::map<Key, T, Hash, KeyEqual, AllocatorOrContainer>;
+    using hash_map = ankerl::unordered_dense::map<Key, T, Hash, KeyEqual, AllocatorOrContainer>;
 
     template<class Key,
              class Hash                 = ankerl::unordered_dense::hash<Key>,
              class KeyEqual             = std::equal_to<Key>,
              class AllocatorOrContainer = std::allocator<Key>>
-    using HashSet = ankerl::unordered_dense::set<Key, Hash, KeyEqual, AllocatorOrContainer>;
+    using hash_set = ankerl::unordered_dense::set<Key, Hash, KeyEqual, AllocatorOrContainer>;
 }} // namespace stormkit::core

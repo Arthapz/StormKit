@@ -16,10 +16,13 @@ import :meta;
 
 import :typesafe.integer;
 
+import :containers.aliases;
+
 import :utils.contract;
 import :utils.tags;
 
 namespace stdr = std::ranges;
+namespace stdp = std::pmr;
 
 template<typename T, stormkit::usize EXTENT>
 consteval auto get_byte_extent_value_of() {
@@ -32,12 +35,18 @@ consteval auto get_byte_extent_value_of() {
 
 export namespace stormkit { inline namespace core {
     using std::byte;
-    using Byte     = std::byte;
-    using ByteView = std::span<const std::byte>;
+
+    template<usize Extent = std::dynamic_extent>
+    using byte_view = array_view<const byte, Extent>;
     template<usize N>
-    using ByteArray       = std::array<std::byte, N>;
-    using ByteDynArray    = std::vector<std::byte>;
-    using MutableByteView = std::span<std::byte>;
+    using byte_array     = array<byte, N>;
+    using byte_dyn_array = dyn_array<byte>;
+    template<usize Extent = std::dynamic_extent>
+    using byte_mut_view = array_view<byte, Extent>;
+
+    namespace pmr {
+        using byte_dyn_array = dyn_array<byte>;
+    } // namespace pmr
 
     template<typename T>
     constexpr auto zero_bytes(T& value) noexcept -> void;
@@ -49,73 +58,72 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto byte_swap(const T& value) noexcept -> T;
 
-    // std::span
+    // array_view
     using std::as_bytes;
 
     template<typename T>
     [[nodiscard]]
-    constexpr auto as_bytes(const T* const ptr, usize size = 1) noexcept -> std::span<const byte>;
+    constexpr auto as_bytes(const T* const ptr, usize size = 1) noexcept -> byte_view<>;
 
     template<stdr::range Range>
     [[nodiscard]]
-    constexpr auto as_bytes(const Range& range) noexcept -> std::span<const byte>;
+    constexpr auto as_bytes(const Range& range) noexcept -> byte_view<>;
 
     [[nodiscard]]
-    constexpr auto as_bytes(std::string_view string) noexcept -> std::span<const byte>;
+    constexpr auto as_bytes(string_view string) noexcept -> byte_view<>;
 
     template<class T>
     [[nodiscard]]
-    constexpr auto as_bytes(const T& value) noexcept -> std::span<const byte, sizeof(T)>;
+    constexpr auto as_bytes(const T& value) noexcept -> byte_view<sizeof(T)>;
 
-    // std::span
+    // array_view
     template<typename T, usize EXTENT>
     [[nodiscard]]
-    constexpr auto as_bytes_mut(std::span<T, EXTENT> container) noexcept
-      -> std::span<byte, get_byte_extent_value_of<T, EXTENT>()>;
+    constexpr auto as_bytes_mut(array_view<T, EXTENT> container) noexcept -> byte_mut_view<get_byte_extent_value_of<T, EXTENT>()>;
 
     template<stdr::range Range>
     [[nodiscard]]
-    constexpr auto as_bytes_mut(Range& range) noexcept -> std::span<byte>;
+    constexpr auto as_bytes_mut(Range& range) noexcept -> byte_mut_view<>;
 
     template<typename T>
     [[nodiscard]]
-    constexpr auto as_bytes_mut(T* const ptr, usize size = 1) noexcept -> std::span<byte>;
+    constexpr auto as_bytes_mut(T* const ptr, usize size = 1) noexcept -> byte_mut_view<>;
 
     template<class T>
     [[nodiscard]]
-    constexpr auto as_bytes_mut(T& value) noexcept -> std::span<byte, sizeof(T)>;
+    constexpr auto as_bytes_mut(T& value) noexcept -> byte_mut_view<sizeof(T)>;
 
     template<class T, usize EXTENT = std::dynamic_extent>
     [[nodiscard]]
-    constexpr auto bytes_as(std::span<const byte, EXTENT> bytes) noexcept -> const T&;
+    constexpr auto bytes_as(byte_view<EXTENT> bytes) noexcept -> const T&;
 
     template<typename T, stdr::range Range>
         requires(meta::SameAs<meta::ToPlainType<meta::ContainedType<Range>>, byte>)
     [[nodiscard]]
-    constexpr auto bytes_as_span(const Range& bytes) noexcept -> std::span<const T>;
+    constexpr auto bytes_as_span(const Range& bytes) noexcept -> array_view<const T>;
 
     template<typename T, usize EXTENT = std::dynamic_extent>
     [[nodiscard]]
-    constexpr auto bytes_as_span(std::span<const byte, EXTENT> bytes) noexcept
-      -> std::span<const T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)>;
+    constexpr auto bytes_as_span(byte_view<EXTENT> bytes) noexcept
+      -> array_view<const T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)>;
 
     template<class T, usize EXTENT>
     [[nodiscard]]
-    constexpr auto bytes_mut_as(std::span<byte, EXTENT> bytes) noexcept -> T&;
+    constexpr auto bytes_mut_as(byte_mut_view<EXTENT> bytes) noexcept -> T&;
 
     template<typename T, stdr::range Range>
         requires(meta::SameAs<meta::ContainedType<Range>, byte> and not meta::IsConst<Range>)
     [[nodiscard]]
-    constexpr auto bytes_mut_as_span(Range& range) noexcept -> std::span<const T>;
+    constexpr auto bytes_mut_as_span(Range& range) noexcept -> array_view<const T>;
 
     template<typename T, usize EXTENT>
     [[nodiscard]]
-    constexpr auto bytes_mut_as_span(std::span<byte, EXTENT> bytes) noexcept
-      -> std::span<T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)>;
+    constexpr auto bytes_mut_as_span(byte_mut_view<EXTENT> bytes) noexcept
+      -> array_view<T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)>;
 
     template<typename T, usize N>
     [[nodiscard]]
-    constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> ByteArray<N>;
+    constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> byte_array<N>;
 
     namespace literals {
         [[nodiscard]]
@@ -173,7 +181,7 @@ namespace stormkit { inline namespace core {
     constexpr auto byte_swap(const T& value) noexcept -> T {
         if constexpr (meta::IsIntegral<T>) return std::byteswap(value);
         else {
-            auto repr = std::bit_cast<std::array<byte, sizeof(value)>>(value);
+            auto repr = std::bit_cast<array<byte, sizeof(value)>>(value);
 
             stdr::reverse(repr);
 
@@ -185,38 +193,38 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_bytes(const T* const ptr, usize size) noexcept -> std::span<const byte> {
-        return std::as_bytes(std::span<const T> { ptr, size });
+    constexpr auto as_bytes(const T* const ptr, usize size) noexcept -> byte_view<> {
+        return std::as_bytes(array_view<const T> { ptr, size });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<stdr::range Range>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_bytes(const Range& range) noexcept -> std::span<const byte> {
-        return as_bytes(std::span { range });
+    constexpr auto as_bytes(const Range& range) noexcept -> byte_view<> {
+        return as_bytes(array_view { range });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto as_bytes(std::string_view value) noexcept -> std::span<const byte> {
-        return std::as_bytes(std::span<const char> { stdr::data(value), stdr::size(value) });
+    constexpr auto as_bytes(string_view value) noexcept -> byte_view<> {
+        return std::as_bytes(array_view<const char> { stdr::data(value), stdr::size(value) });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_bytes(const T& value) noexcept -> std::span<const byte, sizeof(T)> {
-        return std::as_bytes<const T, 1>(std::span<const T, 1> { &value, 1 });
+    constexpr auto as_bytes(const T& value) noexcept -> byte_view<sizeof(T)> {
+        return std::as_bytes<const T, 1>(array_view<const T, 1> { &value, 1 });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, usize EXTENT>
-    constexpr auto as_bytes_mut(std::span<T, EXTENT> container) noexcept
-      -> std::span<byte, get_byte_extent_value_of<T, EXTENT>()> {
+    constexpr auto as_bytes_mut(array_view<T, EXTENT> container) noexcept
+      -> byte_mut_view<get_byte_extent_value_of<T, EXTENT>()> {
         return std::as_writable_bytes<T, EXTENT>(container);
     }
 
@@ -224,31 +232,31 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<stdr::range Range>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_bytes_mut(Range& range) noexcept -> std::span<byte> {
-        return as_bytes_mut(std::span { range });
+    constexpr auto as_bytes_mut(Range& range) noexcept -> byte_mut_view<> {
+        return as_bytes_mut(array_view { range });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_bytes_mut(T* const ptr, usize size) noexcept -> std::span<byte> {
-        return std::as_writable_bytes(std::span<T> { ptr, size });
+    constexpr auto as_bytes_mut(T* const ptr, usize size) noexcept -> byte_mut_view<> {
+        return std::as_writable_bytes(array_view<T> { ptr, size });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_bytes_mut(T& value) noexcept -> std::span<byte, sizeof(T)> {
-        return std::as_writable_bytes<T, 1>(std::span<T, 1> { &value, 1 });
+    constexpr auto as_bytes_mut(T& value) noexcept -> byte_mut_view<sizeof(T)> {
+        return std::as_writable_bytes<T, 1>(array_view<T, 1> { &value, 1 });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, usize EXTENT>
     STORMKIT_FORCE_INLINE
-    constexpr auto bytes_as(std::span<const byte, EXTENT> bytes) noexcept -> const T& {
+    constexpr auto bytes_as(byte_view<EXTENT> bytes) noexcept -> const T& {
         if constexpr (EXTENT != std::dynamic_extent) EXPECTS(EXTENT == sizeof(T));
         EXPECTS(stdr::size(bytes) == sizeof(T));
         return *std::launder(std::bit_cast<const T* const>(stdr::data(bytes)));
@@ -259,28 +267,28 @@ namespace stormkit { inline namespace core {
     template<typename T, stdr::range Range>
         requires(meta::SameAs<meta::ToPlainType<meta::ContainedType<Range>>, byte>)
     STORMKIT_FORCE_INLINE
-    constexpr auto bytes_as_span(const Range& bytes) noexcept -> std::span<const T> {
-        return std::span { std::launder(std::bit_cast<const T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
+    constexpr auto bytes_as_span(const Range& bytes) noexcept -> array_view<const T> {
+        return array_view { std::launder(std::bit_cast<const T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, usize EXTENT>
     STORMKIT_FORCE_INLINE
-    constexpr auto bytes_as_span(std::span<const byte, EXTENT> bytes) noexcept
-      -> std::span<const T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)> {
+    constexpr auto bytes_as_span(byte_view<EXTENT> bytes) noexcept
+      -> array_view<const T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)> {
         if constexpr (EXTENT != std::dynamic_extent)
-            return std::span<const T, EXTENT / sizeof(T)> { std::bit_cast<const T* const>(stdr::data(bytes)),
-                                                            EXTENT / sizeof(T) };
+            return array_view<const T, EXTENT / sizeof(T)> { std::bit_cast<const T* const>(stdr::data(bytes)),
+                                                             EXTENT / sizeof(T) };
         else
-            return std::span { std::launder(std::bit_cast<const T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
+            return array_view { std::launder(std::bit_cast<const T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, usize EXTENT>
     STORMKIT_FORCE_INLINE
-    constexpr auto bytes_mut_as(std::span<byte, EXTENT> bytes) noexcept -> T& {
+    constexpr auto bytes_mut_as(byte_mut_view<EXTENT> bytes) noexcept -> T& {
         if constexpr (EXTENT != std::dynamic_extent) EXPECTS(EXTENT == sizeof(T));
         EXPECTS(stdr::size(bytes) == sizeof(T));
         return *std::launder(std::bit_cast<T* const>(stdr::data(bytes)));
@@ -291,29 +299,29 @@ namespace stormkit { inline namespace core {
     template<typename T, stdr::range Range>
         requires(meta::SameAs<meta::ContainedType<Range>, byte> and not meta::IsConst<Range>)
     STORMKIT_FORCE_INLINE
-    constexpr auto bytes_mut_as_span(Range& bytes) noexcept -> std::span<T> {
-        return std::span { std::launder(std::bit_cast<T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
+    constexpr auto bytes_mut_as_span(Range& bytes) noexcept -> array_view<T> {
+        return array_view { std::launder(std::bit_cast<T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, usize EXTENT>
     STORMKIT_FORCE_INLINE
-    constexpr auto bytes_mut_as_span(std::span<byte, EXTENT> bytes) noexcept
-      -> std::span<T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)> {
+    constexpr auto bytes_mut_as_span(byte_mut_view<EXTENT> bytes) noexcept
+      -> array_view<T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)> {
         if constexpr (EXTENT != std::dynamic_extent)
-            return std::span<T, EXTENT / sizeof(T)> { std::bit_cast<T* const>(stdr::data(bytes)), EXTENT / sizeof(T) };
+            return array_view<T, EXTENT / sizeof(T)> { std::bit_cast<T* const>(stdr::data(bytes)), EXTENT / sizeof(T) };
         else
-            return std::span { std::launder(std::bit_cast<T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
+            return array_view { std::launder(std::bit_cast<T* const>(stdr::data(bytes))), stdr::size(bytes) / sizeof(T) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, usize N>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> ByteArray<N> {
+    constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> byte_array<N> {
         EXPECTS(static_cast<T>(static_cast<byte>(bytes[0])) == bytes[0]);
-        auto out = ByteArray<N> {};
+        auto out = byte_array<N> {};
         auto i   = 0_usize;
         for (auto&& byte : bytes) out[i++] = static_cast<enum byte>(byte);
         return out;

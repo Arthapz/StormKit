@@ -56,7 +56,7 @@ export namespace stormkit::wsi::macos {
             return *this;
         }
 
-        auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept
+        auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept
           -> void {
             const auto resizeable  = check_flag_bit(flags, WindowFlag::RESIZEABLE);
             const auto borderless  = check_flag_bit(flags, WindowFlag::BORDERLESS);
@@ -88,7 +88,7 @@ export namespace stormkit::wsi::macos {
             m_window->drawBitmap(std::bit_cast<unsigned char*>(stdr::data(m_pixels)));
         }
 
-        auto fill_framebuffer(std::span<const ucolor_rgb> pixels) noexcept -> void {
+        auto fill_framebuffer(array_view<const ucolor_rgb> pixels) noexcept -> void {
             const auto [width, height] = extent();
             const auto count           = std::min(as<u32>(stdr::size(pixels)), height * width);
             if (stdr::size(pixels) > stdr::size(m_pixels)) m_pixels.resize(stdr::size(pixels));
@@ -102,7 +102,7 @@ export namespace stormkit::wsi::macos {
             m_window->drawBitmap(std::bit_cast<unsigned char*>(stdr::data(m_pixels)));
         }
 
-        auto set_title(std::string title) noexcept -> void {
+        auto set_title(string title) noexcept -> void {
             if (WindowBase::set_title(std::move(title))) {
                 m_window->setTitle(swift::String { m_state.title });
             }
@@ -205,6 +205,6 @@ export namespace stormkit::wsi::macos {
       private:
         DeferInit<macOS::Window> m_window;
 
-        std::vector<u32> m_pixels;
+        dyn_array<u32> m_pixels;
     };
 } // namespace stormkit::wsi::macos

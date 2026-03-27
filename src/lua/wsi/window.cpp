@@ -42,7 +42,7 @@ namespace stormkit::lua::wsi {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto open_window(std::string name, u32 width, u32 height, wsi::WindowFlag flags) noexcept -> wsi::Window {
+    auto open_window(string name, u32 width, u32 height, wsi::WindowFlag flags) noexcept -> wsi::Window {
         return wsi::Window::open(std::move(name), { width, height }, flags);
     }
 

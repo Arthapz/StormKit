@@ -18,7 +18,7 @@ namespace {
 
                                                          auto node = TreeNode {};
                                                          EXPECTS(node.name() == ""s);
-                                                         node.set_name(std::string { name });
+                                                         node.set_name(string { name });
                                                          EXPECTS(node.name() == name);
                                                      } } } };
 } // namespace

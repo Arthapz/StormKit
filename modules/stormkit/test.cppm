@@ -16,32 +16,32 @@ import stormkit.core;
 import std;
 import frozen;
 
+using namespace stormkit;
+
 export namespace test {
     struct TestFunc {
-        std::string           name;
+        string                name;
         std::function<void()> func;
     };
 
     struct TestSuiteHolder {
-        auto                  hasTest(std::string_view name) noexcept;
-        auto                  runTest(std::string_view name) noexcept;
-        auto                  runTests() noexcept;
-        std::string           name;
-        std::vector<TestFunc> tests;
-        std::source_location  location;
+        auto                 hasTest(string_view name) noexcept;
+        auto                 runTest(string_view name) noexcept;
+        auto                 runTests() noexcept;
+        string               name;
+        dyn_array<TestFunc>  tests;
+        std::source_location location;
     };
 
     struct TestSuite {
-        TestSuite(std::string&&               name,
-                  std::vector<TestFunc>&&     tests,
+        TestSuite(string&&                    name,
+                  dyn_array<TestFunc>&&       tests,
                   const std::source_location& location = std::source_location::current()) noexcept;
     };
 
-    auto expects(bool                        cond,
-                 std::string_view            message,
-                 const std::source_location& location = std::source_location::current()) noexcept;
+    auto expects(bool cond, string_view message, const std::source_location& location = std::source_location::current()) noexcept;
 
-    auto parse_args(std::span<const std::string_view> args) noexcept -> void;
+    auto parse_args(array_view<const string_view> args) noexcept -> void;
     auto runTests() noexcept -> int;
 } // namespace test
 
@@ -58,26 +58,25 @@ namespace test {
     };
 
     struct TestState {
-        std::vector<std::unique_ptr<TestSuiteHolder>> test_suites;
-        bool                                          verbose        = false;
-        bool                                          failed         = false;
-        bool                                          plain          = false;
-        std::optional<std::string>                    requested_test = std::nullopt;
+        dyn_array<std::unique_ptr<TestSuiteHolder>> test_suites;
+        bool                                        verbose        = false;
+        bool                                        failed         = false;
+        bool                                        plain          = false;
+        std::optional<string>                       requested_test = std::nullopt;
     };
 
     namespace {
-        constexpr auto StyleMap = frozen::make_unordered_map<Status, stormkit::ConsoleStyle>({
-          { Status::Passed,    stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK, .bg = stormkit::ConsoleColor::GREEN } },
-          { Status::NotPassed,
-           stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK, .bg = stormkit::ConsoleColor::RED }                       },
+        constexpr auto StyleMap = frozen::make_unordered_map<Status, ConsoleStyle>({
+          { Status::Passed,    ConsoleStyle { .fg = ConsoleColor::BLACK, .bg = ConsoleColor::GREEN } },
+          { Status::NotPassed, ConsoleStyle { .fg = ConsoleColor::BLACK, .bg = ConsoleColor::RED }   },
           { Status::CheckMark,
-           stormkit::ConsoleStyle {
-              .fg = stormkit::ConsoleColor::GREEN,
-            }                                                                                                                      },
+           ConsoleStyle {
+              .fg = ConsoleColor::GREEN,
+            }                                                                                        },
           { Status::CrossMark,
-           stormkit::ConsoleStyle {
-              .fg = stormkit::ConsoleColor::RED,
-            }                                                                                                                      },
+           ConsoleStyle {
+              .fg = ConsoleColor::RED,
+            }                                                                                        },
         });
 
         constexpr auto passed     = StyleMap.at(Status::Passed) | "Passed"sv;
@@ -88,7 +87,7 @@ namespace test {
 
     auto state = TestState {};
 
-    auto TestSuiteHolder::hasTest(std::string_view _name) noexcept {
+    auto TestSuiteHolder::hasTest(string_view _name) noexcept {
         for (auto&& test : tests) {
             if (test.name == _name) return true;
         }
@@ -96,7 +95,7 @@ namespace test {
         return false;
     }
 
-    auto TestSuiteHolder::runTest(std::string_view _name) noexcept {
+    auto TestSuiteHolder::runTest(string_view _name) noexcept {
         for (auto&& test : tests) {
             if (test.name == _name) {
                 if (state.verbose) std::println("     running test {}", test.name);
@@ -137,11 +136,11 @@ namespace test {
         return failed_tests == 0;
     }
 
-    TestSuite::TestSuite(std::string&& _name, std::vector<TestFunc>&& tests, const std::source_location& location) noexcept {
+    TestSuite::TestSuite(string&& _name, dyn_array<TestFunc>&& tests, const std::source_location& location) noexcept {
         state.test_suites.emplace_back(std::make_unique<TestSuiteHolder>(std::move(_name), std::move(tests), location));
     }
 
-    auto expects(bool cond, std::string_view message, const std::source_location& location) noexcept {
+    auto expects(bool cond, string_view message, const std::source_location& location) noexcept {
         if (not cond) [[unlikely]] {
             state.failed = true;
             if (state.verbose) {
@@ -154,16 +153,16 @@ namespace test {
         }
     }
 
-    auto split(std::string_view string, char delim) noexcept -> std::vector<std::string> {
-        auto output = std::vector<std::string> {};
+    auto split(string_view str, char delim) noexcept -> dyn_array<string> {
+        auto output = dyn_array<string> {};
         auto first  = std::size_t { 0u };
 
-        while (first < string.size()) {
-            const auto second = string.find_first_of(delim, first);
+        while (first < str.size()) {
+            const auto second = str.find_first_of(delim, first);
 
-            if (first != second) output.emplace_back(string.substr(first, second - first));
+            if (first != second) output.emplace_back(str.substr(first, second - first));
 
-            if (second == std::string_view::npos) break;
+            if (second == string_view::npos) break;
 
             first = second + 1;
         }
@@ -171,7 +170,7 @@ namespace test {
         return output;
     }
 
-    auto parse_args(std::span<const std::string_view> args) noexcept -> void {
+    auto parse_args(array_view<const string_view> args) noexcept -> void {
         for (auto&& arg : args) {
             if (arg == "--verbose" or arg == "-v") state.verbose = true;
             else if (arg == "--plain" or arg == "-p")

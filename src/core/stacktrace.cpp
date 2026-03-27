@@ -20,8 +20,8 @@ import :console;
 import :string.operations;
 
 namespace stormkit { inline namespace core {
-    auto prettify(std::string_view str) -> std::string {
-        auto out = std::string { str };
+    auto prettify(string_view str) -> string {
+        auto out = string { str };
         out      = replace(out, "::__1::", "::");
         out      = replace(out, "::$_0::", "::");
         out      = replace(out, "__invoke", "invoke");

@@ -87,7 +87,7 @@ class Application: public base::Application {
                                "Failed to create raster pipeline!");
 
         // create present engine resources
-        m_submission_resources = init_by<std::vector<SubmissionResource>>([&](auto& out) noexcept {
+        m_submission_resources = init_by<dyn_array<SubmissionResource>>([&](auto& out) noexcept {
             out.reserve(BUFFERING_COUNT);
             for (auto _ : range(BUFFERING_COUNT)) {
                 out.push_back({
@@ -116,12 +116,11 @@ class Application: public base::Application {
         for (const auto& swap_image : images) {
             auto view = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view!");
 
-            m_image_resources
-              .push_back({ .image           = swap_image,
-                           .view            = std::move(view),
-                           .render_finished = TryAssert(gpu::Semaphore::create(m_device),
-                                                        "Failed to create render "
-                                                        "signal semaphore!") });
+            m_image_resources.push_back({ .image           = swap_image,
+                                          .view            = std::move(view),
+                                          .render_finished = TryAssert(gpu::Semaphore::create(m_device),
+                                                                       "Failed to create render "
+                                                                       "signal semaphore!") });
 
             auto& transition_cmb = transition_cmbs[image_index];
             TryDiscardAssert((transition_cmb.record([&](auto cmb) noexcept {
@@ -165,7 +164,7 @@ class Application: public base::Application {
         const auto& swapchain_image_resource = m_image_resources[image_index];
         const auto& signal                   = swapchain_image_resource.render_finished;
 
-        static constexpr auto PIPELINE_FLAGS = std::array { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT };
+        static constexpr auto PIPELINE_FLAGS = array { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT };
 
         const auto window_extent  = m_window->extent().to<i32>();
         const auto rendering_info = gpu::RenderingInfo {
@@ -205,20 +204,20 @@ class Application: public base::Application {
         if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
     }
 
-    constexpr auto example_name() const noexcept -> std::string_view { return "Triangle"; }
+    constexpr auto example_name() const noexcept -> string_view { return "Triangle"; }
 
   private:
-    DeferInit<gpu::Shader>              m_vertex_shader;
-    DeferInit<gpu::Shader>              m_fragment_shader;
-    DeferInit<gpu::PipelineLayout>      m_pipeline_layout;
-    DeferInit<gpu::RenderPass>          m_render_pass;
-    DeferInit<gpu::Pipeline>            m_pipeline;
-    std::vector<SubmissionResource>     m_submission_resources;
-    std::vector<SwapchainImageResource> m_image_resources;
-    usize                               m_current_frame = 0_usize;
+    DeferInit<gpu::Shader>            m_vertex_shader;
+    DeferInit<gpu::Shader>            m_fragment_shader;
+    DeferInit<gpu::PipelineLayout>    m_pipeline_layout;
+    DeferInit<gpu::RenderPass>        m_render_pass;
+    DeferInit<gpu::Pipeline>          m_pipeline;
+    dyn_array<SubmissionResource>     m_submission_resources;
+    dyn_array<SwapchainImageResource> m_image_resources;
+    usize                             m_current_frame = 0_usize;
 };
 
-auto main(std::span<const std::string_view> args) -> int {
+auto main(array_view<const string_view> args) -> int {
     auto app = Application {};
     app.run(args);
     return 0;

@@ -18,57 +18,57 @@ namespace stdr = std::ranges;
 export namespace stormkit { inline namespace core {
 
     // template<template<class> typename Container = std::inplace_vector, typename T>
-    template<template<class> typename Container = std::vector, typename T>
+    template<template<class> typename Container = dyn_array, typename T>
     constexpr auto filled_with(usize size, T value) noexcept -> Container<T>;
 
     template<usize N, typename T>
-    constexpr auto filled_with(T value) noexcept -> std::array<T, N>;
+    constexpr auto filled_with(T value) noexcept -> array<T, N>;
 
     template<stdr::range Out, stdr::input_range... Inputs>
     constexpr auto merge(Out& output, const Inputs&... ranges) noexcept -> void;
 
-    template<template<class...> typename Out = std::vector, stdr::input_range... Inputs>
+    template<template<class...> typename Out = dyn_array, stdr::input_range... Inputs>
     constexpr auto concat(const Inputs&... inputs) noexcept -> Out<meta::CanonicalType<meta::RangeType<Inputs...[0]>>>;
 
     template<stdr::range Out, stdr::input_range... Inputs>
     constexpr auto move_and_merge(Out& output, Inputs&&... ranges) noexcept -> void;
 
-    template<template<class...> typename Out = std::vector, stdr::input_range... Inputs>
+    template<template<class...> typename Out = dyn_array, stdr::input_range... Inputs>
     constexpr auto move_and_concat(Inputs&&... inputs) noexcept -> Out<meta::CanonicalType<meta::RangeType<Inputs...[0]>>>;
 
     using std::to_array;
 
     template<stdr::input_range T>
-    constexpr auto to_dyn_array(T&& range) noexcept -> std::vector<stdr::range_value_t<T>>;
+    constexpr auto to_dyn_array(T&& range) noexcept -> dyn_array<stdr::range_value_t<T>>;
 
     template<typename... Args>
         requires(sizeof...(Args) > 0)
-    constexpr auto into_array(Args&&... args) noexcept -> std::array<meta::CanonicalType<Args...[0]>, sizeof...(Args)>;
+    constexpr auto into_array(Args&&... args) noexcept -> array<meta::CanonicalType<Args...[0]>, sizeof...(Args)>;
 
     template<typename T, typename... Args>
         requires(sizeof...(Args) > 0)
-    constexpr auto into_array_of(Args&&... args) noexcept -> std::array<T, sizeof...(Args)>;
+    constexpr auto into_array_of(Args&&... args) noexcept -> array<T, sizeof...(Args)>;
 
     template<typename... Args>
         requires(sizeof...(Args) > 0)
-    constexpr auto into_dyn_array(Args&&... args) noexcept -> std::vector<meta::CanonicalType<Args...[0]>>;
+    constexpr auto into_dyn_array(Args&&... args) noexcept -> dyn_array<meta::CanonicalType<Args...[0]>>;
 
     template<typename T, typename... Args>
         requires(sizeof...(Args) > 0)
-    constexpr auto into_dyn_array_of(Args&&... args) noexcept -> std::vector<T>;
+    constexpr auto into_dyn_array_of(Args&&... args) noexcept -> dyn_array<T>;
 
     template<meta::IsStringLike T>
-    constexpr auto as_view(T& range) noexcept -> std::string_view;
+    constexpr auto as_view(T& range) noexcept -> string_view;
 
     template<typename T>
         requires(not stdr::range<T>)
-    constexpr auto as_view(T& value) noexcept -> std::span<T>;
+    constexpr auto as_view(T& value) noexcept -> array_view<T>;
 
     template<stdr::contiguous_range T>
-    constexpr auto as_view(T& range) noexcept -> std::span<meta::ForwardConst<T, stdr::range_value_t<T>>>;
+    constexpr auto as_view(T& range) noexcept -> array_view<meta::ForwardConst<T, stdr::range_value_t<T>>>;
 
     template<stdr::contiguous_range T>
-    constexpr auto as_view(T& range, Force) noexcept -> std::span<meta::ForwardConst<T, stdr::range_value_t<T>>>;
+    constexpr auto as_view(T& range, Force) noexcept -> array_view<meta::ForwardConst<T, stdr::range_value_t<T>>>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -91,8 +91,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<usize N, typename T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto filled_with(T value) noexcept -> std::array<T, N> {
-        auto out = std::array<T, N> {};
+    constexpr auto filled_with(T value) noexcept -> array<T, N> {
+        auto out = array<T, N> {};
         std::ranges::fill(out, value);
         return out;
     }
@@ -146,8 +146,8 @@ namespace stormkit { inline namespace core {
     template<stdr::input_range T>
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
-    constexpr auto to_dyn_array(T&& range) noexcept -> std::vector<stdr::range_value_t<T>> {
-        return std::forward<T>(range) | stdr::to<std::vector>();
+    constexpr auto to_dyn_array(T&& range) noexcept -> dyn_array<stdr::range_value_t<T>> {
+        return std::forward<T>(range) | stdr::to<dyn_array<stdr::range_value_t<T>>>();
     }
 
     /////////////////////////////////////
@@ -156,11 +156,11 @@ namespace stormkit { inline namespace core {
         requires(sizeof...(Args) > 0)
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
-    constexpr auto into_array(Args&&... args) noexcept -> std::array<meta::CanonicalType<Args...[0]>, sizeof...(Args)> {
+    constexpr auto into_array(Args&&... args) noexcept -> array<meta::CanonicalType<Args...[0]>, sizeof...(Args)> {
         static_assert((not meta::IsLValueReference<Args> and ...),
                       "lvalue reference can't be passed to into_ functions as it take "
                       "ownership");
-        return std::array { std::move(args)... };
+        return array { std::move(args)... };
     }
 
     /////////////////////////////////////
@@ -169,8 +169,8 @@ namespace stormkit { inline namespace core {
         requires(sizeof...(Args) > 0)
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
-    constexpr auto into_array_of(Args&&... args) noexcept -> std::array<T, sizeof...(Args)> {
-        return std::array<T, sizeof...(Args)> { T { std::move(args) }... };
+    constexpr auto into_array_of(Args&&... args) noexcept -> array<T, sizeof...(Args)> {
+        return array<T, sizeof...(Args)> { T { std::move(args) }... };
     }
 
     /////////////////////////////////////
@@ -178,11 +178,11 @@ namespace stormkit { inline namespace core {
     template<typename... Args>
         requires(sizeof...(Args) > 0)
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto into_dyn_array(Args&&... args) noexcept -> std::vector<meta::CanonicalType<Args...[0]>> {
+    constexpr auto into_dyn_array(Args&&... args) noexcept -> dyn_array<meta::CanonicalType<Args...[0]>> {
         static_assert((not meta::IsLValueReference<Args> and ...),
                       "lvalue reference can't be passed to into_ functions as it take "
                       "ownership");
-        return std::vector { std::move(args)... };
+        return dyn_array { std::move(args)... };
     }
 
     /////////////////////////////////////
@@ -190,8 +190,8 @@ namespace stormkit { inline namespace core {
     template<typename T, typename... Args>
         requires(sizeof...(Args) > 0)
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto into_dyn_array_of(Args&&... args) noexcept -> std::vector<T> {
-        return std::vector<T> { T { std::move(args) }... };
+    constexpr auto into_dyn_array_of(Args&&... args) noexcept -> dyn_array<T> {
+        return dyn_array<T> { T { std::move(args) }... };
     }
 
     /////////////////////////////////////
@@ -199,8 +199,8 @@ namespace stormkit { inline namespace core {
     template<meta::IsStringLike T>
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
-    constexpr auto as_view(T& range) noexcept -> std::string_view {
-        return std::string_view { range };
+    constexpr auto as_view(T& range) noexcept -> string_view {
+        return string_view { range };
     }
 
     /////////////////////////////////////
@@ -208,7 +208,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
         requires(not stdr::range<T>)
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto as_view(T& value) noexcept -> std::span<T> {
+    constexpr auto as_view(T& value) noexcept -> array_view<T> {
         return { &value, 1 };
     }
 
@@ -216,7 +216,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<stdr::contiguous_range T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto as_view(T& range) noexcept -> std::span<meta::ForwardConst<T, stdr::range_value_t<T>>> {
+    constexpr auto as_view(T& range) noexcept -> array_view<meta::ForwardConst<T, stdr::range_value_t<T>>> {
         return { range };
     }
 
@@ -224,7 +224,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<stdr::contiguous_range T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto as_view(T& range, Force) noexcept -> std::span<meta::ForwardConst<T, stdr::range_value_t<T>>> {
+    constexpr auto as_view(T& range, Force) noexcept -> array_view<meta::ForwardConst<T, stdr::range_value_t<T>>> {
         return { range };
     }
 }} // namespace stormkit::core

@@ -24,7 +24,7 @@ namespace {
                 auto e = 4;
                 auto f = 5;
 
-                auto refs = to_refs<std::vector>(a, b, c, d, e, f);
+                auto refs = to_refs<dyn_array>(a, b, c, d, e, f);
 
                 auto i = 0;
                 for (auto&& ref : refs) EXPECTS(*ref == i++);
@@ -38,7 +38,7 @@ namespace {
                 auto e = 4;
                 auto f = 5;
 
-                auto refs = as_refs<std::array>(a, b, c, d, e, f);
+                auto refs = as_refs<array>(a, b, c, d, e, f);
 
                 auto i = 0;
                 for (auto&& ref : refs) EXPECTS(*ref == i++);
@@ -66,7 +66,7 @@ namespace {
                 auto e = new int { 4 };
                 auto f = 5;
 
-                auto refs = to_refs<std::vector>(a, b, c, d, e, &f);
+                auto refs = to_refs<dyn_array>(a, b, c, d, e, &f);
 
                 auto i = 0;
                 for (auto&& ref : refs) EXPECTS(*ref == i++);
@@ -83,7 +83,7 @@ namespace {
                 auto e = new int { 4 };
                 auto f = 5;
 
-                auto refs = as_refs<std::array>(a, b, c, d, e, &f);
+                auto refs = as_refs<array>(a, b, c, d, e, &f);
 
                 auto i = 0;
                 for (auto&& ref : refs) EXPECTS(*ref == i++);
@@ -110,7 +110,7 @@ namespace {
             } },
           { "ref.to_refs.std_set",
             [] static noexcept {
-                auto vec  = std::vector { 1, 3, 5, 6, 9 };
+                auto vec  = dyn_array { 1, 3, 5, 6, 9 };
                 auto refs = to_refs<std::set>(vec);
 
                 auto i = 0u;
@@ -118,7 +118,7 @@ namespace {
             } },
           { "ref.to_refs.default",
             [] static noexcept {
-                constexpr auto vec  = std::array { 1, 3, 5, 6, 9 };
+                constexpr auto vec  = array { 1, 3, 5, 6, 9 };
                 auto           refs = to_refs(vec);
 
                 auto i = 0u;

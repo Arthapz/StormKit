@@ -87,30 +87,30 @@ export namespace stormkit::gpu::vk {
     template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
         requires(meta::HasNoReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
     [[nodiscard]]
-    auto allocate(usize count, const Func& func, Args&&... args) noexcept -> std::vector<Out>;
+    auto allocate(usize count, const Func& func, Args&&... args) noexcept -> dyn_array<Out>;
 
     template<typename Out, typename... Args, VkResult... SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args...> Func>
         requires(meta::HasResultReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
-    auto allocate_checked(usize count, const Func& func, Args&&... args) noexcept -> Expected<std::vector<Out>>;
+    auto allocate_checked(usize count, const Func& func, Args&&... args) noexcept -> Expected<dyn_array<Out>>;
 
     template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
         requires(meta::HasResultReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
     [[nodiscard]]
-    auto allocate_unchecked(usize count, const Func& func, Args&&... args) noexcept -> std::vector<Out>;
+    auto allocate_unchecked(usize count, const Func& func, Args&&... args) noexcept -> dyn_array<Out>;
 
     template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
         requires(meta::HasNoReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
     [[nodiscard]]
-    auto enumerate(const Func& func, Args&&... args) noexcept -> std::vector<Out>;
+    auto enumerate(const Func& func, Args&&... args) noexcept -> dyn_array<Out>;
 
     template<typename Out, typename... Args, VkResult... SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
         requires(meta::HasResultReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
-    auto enumerate_checked(const Func& func, Args&&... args) noexcept -> Expected<std::vector<Out>>;
+    auto enumerate_checked(const Func& func, Args&&... args) noexcept -> Expected<dyn_array<Out>>;
 
     template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
         requires(meta::HasResultReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
     [[nodiscard]]
-    auto enumerate_unchecked(const Func& func, Args&&... args) noexcept -> std::vector<Out>;
+    auto enumerate_unchecked(const Func& func, Args&&... args) noexcept -> dyn_array<Out>;
 
     template<typename T>
     class Owned {
@@ -245,7 +245,7 @@ namespace stormkit::gpu::vk {
     /////////////////////////////////////
     template<VkResult... _SUCCESS_RESULTS, typename... Args, meta::HasResultReturnValue<Args...> Func>
     inline auto call_checked(const Func& func, Args&&... args) noexcept -> Expected<void> {
-        static constexpr auto SUCCESS_RESULTS = std::array { VK_SUCCESS, _SUCCESS_RESULTS... };
+        static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
 
         using OutExpected = Expected<void>;
         auto out_expected = OutExpected { std::in_place };
@@ -261,7 +261,7 @@ namespace stormkit::gpu::vk {
     /////////////////////////////////////
     template<cmeta::Is<VkResult> Out, VkResult... _SUCCESS_RESULTS, typename... Args, meta::HasResultReturnValue<Args...> Func>
     inline auto call_checked(const Func& func, Args&&... args) noexcept -> Expected<Out> {
-        static constexpr auto SUCCESS_RESULTS = std::array { VK_SUCCESS, _SUCCESS_RESULTS... };
+        static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
 
         using OutExpected = Expected<Out>;
         auto out_expected = OutExpected { std::in_place };
@@ -280,7 +280,7 @@ namespace stormkit::gpu::vk {
     template<typename Out, typename... Args, VkResult... _SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args...> Func>
         requires meta::HasResultReturnValue<Func, Args..., Out*>
     inline auto call_checked(const Func& func, Args&&... args) noexcept -> Expected<Out> {
-        static constexpr auto SUCCESS_RESULTS = std::array { VK_SUCCESS, _SUCCESS_RESULTS... };
+        static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
 
         using OutExpected = Expected<Out>;
         auto out_expected = OutExpected { std::in_place };
@@ -326,8 +326,8 @@ namespace stormkit::gpu::vk {
     /////////////////////////////////////
     template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
         requires(meta::HasNoReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
-    inline auto allocate(usize count, const Func& func, Args&&... args) noexcept -> std::vector<Out> {
-        auto out = std::vector<Out> {};
+    inline auto allocate(usize count, const Func& func, Args&&... args) noexcept -> dyn_array<Out> {
+        auto out = dyn_array<Out> {};
         out.resize(count, VK_NULL_HANDLE);
         std::invoke(func, std::forward<Args>(args)..., stdr::data(out));
         return out;
@@ -337,13 +337,13 @@ namespace stormkit::gpu::vk {
     /////////////////////////////////////
     template<typename Out, typename... Args, VkResult... _SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args...> Func>
         requires(meta::HasResultReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
-    inline auto allocate_checked(usize count, const Func& func, Args&&... args) noexcept -> Expected<std::vector<Out>> {
-        static constexpr auto SUCCESS_RESULTS = std::array { VK_SUCCESS, _SUCCESS_RESULTS... };
+    inline auto allocate_checked(usize count, const Func& func, Args&&... args) noexcept -> Expected<dyn_array<Out>> {
+        static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
 
-        using OutExpected = Expected<std::vector<Out>>;
+        using OutExpected = Expected<dyn_array<Out>>;
         auto out_expected = OutExpected { std::in_place };
 
-        auto out = std::vector<Out> {};
+        auto out = dyn_array<Out> {};
         out.resize(count, VK_NULL_HANDLE);
         const auto result = std::invoke(func, std::forward<Args>(args)..., stdr::data(out));
         if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is_equal(result))) [[likely]]
@@ -358,8 +358,8 @@ namespace stormkit::gpu::vk {
     /////////////////////////////////////
     template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
         requires(meta::HasResultReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
-    inline auto allocate_unchecked(usize count, const Func& func, Args&&... args) noexcept -> std::vector<Out> {
-        auto out = std::vector<Out> {};
+    inline auto allocate_unchecked(usize count, const Func& func, Args&&... args) noexcept -> dyn_array<Out> {
+        auto out = dyn_array<Out> {};
         out.resize(count, VK_NULL_HANDLE);
         const auto _ = std::invoke(func, std::forward<Args>(args)..., stdr::data(out));
         return out;
@@ -369,8 +369,8 @@ namespace stormkit::gpu::vk {
     /////////////////////////////////////
     template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
         requires(meta::HasNoReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
-    inline auto enumerate(const Func& func, Args&&... args) noexcept -> std::vector<Out> {
-        auto out  = std::vector<Out> {};
+    inline auto enumerate(const Func& func, Args&&... args) noexcept -> dyn_array<Out> {
+        auto out  = dyn_array<Out> {};
         auto size = 0_u32;
         std::invoke(func, std::forward<Args>(args)..., &size, nullptr);
         out.resize(size);
@@ -383,13 +383,13 @@ namespace stormkit::gpu::vk {
     /////////////////////////////////////
     template<typename Out, typename... Args, VkResult... _SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
         requires(meta::HasResultReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
-    inline auto enumerate_checked(const Func& func, Args&&... args) noexcept -> Expected<std::vector<Out>> {
-        static constexpr auto SUCCESS_RESULTS = std::array { VK_SUCCESS, _SUCCESS_RESULTS... };
+    inline auto enumerate_checked(const Func& func, Args&&... args) noexcept -> Expected<dyn_array<Out>> {
+        static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
 
-        using OutExpected = Expected<std::vector<Out>>;
+        using OutExpected = Expected<dyn_array<Out>>;
         auto out_expected = OutExpected { std::in_place };
 
-        auto out  = std::vector<Out> {};
+        auto out  = dyn_array<Out> {};
         auto size = 0_u32;
         {
             const auto result = std::invoke(func, std::forward<Args>(args)..., &size, nullptr);
@@ -412,8 +412,8 @@ namespace stormkit::gpu::vk {
     /////////////////////////////////////
     template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
         requires(meta::HasResultReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
-    inline auto enumerate_unchecked(const Func& func, Args&&... args) noexcept -> std::vector<Out> {
-        auto       out  = std::vector<Out> {};
+    inline auto enumerate_unchecked(const Func& func, Args&&... args) noexcept -> dyn_array<Out> {
+        auto       out  = dyn_array<Out> {};
         auto       size = 0_u32;
         const auto _    = std::invoke(func, std::forward<Args>(args)..., &size, nullptr);
         out.resize(size);

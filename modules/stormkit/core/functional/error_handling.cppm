@@ -17,16 +17,16 @@ import :utils.contract;
 
 export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]
-    constexpr auto assert(std::optional<std::string> message  = std::nullopt,
-                          std::source_location       location = std::source_location::current()) noexcept -> decltype(auto);
+    constexpr auto assert(std::optional<string> message  = std::nullopt,
+                          std::source_location  location = std::source_location::current()) noexcept -> decltype(auto);
 
     template<typename T>
     [[nodiscard]]
-    constexpr auto assert(std::optional<std::string> message  = std::nullopt,
-                          std::source_location       location = std::source_location::current()) noexcept -> decltype(auto);
+    constexpr auto assert(std::optional<string> message  = std::nullopt,
+                          std::source_location  location = std::source_location::current()) noexcept -> decltype(auto);
 
     [[nodiscard]]
-    constexpr auto log(std::invocable auto&& logger, std::string&& message) noexcept -> decltype(auto);
+    constexpr auto log(std::invocable auto&& logger, string&& message) noexcept -> decltype(auto);
 
     [[nodiscard]]
     constexpr auto throw_as_exception() noexcept -> decltype(auto);
@@ -47,7 +47,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     ////////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    constexpr auto assert(std::optional<std::string> message, std::source_location location) noexcept -> decltype(auto) {
+    constexpr auto assert(std::optional<string> message, std::source_location location) noexcept -> decltype(auto) {
         return [message = std::move(message), location = std::move(location)]<typename E> NORETURN_LAMBDA(const E& error) -> T {
             if (message.has_value()) core::assert(false, std::format("{} ({})", *message, error), std::move(location));
             else
@@ -60,7 +60,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto assert(std::optional<std::string> message, std::source_location location) noexcept -> decltype(auto) {
+    constexpr auto assert(std::optional<string> message, std::source_location location) noexcept -> decltype(auto) {
         return [message = std::move(message), location = std::move(location)]<typename E> NORETURN_LAMBDA(const E& error) -> E {
             if (message.has_value()) core::assert(false, std::format("{} ({})", *message, error), std::move(location));
             else
@@ -73,7 +73,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto log(std::invocable auto&& logger, std::string&& message) noexcept -> decltype(auto) {
+    constexpr auto log(std::invocable auto&& logger, string&& message) noexcept -> decltype(auto) {
         return [logger  = std::forward<decltype(logger)>,
                 message = std::move(message)](auto&& error) -> std::expected<void, meta::CanonicalType<decltype(error)>> {
             logger(message, error);

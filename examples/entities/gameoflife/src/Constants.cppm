@@ -24,10 +24,10 @@ export {
         = sizeof(stormkit::math::fvec2) + sizeof(stormkit::fvec3);
     inline constexpr auto WINDOW_TITLE                     = "StormKit GameOfLife Example";
     inline constexpr auto MESH_VERTEX_BUFFER_SIZE          = VERTEX_SIZE * 3;
-    inline constexpr auto MESH_VERTEX_BINDING_DESCRIPTIONS = std::array {
+    inline constexpr auto MESH_VERTEX_BINDING_DESCRIPTIONS = array {
         stormkit::gpu::VertexBindingDescription { .binding = 0, .stride = VERTEX_SIZE }
     };
-    inline constexpr auto MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS = std::array {
+    inline constexpr auto MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS = array {
         stormkit::gpu::VertexInputAttributeDescription { .location = 0,
                                                         .binding  = 0,
                                                         .format   = stormkit::gpu::format::f322,

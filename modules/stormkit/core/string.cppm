@@ -5,7 +5,7 @@
 export module stormkit.core:string;
 
 export import :string.constexpr_string;
-export import :string.czstring;
 export import :string.encodings;
 export import :string.format;
 export import :string.operations;
+export import :string.aliases;

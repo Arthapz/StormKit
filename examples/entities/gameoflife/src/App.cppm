@@ -31,7 +31,7 @@ export {
         App();
         ~App() override;
 
-        auto run(const int argc, CZString argv[]) -> stormkit::i32 override;
+        auto run(const int argc, czstring argv[]) -> stormkit::i32 override;
 
       private:
         auto do_initWindow() -> void;

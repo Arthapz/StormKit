@@ -52,7 +52,7 @@ export namespace stormkit { inline namespace core {
 
         auto wait_idle(bool cancel_tasks = false) noexcept -> void;
 
-        auto set_name(std::string_view name) noexcept -> void;
+        auto set_name(string_view name) noexcept -> void;
 
       private:
         struct Task {
@@ -84,7 +84,7 @@ export namespace stormkit { inline namespace core {
 
         u32 m_worker_count = 0;
 
-        std::vector<std::jthread> m_workers;
+        dyn_array<std::jthread> m_workers;
 
         mutable std::mutex          m_mutex;
         std::condition_variable     m_work_signal;
@@ -96,7 +96,7 @@ export namespace stormkit { inline namespace core {
     auto parallel_for(ThreadPool& pool, Range&& range, F&& f) noexcept -> void;
 
     template<std::ranges::input_range Range, std::invocable<meta::RangeType<Range>&> F>
-    auto parallel_for_async(ThreadPool& pool, Range& range, F&& f) noexcept -> std::vector<std::future<void>>;
+    auto parallel_for_async(ThreadPool& pool, Range& range, F&& f) noexcept -> dyn_array<std::future<void>>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto ThreadPool::set_name(std::string_view name) noexcept -> void {
+    inline auto ThreadPool::set_name(string_view name) noexcept -> void {
         // for (auto&& [i, worker] : stdv::enumerate(m_workers))
         for (auto i : range(m_worker_count)) set_thread_name(m_workers[i], std::format("{}:{}", name, i));
     }
@@ -201,12 +201,12 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<std::ranges::input_range Range, std::invocable<meta::RangeType<Range>&> F>
-    inline auto parallel_for_async(ThreadPool& pool, Range& range, F&& f) noexcept -> std::vector<std::future<void>> {
+    inline auto parallel_for_async(ThreadPool& pool, Range& range, F&& f) noexcept -> dyn_array<std::future<void>> {
         const auto size        = stdr::size(range);
         const auto chunk_size  = size / pool.worker_count();
         const auto chunk_count = size / chunk_size;
 
-        auto out = std::vector<std::future<void>> {};
+        auto out = dyn_array<std::future<void>> {};
         out.reserve(chunk_count);
 
         for (auto chunk : stormkit::range(chunk_count)) {

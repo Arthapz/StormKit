@@ -24,7 +24,7 @@ export namespace stormkit { inline namespace core { namespace math {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core { namespace math {
-    constexpr auto FTABLE = std::array<u64, 14> {
+    constexpr auto FTABLE = array<u64, 14> {
         1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800, 479001600, 6227020800
     };
 

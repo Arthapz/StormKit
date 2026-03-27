@@ -29,7 +29,7 @@ namespace stormkit::wsi::macos {
     }
 
     consteval auto generate_key_array() -> decltype(auto) {
-        auto out = std::array<Key, 256> {};
+        auto out = array<Key, 256> {};
         stdr::fill(out, Key::UNKNOWN);
 
         out[0x00] = Key::A;
@@ -159,8 +159,8 @@ namespace stormkit::wsi::macos {
         return out;
     }
 
-    consteval auto generate_scancode_array(std::span<const Key, 256> keys) -> decltype(auto) {
-        auto out = std::array<u8, 256> {};
+    consteval auto generate_scancode_array(array_view<const Key, 256> keys) -> decltype(auto) {
+        auto out = array<u8, 256> {};
         stdr::fill(out, 0);
 
         for (auto i : range(256_u8)) {

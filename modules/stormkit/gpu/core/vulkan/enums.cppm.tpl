@@ -81,7 +81,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::{% outfile:write(name) %}>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
            {% for val_name, value in table.orderpairs(enumeration["values"]) do %}stormkit::gpu::{% outfile:write(name) %}::{% outfile:write(val_name) %},
            {% end %}
         };
@@ -89,7 +89,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::{% outfile:write(name) %}>(stormkit::gpu::{% outfile:write(name) %} value) noexcept -> std::string_view {
+    constexpr auto stormkit::core::as_string<stormkit::gpu::{% outfile:write(name) %}>(stormkit::gpu::{% outfile:write(name) %} value) noexcept -> string_view {
         switch(value) {
            {% for val_name, value in table.orderpairs(enumeration["values"]) do %}case stormkit::gpu::{% outfile:write(name) %}::{% outfile:write(val_name) %}: return "{%  outfile:write(name) %}::{% outfile:write(val_name) %}";
            {% end %}
@@ -98,7 +98,7 @@ export {
     }
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::{% outfile:write(name) %}>(stormkit::gpu::{% outfile:write(name) %} value) noexcept -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::{% outfile:write(name) %}>(stormkit::gpu::{% outfile:write(name) %} value) noexcept -> string {
         switch(value) {
            {% for val_name, value in table.orderpairs(enumeration["values"]) do %}case stormkit::gpu::{% outfile:write(name) %}::{% outfile:write(val_name) %}: return "{%  outfile:write(name) %}::{% outfile:write(val_name) %}";
            {% end %}

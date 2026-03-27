@@ -9,7 +9,9 @@ import std;
 
 #include <stormkit/main/main_macro.hpp>
 
-auto main(std::span<const std::string_view> args) noexcept -> int {
+using namespace stormkit;
+
+auto main(array_view<const string_view> args) noexcept -> i32 {
     test::parse_args(args);
 
     return test::runTests();

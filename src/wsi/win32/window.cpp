@@ -105,7 +105,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(std::string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
+    auto Window::open(string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
         auto style      = DWORD { WS_SYSMENU | WS_BORDER };
         auto style_ex   = DWORD { 0 };
         auto h_instance = GetModuleHandleA(nullptr);
@@ -187,7 +187,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(std::span<const ucolor_rgb> pixels) noexcept -> void {
+    auto Window::fill_framebuffer(array_view<const ucolor_rgb> pixels) noexcept -> void {
         if (m_win32_state.external_context) return;
 
         const auto [width, height] = extent();
@@ -215,7 +215,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(std::string title) noexcept -> void {
+    auto Window::set_title(string title) noexcept -> void {
         SetWindowTextA(m_window_handle, std::data(title));
 
         WindowBase::set_title(std::move(title));

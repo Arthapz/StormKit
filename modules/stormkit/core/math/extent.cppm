@@ -26,7 +26,7 @@ export {
         struct extent;
 
         template<core::meta::IsArithmetic T>
-        struct alignas(std::array<T, 2>) extent<T, 2> {
+        struct alignas(array<T, 2>) extent<T, 2> {
             static constexpr auto RANK = 2uz;
             using ValueType            = T;
             using OrderingType         = meta::ArithmeticOrderingType<T>;
@@ -55,7 +55,7 @@ export {
         using iextent2 = extent2<i32>;
 
         template<core::meta::IsArithmetic T>
-        struct alignas(std::array<T, 3>) extent<T, 3> {
+        struct alignas(array<T, 3>) extent<T, 3> {
             static constexpr auto RANK = 3uz;
             using ValueType            = T;
             using OrderingType         = meta::ArithmeticOrderingType<T>;
@@ -155,10 +155,10 @@ export {
         constexpr auto operator/=(Extent& extent, typename Extent::ValueType factor) noexcept -> Extent&;
 
         template<meta::IsExtent2 Extent>
-        auto to_string(const Extent& extent) noexcept -> std::string;
+        auto to_string(const Extent& extent) noexcept -> string;
 
         template<meta::IsExtent3 Extent>
-        auto to_string(const Extent& extent) noexcept -> std::string;
+        auto to_string(const Extent& extent) noexcept -> string;
 
         template<core::meta::IsArithmetic T, typename FormatContext>
         auto format_as(const extent<T, 2>& extent, FormatContext& ctx) noexcept -> decltype(ctx.out());
@@ -204,8 +204,8 @@ namespace stormkit { inline namespace core { namespace math {
     STORMKIT_PURE
     constexpr auto extent<T, 2>::to() const noexcept -> extent<T, NEW_RANK> {
         using Out        = extent<ValueType, NEW_RANK>;
-        using Array      = std::array<ValueType, RANK>;
-        using OtherArray = std::array<typename Out::ValueType, Out::RANK>;
+        using Array      = array<ValueType, RANK>;
+        using OtherArray = array<typename Out::ValueType, Out::RANK>;
 
         auto out = Out {};
 
@@ -245,8 +245,8 @@ namespace stormkit { inline namespace core { namespace math {
     STORMKIT_PURE
     constexpr auto extent<T, 3>::to() const noexcept -> extent<T, NEW_RANK> {
         using Out        = extent<ValueType, NEW_RANK>;
-        using Array      = std::array<ValueType, RANK>;
-        using OtherArray = std::array<typename Out::ValueType, Out::RANK>;
+        using Array      = array<ValueType, RANK>;
+        using OtherArray = array<typename Out::ValueType, Out::RANK>;
 
         auto out = Out {};
 
@@ -266,7 +266,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<meta::IsExtent Extent>
     STORMKIT_PURE
     constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept -> typename Extent::OrderingType {
-        using Array                = std::array<typename Extent::ValueType, Extent::RANK>;
+        using Array                = array<typename Extent::ValueType, Extent::RANK>;
         using OrderingType         = typename Extent::OrderingType;
         static constexpr auto RANK = Extent::RANK;
 
@@ -284,7 +284,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<meta::IsExtent Extent>
     STORMKIT_PURE
     constexpr auto operator==(const Extent& first, const Extent& second) noexcept -> bool {
-        using Array                = std::array<typename Extent::ValueType, Extent::RANK>;
+        using Array                = array<typename Extent::ValueType, Extent::RANK>;
         static constexpr auto RANK = Extent::RANK;
 
         const auto& values       = *std::bit_cast<Array*>(&first);
@@ -319,7 +319,7 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto operator*=(Extent& extent, typename Extent::ValueType factor) noexcept -> Extent& {
         using ValueType              = typename Extent::ValueType;
         static constexpr auto RANK   = Extent::RANK;
-        auto&                 values = *std::bit_cast<std::array<ValueType, RANK>>(&extent);
+        auto&                 values = *std::bit_cast<array<ValueType, RANK>>(&extent);
         for (auto&& val : values) val *= factor;
         return extent;
     }
@@ -331,7 +331,7 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto operator/=(Extent& extent, typename Extent::ValueType factor) noexcept -> Extent& {
         using ValueType              = typename Extent::ValueType;
         static constexpr auto RANK   = Extent::RANK;
-        auto&                 values = *std::bit_cast<std::array<ValueType, RANK>>(&extent);
+        auto&                 values = *std::bit_cast<array<ValueType, RANK>>(&extent);
         for (auto&& val : values) val /= factor;
         return extent;
     }
@@ -340,7 +340,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<stormkit::math::meta::IsExtent2 Extent>
     STORMKIT_FORCE_INLINE
-    inline auto to_string(const Extent& extent) noexcept -> std::string {
+    inline auto to_string(const Extent& extent) noexcept -> string {
         return std::format("{}", extent);
     }
 
@@ -348,7 +348,7 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<stormkit::math::meta::IsExtent3 Extent>
     STORMKIT_FORCE_INLINE
-    inline auto to_string(const Extent& extent) noexcept -> std::string {
+    inline auto to_string(const Extent& extent) noexcept -> string {
         return std::format("{}", extent);
     }
 
@@ -385,20 +385,20 @@ namespace stormkit { inline namespace core { namespace math {
     }
 }}} // namespace stormkit::core::math
 
-static_assert(sizeof(math::uextent2) == sizeof(std::array<u32, 2>));
-static_assert(sizeof(math::uextent3) == sizeof(std::array<u32, 3>));
+static_assert(sizeof(math::uextent2) == sizeof(array<u32, 2>));
+static_assert(sizeof(math::uextent3) == sizeof(array<u32, 3>));
 
-static_assert(sizeof(math::iextent2) == sizeof(std::array<i32, 2>));
-static_assert(sizeof(math::iextent3) == sizeof(std::array<i32, 3>));
+static_assert(sizeof(math::iextent2) == sizeof(array<i32, 2>));
+static_assert(sizeof(math::iextent3) == sizeof(array<i32, 3>));
 
-static_assert(sizeof(math::extent2<u16>) == sizeof(std::array<u16, 2>));
-static_assert(sizeof(math::extent3<u16>) == sizeof(std::array<u16, 3>));
+static_assert(sizeof(math::extent2<u16>) == sizeof(array<u16, 2>));
+static_assert(sizeof(math::extent3<u16>) == sizeof(array<u16, 3>));
 
-static_assert(sizeof(math::extent2<i16>) == sizeof(std::array<i16, 2>));
-static_assert(sizeof(math::extent3<i16>) == sizeof(std::array<i16, 3>));
+static_assert(sizeof(math::extent2<i16>) == sizeof(array<i16, 2>));
+static_assert(sizeof(math::extent3<i16>) == sizeof(array<i16, 3>));
 
-static_assert(sizeof(math::fextent2) == sizeof(std::array<f32, 2>));
-static_assert(sizeof(math::fextent3) == sizeof(std::array<f32, 3>));
+static_assert(sizeof(math::fextent2) == sizeof(array<f32, 2>));
+static_assert(sizeof(math::fextent3) == sizeof(array<f32, 3>));
 
 static_assert(math::fextent2::RANK == 2);
 static_assert(math::fextent3::RANK == 3);

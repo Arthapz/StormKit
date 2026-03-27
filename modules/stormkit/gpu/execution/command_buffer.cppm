@@ -39,7 +39,7 @@ namespace stormkit::gpu {
 
         struct RenderingInheritanceInfo {
             u32                        view_mask             = 0;
-            std::vector<PixelFormat>   color_attachments     = {};
+            dyn_array<PixelFormat>     color_attachments     = {};
             std::optional<PixelFormat> depth_attachment      = std::nullopt;
             std::optional<PixelFormat> stencil_attachment    = std::nullopt;
             SampleCountFlag            rasterization_samples = SampleCountFlag::C1;
@@ -70,7 +70,7 @@ namespace stormkit::gpu {
             u32         layer_count = 1u;
             u32         view_mask   = 0u;
 
-            std::vector<Attachment>   color_attachments  = {};
+            dyn_array<Attachment>     color_attachments  = {};
             std::optional<Attachment> depth_attachment   = std::nullopt;
             std::optional<Attachment> stencil_attachment = std::nullopt;
         };
@@ -78,10 +78,10 @@ namespace stormkit::gpu {
 
     struct QueueInterfaceBase {
         struct SubmitInfo {
-            std::span<const view::Semaphore>     wait_semaphores   = {};
-            std::span<const PipelineStageFlag>   wait_dst_stages   = {};
-            std::span<const view::CommandBuffer> command_buffers   = {};
-            std::span<const view::Semaphore>     signal_semaphores = {};
+            array_view<const view::Semaphore>     wait_semaphores   = {};
+            array_view<const PipelineStageFlag>   wait_dst_stages   = {};
+            array_view<const view::CommandBuffer> command_buffers   = {};
+            array_view<const view::Semaphore>     signal_semaphores = {};
         };
     };
 
@@ -96,16 +96,16 @@ namespace stormkit::gpu {
 
         auto wait_idle() const noexcept -> Expected<void>;
 
-        auto submit(std::span<const SubmitInfo> submit_infos, std::optional<view::Fence> fence = std::nullopt) const noexcept
+        auto submit(array_view<const SubmitInfo> submit_infos, std::optional<view::Fence> fence = std::nullopt) const noexcept
           -> Expected<void>;
 
         auto submit(const SubmitInfo& submit_info, std::optional<view::Fence> fence = std::nullopt) const noexcept
           -> Expected<void>;
 
         [[nodiscard]]
-        auto present(std::span<const view::SwapChain> swapchains,
-                     std::span<const view::Semaphore> wait_semaphores,
-                     std::span<const u32>             image_indices) const noexcept -> Expected<Result>;
+        auto present(array_view<const view::SwapChain> swapchains,
+                     array_view<const view::Semaphore> wait_semaphores,
+                     array_view<const u32>             image_indices) const noexcept -> Expected<Result>;
 
         [[nodiscard]]
         auto entry() const noexcept -> const QueueEntry&;
@@ -146,17 +146,17 @@ namespace stormkit::gpu {
               -> Expected<void>;
             auto end() noexcept -> Expected<void>;
 
-            auto begin_debug_region(std::string_view name, const fcolor_rgb& color = colors::WHITE<f32>) const noexcept
+            auto begin_debug_region(string_view name, const fcolor_rgb& color = colors::WHITE<f32>) const noexcept
               -> const CommandBufferInterface&;
-            auto insert_debug_label(std::string_view name, const fcolor_rgb& color = colors::WHITE<f32>) const noexcept
+            auto insert_debug_label(string_view name, const fcolor_rgb& color = colors::WHITE<f32>) const noexcept
               -> const CommandBufferInterface&;
             auto end_debug_region() const noexcept -> const CommandBufferInterface&;
 
             auto begin_rendering(const RenderingInfo& info, bool secondary_commandbuffers = false) const noexcept
               -> const CommandBufferInterface&;
-            auto begin_render_pass(view::RenderPass            render_pass,
-                                   view::FrameBuffer           framebuffer,
-                                   std::span<const ClearValue> clear_values = std::array { ClearValue {
+            auto begin_render_pass(view::RenderPass             render_pass,
+                                   view::FrameBuffer            framebuffer,
+                                   array_view<const ClearValue> clear_values = array { ClearValue {
                                      ClearColor { .color = colors::SILVER<f32> } } },
                                    bool secondary_commandbuffers = false) const noexcept -> const CommandBufferInterface&;
             auto next_subpass() const noexcept -> const CommandBufferInterface&;
@@ -164,13 +164,13 @@ namespace stormkit::gpu {
             auto end_rendering() const noexcept -> const CommandBufferInterface&;
 
             auto bind_pipeline(view::Pipeline pipeline) const noexcept -> const CommandBufferInterface&;
-            auto set_viewport(u32 first_viewport, std::span<const Viewport> viewports) const noexcept
+            auto set_viewport(u32 first_viewport, array_view<const Viewport> viewports) const noexcept
               -> const CommandBufferInterface&;
-            auto set_scissor(u32 first_scissor, std::span<const Scissor> scissors) const noexcept
+            auto set_scissor(u32 first_scissor, array_view<const Scissor> scissors) const noexcept
               -> const CommandBufferInterface&;
             auto set_line_width(f32 width) const noexcept -> const CommandBufferInterface&;
             auto set_depth_bias(f32 constant_factor, f32 clamp, f32 slope_factor) const noexcept -> const CommandBufferInterface&;
-            auto set_blend_constants(std::span<const f32> constants) const noexcept -> const CommandBufferInterface&;
+            auto set_blend_constants(array_view<const f32> constants) const noexcept -> const CommandBufferInterface&;
             auto set_depth_bounds(f32 min, f32 max) const noexcept -> const CommandBufferInterface&;
             auto set_stencil_compare_mask(StencilFaceFlag face, u32 mask) const noexcept -> const CommandBufferInterface&;
             auto set_stencil_write_mask(StencilFaceFlag face, u32 mask) const noexcept -> const CommandBufferInterface&;
@@ -191,24 +191,24 @@ namespace stormkit::gpu {
             auto draw_indexed_indirect(view::Buffer buffer, usize offset, u32 draw_count, u32 stride) const noexcept
               -> const CommandBufferInterface&;
 
-            auto bind_vertex_buffers(std::span<const view::Buffer> buffers, std::span<const u64> offsets) const noexcept
+            auto bind_vertex_buffers(array_view<const view::Buffer> buffers, array_view<const u64> offsets) const noexcept
               -> const CommandBufferInterface&;
             auto bind_index_buffer(view::Buffer buffer, u64 offset = 0, bool large_indices = false) const noexcept
               -> const CommandBufferInterface&;
-            auto bind_descriptor_sets(view::Pipeline                       pipeline,
-                                      view::PipelineLayout                 layout,
-                                      std::span<const view::DescriptorSet> descriptor_sets,
-                                      std::span<const u32> dynamic_offsets = {}) const noexcept -> const CommandBufferInterface&;
+            auto bind_descriptor_sets(view::Pipeline                        pipeline,
+                                      view::PipelineLayout                  layout,
+                                      array_view<const view::DescriptorSet> descriptor_sets,
+                                      array_view<const u32> dynamic_offsets = {}) const noexcept -> const CommandBufferInterface&;
 
             auto copy_buffer(view::Buffer src, view::Buffer dst, usize size, u64 src_offset = 0u, u64 dst_offset = 0u)
               const noexcept -> const CommandBufferInterface&;
-            auto copy_buffer_to_image(view::Buffer                     src,
-                                      view::Image                      dst,
-                                      std::span<const BufferImageCopy> buffer_image_copies = {}) const noexcept
+            auto copy_buffer_to_image(view::Buffer                      src,
+                                      view::Image                       dst,
+                                      array_view<const BufferImageCopy> buffer_image_copies = {}) const noexcept
               -> const CommandBufferInterface&;
-            auto copy_image_to_buffer(view::Image                      src,
-                                      view::Buffer                     dst,
-                                      std::span<const BufferImageCopy> buffer_image_copies = {}) const noexcept
+            auto copy_image_to_buffer(view::Image                       src,
+                                      view::Buffer                      dst,
+                                      array_view<const BufferImageCopy> buffer_image_copies = {}) const noexcept
               -> const CommandBufferInterface&;
             auto copy_image(view::Image                   src,
                             view::Image                   dst,
@@ -226,12 +226,12 @@ namespace stormkit::gpu {
                                const ImageSubresourceLayers& dst_subresource_layers = {}) const noexcept
               -> const CommandBufferInterface&;
 
-            auto blit_image(view::Image                 src,
-                            view::Image                 dst,
-                            ImageLayout                 src_layout,
-                            ImageLayout                 dst_layout,
-                            std::span<const BlitRegion> regions,
-                            Filter                      filter) const noexcept -> const CommandBufferInterface&;
+            auto blit_image(view::Image                  src,
+                            view::Image                  dst,
+                            ImageLayout                  src_layout,
+                            ImageLayout                  dst_layout,
+                            array_view<const BlitRegion> regions,
+                            Filter                       filter) const noexcept -> const CommandBufferInterface&;
 
             auto transition_image_layout(view::Image                  image,
                                          ImageLayout                  src_layout,
@@ -239,28 +239,26 @@ namespace stormkit::gpu {
                                          const ImageSubresourceRange& subresource_range = {}) const noexcept
               -> const CommandBufferInterface&;
 
-            auto execute_sub_command_buffers(std::span<const view::CommandBuffer> commandbuffers) const noexcept
+            auto execute_sub_command_buffers(array_view<const view::CommandBuffer> commandbuffers) const noexcept
               -> const CommandBufferInterface&;
 
-            auto pipeline_barrier(PipelineStageFlag                    src_mask,
-                                  PipelineStageFlag                    dst_mask,
-                                  DependencyFlag                       dependency,
-                                  std::span<const MemoryBarrier>       memory_barriers,
-                                  std::span<const BufferMemoryBarrier> buffer_memory_barriers,
-                                  std::span<const ImageMemoryBarrier>  image_memory_barriers) const noexcept
+            auto pipeline_barrier(PipelineStageFlag                     src_mask,
+                                  PipelineStageFlag                     dst_mask,
+                                  DependencyFlag                        dependency,
+                                  array_view<const MemoryBarrier>       memory_barriers,
+                                  array_view<const BufferMemoryBarrier> buffer_memory_barriers,
+                                  array_view<const ImageMemoryBarrier>  image_memory_barriers) const noexcept
               -> const CommandBufferInterface&;
 
-            auto push_constants(view::PipelineLayout  pipeline_layout,
-                                ShaderStageFlag       stage,
-                                std::span<const Byte> data,
-                                u32                   offset = 0u) const noexcept -> const CommandBufferInterface&;
+            auto push_constants(view::PipelineLayout pipeline_layout, ShaderStageFlag stage, byte_view<> data, u32 offset = 0u)
+              const noexcept -> const CommandBufferInterface&;
 
             auto submit(this const auto&,
-                        view::Queue                        queue,
-                        std::span<const view::Semaphore>   wait_semaphores   = {},
-                        std::span<const PipelineStageFlag> wait_dst_stages   = {},
-                        std::span<const view::Semaphore>   signal_semaphores = {},
-                        std::optional<view::Fence>         fence             = std::nullopt) noexcept -> Expected<void>;
+                        view::Queue                         queue,
+                        array_view<const view::Semaphore>   wait_semaphores   = {},
+                        array_view<const PipelineStageFlag> wait_dst_stages   = {},
+                        array_view<const view::Semaphore>   signal_semaphores = {},
+                        std::optional<view::Fence>          fence             = std::nullopt) noexcept -> Expected<void>;
         };
 
         template<typename Base>
@@ -273,15 +271,15 @@ namespace stormkit::gpu {
             auto create_command_buffer(CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
               -> Expected<CommandBuffer>;
             auto create_command_buffers(usize count, CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
-              -> Expected<std::vector<CommandBuffer>>;
+              -> Expected<dyn_array<CommandBuffer>>;
 
             auto allocate_command_buffer(CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
               -> Expected<Heap<CommandBuffer>>;
             auto allocate_command_buffers(usize count, CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
-              -> Expected<std::vector<Heap<CommandBuffer>>>;
+              -> Expected<dyn_array<Heap<CommandBuffer>>>;
 
           protected:
-            auto create_vk_command_buffers(usize, CommandBufferLevel) const noexcept -> Expected<std::vector<VkCommandBuffer>>;
+            auto create_vk_command_buffers(usize, CommandBufferLevel) const noexcept -> Expected<dyn_array<VkCommandBuffer>>;
 
             static auto delete_vk_command_buffers(view::Device, view::CommandPool, VkCommandBuffer) noexcept -> void;
         };
@@ -415,7 +413,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto QueueInterface<Base>::submit(const SubmitInfo& submit_info, std::optional<view::Fence> fence) const noexcept
       -> Expected<void> {
-        return submit({ &submit_info, 1 }, std::move(fence));
+        return QueueInterface<Base>::submit(array_view<const SubmitInfo> { &submit_info, 1 }, std::move(fence));
     }
 
     /////////////////////////////////////
@@ -430,14 +428,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto CommandBufferInterface<Base>::submit(this const auto&                   self,
-                                                     view::Queue                        queue,
-                                                     std::span<const view::Semaphore>   wait_semaphores,
-                                                     std::span<const PipelineStageFlag> wait_dst_stages,
-                                                     std::span<const view::Semaphore>   signal_semaphores,
-                                                     std::optional<view::Fence>         fence) noexcept -> Expected<void> {
+    inline auto CommandBufferInterface<Base>::submit(this const auto&                    self,
+                                                     view::Queue                         queue,
+                                                     array_view<const view::Semaphore>   wait_semaphores,
+                                                     array_view<const PipelineStageFlag> wait_dst_stages,
+                                                     array_view<const view::Semaphore>   signal_semaphores,
+                                                     std::optional<view::Fence>          fence) noexcept -> Expected<void> {
         auto cmbs         = as_views(self);
-        auto submit_infos = std::array {
+        auto submit_infos = array {
             Queue::SubmitInfo {
                                .wait_semaphores   = wait_semaphores,
                                .wait_dst_stages   = wait_dst_stages,
@@ -495,7 +493,7 @@ namespace stormkit::gpu {
     template<typename Base>
     STORMKIT_FORCE_INLINE
     inline auto CommandPoolInterface<Base>::create_command_buffers(usize count, CommandBufferLevel level) const noexcept
-      -> Expected<std::vector<CommandBuffer>> {
+      -> Expected<dyn_array<CommandBuffer>> {
         Return transform(Try(create_vk_command_buffers(count, level)), [this, &level](auto vk_handle) noexcept {
             auto device = Base::owner();
             return CommandBuffer::create(std::move(device), level, std::move(vk_handle), delete_vk_command_buffers);
@@ -518,7 +516,7 @@ namespace stormkit::gpu {
     template<typename Base>
     STORMKIT_FORCE_INLINE
     inline auto CommandPoolInterface<Base>::allocate_command_buffers(usize count, CommandBufferLevel level) const noexcept
-      -> Expected<std::vector<Heap<CommandBuffer>>> {
+      -> Expected<dyn_array<Heap<CommandBuffer>>> {
         Return transform(Try(create_vk_command_buffers(count, level)), [this, &level](auto vk_handle) noexcept {
             auto device = Base::owner();
             return CommandBuffer::allocate(std::move(device), level, std::move(vk_handle), delete_vk_command_buffers);

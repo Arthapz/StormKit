@@ -37,7 +37,7 @@ struct SwapchainImageResource {
 
 namespace {
     constexpr auto BUFFERING_COUNT = 2_u32;
-    constexpr auto POOL_SIZES      = std::array {
+    constexpr auto POOL_SIZES      = array {
         gpu::DescriptorPool::Size { .type = gpu::DescriptorType::COMBINED_IMAGE_SAMPLER, .descriptor_count = BUFFERING_COUNT }
     };
 } // namespace
@@ -55,7 +55,7 @@ class Application: public base::Application {
                                       "Failed to create descriptor pool!");
 
         // create present engine resources
-        m_submission_resources = init_by<std::vector<SubmissionResource>>([&](auto& out) noexcept {
+        m_submission_resources = init_by<dyn_array<SubmissionResource>>([&](auto& out) noexcept {
             out.reserve(BUFFERING_COUNT);
             for (auto _ : range(BUFFERING_COUNT)) {
                 out.push_back({
@@ -84,12 +84,11 @@ class Application: public base::Application {
         for (const auto& swap_image : images) {
             auto view = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view!");
 
-            m_image_resources
-              .push_back({ .image           = swap_image,
-                           .view            = std::move(view),
-                           .render_finished = TryAssert(gpu::Semaphore::create(m_device),
-                                                        "Failed to create render "
-                                                        "signal semaphore!") });
+            m_image_resources.push_back({ .image           = swap_image,
+                                          .view            = std::move(view),
+                                          .render_finished = TryAssert(gpu::Semaphore::create(m_device),
+                                                                       "Failed to create render "
+                                                                       "signal semaphore!") });
 
             auto& transition_cmb = transition_cmbs[image_index];
             TryDiscardAssert((transition_cmb.record([&](auto cmb) noexcept {
@@ -163,39 +162,40 @@ class Application: public base::Application {
         ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_1, gpu::vk::imgui_vk_loader, &*m_device);
         ImGui_ImplVulkan_Init(&init_info);
 
-        m_window
-          ->on(wsi::KeyDownEventFunc { [this, &io](u8 /*id*/, wsi::Key key, char c) mutable noexcept {
-                   if (key == wsi::Key::ESCAPE) m_window->close();
-                   io.AddInputCharactersUTF8(&c);
-               } },
-               wsi::MouseMovedEventFunc { [&io](u8 /*id*/, const math::ivec2& position) mutable noexcept {
-                   const auto _position = position.to<f32>();
+        m_window->on(wsi::KeyDownEventFunc { [this, &io](u8 /*id*/, wsi::Key key, char c) mutable noexcept {
+                         if (key == wsi::Key::ESCAPE) m_window->close();
+                         io.AddInputCharactersUTF8(&c);
+                     } },
+                     wsi::MouseMovedEventFunc { [&io](u8 /*id*/, const math::ivec2& position) mutable noexcept {
+                         const auto _position = position.to<f32>();
 
-                   io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-                   io.AddMousePosEvent(_position.x, _position.y);
-               } },
-               wsi::MouseButtonDownEventFunc { [&io](u8 /*id*/, wsi::MouseButton button, const math::ivec2&) mutable noexcept {
-                   auto mouse_button = -1;
-                   if (button == wsi::MouseButton::LEFT) mouse_button = 0;
-                   if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
-                   if (button == wsi::MouseButton::MIDDLE) mouse_button = 2;
-                   if (button == wsi::MouseButton::BUTTON_1) mouse_button = 3;
-                   if (button == wsi::MouseButton::BUTTON_2) mouse_button = 4;
-                   if (mouse_button == -1) return;
-                   io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-                   io.AddMouseButtonEvent(mouse_button, true);
-               } },
-               wsi::MouseButtonUpEventFunc { [&io](u8 /*id*/, wsi::MouseButton button, const math::ivec2&) mutable noexcept {
-                   auto mouse_button = -1;
-                   if (button == wsi::MouseButton::LEFT) mouse_button = 0;
-                   if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
-                   if (button == wsi::MouseButton::MIDDLE) mouse_button = 2;
-                   if (button == wsi::MouseButton::BUTTON_1) mouse_button = 3;
-                   if (button == wsi::MouseButton::BUTTON_2) mouse_button = 4;
-                   if (mouse_button == -1) return;
-                   io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-                   io.AddMouseButtonEvent(mouse_button, false);
-               } });
+                         io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+                         io.AddMousePosEvent(_position.x, _position.y);
+                     } },
+                     wsi::MouseButtonDownEventFunc {
+                       [&io](u8 /*id*/, wsi::MouseButton button, const math::ivec2&) mutable noexcept {
+                           auto mouse_button = -1;
+                           if (button == wsi::MouseButton::LEFT) mouse_button = 0;
+                           if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
+                           if (button == wsi::MouseButton::MIDDLE) mouse_button = 2;
+                           if (button == wsi::MouseButton::BUTTON_1) mouse_button = 3;
+                           if (button == wsi::MouseButton::BUTTON_2) mouse_button = 4;
+                           if (mouse_button == -1) return;
+                           io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+                           io.AddMouseButtonEvent(mouse_button, true);
+                       } },
+                     wsi::MouseButtonUpEventFunc {
+                       [&io](u8 /*id*/, wsi::MouseButton button, const math::ivec2&) mutable noexcept {
+                           auto mouse_button = -1;
+                           if (button == wsi::MouseButton::LEFT) mouse_button = 0;
+                           if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
+                           if (button == wsi::MouseButton::MIDDLE) mouse_button = 2;
+                           if (button == wsi::MouseButton::BUTTON_1) mouse_button = 3;
+                           if (button == wsi::MouseButton::BUTTON_2) mouse_button = 4;
+                           if (mouse_button == -1) return;
+                           io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+                           io.AddMouseButtonEvent(mouse_button, false);
+                       } });
     }
 
     auto run_example() {
@@ -221,7 +221,7 @@ class Application: public base::Application {
         const auto& swapchain_image_resource = m_image_resources[image_index];
         const auto& signal                   = swapchain_image_resource.render_finished;
 
-        static constexpr auto PIPELINE_FLAGS = std::array { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT };
+        static constexpr auto PIPELINE_FLAGS = array { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT };
 
         const auto window_extent  = m_window->extent().to<i32>();
         const auto rendering_info = gpu::RenderingInfo {
@@ -268,16 +268,16 @@ class Application: public base::Application {
         ImGui::DestroyContext();
     }
 
-    constexpr auto example_name() const noexcept -> std::string_view { return "Imgui"; }
+    constexpr auto example_name() const noexcept -> string_view { return "Imgui"; }
 
   private:
-    DeferInit<gpu::DescriptorPool>      m_descriptor_pool;
-    std::vector<SubmissionResource>     m_submission_resources;
-    std::vector<SwapchainImageResource> m_image_resources;
-    usize                               m_current_frame = 0_usize;
+    DeferInit<gpu::DescriptorPool>    m_descriptor_pool;
+    dyn_array<SubmissionResource>     m_submission_resources;
+    dyn_array<SwapchainImageResource> m_image_resources;
+    usize                             m_current_frame = 0_usize;
 };
 
-auto main(std::span<const std::string_view> args) -> int {
+auto main(array_view<const string_view> args) -> int {
     auto app = Application {};
     app.run(args);
     return 0;

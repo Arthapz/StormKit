@@ -26,21 +26,21 @@ using namespace std::literals;
 namespace stormkit::gpu {
     namespace {
         struct PipelineData {
-            std::vector<VkVertexInputBindingDescription>     binding_descriptions;
-            std::vector<VkVertexInputAttributeDescription>   input_attribute_descriptions;
-            VkPipelineVertexInputStateCreateInfo             vertex_input_info;
-            VkPipelineInputAssemblyStateCreateInfo           input_assembly;
-            std::vector<VkViewport>                          viewports;
-            std::vector<VkRect2D>                            scissors;
-            VkPipelineViewportStateCreateInfo                viewport_state;
-            VkPipelineRasterizationStateCreateInfo           rasterizer;
-            VkPipelineMultisampleStateCreateInfo             multisample;
-            std::vector<VkPipelineColorBlendAttachmentState> blend_attachments;
-            VkPipelineColorBlendStateCreateInfo              color_blending;
-            std::vector<VkDynamicState>                      states;
-            VkPipelineDynamicStateCreateInfo                 dynamic_state;
-            std::vector<VkPipelineShaderStageCreateInfo>     shaders;
-            VkPipelineDepthStencilStateCreateInfo            depth_stencil;
+            dyn_array<VkVertexInputBindingDescription>     binding_descriptions;
+            dyn_array<VkVertexInputAttributeDescription>   input_attribute_descriptions;
+            VkPipelineVertexInputStateCreateInfo           vertex_input_info;
+            VkPipelineInputAssemblyStateCreateInfo         input_assembly;
+            dyn_array<VkViewport>                          viewports;
+            dyn_array<VkRect2D>                            scissors;
+            VkPipelineViewportStateCreateInfo              viewport_state;
+            VkPipelineRasterizationStateCreateInfo         rasterizer;
+            VkPipelineMultisampleStateCreateInfo           multisample;
+            dyn_array<VkPipelineColorBlendAttachmentState> blend_attachments;
+            VkPipelineColorBlendStateCreateInfo            color_blending;
+            dyn_array<VkDynamicState>                      states;
+            VkPipelineDynamicStateCreateInfo               dynamic_state;
+            dyn_array<VkPipelineShaderStageCreateInfo>     shaders;
+            VkPipelineDepthStencilStateCreateInfo          depth_stencil;
         };
 
         auto do_init(const RasterPipelineState& state) noexcept -> PipelineData {

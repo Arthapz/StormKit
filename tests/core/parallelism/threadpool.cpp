@@ -105,7 +105,7 @@ namespace {
             [] static noexcept {
                 auto thread_pool = ThreadPool {};
 
-                auto values = std::vector { std::from_range, range(0, 1000000) };
+                auto values = dyn_array<i32> { std::from_range, range(0, 1000000) };
                 parallel_for(thread_pool, values, [](auto& value) { value += value; });
 
                 auto k = 0;

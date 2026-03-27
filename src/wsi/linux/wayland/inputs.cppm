@@ -41,14 +41,14 @@ export namespace stormkit::wsi::linux::wayland {
 
             std::optional<u32> serial = std::nullopt;
 
-            std::array<PointerButtonState, 5> button_state;
+            array<PointerButtonState, 5> button_state;
 
             wl::ConfinedPointer confined_pointer = wl::ConfinedPointer::empty();
             wl::LockedPointer   locked_pointer   = wl::LockedPointer::empty();
             wl::RelativePointer relative_pointer = wl::RelativePointer::empty();
 
             struct Cursor {
-                std::string name;
+                string name;
 
                 wl::Surface           surface      = wl::Surface::empty();
                 wl::CursorShapeDevice shape_device = wl::CursorShapeDevice::empty();
@@ -85,7 +85,7 @@ export namespace stormkit::wsi::linux::wayland {
 
             Window* focused_window = nullptr;
 
-            std::array<KeyState, 102> keyboard_state = {
+            array<KeyState, 102> keyboard_state = {
                 KeyState { XKB_KEY_a,            false },
                  KeyState { XKB_KEY_b,            false },
                 KeyState { XKB_KEY_c,            false },

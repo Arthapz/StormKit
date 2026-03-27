@@ -18,8 +18,8 @@ import :typesafe.integer;
 
 export namespace stormkit { inline namespace core {
     struct MemoryAllocationError {
-        std::string_view type;
-        usize            size;
+        string_view type;
+        usize       size;
     };
 
     template<typename FormatContext>

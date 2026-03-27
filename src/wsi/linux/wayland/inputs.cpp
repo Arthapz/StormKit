@@ -36,7 +36,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     auto keyboard_key_handler(void*, wl_keyboard*, u32, u32, u32, u32) noexcept -> void;
     auto keyboard_modifiers_handler(void*, wl_keyboard*, u32, u32, u32, u32, u32) noexcept -> void;
     auto keyboard_repeat_info_handler(void*, wl_keyboard*, i32, i32) noexcept -> void;
-    auto update_keymap(KeyboardState&, std::string_view) noexcept -> void;
+    auto update_keymap(KeyboardState&, string_view) noexcept -> void;
 
     auto pointer_enter_handler(void*, wl_pointer*, u32, wl_surface*, wl_fixed_t, wl_fixed_t) noexcept -> void;
     auto pointer_leave_handler(void*, wl_pointer*, u32, wl_surface*) noexcept -> void;
@@ -140,7 +140,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
             auto map_shm = std::bit_cast<char*>(mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0));
 
-            update_keymap(state, std::string_view { map_shm, size });
+            update_keymap(state, string_view { map_shm, size });
 
             munmap(map_shm, size);
             ::close(fd);
@@ -154,7 +154,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& state = *std::bit_cast<KeyboardState*>(data);
         if (not state.focused_window or not state.xkb_state) return;
 
-        auto characters = std::array<char, 10> {};
+        auto characters = array<char, 10> {};
         // stdr
 
         const auto keycode = key + 8;
@@ -218,7 +218,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto update_keymap(KeyboardState& state, std::string_view keymap) noexcept -> void {
+    auto update_keymap(KeyboardState& state, string_view keymap) noexcept -> void {
         auto& globals    = get_globals();
         state.xkb_keymap = common::xkb::Keymap::create(globals.xkb_context,
                                                        std::data(keymap),

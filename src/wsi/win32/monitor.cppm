@@ -29,7 +29,7 @@ namespace stormkit::wsi::win32 {
         if ((monitor_info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY)
             monitor.flags = Monitor::Flags::PRIMARY;
 
-        monitor.name = std::string { monitor_info.szDevice };
+        monitor.name = string { monitor_info.szDevice };
 
         auto dm = zeroed<DEVMODE>();
 
@@ -49,7 +49,7 @@ namespace stormkit::wsi::win32 {
     auto load_monitors(HMONITOR native, HDC, LPRECT, LPARAM data) noexcept -> BOOL {
         if (native == nullptr) return TRUE;
 
-        auto& monitors = *std::bit_cast<std::vector<Monitor>*>(data);
+        auto& monitors = *std::bit_cast<dyn_array<Monitor>*>(data);
         monitors.emplace_back(load_monitor(native));
 
         return TRUE;
@@ -57,8 +57,8 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_monitors(WM, bool update = false) noexcept -> std::span<const Monitor> {
-        thread_local auto monitors = std::vector<Monitor> {};
+    auto get_monitors(WM, bool update = false) noexcept -> array_view<const Monitor> {
+        thread_local auto monitors = dyn_array<Monitor> {};
 
         if (update or stdr::empty(monitors))
             EnumDisplayMonitors(nullptr, nullptr, load_monitors, std::bit_cast<LPARAM>(&monitors));

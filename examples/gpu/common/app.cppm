@@ -46,7 +46,7 @@ extern "C" auto debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
 export namespace base {
     class Application {
       public:
-        auto run(this auto& self, std::span<const std::string_view> args) {
+        auto run(this auto& self, array_view<const string_view> args) {
             wsi::parse_args(args);
             log::parse_args(args);
 
@@ -79,7 +79,7 @@ export namespace base {
         DeferInit<gpu::CommandPool>          m_command_pool;
 
       private:
-        auto init_window(std::string_view example_name) noexcept -> void {
+        auto init_window(string_view example_name) noexcept -> void {
             m_window = wsi::Window::open(std::format("Stormkit GPU {} example", example_name),
                                          { 800_u32, 600_u32 },
                                          wsi::WindowFlag::DEFAULT | wsi::WindowFlag::EXTERNAL_CONTEXT);
@@ -88,13 +88,12 @@ export namespace base {
             });
         }
 
-        auto init_gpu(std::string_view example_name) noexcept -> void {
+        auto init_gpu(string_view example_name) noexcept -> void {
             // initialize gpu backend (vulkan or webgpu depending the platform)
             TryDiscardAssert(gpu::initialize_backend(), "Failed to initialize gpu backend");
 
             // create gpu instance and attach surface to window
-            m_instance = TryAssert(gpu::Instance::create(std::string { example_name }, true),
-                                   "Failed to initialize gpu instance");
+            m_instance = TryAssert(gpu::Instance::create(string { example_name }, true), "Failed to initialize gpu instance");
 
             m_debug_callback = TryAssert(gpu::DebugCallback::create(m_instance, debug_callback),
                                          "Failed to initialize gpu instance");

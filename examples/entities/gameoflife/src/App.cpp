@@ -25,7 +25,7 @@ App::~App() {
     ilog("Cleaning");
 }
 
-auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] CZString argv[]) -> i32 {
+auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] czstring argv[]) -> i32 {
     using Clock = std::chrono::high_resolution_clock;
 
     using namespace stormkit::literals;

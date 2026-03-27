@@ -24,7 +24,7 @@ export namespace stormkit { inline namespace core {
     template<typename... T>
     class MultiBuffer {
       public:
-        explicit constexpr MultiBuffer(std::array<usize, sizeof...(T)> sizes_in_bytes);
+        explicit constexpr MultiBuffer(array<usize, sizeof...(T)> sizes_in_bytes);
         constexpr ~MultiBuffer();
 
         constexpr MultiBuffer(const MultiBuffer&);
@@ -37,26 +37,26 @@ export namespace stormkit { inline namespace core {
         constexpr auto size() const noexcept -> usize;
         template<typename Self>
         [[nodiscard]]
-        constexpr auto data(this Self& self) noexcept -> const meta::ForwardConst<Self, Byte>*;
+        constexpr auto data(this Self& self) noexcept -> const meta::ForwardConst<Self, byte>*;
 
         template<typename U, stdr::input_range V>
-        constexpr auto init_range(V&& init_data) noexcept -> std::span<U>;
+        constexpr auto init_range(V&& init_data) noexcept -> array_view<U>;
         template<usize TYPE_INDEX, stdr::input_range V>
-        constexpr auto init_range(V&& init_data) noexcept -> std::span<T...[TYPE_INDEX]>;
+        constexpr auto init_range(V&& init_data) noexcept -> array_view<T...[TYPE_INDEX]>;
 
         template<typename U, typename Self>
         [[nodiscard]]
-        constexpr auto range(this Self& self) noexcept -> std::span<meta::ForwardConst<Self, U>>;
+        constexpr auto range(this Self& self) noexcept -> array_view<meta::ForwardConst<Self, U>>;
 
         template<usize TYPE_INDEX, typename Self>
         [[nodiscard]]
-        constexpr auto range(this Self& self) noexcept -> std::span<meta::ForwardConst<Self, T...[TYPE_INDEX]>>;
+        constexpr auto range(this Self& self) noexcept -> array_view<meta::ForwardConst<Self, T...[TYPE_INDEX]>>;
 
       private:
-        std::array<usize, sizeof...(T)> m_ranges_sizes;
-        std::array<usize, sizeof...(T)> m_ranges_begin;
-        usize                           m_size = 0;
-        ByteDynArray                    m_data;
+        array<usize, sizeof...(T)> m_ranges_sizes;
+        array<usize, sizeof...(T)> m_ranges_begin;
+        usize                      m_size = 0;
+        byte_dyn_array             m_data;
     };
 }} // namespace stormkit::core
 
@@ -69,7 +69,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename... T>
     STORMKIT_FORCE_INLINE
-    constexpr MultiBuffer<T...>::MultiBuffer(std::array<usize, sizeof...(T)> sizes_in_bytes)
+    constexpr MultiBuffer<T...>::MultiBuffer(array<usize, sizeof...(T)> sizes_in_bytes)
         : m_ranges_sizes { sizes_in_bytes } {
         auto i = 0uz;
         for (auto&& size : m_ranges_sizes) {
@@ -122,7 +122,7 @@ namespace stormkit { inline namespace core {
     template<typename... T>
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    constexpr auto MultiBuffer<T...>::data(this Self& self) noexcept -> const meta::ForwardConst<Self, Byte>* {
+    constexpr auto MultiBuffer<T...>::data(this Self& self) noexcept -> const meta::ForwardConst<Self, byte>* {
         return stdr::data(self.m_data);
     }
 
@@ -130,7 +130,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename... T>
     template<typename U, stdr::input_range V>
-    constexpr auto MultiBuffer<T...>::init_range(V&& init_data) noexcept -> std::span<U> {
+    constexpr auto MultiBuffer<T...>::init_range(V&& init_data) noexcept -> array_view<U> {
         static_assert(meta::IsAnyOf<U, T...>, "U should be a type contained by MultiBuffer");
         static_assert(meta::Is<U, stdr::range_value_t<V>>, "range V should be of type U");
         static constexpr auto TYPE_INDEX = meta::find_type_index_of<U, T...>();
@@ -141,9 +141,9 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename... T>
     template<usize TYPE_INDEX, stdr::input_range V>
-    constexpr auto MultiBuffer<T...>::init_range(V&& init_data) noexcept -> std::span<T... [TYPE_INDEX]> {
+    constexpr auto MultiBuffer<T...>::init_range(V&& init_data) noexcept -> array_view<T... [TYPE_INDEX]> {
         static_assert(TYPE_INDEX < sizeof...(T), "Index is out of bounds");
-        auto span = std::span<Byte> { stdr::data(m_data) + m_ranges_begin[TYPE_INDEX], m_ranges_sizes[TYPE_INDEX] };
+        auto span = byte_mut_view { stdr::data(m_data) + m_ranges_begin[TYPE_INDEX], m_ranges_sizes[TYPE_INDEX] };
 
         auto begin = stdr::begin(span);
         for (auto&& bytes : std::forward<V>(init_data) | stdv::transform(monadic::as_bytes(Force {}))) {
@@ -158,7 +158,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename... T>
     template<typename U, typename Self>
-    constexpr auto MultiBuffer<T...>::range(this Self& self) noexcept -> std::span<meta::ForwardConst<Self, U>> {
+    constexpr auto MultiBuffer<T...>::range(this Self& self) noexcept -> array_view<meta::ForwardConst<Self, U>> {
         static_assert(meta::IsAnyOf<U, T...>, "U should be a type contained by MultiBuffer");
         static constexpr auto TYPE_INDEX = meta::find_type_index_of<U, T...>();
         return self.template range<TYPE_INDEX>();
@@ -168,12 +168,12 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename... T>
     template<usize TYPE_INDEX, typename Self>
-    constexpr auto MultiBuffer<T...>::range(this Self& self) noexcept -> std::span<meta::ForwardConst<Self, T... [TYPE_INDEX]>> {
+    constexpr auto MultiBuffer<T...>::range(this Self& self) noexcept -> array_view<meta::ForwardConst<Self, T... [TYPE_INDEX]>> {
         static_assert(TYPE_INDEX < sizeof...(T), "Index is out of bounds");
         using U        = T...[TYPE_INDEX];
         using OutType  = meta::ForwardConst<Self, U>;
         const auto ptr = stdr::begin(self.m_data) + as<isize>(self.m_ranges_begin[TYPE_INDEX]);
-        return std::span {
+        return array_view {
 #if defined(__cpp_lib_start_lifetime_as) and __cpp_lib_start_lifetime_as >= 202207L
             std::start_lifetime_as_array<OutType>(ptr, self.m_ranges_sizes[TYPE_INDEX] / sizeof(U)),
 #else

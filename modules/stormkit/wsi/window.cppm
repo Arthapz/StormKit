@@ -38,8 +38,8 @@ export {
             RESIZEABLE       = 0b100,
             EXTERNAL_CONTEXT = 0b1000,
         };
-        constexpr auto as_string(WindowFlag button) noexcept -> std::string_view;
-        constexpr auto to_string(WindowFlag button) noexcept -> std::string;
+        constexpr auto as_string(WindowFlag button) noexcept -> string_view;
+        constexpr auto to_string(WindowFlag button) noexcept -> string;
 
         enum class EventType : u8 {
             NONE = 0,
@@ -56,8 +56,8 @@ export {
             ACTIVATE,
             DEACTIVATE,
         };
-        constexpr auto as_string(EventType type) noexcept -> std::string_view;
-        constexpr auto to_string(EventType type) noexcept -> std::string;
+        constexpr auto as_string(EventType type) noexcept -> string_view;
+        constexpr auto to_string(EventType type) noexcept -> string;
 
         using NativeHandle = void*;
 
@@ -132,9 +132,8 @@ export {
             Window(Window&&) noexcept;
             auto operator=(Window&&) noexcept -> Window&;
 
-            static auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept -> Window;
-            static auto allocate_and_open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept
-              -> Heap<Window>;
+            static auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> Window;
+            static auto allocate_and_open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> Heap<Window>;
 
             auto close() noexcept -> void;
             [[nodiscard]]
@@ -142,7 +141,7 @@ export {
             auto handle_events() noexcept -> void;
 
             auto clear(const ucolor_rgb& color = colors::BLACK<u8>) noexcept -> void;
-            auto fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void;
+            auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
             template<EventCallbackFunc T>
             auto on(T&& callback) noexcept -> void;
@@ -161,8 +160,8 @@ export {
             auto current_monitor() const noexcept -> const Monitor&;
 
             [[nodiscard]]
-            auto title() const noexcept -> const std::string&;
-            auto set_title(std::string title) noexcept -> void;
+            auto title() const noexcept -> const string&;
+            auto set_title(string title) noexcept -> void;
 
             auto set_extent(const math::uextent2& extent) noexcept -> void;
 
@@ -257,8 +256,8 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(WindowFlag flag) noexcept -> std::string_view {
-        using Pair                    = std::pair<WindowFlag, std::string_view>;
+    constexpr auto as_string(WindowFlag flag) noexcept -> string_view {
+        using Pair                    = std::pair<WindowFlag, string_view>;
         static constexpr auto MAPPING = core::generate_substitutions_as_string_for<WindowFlag, 4, WindowFlag::DEFAULT, 67>(
           "WindowFlag::",
           {
@@ -276,14 +275,14 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto to_string(WindowFlag flag) noexcept -> std::string {
-        return std::string { as_string(flag) };
+    constexpr auto to_string(WindowFlag flag) noexcept -> string {
+        return string { as_string(flag) };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(EventType type) noexcept -> std::string_view {
+    constexpr auto as_string(EventType type) noexcept -> string_view {
         switch (type) {
             case EventType::NONE: return "EventType::NONE";
             case EventType::CLOSED: return "EventType::CLOSED";
@@ -306,8 +305,8 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto to_string(EventType type) noexcept -> std::string {
-        return std::string { as_string(type) };
+    constexpr auto to_string(EventType type) noexcept -> string {
+        return string { as_string(type) };
     }
 
     ////////////////////////////////////////

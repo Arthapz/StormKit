@@ -17,6 +17,8 @@ import std;
 import frozen;
 
 import :utils.stracktrace;
+import :containers.aliases;
+import :string.aliases;
 
 import :meta;
 
@@ -29,37 +31,37 @@ export namespace stormkit { inline namespace core {
         PostCondition,
     };
 
-    constexpr auto as_string(AssertType type) noexcept -> std::string_view;
-    constexpr auto to_string(AssertType type) noexcept -> std::string;
+    constexpr auto as_string(AssertType type) noexcept -> string_view;
+    constexpr auto to_string(AssertType type) noexcept -> string;
 
     STORMKIT_CORE_API
     auto assert_base(bool                        cond,
                      AssertType                  type,
-                     std::string_view            message,
+                     string_view                 message,
                      const std::source_location& location = std::source_location::current()) noexcept -> void;
 
-    consteval auto consteval_assert_base(bool cond, AssertType type, std::string_view message) noexcept -> void;
+    consteval auto consteval_assert_base(bool cond, AssertType type, string_view message) noexcept -> void;
 
     constexpr auto assert(bool                        cond,
-                          std::string_view            message,
+                          string_view                 message,
                           const std::source_location& location = std::source_location::current()) noexcept -> void;
 
     constexpr auto assert(bool cond, const std::source_location& location = std::source_location::current()) noexcept -> void;
 
     constexpr auto expects(bool                        cond,
-                           std::string_view            message,
+                           string_view                 message,
                            const std::source_location& location = std::source_location::current()) noexcept -> void;
 
     constexpr auto expects(bool cond, const std::source_location& location = std::source_location::current()) noexcept -> void;
 
     constexpr auto ensures(bool                        cond,
-                           std::string_view            message,
+                           string_view                 message,
                            const std::source_location& location = std::source_location::current()) noexcept -> void;
 
     constexpr auto ensures(bool cond, const std::source_location& location = std::source_location::current()) noexcept -> void;
 
     namespace casts::core {
-        template<meta::SameAsAnyOf<std::string, std::string_view> To>
+        template<meta::SameAsAnyOf<string, string_view> To>
         [[nodiscard]]
         constexpr auto as(AssertType t) noexcept -> To;
     }
@@ -83,10 +85,10 @@ namespace stormkit { inline namespace core {
     } // namespace casts::core
 
     struct StringLiteral {
-        std::array<char, 512> buff;
-        std::size_t           size;
+        array<char, 512> buff;
+        std::size_t      size;
 
-        consteval auto view() noexcept -> std::string_view { return { std::data(buff), size }; }
+        consteval auto view() noexcept -> string_view { return { std::data(buff), size }; }
     };
 
     auto constevalFailure(StringLiteral) -> void;
@@ -94,7 +96,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(AssertType type) noexcept -> std::string_view {
+    constexpr auto as_string(AssertType type) noexcept -> string_view {
         const auto t = casts::core::AssertTypeToContractName.at(type);
         return { stdr::data(t), stdr::size(t) };
     }
@@ -102,16 +104,16 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto to_string(AssertType type) noexcept -> std::string {
+    constexpr auto to_string(AssertType type) noexcept -> string {
         const auto t = casts::core::AssertTypeToContractName.at(type);
         return { stdr::data(t), stdr::size(t) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    consteval auto generateConstevalMessage(AssertType type, std::string_view message) noexcept -> StringLiteral {
+    consteval auto generateConstevalMessage(AssertType type, string_view message) noexcept -> StringLiteral {
         auto       result = StringLiteral {};
-        const auto str    = "[Assertion]"s + to_string(type) + ": " + std::string { message };
+        const auto str    = "[Assertion]"s + to_string(type) + ": " + string { message };
         std::ranges::copy(str, std::begin(result.buff));
         result.size = std::size(str);
         return result;
@@ -120,14 +122,14 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    consteval auto consteval_assert_base(bool cond, AssertType type, std::string_view message) noexcept -> void {
+    consteval auto consteval_assert_base(bool cond, AssertType type, string_view message) noexcept -> void {
         if (not cond) [[unlikely]] { constevalFailure(generateConstevalMessage(type, message)); }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto assert(bool cond, std::string_view message, [[maybe_unused]] const std::source_location& location) noexcept
+    constexpr auto assert(bool cond, string_view message, [[maybe_unused]] const std::source_location& location) noexcept
       -> void {
 #ifdef STORMKIT_COMPILER_MSVC
         if constexpr (std::is_constant_evaluated()) {
@@ -150,7 +152,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto expects(bool cond, std::string_view message, const std::source_location& location) noexcept -> void {
+    constexpr auto expects(bool cond, string_view message, const std::source_location& location) noexcept -> void {
 #ifdef STORMKIT_COMPILER_MSVC
         if constexpr (std::is_constant_evaluated()) {
 #else
@@ -172,7 +174,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto ensures(bool cond, std::string_view message, const std::source_location& location) noexcept -> void {
+    constexpr auto ensures(bool cond, string_view message, const std::source_location& location) noexcept -> void {
 #ifdef STORMKIT_COMPILER_MSVC
         if constexpr (std::is_constant_evaluated()) {
 #else

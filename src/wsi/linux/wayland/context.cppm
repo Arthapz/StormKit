@@ -39,7 +39,7 @@ export namespace stormkit::wsi::linux::wayland {
             wl::Display                  display     = wl::Display::empty();
             wl::Registry                 registry    = wl::Registry::empty();
             wl::Compositor               compositor  = wl::Compositor::empty();
-            std::vector<wl::Output>      outputs;
+            dyn_array<wl::Output>        outputs;
             wl::XDGWmBase                xdg_wm_base                 = wl::XDGWmBase::empty();
             wl::Shm                      shm                         = wl::Shm::empty();
             wl::XDGDecorationManager     decoration_manager          = wl::XDGDecorationManager::empty();
@@ -55,15 +55,15 @@ export namespace stormkit::wsi::linux::wayland {
             wl::CursorTheme cursor_theme          = wl::CursorTheme::empty();
             wl::CursorTheme cursor_theme_high_dpi = wl::CursorTheme::empty();
 
-            std::vector<std::pair<Keyboard, KeyboardState>> keyboards;
-            std::vector<std::pair<Pointer, PointerState>>   pointers;
-            std::vector<std::pair<Touch, TouchState>>       touchs;
+            dyn_array<std::pair<Keyboard, KeyboardState>> keyboards;
+            dyn_array<std::pair<Pointer, PointerState>>   pointers;
+            dyn_array<std::pair<Touch, TouchState>>       touchs;
 
             wl::RelativePointerManager relative_pointer_manager = wl::RelativePointerManager::empty();
 
-            std::vector<WaylandMonitor> monitors;
+            dyn_array<WaylandMonitor> monitors;
 
-            std::vector<std::pair<wl_surface*, Window*>> windows;
+            dyn_array<std::pair<wl_surface*, Window*>> windows;
 
             common::xkb::Context xkb_context = common::xkb::Context::empty();
         };

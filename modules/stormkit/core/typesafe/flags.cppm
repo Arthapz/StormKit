@@ -13,6 +13,7 @@ import std;
 import :meta;
 
 import :string.constexpr_string;
+import :string.aliases;
 
 import :math.combinatoric;
 
@@ -51,13 +52,13 @@ export {
         constexpr auto next_value(const T& value) noexcept -> T;
 
         template<meta::IsEnumeration T, usize N, T DEFAULT_VALUE, usize BUF_LEN = 50>
-        consteval auto generate_substitutions_as_string_for(std::string_view                                     prefix,
-                                                            const std::array<std::pair<T, std::string_view>, N>& mapping,
+        consteval auto generate_substitutions_as_string_for(string_view                                prefix,
+                                                            const array<std::pair<T, string_view>, N>& mapping,
                                                             char separator = '|') noexcept -> decltype(auto);
 
         template<meta::IsEnumeration T, usize N, usize BUF_LEN = 50>
-        consteval auto generate_substitutions_as_string_for(std::string_view                                     prefix,
-                                                            const std::array<std::pair<T, std::string_view>, N>& mapping,
+        consteval auto generate_substitutions_as_string_for(string_view                                prefix,
+                                                            const array<std::pair<T, string_view>, N>& mapping,
                                                             char separator = '|') noexcept -> decltype(auto);
     }} // namespace stormkit::core
 
@@ -112,8 +113,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsEnumeration T, usize N, T DEFAULT_VALUE, usize BUF_LEN>
-    consteval auto generate_substitutions_as_string_for(std::string_view                                     prefix,
-                                                        const std::array<std::pair<T, std::string_view>, N>& mapping,
+    consteval auto generate_substitutions_as_string_for(string_view                                prefix,
+                                                        const array<std::pair<T, string_view>, N>& mapping,
                                                         char separator) noexcept -> decltype(auto) {
         constexpr auto OUT_SIZE = [] {
             auto res = 0uz;
@@ -128,22 +129,22 @@ namespace stormkit { inline namespace core {
             return res + 1;
         }();
 
-        auto out   = std::array<std::pair<T, meta::ConstexprString<BUF_LEN>>, OUT_SIZE> {};
-        auto queue = std::vector<std::tuple<T, std::string, bool>> {};
-        for (const auto& [k, v] : mapping) queue.emplace_back(k, std::string { v }, true);
+        auto out   = array<std::pair<T, meta::ConstexprString<BUF_LEN>>, OUT_SIZE> {};
+        auto queue = dyn_array<std::tuple<T, string, bool>> {};
+        for (const auto& [k, v] : mapping) queue.emplace_back(k, string { v }, true);
 
         auto i = 0uz;
         while (not stdr::empty(queue)) {
-            const auto [key, string, single_value] = queue.back();
+            const auto [key, str, single_value] = queue.back();
             if (not stdr::any_of(out, [&key](auto& pair) noexcept { return pair.first == key; })) {
                 auto& [k, v] = out[i];
                 k            = key;
 
-                auto out_string = std::string { prefix };
-                if (single_value) out_string += string;
+                auto out_string = string { prefix };
+                if (single_value) out_string += str;
                 else {
                     out_string += "(";
-                    out_string += string;
+                    out_string += str;
                     out_string += ")";
                 }
 
@@ -160,14 +161,14 @@ namespace stormkit { inline namespace core {
                                                       }));
 
                     if (not has_key) {
-                        auto str = string;
+                        auto str2 = str;
                         if (k != DEFAULT_VALUE) {
-                            str += " ";
-                            str += separator;
-                            str += " ";
-                            str += v;
+                            str2 += " ";
+                            str2 += separator;
+                            str2 += " ";
+                            str2 += v;
                         }
-                        queue.emplace(stdr::begin(queue), key | k, str, false);
+                        queue.emplace(stdr::begin(queue), key | k, str2, false);
                     }
                 }
             }
@@ -179,8 +180,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsEnumeration T, usize N, usize BUF_LEN>
-    consteval auto generate_substitutions_as_string_for(std::string_view                                     prefix,
-                                                        const std::array<std::pair<T, std::string_view>, N>& mapping,
+    consteval auto generate_substitutions_as_string_for(string_view                                prefix,
+                                                        const array<std::pair<T, string_view>, N>& mapping,
                                                         char separator) noexcept -> decltype(auto) {
         constexpr auto OUT_SIZE = [] {
             auto res = 0uz;
@@ -191,22 +192,22 @@ namespace stormkit { inline namespace core {
             return res;
         }();
 
-        auto out   = std::array<std::pair<T, meta::ConstexprString<BUF_LEN>>, OUT_SIZE> {};
-        auto queue = std::vector<std::tuple<T, std::string, bool>> {};
-        for (const auto& [k, v] : mapping) queue.emplace_back(k, std::string { v }, true);
+        auto out   = array<std::pair<T, meta::ConstexprString<BUF_LEN>>, OUT_SIZE> {};
+        auto queue = dyn_array<std::tuple<T, string, bool>> {};
+        for (const auto& [k, v] : mapping) queue.emplace_back(k, string { v }, true);
 
         auto i = 0uz;
         while (not stdr::empty(queue)) {
-            const auto [key, string, single_value] = queue.back();
+            const auto [key, str, single_value] = queue.back();
             if (not stdr::any_of(out, [&key](auto& pair) noexcept { return pair.first == key; })) {
                 auto& [k, v] = out[i];
                 k            = key;
 
-                auto out_string = std::string { prefix };
-                if (single_value) out_string += string;
+                auto out_string = string { prefix };
+                if (single_value) out_string += str;
                 else {
                     out_string += "(";
-                    out_string += string;
+                    out_string += str;
                     out_string += ")";
                 }
 
@@ -221,7 +222,7 @@ namespace stormkit { inline namespace core {
                     return _key == _k;
                 });
 
-                if (not has_key) queue.emplace(stdr::begin(queue), key | k, string + " " + separator + " " + v, false);
+                if (not has_key) queue.emplace(stdr::begin(queue), key | k, str + " " + separator + " " + v, false);
             }
             queue.pop_back();
         }

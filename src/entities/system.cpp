@@ -15,7 +15,7 @@ import stormkit.core;
 namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
-    System::System(std::string name, ComponentTypes types, Closures&& closures) noexcept
+    System::System(string name, ComponentTypes types, Closures&& closures) noexcept
         : m_name { std::move(name) }, m_types { std::move(types) }, m_closures { std::move(closures) } {
     }
 

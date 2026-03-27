@@ -113,7 +113,7 @@ namespace stormkit::gpu {
             } infos;
 
             struct {
-                std::array<u8, VK_UUID_SIZE> value;
+                array<u8, VK_UUID_SIZE> value;
             } uuid;
         } m_serialized;
 

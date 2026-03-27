@@ -13,7 +13,7 @@ using namespace std::literals;
 
 using namespace stormkit;
 
-auto main(const std::span<const std::string_view> args) noexcept -> int {
+auto main(const array_view<const string_view> args) noexcept -> int {
     if (stdr::size(args) < 2) {
         std::println(get_stderr(), "No template filename provided");
         return -1;
@@ -35,11 +35,11 @@ auto main(const std::span<const std::string_view> args) noexcept -> int {
     const auto template_data = TryAssert(io::read_text<io::Mode::AINSI>(template_path),
                                          std::format("Failed to read file {}, reason: ", template_path.string()));
 
-    auto out = std::string {};
+    auto out = string {};
     out.reserve(stdr::size(template_data));
 
     // TODO replace with std::hive when supported
-    auto buff = std::vector<char> {};
+    auto buff = dyn_array<char> {};
     buff.reserve(50);
 
     out += std::format(R"(

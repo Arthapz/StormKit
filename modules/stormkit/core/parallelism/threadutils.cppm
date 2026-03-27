@@ -12,20 +12,21 @@ export module stormkit.core:parallelism.threadutils;
 import std;
 
 import :meta;
+import :string.aliases;
 
 export namespace stormkit { inline namespace core {
     STORMKIT_CORE_API
-    auto set_current_thread_name(std::string_view name) noexcept -> void;
+    auto set_current_thread_name(string_view name) noexcept -> void;
     STORMKIT_CORE_API
-    auto set_thread_name(std::thread& thread, std::string_view name) noexcept -> void;
+    auto set_thread_name(std::thread& thread, string_view name) noexcept -> void;
     STORMKIT_CORE_API
-    auto set_thread_name(std::jthread& thread, std::string_view name) noexcept -> void;
+    auto set_thread_name(std::jthread& thread, string_view name) noexcept -> void;
     STORMKIT_CORE_API
-    auto get_current_thread_name() noexcept -> std::string;
+    auto get_current_thread_name() noexcept -> string;
     STORMKIT_CORE_API
-    auto get_thread_name(const std::thread& thread) noexcept -> std::string;
+    auto get_thread_name(const std::thread& thread) noexcept -> string;
     STORMKIT_CORE_API
-    auto get_thread_name(const std::jthread& thread) noexcept -> std::string;
+    auto get_thread_name(const std::jthread& thread) noexcept -> string;
 
     template<std::ranges::input_range Range>
         requires(meta::IsSpecializationOf<meta::RangeType<Range>, std::future>)

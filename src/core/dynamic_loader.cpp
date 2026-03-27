@@ -57,7 +57,7 @@ namespace stormkit {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DynamicLoader::do_get_func(std::string_view name) const -> Expected<void*> {
+    auto DynamicLoader::do_get_func(string_view name) const -> Expected<void*> {
         EXPECTS(m_library_handle);
 #ifdef STORMKIT_OS_WINDOWS
         auto func = ::GetProcAddress(std::bit_cast<HMODULE>(m_library_handle), std::data(name));

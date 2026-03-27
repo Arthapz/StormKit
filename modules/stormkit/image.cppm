@@ -104,7 +104,7 @@ export namespace stormkit::image {
                 UNKNOWN,
             } reason;
 
-            std::string str_error;
+            string str_error;
         };
 
         struct ImageData {
@@ -116,14 +116,14 @@ export namespace stormkit::image {
             u32            mip_levels        = 1u;
             Format         format            = Format::UNDEFINED;
 
-            std::vector<Byte> data = {};
+            byte_dyn_array data = {};
         };
 
         Image() noexcept;
         explicit Image(ImageData&& data) noexcept;
         Image(const math::uextent3& extent, Format format) noexcept;
         Image(const std::filesystem::path& filepath, Codec codec = Codec::AUTODETECT) noexcept;
-        Image(std::span<const Byte> data, Codec codec = Codec::AUTODETECT) noexcept;
+        Image(byte_view<> data, Codec codec = Codec::AUTODETECT) noexcept;
         ~Image() noexcept;
 
         Image(const Image& rhs) noexcept;
@@ -136,14 +136,14 @@ export namespace stormkit::image {
         auto load_from_file(std::filesystem::path filepath, Codec codec = Codec::AUTODETECT) noexcept
           -> std::expected<void, Error>;
         [[nodiscard]]
-        auto load_from_memory(std::span<const Byte> data, Codec codec = Codec::AUTODETECT) noexcept -> std::expected<void, Error>;
+        auto load_from_memory(byte_view<> data, Codec codec = Codec::AUTODETECT) noexcept -> std::expected<void, Error>;
         [[nodiscard]]
         auto save_to_file(std::filesystem::path filename, Codec codec, CodecArgs args = CodecArgs::BINARY) const noexcept
           -> std::expected<void, Error>;
 
         [[nodiscard]]
         auto save_to_memory(Codec codec, CodecArgs args = CodecArgs::BINARY) const noexcept
-          -> std::expected<std::vector<Byte>, Error>;
+          -> std::expected<byte_dyn_array, Error>;
 
         auto create(math::uextent3 extent, Format format) noexcept -> void;
 
@@ -165,13 +165,13 @@ export namespace stormkit::image {
         auto rotate_270() const noexcept -> Image;
 
         [[nodiscard]]
-        auto pixel(usize id, u32 layer = 0u, u32 face = 0u, u32 level = 0u) noexcept -> std::span<Byte>;
+        auto pixel(usize id, u32 layer = 0u, u32 face = 0u, u32 level = 0u) noexcept -> byte_mut_view<>;
         [[nodiscard]]
-        auto pixel(usize id, u32 layer = 0u, u32 face = 0u, u32 level = 0u) const noexcept -> std::span<const Byte>;
+        auto pixel(usize id, u32 layer = 0u, u32 face = 0u, u32 level = 0u) const noexcept -> byte_view<>;
         [[nodiscard]]
-        auto pixel(math::uvec3 position, u32 layer = 0u, u32 face = 0u, u32 level = 0u) noexcept -> std::span<Byte>;
+        auto pixel(math::uvec3 position, u32 layer = 0u, u32 face = 0u, u32 level = 0u) noexcept -> byte_mut_view<>;
         [[nodiscard]]
-        auto pixel(math::uvec3 position, u32 layer = 0u, u32 face = 0u, u32 level = 0u) const noexcept -> std::span<const Byte>;
+        auto pixel(math::uvec3 position, u32 layer = 0u, u32 face = 0u, u32 level = 0u) const noexcept -> byte_view<>;
 
         [[nodiscard]]
         auto extent(u32 level = 0u) const noexcept -> math::uextent3;
@@ -204,13 +204,13 @@ export namespace stormkit::image {
         auto size(u32 layer) const noexcept -> usize;
 
         [[nodiscard]]
-        auto data() noexcept -> std::span<Byte>;
+        auto data() noexcept -> byte_mut_view<>;
         [[nodiscard]]
-        auto data(u32 layer, u32 face, u32 level) noexcept -> std::span<Byte>;
+        auto data(u32 layer, u32 face, u32 level) noexcept -> byte_mut_view<>;
         [[nodiscard]]
-        auto data() const noexcept -> std::span<const Byte>;
+        auto data() const noexcept -> byte_view<>;
         [[nodiscard]]
-        auto data(u32 layer, u32 face, u32 level) const noexcept -> std::span<const Byte>;
+        auto data(u32 layer, u32 face, u32 level) const noexcept -> byte_view<>;
 
         [[nodiscard]]
         auto begin() noexcept;
@@ -268,7 +268,7 @@ export {
 namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::pixel(usize index, u32 layer, u32 face, u32 level) noexcept -> std::span<Byte> {
+    inline auto Image::pixel(usize index, u32 layer, u32 face, u32 level) noexcept -> byte_mut_view<> {
         EXPECTS(m_data.mip_levels > level);
         EXPECTS(m_data.faces > face);
         EXPECTS(m_data.layers > layer);
@@ -284,7 +284,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::pixel(usize index, u32 layer, u32 face, u32 level) const noexcept -> std::span<const Byte> {
+    inline auto Image::pixel(usize index, u32 layer, u32 face, u32 level) const noexcept -> byte_view<> {
         EXPECTS(m_data.mip_levels > level);
         EXPECTS(m_data.faces > face);
         EXPECTS(m_data.layers > layer);
@@ -301,7 +301,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::pixel(math::uvec3 position, u32 layer, u32 face, u32 level) noexcept -> std::span<Byte> {
+    inline auto Image::pixel(math::uvec3 position, u32 layer, u32 face, u32 level) noexcept -> byte_mut_view<> {
         const auto mip_extent = extent(level);
 
         const auto id = position.x + (position.y * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z);
@@ -311,7 +311,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::pixel(math::uvec3 position, u32 layer, u32 face, u32 level) const noexcept -> std::span<const Byte> {
+    inline auto Image::pixel(math::uvec3 position, u32 layer, u32 face, u32 level) const noexcept -> byte_view<> {
         const auto mip_extent = extent(level);
 
         const auto id = position.x + (position.y * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z);
@@ -405,13 +405,13 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::data() noexcept -> std::span<Byte> {
+    inline auto Image::data() noexcept -> byte_mut_view<> {
         return m_data.data;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::data(u32 layer, u32 face, u32 level) noexcept -> std::span<Byte> {
+    inline auto Image::data(u32 layer, u32 face, u32 level) noexcept -> byte_mut_view<> {
         const auto mip_size = size(layer, face, level);
 
         auto offset = usize { 0 };
@@ -427,13 +427,13 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::data() const noexcept -> std::span<const Byte> {
+    inline auto Image::data() const noexcept -> byte_view<> {
         return m_data.data;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::data(u32 layer, u32 face, u32 level) const noexcept -> std::span<const Byte> {
+    inline auto Image::data(u32 layer, u32 face, u32 level) const noexcept -> byte_view<> {
         const auto mip_size = size(layer, face, level);
 
         auto offset = usize { 0 };

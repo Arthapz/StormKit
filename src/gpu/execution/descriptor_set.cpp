@@ -25,14 +25,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto DescriptorSetInterface<Base>::update(std::span<const Descriptor> descriptors) const noexcept -> void {
+    auto DescriptorSetInterface<Base>::update(array_view<const Descriptor> descriptors) const noexcept -> void {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
         auto&& [_, _, _writes] = [this, descriptors = std::move(descriptors)] noexcept -> decltype(auto) {
-            auto buffers = std::vector<VkDescriptorBufferInfo> {};
-            auto images  = std::vector<VkDescriptorImageInfo> {};
-            auto writes  = std::vector<VkWriteDescriptorSet> {};
+            auto buffers = dyn_array<VkDescriptorBufferInfo> {};
+            auto images  = dyn_array<VkDescriptorImageInfo> {};
+            auto writes  = dyn_array<VkWriteDescriptorSet> {};
             buffers.reserve(std::size(descriptors));
             images.reserve(std::size(descriptors));
             writes.reserve(std::size(descriptors));

@@ -35,7 +35,7 @@ export namespace stormkit::wsi::linux {
         Window(Window&&) noexcept;
         auto operator=(Window&&) noexcept -> Window&;
 
-        auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
+        auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
         auto close() noexcept -> void;
 
         [[nodiscard]]
@@ -50,11 +50,11 @@ export namespace stormkit::wsi::linux {
         auto handle_events() noexcept -> void;
 
         auto clear(const ucolor_rgb& color) noexcept -> void;
-        auto fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void;
+        auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
-        auto set_title(std::string title) noexcept -> void;
+        auto set_title(string title) noexcept -> void;
         [[nodiscard]]
-        auto title() const noexcept -> const std::string&;
+        auto title() const noexcept -> const string&;
 
         auto set_extent(const math::uextent2& extent) noexcept -> void;
         [[nodiscard]]
@@ -141,7 +141,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::open(std::string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
+    inline auto Window::open(string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).open(std::move(title), extent, flags); break;
             case WM::WAYLAND: as<wayland::Window>(m_impl).open(std::move(title), extent, flags); break;
@@ -231,7 +231,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void {
+    inline auto Window::fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).fill_framebuffer(colors); break;
             case WM::WAYLAND: as<wayland::Window>(m_impl).fill_framebuffer(colors); break;
@@ -243,7 +243,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::set_title(std::string title) noexcept -> void {
+    inline auto Window::set_title(string title) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).set_title(std::move(title)); break;
             case WM::WAYLAND: as<wayland::Window>(m_impl).set_title(std::move(title)); break;
@@ -255,7 +255,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto Window::title() const noexcept -> const std::string& {
+    inline auto Window::title() const noexcept -> const string& {
         switch (m_wm) {
             case WM::X11: return as<x11::Window>(m_impl).title();
             case WM::WAYLAND: return as<wayland::Window>(m_impl).title();

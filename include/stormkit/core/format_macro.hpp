@@ -45,7 +45,7 @@
 
 #define FORMATTER_INHERIT_DEFINE_FORMAT_AS_STRING(_Parent, _From)                                        \
     FORMATTER_INHERIT_DEFINE_FORMAT(_From) {                                                             \
-        return formatter<_Parent, CharT>::format(stormkit::as<std::string>(std::forward<U>(data)), ctx); \
+        return formatter<_Parent, CharT>::format(stormkit::as<string>(std::forward<U>(data)), ctx); \
     }
 
 #define FORMATTER_DEFINE_FORMAT_AS_STRING(_From)                                                  \
@@ -53,7 +53,7 @@
         return ctx.begin();                                                                       \
     }                                                                                             \
     FORMATTER_DEFINE_FORMAT(_From) {                                                              \
-        return std::format_to(ctx.out(), "{}", stormkit::as<std::string>(std::forward<U>(data))); \
+        return std::format_to(ctx.out(), "{}", stormkit::as<string>(std::forward<U>(data))); \
     }
 
 #define FORMATTER(_From)            \

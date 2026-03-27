@@ -27,7 +27,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     auto DescriptorPoolInterface<Base>::create_vk_descriptor_sets(usize count, view::DescriptorSetLayout&& layout) const noexcept
-      -> Expected<std::vector<VkDescriptorSet>> {
+      -> Expected<dyn_array<VkDescriptorSet>> {
         const auto vk_layout     = vk::to_vk(layout);
         const auto allocate_info = VkDescriptorSetAllocateInfo {
             .sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -58,7 +58,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DescriptorPoolImplementation::do_init(PrivateTag, std::span<const Size>&& sizes, u32 max_sets) noexcept
+    auto DescriptorPoolImplementation::do_init(PrivateTag, array_view<const Size>&& sizes, u32 max_sets) noexcept
       -> Expected<void> {
         const auto pool_sizes = transform(sizes, [](const Size& size) static noexcept {
             return VkDescriptorPoolSize {

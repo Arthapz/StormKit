@@ -30,7 +30,7 @@ export namespace stormkit::wsi::common {
         u8   id;
         bool key_repeat = false;
 
-        std::array<KeyState, 102> keys = filled_with<102>(KeyState::UP);
+        array<KeyState, 102> keys = filled_with<102>(KeyState::UP);
     };
 
     enum class ButtonState : u8 {
@@ -48,7 +48,7 @@ export namespace stormkit::wsi::common {
         math::uvec2 locked_at     = {};
         math::uvec2 last_position = {};
 
-        std::array<ButtonState, 15> buttons = filled_with<15>(ButtonState::UP);
+        array<ButtonState, 15> buttons = filled_with<15>(ButtonState::UP);
     };
 } // namespace stormkit::wsi::common
 

@@ -31,7 +31,7 @@ namespace stormkit::log {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto parse_args(std::span<const std::string_view> args) noexcept -> void {
+    auto parse_args(array_view<const string_view> args) noexcept -> void {
         debug_enabled = stdr::find_if(args, [](auto&& v) { return v == "--debug" or v == "-d"; }) != stdr::cend(args);
     }
 

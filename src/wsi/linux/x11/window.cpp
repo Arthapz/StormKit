@@ -45,13 +45,13 @@ namespace stdv = std::views;
 namespace stormkit::wsi::linux::x11 {
     namespace {
         [[maybe_unused]]
-        constexpr auto WM_CLASS                = std::string_view("WM_CLASS");
-        constexpr auto WM_HINTS_STR            = std::string_view("_MOTIF_WM_HINTS");
-        constexpr auto WM_PROTOCOLS            = std::string_view("WM_PROTOCOLS");
-        constexpr auto WM_DELETE_WINDOW        = std::string_view("WM_DELETE_WINDOW");
-        constexpr auto WM_STATE_STR            = std::string_view("_NET_WM_STATE");
-        constexpr auto WM_STATE_FULLSCREEN_STR = std::string_view("_NET_WM_STATE_FULLSCREEN");
-        constexpr auto WM_STATE_HIDDEN_STR     = std::string_view("_NET_WM_STATE_HIDDEN");
+        constexpr auto WM_CLASS                = string_view("WM_CLASS");
+        constexpr auto WM_HINTS_STR            = string_view("_MOTIF_WM_HINTS");
+        constexpr auto WM_PROTOCOLS            = string_view("WM_PROTOCOLS");
+        constexpr auto WM_DELETE_WINDOW        = string_view("WM_DELETE_WINDOW");
+        constexpr auto WM_STATE_STR            = string_view("_NET_WM_STATE");
+        constexpr auto WM_STATE_FULLSCREEN_STR = string_view("_NET_WM_STATE_FULLSCREEN");
+        constexpr auto WM_STATE_HIDDEN_STR     = string_view("_NET_WM_STATE_HIDDEN");
 
         constexpr auto MWM_HINTS_FUNCTIONS   = 1 << 0;
         constexpr auto MWM_HINTS_DECORATIONS = 1 << 1;
@@ -136,7 +136,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(std::string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
+    auto Window::open(string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
         const auto& connection = xcb::get_globals().connection;
 
         const auto screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
@@ -148,7 +148,7 @@ namespace stormkit::wsi::linux::x11 {
         {
             m_color_map = xcb::ColorMap::create(connection);
             xcb_create_colormap(connection, XCB_COLORMAP_ALLOC_NONE, m_color_map, screen->root, screen->root_visual);
-            const auto value_list = std::array<u32, 3> { screen->white_pixel, EVENTS, m_color_map };
+            const auto value_list = array<u32, 3> { screen->white_pixel, EVENTS, m_color_map };
 
             const auto cookie = xcb_create_window_checked(connection,
                                                           screen->root_depth,
@@ -350,7 +350,7 @@ namespace stormkit::wsi::linux::x11 {
 
         if (not check_flag_bit(flags, WindowFlag::EXTERNAL_CONTEXT)) {
             m_graphics_context = xcb::GraphicsContext::create(connection);
-            const auto values  = std::array<u32, 3> { screen->white_pixel, screen->black_pixel, 0_u32 };
+            const auto values  = array<u32, 3> { screen->white_pixel, screen->black_pixel, 0_u32 };
             xcb_create_gc(connection,
                           m_graphics_context,
                           m_window,
@@ -428,7 +428,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(std::span<const ucolor_rgb> pixels) noexcept -> void {
+    auto Window::fill_framebuffer(array_view<const ucolor_rgb> pixels) noexcept -> void {
         expects(m_graphics_context, "fill_framebuffer called on a window opened with EXTERNAL_CONTEXT flag");
         const auto count = std::min(stdr::size(pixels), stdr::size(m_framebuffer));
         stdr::copy(pixels | stdv::take(count) | stdv::transform([](const auto& col) static noexcept {
@@ -445,7 +445,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(std::string title) noexcept -> void {
+    auto Window::set_title(string title) noexcept -> void {
         const auto& globals = xcb::get_globals();
 
         xcb_change_property(globals.connection,
@@ -470,7 +470,7 @@ namespace stormkit::wsi::linux::x11 {
         const auto mask   = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
         const auto width  = as<f32>(extent.width);
         const auto height = as<f32>(extent.height);
-        const auto values = std::array<i32, 2> { as<i32>(width), as<i32>(height) };
+        const auto values = array<i32, 2> { as<i32>(width), as<i32>(height) };
 
         xcb_configure_window(globals.connection, m_window, mask, stdr::data(values));
 

@@ -789,7 +789,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::AccessFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_READ,
             stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_WRITE,
             stormkit::gpu::AccessFlag::DEPTH_STENCIL_ATTACHMENT_READ,
@@ -814,8 +814,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::AccessFlag>(stormkit::gpu::AccessFlag value) noexcept
-      -> std::string_view {
+    constexpr auto stormkit::core::as_string<stormkit::gpu::AccessFlag>(stormkit::gpu::AccessFlag value) noexcept -> string_view {
         switch (value) {
             case stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_READ: return "AccessFlag::COLOR_ATTACHMENT_READ";
             case stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_WRITE: return "AccessFlag::COLOR_ATTACHMENT_WRITE";
@@ -840,7 +839,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::AccessFlag>(stormkit::gpu::AccessFlag value) noexcept -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::AccessFlag>(stormkit::gpu::AccessFlag value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_READ: return "AccessFlag::COLOR_ATTACHMENT_READ";
             case stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_WRITE: return "AccessFlag::COLOR_ATTACHMENT_WRITE";
@@ -868,7 +867,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::AttachmentLoadOperation>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::AttachmentLoadOperation::CLEAR,
             stormkit::gpu::AttachmentLoadOperation::DONT_CARE,
             stormkit::gpu::AttachmentLoadOperation::LOAD,
@@ -879,7 +878,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto stormkit::core::as_string<
-      stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation value) noexcept -> std::string_view {
+      stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation value) noexcept -> string_view {
         switch (value) {
             case stormkit::gpu::AttachmentLoadOperation::CLEAR: return "AttachmentLoadOperation::CLEAR";
             case stormkit::gpu::AttachmentLoadOperation::DONT_CARE: return "AttachmentLoadOperation::DONT_CARE";
@@ -891,7 +890,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<
-      stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation value) noexcept -> std::string {
+      stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::AttachmentLoadOperation::CLEAR: return "AttachmentLoadOperation::CLEAR";
             case stormkit::gpu::AttachmentLoadOperation::DONT_CARE: return "AttachmentLoadOperation::DONT_CARE";
@@ -905,7 +904,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::AttachmentStoreOperation>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::AttachmentStoreOperation::DONT_CARE,
             stormkit::gpu::AttachmentStoreOperation::STORE,
 
@@ -915,7 +914,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto stormkit::core::as_string<
-      stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation value) noexcept -> std::string_view {
+      stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation value) noexcept -> string_view {
         switch (value) {
             case stormkit::gpu::AttachmentStoreOperation::DONT_CARE: return "AttachmentStoreOperation::DONT_CARE";
             case stormkit::gpu::AttachmentStoreOperation::STORE: return "AttachmentStoreOperation::STORE";
@@ -926,7 +925,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<
-      stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation value) noexcept -> std::string {
+      stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::AttachmentStoreOperation::DONT_CARE: return "AttachmentStoreOperation::DONT_CARE";
             case stormkit::gpu::AttachmentStoreOperation::STORE: return "AttachmentStoreOperation::STORE";
@@ -939,7 +938,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::BlendFactor>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::BlendFactor::CONSTANT_ALPHA,
             stormkit::gpu::BlendFactor::CONSTANT_COLOR,
             stormkit::gpu::BlendFactor::DST_ALPHA,
@@ -967,7 +966,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::BlendFactor>(stormkit::gpu::BlendFactor value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::BlendFactor::CONSTANT_ALPHA: return "BlendFactor::CONSTANT_ALPHA";
             case stormkit::gpu::BlendFactor::CONSTANT_COLOR: return "BlendFactor::CONSTANT_COLOR";
@@ -994,8 +993,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::BlendFactor>(stormkit::gpu::BlendFactor value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::BlendFactor>(stormkit::gpu::BlendFactor value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::BlendFactor::CONSTANT_ALPHA: return "BlendFactor::CONSTANT_ALPHA";
             case stormkit::gpu::BlendFactor::CONSTANT_COLOR: return "BlendFactor::CONSTANT_COLOR";
@@ -1025,7 +1023,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::BlendOperation>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::BlendOperation::ADD,      stormkit::gpu::BlendOperation::MAX,
             stormkit::gpu::BlendOperation::MIN,      stormkit::gpu::BlendOperation::REVERSE_SUBTRACT,
             stormkit::gpu::BlendOperation::SUBTRACT,
@@ -1037,7 +1035,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::BlendOperation>(stormkit::gpu::BlendOperation value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::BlendOperation::ADD: return "BlendOperation::ADD";
             case stormkit::gpu::BlendOperation::MAX: return "BlendOperation::MAX";
@@ -1051,7 +1049,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::BlendOperation>(stormkit::gpu::BlendOperation value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::BlendOperation::ADD: return "BlendOperation::ADD";
             case stormkit::gpu::BlendOperation::MAX: return "BlendOperation::MAX";
@@ -1067,7 +1065,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::BorderColor>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::BorderColor::FLOAT_OPAQUE_BLACK,      stormkit::gpu::BorderColor::FLOAT_OPAQUE_WHITE,
             stormkit::gpu::BorderColor::FLOAT_TRANSPARENT_BLACK, stormkit::gpu::BorderColor::INT_OPAQUE_BLACK,
             stormkit::gpu::BorderColor::INT_OPAQUE_WHITE,        stormkit::gpu::BorderColor::INT_TRANSPARENT_BLACK,
@@ -1079,7 +1077,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::BorderColor>(stormkit::gpu::BorderColor value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::BorderColor::FLOAT_OPAQUE_BLACK: return "BorderColor::FLOAT_OPAQUE_BLACK";
             case stormkit::gpu::BorderColor::FLOAT_OPAQUE_WHITE: return "BorderColor::FLOAT_OPAQUE_WHITE";
@@ -1093,8 +1091,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::BorderColor>(stormkit::gpu::BorderColor value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::BorderColor>(stormkit::gpu::BorderColor value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::BorderColor::FLOAT_OPAQUE_BLACK: return "BorderColor::FLOAT_OPAQUE_BLACK";
             case stormkit::gpu::BorderColor::FLOAT_OPAQUE_WHITE: return "BorderColor::FLOAT_OPAQUE_WHITE";
@@ -1111,7 +1108,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::BufferUsageFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::BufferUsageFlag::INDEX,        stormkit::gpu::BufferUsageFlag::INDIRECT,
             stormkit::gpu::BufferUsageFlag::STORAGE,      stormkit::gpu::BufferUsageFlag::STORAGE_TEXEL,
             stormkit::gpu::BufferUsageFlag::TRANSFER_DST, stormkit::gpu::BufferUsageFlag::TRANSFER_SRC,
@@ -1125,7 +1122,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::BufferUsageFlag>(stormkit::gpu::BufferUsageFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::BufferUsageFlag::INDEX: return "BufferUsageFlag::INDEX";
             case stormkit::gpu::BufferUsageFlag::INDIRECT: return "BufferUsageFlag::INDIRECT";
@@ -1143,7 +1140,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::BufferUsageFlag>(stormkit::gpu::BufferUsageFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::BufferUsageFlag::INDEX: return "BufferUsageFlag::INDEX";
             case stormkit::gpu::BufferUsageFlag::INDIRECT: return "BufferUsageFlag::INDIRECT";
@@ -1163,7 +1160,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ColorComponentFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ColorComponentFlag::A,   stormkit::gpu::ColorComponentFlag::B,
             stormkit::gpu::ColorComponentFlag::G,   stormkit::gpu::ColorComponentFlag::NONE,
             stormkit::gpu::ColorComponentFlag::R,   stormkit::gpu::ColorComponentFlag::RG,
@@ -1176,7 +1173,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::ColorComponentFlag>(stormkit::gpu::ColorComponentFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::ColorComponentFlag::A: return "ColorComponentFlag::A";
             case stormkit::gpu::ColorComponentFlag::B: return "ColorComponentFlag::B";
@@ -1193,7 +1190,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::ColorComponentFlag>(stormkit::gpu::ColorComponentFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::ColorComponentFlag::A: return "ColorComponentFlag::A";
             case stormkit::gpu::ColorComponentFlag::B: return "ColorComponentFlag::B";
@@ -1212,7 +1209,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ColorSpace>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ColorSpace::ADOBERGB_LINEAR,
             stormkit::gpu::ColorSpace::ADOBERGB_NONLINEAR,
             stormkit::gpu::ColorSpace::BT2020_LINEAR,
@@ -1236,8 +1233,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ColorSpace>(stormkit::gpu::ColorSpace value) noexcept
-      -> std::string_view {
+    constexpr auto stormkit::core::as_string<stormkit::gpu::ColorSpace>(stormkit::gpu::ColorSpace value) noexcept -> string_view {
         switch (value) {
             case stormkit::gpu::ColorSpace::ADOBERGB_LINEAR: return "ColorSpace::ADOBERGB_LINEAR";
             case stormkit::gpu::ColorSpace::ADOBERGB_NONLINEAR: return "ColorSpace::ADOBERGB_NONLINEAR";
@@ -1261,7 +1257,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ColorSpace>(stormkit::gpu::ColorSpace value) noexcept -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::ColorSpace>(stormkit::gpu::ColorSpace value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::ColorSpace::ADOBERGB_LINEAR: return "ColorSpace::ADOBERGB_LINEAR";
             case stormkit::gpu::ColorSpace::ADOBERGB_NONLINEAR: return "ColorSpace::ADOBERGB_NONLINEAR";
@@ -1288,7 +1284,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::CommandBufferLevel>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::CommandBufferLevel::PRIMARY,
             stormkit::gpu::CommandBufferLevel::SECONDARY,
 
@@ -1299,7 +1295,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::CommandBufferLevel>(stormkit::gpu::CommandBufferLevel value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::CommandBufferLevel::PRIMARY: return "CommandBufferLevel::PRIMARY";
             case stormkit::gpu::CommandBufferLevel::SECONDARY: return "CommandBufferLevel::SECONDARY";
@@ -1310,7 +1306,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::CommandBufferLevel>(stormkit::gpu::CommandBufferLevel value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::CommandBufferLevel::PRIMARY: return "CommandBufferLevel::PRIMARY";
             case stormkit::gpu::CommandBufferLevel::SECONDARY: return "CommandBufferLevel::SECONDARY";
@@ -1323,7 +1319,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::CompareOperation>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::CompareOperation::ALWAYS,  stormkit::gpu::CompareOperation::EQUAL,
             stormkit::gpu::CompareOperation::GREATER, stormkit::gpu::CompareOperation::GREATER_OR_EQUAL,
             stormkit::gpu::CompareOperation::LESS,    stormkit::gpu::CompareOperation::LESS_OR_EQUAL,
@@ -1336,7 +1332,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::CompareOperation>(stormkit::gpu::CompareOperation value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::CompareOperation::ALWAYS: return "CompareOperation::ALWAYS";
             case stormkit::gpu::CompareOperation::EQUAL: return "CompareOperation::EQUAL";
@@ -1353,7 +1349,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::CompareOperation>(stormkit::gpu::CompareOperation value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::CompareOperation::ALWAYS: return "CompareOperation::ALWAYS";
             case stormkit::gpu::CompareOperation::EQUAL: return "CompareOperation::EQUAL";
@@ -1372,7 +1368,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::CullModeFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::CullModeFlag::BACK,
             stormkit::gpu::CullModeFlag::FRONT,
             stormkit::gpu::CullModeFlag::FRONT_BACK,
@@ -1385,7 +1381,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::CullModeFlag>(stormkit::gpu::CullModeFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::CullModeFlag::BACK: return "CullModeFlag::BACK";
             case stormkit::gpu::CullModeFlag::FRONT: return "CullModeFlag::FRONT";
@@ -1397,8 +1393,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::CullModeFlag>(stormkit::gpu::CullModeFlag value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::CullModeFlag>(stormkit::gpu::CullModeFlag value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::CullModeFlag::BACK: return "CullModeFlag::BACK";
             case stormkit::gpu::CullModeFlag::FRONT: return "CullModeFlag::FRONT";
@@ -1413,7 +1408,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::DebugObjectType>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::DebugObjectType::BUFFER,
             stormkit::gpu::DebugObjectType::BUFFER_VIEW,
             stormkit::gpu::DebugObjectType::COMMAND_BUFFER,
@@ -1453,7 +1448,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::DebugObjectType>(stormkit::gpu::DebugObjectType value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::DebugObjectType::BUFFER: return "DebugObjectType::BUFFER";
             case stormkit::gpu::DebugObjectType::BUFFER_VIEW: return "DebugObjectType::BUFFER_VIEW";
@@ -1493,7 +1488,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::DebugObjectType>(stormkit::gpu::DebugObjectType value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::DebugObjectType::BUFFER: return "DebugObjectType::BUFFER";
             case stormkit::gpu::DebugObjectType::BUFFER_VIEW: return "DebugObjectType::BUFFER_VIEW";
@@ -1535,7 +1530,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::DependencyFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::DependencyFlag::BY_REGION,
             stormkit::gpu::DependencyFlag::DEVICE_GROUP,
             stormkit::gpu::DependencyFlag::NONE,
@@ -1548,7 +1543,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::DependencyFlag>(stormkit::gpu::DependencyFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::DependencyFlag::BY_REGION: return "DependencyFlag::BY_REGION";
             case stormkit::gpu::DependencyFlag::DEVICE_GROUP: return "DependencyFlag::DEVICE_GROUP";
@@ -1561,7 +1556,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::DependencyFlag>(stormkit::gpu::DependencyFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::DependencyFlag::BY_REGION: return "DependencyFlag::BY_REGION";
             case stormkit::gpu::DependencyFlag::DEVICE_GROUP: return "DependencyFlag::DEVICE_GROUP";
@@ -1576,7 +1571,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::DescriptorType>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::DescriptorType::COMBINED_IMAGE_SAMPLER, stormkit::gpu::DescriptorType::INPUT_ATTACHMENT,
             stormkit::gpu::DescriptorType::SAMPLED_IMAGE,          stormkit::gpu::DescriptorType::SAMPLER,
             stormkit::gpu::DescriptorType::STORAGE_BUFFER,         stormkit::gpu::DescriptorType::STORAGE_BUFFER_DYNAMIC,
@@ -1591,7 +1586,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::DescriptorType>(stormkit::gpu::DescriptorType value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::DescriptorType::COMBINED_IMAGE_SAMPLER: return "DescriptorType::COMBINED_IMAGE_SAMPLER";
             case stormkit::gpu::DescriptorType::INPUT_ATTACHMENT: return "DescriptorType::INPUT_ATTACHMENT";
@@ -1611,7 +1606,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::DescriptorType>(stormkit::gpu::DescriptorType value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::DescriptorType::COMBINED_IMAGE_SAMPLER: return "DescriptorType::COMBINED_IMAGE_SAMPLER";
             case stormkit::gpu::DescriptorType::INPUT_ATTACHMENT: return "DescriptorType::INPUT_ATTACHMENT";
@@ -1633,7 +1628,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::DynamicState>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::DynamicState::BLEND_CONSTANTS,   stormkit::gpu::DynamicState::DEPTH_BIAS,
             stormkit::gpu::DynamicState::DEPTH_BOUNDS,      stormkit::gpu::DynamicState::LINE_WIDTH,
             stormkit::gpu::DynamicState::SCISSOR,           stormkit::gpu::DynamicState::STENCIL_COMPARE_MASK,
@@ -1647,7 +1642,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::DynamicState>(stormkit::gpu::DynamicState value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::DynamicState::BLEND_CONSTANTS: return "DynamicState::BLEND_CONSTANTS";
             case stormkit::gpu::DynamicState::DEPTH_BIAS: return "DynamicState::DEPTH_BIAS";
@@ -1664,8 +1659,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::DynamicState>(stormkit::gpu::DynamicState value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::DynamicState>(stormkit::gpu::DynamicState value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::DynamicState::BLEND_CONSTANTS: return "DynamicState::BLEND_CONSTANTS";
             case stormkit::gpu::DynamicState::DEPTH_BIAS: return "DynamicState::DEPTH_BIAS";
@@ -1685,7 +1679,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::Filter>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::Filter::CUBIC_IMG,
             stormkit::gpu::Filter::LINEAR,
             stormkit::gpu::Filter::NEAREST,
@@ -1696,7 +1690,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::Filter>(stormkit::gpu::Filter value) noexcept -> std::string_view {
+    constexpr auto stormkit::core::as_string<stormkit::gpu::Filter>(stormkit::gpu::Filter value) noexcept -> string_view {
         switch (value) {
             case stormkit::gpu::Filter::CUBIC_IMG: return "Filter::CUBIC_IMG";
             case stormkit::gpu::Filter::LINEAR: return "Filter::LINEAR";
@@ -1707,7 +1701,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::Filter>(stormkit::gpu::Filter value) noexcept -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::Filter>(stormkit::gpu::Filter value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::Filter::CUBIC_IMG: return "Filter::CUBIC_IMG";
             case stormkit::gpu::Filter::LINEAR: return "Filter::LINEAR";
@@ -1721,7 +1715,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::FormatFeatureFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::FormatFeatureFlag::BLIT_DST,
             stormkit::gpu::FormatFeatureFlag::BLIT_SRC,
             stormkit::gpu::FormatFeatureFlag::COLOR_ATTACHMENT,
@@ -1753,7 +1747,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::FormatFeatureFlag>(stormkit::gpu::FormatFeatureFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::FormatFeatureFlag::BLIT_DST: return "FormatFeatureFlag::BLIT_DST";
             case stormkit::gpu::FormatFeatureFlag::BLIT_SRC: return "FormatFeatureFlag::BLIT_SRC";
@@ -1792,7 +1786,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::FormatFeatureFlag>(stormkit::gpu::FormatFeatureFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::FormatFeatureFlag::BLIT_DST: return "FormatFeatureFlag::BLIT_DST";
             case stormkit::gpu::FormatFeatureFlag::BLIT_SRC: return "FormatFeatureFlag::BLIT_SRC";
@@ -1833,7 +1827,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::FrontFace>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::FrontFace::CLOCKWISE,
             stormkit::gpu::FrontFace::COUNTER_CLOCKWISE,
 
@@ -1843,8 +1837,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::FrontFace>(stormkit::gpu::FrontFace value) noexcept
-      -> std::string_view {
+    constexpr auto stormkit::core::as_string<stormkit::gpu::FrontFace>(stormkit::gpu::FrontFace value) noexcept -> string_view {
         switch (value) {
             case stormkit::gpu::FrontFace::CLOCKWISE: return "FrontFace::CLOCKWISE";
             case stormkit::gpu::FrontFace::COUNTER_CLOCKWISE: return "FrontFace::COUNTER_CLOCKWISE";
@@ -1854,7 +1847,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::FrontFace>(stormkit::gpu::FrontFace value) noexcept -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::FrontFace>(stormkit::gpu::FrontFace value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::FrontFace::CLOCKWISE: return "FrontFace::CLOCKWISE";
             case stormkit::gpu::FrontFace::COUNTER_CLOCKWISE: return "FrontFace::COUNTER_CLOCKWISE";
@@ -1867,7 +1860,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::GeometryFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::GeometryFlag::NO_DUPLICATE_ANY_HIT_INVOCATION,
             stormkit::gpu::GeometryFlag::OPAQUE,
 
@@ -1878,7 +1871,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::GeometryFlag>(stormkit::gpu::GeometryFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::GeometryFlag::NO_DUPLICATE_ANY_HIT_INVOCATION:
                 return "GeometryFlag::NO_DUPLICATE_ANY_HIT_INVOCATION";
@@ -1889,8 +1882,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::GeometryFlag>(stormkit::gpu::GeometryFlag value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::GeometryFlag>(stormkit::gpu::GeometryFlag value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::GeometryFlag::NO_DUPLICATE_ANY_HIT_INVOCATION:
                 return "GeometryFlag::NO_DUPLICATE_ANY_HIT_INVOCATION";
@@ -1904,7 +1896,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::GeometryType>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::GeometryType::AABBS,
             stormkit::gpu::GeometryType::INSTANCES,
             stormkit::gpu::GeometryType::TRIANGLES,
@@ -1916,7 +1908,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::GeometryType>(stormkit::gpu::GeometryType value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::GeometryType::AABBS: return "GeometryType::AABBS";
             case stormkit::gpu::GeometryType::INSTANCES: return "GeometryType::INSTANCES";
@@ -1927,8 +1919,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::GeometryType>(stormkit::gpu::GeometryType value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::GeometryType>(stormkit::gpu::GeometryType value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::GeometryType::AABBS: return "GeometryType::AABBS";
             case stormkit::gpu::GeometryType::INSTANCES: return "GeometryType::INSTANCES";
@@ -1942,7 +1933,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageAspectFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ImageAspectFlag::COLOR,
             stormkit::gpu::ImageAspectFlag::DEPTH,
             stormkit::gpu::ImageAspectFlag::NONE,
@@ -1955,7 +1946,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::ImageAspectFlag>(stormkit::gpu::ImageAspectFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::ImageAspectFlag::COLOR: return "ImageAspectFlag::COLOR";
             case stormkit::gpu::ImageAspectFlag::DEPTH: return "ImageAspectFlag::DEPTH";
@@ -1968,7 +1959,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageAspectFlag>(stormkit::gpu::ImageAspectFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::ImageAspectFlag::COLOR: return "ImageAspectFlag::COLOR";
             case stormkit::gpu::ImageAspectFlag::DEPTH: return "ImageAspectFlag::DEPTH";
@@ -1983,7 +1974,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageCreateFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ImageCreateFlag::ALIAS,
             stormkit::gpu::ImageCreateFlag::ARRAY_2D_COMPATIBLE,
             stormkit::gpu::ImageCreateFlag::BLOCK_TEXEL_VIEW_COMPATIBLE,
@@ -2005,7 +1996,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::ImageCreateFlag>(stormkit::gpu::ImageCreateFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::ImageCreateFlag::ALIAS: return "ImageCreateFlag::ALIAS";
             case stormkit::gpu::ImageCreateFlag::ARRAY_2D_COMPATIBLE: return "ImageCreateFlag::ARRAY_2D_COMPATIBLE";
@@ -2029,7 +2020,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageCreateFlag>(stormkit::gpu::ImageCreateFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::ImageCreateFlag::ALIAS: return "ImageCreateFlag::ALIAS";
             case stormkit::gpu::ImageCreateFlag::ARRAY_2D_COMPATIBLE: return "ImageCreateFlag::ARRAY_2D_COMPATIBLE";
@@ -2055,7 +2046,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageLayout>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ImageLayout::ATTACHMENT_OPTIMAL,
             stormkit::gpu::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
             stormkit::gpu::ImageLayout::DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL,
@@ -2078,7 +2069,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::ImageLayout>(stormkit::gpu::ImageLayout value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::ImageLayout::ATTACHMENT_OPTIMAL: return "ImageLayout::ATTACHMENT_OPTIMAL";
             case stormkit::gpu::ImageLayout::COLOR_ATTACHMENT_OPTIMAL: return "ImageLayout::COLOR_ATTACHMENT_OPTIMAL";
@@ -2104,8 +2095,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageLayout>(stormkit::gpu::ImageLayout value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageLayout>(stormkit::gpu::ImageLayout value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::ImageLayout::ATTACHMENT_OPTIMAL: return "ImageLayout::ATTACHMENT_OPTIMAL";
             case stormkit::gpu::ImageLayout::COLOR_ATTACHMENT_OPTIMAL: return "ImageLayout::COLOR_ATTACHMENT_OPTIMAL";
@@ -2134,7 +2124,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageTiling>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ImageTiling::LINEAR,
             stormkit::gpu::ImageTiling::OPTIMAL,
 
@@ -2145,7 +2135,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::ImageTiling>(stormkit::gpu::ImageTiling value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::ImageTiling::LINEAR: return "ImageTiling::LINEAR";
             case stormkit::gpu::ImageTiling::OPTIMAL: return "ImageTiling::OPTIMAL";
@@ -2155,8 +2145,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageTiling>(stormkit::gpu::ImageTiling value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageTiling>(stormkit::gpu::ImageTiling value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::ImageTiling::LINEAR: return "ImageTiling::LINEAR";
             case stormkit::gpu::ImageTiling::OPTIMAL: return "ImageTiling::OPTIMAL";
@@ -2169,7 +2158,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageType>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ImageType::T1D,
             stormkit::gpu::ImageType::T2D,
             stormkit::gpu::ImageType::T3D,
@@ -2180,8 +2169,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ImageType>(stormkit::gpu::ImageType value) noexcept
-      -> std::string_view {
+    constexpr auto stormkit::core::as_string<stormkit::gpu::ImageType>(stormkit::gpu::ImageType value) noexcept -> string_view {
         switch (value) {
             case stormkit::gpu::ImageType::T1D: return "ImageType::T1D";
             case stormkit::gpu::ImageType::T2D: return "ImageType::T2D";
@@ -2192,7 +2180,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageType>(stormkit::gpu::ImageType value) noexcept -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageType>(stormkit::gpu::ImageType value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::ImageType::T1D: return "ImageType::T1D";
             case stormkit::gpu::ImageType::T2D: return "ImageType::T2D";
@@ -2206,7 +2194,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageUsageFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ImageUsageFlag::COLOR_ATTACHMENT, stormkit::gpu::ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT,
             stormkit::gpu::ImageUsageFlag::INPUT_ATTACHMENT, stormkit::gpu::ImageUsageFlag::SAMPLED,
             stormkit::gpu::ImageUsageFlag::STORAGE,          stormkit::gpu::ImageUsageFlag::TRANSFER_DST,
@@ -2219,7 +2207,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::ImageUsageFlag>(stormkit::gpu::ImageUsageFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::ImageUsageFlag::COLOR_ATTACHMENT: return "ImageUsageFlag::COLOR_ATTACHMENT";
             case stormkit::gpu::ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT: return "ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT";
@@ -2236,7 +2224,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageUsageFlag>(stormkit::gpu::ImageUsageFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::ImageUsageFlag::COLOR_ATTACHMENT: return "ImageUsageFlag::COLOR_ATTACHMENT";
             case stormkit::gpu::ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT: return "ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT";
@@ -2255,7 +2243,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageViewType>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ImageViewType::CUBE, stormkit::gpu::ImageViewType::CUBE_ARRAY,
             stormkit::gpu::ImageViewType::T1D,  stormkit::gpu::ImageViewType::T1D_ARRAY,
             stormkit::gpu::ImageViewType::T2D,  stormkit::gpu::ImageViewType::T2D_ARRAY,
@@ -2268,7 +2256,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::ImageViewType>(stormkit::gpu::ImageViewType value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::ImageViewType::CUBE: return "ImageViewType::CUBE";
             case stormkit::gpu::ImageViewType::CUBE_ARRAY: return "ImageViewType::CUBE_ARRAY";
@@ -2284,7 +2272,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::ImageViewType>(stormkit::gpu::ImageViewType value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::ImageViewType::CUBE: return "ImageViewType::CUBE";
             case stormkit::gpu::ImageViewType::CUBE_ARRAY: return "ImageViewType::CUBE_ARRAY";
@@ -2302,7 +2290,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::LogicOperation>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::LogicOperation::AND,         stormkit::gpu::LogicOperation::AND_INVERTED,
             stormkit::gpu::LogicOperation::AND_REVERSE, stormkit::gpu::LogicOperation::CLEAR,
             stormkit::gpu::LogicOperation::COPY,        stormkit::gpu::LogicOperation::COPY_INVERTED,
@@ -2319,7 +2307,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::LogicOperation>(stormkit::gpu::LogicOperation value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::LogicOperation::AND: return "LogicOperation::AND";
             case stormkit::gpu::LogicOperation::AND_INVERTED: return "LogicOperation::AND_INVERTED";
@@ -2344,7 +2332,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::LogicOperation>(stormkit::gpu::LogicOperation value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::LogicOperation::AND: return "LogicOperation::AND";
             case stormkit::gpu::LogicOperation::AND_INVERTED: return "LogicOperation::AND_INVERTED";
@@ -2371,7 +2359,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::MemoryPropertyFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::MemoryPropertyFlag::DEVICE_LOCAL,
             stormkit::gpu::MemoryPropertyFlag::HOST_CACHED,
             stormkit::gpu::MemoryPropertyFlag::HOST_COHERENT,
@@ -2384,7 +2372,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::MemoryPropertyFlag>(stormkit::gpu::MemoryPropertyFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::MemoryPropertyFlag::DEVICE_LOCAL: return "MemoryPropertyFlag::DEVICE_LOCAL";
             case stormkit::gpu::MemoryPropertyFlag::HOST_CACHED: return "MemoryPropertyFlag::HOST_CACHED";
@@ -2397,7 +2385,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::MemoryPropertyFlag>(stormkit::gpu::MemoryPropertyFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::MemoryPropertyFlag::DEVICE_LOCAL: return "MemoryPropertyFlag::DEVICE_LOCAL";
             case stormkit::gpu::MemoryPropertyFlag::HOST_CACHED: return "MemoryPropertyFlag::HOST_CACHED";
@@ -2412,7 +2400,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PhysicalDeviceType>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::PhysicalDeviceType::CPU,
             stormkit::gpu::PhysicalDeviceType::DISCRETE_GPU,
             stormkit::gpu::PhysicalDeviceType::INTEGRATED_GPU,
@@ -2426,7 +2414,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::PhysicalDeviceType>(stormkit::gpu::PhysicalDeviceType value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::PhysicalDeviceType::CPU: return "PhysicalDeviceType::CPU";
             case stormkit::gpu::PhysicalDeviceType::DISCRETE_GPU: return "PhysicalDeviceType::DISCRETE_GPU";
@@ -2440,7 +2428,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::PhysicalDeviceType>(stormkit::gpu::PhysicalDeviceType value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::PhysicalDeviceType::CPU: return "PhysicalDeviceType::CPU";
             case stormkit::gpu::PhysicalDeviceType::DISCRETE_GPU: return "PhysicalDeviceType::DISCRETE_GPU";
@@ -2456,7 +2444,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PipelineBindPoint>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::PipelineBindPoint::COMPUTE,
             stormkit::gpu::PipelineBindPoint::GRAPHICS,
 
@@ -2467,7 +2455,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::PipelineBindPoint>(stormkit::gpu::PipelineBindPoint value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::PipelineBindPoint::COMPUTE: return "PipelineBindPoint::COMPUTE";
             case stormkit::gpu::PipelineBindPoint::GRAPHICS: return "PipelineBindPoint::GRAPHICS";
@@ -2478,7 +2466,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::PipelineBindPoint>(stormkit::gpu::PipelineBindPoint value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::PipelineBindPoint::COMPUTE: return "PipelineBindPoint::COMPUTE";
             case stormkit::gpu::PipelineBindPoint::GRAPHICS: return "PipelineBindPoint::GRAPHICS";
@@ -2491,7 +2479,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PipelineStageFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::PipelineStageFlag::ALL_COMMANDS,
             stormkit::gpu::PipelineStageFlag::ALL_GRAPHICS,
             stormkit::gpu::PipelineStageFlag::BOTTOM_OF_PIPE,
@@ -2517,7 +2505,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::PipelineStageFlag>(stormkit::gpu::PipelineStageFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::PipelineStageFlag::ALL_COMMANDS: return "PipelineStageFlag::ALL_COMMANDS";
             case stormkit::gpu::PipelineStageFlag::ALL_GRAPHICS: return "PipelineStageFlag::ALL_GRAPHICS";
@@ -2545,7 +2533,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::PipelineStageFlag>(stormkit::gpu::PipelineStageFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::PipelineStageFlag::ALL_COMMANDS: return "PipelineStageFlag::ALL_COMMANDS";
             case stormkit::gpu::PipelineStageFlag::ALL_GRAPHICS: return "PipelineStageFlag::ALL_GRAPHICS";
@@ -2575,7 +2563,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PixelFormat>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16,
             stormkit::gpu::PixelFormat::A2_RGB10I_PACK32,
             stormkit::gpu::PixelFormat::A2_RGB10_SNORM_PACK32,
@@ -2656,7 +2644,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::PixelFormat>(stormkit::gpu::PixelFormat value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16: return "PixelFormat::A1_RGB5_UNORM_PACK16";
             case stormkit::gpu::PixelFormat::A2_RGB10I_PACK32: return "PixelFormat::A2_RGB10I_PACK32";
@@ -2736,8 +2724,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::PixelFormat>(stormkit::gpu::PixelFormat value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::PixelFormat>(stormkit::gpu::PixelFormat value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16: return "PixelFormat::A1_RGB5_UNORM_PACK16";
             case stormkit::gpu::PixelFormat::A2_RGB10I_PACK32: return "PixelFormat::A2_RGB10I_PACK32";
@@ -2820,7 +2807,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PolygonMode>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::PolygonMode::FILL,
             stormkit::gpu::PolygonMode::LINE,
             stormkit::gpu::PolygonMode::POINT,
@@ -2832,7 +2819,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::PolygonMode>(stormkit::gpu::PolygonMode value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::PolygonMode::FILL: return "PolygonMode::FILL";
             case stormkit::gpu::PolygonMode::LINE: return "PolygonMode::LINE";
@@ -2843,8 +2830,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::PolygonMode>(stormkit::gpu::PolygonMode value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::PolygonMode>(stormkit::gpu::PolygonMode value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::PolygonMode::FILL: return "PolygonMode::FILL";
             case stormkit::gpu::PolygonMode::LINE: return "PolygonMode::LINE";
@@ -2858,7 +2844,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PresentMode>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::PresentMode::FIFO,
             stormkit::gpu::PresentMode::FIFO_RELAXED,
             stormkit::gpu::PresentMode::IMMEDIATE,
@@ -2873,7 +2859,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::PresentMode>(stormkit::gpu::PresentMode value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::PresentMode::FIFO: return "PresentMode::FIFO";
             case stormkit::gpu::PresentMode::FIFO_RELAXED: return "PresentMode::FIFO_RELAXED";
@@ -2887,8 +2873,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::PresentMode>(stormkit::gpu::PresentMode value) noexcept
-      -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::PresentMode>(stormkit::gpu::PresentMode value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::PresentMode::FIFO: return "PresentMode::FIFO";
             case stormkit::gpu::PresentMode::FIFO_RELAXED: return "PresentMode::FIFO_RELAXED";
@@ -2905,7 +2890,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PrimitiveTopology>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::PrimitiveTopology::LINE_LIST,     stormkit::gpu::PrimitiveTopology::LINE_STRIP,
             stormkit::gpu::PrimitiveTopology::POINT_LIST,    stormkit::gpu::PrimitiveTopology::TRIANGLE_FAN,
             stormkit::gpu::PrimitiveTopology::TRIANGLE_LIST, stormkit::gpu::PrimitiveTopology::TRIANGLE_STRIP,
@@ -2917,7 +2902,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::PrimitiveTopology>(stormkit::gpu::PrimitiveTopology value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::PrimitiveTopology::LINE_LIST: return "PrimitiveTopology::LINE_LIST";
             case stormkit::gpu::PrimitiveTopology::LINE_STRIP: return "PrimitiveTopology::LINE_STRIP";
@@ -2932,7 +2917,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::PrimitiveTopology>(stormkit::gpu::PrimitiveTopology value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::PrimitiveTopology::LINE_LIST: return "PrimitiveTopology::LINE_LIST";
             case stormkit::gpu::PrimitiveTopology::LINE_STRIP: return "PrimitiveTopology::LINE_STRIP";
@@ -2949,7 +2934,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::QueueFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::QueueFlag::COMPUTE,   stormkit::gpu::QueueFlag::GRAPHICS,       stormkit::gpu::QueueFlag::NONE,
             stormkit::gpu::QueueFlag::PROTECTED, stormkit::gpu::QueueFlag::SPARSE_BINDING, stormkit::gpu::QueueFlag::TRANSFER,
 
@@ -2959,8 +2944,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::QueueFlag>(stormkit::gpu::QueueFlag value) noexcept
-      -> std::string_view {
+    constexpr auto stormkit::core::as_string<stormkit::gpu::QueueFlag>(stormkit::gpu::QueueFlag value) noexcept -> string_view {
         switch (value) {
             case stormkit::gpu::QueueFlag::COMPUTE: return "QueueFlag::COMPUTE";
             case stormkit::gpu::QueueFlag::GRAPHICS: return "QueueFlag::GRAPHICS";
@@ -2974,7 +2958,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::QueueFlag>(stormkit::gpu::QueueFlag value) noexcept -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::QueueFlag>(stormkit::gpu::QueueFlag value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::QueueFlag::COMPUTE: return "QueueFlag::COMPUTE";
             case stormkit::gpu::QueueFlag::GRAPHICS: return "QueueFlag::GRAPHICS";
@@ -2991,7 +2975,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ResolveModeFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ResolveModeFlag::AVERAGE, stormkit::gpu::ResolveModeFlag::EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID,
             stormkit::gpu::ResolveModeFlag::MAX,     stormkit::gpu::ResolveModeFlag::MIN,
             stormkit::gpu::ResolveModeFlag::NONE,    stormkit::gpu::ResolveModeFlag::SAMPLE_ZERO,
@@ -3003,7 +2987,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::ResolveModeFlag>(stormkit::gpu::ResolveModeFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::ResolveModeFlag::AVERAGE: return "ResolveModeFlag::AVERAGE";
             case stormkit::gpu::ResolveModeFlag::EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID:
@@ -3019,7 +3003,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::ResolveModeFlag>(stormkit::gpu::ResolveModeFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::ResolveModeFlag::AVERAGE: return "ResolveModeFlag::AVERAGE";
             case stormkit::gpu::ResolveModeFlag::EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID:
@@ -3037,7 +3021,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::Result>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::Result::ERROR_DEVICE_LOST,
             stormkit::gpu::Result::ERROR_EXTENSION_NOT_PRESENT,
             stormkit::gpu::Result::ERROR_FEATURE_NOT_PRESENT,
@@ -3081,7 +3065,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::Result>(stormkit::gpu::Result value) noexcept -> std::string_view {
+    constexpr auto stormkit::core::as_string<stormkit::gpu::Result>(stormkit::gpu::Result value) noexcept -> string_view {
         switch (value) {
             case stormkit::gpu::Result::ERROR_DEVICE_LOST: return "Result::ERROR_DEVICE_LOST";
             case stormkit::gpu::Result::ERROR_EXTENSION_NOT_PRESENT: return "Result::ERROR_EXTENSION_NOT_PRESENT";
@@ -3127,7 +3111,7 @@ export {
 
     template<>
     STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::Result>(stormkit::gpu::Result value) noexcept -> std::string {
+    constexpr auto stormkit::core::to_string<stormkit::gpu::Result>(stormkit::gpu::Result value) noexcept -> string {
         switch (value) {
             case stormkit::gpu::Result::ERROR_DEVICE_LOST: return "Result::ERROR_DEVICE_LOST";
             case stormkit::gpu::Result::ERROR_EXTENSION_NOT_PRESENT: return "Result::ERROR_EXTENSION_NOT_PRESENT";
@@ -3176,7 +3160,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::SampleCountFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::SampleCountFlag::C1,  stormkit::gpu::SampleCountFlag::C16, stormkit::gpu::SampleCountFlag::C2,
             stormkit::gpu::SampleCountFlag::C32, stormkit::gpu::SampleCountFlag::C4,  stormkit::gpu::SampleCountFlag::C64,
             stormkit::gpu::SampleCountFlag::C8,
@@ -3188,7 +3172,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::SampleCountFlag>(stormkit::gpu::SampleCountFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::SampleCountFlag::C1: return "SampleCountFlag::C1";
             case stormkit::gpu::SampleCountFlag::C16: return "SampleCountFlag::C16";
@@ -3204,7 +3188,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::SampleCountFlag>(stormkit::gpu::SampleCountFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::SampleCountFlag::C1: return "SampleCountFlag::C1";
             case stormkit::gpu::SampleCountFlag::C16: return "SampleCountFlag::C16";
@@ -3222,7 +3206,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::SamplerAddressMode>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER,
             stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE,
             stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE,
@@ -3236,7 +3220,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::SamplerAddressMode>(stormkit::gpu::SamplerAddressMode value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER: return "SamplerAddressMode::CLAMP_TO_BORDER";
             case stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE: return "SamplerAddressMode::CLAMP_TO_EDGE";
@@ -3250,7 +3234,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::SamplerAddressMode>(stormkit::gpu::SamplerAddressMode value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER: return "SamplerAddressMode::CLAMP_TO_BORDER";
             case stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE: return "SamplerAddressMode::CLAMP_TO_EDGE";
@@ -3266,7 +3250,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::SamplerMipmapMode>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::SamplerMipmapMode::LINEAR,
             stormkit::gpu::SamplerMipmapMode::NEAREST,
 
@@ -3277,7 +3261,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::SamplerMipmapMode>(stormkit::gpu::SamplerMipmapMode value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::SamplerMipmapMode::LINEAR: return "SamplerMipmapMode::LINEAR";
             case stormkit::gpu::SamplerMipmapMode::NEAREST: return "SamplerMipmapMode::NEAREST";
@@ -3288,7 +3272,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::SamplerMipmapMode>(stormkit::gpu::SamplerMipmapMode value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::SamplerMipmapMode::LINEAR: return "SamplerMipmapMode::LINEAR";
             case stormkit::gpu::SamplerMipmapMode::NEAREST: return "SamplerMipmapMode::NEAREST";
@@ -3301,7 +3285,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ShaderStageFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::ShaderStageFlag::COMPUTE,  stormkit::gpu::ShaderStageFlag::FRAGMENT,
             stormkit::gpu::ShaderStageFlag::GEOMETRY, stormkit::gpu::ShaderStageFlag::NONE,
             stormkit::gpu::ShaderStageFlag::VERTEX,
@@ -3313,7 +3297,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::ShaderStageFlag>(stormkit::gpu::ShaderStageFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::ShaderStageFlag::COMPUTE: return "ShaderStageFlag::COMPUTE";
             case stormkit::gpu::ShaderStageFlag::FRAGMENT: return "ShaderStageFlag::FRAGMENT";
@@ -3327,7 +3311,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::ShaderStageFlag>(stormkit::gpu::ShaderStageFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::ShaderStageFlag::COMPUTE: return "ShaderStageFlag::COMPUTE";
             case stormkit::gpu::ShaderStageFlag::FRAGMENT: return "ShaderStageFlag::FRAGMENT";
@@ -3343,7 +3327,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::StencilFaceFlag>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::StencilFaceFlag::BACK,
             stormkit::gpu::StencilFaceFlag::FRONT,
             stormkit::gpu::StencilFaceFlag::FRONT_AND_BACK,
@@ -3355,7 +3339,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::StencilFaceFlag>(stormkit::gpu::StencilFaceFlag value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::StencilFaceFlag::BACK: return "StencilFaceFlag::BACK";
             case stormkit::gpu::StencilFaceFlag::FRONT: return "StencilFaceFlag::FRONT";
@@ -3367,7 +3351,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::StencilFaceFlag>(stormkit::gpu::StencilFaceFlag value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::StencilFaceFlag::BACK: return "StencilFaceFlag::BACK";
             case stormkit::gpu::StencilFaceFlag::FRONT: return "StencilFaceFlag::FRONT";
@@ -3381,7 +3365,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::VertexInputRate>() noexcept -> decltype(auto) {
-        return std::array {
+        return array {
             stormkit::gpu::VertexInputRate::INSTANCE,
             stormkit::gpu::VertexInputRate::VERTEX,
 
@@ -3392,7 +3376,7 @@ export {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto stormkit::core::as_string<stormkit::gpu::VertexInputRate>(stormkit::gpu::VertexInputRate value) noexcept
-      -> std::string_view {
+      -> string_view {
         switch (value) {
             case stormkit::gpu::VertexInputRate::INSTANCE: return "VertexInputRate::INSTANCE";
             case stormkit::gpu::VertexInputRate::VERTEX: return "VertexInputRate::VERTEX";
@@ -3403,7 +3387,7 @@ export {
     template<>
     STORMKIT_FORCE_INLINE
     constexpr auto stormkit::core::to_string<stormkit::gpu::VertexInputRate>(stormkit::gpu::VertexInputRate value) noexcept
-      -> std::string {
+      -> string {
         switch (value) {
             case stormkit::gpu::VertexInputRate::INSTANCE: return "VertexInputRate::INSTANCE";
             case stormkit::gpu::VertexInputRate::VERTEX: return "VertexInputRate::VERTEX";

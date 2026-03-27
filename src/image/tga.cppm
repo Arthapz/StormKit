@@ -16,14 +16,14 @@ import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_tga(std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_tga(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_tga(const image::Image& image, const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto save_tga(const image::Image& image) noexcept -> std::expected<std::vector<Byte>, image::Image::Error>;
+    auto save_tga(const image::Image& image) noexcept -> std::expected<byte_dyn_array, image::Image::Error>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
@@ -34,7 +34,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_tga(std::span<const Byte>) noexcept -> std::expected<image::Image, image::Image::Error> {
+    auto load_tga(byte_view<>) noexcept -> std::expected<image::Image, image::Image::Error> {
         assert(false, "Not implemented yet !");
         return {};
     }
@@ -48,7 +48,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_tga(const image::Image&) noexcept -> std::expected<std::vector<Byte>, image::Image::Error> {
+    auto save_tga(const image::Image&) noexcept -> std::expected<byte_dyn_array, image::Image::Error> {
         assert(false, "Not implemented yet !");
         return {};
     }

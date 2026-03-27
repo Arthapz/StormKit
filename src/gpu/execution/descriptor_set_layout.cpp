@@ -27,7 +27,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DescriptorSetLayoutImplementation::do_init(PrivateTag, std::vector<DescriptorSetLayoutBinding>&& bindings) noexcept
+    auto DescriptorSetLayoutImplementation::do_init(PrivateTag, dyn_array<DescriptorSetLayoutBinding>&& bindings) noexcept
       -> Expected<void> {
         m_bindings             = std::move(bindings);
         const auto vk_bindings = transform(m_bindings, [](const DescriptorSetLayoutBinding& binding) static noexcept {

@@ -66,6 +66,17 @@ namespace stormkit { inline namespace core { namespace meta {
         };
 
         template<typename T>
+        struct ContainedOrPointedOrTType {
+            using Type = T;
+        };
+
+        template<IsContainer T>
+        struct ContainedOrPointedOrTType<T>: ContainedType<T> {};
+
+        template<IsPointer T>
+        struct ContainedOrPointedOrTType<T>: PointedType<T> {};
+
+        template<typename T>
         struct ContainedOrPointedType;
 
         template<IsContainer T>
@@ -187,6 +198,9 @@ namespace stormkit { inline namespace core { namespace meta {
 
         template<typename T>
         using ContainedOrPointedType = details::ContainedOrPointedType<T>::Type;
+
+        template<typename T>
+        using ContainedOrPointedOrTType = details::ContainedOrPointedOrTType<T>::Type;
 
         template<typename T>
         using ReturnType = details::CallableTrait<T>::ReturnType;

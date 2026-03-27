@@ -16,7 +16,7 @@ import :utils.contract;
 
 export namespace stormkit { inline namespace core {
     template<typename T>
-    using DeferInitDefaultStorage = std::array<std::byte, sizeof(T)>;
+    using DeferInitDefaultStorage = array<std::byte, sizeof(T)>;
 
     template<typename T, typename Storage = DeferInitDefaultStorage<T>>
     class [[nodiscard]] DeferInit {

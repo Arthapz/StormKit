@@ -96,7 +96,7 @@ namespace stormkit::gpu {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        auto rendering_color_attachments   = std::vector<VkFormat> {};
+        auto rendering_color_attachments   = dyn_array<VkFormat> {};
         auto vk_rendering_inheritance_info = init_by<VkCommandBufferInheritanceRenderingInfo>([](auto& info) noexcept {
             info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
             info.pNext = nullptr;
@@ -121,7 +121,7 @@ namespace stormkit::gpu {
 
                   rendering_color_attachments                           = inheritance_info.color_attachments
                                                                           | stdv::transform(gpu::vk::monadic::to_vk<VkFormat>())
-                                                                          | stdr::to<std::vector>();
+                                                                          | stdr::to<dyn_array<VkFormat>>();
                   vk_rendering_inheritance_info.viewMask                = inheritance_info.view_mask;
                   vk_rendering_inheritance_info.colorAttachmentCount    = as<u32>(stdr::size(inheritance_info.color_attachments));
                   vk_rendering_inheritance_info.pColorAttachmentFormats = stdr::data(rendering_color_attachments);
@@ -184,7 +184,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::begin_debug_region(std::string_view name, const fcolor_rgb& color) const noexcept
+    auto CommandBufferInterface<Base>::begin_debug_region(string_view name, const fcolor_rgb& color) const noexcept
       -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -206,7 +206,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::insert_debug_label(std::string_view name, const fcolor_rgb& color) const noexcept
+    auto CommandBufferInterface<Base>::insert_debug_label(string_view name, const fcolor_rgb& color) const noexcept
       -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -319,10 +319,10 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::begin_render_pass(view::RenderPass            render_pass,
-                                                         view::FrameBuffer           framebuffer,
-                                                         std::span<const ClearValue> clear_values,
-                                                         bool                        secondary_commandbuffers) const noexcept
+    auto CommandBufferInterface<Base>::begin_render_pass(view::RenderPass             render_pass,
+                                                         view::FrameBuffer            framebuffer,
+                                                         array_view<const ClearValue> clear_values,
+                                                         bool                         secondary_commandbuffers) const noexcept
       -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -428,7 +428,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::set_viewport(u32 first_viewport, std::span<const Viewport> viewports) const noexcept
+    auto CommandBufferInterface<Base>::set_viewport(u32 first_viewport, array_view<const Viewport> viewports) const noexcept
       -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -445,7 +445,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::set_scissor(u32 first_scissor, std::span<const Scissor> scissors) const noexcept
+    auto CommandBufferInterface<Base>::set_scissor(u32 first_scissor, array_view<const Scissor> scissors) const noexcept
       -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -491,7 +491,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::set_blend_constants(std::span<const f32> constants) const noexcept
+    auto CommandBufferInterface<Base>::set_blend_constants(array_view<const f32> constants) const noexcept
       -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -651,7 +651,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::bind_vertex_buffers(std::span<const view::Buffer> buffers, std::span<const u64> offsets)
+    auto CommandBufferInterface<Base>::bind_vertex_buffers(array_view<const view::Buffer> buffers, array_view<const u64> offsets)
       const noexcept -> const CommandBufferInterface& {
         EXPECTS(not std::empty(buffers));
         EXPECTS(std::size(buffers) == std::size(offsets));
@@ -695,10 +695,10 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::bind_descriptor_sets(view::Pipeline                       pipeline,
-                                                            view::PipelineLayout                 layout,
-                                                            std::span<const view::DescriptorSet> descriptor_sets,
-                                                            std::span<const u32>                 dynamic_offsets) const noexcept
+    auto CommandBufferInterface<Base>::bind_descriptor_sets(view::Pipeline                        pipeline,
+                                                            view::PipelineLayout                  layout,
+                                                            array_view<const view::DescriptorSet> descriptor_sets,
+                                                            array_view<const u32>                 dynamic_offsets) const noexcept
       -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -735,7 +735,7 @@ namespace stormkit::gpu {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        const auto vk_copy_buffers = std::array {
+        const auto vk_copy_buffers = array {
             VkBufferCopy { .srcOffset = src_offset, .dstOffset = dst_offset, .size = size }
         };
 
@@ -746,9 +746,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::copy_buffer_to_image(view::Buffer                     src,
-                                                            view::Image                      dst,
-                                                            std::span<const BufferImageCopy> buffer_image_copies) const noexcept
+    auto CommandBufferInterface<Base>::copy_buffer_to_image(view::Buffer                      src,
+                                                            view::Image                       dst,
+                                                            array_view<const BufferImageCopy> buffer_image_copies) const noexcept
       -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -756,7 +756,7 @@ namespace stormkit::gpu {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        const auto DEFAULT_COPY = std::array {
+        const auto DEFAULT_COPY = array {
             BufferImageCopy { 0, 0, 0, {}, { 0, 0, 0 }, dst.extent() }
         };
 
@@ -793,9 +793,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::copy_image_to_buffer(view::Image                      src,
-                                                            view::Buffer                     dst,
-                                                            std::span<const BufferImageCopy> buffer_image_copies) const noexcept
+    auto CommandBufferInterface<Base>::copy_image_to_buffer(view::Image                       src,
+                                                            view::Buffer                      dst,
+                                                            array_view<const BufferImageCopy> buffer_image_copies) const noexcept
       -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -940,11 +940,11 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::blit_image(view::Image                 src,
-                                                  view::Image                 dst,
-                                                  ImageLayout                 src_layout,
-                                                  ImageLayout                 dst_layout,
-                                                  std::span<const BlitRegion> regions,
+    auto CommandBufferInterface<Base>::blit_image(view::Image                  src,
+                                                  view::Image                  dst,
+                                                  ImageLayout                  src_layout,
+                                                  ImageLayout                  dst_layout,
+                                                  array_view<const BlitRegion> regions,
                                                   Filter filter) const noexcept -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -1053,12 +1053,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::pipeline_barrier(PipelineStageFlag                    src_mask,
-                                                        PipelineStageFlag                    dst_mask,
-                                                        DependencyFlag                       dependency,
-                                                        std::span<const MemoryBarrier>       memory_barriers,
-                                                        std::span<const BufferMemoryBarrier> buffer_memory_barriers,
-                                                        std::span<const ImageMemoryBarrier>  image_memory_barriers) const noexcept
+    auto CommandBufferInterface<Base>::pipeline_barrier(PipelineStageFlag                     src_mask,
+                                                        PipelineStageFlag                     dst_mask,
+                                                        DependencyFlag                        dependency,
+                                                        array_view<const MemoryBarrier>       memory_barriers,
+                                                        array_view<const BufferMemoryBarrier> buffer_memory_barriers,
+                                                        array_view<const ImageMemoryBarrier> image_memory_barriers) const noexcept
       -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);
@@ -1129,9 +1129,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::push_constants(view::PipelineLayout  pipeline_layout,
-                                                      ShaderStageFlag       stage,
-                                                      std::span<const byte> data,
+    auto CommandBufferInterface<Base>::push_constants(view::PipelineLayout pipeline_layout,
+                                                      ShaderStageFlag      stage,
+                                                      byte_view<>          data,
                                                       u32 offset) const noexcept -> const CommandBufferInterface& {
         EXPECTS(not std::empty(data));
 
@@ -1154,7 +1154,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::execute_sub_command_buffers(std::span<const view::CommandBuffer> commandbuffers)
+    auto CommandBufferInterface<Base>::execute_sub_command_buffers(array_view<const view::CommandBuffer> commandbuffers)
       const noexcept -> const CommandBufferInterface& {
         const auto state = this->state();
         EXPECTS(state == CommandBuffer::State::RECORDING);

@@ -225,7 +225,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
         auto& _globals = *std::bit_cast<Globals*>(data);
 
-        const auto interface_name = std::string_view { interface, std::char_traits<char>::length(interface) };
+        const auto interface_name = string_view { interface, std::char_traits<char>::length(interface) };
 
         const auto it = INTERFACE_MAP.find(interface_name);
         if (it == stdr::cend(INTERFACE_MAP)) return;

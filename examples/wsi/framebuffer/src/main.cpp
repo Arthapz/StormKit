@@ -16,7 +16,7 @@ using namespace std::literals;
 
 namespace stdr = std::ranges;
 
-auto update_pixels(stormkit::ThreadPool& pool, std::vector<ucolor_rgb>& pixels, const auto& extent) noexcept {
+auto update_pixels(stormkit::ThreadPool& pool, dyn_array<ucolor_rgb>& pixels, const auto& extent) noexcept {
     const auto rect_width  = extent.width / 5;
     const auto rect_height = extent.height / 5;
 
@@ -29,7 +29,7 @@ auto update_pixels(stormkit::ThreadPool& pool, std::vector<ucolor_rgb>& pixels, 
 
     pixels.resize(extent.height * extent.width, colors::RED<u8>);
 
-    auto data = std::mdspan { stdr::data(pixels), extent.height, extent.width };
+    auto data = mdarray_view { stdr::data(pixels), extent.height, extent.width };
     parallel_for(pool, range(extent.width * extent.height), [&rect, data, &extent](auto x_y) mutable noexcept {
         const auto x = as<u32>(x_y % extent.width);
         const auto y = as<u32>(x_y / extent.width);
@@ -50,7 +50,7 @@ auto update_pixels(stormkit::ThreadPool& pool, std::vector<ucolor_rgb>& pixels, 
     });
 }
 
-auto main(std::span<const std::string_view> args) -> int {
+auto main(array_view<const string_view> args) -> int {
     wsi::parse_args(args);
     log::parse_args(args);
 
@@ -64,7 +64,7 @@ auto main(std::span<const std::string_view> args) -> int {
     ilog("wm: {}", window.wm());
 
     auto pool   = core::ThreadPool {};
-    auto pixels = std::vector<ucolor_rgb> {};
+    auto pixels = dyn_array<ucolor_rgb> {};
     update_pixels(pool, pixels, window.extent());
     auto active = true;
     window.on(wsi::ResizedEventFunc { [&](const math::uextent2& extent) mutable noexcept {

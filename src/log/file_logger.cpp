@@ -47,7 +47,7 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto FileLogger::write(Severity severity, const Module& m, CZString string) noexcept -> void {
+    auto FileLogger::write(Severity severity, const Module& m, czstring str) noexcept -> void {
         const auto now  = LogClock::now();
         const auto time = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
 
@@ -63,11 +63,11 @@ namespace stormkit::log {
         static constexpr auto LOG_LINE        = "[{}, {}] {}\n"sv;
         static constexpr auto LOG_LINE_MODULE = "[{}, {}, {}] {}\n"sv;
 
-        auto       final_string = std::string {};
+        auto       final_string = string {};
         const auto severity_str = replace(as_string(severity), "Severity::", "");
-        if (std::empty(m.name)) final_string = std::format(LOG_LINE, severity_str, time, string);
+        if (std::empty(m.name)) final_string = std::format(LOG_LINE, severity_str, time, str);
         else
-            final_string = std::format(LOG_LINE_MODULE, severity_str, time, m.name, string);
+            final_string = std::format(LOG_LINE_MODULE, severity_str, time, m.name, str);
 
         m_streams.at(filepath.string()) << final_string << std::flush;
     }

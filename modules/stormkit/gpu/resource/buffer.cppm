@@ -52,7 +52,7 @@ namespace stormkit::gpu {
         auto is_persistently_mapped() const noexcept -> bool;
 
         auto map(ioffset offset) noexcept -> Expected<byte*>;
-        auto map(ioffset offset, usize size) noexcept -> Expected<std::span<byte>>;
+        auto map(ioffset offset, usize size) noexcept -> Expected<byte_mut_view<>>;
 
         template<typename T>
         auto map_as(ioffset offset) noexcept -> Expected<ref<T>>;
@@ -64,8 +64,7 @@ namespace stormkit::gpu {
         auto data(this Self& self) noexcept -> cmeta::ForwardConst<Self, byte>*;
         template<typename Self>
         [[nodiscard]]
-        auto data(this Self& self, usize size) noexcept
-          -> cmeta::If<cmeta::IsConst<Self>, std::span<byte>, std::span<const byte>>;
+        auto data(this Self& self, usize size) noexcept -> cmeta::If<cmeta::IsConst<Self>, byte_mut_view<>, byte_view<>>;
 
         template<typename T>
         [[nodiscard]]
@@ -74,10 +73,10 @@ namespace stormkit::gpu {
         auto flush(ioffset offset, usize size) const noexcept -> Expected<void>;
         auto unmap() noexcept -> void;
 
-        auto upload(std::span<const byte> data, ioffset offset = 0) noexcept -> Expected<void>;
+        auto upload(byte_view<> data, ioffset offset = 0) noexcept -> Expected<void>;
 
         template<typename T>
-            requires(not stormkit::meta::IsSpecializationWithNTTPOf<T, std::span>)
+            requires(not stormkit::meta::IsStdSpan<T>)
         auto upload(const T& data, ioffset offset = 0) noexcept -> Expected<void>;
 
         [[nodiscard]]
@@ -239,7 +238,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto BufferInterface<Base>::map(ioffset offset, usize size) noexcept -> Expected<std::span<byte>> {
+    inline auto BufferInterface<Base>::map(ioffset offset, usize size) noexcept -> Expected<byte_mut_view<>> {
         auto   ptr = Try(map(offset));
         Return as_bytes_mut(ptr, size);
     }
@@ -281,8 +280,8 @@ namespace stormkit::gpu {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     inline auto BufferInterface<Base>::data(this Self& self, usize size) noexcept
-      -> cmeta::If<cmeta::IsConst<Self>, std::span<byte>, std::span<const byte>> {
-        using Out = std::span<cmeta::ForwardConst<Self, byte>>;
+      -> cmeta::If<cmeta::IsConst<Self>, byte_mut_view<>, byte_view<>> {
+        using Out = array_view<cmeta::ForwardConst<Self, byte>>;
         return Out { std::bit_cast<typename Out::element_type>(self.data()), size };
     }
 
@@ -300,7 +299,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     template<typename T>
-        requires(not stormkit::meta::IsSpecializationWithNTTPOf<T, std::span>)
+        requires(not stormkit::meta::IsStdSpan<T>)
     STORMKIT_FORCE_INLINE
     inline auto BufferInterface<Base>::upload(const T& data, ioffset offset) noexcept -> Expected<void> {
         const auto bytes = as_bytes(data);

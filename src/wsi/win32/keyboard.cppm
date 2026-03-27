@@ -154,7 +154,7 @@ namespace stormkit::wsi::win32 {
         });
 
         constexpr auto KEY_AS_SCANCODE = [] static noexcept -> decltype(auto) {
-            auto out = std::array<std::pair<Key, WPARAM>, 111> {};
+            auto out = array<std::pair<Key, WPARAM>, 111> {};
             auto i   = 0_usize;
             for (const auto& [key, value] : SCANCODE_AS_KEY)
                 out[i++] = std::make_pair(value.first, key);

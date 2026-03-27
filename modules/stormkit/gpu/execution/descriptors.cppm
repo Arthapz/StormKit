@@ -61,7 +61,7 @@ namespace stormkit::gpu {
             using DeviceObject<Base>::operator=;
             using TagType = DescriptorSetTag;
 
-            auto update(std::span<const Descriptor> descriptors) const noexcept -> void;
+            auto update(array_view<const Descriptor> descriptors) const noexcept -> void;
         };
     }
 
@@ -83,7 +83,7 @@ namespace stormkit::gpu {
             using DescriptorSetLayoutInterfaceBase::Size;
 
             [[nodiscard]]
-            auto bindings() const noexcept -> std::span<const DescriptorSetLayoutBinding>;
+            auto bindings() const noexcept -> array_view<const DescriptorSetLayoutBinding>;
         };
 
         template<typename Base>
@@ -95,16 +95,16 @@ namespace stormkit::gpu {
 
             auto create_descriptor_set(this const auto&, view::DescriptorSetLayout layout) noexcept -> Expected<DescriptorSet>;
             auto create_descriptor_sets(this const auto&, usize count, view::DescriptorSetLayout layout) noexcept
-              -> Expected<std::vector<DescriptorSet>>;
+              -> Expected<dyn_array<DescriptorSet>>;
 
             auto allocate_descriptor_set(this const auto&, view::DescriptorSetLayout layout) noexcept
               -> Expected<Heap<DescriptorSet>>;
             auto allocate_descriptor_sets(this const auto&, usize count, view::DescriptorSetLayout layout) noexcept
-              -> Expected<std::vector<Heap<DescriptorSet>>>;
+              -> Expected<dyn_array<Heap<DescriptorSet>>>;
 
           private:
             auto create_vk_descriptor_sets(usize, view::DescriptorSetLayout&&) const noexcept
-              -> Expected<std::vector<VkDescriptorSet>>;
+              -> Expected<dyn_array<VkDescriptorSet>>;
 
             static auto delete_vk_descriptor_set(view::Device, view::DescriptorPool, VkDescriptorSet) noexcept -> void;
         };
@@ -145,7 +145,7 @@ namespace stormkit::gpu {
     class STORMKIT_GPU_API DescriptorSetLayoutImplementation: public GpuObjectImplementation<DescriptorSetLayoutTag> {
       public:
         DescriptorSetLayoutImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, std::vector<DescriptorSetLayoutBinding>&&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, dyn_array<DescriptorSetLayoutBinding>&&) noexcept -> Expected<void>;
         ~DescriptorSetLayoutImplementation() noexcept;
 
         DescriptorSetLayoutImplementation(const DescriptorSetLayoutImplementation&)                    = delete;
@@ -155,7 +155,7 @@ namespace stormkit::gpu {
         auto operator=(DescriptorSetLayoutImplementation&&) noexcept -> DescriptorSetLayoutImplementation&;
 
       protected:
-        std::vector<DescriptorSetLayoutBinding> m_bindings;
+        dyn_array<DescriptorSetLayoutBinding> m_bindings;
     };
 
     namespace view {
@@ -173,7 +173,7 @@ namespace stormkit::gpu {
             auto operator=(DescriptorSetLayoutImplementation&&) noexcept -> DescriptorSetLayoutImplementation&;
 
           protected:
-            std::span<const DescriptorSetLayoutBinding> m_bindings;
+            array_view<const DescriptorSetLayoutBinding> m_bindings;
         };
     } // namespace view
 
@@ -182,7 +182,7 @@ namespace stormkit::gpu {
         using Size = DescriptorSetLayoutInterfaceBase::Size;
 
         DescriptorPoolImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, std::span<const Size>&&, u32) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, array_view<const Size>&&, u32) noexcept -> Expected<void>;
         ~DescriptorPoolImplementation() noexcept;
 
         DescriptorPoolImplementation(const DescriptorPoolImplementation&)                    = delete;
@@ -221,7 +221,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto DescriptorSetLayoutInterface<Base>::bindings() const noexcept -> std::span<const DescriptorSetLayoutBinding> {
+    inline auto DescriptorSetLayoutInterface<Base>::bindings() const noexcept -> array_view<const DescriptorSetLayoutBinding> {
         return Base::m_bindings;
     }
 
@@ -246,7 +246,7 @@ namespace stormkit::gpu {
     inline auto DescriptorPoolInterface<Base>::create_descriptor_sets(this const auto&          self,
                                                                       usize                     count,
                                                                       view::DescriptorSetLayout layout) noexcept
-      -> Expected<std::vector<DescriptorSet>> {
+      -> Expected<dyn_array<DescriptorSet>> {
         auto   device = self.owner();
         Return transform(Try(self.create_vk_descriptor_sets(count, std::move(layout))), [&self, device](auto vk_handle) noexcept {
             return DescriptorSet::create(device,
@@ -276,7 +276,7 @@ namespace stormkit::gpu {
     inline auto DescriptorPoolInterface<Base>::allocate_descriptor_sets(this const auto&          self,
                                                                         usize                     count,
                                                                         view::DescriptorSetLayout layout) noexcept
-      -> Expected<std::vector<Heap<DescriptorSet>>> {
+      -> Expected<dyn_array<Heap<DescriptorSet>>> {
         auto   device = self.owner();
         Return transform(Try(self.create_vk_descriptor_sets(count, std::move(layout))), [&self, device](auto vk_handle) noexcept {
             return DescriptorSet::allocate(device,

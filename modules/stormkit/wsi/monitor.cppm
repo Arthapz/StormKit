@@ -23,11 +23,11 @@ export {
                 PRIMARY,
             };
 
-            Flags       flags = Flags::NONE;
-            std::string name;
+            Flags  flags = Flags::NONE;
+            string name;
 
-            std::vector<math::uextent2> extents;
-            u32                         scale_factor = 1;
+            dyn_array<math::uextent2> extents;
+            u32                       scale_factor = 1;
 
             [[nodiscard]]
             constexpr auto operator<=>(const Monitor& other) const noexcept -> std::strong_ordering;
@@ -38,16 +38,16 @@ export {
             void* native_handle = nullptr;
         };
 
-        constexpr auto as_string(Monitor::Flags flags) noexcept -> std::string_view;
-        constexpr auto to_string(Monitor::Flags flags) noexcept -> std::string;
+        constexpr auto as_string(Monitor::Flags flags) noexcept -> string_view;
+        constexpr auto to_string(Monitor::Flags flags) noexcept -> string;
 
-        auto to_string(const Monitor& monitor) noexcept -> std::string;
+        auto to_string(const Monitor& monitor) noexcept -> string;
 
         template<typename FormatContext>
         auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept -> decltype(ctx.out());
 
         [[nodiscard]]
-        STORMKIT_WSI_API auto get_monitors(bool update = false) noexcept -> std::span<const Monitor>;
+        STORMKIT_WSI_API auto get_monitors(bool update = false) noexcept -> array_view<const Monitor>;
 
         [[nodiscard]]
         STORMKIT_WSI_API auto get_primary_monitor() noexcept -> const Monitor&;
@@ -105,7 +105,7 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(Monitor::Flags flags) noexcept -> std::string_view {
+    constexpr auto as_string(Monitor::Flags flags) noexcept -> string_view {
         switch (flags) {
             case Monitor::Flags::NONE: return "Monitor::Flags::NONE";
             case Monitor::Flags::PRIMARY: return "Monitor::Flags::PRIMARY";
@@ -118,14 +118,14 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto to_string(Monitor::Flags flags) noexcept -> std::string {
-        return std::string { as_string(flags) };
+    constexpr auto to_string(Monitor::Flags flags) noexcept -> string {
+        return string { as_string(flags) };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto to_string(const Monitor& monitor) noexcept -> std::string {
+    inline auto to_string(const Monitor& monitor) noexcept -> string {
         return std::format("{}", monitor);
     }
 

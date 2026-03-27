@@ -21,6 +21,9 @@ import :typesafe.integer;
 
 import :hash;
 
+namespace stdr = std::ranges;
+namespace stdv = std::views;
+
 export {
     namespace stormkit { inline namespace core {
         template<typename T>
@@ -297,65 +300,65 @@ export {
         [[nodiscard]]
         constexpr auto unref_mut(T& value) noexcept -> meta::PointedType<T>&;
 
-        template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-            requires(not std::ranges::range<Args> and ...)
+        template<template<typename, std::size_t> typename Out = array, typename... Args>
+            requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_refs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = std::vector, typename... Args>
-            requires(not std::ranges::range<Args> and ...)
+        template<template<typename...> typename Out = dyn_array, typename... Args>
+            requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto to_refs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-            requires(not std::ranges::range<Args> and ...)
+        template<template<typename, std::size_t> typename Out = array, typename... Args>
+            requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_ref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = std::vector, typename... Args>
-            requires(not std::ranges::range<Args> and ...)
+        template<template<typename...> typename Out = dyn_array, typename... Args>
+            requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto to_ref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = std::vector, std::ranges::range T>
-            requires(std::ranges::range<Out<typename T::value_type>>)
+        template<template<typename...> class Out = dyn_array, stdr::range T>
+            requires(stdr::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_refs(const T& range) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = std::vector, std::ranges::range T>
-            requires(std::ranges::range<Out<typename T::value_type>>)
+        template<template<typename...> class Out = dyn_array, stdr::range T>
+            requires(stdr::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto);
 
-        template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-            requires(not std::ranges::range<Args> and ...)
+        template<template<typename, std::size_t> typename Out = array, typename... Args>
+            requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_optrefs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = std::vector, typename... Args>
-            requires(not std::ranges::range<Args> and ...)
+        template<template<typename...> typename Out = dyn_array, typename... Args>
+            requires(not stdr::range<Args> and ...)
         [[nodiscard]]
-        constexpr auto to_opt_refs(Args&&... args) noexcept -> decltype(auto);
+        constexpr auto to_optrefs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-            requires(not std::ranges::range<Args> and ...)
+        template<template<typename, std::size_t> typename Out = array, typename... Args>
+            requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_optref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = std::vector, typename... Args>
-            requires(not std::ranges::range<Args> and ...)
+        template<template<typename...> typename Out = dyn_array, typename... Args>
+            requires(not stdr::range<Args> and ...)
         [[nodiscard]]
-        constexpr auto to_opt_ref_muts(Args&&... args) noexcept -> decltype(auto);
+        constexpr auto to_optref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = std::vector, std::ranges::range T>
-            requires(std::ranges::range<Out<typename T::value_type>>)
+        template<template<typename...> class Out = dyn_array, stdr::range T>
+            requires(stdr::range<Out<typename T::value_type>>)
         [[nodiscard]]
-        constexpr auto to_opt_refs(const T& range) noexcept -> decltype(auto);
+        constexpr auto to_optrefs(const T& range) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = std::vector, std::ranges::range T>
-            requires(std::ranges::range<Out<typename T::value_type>>)
+        template<template<typename...> class Out = dyn_array, stdr::range T>
+            requires(stdr::range<Out<typename T::value_type>>)
         [[nodiscard]]
-        constexpr auto to_mut_opt_refs(T& range) noexcept -> decltype(auto);
+        constexpr auto to_mut_optrefs(T& range) noexcept -> decltype(auto);
 
         template<meta::HashType Ret = hash32, typename T>
         constexpr auto hasher(const ref<T>& value) noexcept -> Ret;
@@ -941,125 +944,135 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename, std::size_t> typename Out, typename... Args>
-        requires(not std::ranges::range<Args> and ...)
+        requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_refs(Args&&... args) noexcept -> decltype(auto) {
-        return Out { as_ref(std::forward<Args>(args))... };
+        using ValueType = std::common_type_t<meta::ContainedOrPointedOrTType<meta::RemoveIndirectionsType<Args>>...>;
+        return Out<ref<const ValueType>, sizeof...(args)> { as_ref(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename...> typename Out, typename... Args>
-        requires(not std::ranges::range<Args> and ...)
+        requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto to_refs(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_ref(std::forward<Args>(args))... } };
+        using ValueType = std::common_type_t<meta::ContainedOrPointedOrTType<meta::RemoveIndirectionsType<Args>>...>;
+        return Out<ref<const ValueType>> { as_ref(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename, std::size_t> typename Out, typename... Args>
-        requires(not std::ranges::range<Args> and ...)
+        requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_ref_muts(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_ref_mut(std::forward<Args>(args))... } };
+        using ValueType = std::common_type_t<meta::ContainedOrPointedOrTType<meta::RemoveIndirectionsType<Args>>...>;
+        return Out<ref<ValueType>, sizeof...(args)> { as_ref_mut(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename...> typename Out, typename... Args>
-        requires(not std::ranges::range<Args> and ...)
+        requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto to_ref_muts(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_ref_mut(std::forward<Args>(args))... } };
+        using ValueType = std::common_type_t<meta::ContainedOrPointedOrTType<meta::RemoveIndirectionsType<Args>>...>;
+        return Out<ref<ValueType>> { as_ref_mut(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out, std::ranges::range T>
-        requires(std::ranges::range<Out<typename T::value_type>>)
+    template<template<typename...> class Out, stdr::range T>
+        requires(stdr::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
     constexpr auto to_refs(const T& range) noexcept -> decltype(auto) {
+        using ValueType = stdr::range_value_t<T>;
         return range
-               | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
-                     return as_ref(std::forward<U>(val));
-                 })
-               | std::ranges::to<Out>();
+               | stdv::transform([]<class U>(U&& val) static noexcept -> decltype(auto) { return as_ref(std::forward<U>(val)); })
+               | stdr::to<Out<ref<const ValueType>>>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out, std::ranges::range T>
-        requires(std::ranges::range<Out<typename T::value_type>>)
+    template<template<typename...> class Out, stdr::range T>
+        requires(stdr::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
     constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto) {
+        using ValueType = stdr::range_value_t<T>;
         return range
-               | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
+               | stdv::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
                      return as_ref_mut(std::forward<U>(val));
                  })
-               | std::ranges::to<Out>();
+               | stdr::to<Out<ref<ValueType>>>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename, std::size_t> typename Out, typename... Args>
-        requires(not std::ranges::range<Args> and ...)
+        requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_optrefs(Args&&... args) noexcept -> decltype(auto) {
-        return Out { as_optref(std::forward<Args>(args))... };
+        using ValueType = std::common_type_t<meta::ContainedOrPointedOrTType<meta::RemoveIndirectionsType<Args>>...>;
+        return Out<optref<const ValueType>, sizeof...(args)> { as_optref(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename...> typename Out, typename... Args>
-        requires(not std::ranges::range<Args> and ...)
+        requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
-    constexpr auto to_opt_refs(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_optref(std::forward<Args>(args))... } };
+    constexpr auto to_optrefs(Args&&... args) noexcept -> decltype(auto) {
+        using ValueType = std::common_type_t<meta::ContainedOrPointedOrTType<meta::RemoveIndirectionsType<Args>>...>;
+        return Out<optref<const ValueType>> { optas_ref(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename, std::size_t> typename Out, typename... Args>
-        requires(not std::ranges::range<Args> and ...)
+        requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_optref_muts(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_optref_mut(std::forward<Args>(args))... } };
+        using ValueType = std::common_type_t<meta::ContainedOrPointedOrTType<meta::RemoveIndirectionsType<Args>>...>;
+        return Out<optref<ValueType>, sizeof...(args)> { as_optref_mut(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename...> typename Out, typename... Args>
-        requires(not std::ranges::range<Args> and ...)
+        requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
-    constexpr auto to_opt_ref_muts(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { as_optref_mut(std::forward<Args>(args))... } };
+    constexpr auto to_optref_muts(Args&&... args) noexcept -> decltype(auto) {
+        using ValueType = std::common_type_t<meta::ContainedOrPointedOrTType<meta::RemoveIndirectionsType<Args>>...>;
+        return Out<optref<ValueType>> { as_optref_mut(std::forward<Args>(args))... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out, std::ranges::range T>
-        requires(std::ranges::range<Out<typename T::value_type>>)
+    template<template<typename...> class Out, stdr::range T>
+        requires(stdr::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
-    constexpr auto to_opt_refs(const T& range) noexcept -> decltype(auto) {
+    constexpr auto to_optrefs(const T& range) noexcept -> decltype(auto) {
+        using ValueType = stdr::range_value_t<T>;
         return range
-               | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
+               | stdv::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
                      return as_optref(std::forward<U>(val));
                  })
-               | std::ranges::to<Out>();
+               | stdr::to<Out<ref<const ValueType>>>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class Out, std::ranges::range T>
-        requires(std::ranges::range<Out<typename T::value_type>>)
+    template<template<typename...> class Out, stdr::range T>
+        requires(stdr::range<Out<typename T::value_type>>)
     STORMKIT_FORCE_INLINE
-    constexpr auto to_mut_opt_refs(T& range) noexcept -> decltype(auto) {
+    constexpr auto to_mut_optrefs(T& range) noexcept -> decltype(auto) {
+        using ValueType = stdr::range_value_t<T>;
         return range
-               | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
+               | stdv::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
                      return as_optref_mut(std::forward<U>(val));
                  })
-               | std::ranges::to<Out>();
+               | stdr::to<Out<ref<ValueType>>>();
     }
 
     /////////////////////////////////////

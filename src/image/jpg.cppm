@@ -27,14 +27,14 @@ namespace stdr = std::ranges;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_jpg(std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_jpg(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_jpg(const image::Image& image, const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto save_jpg(const image::Image& image) noexcept -> std::expected<std::vector<Byte>, image::Image::Error>;
+    auto save_jpg(const image::Image& image) noexcept -> std::expected<byte_dyn_array, image::Image::Error>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
@@ -47,7 +47,7 @@ namespace stormkit::image::details {
     namespace jpg {
         struct ErrorData {
             std::jmp_buf setjmp_buffer;
-            std::string  msg;
+            string       msg;
         };
 
         /////////////////////////////////////
@@ -57,7 +57,7 @@ namespace stormkit::image::details {
 
             auto error_data = reinterpret_cast<ErrorData*>(st->client_data);
 
-            auto message = std::string {};
+            auto message = string {};
             message.resize(JMSG_STR_PARM_MAX);
             (*st->err->format_message)(st, stdr::data(message));
 
@@ -69,8 +69,8 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_jpg(std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error> {
-        auto          image_memory = std::vector<Byte> {};
+    auto load_jpg(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error> {
+        auto          image_memory = byte_dyn_array {};
         volatile auto format       = Format {}; // NOTE volatile for error: variable ‘format’ might be
                                                 // clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
         auto extent    = math::uextent3 {};
@@ -101,7 +101,7 @@ namespace stormkit::image::details {
 
         image_memory.resize(as<usize>(extent.width * extent.height * extent.depth * as<u32>(info.out_color_components)));
 
-        auto row_ptr = std::array<Byte*, 1> { nullptr };
+        auto row_ptr = array<byte*, 1> { nullptr };
         while (info.output_scanline < info.output_height) {
             const auto index = as<isize>(extent.width * as<u32>(info.output_components) * info.output_scanline);
             row_ptr[0]       = stdr::data(image_memory) + index;
@@ -176,7 +176,7 @@ namespace stormkit::image::details {
 
             jpeg_start_compress(&info, TRUE);
 
-            auto row_ptr = std::array<Byte*, 1> { nullptr };
+            auto row_ptr = array<byte*, 1> { nullptr };
             while (info.next_scanline < info.image_height) {
                 const auto index = info.next_scanline * 3u * info.image_width;
                 row_ptr[0]       = stdr::data(data) + index;
@@ -200,7 +200,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_jpg(const image::Image& image) noexcept -> std::expected<std::vector<Byte>, image::Image::Error> {
+    auto save_jpg(const image::Image& image) noexcept -> std::expected<byte_dyn_array, image::Image::Error> {
         using uchar_ptr = unsigned char*;
 
         auto output_ptr = uchar_ptr { nullptr };
@@ -234,7 +234,7 @@ namespace stormkit::image::details {
 
         jpeg_start_compress(&info, TRUE);
 
-        auto row_ptr = std::array<Byte*, 1> { nullptr };
+        auto row_ptr = array<byte*, 1> { nullptr };
         while (info.next_scanline < info.image_height) {
             const auto index = info.next_scanline * 3u * info.image_width;
             row_ptr[0]       = stdr::data(data) + index;
@@ -250,7 +250,7 @@ namespace stormkit::image::details {
             return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
         }
 
-        auto output = std::vector<Byte> {};
+        auto output = byte_dyn_array {};
         output.reserve((out_size));
 
         std::ranges::copy(as_bytes(output_ptr, out_size), std::back_inserter(output));

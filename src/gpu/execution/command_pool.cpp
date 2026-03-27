@@ -26,7 +26,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     auto CommandPoolInterface<Base>::create_vk_command_buffers(usize count, CommandBufferLevel level) const noexcept
-      -> Expected<std::vector<VkCommandBuffer>> {
+      -> Expected<dyn_array<VkCommandBuffer>> {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 

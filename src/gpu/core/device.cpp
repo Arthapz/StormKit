@@ -28,7 +28,7 @@ namespace stdv = std::views;
 namespace cmonadic = stormkit::core::monadic;
 
 namespace {
-    constexpr auto RAYTRACING_EXTENSIONS = to_array<CZString>({
+    constexpr auto RAYTRACING_EXTENSIONS = to_array<czstring>({
       VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
       VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
       VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
@@ -38,12 +38,12 @@ namespace {
       VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
     });
 
-    constexpr auto BASE_EXTENSIONS      = to_array<CZString>({
+    constexpr auto BASE_EXTENSIONS      = to_array<czstring>({
       VK_KHR_MAINTENANCE_3_EXTENSION_NAME,
       VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
       VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
     });
-    constexpr auto SWAPCHAIN_EXTENSIONS = to_array<CZString>({
+    constexpr auto SWAPCHAIN_EXTENSIONS = to_array<czstring>({
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     });
 
@@ -210,7 +210,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto DeviceInterface<Base>::wait_for_fences(std::span<const view::Fence>     fences,
+    auto DeviceInterface<Base>::wait_for_fences(array_view<const view::Fence>    fences,
                                                 bool                             wait_all,
                                                 const std::chrono::milliseconds& timeout) const noexcept -> Expected<Result> {
         const auto device_table = this->device_table();
@@ -229,7 +229,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto DeviceInterface<Base>::reset_fences(std::span<const view::Fence> fences) const noexcept -> Expected<void> {
+    auto DeviceInterface<Base>::reset_fences(array_view<const view::Fence> fences) const noexcept -> Expected<void> {
         const auto device_table = this->device_table();
 
         const auto _fences = transform(fences, vk::monadic::to_vk());
@@ -240,7 +240,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto DeviceInterface<Base>::set_object_name(u64 object, DebugObjectType type, std::string_view name) const noexcept
+    auto DeviceInterface<Base>::set_object_name(u64 object, DebugObjectType type, string_view name) const noexcept
       -> Expected<void> {
         if (not vkSetDebugUtilsObjectNameEXT) return {};
 
@@ -266,7 +266,7 @@ namespace stormkit::gpu {
         const auto& queue_families  = physical_device.queue_families();
 
         auto i          = 0_u32;
-        auto priorities = std::vector<std::vector<f32>> {};
+        auto priorities = dyn_array<dyn_array<f32>> {};
         priorities.reserve(stdr::size(queue_families));
         const auto queue_create_infos = transform(queue_families, [this, &i, &priorities](const auto& family) noexcept {
             auto& priority = priorities.emplace_back();
@@ -410,7 +410,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         /////////////////////////////////////
         auto imgui_vk_loader(const char* _func_name, void* user_data) noexcept -> PFN_vkVoidFunction {
-            const auto  func_name    = std::string_view { _func_name };
+            const auto  func_name    = string_view { _func_name };
             const auto& device       = *std::bit_cast<const Device*>(user_data);
             const auto  device_table = device.device_table();
 

@@ -47,23 +47,23 @@ namespace stormkit::lua::entities {
             const auto result = luacall(type, component);
             const auto value  = sol::object { result };
 
-            ensures(value.is<std::string>(), "Component type() must return a string or a component type");
-            const auto _type = hash(value.as<std::string>());
+            ensures(value.is<string>(), "Component type() must return a string or a component type");
+            const auto _type = hash(value.as<string>());
             manager->add_component<LuaComponent>(entity, LuaComponent { .data = std::move(component), ._type = _type });
         };
-        manager["get_component"] = +[](EntityManager* manager, Entity entity, std::string_view name) static noexcept {
+        manager["get_component"] = +[](EntityManager* manager, Entity entity, string_view name) static noexcept {
             return manager->get_component<LuaComponent>(entity, name).data;
         };
-        manager["has_component"] = +[](EntityManager* manager, Entity entity, std::string_view name) static noexcept {
+        manager["has_component"] = +[](EntityManager* manager, Entity entity, string_view name) static noexcept {
             return manager->has_component(entity, name);
         };
         manager["entities"]            = &EntityManager::entities;
         manager["entity_count"]        = &EntityManager::entity_count;
         manager["components_types_of"] = &EntityManager::components_types_of;
-        manager["add_system"]          = +[](EntityManager*           manager,
-                                             std::string              name,
-                                             std::vector<std::string> types,
-                                             sol::table               opt) static noexcept {
+        manager["add_system"]          = +[](EntityManager*    manager,
+                                             string            name,
+                                             dyn_array<string> types,
+                                             sol::table        opt) static noexcept {
             auto update = opt.get<std::optional<sol::protected_function>>("update");
             expects(update.has_value(), std::format("No update closure supplied for system {}", name));
 
@@ -88,7 +88,7 @@ namespace stormkit::lua::entities {
             manager->add_system(std::move(name),
                                 types | stdv::transform([](const auto& type) static noexcept {
                                     return hash(type);
-                                }) | stdr::to<std::vector>(),
+                                }) | stdr::to<dyn_array<hash32>>(),
                                 std::move(_closures));
         };
         manager["has_system"]    = &EntityManager::has_system;

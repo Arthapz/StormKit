@@ -36,7 +36,7 @@ auto Renderer::renderFrame() -> void {
     }
 
     const auto viewports = [&] {
-        auto v = std::vector<gpu::Viewport> {};
+        auto v = dyn_array<gpu::Viewport> {};
         v.emplace_back(gpu::Viewport {
           .extent = surface_extentf,
           .depth  = { 0, 1 }
@@ -46,7 +46,7 @@ auto Renderer::renderFrame() -> void {
     }();
 
     const auto scissors = [&] {
-        auto s = std::vector<gpu::Scissor> {};
+        auto s = dyn_array<gpu::Scissor> {};
         s.emplace_back(gpu::Scissor { .extent = surface_extent });
 
         return s;
@@ -150,7 +150,7 @@ auto Renderer::do_initMeshRenderObjects() -> void {
                      .descriptor_count = 1 });
     m_descriptor_set_layout->bake();
     m_descriptor_pool = m_device->allocateDescriptorPool(
-      std::array {
+      array {
         gpu::DescriptorPool::Size { gpu::DescriptorType::Combined_Image_Sampler, 1 }
     },
       1);

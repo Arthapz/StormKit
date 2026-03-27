@@ -30,7 +30,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SHMBuffer::do_init(PrivateTag, usize size, std::string name, io::Access access) noexcept
+    auto SHMBuffer::do_init(PrivateTag, usize size, string name, io::Access access) noexcept
       -> std::expected<void, std::error_code> {
         m_size                = size;
         m_name                = std::move(name);
@@ -67,7 +67,7 @@ namespace stormkit { inline namespace core {
                 std::error_code { as<i32>(errno), std::system_category() }
             };
 
-        m_data = { std::bit_cast<Byte*>(buf), m_size };
+        m_data = { std::bit_cast<byte*>(buf), m_size };
 
         return {};
     }

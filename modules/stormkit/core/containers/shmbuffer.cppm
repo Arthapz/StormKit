@@ -51,22 +51,22 @@ export namespace stormkit { inline namespace core {
 
         auto size() const noexcept -> usize;
         template<typename Self>
-        auto data(this Self&) noexcept -> std::span<meta::ForwardConst<Self, ValueType>>;
+        auto data(this Self&) noexcept -> array_view<meta::ForwardConst<Self, ValueType>>;
         template<typename Self>
         auto native_handle(this Self&) noexcept -> meta::ForwardConst<Self, void>*;
-        auto name() const noexcept -> std::string_view;
+        auto name() const noexcept -> string_view;
         auto access() const noexcept -> io::Access;
 
         constexpr SHMBuffer(PrivateTag) noexcept;
-        auto do_init(PrivateTag, usize, std::string, io::Access = io::Access::READ | io::Access::WRITE) noexcept
+        auto do_init(PrivateTag, usize, string, io::Access = io::Access::READ | io::Access::WRITE) noexcept
           -> std::expected<void, std::error_code>;
 
       private:
-        io::Access           m_access;
-        void*                m_handle = nullptr;
-        usize                m_size;
-        std::string          m_name;
-        std::span<ValueType> m_data;
+        io::Access            m_access;
+        void*                 m_handle = nullptr;
+        usize                 m_size;
+        string                m_name;
+        array_view<ValueType> m_data;
     };
 }} // namespace stormkit::core
 
@@ -169,7 +169,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    inline auto SHMBuffer::data(this Self& self) noexcept -> std::span<meta::ForwardConst<Self, ValueType>> {
+    inline auto SHMBuffer::data(this Self& self) noexcept -> array_view<meta::ForwardConst<Self, ValueType>> {
         EXPECTS(self.m_handle);
         return std::forward<Self&>(self).m_data;
     }
@@ -185,7 +185,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto SHMBuffer::name() const noexcept -> std::string_view {
+    inline auto SHMBuffer::name() const noexcept -> string_view {
         return m_name;
     }
 

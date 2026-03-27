@@ -13,6 +13,8 @@ export module stormkit.core:utils.app;
 import std;
 
 import :typesafe.integer;
+import :containers.aliases;
+import :string.aliases;
 
 export namespace stormkit { inline namespace core {
     class STORMKIT_CORE_API App {
@@ -26,6 +28,6 @@ export namespace stormkit { inline namespace core {
         App(const App&) noexcept                    = delete;
         auto operator=(const App&) noexcept -> App& = delete;
 
-        virtual auto run(std::span<const std::string_view> args) -> i32 = 0;
+        virtual auto run(array_view<const string_view> args) -> i32 = 0;
     };
 }} // namespace stormkit::core

@@ -34,16 +34,16 @@ export namespace stormkit::wsi::win32 {
         Window(Window&&) noexcept;
         auto operator=(Window&&) noexcept -> Window&;
 
-        auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept
+        auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept
           -> void;
         auto close() noexcept -> void;
 
         auto handle_events() noexcept -> void;
 
         auto clear(const ucolor_rgb& color) noexcept -> void;
-        auto fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void;
+        auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
-        auto set_title(std::string title) noexcept -> void;
+        auto set_title(string title) noexcept -> void;
         auto set_extent(const math::uextent2& extent) noexcept -> void;
         auto set_fullscreen(bool fullscreen) noexcept -> void;
 

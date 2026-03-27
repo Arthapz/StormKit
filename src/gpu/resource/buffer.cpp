@@ -74,7 +74,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto BufferInterface<Base>::upload(std::span<const byte> data, ioffset offset) noexcept -> Expected<void> {
+    auto BufferInterface<Base>::upload(byte_view<> data, ioffset offset) noexcept -> Expected<void> {
         EXPECTS(stdr::size(data) <= this->size());
 
         if (is_persistently_mapped()) {

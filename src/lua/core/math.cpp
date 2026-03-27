@@ -24,7 +24,7 @@ namespace stormkit::lua::core {
                   using Rect = math::rect<Type>;
 
                   parent.template new_usertype<Rect>(
-                    std::string { Rects.name },
+                    string { Rects.name },
                     sol::constructors<Rect(), Rect(Type, Type, Type, Type)> {},
                     "position",
                     &Rect::position,
@@ -46,7 +46,7 @@ namespace stormkit::lua::core {
                   using Rect = math::bounding_rect<Type>;
 
                   parent.template new_usertype<Rect>(
-                    std::string { Rects.name },
+                    string { Rects.name },
                     sol::constructors<Rect(), Rect(Type, Type, Type, Type)> {},
                     "topleft",
                     &Rect::topleft,
@@ -61,7 +61,7 @@ namespace stormkit::lua::core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         template<template<class> typename T, typename U>
-        auto _bind_angle(std::string_view name, auto& parent) {
+        auto _bind_angle(string_view name, auto& parent) {
             auto metatable     = parent.template new_usertype<T<U>>(name, sol::constructors<T<U>(U)> {});
             metatable["value"] = sol::property(
               +[](T<U>* angle) static noexcept { return angle->get(); },
@@ -77,7 +77,7 @@ namespace stormkit::lua::core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         template<typename T, typename... Constructors>
-        auto _bind_extent(std::string_view name, auto& parent, auto... values) {
+        auto _bind_extent(string_view name, auto& parent, auto... values) {
             auto metatable = parent.template new_usertype<T>(name, sol::constructors<T(), Constructors...> {});
 
             metatable[sol::meta_function::to_string] = &math::to_string<T>;
@@ -98,7 +98,7 @@ namespace stormkit::lua::core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         template<typename T, typename... Constructors>
-        auto _bind_vector(std::string_view name, auto& parent, auto... values) {
+        auto _bind_vector(string_view name, auto& parent, auto... values) {
             auto metatable = parent.template new_usertype<T>(name, sol::constructors<T(), Constructors...> {});
 
             metatable[sol::meta_function::to_string] = +[](const T& value) static noexcept { return to_string(value); };
@@ -117,11 +117,11 @@ namespace stormkit::lua::core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         template<typename T, typename... Constructors>
-        auto _bind_matrix(std::string_view name, auto& parent) {
+        auto _bind_matrix(string_view name, auto& parent) {
             auto metatable = parent.template new_usertype<T>(name, sol::constructors<T(), Constructors...> {});
 
             metatable[sol::meta_function::index] = +[](T* value, usize index) static noexcept {
-                return std::span<typename T::value_type> { &((*value)[index, 0u]), T::EXTENTS[1] };
+                return array_view<typename T::value_type> { &((*value)[index, 0u]), T::EXTENTS[1] };
             };
             metatable[sol::meta_function::to_string] = +[](const T& value) static noexcept { return math::to_string(value); };
 

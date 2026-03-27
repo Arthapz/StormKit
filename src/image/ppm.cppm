@@ -15,7 +15,7 @@ import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_ppm(std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_ppm(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_ppm(const image::Image& image, image::Image::CodecArgs args, const std::filesystem::path& filepath) noexcept
@@ -23,7 +23,7 @@ export namespace stormkit::image::details {
 
     [[nodiscard]]
     auto save_ppm(const image::Image& image, image::Image::CodecArgs args) noexcept
-      -> std::expected<std::vector<Byte>, image::Image::Error>;
+      -> std::expected<byte_dyn_array, image::Image::Error>;
 } // namespace stormkit::image::details
 
 using namespace std::literals;
@@ -37,7 +37,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_ppm(std::span<const Byte>) noexcept -> std::expected<image::Image, image::Image::Error> {
+    auto load_ppm(byte_view<>) noexcept -> std::expected<image::Image, image::Image::Error> {
         assert(false, "Not implemented yet !");
         return {};
     }
@@ -58,11 +58,11 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto save_ppm(const image::Image& image, image::Image::CodecArgs args) noexcept
-      -> std::expected<std::vector<Byte>, image::Image::Error> {
+      -> std::expected<byte_dyn_array, image::Image::Error> {
         const auto  output_image = image.convert_to(Format::RGB8_UNORM);
         const auto& data         = output_image.image_data();
 
-        auto output = std::vector<Byte> {};
+        auto output = byte_dyn_array {};
         if (args == image::Image::CodecArgs::ASCII) {
             auto result = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
 

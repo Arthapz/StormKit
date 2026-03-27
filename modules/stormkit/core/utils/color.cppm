@@ -190,11 +190,11 @@ export namespace stormkit { inline namespace core {
     using ucolor_bgra = color_bgra<u8>;
     using ucolor_abgr = color_abgr<u8>;
 
-    constexpr auto as_string(ColorLayout layout) noexcept -> std::string_view;
-    constexpr auto to_string(ColorLayout layout) noexcept -> std::string;
+    constexpr auto as_string(ColorLayout layout) noexcept -> string_view;
+    constexpr auto to_string(ColorLayout layout) noexcept -> string;
 
     template<ColorLayout LAYOUT, meta::ColorComponentStorageType T>
-    constexpr auto to_string(const color<LAYOUT, T>& color) noexcept -> std::string;
+    constexpr auto to_string(const color<LAYOUT, T>& color) noexcept -> string;
 
     template<ColorLayout LAYOUT, meta::ColorComponentStorageType T, typename FormatContext>
     auto format_as(const color<LAYOUT, T>& color, FormatContext& ctx) noexcept -> decltype(ctx.out());
@@ -509,7 +509,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(ColorLayout layout) noexcept -> std::string_view {
+    constexpr auto as_string(ColorLayout layout) noexcept -> string_view {
         switch (layout) {
             case ColorLayout::R: return "R";
             case ColorLayout::RG: return "RG";
@@ -527,15 +527,15 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto to_string(ColorLayout layout) noexcept -> std::string {
-        return std::string { as_string(layout) };
+    constexpr auto to_string(ColorLayout layout) noexcept -> string {
+        return string { as_string(layout) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<ColorLayout LAYOUT, meta::ColorComponentStorageType T>
     STORMKIT_FORCE_INLINE
-    constexpr auto to_string(const color<LAYOUT, T>& color) noexcept -> std::string {
+    constexpr auto to_string(const color<LAYOUT, T>& color) noexcept -> string {
         return std::format("{}", color);
     }
 

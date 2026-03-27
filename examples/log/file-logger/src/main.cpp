@@ -13,7 +13,7 @@ import stormkit;
 using namespace stormkit;
 
 struct Bar {
-    std::string d = "FooBar";
+    string d = "FooBar";
 };
 
 template<class CharT>
@@ -43,11 +43,11 @@ static const auto LOG_DIR = std::filesystem::path { "log/" };
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-auto main(std::span<const std::string_view> args) -> int {
+auto main(array_view<const string_view> args) -> int {
     using log::operator""_module;
 
     // force debug
-    auto args2 = std::vector { std::from_range, args };
+    auto args2 = dyn_array<string_view> { std::from_range, args };
     args2.emplace_back("--debug");
 
     log::parse_args(args2);

@@ -35,7 +35,7 @@
     #define STORMKIT_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
     #define STORMKIT_PUSH_WARNINGS     _Pragma("warning(push)")
     #define STORMKIT_POP_WARNINGS      _Pragma("warning(pop)")
-    #define STORMKIT_ARRAY_IF_MSVC     std::array
+    #define STORMKIT_ARRAY_IF_MSVC     array
 #elif defined(_MSC_VER) and defined(__clang__)
     #if defined(_LIBCPP_VERSION)
         #define STORMKIT_COMPILER_LIBCPP "libc++"
@@ -44,7 +44,7 @@
     #else
         #define STORMKIT_COMPILER_MSSTL  "MSSTL"
         #define STORMKIT_COMPILER_CXXLIB STORMKIT_COMPILER_MSSTL
-        #define STORMKIT_ARRAY_IF_MSVC   std::array
+        #define STORMKIT_ARRAY_IF_MSVC   array
     #endif
     #define STORMKIT_EXPORT            __declspec(dllexport)
     #define STORMKIT_IMPORT            __declspec(dllimport)
@@ -124,7 +124,7 @@
 #if defined(__MINGW32__)
     #define STORMKIT_COMPILER STORMKIT_COMPILER_MINGW
     #if defined(__clang__)
-        #define STORMKIT_COMPILER_CLANG std::string { "MinGW Clang " } + __clang_version__
+        #define STORMKIT_COMPILER_CLANG string { "MinGW Clang " } + __clang_version__
         #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
         #define STORMKIT_PUSH_WARNINGS  _Pragma("clang diagnostic push")
         #define STORMKIT_POP_WARNINGS   _Pragma("clang diagnostic pop")
@@ -143,7 +143,7 @@
     #endif
     #define STORMKIT_COMPILER_MINGW STORMKIT_COMPILER
 #elif defined(__clang__)
-    #define STORMKIT_COMPILER_CLANG std::string { "Clang " } + __clang_version__
+    #define STORMKIT_COMPILER_CLANG string { "Clang " } + __clang_version__
     #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
     #define STORMKIT_PUSH_WARNINGS  _Pragma("clang diagnostic push")
     #define STORMKIT_POP_WARNINGS   _Pragma("clang diagnostic pop")

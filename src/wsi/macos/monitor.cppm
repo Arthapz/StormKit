@@ -17,7 +17,7 @@ namespace stormkit::wsi::macos {
     /////////////////////////////////////
     /////////////////////////////////////
     auto get_monitors(WM, [[maybe_unused]] bool update = false) noexcept
-      -> std::span<const Monitor> {
+      -> array_view<const Monitor> {
         return {};
     }
 

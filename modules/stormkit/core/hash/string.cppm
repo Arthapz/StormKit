@@ -10,7 +10,7 @@ export module stormkit.core:hash.string;
 
 import :hash.base;
 
-import :string.czstring;
+import :string.aliases;
 import :typesafe.integer;
 import :typesafe.safecasts;
 
@@ -24,29 +24,29 @@ export namespace stormkit { inline namespace core {
         using is_avalanching = void;
 
         [[nodiscard]]
-        static constexpr auto operator()(std::string_view value, u64 seed = 0) noexcept -> u64;
+        static constexpr auto operator()(string_view value, u64 seed = 0) noexcept -> u64;
     };
 
-    template<class Value, class Key = std::string>
-    using StringHashMap = ankerl::unordered_dense::
+    template<class Value, class Key = string>
+    using string_hash_map = ankerl::unordered_dense::
       map<std::remove_cvref_t<Key>, std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
 
-    template<class Value, std::size_t Size, class Key = std::string>
-    using FrozenStringHashMap = frozen::
+    template<class Value, std::size_t Size, class Key = string>
+    using Frozenstring_hash_map = frozen::
       unordered_map<std::remove_cvref_t<Key>, std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
 
-    template<class Value = std::string>
-    using StringHashSet = ankerl::unordered_dense::set<std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
+    template<class Value = string>
+    using string_hash_set = ankerl::unordered_dense::set<std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
 
-    template<std::size_t Size, class Value = std::string>
-    using FrozenStringHashSet = frozen::unordered_set<std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
+    template<std::size_t Size, class Value = string>
+    using frozen_string_hash_set = frozen::unordered_set<std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
 
     template<meta::HashType Ret = hash32>
-    constexpr auto hasher(std::string_view value) noexcept -> Ret;
+    constexpr auto hasher(string_view value) noexcept -> Ret;
 
     namespace literals {
-        constexpr auto operator""_hash32(CZString str, usize size) -> hash32;
-        constexpr auto operator""_hash64(CZString str, usize size) -> hash64;
+        constexpr auto operator""_hash32(czstring str, usize size) -> hash32;
+        constexpr auto operator""_hash64(czstring str, usize size) -> hash64;
     } // namespace literals
 }} // namespace stormkit::core
 
@@ -62,12 +62,12 @@ namespace stormkit { inline namespace core {
             : m_hash { basis } {}
 
         STORMKIT_FORCE_INLINE
-        constexpr auto bytes(std::span<const std::byte, 4> bytes) noexcept -> void {
+        constexpr auto bytes(array_view<const std::byte, 4> bytes) noexcept -> void {
             bytes_4(bytes);
         }
 
         STORMKIT_FORCE_INLINE
-        constexpr auto bytes_4(std::span<const std::byte, 4> bytes) noexcept -> void {
+        constexpr auto bytes_4(array_view<const std::byte, 4> bytes) noexcept -> void {
             const auto val = u64(bytes[0]) << 0 | u64(bytes[1]) << 8 | u64(bytes[2]) << 16 | u64(bytes[3]) << 24;
             dword(val);
         }
@@ -98,7 +98,7 @@ namespace stormkit { inline namespace core {
 
     template<class Hasher>
     STORMKIT_FORCE_INLINE
-    constexpr auto hash_selected_characters(u8 mask, Hasher& hasher, CZString s, usize size) noexcept -> void {
+    constexpr auto hash_selected_characters(u8 mask, Hasher& hasher, czstring s, usize size) noexcept -> void {
         if (std::popcount(mask) == 4) {
             auto dword = u64 { 0 };
             auto i     = i32 { 0 };
@@ -164,8 +164,8 @@ namespace stormkit { inline namespace core {
 
             hasher.dword(dword);
         } else {
-            std::array<std::byte, 5> bytes;
-            auto                     i = usize { 0 };
+            array<std::byte, 5> bytes;
+            auto                i = usize { 0 };
 
             if (mask & (1 << 0)) bytes[i++] = static_cast<std::byte>(s[0]);
             if (mask & (1 << 1)) bytes[i++] = static_cast<std::byte>(s[1]);
@@ -175,14 +175,14 @@ namespace stormkit { inline namespace core {
 
             if (mask & (1 << 4)) bytes[i++] = static_cast<std::byte>(size);
 
-            hasher.bytes(std::span<const std::byte, 4> { std::data(bytes), i });
+            hasher.bytes(array_view<const std::byte, 4> { std::data(bytes), i });
         }
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto StringHash::operator()(std::string_view value, u64 seed) noexcept -> u64 {
+    constexpr auto StringHash::operator()(string_view value, u64 seed) noexcept -> u64 {
         auto mask   = u8 { 0b01111 };
         auto hasher = Lehmer128Hasher { seed };
         hash_selected_characters(mask, hasher, std::data(value), std::size(value));
@@ -193,7 +193,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::HashType Ret = hash32>
     STORMKIT_FORCE_INLINE
-    constexpr auto hasher(std::string_view value) noexcept -> Ret {
+    constexpr auto hasher(string_view value) noexcept -> Ret {
         return StringHash::operator()(value);
     }
 
@@ -201,15 +201,15 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        constexpr auto operator""_hash32(CZString str, usize size) -> hash32 {
-            return hash<hash32>(std::string_view { str, size });
+        constexpr auto operator""_hash32(czstring str, usize size) -> hash32 {
+            return hash<hash32>(string_view { str, size });
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        constexpr auto operator""_hash64(CZString str, usize size) -> hash64 {
-            return hash<hash64>(std::string_view { str, size });
+        constexpr auto operator""_hash64(czstring str, usize size) -> hash64 {
+            return hash<hash64>(string_view { str, size });
         }
     } // namespace literals
 }} // namespace stormkit::core

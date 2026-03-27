@@ -316,13 +316,13 @@ export namespace std {
         void await_transform() = delete;
     };
 
-    template<class _Generator, typename _ByteAllocator, bool _ExplicitAllocator = false>
+    template<class _Generator, typename _byteAllocator, bool _ExplicitAllocator = false>
     struct __generator_promise;
 
-    template<class _Ref, typename _Value, typename _Alloc, typename _ByteAllocator, bool _ExplicitAllocator>
-    struct __generator_promise<generator<_Ref, _Value, _Alloc>, _ByteAllocator, _ExplicitAllocator> final
+    template<class _Ref, typename _Value, typename _Alloc, typename _byteAllocator, bool _ExplicitAllocator>
+    struct __generator_promise<generator<_Ref, _Value, _Alloc>, _byteAllocator, _ExplicitAllocator> final
         : public __generator_promise_base<_Ref>,
-          public __promise_base_alloc<_ByteAllocator> {
+          public __promise_base_alloc<_byteAllocator> {
         __generator_promise() noexcept
             : __generator_promise_base<_Ref>(coroutine_handle<__generator_promise>::from_promise(*this)) {}
 
@@ -571,7 +571,7 @@ export namespace std {
         sentinel end() noexcept { return {}; }
 
       private:
-        template<class _Generator, typename _ByteAllocator, bool _ExplicitAllocator>
+        template<class _Generator, typename _byteAllocator, bool _ExplicitAllocator>
         friend struct __generator_promise;
 
         template<class _Promise>

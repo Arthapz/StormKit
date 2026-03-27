@@ -91,16 +91,16 @@ export {
 
                 auto close() noexcept;
 
-                auto read_to(std::span<Byte> out) noexcept -> Expected<usize>;
-                auto read_to(std::span<char> out) noexcept -> Expected<usize>
+                auto read_to(byte_mut_view<> out) noexcept -> Expected<usize>;
+                auto read_to(array_view<char> out) noexcept -> Expected<usize>
                     requires(mode == Mode::UTF8 or mode == Mode::AINSI);
-                auto read_to(std::span<wchar> out) noexcept -> Expected<usize>
+                auto read_to(array_view<wchar> out) noexcept -> Expected<usize>
                     requires(mode == Mode::WIDE);
 
-                auto write(std::span<const Byte> bytes) noexcept -> Expected<usize>;
-                auto write(std::span<const char> bytes) noexcept -> Expected<usize>
+                auto write(byte_view<> bytes) noexcept -> Expected<usize>;
+                auto write(array_view<const char> bytes) noexcept -> Expected<usize>
                     requires(mode == Mode::UTF8 or mode == Mode::AINSI);
-                auto write(std::span<const wchar> bytes) noexcept -> Expected<usize>
+                auto write(array_view<const wchar> bytes) noexcept -> Expected<usize>
                     requires(mode == Mode::WIDE);
 
                 auto flush() noexcept -> void;
@@ -125,17 +125,17 @@ export {
             using TextFile = Descriptor<mode>;
 
             template<Mode mode = Mode::UTF8>
-            auto read_text_to(const stdfs::path& path, std::span<meta::ModeToCharType<mode>> output) noexcept -> Expected<usize>;
+            auto read_text_to(const stdfs::path& path, array_view<meta::ModeToCharType<mode>> output) noexcept -> Expected<usize>;
             template<Mode mode = Mode::UTF8>
-            auto read_text(const stdfs::path& path) noexcept -> Expected<std::vector<meta::ModeToCharType<mode>>>;
+            auto read_text(const stdfs::path& path) noexcept -> Expected<dyn_array<meta::ModeToCharType<mode>>>;
 
-            auto read_to(const stdfs::path& path, std::span<Byte> output) noexcept -> Expected<usize>;
-            auto read(const stdfs::path& path) noexcept -> Expected<std::vector<Byte>>;
+            auto read_to(const stdfs::path& path, byte_mut_view<> output) noexcept -> Expected<usize>;
+            auto read(const stdfs::path& path) noexcept -> Expected<byte_dyn_array>;
 
             template<Mode mode = Mode::UTF8>
-            auto write_text(const stdfs::path& path, std::span<const meta::ModeToCharType<mode>> data) noexcept
+            auto write_text(const stdfs::path& path, array_view<const meta::ModeToCharType<mode>> data) noexcept
               -> Expected<usize>;
-            auto write(const stdfs::path& path, std::span<const Byte> data) noexcept -> Expected<usize>;
+            auto write(const stdfs::path& path, byte_view<> data) noexcept -> Expected<usize>;
         } // namespace io
     }} // namespace stormkit::core
 
@@ -229,7 +229,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::read_to(std::span<Byte> out) noexcept -> Expected<usize> {
+    inline auto Descriptor<mode>::read_to(byte_mut_view<> out) noexcept -> Expected<usize> {
         EXPECTS(m_descriptor != 0);
         const auto ret =
 #ifdef STORMKIT_OS_WINDOWS
@@ -247,7 +247,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::read_to(std::span<char> out) noexcept -> Expected<usize>
+    inline auto Descriptor<mode>::read_to(array_view<char> out) noexcept -> Expected<usize>
         requires(mode == Mode::UTF8 or mode == Mode::AINSI)
     {
         return read_to(as_bytes_mut(out));
@@ -257,7 +257,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::read_to(std::span<wchar> out) noexcept -> Expected<usize>
+    inline auto Descriptor<mode>::read_to(array_view<wchar> out) noexcept -> Expected<usize>
         requires(mode == Mode::WIDE)
     {
         return read_to(as_bytes_mut(out));
@@ -267,7 +267,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::write(std::span<const Byte> data) noexcept -> Expected<usize> {
+    inline auto Descriptor<mode>::write(byte_view<> data) noexcept -> Expected<usize> {
         EXPECTS(m_descriptor != 0);
         const auto ret =
 #ifdef STORMKIT_OS_WINDOWS
@@ -285,7 +285,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::write(std::span<const char> data) noexcept -> Expected<usize>
+    inline auto Descriptor<mode>::write(array_view<const char> data) noexcept -> Expected<usize>
         requires(mode == Mode::UTF8 or mode == Mode::AINSI)
     {
         return write(as_bytes(data));
@@ -295,7 +295,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::write(std::span<const wchar> data) noexcept -> Expected<usize>
+    inline auto Descriptor<mode>::write(array_view<const wchar> data) noexcept -> Expected<usize>
         requires(mode == Mode::WIDE)
     {
         return write(as_bytes(data));
@@ -422,7 +422,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto read_text_to(const stdfs::path& path, std::span<meta::ModeToCharType<mode>> out) noexcept -> Expected<usize> {
+    inline auto read_text_to(const stdfs::path& path, array_view<meta::ModeToCharType<mode>> out) noexcept -> Expected<usize> {
         auto file = Try((TextFile<mode>::open(path, Access::READ)));
         ENSURES(stdr::size(out) >= file.size());
         Return Try(file.read_to(out));
@@ -432,9 +432,9 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto read_text(const stdfs::path& path) noexcept -> Expected<std::vector<meta::ModeToCharType<mode>>> {
+    inline auto read_text(const stdfs::path& path) noexcept -> Expected<dyn_array<meta::ModeToCharType<mode>>> {
         auto file = Try((TextFile<mode>::open(path, Access::READ)));
-        auto out  = std::vector<meta::ModeToCharType<mode>> {};
+        auto out  = dyn_array<meta::ModeToCharType<mode>> {};
         out.resize(file.size());
         auto readed = Try(file.read_to(out));
         out.resize(readed);
@@ -444,7 +444,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto read_to(const stdfs::path& path, std::span<Byte> out) noexcept -> Expected<usize> {
+    inline auto read_to(const stdfs::path& path, byte_mut_view<> out) noexcept -> Expected<usize> {
         auto   file = Try((File::open(path, Access::READ)));
         Return Try(file.read_to(out));
     }
@@ -452,9 +452,9 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto read(const stdfs::path& path) noexcept -> Expected<std::vector<Byte>> {
+    inline auto read(const stdfs::path& path) noexcept -> Expected<byte_dyn_array> {
         auto file = Try((File::open(path, Access::READ)));
-        auto out  = std::vector<Byte> {};
+        auto out  = byte_dyn_array {};
         out.resize(file.size());
         auto readed = Try(file.read_to(out));
         out.resize(readed);
@@ -465,7 +465,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
         STORMKIT_FORCE_INLINE
-    inline auto write_text(const stdfs::path& path, std::span<const meta::ModeToCharType<mode>> data) noexcept
+    inline auto write_text(const stdfs::path& path, array_view<const meta::ModeToCharType<mode>> data) noexcept
       -> Expected<usize> {
         auto   file = Try((TextFile<mode>::open(path, Access::WRITE)));
         Return Try(file.write(data));
@@ -474,7 +474,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto write(const stdfs::path& path, std::span<const Byte> data) noexcept -> Expected<usize> {
+    inline auto write(const stdfs::path& path, byte_view<> data) noexcept -> Expected<usize> {
         auto   file = Try((File::open(path, Access::WRITE)));
         Return Try(file.write(data));
     }

@@ -22,7 +22,7 @@ import :linux.x11.log;
 
 export namespace stormkit::wsi::linux::x11 {
     struct Error {
-        std::string message;
+        string message;
     };
 
     namespace xcb {
@@ -49,13 +49,13 @@ export namespace stormkit::wsi::linux::x11 {
         using KeySymbols
           = RAIICapsule<xcb_key_symbols_t*, xcb_key_symbols_alloc, xcb_key_symbols_free, struct KeySymbolsTag, nullptr>;
 
-        constexpr auto atom_error(std::string_view msg, std::string_view atom_name) -> decltype(auto);
+        constexpr auto atom_error(string_view msg, string_view atom_name) -> decltype(auto);
     } // namespace xcb
 } // namespace stormkit::wsi::linux::x11
 
 export namespace stormkit::wsi::linux::x11::xcb {
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto atom_error(std::string_view atom_name) -> decltype(auto) {
+    constexpr auto atom_error(string_view atom_name) -> decltype(auto) {
         return [atom_name]<typename Error>(Error&& error) noexcept -> Error {
             elog("Failed to get atom "
                  "{}\n        > reason: {}",

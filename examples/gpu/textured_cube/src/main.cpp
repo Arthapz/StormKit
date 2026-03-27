@@ -52,7 +52,7 @@ struct Vertex {
     math::fvec3 position;
     math::fvec2 uv;
 
-    static constexpr auto attribute_descriptions() noexcept -> std::array<gpu::VertexInputAttributeDescription, 2> {
+    static constexpr auto attribute_descriptions() noexcept -> array<gpu::VertexInputAttributeDescription, 2> {
         return to_array<gpu::VertexInputAttributeDescription>({
           { .location = 0, .binding = 0, .format = gpu::PixelFormat::RGB32F, .offset = offsetof(Vertex, position) },
           { .location = 1, .binding = 0, .format = gpu::PixelFormat::RG32F,  .offset = offsetof(Vertex, uv)       }
@@ -80,7 +80,7 @@ struct ViewerData {
 namespace {
     const auto     SHADER   = stdfs::path { SHADER_DIR } / "textured_cube.spv";
     const auto     TEXTURE  = stdfs::path { RESOURCE_DIR } / "textures/cube.png";
-    constexpr auto VERTICES = std::array<Vertex, 36> {
+    constexpr auto VERTICES = array<Vertex, 36> {
         Vertex { { -1.f, -1.f, -1.f }, { 2.f / 3.f, 3.f / 4.f } }, // -X side
         { { -1.f, -1.f, 1.f },  { 1.f / 3.f, 3.f / 4.f } },
         { { -1.f, 1.f, 1.f },   { 1.f / 3.f, 1.f }       },
@@ -137,8 +137,8 @@ namespace {
        }
     });
 
-    constexpr auto OFFSETS        = std::array { 0_u64 };
-    constexpr auto PIPELINE_FLAGS = std::array { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT };
+    constexpr auto OFFSETS        = array { 0_u64 };
+    constexpr auto PIPELINE_FLAGS = array { gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT };
 } // namespace
 
 class Application: public base::Application {
@@ -172,9 +172,9 @@ class Application: public base::Application {
         // initialize render pass
         const auto depth_format = [this] {
             const auto formats_properties = m_physical_device->formats_properties();
-            const auto candidates         = std::array { gpu::PixelFormat::DEPTH32F,
-                                                         gpu::PixelFormat::DEPTH32F_STENCIL8U,
-                                                         gpu::PixelFormat::DEPTH24_UNORM_STENCIL8U };
+            const auto candidates         = array { gpu::PixelFormat::DEPTH32F,
+                                                    gpu::PixelFormat::DEPTH32F_STENCIL8U,
+                                                    gpu::PixelFormat::DEPTH24_UNORM_STENCIL8U };
 
             for (const auto format : candidates) {
                 const auto properties = stdr::find_if(formats_properties, [format](const auto& pair) {
@@ -266,7 +266,7 @@ class Application: public base::Application {
 
             auto copy_cmb = TryAssert(m_command_pool->create_command_buffer(), "Failed to allocate copy texture buffer");
             TryDiscardAssert((copy_cmb.record([&](auto cmb) noexcept {
-                                 const auto copy = std::array {
+                                 const auto copy = array {
                                      gpu::BufferImageCopy {
                                                            .buffer_offset       = 0,
                                                            .buffer_row_length   = 0,
@@ -298,25 +298,25 @@ class Application: public base::Application {
 
         m_texture_view = TryAssert(gpu::ImageView::create(m_device, m_texture), "Failed to create texture view!");
         m_sampler      = TryAssert(gpu::Sampler::create(m_device, gpu::Sampler::Settings {}), "Failed to create sampler!");
-        m_submission_resources = std::vector<SubmissionResource> {};
+        m_submission_resources = dyn_array<SubmissionResource> {};
         m_submission_resources.reserve(BUFFERING_COUNT);
 
         for (auto _ : range(BUFFERING_COUNT)) {
-            m_submission_resources
-              .push_back({ .in_flight = TryAssert(gpu::Fence::create_signaled(m_device), "Failed to create swapchain image!"),
-                           .image_available = TryAssert(gpu::Semaphore::create(m_device), "Failed to create present image!"),
-                           .render_cmb      = TryAssert(m_command_pool->create_command_buffer(), "Failed to create buffers!"),
-                           .viewer_buffer   = TryAssert(gpu::Buffer::create(m_device,
-                                                                            gpu::Buffer::CreateInfo {
-                                                                              .usages              = gpu::BufferUsageFlag::UNIFORM,
-                                                                              .size                = sizeof(ViewerData),
-                                                                              .persistently_mapped = true,
-                                                                            }),
-                                                        "Failed to allocate gpu viewer buffer!"),
-                           .descriptor_set  = TryAssert(m_descriptor_pool->create_descriptor_set(m_descriptor_set_layout),
-                                                        "Failed to create descriptor set!") });
+            m_submission_resources.push_back(
+              { .in_flight       = TryAssert(gpu::Fence::create_signaled(m_device), "Failed to create swapchain image!"),
+                .image_available = TryAssert(gpu::Semaphore::create(m_device), "Failed to create present image!"),
+                .render_cmb      = TryAssert(m_command_pool->create_command_buffer(), "Failed to create buffers!"),
+                .viewer_buffer   = TryAssert(gpu::Buffer::create(m_device,
+                                                                 gpu::Buffer::CreateInfo {
+                                                                   .usages              = gpu::BufferUsageFlag::UNIFORM,
+                                                                   .size                = sizeof(ViewerData),
+                                                                   .persistently_mapped = true,
+                                                                 }),
+                                             "Failed to allocate gpu viewer buffer!"),
+                .descriptor_set  = TryAssert(m_descriptor_pool->create_descriptor_set(m_descriptor_set_layout),
+                                             "Failed to create descriptor set!") });
             auto&      res  = m_submission_resources.back();
-            const auto sets = std::array<gpu::Descriptor, 2> {
+            const auto sets = array<gpu::Descriptor, 2> {
                 gpu::BufferDescriptor {
                                        .binding = 0,
                                        .buffer  = res.viewer_buffer,
@@ -339,7 +339,7 @@ class Application: public base::Application {
         auto       transition_cmbs = TryAssert(m_command_pool->create_command_buffers(image_count),
                                                "Failed to create transition command buffers!");
 
-        m_image_resources = std::vector<SwapchainImageResource> {};
+        m_image_resources = dyn_array<SwapchainImageResource> {};
         m_image_resources.reserve(stdr::size(images));
 
         auto image_index = 0u;
@@ -359,12 +359,12 @@ class Application: public base::Application {
                                                                gpu::ImageSubresourceRange { .aspect_mask = depth_aspect_flag }),
                                         "Failed to create depth image view!");
 
-            m_image_resources
-              .push_back({ .image           = swap_image,
-                           .view            = std::move(view),
-                           .depth_image     = std::move(depth_image),
-                           .depth_view      = std::move(depth_view),
-                           .render_finished = TryAssert(gpu::Semaphore::create(m_device), "Failed to create render!") });
+            m_image_resources.push_back({ .image           = swap_image,
+                                          .view            = std::move(view),
+                                          .depth_image     = std::move(depth_image),
+                                          .depth_view      = std::move(depth_view),
+                                          .render_finished = TryAssert(gpu::Semaphore::create(m_device),
+                                                                       "Failed to create render!") });
 
             const auto& resources = m_image_resources.back();
 
@@ -461,9 +461,10 @@ class Application: public base::Application {
         const auto& signal                   = swapchain_image_resource.render_finished;
 
         // update viewer data and upload
-        const auto time = stdc::duration_cast<fsecond>(current_time - m_start_time).count();
-        viewer_data
-          .model = math::rotate(math::fmat4::identity(), time * math::angle::radians(90.f), math::fvec3 { 0.f, 1.f, 0.f });
+        const auto time   = stdc::duration_cast<fsecond>(current_time - m_start_time).count();
+        viewer_data.model = math::rotate(math::fmat4::identity(),
+                                         time * math::angle::radians(90.f),
+                                         math::fvec3 { 0.f, 1.f, 0.f });
 
         auto& viewer_buffer = submission_resource.viewer_buffer;
         TryAssert(viewer_buffer.upload(viewer_data), "Failed to upload texture to gpu!");
@@ -511,7 +512,7 @@ class Application: public base::Application {
         if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
     }
 
-    constexpr auto example_name() const noexcept -> std::string_view { return "Textured Cube"; }
+    constexpr auto example_name() const noexcept -> string_view { return "Textured Cube"; }
 
   private:
     DeferInit<gpu::DescriptorPool> m_descriptor_pool;
@@ -524,14 +525,14 @@ class Application: public base::Application {
     DeferInit<gpu::Image>               m_texture;
     DeferInit<gpu::ImageView>           m_texture_view;
     DeferInit<gpu::Sampler>             m_sampler;
-    std::vector<SubmissionResource>     m_submission_resources;
-    std::vector<SwapchainImageResource> m_image_resources;
+    dyn_array<SubmissionResource>       m_submission_resources;
+    dyn_array<SwapchainImageResource>   m_image_resources;
     DeferInit<gpu::Buffer>              m_vertex_buffer;
     usize                               m_current_frame = 0_usize;
     decltype(clock::now())              m_start_time    = clock::now();
 };
 
-auto main(std::span<const std::string_view> args) -> int {
+auto main(array_view<const string_view> args) -> int {
     auto app = Application {};
     app.run(args);
     return 0;

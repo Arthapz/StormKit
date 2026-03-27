@@ -29,12 +29,12 @@ export {
         };
 
         [[nodiscard]]
-        constexpr auto as_string(Severity severity) noexcept -> std::string_view;
+        constexpr auto as_string(Severity severity) noexcept -> string_view;
         [[nodiscard]]
-        constexpr auto to_string(Severity severity) noexcept -> std::string;
+        constexpr auto to_string(Severity severity) noexcept -> string;
 
         STORMKIT_LOG_API
-        auto parse_args(std::span<const std::string_view> args) noexcept -> void;
+        auto parse_args(array_view<const string_view> args) noexcept -> void;
 
         class STORMKIT_LOG_API Logger {
           public:
@@ -44,7 +44,7 @@ export {
             Logger(LogClock::time_point start, Severity log_level) noexcept;
             virtual ~Logger() noexcept;
 
-            virtual auto write(Severity severity, const Module& module, CZString string) noexcept -> void = 0;
+            virtual auto write(Severity severity, const Module& module, czstring string) noexcept -> void = 0;
             virtual auto flush() noexcept -> void                                                         = 0;
 
             auto set_log_level(Severity log_level) noexcept -> void;
@@ -66,13 +66,11 @@ export {
             static auto allocate_logger_instance(Args&&... param_args) noexcept -> Heap<T>;
 
             template<class... Args>
-            static auto log(Severity         severity,
-                            const Module&    module,
-                            std::string_view format_string,
-                            Args&&... param_args) noexcept -> void;
+            static auto log(Severity severity, const Module& module, string_view format_string, Args&&... param_args) noexcept
+              -> void;
 
             template<class... Args>
-            static auto log(Severity severity, std::string_view format_string, Args&&... param_args) noexcept -> void;
+            static auto log(Severity severity, string_view format_string, Args&&... param_args) noexcept -> void;
 
             template<class... Args>
             static auto dlog(Args&&... param_args) noexcept -> void;
@@ -119,7 +117,7 @@ export {
 
             auto flush() const noexcept -> void;
 
-            std::string_view name = "";
+            string_view name = "";
         };
 
         template<meta::ConstexprString str>
@@ -138,11 +136,11 @@ export {
             FileLogger(FileLogger&&) noexcept                    = delete;
             auto operator=(FileLogger&&) noexcept -> FileLogger& = delete;
 
-            auto write(Severity severity, const Module& module, CZString string) noexcept -> void override;
+            auto write(Severity severity, const Module& module, czstring string) noexcept -> void override;
             auto flush() noexcept -> void override;
 
           private:
-            StringHashMap<std::ofstream> m_streams;
+            string_hash_map<std::ofstream> m_streams;
 
             std::filesystem::path m_base_path;
         };
@@ -160,7 +158,7 @@ export {
 
             ~ConsoleLogger() noexcept override;
 
-            auto write(Severity severity, const Module& module, CZString string) noexcept -> void override;
+            auto write(Severity severity, const Module& module, czstring string) noexcept -> void override;
             auto flush() noexcept -> void override;
         };
     } // namespace stormkit::log
@@ -177,7 +175,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(Severity severity) noexcept -> std::string_view {
+    constexpr auto as_string(Severity severity) noexcept -> string_view {
         switch (severity) {
             case Severity::INFO: return "Severity::INFO";
             case Severity::WARNING: return "Severity::WARNING";
@@ -193,8 +191,8 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto to_string(Severity severity) noexcept -> std::string {
-        return std::string { as_string(severity) };
+    constexpr auto to_string(Severity severity) noexcept -> string {
+        return string { as_string(severity) };
     }
 
     ////////////////////////////////////////
@@ -251,14 +249,14 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Args>
-    inline auto Logger::log(Severity severity, const Module& m, std::string_view format_string, Args&&... param_args) noexcept
+    inline auto Logger::log(Severity severity, const Module& m, string_view format_string, Args&&... param_args) noexcept
       -> void {
         EXPECTS(has_logger());
 
         const auto log_level = instance().log_level();
         if (not check_flag_bit(log_level, severity)) return;
 
-        auto memory_buffer = std::string {};
+        auto memory_buffer = string {};
         memory_buffer.reserve(std::size(format_string));
         std::vformat_to(std::back_inserter(memory_buffer), format_string, std::make_format_args(param_args...));
 
@@ -280,7 +278,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     template<class... Args>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::log(Severity severity, std::string_view format_string, Args&&... param_args) noexcept -> void {
+    inline auto Logger::log(Severity severity, string_view format_string, Args&&... param_args) noexcept -> void {
         log(severity, Module {}, format_string, std::forward<Args>(param_args)...);
     }
 

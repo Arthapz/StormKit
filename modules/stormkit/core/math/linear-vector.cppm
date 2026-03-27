@@ -25,7 +25,7 @@ import :string.format;
 export namespace stormkit { inline namespace core { namespace math {
     inline namespace vector {
         template<core::meta::IsArithmetic T>
-        struct alignas(std::array<T, 2>) vec2 {
+        struct alignas(array<T, 2>) vec2 {
             using ValueType  = T;
             using SizeType   = usize;
             using ExtentType = u8;
@@ -34,7 +34,7 @@ export namespace stormkit { inline namespace core { namespace math {
             using size_type   = SizeType;
             using extent_type = ExtentType;
 
-            static constexpr auto EXTENT = std::array<ExtentType, 1> { 2uz };
+            static constexpr auto EXTENT = array<ExtentType, 1> { 2uz };
 
             ValueType x;
             ValueType y;
@@ -51,7 +51,7 @@ export namespace stormkit { inline namespace core { namespace math {
         using uvec2 = vec2<u32>;
 
         template<core::meta::IsArithmetic T>
-        struct alignas(std::array<T, 3>) vec3 {
+        struct alignas(array<T, 3>) vec3 {
             using ValueType  = T;
             using SizeType   = usize;
             using ExtentType = u8;
@@ -60,7 +60,7 @@ export namespace stormkit { inline namespace core { namespace math {
             using size_type   = SizeType;
             using extent_type = ExtentType;
 
-            static constexpr auto EXTENT = std::array<ExtentType, 1> { 3uz };
+            static constexpr auto EXTENT = array<ExtentType, 1> { 3uz };
 
             ValueType x;
             ValueType y;
@@ -78,7 +78,7 @@ export namespace stormkit { inline namespace core { namespace math {
         using uvec3 = vec3<u32>;
 
         template<core::meta::IsArithmetic T>
-        struct alignas(std::array<T, 4>) vec4 {
+        struct alignas(array<T, 4>) vec4 {
             using ValueType  = T;
             using SizeType   = usize;
             using ExtentType = u8;
@@ -87,7 +87,7 @@ export namespace stormkit { inline namespace core { namespace math {
             using size_type   = SizeType;
             using extent_type = ExtentType;
 
-            static constexpr auto EXTENT = std::array<ExtentType, 1> { 4uz };
+            static constexpr auto EXTENT = array<ExtentType, 1> { 4uz };
 
             ValueType x;
             ValueType y;
@@ -155,11 +155,11 @@ export namespace stormkit { inline namespace core { namespace math {
 
         template<meta::IsVec T>
         [[nodiscard]]
-        constexpr auto as_view(const T& value) noexcept -> std::span<const typename T::ValueType, T::EXTENT[0]>;
+        constexpr auto as_view(const T& value) noexcept -> array_view<const typename T::ValueType, T::EXTENT[0]>;
 
         template<meta::IsVec T>
         [[nodiscard]]
-        constexpr auto as_view_mut(T& value) noexcept -> std::span<typename T::ValueType, T::EXTENT[0]>;
+        constexpr auto as_view_mut(T& value) noexcept -> array_view<typename T::ValueType, T::EXTENT[0]>;
 
         template<meta::IsVec T>
         [[nodiscard]]
@@ -171,13 +171,13 @@ export namespace stormkit { inline namespace core { namespace math {
         constexpr auto as_mdspan_mut(T& value) noexcept -> VectorSpan<typename T::ValueType, T::EXTENT[0]>;
 
         template<core::meta::IsArithmetic T>
-        auto to_string(const vec2<T>& value) noexcept -> std::string;
+        auto to_string(const vec2<T>& value) noexcept -> string;
 
         template<core::meta::IsArithmetic T>
-        auto to_string(const vec3<T>& value) noexcept -> std::string;
+        auto to_string(const vec3<T>& value) noexcept -> string;
 
         template<core::meta::IsArithmetic T>
-        auto to_string(const vec4<T>& value) noexcept -> std::string;
+        auto to_string(const vec4<T>& value) noexcept -> string;
 
         template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
         constexpr auto hasher(const vec2<T>& value) noexcept -> Ret;
@@ -233,7 +233,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
     template<typename Self>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto vec2<T>::operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, ValueType>& {
-        static constexpr auto members = std::array { &vec2::x, &vec2::y };
+        static constexpr auto members = array { &vec2::x, &vec2::y };
 
         return std::forward_like<Self&>(self.*members[i]);
     }
@@ -253,7 +253,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
     template<typename Self>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto vec3<T>::operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, ValueType>& {
-        static constexpr auto members = std::array { &vec3::x, &vec3::y, &vec3::z };
+        static constexpr auto members = array { &vec3::x, &vec3::y, &vec3::z };
 
         return std::forward_like<Self&>(self.*members[i]);
     }
@@ -273,7 +273,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
     template<typename Self>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto vec4<T>::operator[](this Self& self, usize i) noexcept -> core::meta::ForwardConst<Self, ValueType>& {
-        static constexpr auto members = std::array { &vec4::x, &vec4::y, &vec4::z, &vec4::w };
+        static constexpr auto members = array { &vec4::x, &vec4::y, &vec4::z, &vec4::w };
 
         return std::forward_like<Self&>(self.*members[i]);
     }
@@ -371,16 +371,16 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
     ////////////////////////////////////////
     template<meta::IsVec T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto as_view(const T& value) noexcept -> std::span<const typename T::ValueType, T::EXTENT[0]> {
-        return std::span<const typename T::ValueType, T::EXTENT[0]> { &value.x, T::EXTENT[0] };
+    constexpr auto as_view(const T& value) noexcept -> array_view<const typename T::ValueType, T::EXTENT[0]> {
+        return array_view<const typename T::ValueType, T::EXTENT[0]> { &value.x, T::EXTENT[0] };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsVec T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto as_view_mut(T& value) noexcept -> std::span<typename T::ValueType, T::EXTENT[0]> {
-        return std::span<typename T::ValueType, T::EXTENT[0]> { &value.x, T::EXTENT[0] };
+    constexpr auto as_view_mut(T& value) noexcept -> array_view<typename T::ValueType, T::EXTENT[0]> {
+        return array_view<typename T::ValueType, T::EXTENT[0]> { &value.x, T::EXTENT[0] };
     }
 
     ////////////////////////////////////////
@@ -404,7 +404,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE
-    auto to_string(const vec2<T>& value) noexcept -> std::string {
+    auto to_string(const vec2<T>& value) noexcept -> string {
         return std::format("{}", value);
     }
 
@@ -412,7 +412,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE
-    auto to_string(const vec3<T>& value) noexcept -> std::string {
+    auto to_string(const vec3<T>& value) noexcept -> string {
         return std::format("{}", value);
     }
 
@@ -420,7 +420,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace v
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE
-    auto to_string(const vec4<T>& value) noexcept -> std::string {
+    auto to_string(const vec4<T>& value) noexcept -> string {
         return std::format("{}", value);
     }
 

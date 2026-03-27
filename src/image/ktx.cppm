@@ -14,14 +14,14 @@ import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_ktx(std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_ktx(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_ktx(const image::Image& image, const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto save_ktx(const image::Image& image) noexcept -> std::expected<std::vector<Byte>, image::Image::Error>;
+    auto save_ktx(const image::Image& image) noexcept -> std::expected<byte_dyn_array, image::Image::Error>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
@@ -100,7 +100,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_ktx([[maybe_unused]] std::span<const Byte> data) noexcept -> std::expected<image::Image, image::Image::Error> {
+    auto load_ktx([[maybe_unused]] byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error> {
         /*auto image = gli::load_ktx(reinterpret_cast<const char*>(std::data(data)),
          * std::size(data));*/
         /**/
@@ -113,7 +113,7 @@ namespace stormkit::image::details {
         /*    return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,*/
         /*                                   .str_error = "Unsupported pixel format" });*/
         /**/
-        /*auto image_memory = std::vector<Byte> {};*/
+        /*auto image_memory = byte_dyn_array {};*/
         /*image_memory.resize(image.size());*/
         /**/
         /*std::ranges::copy(as_bytes(image.data(), image.size()), std::begin(image_memory));*/
@@ -144,7 +144,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_ktx(const image::Image&) noexcept -> std::expected<std::vector<Byte>, image::Image::Error> {
+    auto save_ktx(const image::Image&) noexcept -> std::expected<byte_dyn_array, image::Image::Error> {
         assert(false, "Not implemented yet !");
         return {};
     }

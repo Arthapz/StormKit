@@ -155,7 +155,7 @@ export {
         [[nodiscard]]
         constexpr auto is_equal_impl(T first, T second) noexcept -> bool;
 
-        template<meta::ConvertibleTo<std::string_view> T, meta::ConvertibleTo<std::string_view> U>
+        template<meta::ConvertibleTo<string_view> T, meta::ConvertibleTo<string_view> U>
         [[nodiscard]]
         constexpr auto is_equal_impl(T&& first, U&& second) noexcept -> bool;
 
@@ -170,23 +170,23 @@ export {
         ////////////////////////////////////////////////////////////////////
         ///                           BYTES                              ///
         ////////////////////////////////////////////////////////////////////
-        template<meta::IsByte T, meta::IsByte U>
+        template<meta::Isbyte T, meta::Isbyte U>
         [[nodiscard]]
         constexpr auto is_impl(T first, T second) noexcept -> bool;
 
-        template<meta::IsByte T, meta::IsArithmetic U>
+        template<meta::Isbyte T, meta::IsArithmetic U>
         [[nodiscard]]
         constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
 
-        template<meta::IsArithmetic T, meta::IsByte U>
+        template<meta::IsArithmetic T, meta::Isbyte U>
         [[nodiscard]]
         constexpr auto as_impl(U value, const std::source_location&) noexcept -> T;
 
-        template<meta::IsArithmetic T, meta::IsByte U>
+        template<meta::IsArithmetic T, meta::Isbyte U>
         [[nodiscard]]
         constexpr auto narrow_impl(U value) noexcept -> T;
 
-        template<meta::IsByte T, meta::IsArithmetic U>
+        template<meta::Isbyte T, meta::IsArithmetic U>
         [[nodiscard]]
         constexpr auto narrow_impl(U value) noexcept -> T;
 
@@ -246,9 +246,9 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename To, typename From>
-        requires((meta::IsArithmetic<To> or meta::IsByte<To>) and (meta::IsArithmetic<From> or meta::IsByte<From>))
+        requires((meta::IsArithmetic<To> or meta::Isbyte<To>) and (meta::IsArithmetic<From> or meta::Isbyte<From>))
     constexpr auto isSafeNarrowing(const From& from) noexcept -> Boolean {
-        if constexpr ((meta::IsArithmetic<From> and meta::IsByte<To>) or (meta::IsByte<From> and meta::IsArithmetic<To>))
+        if constexpr ((meta::IsArithmetic<From> and meta::Isbyte<To>) or (meta::Isbyte<From> and meta::IsArithmetic<To>))
             return (static_cast<From>(static_cast<To>(from)) == from);
         else if constexpr (meta::IsArithmetic<From> and meta::IsArithmetic<To>)
             return (static_cast<From>(static_cast<To>(from)) == from)
@@ -366,10 +366,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::ConvertibleTo<std::string_view> T, meta::ConvertibleTo<std::string_view> U>
+    template<meta::ConvertibleTo<string_view> T, meta::ConvertibleTo<string_view> U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_equal_impl(T&& first, U&& second) noexcept -> bool {
-        return std::string_view { std::forward<T>(first) } == std::string_view { std::forward<U>(second) };
+        return string_view { std::forward<T>(first) } == string_view { std::forward<U>(second) };
     }
 
     /////////////////////////////////////
@@ -399,7 +399,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////////////////////////////////
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::meta::IsByte T, stormkit::meta::IsArithmetic U>
+    template<stormkit::meta::Isbyte T, stormkit::meta::IsArithmetic U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
         if constexpr (meta::IsNarrowing<T, meta::ToPlainType<U>>)
@@ -413,7 +413,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsByte U>
+    template<stormkit::meta::IsArithmetic T, stormkit::meta::Isbyte U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_impl(U value, const std::source_location& location) noexcept -> T {
         if constexpr (meta::IsNarrowing<T, meta::ToPlainType<U>>)
@@ -427,7 +427,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::meta::IsArithmetic T, stormkit::meta::IsByte U>
+    template<stormkit::meta::IsArithmetic T, stormkit::meta::Isbyte U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
     constexpr auto narrow_impl(U value) noexcept -> T {
         return static_cast<T>(value);
@@ -435,7 +435,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::meta::IsByte T, stormkit::meta::IsArithmetic U>
+    template<stormkit::meta::Isbyte T, stormkit::meta::IsArithmetic U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
     constexpr auto narrow_impl(U value) noexcept -> T {
         return static_cast<T>(value);

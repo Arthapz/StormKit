@@ -64,10 +64,10 @@ export namespace stormkit { inline namespace core { namespace math {
     using fbounding_rect = bounding_rect<f32>;
 
     template<core::meta::IsArithmetic T>
-    auto to_string(const rect<T>& value) noexcept -> std::string;
+    auto to_string(const rect<T>& value) noexcept -> string;
 
     template<core::meta::IsArithmetic T>
-    auto to_string(const bounding_rect<T>& value) noexcept -> std::string;
+    auto to_string(const bounding_rect<T>& value) noexcept -> string;
 
     template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
     constexpr auto hasher(const rect<T>& value) noexcept -> Ret;
@@ -154,7 +154,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE
-    inline auto to_string(const rect<T>& value) noexcept -> std::string {
+    inline auto to_string(const rect<T>& value) noexcept -> string {
         return std::format("{}", value);
     }
 
@@ -162,7 +162,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE
-    inline auto to_string(const bounding_rect<T>& value) noexcept -> std::string {
+    inline auto to_string(const bounding_rect<T>& value) noexcept -> string {
         return std::format("{}", value);
     }
 

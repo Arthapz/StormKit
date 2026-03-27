@@ -52,7 +52,7 @@ export {
 
         template<typename T>
         struct Stylized {
-            constexpr auto render() const noexcept -> std::string;
+            constexpr auto render() const noexcept -> string;
             constexpr auto render_into(stdr::output_range<char> auto& out) const noexcept -> void;
 
             T                           value;
@@ -156,8 +156,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    constexpr auto Stylized<T>::render() const noexcept -> std::string {
-        auto       out  = std::string {};
+    constexpr auto Stylized<T>::render() const noexcept -> string {
+        auto       out  = string {};
         const auto size = [this] noexcept {
             if constexpr (requires { stdr::size(value); }) return stdr::size(value);
             else if constexpr (requires { std::char_traits<meta::RemoveIndirectionsType<T>>::length(value); })
@@ -183,7 +183,7 @@ namespace stormkit { inline namespace core {
         if (check_flag_bit(modifiers, StyleModifier::ITALIC)) out.append(ecma48::ITALIC);
         if (check_flag_bit(modifiers, StyleModifier::INVERSE)) out.append(ecma48::INVERSE);
         if (check_flag_bit(modifiers, StyleModifier::UNDERLINE)) out.append(ecma48::UNDERLINE);
-        if constexpr (meta::IsStringLike<T>) out.append_range(std::string_view { value });
+        if constexpr (meta::IsStringLike<T>) out.append_range(string_view { value });
         else
             out.append_range(std::format("{}", value));
 

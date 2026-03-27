@@ -15,7 +15,7 @@ import :linux.x11.monitor;
 namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_monitors(WM wm, bool update = false) noexcept -> std::span<const Monitor> {
+    auto get_monitors(WM wm, bool update = false) noexcept -> array_view<const Monitor> {
         switch (wm) {
             case WM::X11: return x11::get_monitors(wm, update);
             case WM::WAYLAND: return wayland::get_monitors(wm, update);

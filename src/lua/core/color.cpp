@@ -17,7 +17,7 @@ namespace stormkit::lua::core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         template<typename T, typename... Constructors>
-        auto _bind_color(std::string_view name, auto& parent, auto... values) {
+        auto _bind_color(string_view name, auto& parent, auto... values) {
             auto metatable = parent.template new_usertype<T>(name, sol::constructors<T(), Constructors...> {});
             metatable[sol::meta_function::to_string] = &stormkit::to_string<T::LAYOUT, typename T::Storage>;
             metatable[sol::meta_function::equal_to]  = &T::operator==;

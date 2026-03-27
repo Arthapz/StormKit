@@ -26,7 +26,7 @@ namespace cm = stormkit::core::meta;
 
 namespace stormkit::gpu {
     namespace {
-        constexpr auto RAYTRACING_EXTENSIONS = std::array {
+        constexpr auto RAYTRACING_EXTENSIONS = array {
             "VK_KHR_ray_tracing_pipeline"sv,     "VK_KHR_acceleration_structure"sv, "VK_KHR_buffer_device_address"sv,
             "VK_KHR_deferred_host_operations"sv, "VK_EXT_descriptor_indexing"sv,    "VK_KHR_spirv_1_4"sv,
             "VK_KHR_shader_float_controls"sv
@@ -34,7 +34,7 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto vendor_name_by_id(u64 ID) -> std::string_view {
+        auto vendor_name_by_id(u64 ID) -> string_view {
             switch (ID) {
                 case 0x1002: return "AMD";
                 case 0x1010: return "ImgTex";
@@ -60,7 +60,7 @@ namespace stormkit::gpu {
             const auto device_name_size = std::char_traits<char>::length(properties.deviceName);
 
             device_info.device_name.resize(device_name_size);
-            stdr::copy(std::string_view { properties.deviceName, device_name_size }, std::begin(device_info.device_name));
+            stdr::copy(string_view { properties.deviceName, device_name_size }, std::begin(device_info.device_name));
 
             device_info.vendor_id         = vendor_id;
             device_info.vendor_name       = vendor_name_by_id(vendor_id);
@@ -269,17 +269,17 @@ namespace stormkit::gpu {
             return capabilities;
         }
 
-        auto memory_types(const PhysicalDeviceImplementation& physical_device) noexcept -> std::vector<MemoryPropertyFlag> {
+        auto memory_types(const PhysicalDeviceImplementation& physical_device) noexcept -> dyn_array<MemoryPropertyFlag> {
             const auto& handle               = physical_device.native_handle();
             const auto  vk_memory_properties = vk::call<VkPhysicalDeviceMemoryProperties>(vkGetPhysicalDeviceMemoryProperties,
                                                                                           handle);
 
-            return transform(std::span { vk_memory_properties.memoryTypes, 32 }, [](const auto& type) static noexcept {
+            return transform(array_view { vk_memory_properties.memoryTypes, 32 }, [](const auto& type) static noexcept {
                 return narrow<MemoryPropertyFlag>(type.propertyFlags);
             });
         }
 
-        auto queue_families(const PhysicalDeviceImplementation& physical_device) noexcept -> std::vector<QueueFamily> {
+        auto queue_families(const PhysicalDeviceImplementation& physical_device) noexcept -> dyn_array<QueueFamily> {
             const auto& handle = physical_device.native_handle();
             return transform(vk::enumerate<VkQueueFamilyProperties>(vkGetPhysicalDeviceQueueFamilyProperties, handle),
                              [](const auto& family) static noexcept {
@@ -288,7 +288,7 @@ namespace stormkit::gpu {
         }
 
         auto extensions(const PhysicalDeviceImplementation& physical_device, const PhysicalDeviceInfo& info) noexcept
-          -> std::vector<std::string> {
+          -> dyn_array<string> {
             const auto& handle     = physical_device.native_handle();
             const auto  extensions = TryAssert(vk::enumerate_checked<VkExtensionProperties>(vkEnumerateDeviceExtensionProperties,
                                                                                             handle,
@@ -298,12 +298,12 @@ namespace stormkit::gpu {
             Return transform(extensions, [](const auto& extension) static noexcept {
                 const auto string_size = std::char_traits<char>::length(extension.extensionName);
 
-                return std::string { extension.extensionName, string_size };
+                return string { extension.extensionName, string_size };
             });
         }
 
         auto formats_properties(const PhysicalDeviceImplementation& physical_device) noexcept
-          -> std::vector<std::pair<PixelFormat, FormatProperties>> {
+          -> dyn_array<std::pair<PixelFormat, FormatProperties>> {
             const auto& handle = physical_device.native_handle();
             return transform(cm::enumerate<PixelFormat>(), [&handle](const auto val) noexcept {
                 return std::make_pair(val,

@@ -31,15 +31,15 @@ export namespace stormkit::wsi::linux::x11::xcb {
     auto init() noexcept -> bool;
     auto get_globals() noexcept -> Globals&;
 
-    auto get_atom(std::string_view name, bool only_if_exists) noexcept -> std::expected<xcb_atom_t, Error>;
-    auto get_atom_name(xcb_atom_t atom) -> std::expected<std::string, Error>;
+    auto get_atom(string_view name, bool only_if_exists) noexcept -> std::expected<xcb_atom_t, Error>;
+    auto get_atom_name(xcb_atom_t atom) -> std::expected<string, Error>;
 
-    auto get_error(ref<xcb_generic_error_t> error) -> std::string;
+    auto get_error(ref<xcb_generic_error_t> error) -> string;
 
     auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<ref<xcb_input_xi_device_info_t>, Error>;
 
     // template<typename T>
-    // auto get_xft_value(std::string_view name) -> std::optional<T>;
+    // auto get_xft_value(string_view name) -> std::optional<T>;
 } // namespace stormkit::wsi::linux::x11::xcb
 
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ export namespace stormkit::wsi::linux::x11::xcb {
     // /////////////////////////////////////
     // /////////////////////////////////////
     // template<typename T>
-    // auto get_xft_value(std::string_view name) -> std::optional<T> {
+    // auto get_xft_value(string_view name) -> std::optional<T> {
     //     using XcbXrmDatabase = RAIICapsule<xcb_xrm_database_t*,
     //                                        xcb_xrm_database_from_default,
     //                                        xcb_xrm_database_free,

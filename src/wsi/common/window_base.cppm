@@ -47,9 +47,9 @@ export namespace stormkit::wsi::common {
         auto current_monitor() const noexcept -> const Monitor&;
         auto set_current_monitor(const Monitor& extent) noexcept -> void;
 
-        auto set_title(std::string title) noexcept -> bool;
+        auto set_title(string title) noexcept -> bool;
         [[nodiscard]]
-        auto title() const noexcept -> const std::string&;
+        auto title() const noexcept -> const string&;
 
         auto set_extent(const math::uextent2& extent) noexcept -> bool;
         [[nodiscard]]
@@ -100,15 +100,15 @@ export namespace stormkit::wsi::common {
             bool                  visible    = false;
             math::uextent2        extent;
             optref<const Monitor> current_monitor;
-            std::string           title;
+            string                title;
 
             f32 dpi = 1.f;
 
             math::ivec2 position = { 0, 0 };
         } m_state;
 
-        std::vector<MouseState>    m_mouse_states;
-        std::vector<KeyboardState> m_keyboard_states;
+        dyn_array<MouseState>    m_mouse_states;
+        dyn_array<KeyboardState> m_keyboard_states;
     };
 } // namespace stormkit::wsi::common
 
@@ -155,7 +155,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::set_title(std::string title) noexcept -> bool {
+    inline auto WindowBase::set_title(string title) noexcept -> bool {
         if (not m_state.open) return false;
 
         m_state.title = std::move(title);
@@ -165,7 +165,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::title() const noexcept -> const std::string& {
+    inline auto WindowBase::title() const noexcept -> const string& {
         return m_state.title;
     }
 

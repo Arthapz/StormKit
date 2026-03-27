@@ -28,9 +28,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto FrameBufferImplementation::do_init(PrivateTag,
-                                            view::RenderPass&&             render_pass,
-                                            const math::uextent2&          extent,
-                                            std::vector<view::ImageView>&& attachments) noexcept -> Expected<void> {
+                                            view::RenderPass&&           render_pass,
+                                            const math::uextent2&        extent,
+                                            dyn_array<view::ImageView>&& attachments) noexcept -> Expected<void> {
         m_extent                  = extent;
         m_attachments             = std::move(attachments);
         const auto vk_attachments = transform(m_attachments, vk::monadic::to_vk());

@@ -64,7 +64,7 @@ export namespace stormkit { inline namespace core {
         auto get(this Self& self) noexcept -> decltype(auto);
 
         [[nodiscard]]
-        auto data() const noexcept -> std::span<const ValueType>;
+        auto data() const noexcept -> array_view<const ValueType>;
 
       private:
         template<class Self>
@@ -74,7 +74,7 @@ export namespace stormkit { inline namespace core {
         ExtentType m_capacity = 0;
         ExtentType m_count    = 0;
 
-        std::vector<Byte> m_buffer;
+        byte_dyn_array m_buffer;
 
         ExtentType m_write = 0;
         ExtentType m_read  = 0;
@@ -140,7 +140,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T>
     RingBuffer<T>::RingBuffer(RingBuffer&& moved) noexcept {
-        m_buffer = std::exchange(moved.m_buffer, std::vector<Byte> {});
+        m_buffer = std::exchange(moved.m_buffer, byte_dyn_array {});
 
         m_capacity = std::exchange(moved.m_capacity, 0);
         m_count    = std::exchange(moved.m_count, 0);
@@ -154,7 +154,7 @@ namespace stormkit { inline namespace core {
     auto RingBuffer<T>::operator=(RingBuffer&& moved) noexcept -> RingBuffer& {
         if (&moved == this) return *this;
 
-        m_buffer = std::exchange(moved.m_buffer, std::vector<Byte> {});
+        m_buffer = std::exchange(moved.m_buffer, byte_dyn_array {});
 
         m_capacity = std::exchange(moved.m_capacity, 0);
         m_count    = std::exchange(moved.m_count, 0);
@@ -262,8 +262,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    auto RingBuffer<T>::data() const noexcept -> std::span<const ValueType> {
-        return std::span<const ValueType> { get_ptr(0), m_capacity };
+    auto RingBuffer<T>::data() const noexcept -> array_view<const ValueType> {
+        return array_view<const ValueType> { get_ptr(0), m_capacity };
     }
 
     ////////////////////////////////////////

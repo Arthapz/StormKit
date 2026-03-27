@@ -31,9 +31,9 @@ export {
             // M => rows
             // N => columns
             template<core::meta::IsArithmetic T, usize M, usize N>
-            struct alignas(std::array<T, M * N>) mat {
+            struct alignas(array<T, M * N>) mat {
                 using ValueType   = T;
-                using StorageType = std::array<ValueType, M * N>;
+                using StorageType = array<ValueType, M * N>;
                 using SizeType    = usize;
                 using ExtentType  = u8;
 
@@ -42,7 +42,7 @@ export {
                 using size_type    = SizeType;
                 using extent_type  = ExtentType;
 
-                static constexpr auto EXTENTS = std::array<ExtentType, 2> { M, N };
+                static constexpr auto EXTENTS = array<ExtentType, 2> { M, N };
 
                 StorageType values;
 
@@ -226,11 +226,11 @@ export {
             template<meta::IsMat T>
             [[nodiscard]]
             constexpr auto as_view(const T& value) noexcept
-              -> std::span<const typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]>;
+              -> array_view<const typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]>;
 
             template<meta::IsMat T>
             [[nodiscard]]
-            constexpr auto as_view_mut(T& value) noexcept -> std::span<typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]>;
+            constexpr auto as_view_mut(T& value) noexcept -> array_view<typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]>;
 
             template<meta::IsMat T>
             [[nodiscard]]
@@ -243,7 +243,7 @@ export {
             constexpr auto as_mdspan(T& value) noexcept -> MatrixSpan<typename T::ValueType, T::EXTENTS[0], T::EXTENTS[1]>;
 
             template<meta::IsMat T>
-            auto to_string(const T& value) noexcept -> std::string;
+            auto to_string(const T& value) noexcept -> string;
 
             template<core::meta::HashType Ret = hash32, meta::IsMat T>
             constexpr auto hasher(const T& value) noexcept -> Ret;
@@ -561,8 +561,8 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     ////////////////////////////////////////
     template<meta::IsMat T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto as_view(const T& value) noexcept -> std::span<const typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
-        return std::span<const typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
+    constexpr auto as_view(const T& value) noexcept -> array_view<const typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
+        return array_view<const typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
             stdr::data(value),
             T::EXTENTS[0] * T::EXTENTS[1]
         };
@@ -572,8 +572,8 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     ////////////////////////////////////////
     template<meta::IsMat T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto as_view_mut(T& value) noexcept -> std::span<typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
-        return std::span<typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
+    constexpr auto as_view_mut(T& value) noexcept -> array_view<typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
+        return array_view<typename T::ValueType, T::EXTENTS[0] * T::EXTENTS[1]> {
             stdr::data(value),
             T::EXTENTS[0] * T::EXTENTS[1]
         };
@@ -599,7 +599,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsMat T>
-    inline auto to_string(const T& value) noexcept -> std::string {
+    inline auto to_string(const T& value) noexcept -> string {
         return std::format("{}", value);
     }
 

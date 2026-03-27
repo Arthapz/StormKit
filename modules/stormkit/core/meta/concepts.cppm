@@ -116,13 +116,13 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept SameAsAnyOf = (SameAs<T, U> or ...);
 
     template<class T>
-    concept IsByte = SameAs<T, std::byte>;
+    concept Isbyte = SameAs<T, std::byte>;
 
     template<class T>
-    concept IsByteSized = sizeof(T) == sizeof(std::byte);
+    concept IsbyteSized = sizeof(T) == sizeof(std::byte);
 
     template<class T>
-    concept IsNotByte = not IsByte<T>;
+    concept IsNotbyte = not Isbyte<T>;
 
     template<class T>
     concept IsStringLike = std::convertible_to<T, std::string_view>;
@@ -135,6 +135,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<class T>
     concept IsStdVariant = IsSpecializationOf<T, std::variant>;
+
+    template<class T>
+    concept IsStdSpan = IsSpecializationOfNTTP_TV<T, std::span>;
 
     template<class T>
     concept IsStdMdspan = IsSpecializationOf<T, std::mdspan>;
@@ -199,6 +202,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<class T>
     concept IsIndirection = IsLValueReference<T> or IsPointer<T>;
 
+    template<class T, class U>
+    concept IsIndirectionTo = IsIndirection<T> and SameAs<std::remove_pointer_t<std::remove_reference_t<T>>, U>;
+
     template<class... T>
     concept AreIndirections = ((IsLValueReference<T> or IsPointer<T>) and ...);
 
@@ -227,6 +233,12 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsContainerOrPointerOf = IsContainerOf<T, U> or IsPointerOf<T, U>;
 
     template<class T>
+    concept IsContainerOrIndirection = IsContainer<T> or IsIndirection<T>;
+
+    template<class T, class U>
+    concept IsContainerOrIndirectionOf = IsContainerOf<T, U> or IsIndirectionTo<T, U>;
+
+    template<class T>
     concept IsPolymorphic = std::is_polymorphic_v<T>;
 
     template<class T>
@@ -248,16 +260,16 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsNotIndirection = not IsIndirection<T>;
 
     template<class T>
-    concept IsScopedEnumeration = std::is_scoped_enum_v<T> and IsNotByte<T>;
+    concept IsScopedEnumeration = std::is_scoped_enum_v<T> and IsNotbyte<T>;
 
     template<class T>
-    concept IsPlainEnumeration = not IsScopedEnumeration<T> and std::is_enum_v<T> and IsNotByte<T>;
+    concept IsPlainEnumeration = not IsScopedEnumeration<T> and std::is_enum_v<T> and IsNotbyte<T>;
 
     template<class T>
-    concept IsEnumeration = std::is_enum_v<T> and IsNotByte<T>;
+    concept IsEnumeration = std::is_enum_v<T> and IsNotbyte<T>;
 
     template<typename T>
-    concept IsIntegral = (std::integral<T> and not SameAs<T, bool> and not IsByte<T>)
+    concept IsIntegral = (std::integral<T> and not SameAs<T, bool> and not Isbyte<T>)
                          or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
                          or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<unsigned long long, unsigned long long>>>
 #if defined(STORMKIT_COMPILER_MSVC)
@@ -364,8 +376,8 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsSignNarrowing = (IsSigned<From> ? not IsSigned<To> : IsSigned<To> and sizeof(From) == sizeof(To));
 
     template<typename To, typename From>
-    concept IsByteNarrowing = ((IsArithmetic<To> and IsByte<From>) or (IsByte<To> and IsArithmetic<From>))
-                              and (IsByte<To> and sizeof(To) != sizeof(From));
+    concept IsbyteNarrowing = ((IsArithmetic<To> and Isbyte<From>) or (Isbyte<To> and IsArithmetic<From>))
+                              and (Isbyte<To> and sizeof(To) != sizeof(From));
 
     template<typename To, typename From>
     concept IsNarrowing = (IsFloatingPoint<From> and IsIntegral<To>)

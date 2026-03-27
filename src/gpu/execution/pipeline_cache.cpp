@@ -100,7 +100,7 @@ namespace stormkit::gpu {
         if (not stdr::equal(m_serialized.uuid.value, physical_device_infos.pipeline_cache_uuid))
             Return create_new_pipeline_cache();
 
-        auto data = std::vector<Byte> {};
+        auto data = byte_dyn_array {};
         data.resize(m_serialized.guard.data_size);
 
         TryTransformError(io::read_to(m_path, data), sys_to_load_error);
@@ -129,7 +129,7 @@ namespace stormkit::gpu {
         auto size = 0_usize;
         TryTransformError(vk::call_checked(device_table.vkGetPipelineCacheData, device, m_vk_handle, &size, nullptr),
                           result_to_load_error);
-        auto data = std::vector<byte> {};
+        auto data = byte_dyn_array {};
         data.resize(size, 0_b);
         TryTransformError(vk::call_checked(device_table.vkGetPipelineCacheData, device, m_vk_handle, &size, stdr::data(data)),
                           result_to_load_error);

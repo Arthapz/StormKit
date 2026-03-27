@@ -7,6 +7,7 @@ export module stormkit.core:utils.algorithms;
 import std;
 
 import :meta;
+import :containers.aliases;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -42,14 +43,18 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<stdr::input_range Range, meta::IsUnaryPredicate<typename meta::CanonicalType<Range>::value_type> Predicate>
     constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept -> decltype(auto) {
-        return std::forward<Range>(input) | stdv::filter(std::forward<Predicate>(predicate)) | stdr::to<std::vector>();
+        return std::forward<Range>(input)
+               | stdv::filter(std::forward<Predicate>(predicate))
+               | stdr::to<dyn_array<typename Range::value_type>>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<stdr::input_range Range, std::invocable<const typename meta::CanonicalType<Range>::value_type&> Lambda>
     constexpr auto transform(Range&& input, Lambda&& lambda) noexcept -> decltype(auto) {
-        return std::forward<Range>(input) | stdv::transform(lambda) | stdr::to<std::vector>();
+        return std::forward<Range>(input)
+               | stdv::transform(lambda)
+               | stdr::to<dyn_array<std::invoke_result_t<Lambda, const typename meta::CanonicalType<Range>::value_type>>>();
     }
 
     /////////////////////////////////////
@@ -61,7 +66,7 @@ namespace stormkit { inline namespace core {
         return std::forward<Range>(input)
                | stdv::filter(std::forward<Predicate>(predicate))
                | stdv::transform(std::forward<Lambda>(lambda))
-               | stdr::to<std::vector>();
+               | stdr::to<dyn_array<std::invoke_result_t<Lambda, const typename meta::CanonicalType<Range>::value_type>>>();
     }
 
     /////////////////////////////////////

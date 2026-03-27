@@ -72,15 +72,15 @@ export namespace stormkit::wsi::linux::x11 {
         Window(Window&&) noexcept;
         auto operator=(Window&&) noexcept -> Window&;
 
-        auto open(std::string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
+        auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
         auto close() noexcept -> void;
 
         auto handle_events() noexcept -> void;
 
         auto clear(const ucolor_rgb& color) noexcept -> void;
-        auto fill_framebuffer(std::span<const ucolor_rgb> colors) noexcept -> void;
+        auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
-        auto set_title(std::string title) noexcept -> void;
+        auto set_title(string title) noexcept -> void;
         auto set_extent(const math::uextent2& extent) noexcept -> void;
         auto set_fullscreen(bool fullscreen) noexcept -> void;
 
@@ -129,7 +129,7 @@ export namespace stormkit::wsi::linux::x11 {
         xcb::ColorMap        m_color_map        = xcb::ColorMap::empty();
         xcb::GraphicsContext m_graphics_context = xcb::GraphicsContext::empty();
         xcb::Image           m_image            = xcb::Image::empty();
-        std::span<u32>       m_framebuffer;
+        array_view<u32>      m_framebuffer;
         xcb::Pixmap          m_pixmap      = xcb::Pixmap::empty();
         xcb::KeySymbols      m_key_symbols = xcb::KeySymbols::empty();
         common::xkb::Keymap  m_keymap      = common::xkb::Keymap::empty();

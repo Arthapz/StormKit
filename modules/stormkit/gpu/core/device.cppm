@@ -46,7 +46,7 @@ namespace stormkit::gpu {
 
             auto wait_idle() const noexcept -> Expected<void>;
 
-            auto wait_for_fences(std::span<const view::Fence>     fences,
+            auto wait_for_fences(array_view<const view::Fence>    fences,
                                  bool                             wait_all = true,
                                  const std::chrono::milliseconds& timeout  = std::chrono::milliseconds::max()) const noexcept
               -> Expected<Result>;
@@ -54,16 +54,16 @@ namespace stormkit::gpu {
                                 const std::chrono::milliseconds& timeout = std::chrono::milliseconds::max()) const noexcept
               -> Expected<Result>;
 
-            auto reset_fences(std::span<const view::Fence> fences) const noexcept -> Expected<void>;
+            auto reset_fences(array_view<const view::Fence> fences) const noexcept -> Expected<void>;
             auto reset_fence(view::Fence fence) const noexcept -> Expected<void>;
 
             template<meta::IsGpuObjectOrView T>
-            auto set_object_name(const T& object, std::string_view name) const noexcept -> Expected<void>;
+            auto set_object_name(const T& object, string_view name) const noexcept -> Expected<void>;
 
-            auto set_object_name(u64 object, DebugObjectType type, std::string_view name) const noexcept -> Expected<void>;
+            auto set_object_name(u64 object, DebugObjectType type, string_view name) const noexcept -> Expected<void>;
 
             [[nodiscard]]
-            auto queue_entries() const noexcept -> std::span<const QueueEntry>;
+            auto queue_entries() const noexcept -> array_view<const QueueEntry>;
 
             [[nodiscard]]
             auto device_table() const noexcept -> const VolkDeviceTable&;
@@ -100,7 +100,7 @@ namespace stormkit::gpu {
         auto operator=(DeviceImplementation&&) noexcept -> DeviceImplementation&;
 
       protected:
-        std::vector<QueueEntry> m_queue_entries;
+        dyn_array<QueueEntry> m_queue_entries;
 
         VolkDeviceTable         m_vk_device_table    = {};
         VmaVulkanFunctions      m_vma_function_table = {};
@@ -122,7 +122,7 @@ namespace stormkit::gpu {
             auto operator=(DeviceImplementation&&) noexcept -> DeviceImplementation&;
 
           protected:
-            std::span<const QueueEntry> m_queue_entries;
+            array_view<const QueueEntry> m_queue_entries;
 
             VolkDeviceTable            m_vk_device_table;
             vk::Observer<VmaAllocator> m_vma_allocator;
@@ -140,7 +140,7 @@ namespace stormkit::gpu {
     template<typename Base>
     template<meta::IsGpuObjectOrView T>
     STORMKIT_FORCE_INLINE
-    inline auto DeviceInterface<Base>::set_object_name(const T& object, std::string_view name) const noexcept -> Expected<void> {
+    inline auto DeviceInterface<Base>::set_object_name(const T& object, string_view name) const noexcept -> Expected<void> {
         if (not vkSetDebugUtilsObjectNameEXT) return {};
 
         const auto vk_object = vk::to_vk(object);
@@ -153,7 +153,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto DeviceInterface<Base>::queue_entries() const noexcept -> std::span<const QueueEntry> {
+    inline auto DeviceInterface<Base>::queue_entries() const noexcept -> array_view<const QueueEntry> {
         return Base::m_queue_entries;
     }
 

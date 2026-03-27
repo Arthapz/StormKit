@@ -53,11 +53,11 @@ namespace stormkit::gpu {
             };
         });
 
-        auto color_attachment_refs   = std::vector<std::vector<VkAttachmentReference>> {};
+        auto color_attachment_refs   = dyn_array<dyn_array<VkAttachmentReference>> {};
         auto depth_attachment_ref    = std::optional<VkAttachmentReference> {};
-        auto resolve_attachment_refs = std::vector<std::vector<VkAttachmentReference>> {};
-        auto subpasses               = std::vector<VkSubpassDescription> {};
-        auto subpasses_deps          = std::vector<VkSubpassDependency> {};
+        auto resolve_attachment_refs = dyn_array<dyn_array<VkAttachmentReference>> {};
+        auto subpasses               = dyn_array<VkSubpassDescription> {};
+        auto subpasses_deps          = dyn_array<VkSubpassDependency> {};
 
         color_attachment_refs.reserve(stdr::size(m_description->subpasses));
         resolve_attachment_refs.reserve(stdr::size(m_description->subpasses));

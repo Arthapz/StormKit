@@ -20,34 +20,34 @@ LOGGER("lua")
 namespace stormkit::lua::log {
     auto init_lua(sol::state& global_state) noexcept -> void {
         auto log_table    = global_state["log"].get_or_create<sol::table>();
-        log_table["info"] = [&global_state](std::string_view str, sol::variadic_args args) noexcept {
+        log_table["info"] = [&global_state](string_view str, sol::variadic_args args) noexcept {
             const auto format = sol::protected_function { global_state["format"] };
             const auto result = luacall(format, str, std::move(args));
-            const auto out    = sol::object { result }.as<std::string>();
+            const auto out    = sol::object { result }.as<string>();
             ilog("{}", out);
         };
-        log_table["debug"] = [&global_state](std::string_view str, sol::variadic_args args) noexcept {
+        log_table["debug"] = [&global_state](string_view str, sol::variadic_args args) noexcept {
             const auto format = sol::protected_function { global_state["format"] };
             const auto result = luacall(format, str, std::move(args));
-            const auto out    = sol::object { result }.as<std::string>();
+            const auto out    = sol::object { result }.as<string>();
             dlog("{}", out);
         };
-        log_table["error"] = [&global_state](std::string_view str, sol::variadic_args args) noexcept {
+        log_table["error"] = [&global_state](string_view str, sol::variadic_args args) noexcept {
             const auto format = sol::protected_function { global_state["format"] };
             const auto result = luacall(format, str, std::move(args));
-            const auto out    = sol::object { result }.as<std::string>();
+            const auto out    = sol::object { result }.as<string>();
             elog("{}", out);
         };
-        log_table["fatal"] = [&global_state](std::string_view str, sol::variadic_args args) noexcept {
+        log_table["fatal"] = [&global_state](string_view str, sol::variadic_args args) noexcept {
             const auto format = sol::protected_function { global_state["format"] };
             const auto result = luacall(format, str, std::move(args));
-            const auto out    = sol::object { result }.as<std::string>();
+            const auto out    = sol::object { result }.as<string>();
             flog("{}", out);
         };
-        log_table["warning"] = [&global_state](std::string_view str, sol::variadic_args args) noexcept {
+        log_table["warning"] = [&global_state](string_view str, sol::variadic_args args) noexcept {
             const auto format = sol::protected_function { global_state["format"] };
             const auto result = luacall(format, str, std::move(args));
-            const auto out    = sol::object { result }.as<std::string>();
+            const auto out    = sol::object { result }.as<string>();
             wlog("{}", out);
         };
     }

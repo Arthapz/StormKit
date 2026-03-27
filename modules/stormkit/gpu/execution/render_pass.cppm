@@ -41,7 +41,7 @@ namespace stormkit::gpu {
             bool resolve = false;
         };
 
-        using AttachmentDescriptions = std::vector<AttachmentDescription>;
+        using AttachmentDescriptions = dyn_array<AttachmentDescription>;
 
         struct Subpass {
             struct Ref {
@@ -51,12 +51,12 @@ namespace stormkit::gpu {
             };
 
             PipelineBindPoint  bind_point;
-            std::vector<Ref>   color_attachment_refs   = {};
-            std::vector<Ref>   resolve_attachment_refs = {};
+            dyn_array<Ref>     color_attachment_refs   = {};
+            dyn_array<Ref>     resolve_attachment_refs = {};
             std::optional<Ref> depth_attachment_ref    = {};
         };
 
-        using Subpasses = std::vector<Subpass>;
+        using Subpasses = dyn_array<Subpass>;
 
         struct RenderPassDescription {
             AttachmentDescriptions attachments;
@@ -75,7 +75,7 @@ namespace stormkit::gpu {
             [[nodiscard]]
             auto extent() const noexcept -> const math::uextent2&;
             [[nodiscard]]
-            auto attachments() const noexcept -> std::span<const view::ImageView>;
+            auto attachments() const noexcept -> array_view<const view::ImageView>;
         };
 
         template<typename Base>
@@ -86,13 +86,13 @@ namespace stormkit::gpu {
             using TagType = RenderPassTag;
 
             auto create_framebuffer(this const auto&,
-                                    view::Device                 device,
-                                    const math::uextent2&        extent,
-                                    std::vector<view::ImageView> attachments) noexcept -> Expected<FrameBuffer>;
+                                    view::Device               device,
+                                    const math::uextent2&      extent,
+                                    dyn_array<view::ImageView> attachments) noexcept -> Expected<FrameBuffer>;
             auto allocate_framebuffer(this const auto&,
-                                      view::Device                 device,
-                                      const math::uextent2&        extent,
-                                      std::vector<view::ImageView> attachments) noexcept -> Expected<Heap<FrameBuffer>>;
+                                      view::Device               device,
+                                      const math::uextent2&      extent,
+                                      dyn_array<view::ImageView> attachments) noexcept -> Expected<Heap<FrameBuffer>>;
 
             [[nodiscard]]
             auto is_compatible(view::RenderPass render_pass) const noexcept -> bool;
@@ -107,7 +107,7 @@ namespace stormkit::gpu {
     class STORMKIT_GPU_API FrameBufferImplementation: public GpuObjectImplementation<FrameBufferTag> {
       public:
         FrameBufferImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, view::RenderPass&&, const math::uextent2&, std::vector<view::ImageView>&&) noexcept
+        auto do_init(PrivateTag, view::RenderPass&&, const math::uextent2&, dyn_array<view::ImageView>&&) noexcept
           -> Expected<void>;
         ~FrameBufferImplementation() noexcept;
 
@@ -121,8 +121,8 @@ namespace stormkit::gpu {
         using UseNamedConstructors::allocate;
         using UseNamedConstructors::create;
 
-        math::uextent2               m_extent = { 0, 0 };
-        std::vector<view::ImageView> m_attachments;
+        math::uextent2             m_extent = { 0, 0 };
+        dyn_array<view::ImageView> m_attachments;
 
         friend class RenderPassInterface<RenderPassImplementation>;
         friend class RenderPassInterface<view::RenderPassImplementation>;
@@ -143,8 +143,8 @@ namespace stormkit::gpu {
             auto operator=(FrameBufferImplementation&&) noexcept -> FrameBufferImplementation&;
 
           protected:
-            math::uextent2                   m_extent;
-            std::span<const view::ImageView> m_attachments;
+            math::uextent2                    m_extent;
+            array_view<const view::ImageView> m_attachments;
         };
     } // namespace view
 
@@ -212,7 +212,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto FrameBufferInterface<Base>::attachments() const noexcept -> std::span<const view::ImageView> {
+    inline auto FrameBufferInterface<Base>::attachments() const noexcept -> array_view<const view::ImageView> {
         return Base::m_attachments;
     }
 
@@ -220,10 +220,10 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto RenderPassInterface<Base>::create_framebuffer(this const auto&             self,
-                                                              view::Device                 device,
-                                                              const math::uextent2&        extent,
-                                                              std::vector<view::ImageView> attachments) noexcept
+    inline auto RenderPassInterface<Base>::create_framebuffer(this const auto&           self,
+                                                              view::Device               device,
+                                                              const math::uextent2&      extent,
+                                                              dyn_array<view::ImageView> attachments) noexcept
       -> Expected<FrameBuffer> {
         return FrameBuffer::create(std::move(device), gpu::as_view(self), extent, std::move(attachments));
     }
@@ -232,10 +232,10 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto RenderPassInterface<Base>::allocate_framebuffer(this const auto&             self,
-                                                                view::Device                 device,
-                                                                const math::uextent2&        extent,
-                                                                std::vector<view::ImageView> attachments) noexcept
+    inline auto RenderPassInterface<Base>::allocate_framebuffer(this const auto&           self,
+                                                                view::Device               device,
+                                                                const math::uextent2&      extent,
+                                                                dyn_array<view::ImageView> attachments) noexcept
       -> Expected<Heap<FrameBuffer>> {
         return FrameBuffer::allocate(std::move(device), gpu::as_view(self), extent, std::move(attachments));
     }

@@ -18,7 +18,7 @@ namespace stormkit::gpu {
     namespace {
         /////////////////////////////////////
         /////////////////////////////////////
-        auto choose_swap_surface_format(std::span<const VkSurfaceFormatKHR> formats) noexcept -> VkSurfaceFormatKHR {
+        auto choose_swap_surface_format(array_view<const VkSurfaceFormatKHR> formats) noexcept -> VkSurfaceFormatKHR {
             for (const auto& format : formats) {
                 if (format.format == VK_FORMAT_B8G8R8A8_UNORM && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
                     return format;
@@ -29,7 +29,7 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto choose_swap_present_mode(std::span<const VkPresentModeKHR> present_modes) noexcept -> VkPresentModeKHR {
+        auto choose_swap_present_mode(array_view<const VkPresentModeKHR> present_modes) noexcept -> VkPresentModeKHR {
             auto present_mode_ = VK_PRESENT_MODE_FIFO_KHR;
 
             for (const auto& present_mode : present_modes) {

@@ -10,10 +10,14 @@ export module stormkit.core:string.constexpr_string;
 
 import std;
 
+import :containers.aliases;
+import :string.aliases;
+import :typesafe.integer;
+
 namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core { namespace meta {
-    template<std::size_t N>
+    template<usize N>
     struct ConstexprString {
         consteval ConstexprString() noexcept = default;
         consteval ConstexprString(const char (&new_str)[N]) noexcept;
@@ -23,20 +27,20 @@ export namespace stormkit { inline namespace core { namespace meta {
         [[nodiscard]]
         constexpr auto end(this auto& self) noexcept -> decltype(auto);
         [[nodiscard]]
-        constexpr auto size() const noexcept -> std::size_t;
+        constexpr auto size() const noexcept -> usize;
 
         [[nodiscard]]
-        constexpr auto view() const noexcept -> std::string_view;
+        constexpr auto view() const noexcept -> string_view;
 
         [[nodiscard]]
-        constexpr operator std::string_view() const noexcept;
+        constexpr operator string_view() const noexcept;
 
         constexpr auto update_size() noexcept -> void;
 
         static constexpr auto STATIC_SIZE = N - 1u;
 
-        std::array<char, N> data   = {};
-        std::size_t         m_size = 0;
+        array<char, N> data   = {};
+        usize          m_size = 0;
     };
 }}} // namespace stormkit::core::meta
 
@@ -47,7 +51,7 @@ export namespace stormkit { inline namespace core { namespace meta {
 namespace stormkit { inline namespace core { namespace meta {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::size_t N>
+    template<usize N>
     STORMKIT_FORCE_INLINE
     consteval ConstexprString<N>::ConstexprString(const char (&new_str)[N]) noexcept {
         std::copy_n(new_str, STATIC_SIZE, std::data(data));
@@ -56,7 +60,7 @@ namespace stormkit { inline namespace core { namespace meta {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::size_t N>
+    template<usize N>
         STORMKIT_FORCE_INLINE
     constexpr auto ConstexprString<N>::begin(this auto& self) noexcept -> decltype(auto) {
         return stdr::begin(self.data);
@@ -64,7 +68,7 @@ namespace stormkit { inline namespace core { namespace meta {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::size_t N>
+    template<usize N>
         STORMKIT_FORCE_INLINE
     constexpr auto ConstexprString<N>::end(this auto& self) noexcept -> decltype(auto) {
         return stdr::begin(self.data) + static_cast<std::ptrdiff_t>(self.size());
@@ -72,31 +76,31 @@ namespace stormkit { inline namespace core { namespace meta {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::size_t N>
+    template<usize N>
         STORMKIT_FORCE_INLINE
-    constexpr auto ConstexprString<N>::size() const noexcept -> std::size_t {
+    constexpr auto ConstexprString<N>::size() const noexcept -> usize {
         return m_size;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::size_t N>
+    template<usize N>
         STORMKIT_FORCE_INLINE
-    constexpr auto ConstexprString<N>::view() const noexcept -> std::string_view {
-        return std::string_view { begin(), end() };
+    constexpr auto ConstexprString<N>::view() const noexcept -> string_view {
+        return string_view { begin(), end() };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::size_t N>
+    template<usize N>
         STORMKIT_FORCE_INLINE
-    constexpr ConstexprString<N>::operator std::string_view() const noexcept {
+    constexpr ConstexprString<N>::operator string_view() const noexcept {
         return view();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::size_t N>
+    template<usize N>
         STORMKIT_FORCE_INLINE
     constexpr auto ConstexprString<N>::update_size() noexcept -> void {
         m_size = std::char_traits<char>::length(stdr::data(data));
