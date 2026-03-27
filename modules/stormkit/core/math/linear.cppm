@@ -526,10 +526,9 @@ namespace stormkit { inline namespace core { namespace math {
     STORMKIT_FORCE_INLINE
     constexpr auto mul(const MatrixSpan<const T, M, N>& a, const MatrixSpan<const T, N, K>& b, MatrixSpan<T, M, K> out) noexcept
       -> void {
-        stdr::fill(as_span_mut(out), T { 0 });
         for (auto i = 0u; i < M; ++i)
             for (auto j = 0u; j < K; ++j)
-                for (auto k = 0u; k < N; ++k) out[i, j] += a[i, k] * b[k, j];
+                for (auto k = 0u; k < N; ++k) out[i, j] += a[i, k] * b[j, k];
     }
 
     ////////////////////////////////////////
@@ -626,8 +625,7 @@ namespace stormkit { inline namespace core { namespace math {
 
         ();
 
-        auto rotation_matrix = SMatData<T, 4> {};
-        stdr::fill(rotation_matrix, 0);
+        auto rotation_matrix  = SMatData<T, 4> {};
         auto rotation_matrix_ = as_mdspan_mut<4, 4>(rotation_matrix);
 
         rotation_matrix_[0, 0] = cos + temp[0] * axis_norm[0];
@@ -642,15 +640,10 @@ namespace stormkit { inline namespace core { namespace math {
         rotation_matrix_[1, 2] = temp[2] * axis_norm[1] - sin * axis_norm[0];
         rotation_matrix_[2, 2] = cos + temp[2] * axis_norm[2];
 
-        // TODO replace by mul when submdspan is available
+        // // TODO replace by mul when submdspan is available
         for (auto i = 0u; i < 3; ++i)
             for (auto j = 0u; j < 3; ++j)
-                for (auto k = 0u; k < 3; ++k) out[i, j] += a[i, k] * rotation_matrix_[k, j];
-
-        out[0, 3] = a[0, 3];
-        out[1, 3] = a[1, 3];
-        out[2, 3] = a[2, 3];
-        out[3, 3] = a[3, 3];
+                for (auto k = 0u; k < 3; ++k) out[j, i] += a[k, i] * rotation_matrix_[j, k];
     }
 
     ////////////////////////////////////////

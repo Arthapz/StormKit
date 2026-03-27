@@ -462,9 +462,9 @@ class Application: public base::Application {
 
         // update viewer data and upload
         const auto time   = stdc::duration_cast<fsecond>(current_time - m_start_time).count();
-        viewer_data.model = math::rotate(math::fmat4::identity(),
-                                         time * math::angle::radians(90.f),
-                                         math::fvec3 { 0.f, 1.f, 0.f });
+        viewer_data.model = math::transpose(math::rotate(math::fmat4::identity(),
+                                                         time * math::angle::radians(90.f),
+                                                         math::fvec3 { 0.f, 1.f, 0.f }));
 
         auto& viewer_buffer = submission_resource.viewer_buffer;
         TryAssert(viewer_buffer.upload(viewer_data), "Failed to upload texture to gpu!");

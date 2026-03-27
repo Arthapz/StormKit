@@ -504,7 +504,36 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     constexpr auto rotate(const mat4x4<T>& mat, angle::radian<T> angle, const vec3<T>& axis) noexcept -> mat4x4<T> {
         auto out = auto(mat);
 
-        math::rotate(as_mdspan(mat), angle, as_mdspan(axis), as_mdspan_mut(out));
+        const auto cos = narrow<T>(std::cos(angle.get()));
+        const auto sin = narrow<T>(std::sin(angle.get()));
+
+        const auto axis_norm = normalize(axis);
+        const auto temp      = mul(axis_norm, T { 1 } - cos);
+
+        auto rotation_matrix  = mat4x4<T> {};
+        rotation_matrix[0, 0] = cos + temp[0] * axis_norm[0];
+        rotation_matrix[1, 0] = temp[0] * axis_norm[1] + sin * axis_norm[2];
+        rotation_matrix[2, 0] = temp[0] * axis_norm[2] - sin * axis_norm[1];
+
+        rotation_matrix[0, 1] = temp[1] * axis_norm[0] - sin * axis_norm[2];
+        rotation_matrix[1, 1] = cos + temp[1] * axis_norm[1];
+        rotation_matrix[2, 1] = temp[1] * axis_norm[2] + sin * axis_norm[0];
+
+        rotation_matrix[0, 2] = temp[2] * axis_norm[0] + sin * axis_norm[1];
+        rotation_matrix[1, 2] = temp[2] * axis_norm[1] - sin * axis_norm[0];
+        rotation_matrix[2, 2] = cos + temp[2] * axis_norm[2];
+
+        out[0, 0] = mat[0, 0] * rotation_matrix[0, 0] + mat[1, 0] * rotation_matrix[1, 0] + mat[2, 0] * rotation_matrix[2, 0];
+        out[0, 1] = mat[0, 1] * rotation_matrix[0, 0] + mat[1, 1] * rotation_matrix[1, 0] + mat[2, 1] * rotation_matrix[2, 0];
+        out[0, 2] = mat[0, 2] * rotation_matrix[0, 0] + mat[1, 2] * rotation_matrix[1, 0] + mat[2, 2] * rotation_matrix[2, 0];
+
+        out[1, 0] = mat[0, 0] * rotation_matrix[0, 1] + mat[1, 0] * rotation_matrix[1, 1] + mat[2, 0] * rotation_matrix[2, 1];
+        out[1, 1] = mat[0, 1] * rotation_matrix[0, 1] + mat[1, 1] * rotation_matrix[1, 1] + mat[2, 1] * rotation_matrix[2, 1];
+        out[1, 2] = mat[0, 2] * rotation_matrix[0, 1] + mat[1, 2] * rotation_matrix[1, 1] + mat[2, 2] * rotation_matrix[2, 1];
+
+        out[2, 0] = mat[0, 0] * rotation_matrix[0, 2] + mat[1, 0] * rotation_matrix[1, 2] + mat[2, 0] * rotation_matrix[2, 2];
+        out[2, 1] = mat[0, 1] * rotation_matrix[0, 2] + mat[1, 1] * rotation_matrix[1, 2] + mat[2, 1] * rotation_matrix[2, 2];
+        out[2, 2] = mat[0, 2] * rotation_matrix[0, 2] + mat[1, 2] * rotation_matrix[1, 2] + mat[2, 2] * rotation_matrix[2, 2];
 
         return out;
     }
