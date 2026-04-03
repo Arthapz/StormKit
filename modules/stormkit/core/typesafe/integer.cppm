@@ -41,7 +41,7 @@ export {
         using u32 = std::uint32_t;
         using u64 = std::uint64_t;
     #ifdef __SIZEOF_INT128__
-        using u128 = unsigned __int128;
+        __extension__ using u128 = unsigned __int128;
     #elif defined(STORMKIT_COMPILER_MSVC)
         using u128 = std::_Unsigned128;
     #endif
@@ -51,7 +51,7 @@ export {
         using i32 = std::int32_t;
         using i64 = std::int64_t;
     #ifdef __SIZEOF_INT128__
-        using i128 = __int128;
+        __extension__ using i128 = __int128;
     #elif defined(STORMKIT_COMPILER_MSVC)
         using i128 = std::_Signed128;
     #else

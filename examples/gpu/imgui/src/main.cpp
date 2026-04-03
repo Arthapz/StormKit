@@ -82,7 +82,7 @@ class Application: public base::Application {
 
         auto image_index = 0u;
         for (const auto& swap_image : images) {
-            auto view = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view!");
+            auto view = TryAssert(gpu::ImageView::create(m_device, { swap_image }), "Failed to create swapchain image view!");
 
             m_image_resources.push_back({ .image           = swap_image,
                                           .view            = std::move(view),

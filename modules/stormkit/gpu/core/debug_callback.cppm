@@ -22,20 +22,31 @@ import :objects;
 import :instance;
 
 namespace stormkit::gpu {
-    export template<typename Base>
-    class DebugCallbackInterface final: public InstanceObject<Base> {
-      public:
-        using InstanceObject<Base>::InstanceObject;
-        using InstanceObject<Base>::operator=;
-        using TagType = DebugCallbackTag;
-    };
+    export {
+        struct DebugCallbackInterfaceBase {
+            struct CreateInfo {
+                using Closure = PFN_vkDebugUtilsMessengerCallbackEXT;
 
-    class STORMKIT_GPU_API DebugCallbackImplementation: public GpuObjectImplementation<DebugCallbackTag> {
+                Closure   messenger_closure;
+                ptr<void> user_data = nullptr;
+            };
+        };
+
+        template<typename Base>
+        class DebugCallbackInterface final: public InstanceObject<Base>, public DebugCallbackInterfaceBase {
+          public:
+            using InstanceObject<Base>::InstanceObject;
+            using InstanceObject<Base>::operator=;
+            using TagType = DebugCallbackTag;
+        };
+    }
+
+    class STORMKIT_GPU_API DebugCallbackImplementation
+        : public GpuObjectImplementation<DebugCallbackTag, const DebugCallbackInterfaceBase::CreateInfo&> {
       public:
-        using Closure = PFN_vkDebugUtilsMessengerCallbackEXT;
+        using CreateInfo = DebugCallbackInterfaceBase::CreateInfo;
 
         DebugCallbackImplementation(PrivateTag, view::Instance&&) noexcept;
-        auto do_init(PrivateTag, Closure messenger_closure, void* user_data = nullptr) noexcept -> Expected<void>;
         ~DebugCallbackImplementation() noexcept;
 
         DebugCallbackImplementation(const DebugCallbackImplementation&) noexcept                    = delete;
@@ -43,6 +54,8 @@ namespace stormkit::gpu {
 
         DebugCallbackImplementation(DebugCallbackImplementation&&) noexcept;
         auto operator=(DebugCallbackImplementation&&) noexcept -> DebugCallbackImplementation&;
+
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
     };
 
     namespace view {

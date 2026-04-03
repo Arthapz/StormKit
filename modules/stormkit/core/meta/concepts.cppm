@@ -2,9 +2,21 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
 export module stormkit.core:meta.concepts;
 
 import std;
+
+#if defined(STORMKIT_COMPILER_MSVC)
+using int128  = std::__Signed128;
+using uint128 = std::__Unsigned128;
+#else
+__extension__ using int128  = __int128;
+__extension__ using uint128 = unsigned __int128;
+#endif
 
 namespace stormkit { inline namespace core { namespace meta::details {
     template<class T>
@@ -49,14 +61,14 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<class T, class U>
     concept IsNot = not Is<T, U>;
 
-    template<typename T, template<typename> concept C>
-    concept Not = not C<T>;
+    // template<typename T, template<typename> concept C>
+    // concept Not = not C<T>;
 
-    template<typename T, template<typename> concept... C>
-    concept AllOf = (C<T> and ...);
+    // template<typename T, template<typename> concept... C>
+    // concept AllOf = (C<T> and ...);
 
-    template<typename T, template<typename> concept... C>
-    concept AnyOf = (C<T> or ...);
+    // template<typename T, template<typename> concept... C>
+    // concept AnyOf = (C<T> or ...);
 
     template<class T>
     concept IsBooleanTestable = details::IsBooleanTestable<T> && requires(T&& t) {
@@ -272,13 +284,8 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsIntegral = (std::integral<T> and not SameAs<T, bool> and not Isbyte<T>)
                          or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
                          or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<unsigned long long, unsigned long long>>>
-#if defined(STORMKIT_COMPILER_MSVC)
-                         or Is<T, std::_Unsigned128>
-                         or Is<T, std::__Signed128>;
-#else
-                         or Is<T, __int128>
-                         or Is<T, unsigned __int128>;
-#endif
+                         or Is<T, int128>
+                         or Is<T, uint128>;
 
     template<typename T>
     concept IsIntegralOrEnumeration = IsIntegral<T> or IsEnumeration<T>;
@@ -354,20 +361,10 @@ export namespace stormkit { inline namespace core { namespace meta {
     };
 
     template<typename T>
-    concept IsUnsigned = std::is_unsigned_v<T>
-#if defined(STORMKIT_COMPILER_MSVC)
-                         or Is<T, std::_Unsigned128>;
-#else
-                         or Is<T, unsigned __int128>;
-#endif
+    concept IsUnsigned = std::is_unsigned_v<T> or Is<T, uint128>;
 
     template<typename T>
-    concept IsSigned = std::is_signed_v<T>
-#if defined(STORMKIT_COMPILER_MSVC)
-                       or Is<T, std::__Signed128>;
-#else
-                       or Is<T, __int128>;
-#endif
+    concept IsSigned = std::is_signed_v<T> or Is<T, int128>;
 
     template<typename T, typename U>
     concept IsSameSigneness = (IsSigned<T> and IsSigned<U>) or (IsUnsigned<T> and IsUnsigned<U>);

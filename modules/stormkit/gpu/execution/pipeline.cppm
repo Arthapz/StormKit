@@ -28,54 +28,30 @@ namespace stdfs = std::filesystem;
 namespace cmeta = stormkit::core::meta;
 
 namespace stormkit::gpu {
-    export template<typename Base>
-    class PipelineCacheInterface final: public DeviceObject<Base> {
-      public:
-        using DeviceObject<Base>::DeviceObject;
-        using DeviceObject<Base>::operator=;
-        using TagType = PipelineCacheTag;
-    };
-
-    export template<typename Base>
-    class PipelineLayoutInterface final: public DeviceObject<Base> {
-      public:
-        using DeviceObject<Base>::DeviceObject;
-        using DeviceObject<Base>::operator=;
-        using TagType = PipelineLayoutTag;
-
-        [[nodiscard]]
-        auto raster_layout() const noexcept -> const RasterPipelineLayout&;
-    };
-
-    struct PipelineInterfaceBase {
-        using StateVariant = std::variant<RasterPipelineState>;
-
-        enum class Type {
-            RASTER,
-            COMPUTE,
-            RAYTRACING,
+    export {
+        template<typename Base>
+        class PipelineCacheInterface final: public DeviceObject<Base> {
+          public:
+            using DeviceObject<Base>::DeviceObject;
+            using DeviceObject<Base>::operator=;
+            using TagType = PipelineCacheTag;
         };
-    };
 
-    export template<typename Base>
-    class PipelineInterface final: public DeviceObject<Base>, protected PipelineInterfaceBase {
-      public:
-        using DeviceObject<Base>::DeviceObject;
-        using DeviceObject<Base>::operator=;
-        using TagType = PipelineTag;
+        template<typename Base>
+        class PipelineLayoutInterface final: public DeviceObject<Base> {
+          public:
+            using DeviceObject<Base>::DeviceObject;
+            using DeviceObject<Base>::operator=;
+            using TagType = PipelineLayoutTag;
 
-        using PipelineInterfaceBase::Type;
+            [[nodiscard]]
+            auto raster_layout() const noexcept -> const RasterPipelineLayout&;
+        };
+    }
 
-        [[nodiscard]]
-        auto type() const noexcept -> Type;
-        [[nodiscard]]
-        auto raster_state() const noexcept -> const RasterPipelineState&;
-    };
-
-    class STORMKIT_GPU_API PipelineCacheImplementation: public GpuObjectImplementation<PipelineCacheTag> {
+    class STORMKIT_GPU_API PipelineCacheImplementation: public GpuObjectImplementation<PipelineCacheTag, stdfs::path> {
       public:
         PipelineCacheImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, stdfs::path&&) noexcept -> LoadSaveExpected<void>;
         ~PipelineCacheImplementation() noexcept;
 
         PipelineCacheImplementation(const PipelineCacheImplementation&)                    = delete;
@@ -88,9 +64,11 @@ namespace stormkit::gpu {
         static auto allocate_load_from_file(view::Device device, stdfs::path cache_path) noexcept
           -> LoadSaveExpected<Heap<PipelineCache>>;
 
+        auto do_init(PrivateTag, stdfs::path&&) noexcept -> LoadSaveExpected<void>;
+
       protected:
-        using UseNamedConstructors::allocate;
-        using UseNamedConstructors::create;
+        using NamedConstructor::allocate;
+        using NamedConstructor::create;
 
         auto create_new_pipeline_cache() noexcept -> LoadSaveExpected<void>;
         auto read_pipeline_cache() noexcept -> LoadSaveExpected<void>;
@@ -128,10 +106,10 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    class STORMKIT_GPU_API PipelineLayoutImplementation: public GpuObjectImplementation<PipelineLayoutTag> {
+    class STORMKIT_GPU_API
+      PipelineLayoutImplementation: public GpuObjectImplementation<PipelineLayoutTag, const RasterPipelineLayout&> {
       public:
         PipelineLayoutImplementation(PrivateTag, view::Device&& device) noexcept;
-        auto do_init(PrivateTag, const RasterPipelineLayout&) noexcept -> Expected<void>;
         ~PipelineLayoutImplementation() noexcept;
 
         PipelineLayoutImplementation(const PipelineLayoutImplementation&)                    = delete;
@@ -139,6 +117,8 @@ namespace stormkit::gpu {
 
         PipelineLayoutImplementation(PipelineLayoutImplementation&&) noexcept;
         auto operator=(PipelineLayoutImplementation&&) noexcept -> PipelineLayoutImplementation&;
+
+        auto do_init(PrivateTag, const RasterPipelineLayout&) noexcept -> Expected<void>;
 
       protected:
         Heap<RasterPipelineLayout> m_layout;
@@ -165,23 +145,64 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    class STORMKIT_GPU_API PipelineImplementation: public GpuObjectImplementation<PipelineTag> {
+    export {
+        struct PipelineInterfaceBase {
+            using StateVariant = std::variant<RasterPipelineState>;
+
+            enum class Type {
+                RASTER,
+                COMPUTE,
+                RAYTRACING,
+            };
+
+            struct RasterizationCreateInfo {
+                ref<const RasterPipelineState>     state;
+                view::PipelineLayout               layout;
+                RasterPipelineRenderingInfo        rendering_info;
+                std::optional<view::PipelineCache> cache = std::nullopt;
+            };
+
+            struct LegacyRasterizationCreateInfo {
+                ref<const RasterPipelineState>     state;
+                view::PipelineLayout               layout;
+                view::RenderPass                   render_pass;
+                std::optional<view::PipelineCache> cache = std::nullopt;
+            };
+        };
+
+        template<typename Base>
+        class PipelineInterface final: public DeviceObject<Base>, protected PipelineInterfaceBase {
+          public:
+            using DeviceObject<Base>::DeviceObject;
+            using DeviceObject<Base>::operator=;
+            using TagType = PipelineTag;
+
+            using PipelineInterfaceBase::Type;
+
+            [[nodiscard]]
+            auto type() const noexcept -> Type;
+            [[nodiscard]]
+            auto raster_state() const noexcept -> const RasterPipelineState&;
+        };
+    }
+
+    class STORMKIT_GPU_API PipelineImplementation
+        : public GpuObjectImplementation<PipelineTag, const PipelineInterfaceBase::RasterizationCreateInfo&>,
+          public core::NamedConstructor<PipelineImplementation,
+                                        ConstructorArgs<view::Device>,
+                                        DoInitArgs<const PipelineInterfaceBase::LegacyRasterizationCreateInfo&>> {
         using StateVariant = PipelineInterfaceBase::StateVariant;
 
+        using LegacyNamedConstructor = NamedConstructor<PipelineImplementation,
+                                                        ConstructorArgs<view::Device>,
+                                                        DoInitArgs<const PipelineInterfaceBase::LegacyRasterizationCreateInfo&>>;
+
       public:
-        using Type = PipelineInterfaceBase::Type;
+        using Type                          = PipelineInterfaceBase::Type;
+        using RasterizationCreateInfo       = PipelineInterfaceBase::RasterizationCreateInfo;
+        using LegacyRasterizationCreateInfo = PipelineInterfaceBase::LegacyRasterizationCreateInfo;
 
         PipelineImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag,
-                     const RasterPipelineState&,
-                     view::PipelineLayout,
-                     const RasterPipelineRenderingInfo&,
-                     std::optional<view::PipelineCache>&& = std::nullopt) noexcept -> Expected<void>;
-        auto do_init(PrivateTag,
-                     const RasterPipelineState&,
-                     view::PipelineLayout,
-                     view::RenderPass,
-                     std::optional<view::PipelineCache>&& = std::nullopt) noexcept -> Expected<void>;
         ~PipelineImplementation() noexcept;
 
         PipelineImplementation(const PipelineImplementation&)                    = delete;
@@ -189,6 +210,14 @@ namespace stormkit::gpu {
 
         PipelineImplementation(PipelineImplementation&&) noexcept;
         auto operator=(PipelineImplementation&&) noexcept -> PipelineImplementation&;
+
+        using GpuObjectImplementation::allocate;
+        using GpuObjectImplementation::create;
+        using LegacyNamedConstructor::allocate;
+        using LegacyNamedConstructor::create;
+
+        auto do_init(PrivateTag, const RasterizationCreateInfo&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const LegacyRasterizationCreateInfo&) noexcept -> Expected<void>;
 
       protected:
         Type               m_type;
@@ -278,7 +307,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto PipelineCacheImplementation::load_from_file(view::Device device, stdfs::path cache_path) noexcept
       -> LoadSaveExpected<PipelineCache> {
-        Return UseNamedConstructors::create(std::move(device), std::move(cache_path));
+        Return NamedConstructor::create(std::move(device), std::move(cache_path));
     }
 
     /////////////////////////////////////
@@ -286,7 +315,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto PipelineCacheImplementation::allocate_load_from_file(view::Device device, stdfs::path cache_path) noexcept
       -> LoadSaveExpected<Heap<PipelineCache>> {
-        Return UseNamedConstructors::allocate(std::move(device), std::move(cache_path));
+        Return NamedConstructor::allocate(std::move(device), std::move(cache_path));
     }
 
     /////////////////////////////////////

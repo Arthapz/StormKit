@@ -96,39 +96,36 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SwapChainImplementation::do_init(PrivateTag,
-                                          view::Surface         surface,
-                                          const math::uextent2& extent,
-                                          VkSwapchainKHR        old_swapchain) noexcept -> Expected<void> {
+    auto SwapChainImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> Expected<void> {
         const auto& device          = owner();
         const auto& device_table    = device.device_table();
         const auto& physical_device = device.physical_device();
 
         const auto capabilities  = Try(vk::call_checked<VkSurfaceCapabilitiesKHR>(vkGetPhysicalDeviceSurfaceCapabilitiesKHR,
                                                                                   physical_device,
-                                                                                  surface));
+                                                                                  create_info.surface));
         const auto formats       = Try(vk::enumerate_checked<VkSurfaceFormatKHR>(vkGetPhysicalDeviceSurfaceFormatsKHR,
                                                                                  physical_device,
-                                                                                 surface));
+                                                                                 create_info.surface));
         const auto present_modes = Try(vk::enumerate_checked<VkPresentModeKHR>(vkGetPhysicalDeviceSurfacePresentModesKHR,
                                                                                physical_device,
-                                                                               surface));
+                                                                               create_info.surface));
 
         const auto format             = choose_swap_surface_format(formats);
         const auto present_mode       = choose_swap_present_mode(present_modes);
-        const auto swapchain_extent   = choose_swap_extent(capabilities, extent.to<2uz>());
+        const auto swapchain_extent   = choose_swap_extent(capabilities, create_info.extent.to<2>());
         const auto image_count        = choose_image_count(capabilities);
         const auto image_sharing_mode = VK_SHARING_MODE_EXCLUSIVE;
         const auto image_usage        = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-        m_extent       = extent;
+        m_extent       = create_info.extent;
         m_pixel_format = vk::from_vk<PixelFormat>(format.format);
 
-        const auto create_info = VkSwapchainCreateInfoKHR {
+        const auto vk_create_info = VkSwapchainCreateInfoKHR {
             .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-            .pNext                 = nullptr,
+            .pNext                 = VK_NULL_HANDLE,
             .flags                 = 0,
-            .surface               = surface,
+            .surface               = create_info.surface,
             .minImageCount         = image_count,
             .imageFormat           = format.format,
             .imageColorSpace       = format.colorSpace,
@@ -142,13 +139,13 @@ namespace stormkit::gpu {
             .compositeAlpha        = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
             .presentMode           = present_mode,
             .clipped               = true,
-            .oldSwapchain          = old_swapchain,
+            .oldSwapchain          = create_info.old,
         };
 
         ENSURES(device_table.vkCreateSwapchainKHR != nullptr);
         ENSURES(device_table.vkGetSwapchainImagesKHR != nullptr);
 
-        m_vk_handle = Try(vk::call_checked<VkSwapchainKHR>(device_table.vkCreateSwapchainKHR, device, &create_info, nullptr));
+        m_vk_handle = Try(vk::call_checked<VkSwapchainKHR>(device_table.vkCreateSwapchainKHR, device, &vk_create_info, nullptr));
         const auto vk_images = Try(vk::enumerate_checked<VkImage>(device_table.vkGetSwapchainImagesKHR, device, m_vk_handle));
 
         m_image_count = as<u32>(stdr::size(vk_images));

@@ -29,6 +29,12 @@ namespace stormkit::gpu {
             Result  result;
             ImageID id;
         };
+
+        struct CreateInfo {
+            view::Surface  surface;
+            math::uextent2 extent;
+            VkSwapchainKHR old = VK_NULL_HANDLE;
+        };
     };
 
     export template<typename Base>
@@ -49,14 +55,14 @@ namespace stormkit::gpu {
           -> Expected<NextImage>;
     };
 
-    class STORMKIT_GPU_API SwapChainImplementation: public GpuObjectImplementation<SwapChainTag> {
+    class STORMKIT_GPU_API
+      SwapChainImplementation: public GpuObjectImplementation<SwapChainTag, const SwapChainInterfaceBase::CreateInfo&> {
       public:
-        using ImageID   = SwapChainInterfaceBase::ImageID;
-        using NextImage = SwapChainInterfaceBase::NextImage;
+        using ImageID    = SwapChainInterfaceBase::ImageID;
+        using NextImage  = SwapChainInterfaceBase::NextImage;
+        using CreateInfo = SwapChainInterfaceBase::CreateInfo;
 
         SwapChainImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, view::Surface, const math::uextent2&, VkSwapchainKHR = VK_NULL_HANDLE) noexcept
-          -> Expected<void>;
         ~SwapChainImplementation() noexcept;
 
         SwapChainImplementation(const SwapChainImplementation&)                    = delete;
@@ -64,6 +70,8 @@ namespace stormkit::gpu {
 
         SwapChainImplementation(SwapChainImplementation&&) noexcept;
         auto operator=(SwapChainImplementation&&) noexcept -> SwapChainImplementation&;
+
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
 
       protected:
         math::uextent2 m_extent;

@@ -43,6 +43,8 @@ extern "C" auto debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
     return 0;
 }
 
+static constexpr auto ENABLE_VALIDATION_LAYERS = false;
+
 export namespace base {
     class Application {
       public:
@@ -93,10 +95,14 @@ export namespace base {
             TryDiscardAssert(gpu::initialize_backend(), "Failed to initialize gpu backend");
 
             // create gpu instance and attach surface to window
-            m_instance = TryAssert(gpu::Instance::create(string { example_name }, true), "Failed to initialize gpu instance");
+            m_instance = TryAssert(gpu::Instance::create({ .application_name         = string { example_name },
+                                                           .enable_validation_layers = ENABLE_VALIDATION_LAYERS }),
+                                   "Failed to initialize gpu instance");
 
-            m_debug_callback = TryAssert(gpu::DebugCallback::create(m_instance, debug_callback),
-                                         "Failed to initialize gpu instance");
+            if (ENABLE_VALIDATION_LAYERS) {
+                m_debug_callback = TryAssert(gpu::DebugCallback::create(m_instance, { .messenger_closure = debug_callback }),
+                                             "Failed to initialize gpu instance");
+            }
 
             m_surface = TryAssert(gpu::Surface::create_from_window(m_instance, m_window),
                                   "Failed to initialize window gpu surface");
@@ -123,11 +129,11 @@ export namespace base {
             ilog("Picked gpu: {}", *m_physical_device);
 
             // create gpu device
-            m_device = TryAssert(gpu::Device::create(m_physical_device), "Failed to initialize gpu device");
+            m_device = TryAssert(gpu::Device::create(m_physical_device, {}), "Failed to initialize gpu device");
 
             // create swapchain
             const auto window_extent = m_window->extent();
-            m_swapchain              = TryAssert(gpu::SwapChain::create(m_device, gpu::as_view(m_surface), window_extent),
+            m_swapchain              = TryAssert(gpu::SwapChain::create(m_device, { gpu::as_view(m_surface), window_extent }),
                                                  "Failed to create swapchain");
 
             const auto queue_entries = m_device->queue_entries();
@@ -136,8 +142,8 @@ export namespace base {
 
             m_raster_queue = gpu::Queue::create(m_device, *it);
 
-            m_command_pool = TryAssert(gpu::CommandPool::create(m_device),
-                                       "Failed to create raster queue "
+            m_command_pool = TryAssert(gpu::CommandPool::create(m_device, { .queue = m_raster_queue }),
+                                       "Failed to create command pool "
                                        "command pool");
         }
     };

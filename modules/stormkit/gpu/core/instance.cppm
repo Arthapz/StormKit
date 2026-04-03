@@ -58,8 +58,16 @@ namespace stormkit::gpu {
             auto formats_properties() const noexcept -> array_view<const std::pair<PixelFormat, FormatProperties>>;
         };
 
+        struct InstanceInterfaceBase {
+            struct CreateInfo {
+                string_view application_name;
+                u32         application_version     = vk::make_version(0, 0, 0);
+                bool        enable_validation_layers = (STORMKIT_BUILD_TYPE == "DEBUG");
+            };
+        };
+
         template<typename Base>
-        class InstanceInterface final: public Base {
+        class InstanceInterface final: public Base, public InstanceInterfaceBase {
           public:
             using Base::Base;
             using Base::operator=;
@@ -73,10 +81,12 @@ namespace stormkit::gpu {
         };
     }
 
-    class STORMKIT_GPU_API InstanceImplementation: public GpuObjectImplementation<InstanceTag> {
+    class STORMKIT_GPU_API
+      InstanceImplementation: public GpuObjectImplementation<InstanceTag, const InstanceInterfaceBase::CreateInfo&> {
       public:
+        using CreateInfo = InstanceInterfaceBase::CreateInfo;
+
         explicit InstanceImplementation(PrivateTag) noexcept;
-        auto do_init(PrivateTag, string = "", bool = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept -> Expected<void>;
         ~InstanceImplementation() noexcept;
 
         InstanceImplementation(const InstanceImplementation&) noexcept                    = delete;
@@ -84,6 +94,8 @@ namespace stormkit::gpu {
 
         InstanceImplementation(InstanceImplementation&&) noexcept;
         auto operator=(InstanceImplementation&&) noexcept -> InstanceImplementation&;
+
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
 
       protected:
         dyn_array<string>         m_extensions;
@@ -117,7 +129,7 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    class STORMKIT_GPU_API PhysicalDeviceImplementation: public GpuObjectImplementation<PhysicalDeviceTag> {
+    class STORMKIT_GPU_API PhysicalDeviceImplementation: public GpuObjectImplementation<PhysicalDeviceTag, VkPhysicalDevice&&> {
       public:
         struct Data {
             PhysicalDeviceInfo device_info;
@@ -125,7 +137,6 @@ namespace stormkit::gpu {
         };
 
         PhysicalDeviceImplementation(PrivateTag, view::Instance&&) noexcept;
-        auto do_init(PrivateTag, VkPhysicalDevice&&) noexcept -> void;
         ~PhysicalDeviceImplementation() noexcept;
 
         PhysicalDeviceImplementation(const PhysicalDeviceImplementation&) noexcept                    = delete;
@@ -133,6 +144,8 @@ namespace stormkit::gpu {
 
         PhysicalDeviceImplementation(PhysicalDeviceImplementation&&) noexcept;
         auto operator=(PhysicalDeviceImplementation&&) noexcept -> PhysicalDeviceImplementation&;
+
+        auto do_init(PrivateTag, VkPhysicalDevice&&) noexcept -> void;
 
       protected:
         Heap<Data>                                          m_data;

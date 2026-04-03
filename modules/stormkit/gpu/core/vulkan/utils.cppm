@@ -343,13 +343,11 @@ namespace stormkit::gpu::vk {
         using OutExpected = Expected<dyn_array<Out>>;
         auto out_expected = OutExpected { std::in_place };
 
-        auto out = dyn_array<Out> {};
+        auto& out = out_expected.value();
         out.resize(count, VK_NULL_HANDLE);
         const auto result = std::invoke(func, std::forward<Args>(args)..., stdr::data(out));
         if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is_equal(result))) [[likely]]
             out_expected = std::unexpected { vk::from_vk<Result>(result) };
-        else
-            out_expected = std::move(out);
 
         return out_expected;
     }

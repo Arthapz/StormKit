@@ -101,7 +101,7 @@ export namespace stormkit::gpu {
         friend class GpuObjectViewImplementation<Tag>;
     };
 
-    template<meta::GpuObjectHasTraitDefined>
+    template<typename...>
     class GpuObjectImplementation;
 
     template<meta::GpuObjectHasTraitDefined Tag>
@@ -115,7 +115,7 @@ export namespace stormkit::gpu {
         using ObjectType = Base::ObjectType;
         using ViewType   = Base::ViewType;
 
-        GpuObjectViewImplementation(const GpuObjectImplementation<Tag>&) noexcept;
+        GpuObjectViewImplementation(const cmeta::IsSpecializationOf<GpuObjectImplementation> auto&) noexcept;
         template<cmeta::IsContainerOrPointer TContainerOrPointer>
         GpuObjectViewImplementation(const TContainerOrPointer&) noexcept;
         ~GpuObjectViewImplementation() noexcept;
@@ -141,7 +141,7 @@ export namespace stormkit::gpu {
         using OwnerType     = Base::OwnerType;
         using OwnerViewType = Base::OwnerViewType;
 
-        GpuObjectViewImplementation(const GpuObjectImplementation<Tag>&) noexcept;
+        GpuObjectViewImplementation(const cmeta::IsSpecializationOf<GpuObjectImplementation> auto&) noexcept;
         template<cmeta::IsContainerOrPointer TContainerOrPointer>
         GpuObjectViewImplementation(const TContainerOrPointer&) noexcept;
         ~GpuObjectViewImplementation() noexcept;
@@ -153,11 +153,16 @@ export namespace stormkit::gpu {
         auto operator=(GpuObjectViewImplementation&&) noexcept -> GpuObjectViewImplementation&;
     };
 
-    template<meta::GpuObjectHasTraitDefined Tag>
-    class GpuObjectImplementation
+    template<typename Tag, typename... TDoInitArgs>
+        requires(meta::GpuObjectHasTraitDefined<Tag>)
+    class GpuObjectImplementation<Tag, TDoInitArgs...>
         : public GpuObjectBase<Tag>,
-          public UseNamedConstructors<typename trait::GpuObject<Tag>::ObjectType, meta::GpuObjectDoInitReturnType<Tag>> {
+          public core::NamedConstructor<typename trait::GpuObject<Tag>::ObjectType, DoInitArgs<TDoInitArgs...>> {
         using Base = GpuObjectBase<Tag>;
+
+      protected:
+        using NamedConstructorBase = core::NamedConstructor<typename trait::GpuObject<Tag>::ObjectType,
+                                                            DoInitArgs<TDoInitArgs...>>;
 
       public:
         using TagType     = Base::TagType;
@@ -176,18 +181,26 @@ export namespace stormkit::gpu {
         GpuObjectImplementation(GpuObjectImplementation&&) noexcept;
         auto operator=(GpuObjectImplementation&&) noexcept -> GpuObjectImplementation&;
 
+        using NamedConstructorBase::allocate;
+        using NamedConstructorBase::create;
+
       protected:
         DeleterType m_deleter_ptr;
     };
 
-    template<meta::GpuObjectHasTraitDefined Tag>
-        requires(meta::HasOwnerType<Tag>)
-    class GpuObjectImplementation<Tag>
+    template<typename Tag, typename... TDoInitArgs>
+        requires(meta::GpuObjectHasTraitDefined<Tag> and meta::HasOwnerType<Tag>)
+    class GpuObjectImplementation<Tag, TDoInitArgs...>
         : public GpuObjectBase<Tag>,
-          public UseNamedConstructors<typename trait::GpuObject<Tag>::ObjectType,
-                                      meta::GpuObjectDoInitReturnType<Tag>,
-                                      typename trait::GpuObject<Tag>::OwnerType::ViewType> {
+          public core::NamedConstructor<typename trait::GpuObject<Tag>::ObjectType,
+                                        ConstructorArgs<typename trait::GpuObject<Tag>::OwnerType::ViewType>,
+                                        DoInitArgs<TDoInitArgs...>> {
         using Base = GpuObjectBase<Tag>;
+
+      protected:
+        using NamedConstructorBase = core::NamedConstructor<typename trait::GpuObject<Tag>::ObjectType,
+                                                            ConstructorArgs<typename trait::GpuObject<Tag>::OwnerType::ViewType>,
+                                                            DoInitArgs<TDoInitArgs...>>;
 
       public:
         using TagType       = Base::TagType;
@@ -207,6 +220,9 @@ export namespace stormkit::gpu {
 
         GpuObjectImplementation(GpuObjectImplementation&&) noexcept;
         auto operator=(GpuObjectImplementation&&) noexcept -> GpuObjectImplementation&;
+
+        using NamedConstructorBase::allocate;
+        using NamedConstructorBase::create;
 
       protected:
         DeleterType m_deleter_ptr;
@@ -397,7 +413,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<meta::GpuObjectHasTraitDefined Tag>
     STORMKIT_FORCE_INLINE
-    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const GpuObjectImplementation<Tag>& object) noexcept
+    inline GpuObjectViewImplementation<
+      Tag>::GpuObjectViewImplementation(const cmeta::IsSpecializationOf<GpuObjectImplementation> auto& object) noexcept
         : GpuObjectBase<Tag> {} {
         GpuObjectBase<Tag>::m_vk_handle = object.m_vk_handle;
     }
@@ -411,6 +428,12 @@ namespace stormkit::gpu {
         : GpuObjectBase<Tag> {} {
         GpuObjectBase<Tag>::m_vk_handle = (*object).m_vk_handle;
     }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::~GpuObjectViewImplementation() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -451,15 +474,10 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::GpuObjectHasTraitDefined Tag>
-    STORMKIT_FORCE_INLINE
-    inline GpuObjectViewImplementation<Tag>::~GpuObjectViewImplementation() noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::GpuObjectHasTraitDefined Tag>
         requires(meta::HasOwnerType<Tag>)
     STORMKIT_FORCE_INLINE
-    inline GpuObjectViewImplementation<Tag>::GpuObjectViewImplementation(const GpuObjectImplementation<Tag>& object) noexcept
+    inline GpuObjectViewImplementation<
+      Tag>::GpuObjectViewImplementation(const cmeta::IsSpecializationOf<GpuObjectImplementation> auto& object) noexcept
         : GpuObjectBase<Tag> { object.owner() } {
         GpuObjectBase<Tag>::m_vk_handle = object.m_vk_handle;
     }
@@ -474,6 +492,13 @@ namespace stormkit::gpu {
         : GpuObjectBase<Tag> { (*object).owner() } {
         GpuObjectBase<Tag>::m_vk_handle = (*object).m_vk_handle;
     }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::GpuObjectHasTraitDefined Tag>
+        requires(meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectViewImplementation<Tag>::~GpuObjectViewImplementation() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -519,47 +544,18 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::GpuObjectHasTraitDefined Tag>
-        requires(meta::HasOwnerType<Tag>)
+    template<typename Tag, typename... TDoInitArgs>
+        requires(meta::GpuObjectHasTraitDefined<Tag>)
     STORMKIT_FORCE_INLINE
-    inline GpuObjectViewImplementation<Tag>::~GpuObjectViewImplementation() noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::GpuObjectHasTraitDefined Tag>
-    STORMKIT_FORCE_INLINE
-    inline GpuObjectImplementation<Tag>::GpuObjectImplementation(DeleterType&& deleter_ptr) noexcept
+    inline GpuObjectImplementation<Tag, TDoInitArgs...>::GpuObjectImplementation(DeleterType&& deleter_ptr) noexcept
         : GpuObjectBase<Tag> {}, m_deleter_ptr { std::move(deleter_ptr) } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::GpuObjectHasTraitDefined Tag>
-    STORMKIT_FORCE_INLINE
-    inline GpuObjectImplementation<Tag>::GpuObjectImplementation(GpuObjectImplementation&& other) noexcept
-        : GpuObjectBase<Tag> { std::move(other) }, m_deleter_ptr { std::exchange(other.m_deleter_ptr, {}) } {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::GpuObjectHasTraitDefined Tag>
-    STORMKIT_FORCE_INLINE
-    inline auto GpuObjectImplementation<Tag>::operator=(GpuObjectImplementation&& other) noexcept -> GpuObjectImplementation& {
-        if (&other == this) [[unlikely]]
-            return *this;
-
-        GpuObjectBase<Tag>::operator=(std::move(other));
-
-        m_deleter_ptr = std::exchange(other.m_deleter_ptr, {});
-
-        return *this;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::GpuObjectHasTraitDefined Tag>
-    STORMKIT_FORCE_INLINE
-    inline GpuObjectImplementation<Tag>::~GpuObjectImplementation() noexcept {
+    template<typename Tag, typename... TDoInitArgs>
+        requires(meta::GpuObjectHasTraitDefined<Tag>)
+    STORMKIT_FORCE_INLINE inline GpuObjectImplementation<Tag, TDoInitArgs...>::~GpuObjectImplementation() noexcept {
         if constexpr (cmeta::SameAs<DeleterType, void (*)(ValueType, const VkAllocationCallbacks*)>) {
             if (m_deleter_ptr != nullptr and Base::m_vk_handle != VK_NULL_HANDLE)
                 vk::call(m_deleter_ptr, Base::m_vk_handle, nullptr);
@@ -568,28 +564,20 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::GpuObjectHasTraitDefined Tag>
-        requires(meta::HasOwnerType<Tag>)
+    template<typename Tag, typename... TDoInitArgs>
+        requires(meta::GpuObjectHasTraitDefined<Tag>)
     STORMKIT_FORCE_INLINE
-    inline GpuObjectImplementation<Tag>::GpuObjectImplementation(OwnerViewType&& owner, DeleterType&& deleter_ptr) noexcept
-        : GpuObjectBase<Tag> { std::move(owner) }, m_deleter_ptr { std::move(deleter_ptr) } {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::GpuObjectHasTraitDefined Tag>
-        requires(meta::HasOwnerType<Tag>)
-    STORMKIT_FORCE_INLINE
-    inline GpuObjectImplementation<Tag>::GpuObjectImplementation(GpuObjectImplementation&& other) noexcept
+    inline GpuObjectImplementation<Tag, TDoInitArgs...>::GpuObjectImplementation(GpuObjectImplementation&& other) noexcept
         : GpuObjectBase<Tag> { std::move(other) }, m_deleter_ptr { std::exchange(other.m_deleter_ptr, {}) } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::GpuObjectHasTraitDefined Tag>
-        requires(meta::HasOwnerType<Tag>)
+    template<typename Tag, typename... TDoInitArgs>
+        requires(meta::GpuObjectHasTraitDefined<Tag>)
     STORMKIT_FORCE_INLINE
-    inline auto GpuObjectImplementation<Tag>::operator=(GpuObjectImplementation&& other) noexcept -> GpuObjectImplementation& {
+    inline auto GpuObjectImplementation<Tag, TDoInitArgs...>::operator=(GpuObjectImplementation&& other) noexcept
+      -> GpuObjectImplementation& {
         if (&other == this) [[unlikely]]
             return *this;
 
@@ -602,10 +590,19 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::GpuObjectHasTraitDefined Tag>
-        requires(meta::HasOwnerType<Tag>)
+    template<typename Tag, typename... TDoInitArgs>
+        requires(meta::GpuObjectHasTraitDefined<Tag> and meta::HasOwnerType<Tag>)
     STORMKIT_FORCE_INLINE
-    inline GpuObjectImplementation<Tag>::~GpuObjectImplementation() noexcept {
+    inline GpuObjectImplementation<Tag, TDoInitArgs...>::GpuObjectImplementation(OwnerViewType&& owner,
+                                                                                 DeleterType&&   deleter_ptr) noexcept
+        : GpuObjectBase<Tag> { std::move(owner) }, m_deleter_ptr { std::move(deleter_ptr) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Tag, typename... TDoInitArgs>
+        requires(meta::GpuObjectHasTraitDefined<Tag> and meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE inline GpuObjectImplementation<Tag, TDoInitArgs...>::~GpuObjectImplementation() noexcept {
         using OwnerValueType = OwnerType::ValueType;
 
         if constexpr (cmeta::SameAs<DeleterType, void (*)(OwnerValueType, ValueType, const VkAllocationCallbacks*)>) {
@@ -619,6 +616,32 @@ namespace stormkit::gpu {
                     vk::call(device_table.*m_deleter_ptr, device, Base::m_vk_handle, nullptr);
             }
         }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Tag, typename... TDoInitArgs>
+        requires(meta::GpuObjectHasTraitDefined<Tag> and meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline GpuObjectImplementation<Tag, TDoInitArgs...>::GpuObjectImplementation(GpuObjectImplementation&& other) noexcept
+        : GpuObjectBase<Tag> { std::move(other) }, m_deleter_ptr { std::exchange(other.m_deleter_ptr, {}) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Tag, typename... TDoInitArgs>
+        requires(meta::GpuObjectHasTraitDefined<Tag> and meta::HasOwnerType<Tag>)
+    STORMKIT_FORCE_INLINE
+    inline auto GpuObjectImplementation<Tag, TDoInitArgs...>::operator=(GpuObjectImplementation&& other) noexcept
+      -> GpuObjectImplementation& {
+        if (&other == this) [[unlikely]]
+            return *this;
+
+        GpuObjectBase<Tag>::operator=(std::move(other));
+
+        m_deleter_ptr = std::exchange(other.m_deleter_ptr, {});
+
+        return *this;
     }
 
     /////////////////////////////////////

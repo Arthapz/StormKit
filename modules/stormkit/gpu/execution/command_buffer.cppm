@@ -260,37 +260,13 @@ namespace stormkit::gpu {
                         array_view<const view::Semaphore>   signal_semaphores = {},
                         std::optional<view::Fence>          fence             = std::nullopt) noexcept -> Expected<void>;
         };
-
-        template<typename Base>
-        class CommandPoolInterface final: public DeviceObject<Base> {
-          public:
-            using DeviceObject<Base>::DeviceObject;
-            using DeviceObject<Base>::operator=;
-            using TagType = CommandPoolTag;
-
-            auto create_command_buffer(CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
-              -> Expected<CommandBuffer>;
-            auto create_command_buffers(usize count, CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
-              -> Expected<dyn_array<CommandBuffer>>;
-
-            auto allocate_command_buffer(CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
-              -> Expected<Heap<CommandBuffer>>;
-            auto allocate_command_buffers(usize count, CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
-              -> Expected<dyn_array<Heap<CommandBuffer>>>;
-
-          protected:
-            auto create_vk_command_buffers(usize, CommandBufferLevel) const noexcept -> Expected<dyn_array<VkCommandBuffer>>;
-
-            static auto delete_vk_command_buffers(view::Device, view::CommandPool, VkCommandBuffer) noexcept -> void;
-        };
     }
 
-    class STORMKIT_GPU_API QueueImplementation: public GpuObjectImplementation<QueueTag> {
+    class STORMKIT_GPU_API QueueImplementation: public GpuObjectImplementation<QueueTag, const QueueEntry&> {
       public:
         using SubmitInfo = QueueInterfaceBase::SubmitInfo;
 
         QueueImplementation(PrivateTag, view::Device&& device) noexcept;
-        auto do_init(PrivateTag, const QueueEntry&) -> void;
         ~QueueImplementation() noexcept;
 
         QueueImplementation(const QueueImplementation&) = delete;
@@ -298,6 +274,8 @@ namespace stormkit::gpu {
 
         QueueImplementation(QueueImplementation&&) noexcept;
         auto operator=(QueueImplementation&&) noexcept -> QueueImplementation&;
+
+        auto do_init(PrivateTag, const QueueEntry&) -> void;
 
       protected:
         QueueEntry m_entry;
@@ -326,15 +304,15 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    class STORMKIT_GPU_API CommandBufferImplementation: public GpuObjectImplementation<CommandBufferTag> {
+    using CommandBufferDeleter = std::function<void(view::Device, view::CommandPool, VkCommandBuffer)>;
+
+    class STORMKIT_GPU_API CommandBufferImplementation
+        : public GpuObjectImplementation<CommandBufferTag, CommandBufferLevel, VkCommandBuffer&&, CommandBufferDeleter&&> {
       public:
         using RecordClosure = CommandBufferInterfaceBase::RecordClosure;
         using State         = CommandBufferInterfaceBase::State;
 
-        using Deleter = std::function<void(view::Device, view::CommandPool, VkCommandBuffer)>;
-
         CommandBufferImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, CommandBufferLevel, VkCommandBuffer&&, Deleter&&) noexcept -> void;
         ~CommandBufferImplementation() noexcept;
 
         CommandBufferImplementation(const CommandBufferImplementation&)                    = delete;
@@ -343,14 +321,16 @@ namespace stormkit::gpu {
         CommandBufferImplementation(CommandBufferImplementation&&) noexcept;
         auto operator=(CommandBufferImplementation&&) noexcept -> CommandBufferImplementation&;
 
+        auto do_init(PrivateTag, CommandBufferLevel, VkCommandBuffer&&, CommandBufferDeleter&&) noexcept -> void;
+
       protected:
-        using UseNamedConstructors::allocate;
-        using UseNamedConstructors::create;
+        using NamedConstructor::allocate;
+        using NamedConstructor::create;
 
         Heap<State>        m_state;
         CommandBufferLevel m_level = CommandBufferLevel::PRIMARY;
 
-        Deleter m_deleter;
+        CommandBufferDeleter m_deleter;
 
         friend class CommandPoolInterface<CommandPoolImplementation>;
         friend class CommandPoolInterface<view::CommandPoolImplementation>;
@@ -380,10 +360,45 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    class STORMKIT_GPU_API CommandPoolImplementation: public GpuObjectImplementation<CommandPoolTag> {
+    export {
+        struct CommandPoolInterfaceBase {
+            struct CreateInfo {
+                view::Queue queue;
+                bool        reset     = true;
+                bool        transient = false;
+            };
+        };
+
+        template<typename Base>
+        class CommandPoolInterface final: public DeviceObject<Base>, public CommandPoolInterfaceBase {
+          public:
+            using DeviceObject<Base>::DeviceObject;
+            using DeviceObject<Base>::operator=;
+            using TagType = CommandPoolTag;
+
+            auto create_command_buffer(CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
+              -> Expected<CommandBuffer>;
+            auto create_command_buffers(usize count, CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
+              -> Expected<dyn_array<CommandBuffer>>;
+
+            auto allocate_command_buffer(CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
+              -> Expected<Heap<CommandBuffer>>;
+            auto allocate_command_buffers(usize count, CommandBufferLevel level = CommandBufferLevel::PRIMARY) const noexcept
+              -> Expected<dyn_array<Heap<CommandBuffer>>>;
+
+          protected:
+            auto create_vk_command_buffers(usize, CommandBufferLevel) const noexcept -> Expected<dyn_array<VkCommandBuffer>>;
+
+            static auto delete_vk_command_buffers(view::Device, view::CommandPool, VkCommandBuffer) noexcept -> void;
+        };
+    }
+
+    class STORMKIT_GPU_API
+      CommandPoolImplementation: public GpuObjectImplementation<CommandPoolTag, const CommandPoolInterfaceBase::CreateInfo&> {
       public:
+        using CreateInfo = CommandPoolInterfaceBase::CreateInfo;
+
         CommandPoolImplementation(PrivateTag, view::Device&& device) noexcept;
-        auto do_init(PrivateTag) noexcept -> Expected<void>;
         ~CommandPoolImplementation() noexcept;
 
         CommandPoolImplementation(const CommandPoolImplementation&) = delete;
@@ -391,6 +406,8 @@ namespace stormkit::gpu {
 
         CommandPoolImplementation(CommandPoolImplementation&&) noexcept;
         auto operator=(CommandPoolImplementation&&) noexcept -> CommandPoolImplementation&;
+
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
     };
 
     namespace view {

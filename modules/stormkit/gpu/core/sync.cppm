@@ -29,6 +29,10 @@ import :device;
 namespace stormkit::gpu {
     export {
         struct FenceInterfaceBase {
+            struct CreateInfo {
+                bool signaled = false;
+            };
+
             enum class Status {
                 SIGNALED,
                 UNSIGNALED,
@@ -59,13 +63,18 @@ namespace stormkit::gpu {
         };
     }
 
-    class STORMKIT_GPU_API FenceImplementation: public GpuObjectImplementation<FenceTag> {
+    class STORMKIT_GPU_API FenceImplementation: public GpuObjectImplementation<FenceTag, const FenceInterfaceBase::CreateInfo&> {
       public:
-        FenceImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, bool = false) noexcept -> Expected<void>;
+        using CreateInfo = FenceInterfaceBase::CreateInfo;
 
+        static auto create(view::Device device) noexcept -> Expected<Fence>;
+        static auto allocate(view::Device device) noexcept -> Expected<Heap<Fence>>;
         static auto create_signaled(view::Device device) noexcept -> Expected<Fence>;
         static auto allocate_signaled(view::Device device) noexcept -> Expected<Heap<Fence>>;
+
+        FenceImplementation(PrivateTag, view::Device&&) noexcept;
+
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
     };
 
     namespace view {
@@ -79,6 +88,7 @@ namespace stormkit::gpu {
     class STORMKIT_GPU_API SemaphoreImplementation: public GpuObjectImplementation<SemaphoreTag> {
       public:
         SemaphoreImplementation(PrivateTag, view::Device&&) noexcept;
+
         auto do_init(PrivateTag) noexcept -> Expected<void>;
     };
 
@@ -123,15 +133,29 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
+    inline auto FenceImplementation::create(view::Device device) noexcept -> Expected<Fence> {
+        return NamedConstructor::create(std::move(device), {});
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto FenceImplementation::allocate(view::Device device) noexcept -> Expected<Heap<Fence>> {
+        return NamedConstructor::allocate(std::move(device), {});
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto FenceImplementation::create_signaled(view::Device device) noexcept -> Expected<Fence> {
-        return UseNamedConstructors::create(std::move(device), true);
+        return NamedConstructor::create(std::move(device), { true });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto FenceImplementation::allocate_signaled(view::Device device) noexcept -> Expected<Heap<Fence>> {
-        return UseNamedConstructors::allocate(std::move(device), true);
+        return NamedConstructor::allocate(std::move(device), { true });
     }
 
     /////////////////////////////////////

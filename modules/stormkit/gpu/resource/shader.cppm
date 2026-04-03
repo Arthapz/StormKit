@@ -41,7 +41,8 @@ namespace stormkit::gpu {
         auto source_as_bytes() const noexcept -> byte_view<>;
     };
 
-    class STORMKIT_GPU_API ShaderImplementation: public GpuObjectImplementation<ShaderTag> {
+    class STORMKIT_GPU_API
+      ShaderImplementation: public GpuObjectImplementation<ShaderTag, dyn_array<SpirvID>&&, ShaderStageFlag> {
       public:
         enum class Error {
             INVALID_SPIRV,
@@ -52,7 +53,6 @@ namespace stormkit::gpu {
         using LoadExpected = std::expected<T, LoadError>;
 
         ShaderImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, dyn_array<SpirvID>&&, ShaderStageFlag) -> Expected<void>;
         ~ShaderImplementation() noexcept;
 
         ShaderImplementation(const ShaderImplementation&) noexcept                    = delete;
@@ -76,9 +76,11 @@ namespace stormkit::gpu {
                                                  array_view<const SpirvID> data,
                                                  ShaderStageFlag           type) noexcept -> Expected<Heap<Shader>>;
 
+        auto do_init(PrivateTag, dyn_array<SpirvID>&&, ShaderStageFlag) -> Expected<void>;
+
       protected:
-        using UseNamedConstructors::allocate;
-        using UseNamedConstructors::create;
+        using NamedConstructor::allocate;
+        using NamedConstructor::create;
 
         ShaderStageFlag    m_type   = ShaderStageFlag::NONE;
         dyn_array<SpirvID> m_source = {};
@@ -180,7 +182,7 @@ namespace stormkit::gpu {
 
         const auto data  = TryTransformError(io::read(filepath), sys_to_load_error);
         auto       spirv = dyn_array<SpirvID> { std::from_range, bytes_as_span<SpirvID>(data) };
-        Return TryTransformError(UseNamedConstructors::create(std::move(device), std::move(spirv), type), result_to_load_error);
+        Return     TryTransformError(NamedConstructor::create(std::move(device), std::move(spirv), type), result_to_load_error);
     }
 
     /////////////////////////////////////
@@ -189,7 +191,7 @@ namespace stormkit::gpu {
     inline auto ShaderImplementation::load_from_bytes(view::Device device, byte_view<> data, ShaderStageFlag type) noexcept
       -> Expected<Shader> {
         auto spirv = dyn_array<SpirvID> { std::from_range, bytes_as_span<SpirvID>(data) };
-        return UseNamedConstructors::create(std::move(device), std::move(spirv), type);
+        return NamedConstructor::create(std::move(device), std::move(spirv), type);
     }
 
     /////////////////////////////////////
@@ -199,7 +201,7 @@ namespace stormkit::gpu {
                                                       array_view<const SpirvID> data,
                                                       ShaderStageFlag           type) noexcept -> Expected<Shader> {
         auto spirv = dyn_array<SpirvID> { std::from_range, data };
-        return UseNamedConstructors::create(std::move(device), std::move(spirv), type);
+        return NamedConstructor::create(std::move(device), std::move(spirv), type);
     }
 
     /////////////////////////////////////
@@ -212,17 +214,17 @@ namespace stormkit::gpu {
 
         const auto data  = TryTransformError(io::read(filepath), sys_to_load_error);
         auto       spirv = dyn_array<SpirvID> { std::from_range, bytes_as_span<SpirvID>(data) };
-        Return TryTransformError(UseNamedConstructors::allocate(std::move(device), std::move(spirv), type), result_to_load_error);
+        Return     TryTransformError(NamedConstructor::allocate(std::move(device), std::move(spirv), type), result_to_load_error);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto ShaderImplementation::allocate_and_load_from_bytes(view::Device    device,
-                                                                   byte_view<>       data,
+                                                                   byte_view<>     data,
                                                                    ShaderStageFlag type) noexcept -> Expected<Heap<Shader>> {
         auto spirv = dyn_array<SpirvID> { std::from_range, bytes_as_span<SpirvID>(data) };
-        return UseNamedConstructors::allocate(std::move(device), std::move(spirv), type);
+        return NamedConstructor::allocate(std::move(device), std::move(spirv), type);
     }
 
     /////////////////////////////////////
@@ -232,7 +234,7 @@ namespace stormkit::gpu {
                                                                    array_view<const SpirvID> data,
                                                                    ShaderStageFlag type) noexcept -> Expected<Heap<Shader>> {
         auto spirv = dyn_array<SpirvID> { std::from_range, data };
-        return UseNamedConstructors::allocate(std::move(device), std::move(spirv), type);
+        return NamedConstructor::allocate(std::move(device), std::move(spirv), type);
     }
 
     namespace view {

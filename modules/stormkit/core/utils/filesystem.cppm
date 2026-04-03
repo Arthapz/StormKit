@@ -76,11 +76,11 @@ export {
 
         namespace io {
             template<Mode mode>
-            class Descriptor final: protected UseNamedConstructors<Descriptor<mode>, Expected<void>> {
-              public:
-                static auto open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor>;
-                static auto allocate_and_open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor>;
+            class Descriptor final: public NamedConstructor<Descriptor<mode>, DoInitArgs<const stdfs::path&, Access>> {
+                using Base = NamedConstructor<Descriptor<mode>, DoInitArgs<const stdfs::path&, Access>>;
 
+              public:
+                explicit Descriptor(PrivateTag) noexcept;
                 ~Descriptor() noexcept;
 
                 Descriptor(Descriptor&)                    = delete;
@@ -88,6 +88,9 @@ export {
 
                 Descriptor(Descriptor&&) noexcept;
                 auto operator=(Descriptor&&) noexcept -> Descriptor&;
+
+                static auto open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor>;
+                static auto allocate_and_open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor>;
 
                 auto close() noexcept;
 
@@ -110,10 +113,12 @@ export {
 
                 auto native_descriptor() const noexcept -> int;
 
-                Descriptor(PrivateTag) noexcept;
                 auto do_init(PrivateTag, const stdfs::path&, Access) noexcept -> Expected<void>;
 
               private:
+                using Base::allocate;
+                using Base::create;
+
                 int m_descriptor = 0;
 
                 mutable std::atomic<usize> m_size = 0;
@@ -194,8 +199,7 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto Descriptor<mode>::open(const stdfs::path& path, Access access) noexcept -> Expected<Descriptor<mode>> {
-        auto   descriptor = Try(Descriptor<mode>::create(path, access));
-        Return descriptor;
+        return Descriptor<mode>::create(path, access);
     }
 
     ////////////////////////////////////////
@@ -204,7 +208,7 @@ namespace stormkit { inline namespace core { namespace io {
     STORMKIT_FORCE_INLINE
     inline auto Descriptor<mode>::allocate_and_open(const stdfs::path& path, Access access) noexcept
       -> Expected<Descriptor<mode>> {
-        Return Try(Descriptor<mode>::allocate(path, access));
+        return Descriptor<mode>::allocate(path, access);
     }
 
     ////////////////////////////////////////

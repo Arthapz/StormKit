@@ -31,7 +31,7 @@ export {
         template<typename T>
         using owned_ptr = T*;
 
-        template<typename T, bool Optional = false>
+        template<typename T, bool Optional>
         class ref;
 
         template<typename T>

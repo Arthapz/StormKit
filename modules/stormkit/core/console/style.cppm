@@ -78,6 +78,56 @@ export {
         inline constexpr auto CYAN_TEXT_STYLE    = ConsoleStyle { .fg = ConsoleColor::CYAN };
         inline constexpr auto WHITE_TEXT_STYLE   = ConsoleStyle { .fg = ConsoleColor::WHITE };
         inline constexpr auto BLACK_TEXT_STYLE   = ConsoleStyle { .fg = ConsoleColor::BLACK };
+
+        namespace ecma48 {
+            inline constexpr auto FOREGROUND = frozen::make_unordered_map<ConsoleColor, std::string_view>({
+              { ConsoleColor::BLACK,          "\x1B[30m" },
+              { ConsoleColor::RED,            "\x1B[31m" },
+              { ConsoleColor::GREEN,          "\x1B[32m" },
+              { ConsoleColor::YELLOW,         "\x1B[33m" },
+              { ConsoleColor::BLUE,           "\x1B[34m" },
+              { ConsoleColor::MAGENTA,        "\x1B[35m" },
+              { ConsoleColor::CYAN,           "\x1B[36m" },
+              { ConsoleColor::WHITE,          "\x1B[37m" },
+              { ConsoleColor::BRIGHT_BLACK,   "\x1B[90m" },
+              { ConsoleColor::BRIGHT_RED,     "\x1B[91m" },
+              { ConsoleColor::BRIGHT_GREEN,   "\x1B[92m" },
+              { ConsoleColor::BRIGHT_YELLOW,  "\x1B[93m" },
+              { ConsoleColor::BRIGHT_BLUE,    "\x1B[94m" },
+              { ConsoleColor::BRIGHT_MAGENTA, "\x1B[95m" },
+              { ConsoleColor::BRIGHT_CYAN,    "\x1B[96m" },
+              { ConsoleColor::BRIGHT_WHITE,   "\x1B[97m" },
+            });
+
+            inline constexpr auto BACKGROUND = frozen::make_unordered_map<ConsoleColor, std::string_view>({
+              { ConsoleColor::BLACK,          "\x1B[40m"  },
+              { ConsoleColor::RED,            "\x1B[41m"  },
+              { ConsoleColor::GREEN,          "\x1B[42m"  },
+              { ConsoleColor::YELLOW,         "\x1B[43m"  },
+              { ConsoleColor::BLUE,           "\x1B[44m"  },
+              { ConsoleColor::MAGENTA,        "\x1B[45m"  },
+              { ConsoleColor::CYAN,           "\x1B[46m"  },
+              { ConsoleColor::WHITE,          "\x1B[47m"  },
+              { ConsoleColor::BRIGHT_BLACK,   "\x1B[100m" },
+              { ConsoleColor::BRIGHT_RED,     "\x1B[101m" },
+              { ConsoleColor::BRIGHT_GREEN,   "\x1B[102m" },
+              { ConsoleColor::BRIGHT_YELLOW,  "\x1B[103m" },
+              { ConsoleColor::BRIGHT_BLUE,    "\x1B[104m" },
+              { ConsoleColor::BRIGHT_MAGENTA, "\x1B[105m" },
+              { ConsoleColor::BRIGHT_CYAN,    "\x1B[106m" },
+              { ConsoleColor::BRIGHT_WHITE,   "\x1B[107m" },
+            });
+
+            inline constexpr auto RESET     = "\x1B[0m"sv;
+            inline constexpr auto BOLD      = "\x1B[1m"sv;
+            inline constexpr auto FAINT     = "\x1B[2m"sv;
+            inline constexpr auto ITALIC    = "\x1B[3m"sv;
+            inline constexpr auto UNDERLINE = "\x1B[4m"sv;
+            inline constexpr auto INVERSE   = "\x1B[7m"sv;
+        } // namespace ecma48
+
+        template<typename FormatContext>
+        auto format_as(const ConsoleStyle& style, FormatContext& ctx) noexcept -> decltype(ctx.out());
     }} // namespace stormkit::core
 
     FLAG_ENUM(stormkit::core::StyleModifier)
@@ -98,53 +148,6 @@ export {
 using namespace std::literals;
 
 namespace stormkit { inline namespace core {
-    namespace ecma48 {
-        inline constexpr auto FOREGROUND = frozen::make_unordered_map<ConsoleColor, frozen::string>({
-          { ConsoleColor::BLACK,          "\x1B[30m" },
-          { ConsoleColor::RED,            "\x1B[31m" },
-          { ConsoleColor::GREEN,          "\x1B[32m" },
-          { ConsoleColor::YELLOW,         "\x1B[33m" },
-          { ConsoleColor::BLUE,           "\x1B[34m" },
-          { ConsoleColor::MAGENTA,        "\x1B[35m" },
-          { ConsoleColor::CYAN,           "\x1B[36m" },
-          { ConsoleColor::WHITE,          "\x1B[37m" },
-          { ConsoleColor::BRIGHT_BLACK,   "\x1B[90m" },
-          { ConsoleColor::BRIGHT_RED,     "\x1B[91m" },
-          { ConsoleColor::BRIGHT_GREEN,   "\x1B[92m" },
-          { ConsoleColor::BRIGHT_YELLOW,  "\x1B[93m" },
-          { ConsoleColor::BRIGHT_BLUE,    "\x1B[94m" },
-          { ConsoleColor::BRIGHT_MAGENTA, "\x1B[95m" },
-          { ConsoleColor::BRIGHT_CYAN,    "\x1B[96m" },
-          { ConsoleColor::BRIGHT_WHITE,   "\x1B[97m" },
-        });
-
-        inline constexpr auto BACKGROUND = frozen::make_unordered_map<ConsoleColor, frozen::string>({
-          { ConsoleColor::BLACK,          "\x1B[40m"  },
-          { ConsoleColor::RED,            "\x1B[41m"  },
-          { ConsoleColor::GREEN,          "\x1B[42m"  },
-          { ConsoleColor::YELLOW,         "\x1B[43m"  },
-          { ConsoleColor::BLUE,           "\x1B[44m"  },
-          { ConsoleColor::MAGENTA,        "\x1B[45m"  },
-          { ConsoleColor::CYAN,           "\x1B[46m"  },
-          { ConsoleColor::WHITE,          "\x1B[47m"  },
-          { ConsoleColor::BRIGHT_BLACK,   "\x1B[100m" },
-          { ConsoleColor::BRIGHT_RED,     "\x1B[101m" },
-          { ConsoleColor::BRIGHT_GREEN,   "\x1B[102m" },
-          { ConsoleColor::BRIGHT_YELLOW,  "\x1B[103m" },
-          { ConsoleColor::BRIGHT_BLUE,    "\x1B[104m" },
-          { ConsoleColor::BRIGHT_MAGENTA, "\x1B[105m" },
-          { ConsoleColor::BRIGHT_CYAN,    "\x1B[106m" },
-          { ConsoleColor::BRIGHT_WHITE,   "\x1B[107m" },
-        });
-
-        inline constexpr auto RESET     = "\x1B[0m"sv;
-        inline constexpr auto BOLD      = "\x1B[1m"sv;
-        inline constexpr auto FAINT     = "\x1B[2m"sv;
-        inline constexpr auto ITALIC    = "\x1B[3m"sv;
-        inline constexpr auto UNDERLINE = "\x1B[4m"sv;
-        inline constexpr auto INVERSE   = "\x1B[7m"sv;
-    } // namespace ecma48
-
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
@@ -188,6 +191,45 @@ namespace stormkit { inline namespace core {
             out.append_range(std::format("{}", value));
 
         out.append(ecma48::RESET);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename FormatContext>
+    auto format_as(const ConsoleStyle& style, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
+        thread_local auto buf = array<char, 32 * sizeof(char)> {};
+        auto              end = stdr::begin(buf);
+
+        if (style.fg) {
+            auto [_, end_] = stdr::copy(ecma48::FOREGROUND.at(*style.fg), end);
+            end            = end_;
+        }
+        if (style.bg) {
+            auto [_, end_] = stdr::copy(ecma48::BACKGROUND.at(*style.bg), end);
+            end            = end_;
+        }
+        if (check_flag_bit(style.modifiers, StyleModifier::BOLD)) {
+            auto [_, end_] = stdr::copy(ecma48::BOLD, end);
+            end            = end_;
+        }
+        if (check_flag_bit(style.modifiers, StyleModifier::FAINT)) {
+            auto [_, end_] = stdr::copy(ecma48::FAINT, end);
+            end            = end_;
+        }
+        if (check_flag_bit(style.modifiers, StyleModifier::ITALIC)) {
+            auto [_, end_] = stdr::copy(ecma48::ITALIC, end);
+            end            = end_;
+        }
+        if (check_flag_bit(style.modifiers, StyleModifier::INVERSE)) {
+            auto [_, end_] = stdr::copy(ecma48::INVERSE, end);
+            end            = end_;
+        }
+        if (check_flag_bit(style.modifiers, StyleModifier::UNDERLINE)) {
+            auto [_, end_] = stdr::copy(ecma48::UNDERLINE, end);
+            end            = end_;
+        }
+
+        return std::format_to(ctx.out(), "{}", string_view { stdr::begin(buf), end });
     }
 }} // namespace stormkit::core
 

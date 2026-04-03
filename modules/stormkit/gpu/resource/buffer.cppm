@@ -26,8 +26,18 @@ namespace cmeta    = stormkit::core::meta;
 namespace cmonadic = stormkit::core::monadic;
 
 namespace stormkit::gpu {
+    struct BufferInterfaceBase {
+        struct CreateInfo {
+            BufferUsageFlag    usages;
+            usize              size;
+            MemoryPropertyFlag properties = MemoryPropertyFlag::HOST_VISIBLE | MemoryPropertyFlag::HOST_COHERENT;
+
+            bool persistently_mapped = false;
+        };
+    };
+
     export template<typename Base>
-    class STORMKIT_GPU_API BufferInterface final: public DeviceObject<Base> {
+    class STORMKIT_GPU_API BufferInterface final: public DeviceObject<Base>, public BufferInterfaceBase {
       public:
         using DeviceObject<Base>::DeviceObject;
         using DeviceObject<Base>::operator=;
@@ -83,18 +93,12 @@ namespace stormkit::gpu {
         auto allocation() const noexcept -> vk::Observer<VmaAllocation>;
     };
 
-    class STORMKIT_GPU_API BufferImplementation: public GpuObjectImplementation<BufferTag> {
+    class STORMKIT_GPU_API
+      BufferImplementation: public GpuObjectImplementation<BufferTag, const BufferInterfaceBase::CreateInfo&> {
       public:
-        struct CreateInfo {
-            BufferUsageFlag    usages;
-            usize              size;
-            MemoryPropertyFlag properties = MemoryPropertyFlag::HOST_VISIBLE | MemoryPropertyFlag::HOST_COHERENT;
-
-            bool persistently_mapped = false;
-        };
+        using CreateInfo = BufferInterfaceBase::CreateInfo;
 
         BufferImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
         ~BufferImplementation() noexcept;
 
         BufferImplementation(const BufferImplementation&) noexcept                    = delete;
@@ -102,6 +106,8 @@ namespace stormkit::gpu {
 
         BufferImplementation(BufferImplementation&&) noexcept;
         auto operator=(BufferImplementation&&) noexcept -> BufferImplementation&;
+
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
 
       protected:
         BufferUsageFlag    m_usages            = {};

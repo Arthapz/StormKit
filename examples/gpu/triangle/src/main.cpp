@@ -83,7 +83,10 @@ class Application: public base::Application {
             .color_attachment_formats = { m_swapchain->pixel_format() }
         };
 
-        m_pipeline = TryAssert(gpu::Pipeline::create(m_device, state, m_pipeline_layout, rendering_info),
+        m_pipeline = TryAssert(gpu::Pipeline::create(m_device,
+                                                     gpu::Pipeline::RasterizationCreateInfo { .state          = as_ref(state),
+                                                                                              .layout         = m_pipeline_layout,
+                                                                                              .rendering_info = rendering_info }),
                                "Failed to create raster pipeline!");
 
         // create present engine resources
@@ -114,7 +117,7 @@ class Application: public base::Application {
 
         auto image_index = 0u;
         for (const auto& swap_image : images) {
-            auto view = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view!");
+            auto view = TryAssert(gpu::ImageView::create(m_device, { swap_image }), "Failed to create swapchain image view!");
 
             m_image_resources.push_back({ .image           = swap_image,
                                           .view            = std::move(view),

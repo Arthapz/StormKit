@@ -191,7 +191,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::HashType Ret = hash32>
+    template<meta::HashType Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(string_view value) noexcept -> Ret {
         return StringHash::operator()(value);

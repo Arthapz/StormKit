@@ -168,7 +168,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+    template<core::meta::HashType Ret, core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const rect<T>& value) noexcept -> Ret {
         return hash<Ret>(value.x, value.y, value.width, value.height);
@@ -176,7 +176,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+    template<core::meta::HashType Ret, core::meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const bounding_rect<T>& value) noexcept -> Ret {
         return hash(value.left, value.top, value.right, value.bottom);

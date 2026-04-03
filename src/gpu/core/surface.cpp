@@ -32,14 +32,16 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SurfaceImplementation::do_init(PrivateTag) noexcept -> Expected<void> {
+    auto SurfaceImplementation::do_init(PrivateTag, const OffscreenCreateInfo&) noexcept -> Expected<void> {
         assert(false, "not implemented yet");
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SurfaceImplementation::do_init(PrivateTag, const wsi::Window& window) noexcept -> Expected<void> {
+    auto SurfaceImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> Expected<void> {
+        const auto& window = *create_info.window;
+
         EXPECTS(window.is_open());
         const auto instance = owner();
 

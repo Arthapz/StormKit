@@ -51,6 +51,21 @@ namespace stormkit::gpu {
         };
     };
 
+    struct ImageInterfaceBase {
+        struct CreateInfo {
+            math::uextent3     extent;
+            PixelFormat        format     = PixelFormat::RGBA8_UNORM;
+            u32                layers     = 1u;
+            u32                mip_levels = 1u;
+            ImageType          type       = ImageType::T2D;
+            ImageCreateFlag    flags      = ImageCreateFlag::NONE;
+            SampleCountFlag    samples    = SampleCountFlag::C1;
+            ImageUsageFlag     usages     = ImageUsageFlag::SAMPLED | ImageUsageFlag::TRANSFER_DST | ImageUsageFlag::TRANSFER_SRC;
+            ImageTiling        tiling     = ImageTiling::OPTIMAL;
+            MemoryPropertyFlag properties = MemoryPropertyFlag::DEVICE_LOCAL;
+        };
+    };
+
     export {
         template<typename Base>
         class SamplerInterface: public DeviceObject<Base>, public SamplerInterfaceBase {
@@ -64,7 +79,7 @@ namespace stormkit::gpu {
         };
 
         template<typename Base>
-        class ImageInterface: public DeviceObject<Base> {
+        class ImageInterface: public DeviceObject<Base>, public ImageInterfaceBase {
           public:
             using DeviceObject<Base>::DeviceObject;
             using DeviceObject<Base>::operator=;
@@ -89,77 +104,13 @@ namespace stormkit::gpu {
             [[nodiscard]]
             auto allocation() const noexcept -> vk::Observer<VmaAllocation>;
         };
-
-        template<typename Base>
-        class ImageViewInterface: public DeviceObject<Base> {
-          public:
-            using DeviceObject<Base>::DeviceObject;
-            using DeviceObject<Base>::operator=;
-            using TagType = ImageViewTag;
-
-            [[nodiscard]]
-            auto type() const noexcept -> ImageViewType;
-            [[nodiscard]]
-            auto subresource_range() const noexcept -> const ImageSubresourceRange&;
-        };
     }
 
-    class STORMKIT_GPU_API SamplerImplementation: public GpuObjectImplementation<SamplerTag> {
+    class STORMKIT_GPU_API ImageImplementation: public GpuObjectImplementation<ImageTag, const ImageInterfaceBase::CreateInfo&> {
       public:
-        using Settings = SamplerInterfaceBase::Settings;
-
-        SamplerImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, const Settings&) noexcept -> Expected<void>;
-        ~SamplerImplementation() noexcept;
-
-        SamplerImplementation(const SamplerImplementation&) noexcept                    = delete;
-        auto operator=(const SamplerImplementation&) noexcept -> SamplerImplementation& = delete;
-
-        SamplerImplementation(SamplerImplementation&&) noexcept;
-        auto operator=(SamplerImplementation&&) noexcept -> SamplerImplementation&;
-
-      protected:
-        Settings m_settings = {};
-    };
-
-    namespace view {
-        class SamplerImplementation: public GpuObjectViewImplementation<SamplerTag> {
-          public:
-            using Settings = SamplerInterfaceBase::Settings;
-
-            SamplerImplementation(const gpu::Sampler&) noexcept;
-            template<cmeta::IsContainerOrPointerOf<gpu::Sampler> TContainerOrPointer>
-            SamplerImplementation(const TContainerOrPointer&) noexcept;
-            ~SamplerImplementation() noexcept;
-
-            SamplerImplementation(const SamplerImplementation&) noexcept;
-            auto operator=(const SamplerImplementation&) noexcept -> SamplerImplementation&;
-
-            SamplerImplementation(SamplerImplementation&&) noexcept;
-            auto operator=(SamplerImplementation&&) noexcept -> SamplerImplementation&;
-
-          protected:
-            Settings m_settings;
-        };
-    } // namespace view
-
-    class STORMKIT_GPU_API ImageImplementation: public GpuObjectImplementation<ImageTag> {
-      public:
-        struct CreateInfo {
-            math::uextent3     extent;
-            PixelFormat        format     = PixelFormat::RGBA8_UNORM;
-            u32                layers     = 1u;
-            u32                mip_levels = 1u;
-            ImageType          type       = ImageType::T2D;
-            ImageCreateFlag    flags      = ImageCreateFlag::NONE;
-            SampleCountFlag    samples    = SampleCountFlag::C1;
-            ImageUsageFlag     usages     = ImageUsageFlag::SAMPLED | ImageUsageFlag::TRANSFER_DST | ImageUsageFlag::TRANSFER_SRC;
-            ImageTiling        tiling     = ImageTiling::OPTIMAL;
-            MemoryPropertyFlag properties = MemoryPropertyFlag::DEVICE_LOCAL;
-        };
+        using CreateInfo = ImageInterfaceBase::CreateInfo;
 
         ImageImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
         ~ImageImplementation() noexcept;
 
         ImageImplementation(const ImageImplementation&) noexcept                    = delete;
@@ -169,6 +120,8 @@ namespace stormkit::gpu {
         auto operator=(ImageImplementation&&) noexcept -> ImageImplementation&;
 
         static auto from_existing(view::Device device, const CreateInfo& create_info, VkImage image) noexcept -> Image;
+
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
 
       protected:
         bool m_no_delete = false;
@@ -220,11 +173,76 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    class STORMKIT_GPU_API ImageViewImplementation: public GpuObjectImplementation<ImageViewTag> {
+    struct ImageViewInterfaceBase {
+        struct CreateInfo {
+            view::Image           image;
+            ImageViewType         type              = ImageViewType::T2D;
+            ImageSubresourceRange subresource_range = {};
+        };
+    };
+
+    export template<typename Base>
+    class ImageViewInterface: public DeviceObject<Base>, public ImageViewInterfaceBase {
       public:
+        using CreateInfo = ImageViewInterfaceBase::CreateInfo;
+
+        using DeviceObject<Base>::DeviceObject;
+        using DeviceObject<Base>::operator=;
+        using TagType = ImageViewTag;
+
+        [[nodiscard]]
+        auto type() const noexcept -> ImageViewType;
+        [[nodiscard]]
+        auto subresource_range() const noexcept -> const ImageSubresourceRange&;
+    };
+
+    class STORMKIT_GPU_API
+      SamplerImplementation: public GpuObjectImplementation<SamplerTag, const SamplerInterfaceBase::Settings&> {
+      public:
+        using Settings = SamplerInterfaceBase::Settings;
+
+        SamplerImplementation(PrivateTag, view::Device&&) noexcept;
+        ~SamplerImplementation() noexcept;
+
+        SamplerImplementation(const SamplerImplementation&) noexcept                    = delete;
+        auto operator=(const SamplerImplementation&) noexcept -> SamplerImplementation& = delete;
+
+        SamplerImplementation(SamplerImplementation&&) noexcept;
+        auto operator=(SamplerImplementation&&) noexcept -> SamplerImplementation&;
+
+        auto do_init(PrivateTag, const Settings&) noexcept -> Expected<void>;
+
+      protected:
+        Settings m_settings = {};
+    };
+
+    namespace view {
+        class SamplerImplementation: public GpuObjectViewImplementation<SamplerTag> {
+          public:
+            using Settings = SamplerInterfaceBase::Settings;
+
+            SamplerImplementation(const gpu::Sampler&) noexcept;
+            template<cmeta::IsContainerOrPointerOf<gpu::Sampler> TContainerOrPointer>
+            SamplerImplementation(const TContainerOrPointer&) noexcept;
+            ~SamplerImplementation() noexcept;
+
+            SamplerImplementation(const SamplerImplementation&) noexcept;
+            auto operator=(const SamplerImplementation&) noexcept -> SamplerImplementation&;
+
+            SamplerImplementation(SamplerImplementation&&) noexcept;
+            auto operator=(SamplerImplementation&&) noexcept -> SamplerImplementation&;
+
+          protected:
+            Settings m_settings;
+        };
+    } // namespace view
+
+    class STORMKIT_GPU_API
+      ImageViewImplementation: public GpuObjectImplementation<ImageViewTag, const ImageViewInterfaceBase::CreateInfo&> {
+      public:
+        using CreateInfo = ImageViewInterfaceBase::CreateInfo;
+
         ImageViewImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, view::Image, ImageViewType = ImageViewType::T2D, const ImageSubresourceRange& = {}) noexcept
-          -> Expected<void>;
         ~ImageViewImplementation() noexcept;
 
         ImageViewImplementation(const ImageViewImplementation&) noexcept                    = delete;
@@ -232,6 +250,8 @@ namespace stormkit::gpu {
 
         ImageViewImplementation(ImageViewImplementation&&) noexcept;
         auto operator=(ImageViewImplementation&&) noexcept -> ImageViewImplementation&;
+
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
 
       protected:
         ImageViewType         m_type              = {};
@@ -473,7 +493,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     inline auto ImageImplementation::from_existing(view::Device device, const CreateInfo& create_info, VkImage vk_image) noexcept
       -> Image {
-        auto image         = Image { UseNamedConstructors::PRIVATE, std::move(device) };
+        auto image         = Image { NamedConstructor::PRIVATE, std::move(device) };
         image.m_extent     = create_info.extent;
         image.m_format     = create_info.format;
         image.m_layers     = create_info.layers;

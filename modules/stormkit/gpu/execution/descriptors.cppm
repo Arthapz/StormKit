@@ -65,6 +65,8 @@ namespace stormkit::gpu {
         };
     }
 
+    using DescriptorSetDeleter = std::function<void(VkDescriptorSet)>;
+
     struct DescriptorSetLayoutInterfaceBase {
         struct Size {
             DescriptorType type;
@@ -110,12 +112,10 @@ namespace stormkit::gpu {
         };
     }
 
-    class STORMKIT_GPU_API DescriptorSetImplementation: public GpuObjectImplementation<DescriptorSetTag> {
+    class STORMKIT_GPU_API
+      DescriptorSetImplementation: public GpuObjectImplementation<DescriptorSetTag, VkDescriptorSet&&, DescriptorSetDeleter&&> {
       public:
-        using Deleter = std::function<void(VkDescriptorSet)>;
-
         DescriptorSetImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, VkDescriptorSet&&, Deleter&&) noexcept -> void;
         ~DescriptorSetImplementation() noexcept;
 
         DescriptorSetImplementation(const DescriptorSetImplementation&)                    = delete;
@@ -124,11 +124,13 @@ namespace stormkit::gpu {
         DescriptorSetImplementation(DescriptorSetImplementation&&) noexcept;
         auto operator=(DescriptorSetImplementation&&) noexcept -> DescriptorSetImplementation&;
 
-      protected:
-        using UseNamedConstructors::allocate;
-        using UseNamedConstructors::create;
+        auto do_init(PrivateTag, VkDescriptorSet&&, DescriptorSetDeleter&&) noexcept -> Expected<void>;
 
-        Deleter m_deleter;
+      protected:
+        using NamedConstructor::allocate;
+        using NamedConstructor::create;
+
+        DescriptorSetDeleter m_deleter;
 
         friend class DescriptorPoolInterface<DescriptorPoolImplementation>;
         friend class DescriptorPoolInterface<view::DescriptorPoolImplementation>;
@@ -142,10 +144,10 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    class STORMKIT_GPU_API DescriptorSetLayoutImplementation: public GpuObjectImplementation<DescriptorSetLayoutTag> {
+    class STORMKIT_GPU_API DescriptorSetLayoutImplementation
+        : public GpuObjectImplementation<DescriptorSetLayoutTag, dyn_array<DescriptorSetLayoutBinding>> {
       public:
         DescriptorSetLayoutImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, dyn_array<DescriptorSetLayoutBinding>&&) noexcept -> Expected<void>;
         ~DescriptorSetLayoutImplementation() noexcept;
 
         DescriptorSetLayoutImplementation(const DescriptorSetLayoutImplementation&)                    = delete;
@@ -153,6 +155,8 @@ namespace stormkit::gpu {
 
         DescriptorSetLayoutImplementation(DescriptorSetLayoutImplementation&&) noexcept;
         auto operator=(DescriptorSetLayoutImplementation&&) noexcept -> DescriptorSetLayoutImplementation&;
+
+        auto do_init(PrivateTag, dyn_array<DescriptorSetLayoutBinding>&&) noexcept -> Expected<void>;
 
       protected:
         dyn_array<DescriptorSetLayoutBinding> m_bindings;
@@ -177,12 +181,12 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    class STORMKIT_GPU_API DescriptorPoolImplementation: public GpuObjectImplementation<DescriptorPoolTag> {
+    class STORMKIT_GPU_API DescriptorPoolImplementation
+        : public GpuObjectImplementation<DescriptorPoolTag, array_view<const DescriptorSetLayoutInterfaceBase::Size>, u32> {
       public:
         using Size = DescriptorSetLayoutInterfaceBase::Size;
 
         DescriptorPoolImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, array_view<const Size>&&, u32) noexcept -> Expected<void>;
         ~DescriptorPoolImplementation() noexcept;
 
         DescriptorPoolImplementation(const DescriptorPoolImplementation&)                    = delete;
@@ -190,6 +194,8 @@ namespace stormkit::gpu {
 
         DescriptorPoolImplementation(DescriptorPoolImplementation&&) noexcept;
         auto operator=(DescriptorPoolImplementation&&) noexcept -> DescriptorPoolImplementation&;
+
+        auto do_init(PrivateTag, array_view<const Size>&&, u32) noexcept -> Expected<void>;
     };
 
     namespace view {

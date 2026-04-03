@@ -5,6 +5,8 @@
 #ifndef STORMKIT_TRY_EXPECTED_HPP
 #define STORMKIT_TRY_EXPECTED_HPP
 
+#include <stormkit/core/platform_macro.hpp>
+
 #if (defined(__clang__) or defined(__GNUC__))
     #define Try(m)                                                 \
         ({                                                         \

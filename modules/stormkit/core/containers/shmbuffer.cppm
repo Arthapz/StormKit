@@ -22,12 +22,22 @@ import :named_constructors;
 import :utils.filesystem;
 
 export namespace stormkit { inline namespace core {
-    class STORMKIT_CORE_API SHMBuffer: public UseNamedConstructors<SHMBuffer, std::expected<void, std::error_code>> {
+    class STORMKIT_CORE_API SHMBuffer final: public NamedConstructor<SHMBuffer, DoInitArgs<usize, string, io::Access>> {
+        using Base = NamedConstructor<SHMBuffer, DoInitArgs<usize, string, io::Access>>;
+
       public:
         using ValueType = byte;
+        template<typename T>
+        using ExpectedType = std::expected<T, std::error_code>;
 
         using value_type = ValueType;
 
+        static auto create(usize size, string name, io::Access access = io::Access::READ | io::Access::WRITE) noexcept
+          -> ExpectedType<SHMBuffer>;
+        static auto allocate(usize size, string name, io::Access access = io::Access::READ | io::Access::WRITE) noexcept
+          -> ExpectedType<Heap<SHMBuffer>>;
+
+        explicit SHMBuffer(PrivateTag) noexcept;
         ~SHMBuffer();
 
         SHMBuffer(const SHMBuffer&)                    = delete;
@@ -57,11 +67,12 @@ export namespace stormkit { inline namespace core {
         auto name() const noexcept -> string_view;
         auto access() const noexcept -> io::Access;
 
-        constexpr SHMBuffer(PrivateTag) noexcept;
-        auto do_init(PrivateTag, usize, string, io::Access = io::Access::READ | io::Access::WRITE) noexcept
-          -> std::expected<void, std::error_code>;
+        auto do_init(PrivateTag, usize, string, io::Access) noexcept -> ExpectedType<void>;
 
       private:
+        using Base::allocate;
+        using Base::create;
+
         io::Access            m_access;
         void*                 m_handle = nullptr;
         usize                 m_size;
@@ -74,7 +85,21 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr SHMBuffer::SHMBuffer(PrivateTag) noexcept {
+    inline auto SHMBuffer::create(usize size, string name, io::Access access) noexcept -> ExpectedType<SHMBuffer> {
+        return Base::create(size, std::move(name), access);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto SHMBuffer::allocate(usize size, string name, io::Access access) noexcept -> ExpectedType<Heap<SHMBuffer>> {
+        return Base::allocate(size, std::move(name), access);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline SHMBuffer::SHMBuffer(PrivateTag) noexcept {
     }
 
     /////////////////////////////////////

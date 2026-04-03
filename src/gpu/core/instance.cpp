@@ -29,9 +29,8 @@ namespace stormkit::gpu {
     namespace {
         constexpr auto VALIDATION_LAYERS = into_array_of<czstring>("VK_LAYER_KHRONOS_validation",
                                                                    // "VK_LAYER_LUNARG_api_dump",
-                                                                   "VK_LAYER_LUNARG_monitor"
-                                                                   // "VK_LAYER_MESA_overlay",
-        );
+                                                                   "VK_LAYER_LUNARG_monitor",
+                                                                   "VK_LAYER_MESA_overlay");
 
         // [[maybe_unused]]
         // constexpr auto VALIDATION_FEATURES = into_array_of<czstring>(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
@@ -92,21 +91,25 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto InstanceImplementation::do_init(PrivateTag, string app_name, bool validation_layers_enabled) noexcept -> Expected<void> {
+    auto InstanceImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> Expected<void> {
         const auto exts = Try(vk::enumerate_checked<VkExtensionProperties>(vkEnumerateInstanceExtensionProperties, nullptr));
         m_extensions    = transform(exts, [](const auto& ext) static noexcept { return string { ext.extensionName }; });
-        const auto validation_layers = validation_layers_enabled
-                                         ? dyn_array<czstring>()
-                                         : transform_if(
-                                             Try(vk::enumerate_checked<VkLayerProperties>(vkEnumerateInstanceLayerProperties)),
+        const auto available_layers = Try(vk::enumerate_checked<VkLayerProperties>(vkEnumerateInstanceLayerProperties));
+        // std::println("{}", available_layers | stdv::transform([](const auto& layer) static noexcept {
+        //                        return std::string_view { layer.layerName };
+        //                    }));
+        const auto validation_layers = create_info.enable_validation_layers
+                                         ? transform_if(
+                                             available_layers,
                                              [](const auto& layer) static noexcept {
                                                  return stdr::contains(VALIDATION_LAYERS, string_view { layer.layerName });
                                              },
-                                             [](const auto& layer) static noexcept { return layer.layerName; });
+                                             [](const auto& layer) static noexcept { return layer.layerName; })
+                                         : dyn_array<czstring>();
 
-        const auto instance_extensions = [validation_layers_enabled] noexcept {
+        const auto instance_extensions = [enable_validation_layers = create_info.enable_validation_layers] noexcept {
             auto e = concat(BASE_EXTENSIONS, SURFACE_EXTENSIONS, WSI_SURFACE_EXTENSIONS);
-            if (validation_layers_enabled) e.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            if (enable_validation_layers) e.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             return e;
         }();
         const auto result = check_extension_support(m_extensions, instance_extensions);
@@ -117,14 +120,14 @@ namespace stormkit::gpu {
         const auto app_info = VkApplicationInfo {
             .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
             .pNext              = nullptr,
-            .pApplicationName   = std::data(app_name),
-            .applicationVersion = vk::make_version<i32>(0, 0, 0),
+            .pApplicationName   = std::data(create_info.application_name),
+            .applicationVersion = create_info.application_version,
             .pEngineName        = ENGINE_NAME,
             .engineVersion      = STORMKIT_VK_VERSION,
             .apiVersion         = VK_API_VERSION_1_3,
         };
 
-        const auto create_info = VkInstanceCreateInfo {
+        const auto vk_create_info = VkInstanceCreateInfo {
             .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
             .pNext = nullptr,
 #ifdef STORMKIT_OS_APPLE
@@ -139,7 +142,7 @@ namespace stormkit::gpu {
             .ppEnabledExtensionNames = stdr::data(instance_extensions),
         };
 
-        m_vk_handle = Try(vk::call_checked<VkInstance>(vkCreateInstance, &create_info, nullptr));
+        m_vk_handle = Try(vk::call_checked<VkInstance>(vkCreateInstance, &vk_create_info, nullptr));
 
         Try(do_load_instance());
         Try(do_retrieve_physical_devices());

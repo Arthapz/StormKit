@@ -70,10 +70,10 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto FenceImplementation::do_init(PrivateTag, bool signaled) noexcept -> Expected<void> {
-        const auto flags = (signaled) ? VkFenceCreateFlags { VK_FENCE_CREATE_SIGNALED_BIT } : VkFenceCreateFlags {};
+    auto FenceImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> Expected<void> {
+        const auto flags = (create_info.signaled) ? VkFenceCreateFlags { VK_FENCE_CREATE_SIGNALED_BIT } : VkFenceCreateFlags {};
 
-        const auto create_info = VkFenceCreateInfo {
+        const auto vk_create_info = VkFenceCreateInfo {
             .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
             .pNext = nullptr,
             .flags = flags
@@ -82,7 +82,7 @@ namespace stormkit::gpu {
         const auto& device       = owner();
         const auto& device_table = device.device_table();
 
-        m_vk_handle = Try(vk::call_checked<VkFence>(device_table.vkCreateFence, device, &create_info, nullptr));
+        m_vk_handle = Try(vk::call_checked<VkFence>(device_table.vkCreateFence, device, &vk_create_info, nullptr));
 
         Return {};
     }

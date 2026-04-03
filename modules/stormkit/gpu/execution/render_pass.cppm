@@ -104,11 +104,10 @@ namespace stormkit::gpu {
         };
     }
 
-    class STORMKIT_GPU_API FrameBufferImplementation: public GpuObjectImplementation<FrameBufferTag> {
+    class STORMKIT_GPU_API FrameBufferImplementation
+        : public GpuObjectImplementation<FrameBufferTag, view::RenderPass, const math::uextent2&, dyn_array<view::ImageView>> {
       public:
         FrameBufferImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, view::RenderPass&&, const math::uextent2&, dyn_array<view::ImageView>&&) noexcept
-          -> Expected<void>;
         ~FrameBufferImplementation() noexcept;
 
         FrameBufferImplementation(const FrameBufferImplementation&)                    = delete;
@@ -117,9 +116,12 @@ namespace stormkit::gpu {
         FrameBufferImplementation(FrameBufferImplementation&&) noexcept;
         auto operator=(FrameBufferImplementation&&) noexcept -> FrameBufferImplementation&;
 
+        auto do_init(PrivateTag, view::RenderPass&&, const math::uextent2&, dyn_array<view::ImageView>&&) noexcept
+          -> Expected<void>;
+
       protected:
-        using UseNamedConstructors::allocate;
-        using UseNamedConstructors::create;
+        using NamedConstructor::allocate;
+        using NamedConstructor::create;
 
         math::uextent2             m_extent = { 0, 0 };
         dyn_array<view::ImageView> m_attachments;
@@ -148,10 +150,9 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    class STORMKIT_GPU_API RenderPassImplementation: public GpuObjectImplementation<RenderPassTag> {
+    class STORMKIT_GPU_API RenderPassImplementation: public GpuObjectImplementation<RenderPassTag, const RenderPassDescription&> {
       public:
         RenderPassImplementation(PrivateTag, view::Device&&) noexcept;
-        auto do_init(PrivateTag, const RenderPassDescription&) noexcept -> Expected<void>;
         ~RenderPassImplementation() noexcept;
 
         RenderPassImplementation(const RenderPassImplementation&)                    = delete;
@@ -159,6 +160,8 @@ namespace stormkit::gpu {
 
         RenderPassImplementation(RenderPassImplementation&&) noexcept;
         auto operator=(RenderPassImplementation&&) noexcept -> RenderPassImplementation&;
+
+        auto do_init(PrivateTag, const RenderPassDescription&) noexcept -> Expected<void>;
 
       protected:
         Heap<RenderPassDescription> m_description = {};

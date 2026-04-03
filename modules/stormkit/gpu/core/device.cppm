@@ -37,8 +37,15 @@ namespace stormkit::gpu {
             QueueFlag flags = QueueFlag {};
         };
 
+        struct DeviceInterfaceBase {
+            struct CreateInfo {
+                bool enable_swapchain  = true;
+                bool enable_raytracing = false;
+            };
+        };
+
         template<typename Base>
-        class STORMKIT_GPU_API DeviceInterface final: public PhysicalDeviceObject<Base> {
+        class STORMKIT_GPU_API DeviceInterface final: public PhysicalDeviceObject<Base>, public DeviceInterfaceBase {
           public:
             using PhysicalDeviceObject<Base>::PhysicalDeviceObject;
             using PhysicalDeviceObject<Base>::operator=;
@@ -82,15 +89,12 @@ namespace stormkit::gpu {
         } // namespace monadic
     }
 
-    class STORMKIT_GPU_API DeviceImplementation: public GpuObjectImplementation<DeviceTag> {
+    class STORMKIT_GPU_API
+      DeviceImplementation: public GpuObjectImplementation<DeviceTag, const DeviceInterfaceBase::CreateInfo&> {
       public:
-        struct CreateInfo {
-            bool enable_swapchain  = true;
-            bool enable_raytracing = false;
-        };
+        using CreateInfo = DeviceInterfaceBase::CreateInfo;
 
         DeviceImplementation(PrivateTag, view::PhysicalDevice&&) noexcept;
-        auto do_init(PrivateTag, const CreateInfo& create_info = { true, false }) noexcept -> Expected<void>;
         ~DeviceImplementation() noexcept;
 
         DeviceImplementation(const DeviceImplementation&) noexcept                    = delete;
@@ -98,6 +102,8 @@ namespace stormkit::gpu {
 
         DeviceImplementation(DeviceImplementation&&) noexcept;
         auto operator=(DeviceImplementation&&) noexcept -> DeviceImplementation&;
+
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
 
       protected:
         dyn_array<QueueEntry> m_queue_entries;

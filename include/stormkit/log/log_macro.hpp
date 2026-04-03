@@ -13,26 +13,46 @@
         constexpr auto NAME = stormkit::log::Module { module_chars }; \
     }
 
-#define LOGGER_FUNC(LOG_MODULE)                                               \
-    template<class... Args>                                                   \
-    STORMKIT_FORCE_INLINE inline auto dlog(Args&&... args) noexcept -> void { \
-        LOG_MODULE.dlog(std::forward<Args>(args)...);                         \
-    }                                                                         \
-    template<class... Args>                                                   \
-    STORMKIT_FORCE_INLINE inline auto ilog(Args&&... args) noexcept -> void { \
-        LOG_MODULE.ilog(std::forward<Args>(args)...);                         \
-    }                                                                         \
-    template<class... Args>                                                   \
-    STORMKIT_FORCE_INLINE inline auto wlog(Args&&... args) noexcept -> void { \
-        LOG_MODULE.wlog(std::forward<Args>(args)...);                         \
-    }                                                                         \
-    template<class... Args>                                                   \
-    STORMKIT_FORCE_INLINE inline auto elog(Args&&... args) noexcept -> void { \
-        LOG_MODULE.elog(std::forward<Args>(args)...);                         \
-    }                                                                         \
-    template<class... Args>                                                   \
-    STORMKIT_FORCE_INLINE inline auto flog(Args&&... args) noexcept -> void { \
-        LOG_MODULE.flog(std::forward<Args>(args)...);                         \
+#define LOGGER_FUNC(LOG_MODULE)                                                                                          \
+    template<class... Args>                                                                                              \
+    STORMKIT_FORCE_INLINE inline auto dlog(std::format_string<Args...> format_string, Args&&... args) noexcept -> void { \
+        LOG_MODULE.dlog(std::move(format_string), std::forward<Args>(args)...);                                          \
+    }                                                                                                                    \
+    template<class... Args>                                                                                              \
+    STORMKIT_FORCE_INLINE inline auto ilog(std::format_string<Args...> format_string, Args&&... args) noexcept -> void { \
+        LOG_MODULE.ilog(std::move(format_string), std::forward<Args>(args)...);                                          \
+    }                                                                                                                    \
+    template<class... Args>                                                                                              \
+    STORMKIT_FORCE_INLINE inline auto wlog(std::format_string<Args...> format_string, Args&&... args) noexcept -> void { \
+        LOG_MODULE.wlog(std::move(format_string), std::forward<Args>(args)...);                                          \
+    }                                                                                                                    \
+    template<class... Args>                                                                                              \
+    STORMKIT_FORCE_INLINE inline auto elog(std::format_string<Args...> format_string, Args&&... args) noexcept -> void { \
+        LOG_MODULE.elog(std::move(format_string), std::forward<Args>(args)...);                                          \
+    }                                                                                                                    \
+    template<class... Args>                                                                                              \
+    STORMKIT_FORCE_INLINE inline auto flog(std::format_string<Args...> format_string, Args&&... args) noexcept -> void { \
+        LOG_MODULE.flog(std::move(format_string), std::forward<Args>(args)...);                                          \
+    }                                                                                                                    \
+    template<class... Args>                                                                                              \
+    STORMKIT_FORCE_INLINE inline auto dlog_runtime(std::string_view format_string, Args&&... args) noexcept -> void {    \
+        LOG_MODULE.dlog_runtime(std::move(format_string), std::forward<Args>(args)...);                                  \
+    }                                                                                                                    \
+    template<class... Args>                                                                                              \
+    STORMKIT_FORCE_INLINE inline auto ilog_runtime(std::string_view format_string, Args&&... args) noexcept -> void {    \
+        LOG_MODULE.ilog_runtime(std::move(format_string), std::forward<Args>(args)...);                                  \
+    }                                                                                                                    \
+    template<class... Args>                                                                                              \
+    STORMKIT_FORCE_INLINE inline auto wlog_runtime(std::string_view format_string, Args&&... args) noexcept -> void {    \
+        LOG_MODULE.wlog_runtime(std::move(format_string), std::forward<Args>(args)...);                                  \
+    }                                                                                                                    \
+    template<class... Args>                                                                                              \
+    STORMKIT_FORCE_INLINE inline auto elog_runtime(std::string_view format_string, Args&&... args) noexcept -> void {    \
+        LOG_MODULE.elog_runtime(std::move(format_string), std::forward<Args>(args)...);                                  \
+    }                                                                                                                    \
+    template<class... Args>                                                                                              \
+    STORMKIT_FORCE_INLINE inline auto flog_runtime(std::string_view format_string, Args&&... args) noexcept -> void {    \
+        LOG_MODULE.flog_runtime(std::move(format_string), std::forward<Args>(args)...);                                  \
     }
 
 #define LOGGER(module)               \

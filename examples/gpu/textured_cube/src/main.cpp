@@ -240,7 +240,10 @@ class Application: public base::Application {
             .depth_attachment_format  = depth_format,
         };
 
-        m_pipeline = TryAssert(gpu::Pipeline::create(m_device, state, m_pipeline_layout, rendering_info),
+        m_pipeline = TryAssert(gpu::Pipeline::create(m_device,
+                                                     gpu::Pipeline::RasterizationCreateInfo { .state          = as_ref(state),
+                                                                                              .layout         = m_pipeline_layout,
+                                                                                              .rendering_info = rendering_info }),
                                "Failed to create raster pipeline!");
 
         // load texture
@@ -248,8 +251,7 @@ class Application: public base::Application {
         TryAssert(image.load_from_file(TEXTURE), std::format("Failed to load texture file {}!", TEXTURE.string()));
 
         m_texture = TryAssert(gpu::Image::create(m_device,
-                                                 gpu::Image::CreateInfo {
-                                                   .extent     = image.extent(),
+                                                 { .extent     = image.extent(),
                                                    .format     = gpu::PixelFormat::RGBA8_UNORM,
                                                    .usages     = gpu::ImageUsageFlag::SAMPLED | gpu::ImageUsageFlag::TRANSFER_DST,
                                                    .properties = gpu::MemoryPropertyFlag::DEVICE_LOCAL }),
@@ -258,8 +260,7 @@ class Application: public base::Application {
         {
             auto cpy_fence      = TryAssert(gpu::Fence::create(m_device), "Failed to create copy texture buffer fence!");
             auto staging_buffer = TryAssert(gpu::Buffer::create(m_device,
-                                                                gpu::Buffer::CreateInfo {
-                                                                  .usages = gpu::BufferUsageFlag::TRANSFER_SRC,
+                                                                { .usages = gpu::BufferUsageFlag::TRANSFER_SRC,
                                                                   .size   = image.size() }),
                                             "Failed to allocate gpu texture staging buffer!");
             TryAssert(staging_buffer.upload(image.data()), "Failed to upload texture data to staging buffer!");
@@ -296,8 +297,8 @@ class Application: public base::Application {
             TryDiscardAssert(cpy_fence.wait(), "Failed to create texture view!");
         }
 
-        m_texture_view = TryAssert(gpu::ImageView::create(m_device, m_texture), "Failed to create texture view!");
-        m_sampler      = TryAssert(gpu::Sampler::create(m_device, gpu::Sampler::Settings {}), "Failed to create sampler!");
+        m_texture_view         = TryAssert(gpu::ImageView::create(m_device, { m_texture }), "Failed to create texture view!");
+        m_sampler              = TryAssert(gpu::Sampler::create(m_device, {}), "Failed to create sampler!");
         m_submission_resources = dyn_array<SubmissionResource> {};
         m_submission_resources.reserve(BUFFERING_COUNT);
 
@@ -307,7 +308,7 @@ class Application: public base::Application {
                 .image_available = TryAssert(gpu::Semaphore::create(m_device), "Failed to create present image!"),
                 .render_cmb      = TryAssert(m_command_pool->create_command_buffer(), "Failed to create buffers!"),
                 .viewer_buffer   = TryAssert(gpu::Buffer::create(m_device,
-                                                                 gpu::Buffer::CreateInfo {
+                                                                 {
                                                                    .usages              = gpu::BufferUsageFlag::UNIFORM,
                                                                    .size                = sizeof(ViewerData),
                                                                    .persistently_mapped = true,
@@ -344,19 +345,18 @@ class Application: public base::Application {
 
         auto image_index = 0u;
         for (const auto& swap_image : images) {
-            auto view        = TryAssert(gpu::ImageView::create(m_device, swap_image), "Failed to create swapchain image view!");
+            auto view = TryAssert(gpu::ImageView::create(m_device, { swap_image }), "Failed to create swapchain image view!");
             auto depth_image = TryAssert(gpu::Image::create(m_device,
-                                                            gpu::Image::CreateInfo {
-                                                              .extent     = swap_image.extent(),
+                                                            { .extent     = swap_image.extent(),
                                                               .format     = depth_format,
                                                               .usages     = gpu::ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT,
                                                               .properties = gpu::MemoryPropertyFlag::DEVICE_LOCAL }),
                                          "Failed to create depth image!");
 
             auto depth_view = TryAssert(gpu::ImageView::create(m_device,
-                                                               depth_image,
-                                                               gpu::ImageViewType::T2D,
-                                                               gpu::ImageSubresourceRange { .aspect_mask = depth_aspect_flag }),
+                                                               { .image             = depth_image,
+                                                                 .subresource_range = gpu::
+                                                                   ImageSubresourceRange { .aspect_mask = depth_aspect_flag } }),
                                         "Failed to create depth image view!");
 
             m_image_resources.push_back({ .image           = swap_image,
@@ -395,8 +395,7 @@ class Application: public base::Application {
 
         // setup vertex buffer
         m_vertex_buffer = TryAssert(gpu::Buffer::create(m_device,
-                                                        gpu::Buffer::CreateInfo {
-                                                          .usages     = gpu::BufferUsageFlag::VERTEX
+                                                        { .usages     = gpu::BufferUsageFlag::VERTEX
                                                                         | gpu::BufferUsageFlag::TRANSFER_DST,
                                                           .size       = VERTICES_SIZE,
                                                           .properties = gpu::MemoryPropertyFlag::DEVICE_LOCAL }),
@@ -404,8 +403,7 @@ class Application: public base::Application {
 
         {
             auto staging_buffer = TryAssert(gpu::Buffer::create(m_device,
-                                                                gpu::Buffer::CreateInfo {
-                                                                  .usages = gpu::BufferUsageFlag::TRANSFER_SRC,
+                                                                { .usages = gpu::BufferUsageFlag::TRANSFER_SRC,
                                                                   .size   = VERTICES_SIZE }),
                                             "Failed to allocate gpu vertex staging buffer!");
 

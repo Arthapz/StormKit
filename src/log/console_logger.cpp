@@ -26,7 +26,10 @@ namespace stormkit::log {
           { Severity::FATAL,   ConsoleStyle { .fg = ConsoleColor::RED, .modifiers = StyleModifier::INVERSE }     },
           { Severity::DEBUG,   ConsoleStyle { .fg = ConsoleColor::CYAN, .modifiers = StyleModifier::INVERSE }    },
         });
-    }
+
+        constexpr auto format_string_with_module = "{}[{}, {:%S}, {}]{} {}"sv;
+        constexpr auto format_string             = "{}[{}, {:%S}]{} {}"sv;
+    } // namespace
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -41,30 +44,15 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto ConsoleLogger::write(Severity severity, const Module& module, czstring str) noexcept -> void {
+    auto ConsoleLogger::write(Severity severity, const Module& module, std::string_view str) noexcept -> void {
         const auto now      = LogClock::now();
         const auto time     = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time);
         const auto is_error = severity == Severity::ERROR or severity == Severity::FATAL;
         const auto out      = (is_error) ? get_stderr() : get_stdout();
 
-        const auto header = [&severity, &module, &time] noexcept {
-            const auto severity_str = replace(as_string(severity), "Severity::", "");
-            if (std::empty(module.name)) return std::format("[{}, {:%S}]", severity_str, time);
-            else
-                return std::format("[{}, {:%S}, {}]", severity_str, time, module.name);
-        }();
-
-        const auto prefixed_string = [&header, str] noexcept {
-            const auto header_length = stdr::size(header) + 1;
-
-            auto prefix = string {};
-            prefix.resize(header_length + 1, ' ');
-            prefix.front() = '\n';
-            return replace(str, "\n", prefix);
-        }();
-
-        const auto styled_header = std::format("{} ", StyleMap.at(severity) | header);
-        std::println(out, "{}{}", styled_header, prefixed_string);
+        if (stdr::empty(module.name)) std::println(out, format_string, StyleMap.at(severity), severity, time, ecma48::RESET, str);
+        else
+            std::println(out, format_string_with_module, StyleMap.at(severity), severity, time, module.name, ecma48::RESET, str);
     }
 
     ////////////////////////////////////////

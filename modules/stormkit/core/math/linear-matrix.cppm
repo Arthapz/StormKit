@@ -634,7 +634,7 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::HashType Ret = hash32, meta::IsMat T>
+    template<core::meta::HashType Ret, meta::IsMat T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto hasher(const T& value) noexcept -> Ret {
         return hash<Ret>(as_view(value));

@@ -27,19 +27,39 @@ import :objects;
 import :instance;
 
 namespace stormkit::gpu {
-    export template<typename Base>
-    class SurfaceInterface final: public InstanceObject<Base> {
-      public:
-        using InstanceObject<Base>::InstanceObject;
-        using InstanceObject<Base>::operator=;
-        using TagType = SurfaceTag;
-    };
+    export {
+        struct SurfaceInterfaceBase {
+            struct OffscreenCreateInfo {};
 
-    class STORMKIT_GPU_API SurfaceImplementation: public GpuObjectImplementation<SurfaceTag> {
+            struct CreateInfo {
+                ref<const wsi::Window> window;
+            };
+        };
+
+        template<typename Base>
+        class SurfaceInterface final: public InstanceObject<Base> {
+          public:
+            using InstanceObject<Base>::InstanceObject;
+            using InstanceObject<Base>::operator=;
+            using TagType = SurfaceTag;
+        };
+    }
+
+    class STORMKIT_GPU_API SurfaceImplementation
+        : public GpuObjectImplementation<SurfaceTag, const SurfaceInterfaceBase::CreateInfo&>,
+          public core::NamedConstructor<SurfaceImplementation,
+                                        ConstructorArgs<view::Instance>,
+                                        DoInitArgs<const SurfaceInterfaceBase::OffscreenCreateInfo&>> {
       public:
+        using CreateInfo                = SurfaceInterfaceBase::CreateInfo;
+        using OffscreenCreateInfo       = SurfaceInterfaceBase::OffscreenCreateInfo;
+        using OffscreenNamedConstructor = core::
+          NamedConstructor<SurfaceImplementation, ConstructorArgs<view::Instance>, DoInitArgs<const OffscreenCreateInfo&>>;
+
+        using OffscreenNamedConstructor::allocate;
+        using OffscreenNamedConstructor::create;
+
         SurfaceImplementation(PrivateTag, view::Instance&&) noexcept;
-        auto do_init(PrivateTag) noexcept -> Expected<void>;
-        auto do_init(PrivateTag, const wsi::Window&) noexcept -> Expected<void>;
         ~SurfaceImplementation() noexcept;
 
         SurfaceImplementation(const SurfaceImplementation&) noexcept                    = delete;
@@ -62,9 +82,8 @@ namespace stormkit::gpu {
         [[nodiscard]]
         static auto allocate_from_window(view::Instance instance, const wsi::Window& window) noexcept -> Expected<Heap<Surface>>;
 
-      private:
-        using UseNamedConstructors::allocate;
-        using UseNamedConstructors::create;
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const OffscreenCreateInfo&) noexcept -> Expected<void>;
     };
 
     namespace view {
@@ -108,14 +127,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE inline auto SurfaceImplementation::create_offscreen(view::Instance instance) noexcept
         -> Expected<Surface> {
-        return UseNamedConstructors::create(std::move(instance));
+        return OffScreenNamedConstructor::create(std::move(instance), OffscreenCreateInfo{});
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE inline auto SurfaceImplementation::allocate_offscreen(view::Instance instance) noexcept
         -> Expected<Heap<Surface>> {
-        return UseNamedConstructors::allocate(std::move(instance));
+        return OffScreenNamedConstructor::allocate(std::move(instance), OffscreenCreateInfo{});
     }
 #endif
 
@@ -124,7 +143,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto SurfaceImplementation::create_from_window(view::Instance instance, const wsi::Window& window) noexcept
       -> Expected<Surface> {
-        return UseNamedConstructors::create(std::move(instance), window);
+        return GpuObjectImplementation::create(std::move(instance), CreateInfo { as_ref(window) });
     }
 
     /////////////////////////////////////
@@ -132,6 +151,6 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto SurfaceImplementation::allocate_from_window(view::Instance instance, const wsi::Window& window) noexcept
       -> Expected<Heap<Surface>> {
-        return UseNamedConstructors::allocate(std::move(instance), window);
+        return GpuObjectImplementation::allocate(std::move(instance), CreateInfo { as_ref(window) });
     }
 } // namespace stormkit::gpu

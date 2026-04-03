@@ -56,15 +56,22 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto CommandPoolImplementation::do_init(PrivateTag) noexcept -> Expected<void> {
+    auto CommandPoolImplementation::do_init(PrivateTag, const CreateInfo& create_info_) noexcept -> Expected<void> {
         const auto& device       = owner();
         const auto& device_table = device.device_table();
+
+        const auto flags = [&create_info_] noexcept {
+            auto out = VkCommandPoolCreateFlags {};
+            if (create_info_.reset) out |= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+            if (create_info_.transient) out |= VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+            return out;
+        }();
 
         const auto create_info = VkCommandPoolCreateInfo {
             .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .pNext            = nullptr,
-            .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-            .queueFamilyIndex = 0,
+            .flags            = flags,
+            .queueFamilyIndex = create_info_.queue.entry().id,
         };
 
         m_vk_handle = Try(vk::call_checked<VkCommandPool>(device_table.vkCreateCommandPool, device, &create_info, nullptr));

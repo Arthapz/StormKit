@@ -93,8 +93,12 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DescriptorSetImplementation::do_init(PrivateTag, VkDescriptorSet&& descriptor_set, Deleter&& deleter) noexcept -> void {
+    auto DescriptorSetImplementation::do_init(PrivateTag,
+                                              VkDescriptorSet&&      descriptor_set,
+                                              DescriptorSetDeleter&& deleter) noexcept -> Expected<void> {
         m_vk_handle = std::move(descriptor_set);
         m_deleter   = std::move(deleter);
+
+        return {};
     }
 } // namespace stormkit::gpu

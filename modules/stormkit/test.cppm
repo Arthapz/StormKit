@@ -45,7 +45,7 @@ export namespace test {
     auto runTests() noexcept -> int;
 } // namespace test
 
-module :private;
+// module :private;
 
 using namespace std::literals;
 

@@ -1178,9 +1178,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto CommandBufferImplementation::do_init(PrivateTag,
-                                              CommandBufferLevel level,
-                                              VkCommandBuffer&&  handle,
-                                              Deleter&&          deleter) noexcept -> void {
+                                              CommandBufferLevel     level,
+                                              VkCommandBuffer&&      handle,
+                                              CommandBufferDeleter&& deleter) noexcept -> void {
         m_state = core::allocate_unsafe<State>(State::INITIAL);
 
         m_level = level;

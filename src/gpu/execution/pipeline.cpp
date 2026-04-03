@@ -206,13 +206,9 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineImplementation::do_init(PrivateTag,
-                                         const RasterPipelineState&           _state,
-                                         view::PipelineLayout                 layout,
-                                         const RasterPipelineRenderingInfo&   rendering_info,
-                                         std::optional<view::PipelineCache>&& pipeline_cache) noexcept -> Expected<void> {
+    auto PipelineImplementation::do_init(PrivateTag, const RasterizationCreateInfo& create_info) noexcept -> Expected<void> {
         m_type  = Type::RASTER;
-        m_state = core::allocate_unsafe<StateVariant>(_state);
+        m_state = core::allocate_unsafe<StateVariant>(create_info.state);
 
         const auto& state = as<RasterPipelineState>(*m_state);
 
@@ -232,31 +228,31 @@ namespace stormkit::gpu {
                     shaders,
                     depth_stencil] = gpu::do_init(state);
 
-        const auto formats = transform(rendering_info.color_attachment_formats, vk::monadic::to_vk<VkFormat>());
+        const auto formats = transform(create_info.rendering_info.color_attachment_formats, vk::monadic::to_vk<VkFormat>());
 
-        const auto _rendering_info = [&] noexcept {
+        const auto rendering_info = [&] noexcept {
             auto info = VkPipelineRenderingCreateInfo {
                 .sType                   = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
                 .pNext                   = nullptr,
-                .viewMask                = rendering_info.view_mask,
+                .viewMask                = create_info.rendering_info.view_mask,
                 .colorAttachmentCount    = as<u32>(stdr::size(formats)),
                 .pColorAttachmentFormats = stdr::data(formats),
                 .depthAttachmentFormat   = {},
                 .stencilAttachmentFormat = {}
             };
 
-            if (rendering_info.depth_attachment_format)
-                info.depthAttachmentFormat = vk::to_vk<VkFormat>(*rendering_info.depth_attachment_format);
+            if (create_info.rendering_info.depth_attachment_format)
+                info.depthAttachmentFormat = vk::to_vk<VkFormat>(*create_info.rendering_info.depth_attachment_format);
 
-            if (rendering_info.stencil_attachment_format)
-                info.stencilAttachmentFormat = vk::to_vk<VkFormat>(*rendering_info.stencil_attachment_format);
+            if (create_info.rendering_info.stencil_attachment_format)
+                info.stencilAttachmentFormat = vk::to_vk<VkFormat>(*create_info.rendering_info.stencil_attachment_format);
 
             return info;
         }();
 
-        const auto create_info = VkGraphicsPipelineCreateInfo {
+        const auto vk_create_info = VkGraphicsPipelineCreateInfo {
             .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-            .pNext               = &_rendering_info,
+            .pNext               = &rendering_info,
             .flags               = 0,
             .stageCount          = as<u32>(stdr::size(shaders)),
             .pStages             = stdr::data(shaders),
@@ -269,14 +265,14 @@ namespace stormkit::gpu {
             .pDepthStencilState  = &depth_stencil,
             .pColorBlendState    = &color_blending,
             .pDynamicState       = &dynamic_state,
-            .layout              = vk::to_vk(layout),
+            .layout              = vk::to_vk(create_info.layout),
             .renderPass          = VK_NULL_HANDLE,
             .subpass             = 0,
             .basePipelineHandle  = nullptr,
             .basePipelineIndex   = -1,
         };
 
-        const auto vk_pipeline_cache = either(pipeline_cache, vk::monadic::to_vk(), cmonadic::init<VkPipelineCache>(nullptr));
+        const auto vk_pipeline_cache = either(create_info.cache, vk::monadic::to_vk(), cmonadic::init<VkPipelineCache>(nullptr));
 
         const auto& device       = owner();
         const auto& device_table = device.device_table();
@@ -285,20 +281,17 @@ namespace stormkit::gpu {
                                                        device,
                                                        vk_pipeline_cache,
                                                        1,
-                                                       &create_info,
+                                                       &vk_create_info,
                                                        nullptr));
         Return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineImplementation::do_init(PrivateTag,
-                                         const RasterPipelineState&           _state,
-                                         view::PipelineLayout                 layout,
-                                         view::RenderPass                     render_pass,
-                                         std::optional<view::PipelineCache>&& pipeline_cache) noexcept -> Expected<void> {
+    auto PipelineImplementation::do_init(PrivateTag, const LegacyRasterizationCreateInfo& create_info) noexcept
+      -> Expected<void> {
         m_type  = Type::RASTER;
-        m_state = core::allocate_unsafe<StateVariant>(_state);
+        m_state = core::allocate_unsafe<StateVariant>(create_info.state);
 
         const auto& state = as<RasterPipelineState>(*m_state);
 
@@ -318,7 +311,7 @@ namespace stormkit::gpu {
                     shaders,
                     depth_stencil] = gpu::do_init(state);
 
-        const auto create_info = VkGraphicsPipelineCreateInfo {
+        const auto vk_create_info = VkGraphicsPipelineCreateInfo {
             .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .pNext               = nullptr,
             .flags               = 0,
@@ -333,14 +326,14 @@ namespace stormkit::gpu {
             .pDepthStencilState  = &depth_stencil,
             .pColorBlendState    = &color_blending,
             .pDynamicState       = &dynamic_state,
-            .layout              = vk::to_vk(layout),
-            .renderPass          = render_pass,
+            .layout              = vk::to_vk(create_info.layout),
+            .renderPass          = create_info.render_pass,
             .subpass             = 0,
             .basePipelineHandle  = nullptr,
             .basePipelineIndex   = -1,
         };
 
-        const auto vk_pipeline_cache = either(pipeline_cache, vk::monadic::to_vk(), cmonadic::init<VkPipelineCache>(nullptr));
+        const auto vk_pipeline_cache = either(create_info.cache, vk::monadic::to_vk(), cmonadic::init<VkPipelineCache>(nullptr));
 
         const auto& device       = owner();
         const auto& device_table = device.device_table();
@@ -349,7 +342,7 @@ namespace stormkit::gpu {
                                                        device,
                                                        vk_pipeline_cache,
                                                        1,
-                                                       &create_info,
+                                                       &vk_create_info,
                                                        nullptr));
         Return {};
     }
