@@ -21,6 +21,7 @@ export module stormkit.core:errors;
 import std;
 
 import :string.aliases;
+import :containers.aliases;
 
 export {
     namespace stormkit { inline namespace core {
