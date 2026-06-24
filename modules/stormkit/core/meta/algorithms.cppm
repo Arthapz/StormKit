@@ -13,25 +13,6 @@ import std;
 import :meta.concepts;
 
 namespace stormkit { inline namespace core { namespace meta::details {
-    // template<bool, template<class> class Then, class Arg, class Else>
-    // struct LazyEvaluation final {
-    //     using type = Else;
-    // };
-
-    // template<template<class> class Then, class Arg, class Else>
-    // struct LazyEvaluation<true, Then, Arg, Else> final {
-    //     using type = Then<Arg>;
-    // };
-
-    // /*
-    //     LazyEvaluationType permet de choisir un type basé sur une condition sans instancier préventivement la branche 'Then'.
-    //     Contrairement à std::conditional<Condition, A, B>::type, qui force l'instanciation de A ET B même si Condition est
-    //     fausse (pouvant causer des erreurs de compilation si une branche est invalide pour les types donnés),
-    //     LazyEvaluationType n'instancie Then<Arg> que si la condition est vraie.
-    // */
-    // template<bool Condition, template<class> class Then, class Arg, class Else>
-    // using LazyEvaluationType = typename LazyEvaluation<Condition, Then, Arg, Else>::type;
-
     template<class T>
     struct LazyType {
         using Type = T;

@@ -1,6 +1,6 @@
 add_requires("frozen", { system = false, configs = { modules = true, std_import = true, cpp = "latest" } })
 add_requires("unordered_dense", { system = false, configs = { modules = true, std_import = true } })
-add_requires("nontype_functional")
+add_requires("nontype_functional main")
 
 local src_core_dir = path.join(src_dir, "core")
 local module_core_dir = path.join(module_dir, "core")
