@@ -31,13 +31,12 @@
     #define STORMKIT_IMPORT          __declspec(dllimport)
     #define STORMKIT_RESTRICT        __restrict
     #define STORMKIT_PRIVATE
-    #define STORMKIT_FORCE_INLINE_IMPL                  [[msvc::forceinline]]
-    #define STORMKIT_INTRINSIC                          [[msvc::intrinsic]]
-    #define STORMKIT_NO_UNIQUE_ADDRESS                  [[msvc::no_unique_address]]
-    #define STORMKIT_PUSH_WARNINGS                      _Pragma("warning(push)")
-    #define STORMKIT_WARNING_IGNORE_MSVC_IMPL(warning_) _Pragma(#warning_)
+    #define STORMKIT_FORCE_INLINE_IMPL [[msvc::forceinline]]
+    #define STORMKIT_INTRINSIC         [[msvc::intrinsic]]
+    #define STORMKIT_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+    #define STORMKIT_PUSH_WARNINGS     _Pragma("warning(push)")
     //clang-format off
-    #define STORMKIT_WARNING_IGNORE_MSVC(value) STORMKIT_WARNING_IGNORE_MSVC_IMPL(warning(disable : value))
+    #define STORMKIT_WARNING_IGNORE_MSVC(value) STORMKIT_PRAGMA_FROM_STRING(warning(disable : value))
     //clang-format on
     #define STORMKIT_POP_WARNINGS  _Pragma("warning(pop)")
     #define STORMKIT_ARRAY_IF_MSVC array
@@ -155,7 +154,9 @@
     #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
     #define STORMKIT_PUSH_WARNINGS  _Pragma("clang diagnostic push")
     #define STORMKIT_WARNING_IGNORE_GCC(_)
-    #define STORMKIT_WARNING_IGNORE_MSVC(_)
+    #ifndef STORMKIT_WARNING_IGNORE_MSVC
+        #define STORMKIT_WARNING_IGNORE_MSVC(_)
+    #endif
     #define STORMKIT_WARNING_IGNORE_CLANG(warning) STORMKIT_PRAGMA_FROM_STRING(clang diagnostic ignore warning)
     #define STORMKIT_POP_WARNINGS                  _Pragma("clang diagnostic pop")
 #elif defined(__GNUC__) or defined(__GNUG__)
@@ -164,7 +165,9 @@
     #define STORMKIT_COMPILER      STORMKIT_COMPILER_GCC
     #define STORMKIT_PUSH_WARNINGS _Pragma("GCC diagnostic push")
     #define STORMKIT_WARNING_IGNORE_CLANG(_)
-    #define STORMKIT_WARNING_IGNORE_MSVC(_)
+    #ifndef STORMKIT_WARNING_IGNORE_MSVC
+        #define STORMKIT_WARNING_IGNORE_MSVC(_)
+    #endif
     #define STORMKIT_WARNING_IGNORE_GCC(warning) STORMKIT_PRAGMA_FROM_STRING(GCC diagnostic ignored warning)
     #define STORMKIT_POP_WARNINGS                _Pragma("GCC diagnostic pop")
 #endif
