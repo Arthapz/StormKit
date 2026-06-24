@@ -69,7 +69,6 @@ namespace("stormkit", function()
 
     includes("xmake/targets/core.xmake.lua")
     includes("xmake/targets/main.xmake.lua")
-    includes("xmake/targets/test.xmake.lua")
 
     for _, name in ipairs({ "log", "entities", "gpu", "image", "wsi", "lua" }) do
         if get_config(name) then includes("xmake/targets/" .. name .. ".xmake.lua") end
@@ -77,7 +76,10 @@ namespace("stormkit", function()
 
     includes("xmake/targets/examples.xmake.lua")
 
-    if get_config("tests") then includes("xmake/targets/tests.xmake.lua") end
+    if get_config("tests") then
+        includes("xmake/targets/test.xmake.lua")
+        includes("xmake/targets/tests.xmake.lua")
+    end
     if get_config("tools") then includes("xmake/targets/tools.xmake.lua") end
 
     target("stormkit", function()
