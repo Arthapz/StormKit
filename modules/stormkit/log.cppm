@@ -289,8 +289,8 @@ namespace stormkit::log {
 
         auto time_point = LogClock::now();
 
-        return allocate(std::move(time_point), std::forward<Args>(param_args)...)
-          .transform_error(core::monadic::assert("Failed to allocate logger instance"));
+        return *allocate<T>(std::move(time_point), std::forward<Args>(param_args)...)
+                  .transform_error(core::monadic::assert("Failed to allocate logger instance"));
     }
 
     ////////////////////////////////////////
