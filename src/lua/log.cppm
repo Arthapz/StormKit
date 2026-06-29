@@ -13,6 +13,6 @@ import std;
 import stormkit.core;
 import stormkit.log;
 
-export namespace stormkit::lua::log {
+namespace stormkit::lua::log {
     auto init_lua(sol::state& global_state) noexcept -> void;
 } // namespace stormkit::lua::log

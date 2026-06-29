@@ -1,6 +1,6 @@
 namespace("stormkit", function()
     rule("flags", function()
-        on_load("linux", "mingw", "macosx", "ios", "android", function(target)
+        on_config("linux", "mingw", "macosx", "ios", "android", function(target)
             if get_config("lto") then
                 target:set("policy", "build.optimization.lto", true)
                 if get_config("toolchain") == "llvm" or get_config("toolchain") == "clang" then
@@ -28,7 +28,7 @@ namespace("stormkit", function()
                 target:add("syslinks", "dl")
             end
         end)
-        on_load("windows", function(target)
+        on_config("windows", function(target)
             import("core.tool.compiler")
             local rad_enabled = false
             if get_config("rad") and is_subhost("windows") then
@@ -36,6 +36,8 @@ namespace("stormkit", function()
                 target:add("ldflags", "-fuse-ld=radlink", { force = true })
                 target:add("shflags", "-fuse-ld=radlink", { force = true })
             end
+            target:add("cxflags", "clang::-fms-compatibility")
+            target:add("defines", "_CRT_STDIO_ISO_WIDE_SPECIFIERS=1")
 
             if get_config("sanitizers") and is_mode("release", "releasedbg") and target:is_binary() then
                 if get_config("toolchain") == "llvm" or get_config("toolchain") == "clang" then
@@ -128,9 +130,11 @@ namespace("stormkit", function()
                             "-fstack-clash-protection",
                             "-ftrivial-auto-var-init=zero",
                         },
-                        is_plat("linux") and {
-                                "-fcf-protection=full",
-                            } or {},
+                        is_plat("linux")
+                                and {
+                                    "-fcf-protection=full",
+                                }
+                            or {},
                         is_mode("debug", "releasedbg")
                                 and { "-ggdb3", "-fno-omit-frame-pointer", "-fno-sanitize-merge" }
                             or {},

@@ -105,11 +105,7 @@ namespace stormkit { inline namespace core {
 
             if ((mask & (3 << 0)) == (3 << 0)) {
                 auto w = u16 { 0 };
-#ifdef STORMKIT_COMPILER_MSVC
-                if constexpr (std::is_constant_evaluated()) {
-#else
                 if consteval {
-#endif
                     w = as<u16>(s[0] | (s[1] << 8));
                 } else {
                     // FIXME(strager): This is endian-dependent, but it makes GCC
@@ -131,11 +127,7 @@ namespace stormkit { inline namespace core {
 
             if ((mask & (3 << 2)) == (3 << 2)) {
                 auto w = u16 { 0 };
-#ifdef STORMKIT_COMPILER_MSVC
-                if constexpr (std::is_constant_evaluated()) {
-#else
                 if consteval {
-#endif
                     w = as<u16>(s[size - 2] | (s[size - 1] << 8));
                 } else {
                     // FIXME(strager): This is endian-dependent, but it makes GCC

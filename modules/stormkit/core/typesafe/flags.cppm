@@ -6,6 +6,8 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
+#define SUBSTITUTION 0
+
 export module stormkit.core:typesafe.flags;
 
 import std;
@@ -21,22 +23,13 @@ import :typesafe.integer;
 
 export {
     namespace stormkit { inline namespace core {
-        namespace details {
-            template<stormkit::meta::IsEnumeration T>
-            struct EnableBitmaskOperators {
-                constexpr EnableBitmaskOperators() = default;
-                static constexpr auto enable       = false;
-            };
-
-            template<stormkit::meta::IsEnumeration T>
-            inline constexpr auto BITMASK_OPERATORS_ENABLED = EnableBitmaskOperators<T>::enable;
-        } // namespace details
-
         namespace meta {
+            template<IsEnumeration T>
+            inline constexpr auto FLAG_TRAIT = false;
+
             template<class T>
-            concept IsFlag = (IsScopedEnumeration<meta::CanonicalType<T>> and core::details::BITMASK_OPERATORS_ENABLED<T>)
-                             or IsPlainEnumeration<meta::CanonicalType<T>>;
-        }
+            concept IsFlag = FLAG_TRAIT<T>;
+        } // namespace meta
 
         /// \brief Check if a flag bit is enabled
         /// \requires `Enum` to be an enumeration promoted static_cast a flag with `FLAG_ENUM`
@@ -51,6 +44,7 @@ export {
         [[nodiscard]]
         constexpr auto next_value(const T& value) noexcept -> T;
 
+#if SUBSTITUTION
         template<meta::IsEnumeration T, usize N, T DEFAULT_VALUE, usize BUF_LEN = 50>
         consteval auto generate_substitutions_as_string_for(string_view                                prefix,
                                                             const array<std::pair<T, string_view>, N>& mapping,
@@ -60,6 +54,7 @@ export {
         consteval auto generate_substitutions_as_string_for(string_view                                prefix,
                                                             const array<std::pair<T, string_view>, N>& mapping,
                                                             char separator = '|') noexcept -> decltype(auto);
+#endif
     }} // namespace stormkit::core
 
     template<stormkit::meta::IsFlag T>
@@ -110,6 +105,7 @@ namespace stormkit { inline namespace core {
         return static_cast<T>(static_cast<Underlying>(value) << 1);
     }
 
+#if SUBSTITUTION
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsEnumeration T, usize N, T DEFAULT_VALUE, usize BUF_LEN>
@@ -130,7 +126,7 @@ namespace stormkit { inline namespace core {
         }();
 
         auto out   = array<std::pair<T, meta::ConstexprString<BUF_LEN>>, OUT_SIZE> {};
-        auto queue = dyn_array<std::tuple<T, string, bool>> {};
+        auto queue = dynarray<std::tuple<T, string, bool>> {};
         for (const auto& [k, v] : mapping) queue.emplace_back(k, string { v }, true);
 
         auto i = 0uz;
@@ -193,7 +189,7 @@ namespace stormkit { inline namespace core {
         }();
 
         auto out   = array<std::pair<T, meta::ConstexprString<BUF_LEN>>, OUT_SIZE> {};
-        auto queue = dyn_array<std::tuple<T, string, bool>> {};
+        auto queue = dynarray<std::tuple<T, string, bool>> {};
         for (const auto& [k, v] : mapping) queue.emplace_back(k, string { v }, true);
 
         auto i = 0uz;
@@ -228,74 +224,71 @@ namespace stormkit { inline namespace core {
         }
         return out;
     }
+#endif
+
 }} // namespace stormkit::core
+
+using namespace stormkit;
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::IsFlag T>
+template<meta::IsFlag T>
 STORMKIT_FORCE_INLINE
 constexpr auto operator|(const T& lhs, const T& rhs) noexcept -> decltype(auto) {
-    using namespace stormkit;
     using Underlying = meta::UnderlyingType<T>;
     return static_cast<T>(static_cast<Underlying>(lhs) | static_cast<Underlying>(rhs));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::IsFlag T>
+template<meta::IsFlag T>
 STORMKIT_FORCE_INLINE
 constexpr auto operator&(const T& lhs, const T& rhs) noexcept -> decltype(auto) {
-    using namespace stormkit;
     using Underlying = meta::UnderlyingType<T>;
     return static_cast<T>(static_cast<Underlying>(lhs) & static_cast<Underlying>(rhs));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::IsFlag T>
+template<meta::IsFlag T>
 STORMKIT_FORCE_INLINE
 constexpr auto operator^(const T& lhs, const T& rhs) noexcept -> decltype(auto) {
-    using namespace stormkit;
     using Underlying = meta::UnderlyingType<T>;
     return static_cast<T>(static_cast<Underlying>(lhs) ^ static_cast<Underlying>(rhs));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::IsFlag T>
+template<meta::IsFlag T>
 STORMKIT_FORCE_INLINE
 constexpr auto operator~(const T& lhs) noexcept -> decltype(auto) {
-    using namespace stormkit;
     using Underlying = meta::UnderlyingType<T>;
     return static_cast<T>(~static_cast<Underlying>(lhs));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::IsFlag T>
+template<meta::IsFlag T>
 STORMKIT_FORCE_INLINE
 constexpr auto operator|=(T& lhs, const T& rhs) noexcept -> decltype(auto) {
-    using namespace stormkit;
     lhs = lhs | rhs;
     return lhs;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::IsFlag T>
+template<meta::IsFlag T>
 STORMKIT_FORCE_INLINE
 constexpr auto operator&=(T& lhs, const T& rhs) noexcept -> decltype(auto) {
-    using namespace stormkit;
     lhs = lhs & rhs;
     return lhs;
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::meta::IsFlag T>
+template<meta::IsFlag T>
 STORMKIT_FORCE_INLINE
 constexpr auto operator^=(T& lhs, const T& rhs) noexcept -> decltype(auto) {
-    using namespace stormkit;
     lhs = lhs ^ rhs;
     return lhs;
 }

@@ -69,7 +69,8 @@ namespace stormkit { inline namespace core {
         auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
 
-        for (const auto& c : input) std::c16rtomb(std::bit_cast<char*>(stdr::data(output)), c, &state);
+        for (const auto& c : input) [[maybe_unused]]
+            auto _ = std::c16rtomb(std::bit_cast<char*>(stdr::data(output)), c, &state);
 #else
         output = std::bit_cast<char*>(stdr::data(input));
 #endif
@@ -114,7 +115,8 @@ namespace stormkit { inline namespace core {
         output.resize(stdr::size(input));
 
 #if defined(STORMKIT_COMPILER_MSVC)
-        for (const auto& c : input) std::c16rtomb(stdr::data(output), narrow<char16_t>(c), &state);
+        for (const auto& c : input) [[maybe_unused]]
+            auto _ = std::c16rtomb(stdr::data(output), narrow<char16_t>(c), &state);
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<char*>(stdr::data(input));
 #else
@@ -132,7 +134,8 @@ namespace stormkit { inline namespace core {
         output.resize(stdr::size(input) * narrow<usize>(MB_LEN_MAX));
 
 #if defined(STORMKIT_COMPILER_MSVC)
-        stdr::copy(as_bytes(input), std::bit_cast<char*>(stdr::begin(output)));
+        auto bytes = as_mutable_bytes(output);
+        stdr::copy(as_bytes(input), stdr::begin(bytes));
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<char8_t*>(stdr::data(input));
 #else
@@ -157,7 +160,7 @@ namespace stormkit { inline namespace core {
         output.resize(stdr::size(input));
 
 #if defined(STORMKIT_COMPILER_MSVC)
-        auto bytes = as_bytes(output);
+        auto bytes = as_mutable_bytes(output);
         stdr::copy(as_bytes(input), stdr::begin(bytes));
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<char*>(stdr::data(input));

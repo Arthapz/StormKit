@@ -110,16 +110,16 @@ export namespace stormkit { inline namespace core {
         auto dirties() const noexcept -> array_view<const TreeNodeIndexType>;
 
         auto gen_dot_file(stdfs::path filepath, std23::function_ref<string_view(string_view)> colorize_node) const noexcept
-          -> io::Expected<usize>;
+          -> Result<usize>;
 
         auto gen_dot_file(stdfs::path                                   filepath,
                           core::u32                                     highlight,
-                          std23::function_ref<string_view(string_view)> colorize_node) const noexcept -> io::Expected<usize>;
+                          std23::function_ref<string_view(string_view)> colorize_node) const noexcept -> Result<usize>;
 
       private:
-        TreeNodeIndexType            m_first_free_index = 0;
-        dyn_array<TreeNodeType>      m_tree;
-        dyn_array<TreeNodeIndexType> m_dirties;
+        TreeNodeIndexType           m_first_free_index = 0;
+        dynarray<TreeNodeType>      m_tree;
+        dynarray<TreeNodeIndexType> m_dirties;
     };
 }} // namespace stormkit::core
 
@@ -442,7 +442,7 @@ namespace stormkit { inline namespace core {
     template<class TreeNodeClass>
     auto Tree<TreeNodeClass>::gen_dot_file(stdfs::path                                   filepath,
                                            std23::function_ref<string_view(string_view)> colorize_node) const noexcept
-      -> io::Expected<usize> {
+      -> Result<usize> {
         using namespace stormkit::literals;
         auto out = string {};
         out.reserve(1_kb);
@@ -475,7 +475,7 @@ namespace stormkit { inline namespace core {
 
         out += "}";
 
-        return io::write_text(filepath, out);
+        return io::writefile(filepath, out);
     }
 
     ////////////////////////////////////////
@@ -484,7 +484,7 @@ namespace stormkit { inline namespace core {
     auto Tree<TreeNodeClass>::gen_dot_file(stdfs::path                                   filepath,
                                            core::u32                                     highlight,
                                            std23::function_ref<string_view(string_view)> colorize_node) const noexcept
-      -> io::Expected<usize> {
+      -> Result<usize> {
         using namespace stormkit::literals;
         auto out = string {};
         out.reserve(1_kb);
@@ -525,6 +525,6 @@ namespace stormkit { inline namespace core {
 
         out += "}";
 
-        return io::write_text(filepath, out);
+        return io::writefile(filepath, out);
     }
 }} // namespace stormkit::core

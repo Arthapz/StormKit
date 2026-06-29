@@ -73,7 +73,7 @@ namespace stormkit { inline namespace core {
             static constexpr auto create(TConstructorArgs... c_args) noexcept -> ValueType;
 
             [[nodiscard]]
-            static constexpr auto allocate(TConstructorArgs... c_args) noexcept -> Heap<ValueType>;
+            static constexpr auto allocate(TConstructorArgs... c_args) noexcept -> heap_ptr<ValueType>;
         };
 
         template<typename T>
@@ -169,7 +169,7 @@ namespace stormkit { inline namespace core {
     template<typename T, typename... TConstructorArgs>
     STORMKIT_FORCE_INLINE
     constexpr auto NamedConstructor<T, ConstructorArgs<TConstructorArgs...>>::allocate(TConstructorArgs... args) noexcept
-      -> Heap<ValueType> {
+      -> heap_ptr<ValueType> {
         return core::allocate_unsafe<ValueType>(PrivateTagBase::PRIVATE, std::forward<TConstructorArgs>(args)...);
     }
 
@@ -214,7 +214,7 @@ namespace stormkit { inline namespace core {
             out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(d_args)...);
             return out;
         } else {
-            using ReturnType = meta::TransformExpectedValueTo<Heap<ValueType>, DoInitReturnType>;
+            using ReturnType = meta::TransformExpectedValueTo<heap_ptr<ValueType>, DoInitReturnType>;
 
 #ifdef STORMKIT_COMPILER_CLANG
             auto out = core::allocate_unsafe<ValueType>(PrivateTagBase::PRIVATE, std::forward<TConstructorArgs>(c_args)...);
@@ -275,7 +275,7 @@ namespace stormkit { inline namespace core {
             out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(args)...);
             return out;
         } else {
-            using ReturnType = meta::TransformExpectedValueTo<Heap<ValueType>, DoInitReturnType>;
+            using ReturnType = meta::TransformExpectedValueTo<heap_ptr<ValueType>, DoInitReturnType>;
 
 #ifdef STORMKIT_COMPILER_CLANG
             auto out = core::allocate_unsafe<ValueType>(PrivateTagBase::PRIVATE);

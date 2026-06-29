@@ -133,7 +133,8 @@ export {
             auto operator=(Window&&) noexcept -> Window&;
 
             static auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> Window;
-            static auto allocate_and_open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> Heap<Window>;
+            static auto allocate_and_open(string title, const math::uextent2& size, WindowFlag flags) noexcept
+              -> heap_ptr<Window>;
 
             auto close() noexcept -> void;
             [[nodiscard]]
@@ -241,7 +242,8 @@ export {
         };
     }} // namespace stormkit::wsi
 
-    FLAG_ENUM(stormkit::wsi::WindowFlag)
+    template<>
+    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::WindowFlag> = true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -35,7 +35,7 @@ export namespace stormkit { inline namespace core {
         };
 
         template<class T>
-        concept IsNumericsRangePure = IsNumericsRange<CanonicalType<T>>;
+        concept IsNumericsRangePure = IsNumericsRange<CanonicalT<T>>;
     } // namespace meta
 
     template<meta::IsArithmetic T>
@@ -262,7 +262,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     constexpr auto range(meta::IsNumericsRangePure auto&& range) noexcept -> decltype(auto) {
-        return Range<meta::CanonicalType<decltype(range)>> { std::forward<decltype(range)>(range) };
+        return Range<meta::CanonicalT<decltype(range)>> { std::forward<decltype(range)>(range) };
     }
 
     /////////////////////////////////////

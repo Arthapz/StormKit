@@ -32,14 +32,14 @@ auto main(const array_view<const string_view> args) noexcept -> int {
         return stdfs::path { args[2] };
     }();
 
-    const auto template_data = TryAssert(io::read_text<io::Mode::AINSI>(template_path),
+    const auto template_data = TryAssert(io::readfile<io::Mode::AINSI>(template_path),
                                          std::format("Failed to read file {}, reason: ", template_path.string()));
 
     auto out = string {};
     out.reserve(stdr::size(template_data));
 
     // TODO replace with std::hive when supported
-    auto buff = dyn_array<char> {};
+    auto buff = dynarray<char> {};
     buff.reserve(50);
 
     out += std::format(R"(

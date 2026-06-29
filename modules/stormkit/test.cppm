@@ -29,13 +29,13 @@ export namespace test {
         auto                 runTest(string_view name) noexcept;
         auto                 runTests() noexcept;
         string               name;
-        dyn_array<TestFunc>  tests;
+        dynarray<TestFunc>   tests;
         std::source_location location;
     };
 
     struct TestSuite {
         TestSuite(string&&                    name,
-                  dyn_array<TestFunc>&&       tests,
+                  dynarray<TestFunc>&&        tests,
                   const std::source_location& location = std::source_location::current()) noexcept;
     };
 
@@ -58,11 +58,11 @@ namespace test {
     };
 
     struct TestState {
-        dyn_array<std::unique_ptr<TestSuiteHolder>> test_suites;
-        bool                                        verbose        = false;
-        bool                                        failed         = false;
-        bool                                        plain          = false;
-        std::optional<string>                       requested_test = std::nullopt;
+        dynarray<std::unique_ptr<TestSuiteHolder>> test_suites;
+        bool                                       verbose        = false;
+        bool                                       failed         = false;
+        bool                                       plain          = false;
+        std::optional<string>                      requested_test = std::nullopt;
     };
 
     namespace {
@@ -136,7 +136,7 @@ namespace test {
         return failed_tests == 0;
     }
 
-    TestSuite::TestSuite(string&& _name, dyn_array<TestFunc>&& tests, const std::source_location& location) noexcept {
+    TestSuite::TestSuite(string&& _name, dynarray<TestFunc>&& tests, const std::source_location& location) noexcept {
         state.test_suites.emplace_back(std::make_unique<TestSuiteHolder>(std::move(_name), std::move(tests), location));
     }
 
@@ -153,8 +153,8 @@ namespace test {
         }
     }
 
-    auto split(string_view str, char delim) noexcept -> dyn_array<string> {
-        auto output = dyn_array<string> {};
+    auto split(string_view str, char delim) noexcept -> dynarray<string> {
+        auto output = dynarray<string> {};
         auto first  = std::size_t { 0u };
 
         while (first < str.size()) {

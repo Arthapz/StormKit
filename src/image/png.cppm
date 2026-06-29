@@ -18,14 +18,14 @@ import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_png(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_png(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_png(const image::Image& image, const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto save_png(const image::Image& image) noexcept -> std::expected<byte_dyn_array, image::Image::Error>;
+    auto save_png(const image::Image& image) noexcept -> std::expected<byte_dynarray, image::Image::Error>;
 } // namespace stormkit::image::details
 
 namespace stdr = std::ranges;
@@ -40,11 +40,11 @@ namespace stormkit::image::details {
     namespace png {
         struct ReadParam {
             usize      readed;
-            byte_view<>& data;
+            byte_view& data;
         };
 
         struct WriteParam {
-            byte_dyn_array& data;
+            byte_dynarray& data;
         };
 
         /////////////////////////////////////
@@ -52,7 +52,7 @@ namespace stormkit::image::details {
         static auto read_func(png_struct* ps, png_byte* d, png_size_t length) noexcept -> void {
             auto& param = *std::bit_cast<ReadParam*>(png_get_io_ptr(ps));
 
-            auto _d   = as_bytes_mut(d, length);
+            auto _d   = as_mutable_bytes(d, length);
             auto data = param.data.subspan(param.readed, length);
 
             stdr::copy(data, stdr::begin(_d));
@@ -74,8 +74,8 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_png(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error> {
-        auto image_memory = byte_dyn_array {};
+    auto load_png(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error> {
+        auto image_memory = byte_dynarray {};
         auto format       = Format {};
         auto extent       = math::uextent3 {};
 
@@ -162,7 +162,7 @@ namespace stormkit::image::details {
         const auto row_bytes = png_get_rowbytes(png_ptr, info_ptr);
         image_memory.resize(extent.height * row_bytes);
 
-        auto row_pointers = dyn_array<byte*> { extent.height, nullptr };
+        auto row_pointers = dynarray<byte*> { extent.height, nullptr };
 
         auto buff_pos = std::data(image_memory);
 
@@ -197,8 +197,8 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_png(const image::Image& image) noexcept -> std::expected<byte_dyn_array, image::Image::Error> {
-        auto output = byte_dyn_array {};
+    auto save_png(const image::Image& image) noexcept -> std::expected<byte_dynarray, image::Image::Error> {
+        auto output = byte_dynarray {};
 
         auto write_param = png::WriteParam { output };
 
@@ -236,7 +236,7 @@ namespace stormkit::image::details {
                      PNG_FILTER_TYPE_DEFAULT);
         png_write_info(png_ptr, info_ptr);
 
-        auto rows = dyn_array<byte*> { data.extent.height, nullptr };
+        auto rows = dynarray<byte*> { data.extent.height, nullptr };
         for (auto i : range(data.extent.height))
             rows[i] = const_cast<
               byte*>(&data.data[i * data.extent.width * data.channel_count * data.bytes_per_channel]); // TODO Fix

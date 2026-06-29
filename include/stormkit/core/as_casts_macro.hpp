@@ -8,13 +8,13 @@
 #include <stormkit/core/platform_macro.hpp>
 
 #define ASCASTER_STRICT_DECLARE(_To, _From)                                                                      \
-    template<stormkit::meta::SameAs<_To> To, stormkit::meta::SameAs<_From> From>                             \
+    template<stormkit::meta::SameAs<_To> To, stormkit::meta::SameAs<_From> From>                                 \
     struct stormkit::casts::AsCaster<To, From> {                                                                 \
         static constexpr auto operator()(const From& from, const std::source_location& location) noexcept -> To; \
     };
 
 #define ASCASTER_STRICT_DEFINE(_To, _From)                                                               \
-    template<stormkit::meta::SameAs<_To> To, stormkit::meta::SameAs<_From> From>                     \
+    template<stormkit::meta::SameAs<_To> To, stormkit::meta::SameAs<_From> From>                         \
     STORMKIT_FORCE_INLINE constexpr auto                                                                 \
       stormkit::casts::AsCaster<To, From>::operator()(const From&                                  from, \
                                                       [[maybe_unused]] const std::source_location& location) noexcept -> To
@@ -40,13 +40,13 @@
     ASCASTER_DEFINE(_To, _From)
 
 #define NARROWCASTER_STRICT_DECLARE(_To, _From)                                                                  \
-    template<stormkit::meta::SameAs<_To> To, stormkit::meta::SameAs<_From> From>                             \
+    template<stormkit::meta::SameAs<_To> To, stormkit::meta::SameAs<_From> From>                                 \
     struct stormkit::casts::NarrowCaster<To, From> {                                                             \
         static constexpr auto operator()(const From& from, const std::source_location& location) noexcept -> To; \
     };
 
 #define NARROWCASTER_STRICT_DEFINE(_To, _From)                                                               \
-    template<stormkit::meta::SameAs<_To> To, stormkit::meta::SameAs<_From> From>                         \
+    template<stormkit::meta::SameAs<_To> To, stormkit::meta::SameAs<_From> From>                             \
     STORMKIT_FORCE_INLINE constexpr auto                                                                     \
       stormkit::casts::NarrowCaster<To, From>::operator()(const From&                                  from, \
                                                           [[maybe_unused]] const std::source_location& location) noexcept -> To

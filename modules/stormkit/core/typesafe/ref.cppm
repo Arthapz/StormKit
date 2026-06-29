@@ -305,7 +305,7 @@ export {
         [[nodiscard]]
         constexpr auto as_refs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = dyn_array, typename... Args>
+        template<template<typename...> typename Out = dynarray, typename... Args>
             requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto to_refs(Args&&... args) noexcept -> decltype(auto);
@@ -315,17 +315,17 @@ export {
         [[nodiscard]]
         constexpr auto as_ref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = dyn_array, typename... Args>
+        template<template<typename...> typename Out = dynarray, typename... Args>
             requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto to_ref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = dyn_array, stdr::range T>
+        template<template<typename...> class Out = dynarray, stdr::range T>
             requires(stdr::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_refs(const T& range) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = dyn_array, stdr::range T>
+        template<template<typename...> class Out = dynarray, stdr::range T>
             requires(stdr::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto);
@@ -335,7 +335,7 @@ export {
         [[nodiscard]]
         constexpr auto as_optrefs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = dyn_array, typename... Args>
+        template<template<typename...> typename Out = dynarray, typename... Args>
             requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto to_optrefs(Args&&... args) noexcept -> decltype(auto);
@@ -345,17 +345,17 @@ export {
         [[nodiscard]]
         constexpr auto as_optref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> typename Out = dyn_array, typename... Args>
+        template<template<typename...> typename Out = dynarray, typename... Args>
             requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto to_optref_muts(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = dyn_array, stdr::range T>
+        template<template<typename...> class Out = dynarray, stdr::range T>
             requires(stdr::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_optrefs(const T& range) noexcept -> decltype(auto);
 
-        template<template<typename...> class Out = dyn_array, stdr::range T>
+        template<template<typename...> class Out = dynarray, stdr::range T>
             requires(stdr::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_mut_optrefs(T& range) noexcept -> decltype(auto);

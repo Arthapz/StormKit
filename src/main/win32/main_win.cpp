@@ -78,7 +78,7 @@ namespace {
 extern auto user_main(array_view<const string_view>) -> int;
 
 auto __stdcall main(int argc, char** argv) -> int {
-    auto args = dyn_array<string_view> {};
+    auto args = dynarray<string_view> {};
     args.reserve(as<usize>(argc));
 
     for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
@@ -95,7 +95,7 @@ auto __stdcall WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int {
     const auto argc = __argc;
     const auto argv = __argv;
 
-    auto args = dyn_array<string_view> {};
+    auto args = dynarray<string_view> {};
     args.reserve(as<usize>(argc));
 
     for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);

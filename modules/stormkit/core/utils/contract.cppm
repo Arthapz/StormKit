@@ -131,11 +131,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr auto assert(bool cond, string_view message, [[maybe_unused]] const std::source_location& location) noexcept
       -> void {
-#ifdef STORMKIT_COMPILER_MSVC
-        if constexpr (std::is_constant_evaluated()) {
-#else
         if consteval {
-#endif
             consteval_assert_base(cond, AssertType::Assertion, message);
         } else {
             assert_base(cond, AssertType::Assertion, message, location);
@@ -153,11 +149,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     constexpr auto expects(bool cond, string_view message, const std::source_location& location) noexcept -> void {
-#ifdef STORMKIT_COMPILER_MSVC
-        if constexpr (std::is_constant_evaluated()) {
-#else
         if consteval {
-#endif
             consteval_assert_base(cond, AssertType::PreCondition, message);
         } else {
             assert_base(cond, AssertType::PreCondition, message, location);
@@ -175,11 +167,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     constexpr auto ensures(bool cond, string_view message, const std::source_location& location) noexcept -> void {
-#ifdef STORMKIT_COMPILER_MSVC
-        if constexpr (std::is_constant_evaluated()) {
-#else
         if consteval {
-#endif
             consteval_assert_base(cond, AssertType::PostCondition, message);
         } else {
             assert_base(cond, AssertType::PostCondition, message, location);

@@ -107,8 +107,8 @@ export namespace stormkit::wsi::common {
             math::ivec2 position = { 0, 0 };
         } m_state;
 
-        dyn_array<MouseState>    m_mouse_states;
-        dyn_array<KeyboardState> m_keyboard_states;
+        dynarray<MouseState>    m_mouse_states;
+        dynarray<KeyboardState> m_keyboard_states;
     };
 } // namespace stormkit::wsi::common
 

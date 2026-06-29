@@ -27,14 +27,14 @@ namespace stdr = std::ranges;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_jpg(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_jpg(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_jpg(const image::Image& image, const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto save_jpg(const image::Image& image) noexcept -> std::expected<byte_dyn_array, image::Image::Error>;
+    auto save_jpg(const image::Image& image) noexcept -> std::expected<byte_dynarray, image::Image::Error>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
@@ -69,8 +69,8 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_jpg(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error> {
-        auto          image_memory = byte_dyn_array {};
+    auto load_jpg(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error> {
+        auto          image_memory = byte_dynarray {};
         volatile auto format       = Format {}; // NOTE volatile for error: variable ‘format’ might be
                                                 // clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
         auto extent    = math::uextent3 {};
@@ -200,7 +200,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_jpg(const image::Image& image) noexcept -> std::expected<byte_dyn_array, image::Image::Error> {
+    auto save_jpg(const image::Image& image) noexcept -> std::expected<byte_dynarray, image::Image::Error> {
         using uchar_ptr = unsigned char*;
 
         auto output_ptr = uchar_ptr { nullptr };
@@ -250,7 +250,7 @@ namespace stormkit::image::details {
             return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
         }
 
-        auto output = byte_dyn_array {};
+        auto output = byte_dynarray {};
         output.reserve((out_size));
 
         std::ranges::copy(as_bytes(output_ptr, out_size), std::back_inserter(output));

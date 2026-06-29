@@ -13,24 +13,24 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 export namespace stormkit { inline namespace core {
-    template<stdr::input_range Range, meta::IsUnaryPredicate<typename meta::CanonicalType<Range>::value_type> Predicate>
+    template<stdr::input_range Range, meta::IsUnaryPredicate<typename meta::CanonicalT<Range>::value_type> Predicate>
     [[nodiscard]]
     constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept -> decltype(auto);
 
-    template<stdr::input_range Range, std::invocable<const typename meta::CanonicalType<Range>::value_type&> Lambda>
+    template<stdr::input_range Range, std::invocable<const typename meta::CanonicalT<Range>::value_type&> Lambda>
     [[nodiscard]]
     constexpr auto transform(Range&& input, Lambda&& lambda) noexcept -> decltype(auto);
 
     template<stdr::input_range                                                       Range,
-             meta::IsUnaryPredicate<typename meta::CanonicalType<Range>::value_type> Predicate,
-             std::invocable<const typename meta::CanonicalType<Range>::value_type&>  Lambda>
+             meta::IsUnaryPredicate<typename meta::CanonicalT<Range>::value_type> Predicate,
+             std::invocable<const typename meta::CanonicalT<Range>::value_type&>  Lambda>
     [[nodiscard]]
     constexpr auto transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept -> decltype(auto);
 
     template<stdr::input_range                                                                                          Range,
-             meta::IsUnaryPredicate<typename meta::CanonicalType<Range>::value_type>                                    Predicate,
-             std::invocable<const typename meta::CanonicalType<Range>::value_type&>                                     Lambda,
-             std::output_iterator<std::invoke_result_t<Lambda, const typename meta::CanonicalType<Range>::value_type&>> Iterator>
+             meta::IsUnaryPredicate<typename meta::CanonicalT<Range>::value_type>                                    Predicate,
+             std::invocable<const typename meta::CanonicalT<Range>::value_type&>                                     Lambda,
+             std::output_iterator<std::invoke_result_t<Lambda, const typename meta::CanonicalT<Range>::value_type&>> Iterator>
     constexpr auto transform_if(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept -> void;
 }} // namespace stormkit::core
 
@@ -41,40 +41,40 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stdr::input_range Range, meta::IsUnaryPredicate<typename meta::CanonicalType<Range>::value_type> Predicate>
+    template<stdr::input_range Range, meta::IsUnaryPredicate<typename meta::CanonicalT<Range>::value_type> Predicate>
     constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept -> decltype(auto) {
         return std::forward<Range>(input)
                | stdv::filter(std::forward<Predicate>(predicate))
-               | stdr::to<dyn_array<typename Range::value_type>>();
+               | stdr::to<dynarray<typename Range::value_type>>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stdr::input_range Range, std::invocable<const typename meta::CanonicalType<Range>::value_type&> Lambda>
+    template<stdr::input_range Range, std::invocable<const typename meta::CanonicalT<Range>::value_type&> Lambda>
     constexpr auto transform(Range&& input, Lambda&& lambda) noexcept -> decltype(auto) {
         return std::forward<Range>(input)
                | stdv::transform(lambda)
-               | stdr::to<dyn_array<std::invoke_result_t<Lambda, const typename meta::CanonicalType<Range>::value_type>>>();
+               | stdr::to<dynarray<std::invoke_result_t<Lambda, const typename meta::CanonicalT<Range>::value_type>>>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<stdr::input_range                                                       Range,
-             meta::IsUnaryPredicate<typename meta::CanonicalType<Range>::value_type> Predicate,
-             std::invocable<const typename meta::CanonicalType<Range>::value_type&>  Lambda>
+             meta::IsUnaryPredicate<typename meta::CanonicalT<Range>::value_type> Predicate,
+             std::invocable<const typename meta::CanonicalT<Range>::value_type&>  Lambda>
     constexpr auto transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept -> decltype(auto) {
         return std::forward<Range>(input)
                | stdv::filter(std::forward<Predicate>(predicate))
                | stdv::transform(std::forward<Lambda>(lambda))
-               | stdr::to<dyn_array<std::invoke_result_t<Lambda, const typename meta::CanonicalType<Range>::value_type>>>();
+               | stdr::to<dynarray<std::invoke_result_t<Lambda, const typename meta::CanonicalT<Range>::value_type>>>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<stdr::input_range                                                                                          Range,
-             meta::IsUnaryPredicate<typename meta::CanonicalType<Range>::value_type>                                    Predicate,
-             std::invocable<const typename meta::CanonicalType<Range>::value_type&>                                     Lambda,
-             std::output_iterator<std::invoke_result_t<Lambda, const typename meta::CanonicalType<Range>::value_type&>> Iterator>
+             meta::IsUnaryPredicate<typename meta::CanonicalT<Range>::value_type>                                    Predicate,
+             std::invocable<const typename meta::CanonicalT<Range>::value_type&>                                     Lambda,
+             std::output_iterator<std::invoke_result_t<Lambda, const typename meta::CanonicalT<Range>::value_type&>> Iterator>
     constexpr auto transform_if(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept -> void {
         stdr::for_each(std::forward<Range>(input), [&it, &predicate, &lambda](auto&& elem) {
             if (predicate(elem)) *it++ = lambda(elem);

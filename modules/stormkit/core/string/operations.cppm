@@ -25,7 +25,7 @@ namespace stdv = std::views;
 
 export namespace stormkit { inline namespace core {
     [[nodiscard]]
-    constexpr auto split(string_view str, string_view delim) noexcept -> dyn_array<string_view>;
+    constexpr auto split(string_view str, string_view delim) noexcept -> dynarray<string_view>;
     [[nodiscard]]
     constexpr auto to_lower(string_view str) noexcept -> string;
     [[nodiscard]]
@@ -107,11 +107,11 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    constexpr auto split(string_view str, string_view delim) noexcept -> dyn_array<string_view> {
+    constexpr auto split(string_view str, string_view delim) noexcept -> dynarray<string_view> {
         return str
                | stdv::split(delim)
                | stdv::transform([](auto&& subrange) { return string_view { stdr::cbegin(subrange), stdr::cend(subrange) }; })
-               | stdr::to<dyn_array<string_view>>();
+               | stdr::to<dynarray<string_view>>();
     }
 
     ////////////////////////////////////////

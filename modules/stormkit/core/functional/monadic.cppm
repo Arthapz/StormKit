@@ -150,7 +150,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto consume(auto&& value) noexcept -> decltype(auto) {
-        return [value = std::move(value)](auto&&...) mutable noexcept -> meta::CanonicalType<decltype(value)> {
+        return [value = std::move(value)](auto&&...) mutable noexcept -> meta::CanonicalT<decltype(value)> {
             return std::move(value);
         };
     }
@@ -320,8 +320,8 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
     constexpr auto map(First&& first, Second&& second) noexcept -> decltype(auto) {
-        using FirstP  = meta::CanonicalType<First>;
-        using SecondP = meta::CanonicalType<Second>;
+        using FirstP  = meta::CanonicalT<First>;
+        using SecondP = meta::CanonicalT<Second>;
 
         return [first = std::forward<First>(first), second = std::forward<Second>(second)]<
                  typename... Args>(Args&&... args) noexcept(is_noexcept<FirstP, SecondP, Args...>) -> decltype(auto) {
@@ -386,7 +386,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto clone() noexcept -> decltype(auto) {
-        return []<typename T>(T&& value) static noexcept(noexcept(std::is_nothrow_copy_constructible_v<meta::CanonicalType<T>>))
+        return []<typename T>(T&& value) static noexcept(noexcept(std::is_nothrow_copy_constructible_v<meta::CanonicalT<T>>))
                  -> decltype(auto) { return auto(std::forward<T>(value)); };
     }
 

@@ -15,7 +15,7 @@ auto main(i32 argc, char** argv) -> i32 {
     setup_signal_handler();
     set_current_thread_name("stormkit:main_thread");
 
-    auto args = dyn_array<string_view> {};
+    auto args = dynarray<string_view> {};
 
     for (auto i : range(argc)) args.emplace_back(argv[i]);
 

@@ -35,7 +35,7 @@ export namespace stormkit { inline namespace core {
         static auto create(usize size, string name, io::Access access = io::Access::READ | io::Access::WRITE) noexcept
           -> ExpectedType<SHMBuffer>;
         static auto allocate(usize size, string name, io::Access access = io::Access::READ | io::Access::WRITE) noexcept
-          -> ExpectedType<Heap<SHMBuffer>>;
+          -> ExpectedType<heap_ptr<SHMBuffer>>;
 
         explicit SHMBuffer(PrivateTag) noexcept;
         ~SHMBuffer();
@@ -92,7 +92,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto SHMBuffer::allocate(usize size, string name, io::Access access) noexcept -> ExpectedType<Heap<SHMBuffer>> {
+    inline auto SHMBuffer::allocate(usize size, string name, io::Access access) noexcept -> ExpectedType<heap_ptr<SHMBuffer>> {
         return Base::allocate(size, std::move(name), access);
     }
 

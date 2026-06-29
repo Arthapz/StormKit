@@ -13,6 +13,6 @@ import std;
 import stormkit.core;
 import stormkit.gpu;
 
-export namespace stormkit::lua::gpu {
+namespace stormkit::lua::gpu {
     auto init_lua(sol::state& global_state) noexcept -> void;
 } // namespace stormkit::lua::gpu

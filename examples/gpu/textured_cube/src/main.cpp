@@ -156,7 +156,7 @@ class Application: public base::Application {
 
         m_descriptor_set_layout = TryAssert(gpu::DescriptorSetLayout::
                                               create(m_device,
-                                                     into_dyn_array(ViewerData::layout_binding(),
+                                                     into_dynarray(ViewerData::layout_binding(),
                                                                     gpu::DescriptorSetLayoutBinding {
                                                                       1,
                                                                       gpu::DescriptorType::COMBINED_IMAGE_SAMPLER,
@@ -226,8 +226,8 @@ class Application: public base::Application {
                                    .alpha_blend_operation  = gpu::BlendOperation::ADD, }, }, },
             .shader_state  = to_views(m_vertex_shader, m_fragment_shader),
             .vertex_input_state = {
-                .binding_descriptions = into_dyn_array(Vertex::binding_description()),
-                .input_attribute_descriptions = to_dyn_array(Vertex::attribute_descriptions()),
+                .binding_descriptions = into_dynarray(Vertex::binding_description()),
+                .input_attribute_descriptions = to_dynarray(Vertex::attribute_descriptions()),
             },
                 .depth_stencil_state = {
                 .depth_test_enable =  true,
@@ -299,7 +299,7 @@ class Application: public base::Application {
 
         m_texture_view         = TryAssert(gpu::ImageView::create(m_device, { m_texture }), "Failed to create texture view!");
         m_sampler              = TryAssert(gpu::Sampler::create(m_device, {}), "Failed to create sampler!");
-        m_submission_resources = dyn_array<SubmissionResource> {};
+        m_submission_resources = dynarray<SubmissionResource> {};
         m_submission_resources.reserve(BUFFERING_COUNT);
 
         for (auto _ : range(BUFFERING_COUNT)) {
@@ -340,7 +340,7 @@ class Application: public base::Application {
         auto       transition_cmbs = TryAssert(m_command_pool->create_command_buffers(image_count),
                                                "Failed to create transition command buffers!");
 
-        m_image_resources = dyn_array<SwapchainImageResource> {};
+        m_image_resources = dynarray<SwapchainImageResource> {};
         m_image_resources.reserve(stdr::size(images));
 
         auto image_index = 0u;
@@ -523,8 +523,8 @@ class Application: public base::Application {
     DeferInit<gpu::Image>               m_texture;
     DeferInit<gpu::ImageView>           m_texture_view;
     DeferInit<gpu::Sampler>             m_sampler;
-    dyn_array<SubmissionResource>       m_submission_resources;
-    dyn_array<SwapchainImageResource>   m_image_resources;
+    dynarray<SubmissionResource>       m_submission_resources;
+    dynarray<SwapchainImageResource>   m_image_resources;
     DeferInit<gpu::Buffer>              m_vertex_buffer;
     usize                               m_current_frame = 0_usize;
     decltype(clock::now())              m_start_time    = clock::now();

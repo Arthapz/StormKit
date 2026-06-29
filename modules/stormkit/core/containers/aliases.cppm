@@ -13,7 +13,7 @@ export namespace stormkit { inline namespace core {
     using std::array;
 
     template<typename T, class Allocator = std::allocator<T>>
-    using dyn_array = std::vector<T, Allocator>;
+    using dynarray = std::vector<T, Allocator>;
 
     template<typename T, std::size_t Extent = std::dynamic_extent>
     using array_view = std::span<T, Extent>;
@@ -23,6 +23,6 @@ export namespace stormkit { inline namespace core {
 
     namespace pmr {
         template<typename T>
-        using dyn_array = std::vector<T, std::type_identity_t<stdp::polymorphic_allocator<T>>>;
+        using dynarray = std::vector<T, std::type_identity_t<stdp::polymorphic_allocator<T>>>;
     } // namespace pmr
 }} // namespace stormkit::core

@@ -116,9 +116,13 @@
     #define STORMKIT_PURE
 #endif
 
-#if __has_cpp_attribute(gnu::const)
-    #define STORMKIT_CONST [[gnu::const]]
-#else
+#if not defined(STORMKIT_COMPILER_MSVC)
+    #if __has_cpp_attribute(gnu::const)
+        #define STORMKIT_CONST [[gnu::const]]
+    #endif
+#endif
+
+#if not defined(STORMKIT_CONST)
     #define STORMKIT_CONST
 #endif
 

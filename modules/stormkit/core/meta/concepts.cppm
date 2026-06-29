@@ -6,13 +6,17 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
+#ifdef STORMKIT_COMPILER_MSVC
+    #include <__msvc_int128.hpp>
+#endif
+
 export module stormkit.core:meta.concepts;
 
 import std;
 
 #if defined(STORMKIT_COMPILER_MSVC)
-using int128  = std::__Signed128;
-using uint128 = std::__Unsigned128;
+using int128  = std::_Signed128;
+using uint128 = std::_Unsigned128;
 #else
 __extension__ using int128  = __int128;
 __extension__ using uint128 = unsigned __int128;

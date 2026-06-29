@@ -62,7 +62,7 @@ namespace stormkit::lua::entities {
         manager["components_types_of"] = &EntityManager::components_types_of;
         manager["add_system"]          = +[](EntityManager*    manager,
                                              string            name,
-                                             dyn_array<string> types,
+                                             dynarray<string> types,
                                              sol::table        opt) static noexcept {
             auto update = opt.get<std::optional<sol::protected_function>>("update");
             expects(update.has_value(), std::format("No update closure supplied for system {}", name));
@@ -88,7 +88,7 @@ namespace stormkit::lua::entities {
             manager->add_system(std::move(name),
                                 types | stdv::transform([](const auto& type) static noexcept {
                                     return hash(type);
-                                }) | stdr::to<dyn_array<hash32>>(),
+                                }) | stdr::to<dynarray<hash32>>(),
                                 std::move(_closures));
         };
         manager["has_system"]    = &EntityManager::has_system;

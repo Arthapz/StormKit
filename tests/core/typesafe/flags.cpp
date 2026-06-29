@@ -24,8 +24,11 @@ enum Flag2 {
     C = 4,
 };
 
-FLAG_ENUM(Flag)
-FLAG_ENUM(Flag2)
+template<>
+inline constexpr auto stormkit::core::meta::FLAG_TRAIT<Flag> = true;
+
+template<>
+inline constexpr auto stormkit::core::meta::FLAG_TRAIT<Flag2> = true;
 
 namespace {
     auto _ = test::TestSuite {

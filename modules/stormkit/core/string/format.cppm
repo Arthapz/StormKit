@@ -18,8 +18,6 @@ import :string.operations;
 
 export {
     namespace stormkit { inline namespace core {
-        template<typename T, typename FormatContext>
-        auto format_as(const T&, FormatContext& ctx) noexcept -> decltype(ctx.out()) = delete;
 
         namespace meta {
             template<meta::IsEnumeration T>
@@ -35,60 +33,69 @@ export {
         } // namespace meta
 
         inline constexpr struct FormatFN {
-            template<meta::HasFormatAs T, typename FormatContext>
-            static constexpr auto operator()(const T& value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
-                return format_as(value, ctx);
-            }
+            static constexpr auto operator()(const meta::HasFormatAs auto& value, auto& ctx) noexcept -> decltype(ctx.out());
         } format_fn = {};
 
-        template<typename FormatContext>
-        auto format_as(std::byte, FormatContext& ctx) noexcept -> decltype(ctx.out());
-
-        template<typename FormatContext>
-        auto format_as(stormkit::fsecond, FormatContext& ctx) noexcept -> decltype(ctx.out());
+        auto           format_as(const auto&, auto& ctx) noexcept -> decltype(ctx.out()) = delete;
+        constexpr auto format_as(std::byte, auto& ctx) noexcept -> decltype(ctx.out());
+        constexpr auto format_as(stormkit::fsecond, auto& ctx) noexcept -> decltype(ctx.out());
     }} // namespace stormkit::core
 
-    template<stormkit::core::meta::HasFormatAs T, typename CharT>
+    template<stormkit::meta::HasFormatAs T, typename CharT>
     struct std::formatter<T, CharT> {
-        template<class ParseContext>
         [[nodiscard]]
-        constexpr auto parse(ParseContext& ctx) noexcept -> decltype(ctx.begin());
+        STORMKIT_FORCE_INLINE
+        constexpr auto parse(auto& ctx) noexcept -> decltype(ctx.begin()) {
+            return ctx.begin();
+        }
 
-        template<class FormatContext>
         [[nodiscard]]
-        auto format(const T&, FormatContext& ctx) const noexcept -> decltype(ctx.out());
+        constexpr auto format(const T&, auto& ctx) const noexcept -> decltype(ctx.out());
     };
 
     template<stormkit::meta::IsDefaultFormattedEnumeration T, typename CharT>
     struct std::formatter<T, CharT> {
-        template<class ParseContext>
         [[nodiscard]]
-        constexpr auto parse(ParseContext& ctx) noexcept -> decltype(ctx.begin());
+        STORMKIT_FORCE_INLINE
+        constexpr auto parse(auto& ctx) noexcept -> decltype(ctx.begin()) {
+            return ctx.begin();
+        }
 
-        template<class FormatContext>
         [[nodiscard]]
-        auto format(const T&, FormatContext& ctx) const -> decltype(ctx.out());
+        constexpr auto format(const T& value, auto& ctx) const noexcept -> decltype(ctx.out()) {
+            using namespace stormkit;
+
+            auto&& out = ctx.out();
+            if constexpr (requires {
+                              { as_string(value) } -> meta::Is<string_view>;
+                          }) {
+                const auto strvalue = as_string(value);
+                return format_to(out, "{}", strvalue);
+            } else
+                return format_to(out, "{}", as<Underlying>(value));
+        }
     };
 
     template<stormkit::meta::IsPointer T, typename CharT>
     struct std::formatter<T, CharT>: public formatter<std::uintptr_t, CharT> {
-        template<class FormatContext>
         [[nodiscard]]
-        auto format(const T&, FormatContext& ctx) const -> decltype(ctx.out());
+        STORMKIT_FORCE_INLINE
+        constexpr auto format(const T& value, auto& ctx) const noexcept -> decltype(ctx.out()) {
+            auto&& out = ctx.out();
+            return format_to(out, "{:#0x}", std::bit_cast<std::uintptr_t>(std::to_address(value)));
+        }
     };
 
     template<typename CharT>
     struct std::formatter<std::error_code, CharT>: public formatter<basic_string_view<CharT>, CharT> {
-        template<class FormatContext>
         [[nodiscard]]
-        auto format(const std::error_code&, FormatContext& ctx) const -> decltype(ctx.out());
+        constexpr auto format(const std::error_code&, auto& ctx) const noexcept -> decltype(ctx.out());
     };
 
     template<typename CharT>
     struct std::formatter<std::errc, CharT>: public formatter<basic_string_view<CharT>, CharT> {
-        template<class FormatContext>
         [[nodiscard]]
-        auto format(const std::errc& code, FormatContext& ctx) const -> decltype(ctx.out());
+        constexpr auto format(const std::errc& code, auto& ctx) const noexcept -> decltype(ctx.out());
     };
 }
 
@@ -99,18 +106,23 @@ export {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class FormatContext>
     STORMKIT_FORCE_INLINE
-    inline auto format_as(std::byte value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
+    constexpr auto FormatFN::operator()(const meta::HasFormatAs auto& value, auto& ctx) noexcept -> decltype(ctx.out()) {
+        return format_as(value, ctx);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto format_as(std::byte value, auto& ctx) noexcept -> decltype(ctx.out()) {
         auto&& out = ctx.out();
         return std::format_to(out, "{}", narrow<i16>(value));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class FormatContext>
     STORMKIT_FORCE_INLINE
-    inline auto format_as(fsecond value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
+    constexpr auto format_as(fsecond value, auto& ctx) noexcept -> decltype(ctx.out()) {
         auto&& out = ctx.out();
         return std::format_to(out, "{}", value.count());
     }
@@ -120,57 +132,51 @@ using namespace stormkit;
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<meta::HasFormatAs T, typename CharT>
-template<class ParseContext>
-constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept -> decltype(ctx.begin()) {
-    return ctx.begin();
-}
+// template<meta::HasFormatAs T, typename CharT>
+// constexpr auto std::formatter<T, CharT>::parse(auto& ctx) noexcept -> decltype(ctx.begin()) {
+//     return ctx.begin();
+// }
 
 /////////////////////////////////////
 /////////////////////////////////////
 template<meta::HasFormatAs T, typename CharT>
-template<class FormatContext>
-auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const noexcept -> decltype(ctx.out()) {
+constexpr auto std::formatter<T, CharT>::format(const T& value, auto& ctx) const noexcept -> decltype(ctx.out()) {
     return core::format_fn(value, ctx);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<meta::IsDefaultFormattedEnumeration T, typename CharT>
-template<class ParseContext>
-constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept -> decltype(ctx.begin()) {
-    return ctx.begin();
-}
+// template<meta::IsDefaultFormattedEnumeration T, typename CharT>
+// constexpr auto std::formatter<T, CharT>::parse(auto& ctx) noexcept -> decltype(ctx.begin()) {
+//     return ctx.begin();
+// }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<meta::IsDefaultFormattedEnumeration T, typename CharT>
-template<class FormatContext>
-auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const -> decltype(ctx.out()) {
-    auto&& out = ctx.out();
-    if constexpr (requires {
-                      { as_string(value) } -> meta::Is<string_view>;
-                  }) {
-        const auto strvalue = as_string(value);
-        return format_to(out, "{}", strvalue);
-    } else
-        return format_to(out, "{}", as<Underlying>(value));
-}
+// template<meta::IsDefaultFormattedEnumeration T, typename CharT>
+// constexpr auto std::formatter<T, CharT>::format(const T& value, auto& ctx) const noexcept -> decltype(ctx.out()) {
+//     auto&& out = ctx.out();
+//     if constexpr (requires {
+//                       { as_string(value) } -> meta::Is<string_view>;
+//                   }) {
+//         const auto strvalue = as_string(value);
+//         return format_to(out, "{}", strvalue);
+//     } else
+//         return format_to(out, "{}", as<Underlying>(value));
+// }
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<meta::IsPointer T, typename CharT>
-template<class FormatContext>
-auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const -> decltype(ctx.out()) {
-    auto&& out = ctx.out();
-    return format_to(out, "{:#0x}", std::bit_cast<std::uintptr_t>(std::to_address(value)));
-}
+// template<meta::IsPointer T, typename CharT>
+// constexpr auto std::formatter<T, CharT>::format(const T& value, auto& ctx) const noexcept -> decltype(ctx.out()) {
+//     auto&& out = ctx.out();
+//     return format_to(out, "{:#0x}", std::bit_cast<std::uintptr_t>(std::to_address(value)));
+// }
 
 /////////////////////////////////////
 /////////////////////////////////////
 template<typename CharT>
-template<class FormatContext>
-auto std::formatter<std::error_code, CharT>::format(const std::error_code& code, FormatContext& ctx) const
+constexpr auto std::formatter<std::error_code, CharT>::format(const std::error_code& code, auto& ctx) const noexcept
   -> decltype(ctx.out()) {
     auto&&     out     = ctx.out();
     const auto message = code.message();
@@ -180,8 +186,7 @@ auto std::formatter<std::error_code, CharT>::format(const std::error_code& code,
 /////////////////////////////////////
 /////////////////////////////////////
 template<typename CharT>
-template<class FormatContext>
-auto std::formatter<std::errc, CharT>::format(const std::errc& code, FormatContext& ctx) const -> decltype(ctx.out()) {
+constexpr auto std::formatter<std::errc, CharT>::format(const std::errc& code, auto& ctx) const noexcept -> decltype(ctx.out()) {
     auto&&     out     = ctx.out();
     const auto message = make_error_code(code).message();
     return format_to(out, "{}", message);

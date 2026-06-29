@@ -8,45 +8,45 @@
 #include <stormkit/core/platform_macro.hpp>
 
 #if (defined(__clang__) or defined(__GNUC__))
-    #define Try(m)                                                 \
-        ({                                                         \
-            auto res = (m);                                        \
-            if (not res.has_value()) [[unlikely]]                  \
-                return std::unexpected { std::move(res).error() }; \
-            std::move(res).value();                                \
+    #define Try(m)                                                     \
+        ({                                                             \
+            auto res = (m);                                            \
+            if (not res.has_value()) [[unlikely]]                      \
+                return { std::unexpected { std::move(res.error()) } }; \
+            std::move(*res);                                           \
         })
     #define TryOr(m, t)                           \
         ({                                        \
             auto res = (m);                       \
             if (not res.has_value()) [[unlikely]] \
-                t(std::move(res).error());        \
-            std::move(res).value();               \
+                t(std::move(res.error()));        \
+            std::move(*res);                      \
         })
-    #define TryTransformError(m, t)                                   \
-        ({                                                            \
-            auto res = (m);                                           \
-            if (not res.has_value()) [[unlikely]]                     \
-                return std::unexpected { t(std::move(res).error()) }; \
-            std::move(res).value();                                   \
+    #define TryTransformError(m, t)                                       \
+        ({                                                                \
+            auto res = (m);                                               \
+            if (not res.has_value()) [[unlikely]]                         \
+                return { std::unexpected { t(std::move(res.error())) } }; \
+            std::move(*res);                                              \
         })
 
     #define TryDiscard(m)                                                 \
         ({                                                                \
             auto res = (m).transform(stormkit::core::monadic::discard()); \
             if (not res.has_value()) [[unlikely]]                         \
-                return std::unexpected { std::move(res).error() };        \
+                return { std::unexpected { std::move(res.error()) } };    \
         })
     #define TryDiscardOr(m, t)                                            \
         ({                                                                \
             auto res = (m).transform(stormkit::core::monadic::discard()); \
             if (not res.has_value()) [[unlikely]]                         \
-                t(std::move(res).error());                                \
+                t(std::move(res.error()));                                \
         })
     #define TryDiscardTransformError(m, t)                                \
         ({                                                                \
             auto res = (m).transform(stormkit::core::monadic::discard()); \
             if (not res.has_value()) [[unlikely]]                         \
-                return std::unexpected { t(std::move(res).error()) };     \
+                return { std::unexpected { t(std::move(res.error())) } }; \
         })
 
     #define Return return

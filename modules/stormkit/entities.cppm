@@ -46,7 +46,7 @@ export namespace stormkit::entities {
 #endif
 
     using Entity   = u32;
-    using Entities = dyn_array<Entity>;
+    using Entities = dynarray<Entity>;
 
     inline constexpr auto INVALID_ENTITY = Entity { 0 };
     class System;
@@ -106,7 +106,7 @@ export namespace stormkit::entities {
 
     class STORMKIT_ENTITIES_API System {
       public:
-        using ComponentTypes = dyn_array<ComponentType>;
+        using ComponentTypes = dynarray<ComponentType>;
 
         using PreUpdateClosure  = std::function<void(EntityManager&, const Entities&)>;
         using UpdateClosure     = std::function<void(EntityManager&, fsecond, const Entities&)>;
@@ -209,13 +209,13 @@ export namespace stormkit::entities {
         auto get_component(this Self& self, Entity entity, string_view) noexcept -> cmeta::ForwardConst<Self, T>&;
 
         template<meta::ComponentWithStaticType T, class Self>
-        auto components_of_type(this Self& self) noexcept -> dyn_array<ref<cmeta::ForwardConst<Self, T>>>;
+        auto components_of_type(this Self& self) noexcept -> dynarray<ref<cmeta::ForwardConst<Self, T>>>;
         template<meta::IsComponentType T, class Self>
-        auto components_of_type(this Self& self, ComponentType type) noexcept -> dyn_array<ref<cmeta::ForwardConst<Self, T>>>;
+        auto components_of_type(this Self& self, ComponentType type) noexcept -> dynarray<ref<cmeta::ForwardConst<Self, T>>>;
         template<meta::IsComponentType T, class Self>
-        auto components_of_type(this Self& self, string_view name) noexcept -> dyn_array<ref<cmeta::ForwardConst<Self, T>>>;
+        auto components_of_type(this Self& self, string_view name) noexcept -> dynarray<ref<cmeta::ForwardConst<Self, T>>>;
 
-        auto components_types_of(Entity entity) const noexcept -> dyn_array<ComponentType>;
+        auto components_types_of(Entity entity) const noexcept -> dynarray<ComponentType>;
 
         template<meta::IsUsableAsSystem T>
         auto add_system(string name, System::ComponentTypes types, T& system) noexcept -> System&;
@@ -224,7 +224,7 @@ export namespace stormkit::entities {
         auto remove_system(string_view name) noexcept -> void;
 
         template<class Self>
-        auto systems(this Self& self) noexcept -> dyn_array<ref<cmeta::ForwardConst<Self, System>>>;
+        auto systems(this Self& self) noexcept -> dynarray<ref<cmeta::ForwardConst<Self, System>>>;
 
         template<class Self>
         auto get_system(this Self& self, string_view name) noexcept -> cmeta::ForwardConst<Self, System&>;
@@ -234,8 +234,8 @@ export namespace stormkit::entities {
 
         auto entity_count() const noexcept -> usize;
 
-        auto add_raw_component(Entity entity, ComponentType type, byte_view<> component, DeleteFunc delete_func) noexcept
-          -> byte_mut_view<>;
+        auto add_raw_component(Entity entity, ComponentType type, byte_view component, DeleteFunc delete_func) noexcept
+          -> byte_view_mut;
 
         template<class Self>
         auto get_raw_component(this Self& self, Entity entity, ComponentType type) noexcept
@@ -248,11 +248,11 @@ export namespace stormkit::entities {
             ComponentType  type;
             usize          size;
             Entities       entities;
-            byte_dyn_array data;
+            byte_dynarray data;
             DeleteFunc     delete_func;
         };
 
-        using ComponentStore = dyn_array<Store>;
+        using ComponentStore = dynarray<Store>;
 
         auto purpose_to_systems(Entity e) noexcept -> void;
         auto remove_from_systems(Entity e) noexcept -> void;
@@ -268,7 +268,7 @@ export namespace stormkit::entities {
         hash_set<Entity> m_updated_entities;
         hash_set<Entity> m_removed_entities;
 
-        dyn_array<System> m_systems;
+        dynarray<System> m_systems;
 
         ComponentStore m_components;
 
@@ -388,7 +388,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::ComponentWithStaticType T, class Self>
-    auto EntityManager::components_of_type(this Self& self) noexcept -> dyn_array<ref<cmeta::ForwardConst<Self, T>>> {
+    auto EntityManager::components_of_type(this Self& self) noexcept -> dynarray<ref<cmeta::ForwardConst<Self, T>>> {
         return self.template components_of_type<T>(T::type());
     }
 
@@ -396,14 +396,14 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<meta::IsComponentType T, class Self>
     auto EntityManager::components_of_type(this Self& self, ComponentType type) noexcept
-      -> dyn_array<ref<cmeta::ForwardConst<Self, T>>> {
+      -> dynarray<ref<cmeta::ForwardConst<Self, T>>> {
         // clang-format off
         return self.m_entities 
                | stdv::filter([&self, type](auto entity) noexcept { return self.has_component(entity, type); })
                | stdv::transform([&self, type](auto entity) noexcept { return self.template get_component<T>(entity, type); })
                // | stdv::transform(monadic::forward_like<Self&>())
                | stdv::transform(monadic::as_ref())
-               | stdr::to<dyn_array>();
+               | stdr::to<dynarray>();
         // clang-format on
     }
 
@@ -411,16 +411,16 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<meta::IsComponentType T, class Self>
     auto EntityManager::components_of_type(this Self& self, string_view name) noexcept
-      -> dyn_array<ref<cmeta::ForwardConst<Self, T>>> {
+      -> dynarray<ref<cmeta::ForwardConst<Self, T>>> {
         return self.template components_of_type<T>(hash(name));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto EntityManager::components_types_of(Entity entity) const noexcept -> dyn_array<ComponentType> {
+    inline auto EntityManager::components_types_of(Entity entity) const noexcept -> dynarray<ComponentType> {
         EXPECTS(has_entity(entity));
 
-        auto out = dyn_array<ComponentType> {};
+        auto out = dynarray<ComponentType> {};
         for (auto&& [type, _, entities, _, _] : m_components) {
             for (auto e : entities)
                 if (e == entity) {
@@ -488,14 +488,14 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Self>
-    auto EntityManager::systems(this Self& self) noexcept -> dyn_array<ref<cmeta::ForwardConst<Self, System>>> {
+    auto EntityManager::systems(this Self& self) noexcept -> dynarray<ref<cmeta::ForwardConst<Self, System>>> {
         constexpr auto as_refer = [] {
             if constexpr (cmeta::IsConst<Self>) return monadic::as_ref();
             else
                 return monadic::as_ref_mut();
         }();
 
-        return self.m_systems | stdv::transform(as_refer) | stdr::to<dyn_array<ref<cmeta::ForwardConst<Self, System>>>>();
+        return self.m_systems | stdv::transform(as_refer) | stdr::to<dynarray<ref<cmeta::ForwardConst<Self, System>>>>();
     }
 
     /////////////////////////////////////
@@ -518,8 +518,8 @@ namespace stormkit::entities {
     /////////////////////////////////////
     auto EntityManager::add_raw_component(Entity        entity,
                                           ComponentType type,
-                                          byte_view<>   component,
-                                          DeleteFunc    delete_func) noexcept -> byte_mut_view<> {
+                                          byte_view   component,
+                                          DeleteFunc    delete_func) noexcept -> byte_view_mut {
         EXPECTS(has_entity(entity));
         EXPECTS(not has_component(entity, type));
 

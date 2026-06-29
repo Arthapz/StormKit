@@ -39,7 +39,7 @@ export namespace stormkit::wsi::linux::wayland {
             wl::Display                  display     = wl::Display::empty();
             wl::Registry                 registry    = wl::Registry::empty();
             wl::Compositor               compositor  = wl::Compositor::empty();
-            dyn_array<wl::Output>        outputs;
+            dynarray<wl::Output>         outputs;
             wl::XDGWmBase                xdg_wm_base                 = wl::XDGWmBase::empty();
             wl::Shm                      shm                         = wl::Shm::empty();
             wl::XDGDecorationManager     decoration_manager          = wl::XDGDecorationManager::empty();
@@ -55,15 +55,15 @@ export namespace stormkit::wsi::linux::wayland {
             wl::CursorTheme cursor_theme          = wl::CursorTheme::empty();
             wl::CursorTheme cursor_theme_high_dpi = wl::CursorTheme::empty();
 
-            dyn_array<std::pair<Keyboard, KeyboardState>> keyboards;
-            dyn_array<std::pair<Pointer, PointerState>>   pointers;
-            dyn_array<std::pair<Touch, TouchState>>       touchs;
+            dynarray<std::pair<Keyboard, KeyboardState>> keyboards;
+            dynarray<std::pair<Pointer, PointerState>>   pointers;
+            dynarray<std::pair<Touch, TouchState>>       touchs;
 
             wl::RelativePointerManager relative_pointer_manager = wl::RelativePointerManager::empty();
 
-            dyn_array<WaylandMonitor> monitors;
+            dynarray<WaylandMonitor> monitors;
 
-            dyn_array<std::pair<wl_surface*, Window*>> windows;
+            dynarray<std::pair<wl_surface*, Window*>> windows;
 
             common::xkb::Context xkb_context = common::xkb::Context::empty();
         };
@@ -74,4 +74,5 @@ export namespace stormkit::wsi::linux::wayland {
     } // namespace wl
 } // namespace stormkit::wsi::linux::wayland
 
-FLAG_ENUM(stormkit::wsi::linux::wayland::wl::PointerState::Flag);
+template<>
+inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::linux::wayland::wl::PointerState::Flag> = true;

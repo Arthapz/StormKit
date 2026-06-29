@@ -26,8 +26,8 @@ export {
             Flags  flags = Flags::NONE;
             string name;
 
-            dyn_array<math::uextent2> extents;
-            u32                       scale_factor = 1;
+            dynarray<math::uextent2> extents;
+            u32                      scale_factor = 1;
 
             [[nodiscard]]
             constexpr auto operator<=>(const Monitor& other) const noexcept -> std::strong_ordering;
@@ -53,7 +53,8 @@ export {
         STORMKIT_WSI_API auto get_primary_monitor() noexcept -> const Monitor&;
     } // namespace stormkit::wsi
 
-    FLAG_ENUM(stormkit::wsi::Monitor::Flags);
+    template<>
+    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::Monitor::Flags> = true;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////

@@ -102,7 +102,7 @@ namespace stormkit { inline namespace core {
             template<template<class> class Lock = details::DefaultReadOnlyLock, typename... LockArgs>
             auto read(LockArgs&&... lock_args) const noexcept -> ReadAccess<Lock>;
 
-            template<std::invocable<ConstReferenceType> Closure,
+            template<std::invocable<typename Locked<T, Mutex>::ConstReferenceType> Closure,
                      template<class> class Lock = details::DefaultReadOnlyLock,
                      typename... LockArgs>
             auto read(Closure&& closure, LockArgs&&... lock_args) const noexcept
@@ -111,7 +111,7 @@ namespace stormkit { inline namespace core {
             template<template<class> class Lock = details::DefaultReadWriteLock, typename... LockArgs>
             auto write(LockArgs&&... lock_args) noexcept -> WriteAccess<Lock>;
 
-            template<std::invocable<ReferenceType> Closure,
+            template<std::invocable<typename Locked<T, Mutex>::ReferenceType> Closure,
                      template<class> class Lock = details::DefaultReadWriteLock,
                      typename... LockArgs>
             auto write(Closure&& closure, LockArgs&&... lock_args) noexcept -> std::invoke_result_t<Closure, ReferenceType>;

@@ -45,7 +45,7 @@ namespace std {
       -> decltype(ctx.out()) {
         return std::visit(
           [&ctx](auto&& value) mutable noexcept {
-              using T = stormkit::meta::CanonicalType<decltype(value)>;
+              using T = stormkit::meta::CanonicalT<decltype(value)>;
 
               return std::formatter<T> {}.format(value, ctx);
           },

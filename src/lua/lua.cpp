@@ -55,7 +55,7 @@ namespace stormkit::lua {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto Engine::load(stdfs::path&& file) noexcept -> void {
-        m_script = TryAssert(io::read_text<io::Mode::AINSI>(file), std::format("Failed to load {}", file.string()));
+        m_script = TryAssert(io::readfile<io::Mode::AINSI>(file), std::format("Failed to load {}", file.string()));
     }
 
     ////////////////////////////////////////

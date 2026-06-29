@@ -4,24 +4,29 @@
 
 module;
 
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <stormkit/core/platform_macro.hpp>
 
-#include <errno.h>
+#include <stormkit/core/contract_macro.hpp>
 
-#include <cstring>
+// #include <status-code/error.hpp>
+// #include <status-code/status_code.hpp>
+// #include <status-code/std_error_code.hpp>
 
-#include <string>
-
-#include <system_error>
+#ifdef STORMKIT_OS_WINDOWS
+    #include <stormkit/core/platform/windows.hpp>
+#endif
 
 export module stormkit.core:errors;
 
 import std;
 
+import :utils.contract;
+
 import :string.aliases;
 import :containers.aliases;
+export import :status_code;
+import :typesafe.integer;
+import :string.format;
 
 export {
     namespace stormkit { inline namespace core {
@@ -43,12 +48,12 @@ export {
 
                 template<typename... Args>
                 constexpr auto return_value(Args&&... args) noexcept {
-                    assert(expected_ptr != nullptr);
+                    EXPECTS(expected_ptr != nullptr);
                     *expected_ptr = Expected { std::in_place, std::forward<Args>(args)... };
                 }
 
                 constexpr auto return_value(ERR error) noexcept {
-                    assert(expected_ptr != nullptr);
+                    EXPECTS(expected_ptr != nullptr);
                     *expected_ptr = Expected {
                         std::unexpected<ERR> { std::in_place, std::move(error) }
                     };
@@ -76,53 +81,19 @@ export {
             }
         };
 #endif
+        using Error = system_error2::system_code;
+
+        namespace error {
+#ifdef STORMKIT_OS_WINDOWS
+            auto from_win32() noexcept -> Error;
+#endif
+            auto from_errno() noexcept -> Error;
+            auto from_stderrc(std::errc code) noexcept -> Error;
+        } // namespace error
 
         template<typename T>
-        struct Error {
-            T code;
-        };
-
-        template<>
-        struct Error<std::errc> {
-            static auto from_errno() noexcept -> Error<std::errc>;
-            std::errc   code;
-        };
-
-        using SystemError = Error<std::errc>;
-
-        template<typename T>
-        struct DecoratedError {
-            Error<T> error;
-            string   message = "<MISSING DESCRIPTION>";
-        };
-
-        template<>
-        struct DecoratedError<std::errc> {
-            explicit DecoratedError(Error<std::errc> _error) noexcept;
-
-            Error<std::errc> error;
-            string           message;
-        };
-
-        auto to_string(const SystemError& error) noexcept -> string;
+        using Result = Expected<T, Error>;
     }} // namespace stormkit::core
-
-    namespace std {
-        template<class T, class CharT>
-        struct formatter<stormkit::core::Error<T>, CharT>: formatter<T, CharT> {
-            template<class FormatContext>
-            auto format(const stormkit::core::Error<T>&, FormatContext& ctx) const -> decltype(ctx.out());
-        };
-
-        template<class T, class CharT>
-        struct formatter<stormkit::core::DecoratedError<T>, CharT> {
-            template<class ParseContext>
-            constexpr auto parse(ParseContext& ctx) noexcept -> decltype(ctx.begin());
-
-            template<class FormatContext>
-            auto format(const stormkit::core::DecoratedError<T>&, FormatContext& ctx) const -> decltype(ctx.out());
-        };
-    } // namespace std
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,64 +103,42 @@ export {
 namespace stdr = std::ranges;
 
 namespace stormkit { inline namespace core {
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto Error<std::errc>::from_errno() noexcept -> Error<std::errc> {
-        return SystemError { std::errc { errno } };
-    }
 
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline DecoratedError<std::errc>::DecoratedError(Error<std::errc> _error) noexcept
-        : error { _error }, message { to_string(error) } {
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto to_string(const SystemError& error) noexcept -> string {
-        const auto code = static_cast<int>(error.code);
+    namespace error {
 #ifdef STORMKIT_OS_WINDOWS
-        thread_local auto STRERROR_BUFFER = array<char, 512> {};
-        strerror_s(stdr::data(STRERROR_BUFFER), stdr::size(STRERROR_BUFFER), code);
-        return string { stdr::data(STRERROR_BUFFER) };
-#else
-        return std::strerror(code);
+        STORMKIT_FORCE_INLINE
+        inline auto from_win32() noexcept -> Error {
+            return system_error2::posix_code { errno };
+        }
 #endif
-    }
+
+        STORMKIT_FORCE_INLINE
+        inline auto from_errno() noexcept -> Error {
+            return system_error2::win32_code { GetLastError() };
+        }
+
+        STORMKIT_FORCE_INLINE
+        inline auto from_stderrc(std::errc code) noexcept -> Error {
+            return Error { system_error2::posix_code { static_cast<i32>(code) } };
+        }
+    } // namespace error
+
+    //    ////////////////////////////////////////
+    //    ////////////////////////////////////////
+    //    STORMKIT_FORCE_INLINE
+    //    inline auto to_string(const System_error& error) noexcept -> string {
+    //        const auto code = static_cast<int>(error.code);
+    // #ifdef STORMKIT_OS_WINDOWS
+    //        thread_local auto STRERROR_BUFFER = array<char, 512> {};
+    //        strerror_s(stdr::data(STRERROR_BUFFER), stdr::size(STRERROR_BUFFER), code);
+    //        return string { stdr::data(STRERROR_BUFFER) };
+    // #else
+    //        return std::strerror(code);
+    // #endif
+    //    }
+
+    // template<typename FormatContext>
+    // constexpr auto format_as(const Error& point, FormatContext& ctx) -> decltype(ctx.out()) {
+    //     return std::format_to(ctx.out(), "[]");
+    // }
 }} // namespace stormkit::core
-
-namespace std {
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename T, class CharT>
-    template<class FormatContext>
-    STORMKIT_FORCE_INLINE
-    inline auto formatter<stormkit::core::Error<T>, CharT>::format(const stormkit::core::Error<T>& error, FormatContext& ctx)
-      const -> decltype(ctx.out()) {
-        return formatter<T>::format(error.code, ctx);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename T, class CharT>
-    template<class ParseContext>
-    STORMKIT_FORCE_INLINE
-    constexpr auto formatter<stormkit::core::DecoratedError<T>, CharT>::parse(ParseContext& ctx) noexcept
-      -> decltype(ctx.begin()) {
-        return ctx.begin();
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename T, class CharT>
-    template<class FormatContext>
-    STORMKIT_FORCE_INLINE
-    inline auto formatter<stormkit::core::DecoratedError<T>, CharT>::format(const stormkit::core::DecoratedError<T>& error,
-                                                                            FormatContext& ctx) const -> decltype(ctx.out()) {
-        auto&& out = ctx.out();
-        return format_to("message: {}, code: {}", error.message, error.error.code);
-    }
-} // namespace std

@@ -22,7 +22,7 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     auto get_monitors(WM, bool update) noexcept -> array_view<const Monitor> {
-        thread_local auto monitors = dyn_array<Monitor> {};
+        thread_local auto monitors = dynarray<Monitor> {};
 
         if (stdr::empty(monitors) or update) {
             auto& globals = xcb::get_globals();

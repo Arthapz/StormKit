@@ -55,7 +55,7 @@ class Application: public base::Application {
                                       "Failed to create descriptor pool!");
 
         // create present engine resources
-        m_submission_resources = init_by<dyn_array<SubmissionResource>>([&](auto& out) noexcept {
+        m_submission_resources = init_by<dynarray<SubmissionResource>>([&](auto& out) noexcept {
             out.reserve(BUFFERING_COUNT);
             for (auto _ : range(BUFFERING_COUNT)) {
                 out.push_back({
@@ -272,8 +272,8 @@ class Application: public base::Application {
 
   private:
     DeferInit<gpu::DescriptorPool>    m_descriptor_pool;
-    dyn_array<SubmissionResource>     m_submission_resources;
-    dyn_array<SwapchainImageResource> m_image_resources;
+    dynarray<SubmissionResource>     m_submission_resources;
+    dynarray<SwapchainImageResource> m_image_resources;
     usize                             m_current_frame = 0_usize;
 };
 

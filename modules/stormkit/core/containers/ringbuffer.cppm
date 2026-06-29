@@ -49,7 +49,7 @@ export namespace stormkit { inline namespace core {
         auto capacity() const noexcept -> ExtentType;
 
         template<typename U>
-            requires meta::Is<T, meta::CanonicalType<U>>
+            requires meta::Is<T, meta::CanonicalT<U>>
         auto push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>) -> void;
 
         template<class... Args>
@@ -74,7 +74,7 @@ export namespace stormkit { inline namespace core {
         ExtentType m_capacity = 0;
         ExtentType m_count    = 0;
 
-        byte_dyn_array m_buffer;
+        byte_dynarray m_buffer;
 
         ExtentType m_write = 0;
         ExtentType m_read  = 0;
@@ -140,7 +140,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T>
     RingBuffer<T>::RingBuffer(RingBuffer&& moved) noexcept {
-        m_buffer = std::exchange(moved.m_buffer, byte_dyn_array {});
+        m_buffer = std::exchange(moved.m_buffer, byte_dynarray {});
 
         m_capacity = std::exchange(moved.m_capacity, 0);
         m_count    = std::exchange(moved.m_count, 0);
@@ -154,7 +154,7 @@ namespace stormkit { inline namespace core {
     auto RingBuffer<T>::operator=(RingBuffer&& moved) noexcept -> RingBuffer& {
         if (&moved == this) return *this;
 
-        m_buffer = std::exchange(moved.m_buffer, byte_dyn_array {});
+        m_buffer = std::exchange(moved.m_buffer, byte_dynarray {});
 
         m_capacity = std::exchange(moved.m_capacity, 0);
         m_count    = std::exchange(moved.m_count, 0);
@@ -210,7 +210,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T>
     template<typename U>
-        requires meta::Is<T, meta::CanonicalType<U>>
+        requires meta::Is<T, meta::CanonicalT<U>>
     auto RingBuffer<T>::push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>) -> void {
         emplace(std::forward(value));
     }

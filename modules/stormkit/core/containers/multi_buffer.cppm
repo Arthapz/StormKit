@@ -16,6 +16,7 @@ import :meta;
 import :typesafe.integer;
 import :functional.monadic;
 import :utils.tags;
+import :containers.utils;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -42,7 +43,7 @@ export namespace stormkit { inline namespace core {
         template<typename U, stdr::input_range V>
         constexpr auto init_range(V&& init_data) noexcept -> array_view<U>;
         template<usize TYPE_INDEX, stdr::input_range V>
-        constexpr auto init_range(V&& init_data) noexcept -> array_view<T...[TYPE_INDEX]>;
+        constexpr auto init_range(V&& init_data) noexcept -> array_view<meta::NthT<TYPE_INDEX, T...>>;
 
         template<typename U, typename Self>
         [[nodiscard]]
@@ -50,13 +51,13 @@ export namespace stormkit { inline namespace core {
 
         template<usize TYPE_INDEX, typename Self>
         [[nodiscard]]
-        constexpr auto range(this Self& self) noexcept -> array_view<meta::ForwardConst<Self, T...[TYPE_INDEX]>>;
+        constexpr auto range(this Self& self) noexcept -> array_view<meta::ForwardConst<Self, meta::NthT<TYPE_INDEX, T...>>>;
 
       private:
         array<usize, sizeof...(T)> m_ranges_sizes;
         array<usize, sizeof...(T)> m_ranges_begin;
         usize                      m_size = 0;
-        byte_dyn_array             m_data;
+        byte_dynarray              m_data;
     };
 }} // namespace stormkit::core
 
@@ -141,9 +142,9 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename... T>
     template<usize TYPE_INDEX, stdr::input_range V>
-    constexpr auto MultiBuffer<T...>::init_range(V&& init_data) noexcept -> array_view<T... [TYPE_INDEX]> {
+    constexpr auto MultiBuffer<T...>::init_range(V&& init_data) noexcept -> array_view<meta::NthT<TYPE_INDEX, T...>> {
         static_assert(TYPE_INDEX < sizeof...(T), "Index is out of bounds");
-        auto span = byte_mut_view { stdr::data(m_data) + m_ranges_begin[TYPE_INDEX], m_ranges_sizes[TYPE_INDEX] };
+        auto span = byte_view_mut { stdr::data(m_data) + m_ranges_begin[TYPE_INDEX], m_ranges_sizes[TYPE_INDEX] };
 
         auto begin = stdr::begin(span);
         for (auto&& bytes : std::forward<V>(init_data) | stdv::transform(monadic::as_bytes(Force {}))) {
@@ -168,9 +169,10 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename... T>
     template<usize TYPE_INDEX, typename Self>
-    constexpr auto MultiBuffer<T...>::range(this Self& self) noexcept -> array_view<meta::ForwardConst<Self, T... [TYPE_INDEX]>> {
+    constexpr auto MultiBuffer<T...>::range(this Self& self) noexcept
+      -> array_view<meta::ForwardConst<Self, meta::NthT<TYPE_INDEX, T...>>> {
         static_assert(TYPE_INDEX < sizeof...(T), "Index is out of bounds");
-        using U        = T...[TYPE_INDEX];
+        using U        = meta::NthT<TYPE_INDEX, T...>;
         using OutType  = meta::ForwardConst<Self, U>;
         const auto ptr = stdr::begin(self.m_data) + as<isize>(self.m_ranges_begin[TYPE_INDEX]);
         return array_view {

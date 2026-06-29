@@ -47,7 +47,7 @@ auto main(array_view<const string_view> args) -> int {
     using log::operator""_module;
 
     // force debug
-    auto args2 = dyn_array<string_view> { std::from_range, args };
+    auto args2 = dynarray<string_view> { std::from_range, args };
     args2.emplace_back("--debug");
 
     log::parse_args(args2);

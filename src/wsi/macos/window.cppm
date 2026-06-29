@@ -205,6 +205,6 @@ export namespace stormkit::wsi::macos {
       private:
         DeferInit<macOS::Window> m_window;
 
-        dyn_array<u32> m_pixels;
+        dynarray<u32> m_pixels;
     };
 } // namespace stormkit::wsi::macos

@@ -130,7 +130,7 @@ export {
         template<meta::IsExtent Extent>
         [[nodiscard]]
         constexpr auto operator*(Extent&& extent, typename Extent::ElemenType factor) noexcept
-          -> core::meta::CanonicalType<Extent>;
+          -> core::meta::CanonicalT<Extent>;
 
         /// @brief Divide an extent with a factor.
         /// @param factor ValueType factor to divide
@@ -138,7 +138,7 @@ export {
         template<meta::IsExtent Extent>
         [[nodiscard]]
         constexpr auto operator/(Extent&& extent, typename Extent::ElemenType factor) noexcept
-          -> core::meta::CanonicalType<Extent>;
+          -> core::meta::CanonicalT<Extent>;
 
         /// @brief Multiply this extent with a factor.
         /// @param factor ValueType factor to multiply
@@ -300,16 +300,16 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator*(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalType<Extent> {
-        return core::meta::CanonicalType<Extent> { std::forward<Extent>(extent) } *= factor;
+    constexpr auto operator*(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalT<Extent> {
+        return core::meta::CanonicalT<Extent> { std::forward<Extent>(extent) } *= factor;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator/(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalType<Extent> {
-        return core::meta::CanonicalType<Extent> { std::forward<Extent>(extent) } /= factor;
+    constexpr auto operator/(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalT<Extent> {
+        return core::meta::CanonicalT<Extent> { std::forward<Extent>(extent) } /= factor;
     }
 
     /////////////////////////////////////

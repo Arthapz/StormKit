@@ -248,12 +248,11 @@ namespace stormkit { inline namespace core {
     template<typename To, typename From>
         requires((meta::IsArithmetic<To> or meta::Isbyte<To>) and (meta::IsArithmetic<From> or meta::Isbyte<From>))
     constexpr auto isSafeNarrowing(const From& from) noexcept -> Boolean {
-        if constexpr ((meta::IsArithmetic<From> and meta::Isbyte<To>) or (meta::Isbyte<From> and meta::IsArithmetic<To>))
-            return (static_cast<From>(static_cast<To>(from)) == from);
-        else if constexpr (meta::IsArithmetic<From> and meta::IsArithmetic<To>)
+        if constexpr (meta::IsArithmetic<From> and meta::IsArithmetic<To>)
             return (static_cast<From>(static_cast<To>(from)) == from)
                    or (meta::IsSigned<To> != meta::IsUnsigned<From> and ((static_cast<To>(from) < To {}) == (from < From {})));
-        std::unreachable();
+        else
+            return (static_cast<From>(static_cast<To>(from)) == from);
     }
 
     /////////////////////////////////////
@@ -646,33 +645,33 @@ namespace stormkit { inline namespace core {
     IS_EQUAL_INSTANCIATE_F2(i64, f64);
     IS_EQUAL_INSTANCIATE(i64, std::byte);
 
-    IS_EQUAL_INSTANCIATE(u128, u8);
-    IS_EQUAL_INSTANCIATE(u128, i8);
-    IS_EQUAL_INSTANCIATE(u128, u16);
-    IS_EQUAL_INSTANCIATE(u128, i16);
-    IS_EQUAL_INSTANCIATE(u128, u32);
-    IS_EQUAL_INSTANCIATE(u128, i32);
-    IS_EQUAL_INSTANCIATE(u128, u64);
-    IS_EQUAL_INSTANCIATE(u128, i64);
-    IS_EQUAL_INSTANCIATE(u128, u128);
-    IS_EQUAL_INSTANCIATE(u128, i128);
-    IS_EQUAL_INSTANCIATE_F2(u128, f32);
-    IS_EQUAL_INSTANCIATE_F2(u128, f64);
-    IS_EQUAL_INSTANCIATE(u128, std::byte);
+    // IS_EQUAL_INSTANCIATE(u128, u8);
+    // IS_EQUAL_INSTANCIATE(u128, i8);
+    // IS_EQUAL_INSTANCIATE(u128, u16);
+    // IS_EQUAL_INSTANCIATE(u128, i16);
+    // IS_EQUAL_INSTANCIATE(u128, u32);
+    // IS_EQUAL_INSTANCIATE(u128, i32);
+    // IS_EQUAL_INSTANCIATE(u128, u64);
+    // IS_EQUAL_INSTANCIATE(u128, i64);
+    // IS_EQUAL_INSTANCIATE(u128, u128);
+    // IS_EQUAL_INSTANCIATE(u128, i128);
+    // IS_EQUAL_INSTANCIATE_F2(u128, f32);
+    // IS_EQUAL_INSTANCIATE_F2(u128, f64);
+    // IS_EQUAL_INSTANCIATE(u128, std::byte);
 
-    IS_EQUAL_INSTANCIATE(i128, u8);
-    IS_EQUAL_INSTANCIATE(i128, i8);
-    IS_EQUAL_INSTANCIATE(i128, u16);
-    IS_EQUAL_INSTANCIATE(i128, i16);
-    IS_EQUAL_INSTANCIATE(i128, u32);
-    IS_EQUAL_INSTANCIATE(i128, i32);
-    IS_EQUAL_INSTANCIATE(i128, u64);
-    IS_EQUAL_INSTANCIATE(i128, i64);
-    IS_EQUAL_INSTANCIATE(i128, u128);
-    IS_EQUAL_INSTANCIATE(i128, i128);
-    IS_EQUAL_INSTANCIATE_F2(i128, f32);
-    IS_EQUAL_INSTANCIATE_F2(i128, f64);
-    IS_EQUAL_INSTANCIATE(i128, std::byte);
+    // IS_EQUAL_INSTANCIATE(i128, u8);
+    // IS_EQUAL_INSTANCIATE(i128, i8);
+    // IS_EQUAL_INSTANCIATE(i128, u16);
+    // IS_EQUAL_INSTANCIATE(i128, i16);
+    // IS_EQUAL_INSTANCIATE(i128, u32);
+    // IS_EQUAL_INSTANCIATE(i128, i32);
+    // IS_EQUAL_INSTANCIATE(i128, u64);
+    // IS_EQUAL_INSTANCIATE(i128, i64);
+    // IS_EQUAL_INSTANCIATE(i128, u128);
+    // IS_EQUAL_INSTANCIATE(i128, i128);
+    // IS_EQUAL_INSTANCIATE_F2(i128, f32);
+    // IS_EQUAL_INSTANCIATE_F2(i128, f64);
+    // IS_EQUAL_INSTANCIATE(i128, std::byte);
 
     IS_EQUAL_INSTANCIATE_F1(f32, u8);
     IS_EQUAL_INSTANCIATE_F1(f32, i8);
@@ -718,8 +717,8 @@ namespace stormkit { inline namespace core {
     AS_NARROW_INSTANCIATE(u8, i32);
     AS_NARROW_INSTANCIATE(u8, u64);
     AS_NARROW_INSTANCIATE(u8, i64);
-    AS_NARROW_INSTANCIATE(u8, u128);
-    AS_NARROW_INSTANCIATE(u8, i128);
+    // AS_NARROW_INSTANCIATE(u8, u128);
+    // AS_NARROW_INSTANCIATE(u8, i128);
     AS_NARROW_INSTANCIATE(u8, f32);
     AS_NARROW_INSTANCIATE(u8, f64);
     AS_NARROW_INSTANCIATE(u8, std::byte);
@@ -732,8 +731,8 @@ namespace stormkit { inline namespace core {
     AS_NARROW_INSTANCIATE(i8, i32);
     AS_NARROW_INSTANCIATE(i8, u64);
     AS_NARROW_INSTANCIATE(i8, i64);
-    AS_NARROW_INSTANCIATE(i8, u128);
-    AS_NARROW_INSTANCIATE(i8, i128);
+    // AS_NARROW_INSTANCIATE(i8, u128);
+    // AS_NARROW_INSTANCIATE(i8, i128);
     AS_NARROW_INSTANCIATE(i8, f32);
     AS_NARROW_INSTANCIATE(i8, f64);
     AS_NARROW_INSTANCIATE(i8, std::byte);
@@ -746,8 +745,8 @@ namespace stormkit { inline namespace core {
     AS_NARROW_INSTANCIATE(u16, i32);
     AS_NARROW_INSTANCIATE(u16, u64);
     AS_NARROW_INSTANCIATE(u16, i64);
-    AS_NARROW_INSTANCIATE(u16, u128);
-    AS_NARROW_INSTANCIATE(u16, i128);
+    // AS_NARROW_INSTANCIATE(u16, u128);
+    // AS_NARROW_INSTANCIATE(u16, i128);
     AS_NARROW_INSTANCIATE(u16, f32);
     AS_NARROW_INSTANCIATE(u16, f64);
     AS_NARROW_INSTANCIATE(u16, std::byte);
@@ -760,8 +759,8 @@ namespace stormkit { inline namespace core {
     AS_NARROW_INSTANCIATE(i16, i32);
     AS_NARROW_INSTANCIATE(i16, u64);
     AS_NARROW_INSTANCIATE(i16, i64);
-    AS_NARROW_INSTANCIATE(i16, u128);
-    AS_NARROW_INSTANCIATE(i16, i128);
+    // AS_NARROW_INSTANCIATE(i16, u128);
+    // AS_NARROW_INSTANCIATE(i16, i128);
     AS_NARROW_INSTANCIATE(i16, f32);
     AS_NARROW_INSTANCIATE(i16, f64);
     AS_NARROW_INSTANCIATE(i16, std::byte);
@@ -774,8 +773,8 @@ namespace stormkit { inline namespace core {
     AS_NARROW_INSTANCIATE(u32, i32);
     AS_NARROW_INSTANCIATE(u32, u64);
     AS_NARROW_INSTANCIATE(u32, i64);
-    AS_NARROW_INSTANCIATE(u32, u128);
-    AS_NARROW_INSTANCIATE(u32, i128);
+    // AS_NARROW_INSTANCIATE(u32, u128);
+    // AS_NARROW_INSTANCIATE(u32, i128);
     AS_NARROW_INSTANCIATE(u32, f32);
     AS_NARROW_INSTANCIATE(u32, f64);
     AS_NARROW_INSTANCIATE(u32, std::byte);
@@ -788,8 +787,8 @@ namespace stormkit { inline namespace core {
     AS_NARROW_INSTANCIATE(i32, i32);
     AS_NARROW_INSTANCIATE(i32, u64);
     AS_NARROW_INSTANCIATE(i32, i64);
-    AS_NARROW_INSTANCIATE(i32, u128);
-    AS_NARROW_INSTANCIATE(i32, i128);
+    // AS_NARROW_INSTANCIATE(i32, u128);
+    // AS_NARROW_INSTANCIATE(i32, i128);
     AS_NARROW_INSTANCIATE(i32, f32);
     AS_NARROW_INSTANCIATE(i32, f64);
     AS_NARROW_INSTANCIATE(i32, std::byte);
@@ -802,8 +801,8 @@ namespace stormkit { inline namespace core {
     AS_NARROW_INSTANCIATE(u64, i32);
     AS_NARROW_INSTANCIATE(u64, u64);
     AS_NARROW_INSTANCIATE(u64, i64);
-    AS_NARROW_INSTANCIATE(u64, u128);
-    AS_NARROW_INSTANCIATE(u64, i128);
+    // AS_NARROW_INSTANCIATE(u64, u128);
+    // AS_NARROW_INSTANCIATE(u64, i128);
     AS_NARROW_INSTANCIATE(u64, f32);
     AS_NARROW_INSTANCIATE(u64, f64);
     AS_NARROW_INSTANCIATE(u64, std::byte);
@@ -822,33 +821,33 @@ namespace stormkit { inline namespace core {
     AS_NARROW_INSTANCIATE(i64, f64);
     AS_NARROW_INSTANCIATE(i64, std::byte);
 
-    AS_NARROW_INSTANCIATE(u128, u8);
-    AS_NARROW_INSTANCIATE(u128, i8);
-    AS_NARROW_INSTANCIATE(u128, u16);
-    AS_NARROW_INSTANCIATE(u128, i16);
-    AS_NARROW_INSTANCIATE(u128, u32);
-    AS_NARROW_INSTANCIATE(u128, i32);
-    AS_NARROW_INSTANCIATE(u128, u64);
-    AS_NARROW_INSTANCIATE(u128, i64);
-    AS_NARROW_INSTANCIATE(u128, u128);
-    AS_NARROW_INSTANCIATE(u128, i128);
-    AS_NARROW_INSTANCIATE(u128, f32);
-    AS_NARROW_INSTANCIATE(u128, f64);
-    AS_NARROW_INSTANCIATE(u128, std::byte);
+    // AS_NARROW_INSTANCIATE(u128, u8);
+    // AS_NARROW_INSTANCIATE(u128, i8);
+    // AS_NARROW_INSTANCIATE(u128, u16);
+    // AS_NARROW_INSTANCIATE(u128, i16);
+    // AS_NARROW_INSTANCIATE(u128, u32);
+    // AS_NARROW_INSTANCIATE(u128, i32);
+    // AS_NARROW_INSTANCIATE(u128, u64);
+    // AS_NARROW_INSTANCIATE(u128, i64);
+    // AS_NARROW_INSTANCIATE(u128, u128);
+    // AS_NARROW_INSTANCIATE(u128, i128);
+    // AS_NARROW_INSTANCIATE(u128, f32);
+    // AS_NARROW_INSTANCIATE(u128, f64);
+    // AS_NARROW_INSTANCIATE(u128, std::byte);
 
-    AS_NARROW_INSTANCIATE(i128, u8);
-    AS_NARROW_INSTANCIATE(i128, i8);
-    AS_NARROW_INSTANCIATE(i128, u16);
-    AS_NARROW_INSTANCIATE(i128, i16);
-    AS_NARROW_INSTANCIATE(i128, u32);
-    AS_NARROW_INSTANCIATE(i128, i32);
-    AS_NARROW_INSTANCIATE(i128, u64);
-    AS_NARROW_INSTANCIATE(i128, i64);
-    AS_NARROW_INSTANCIATE(i128, u128);
-    AS_NARROW_INSTANCIATE(i128, i128);
-    AS_NARROW_INSTANCIATE(i128, f32);
-    AS_NARROW_INSTANCIATE(i128, f64);
-    AS_NARROW_INSTANCIATE(i128, std::byte);
+    // AS_NARROW_INSTANCIATE(i128, u8);
+    // AS_NARROW_INSTANCIATE(i128, i8);
+    // AS_NARROW_INSTANCIATE(i128, u16);
+    // AS_NARROW_INSTANCIATE(i128, i16);
+    // AS_NARROW_INSTANCIATE(i128, u32);
+    // AS_NARROW_INSTANCIATE(i128, i32);
+    // AS_NARROW_INSTANCIATE(i128, u64);
+    // AS_NARROW_INSTANCIATE(i128, i64);
+    // AS_NARROW_INSTANCIATE(i128, u128);
+    // AS_NARROW_INSTANCIATE(i128, i128);
+    // AS_NARROW_INSTANCIATE(i128, f32);
+    // AS_NARROW_INSTANCIATE(i128, f64);
+    // AS_NARROW_INSTANCIATE(i128, std::byte);
 
     AS_NARROW_INSTANCIATE(f32, u8);
     AS_NARROW_INSTANCIATE(f32, i8);
@@ -858,8 +857,8 @@ namespace stormkit { inline namespace core {
     AS_NARROW_INSTANCIATE(f32, i32);
     AS_NARROW_INSTANCIATE(f32, u64);
     AS_NARROW_INSTANCIATE(f32, i64);
-    AS_NARROW_INSTANCIATE(f32, u128);
-    AS_NARROW_INSTANCIATE(f32, i128);
+    // AS_NARROW_INSTANCIATE(f32, u128);
+    // AS_NARROW_INSTANCIATE(f32, i128);
     AS_NARROW_INSTANCIATE(f32, f32);
     AS_NARROW_INSTANCIATE(f32, f64);
     AS_NARROW_INSTANCIATE(f32, std::byte);
@@ -872,8 +871,8 @@ namespace stormkit { inline namespace core {
     AS_NARROW_INSTANCIATE(f64, i32);
     AS_NARROW_INSTANCIATE(f64, u64);
     AS_NARROW_INSTANCIATE(f64, i64);
-    AS_NARROW_INSTANCIATE(f64, u128);
-    AS_NARROW_INSTANCIATE(f64, i128);
+    // AS_NARROW_INSTANCIATE(f64, u128);
+    // AS_NARROW_INSTANCIATE(f64, i128);
     AS_NARROW_INSTANCIATE(f64, f32);
     AS_NARROW_INSTANCIATE(f64, f64);
     AS_NARROW_INSTANCIATE(f64, std::byte);

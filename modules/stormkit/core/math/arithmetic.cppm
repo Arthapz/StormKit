@@ -68,13 +68,13 @@ namespace stormkit { inline namespace core { namespace math {
     template<meta::IsArithmetic T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto floor(T v) noexcept -> T {
-        if consteval {
-            if constexpr (meta::IsIntegral<T>) return as<T>(std::floor(v));
-            else
-                return as<T>(as<i64>(v));
-        } else {
-            return as<T>(std::floor(v));
-        }
+        // if consteval {
+        //     if constexpr (meta::IsIntegral<T>) return as<T>(std::floor(v));
+        //     else
+        //         return as<T>(as<i64>(v));
+        // } else {
+        return as<T>(std::floor(v));
+        // }
     }
 
     ////////////////////////////////////////
@@ -83,16 +83,13 @@ namespace stormkit { inline namespace core { namespace math {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto log2(T v) noexcept -> T {
         if consteval {
-            if constexpr (meta::IsIntegral<T>) return as<T>(std::log2(v));
-            else {
-                auto val_i = as<i32>(v);
-                auto log_2 = std::bit_cast<f32>(((val_i >> 23) & 255) - 128);
-                val_i &= ~(255 << 23);
-                val_i += 127 << 23;
-                const auto val_f = std::bit_cast<f32>(val_i);
-                log_2 += ((-0.3358287811f) * val_f + 2.0f) * val_f - 0.65871759316667f;
-                return as<T>(log_2);
-            }
+            auto val_i = as<i32>(v);
+            auto log_2 = std::bit_cast<f32>(((val_i >> 23) & 255) - 128);
+            val_i &= ~(255 << 23);
+            val_i += 127 << 23;
+            const auto val_f = std::bit_cast<f32>(val_i);
+            log_2 += ((-0.3358287811f) * val_f + 2.0f) * val_f - 0.65871759316667f;
+            return as<T>(log_2);
         } else {
             return as<T>(std::log2(v));
         }
@@ -146,13 +143,8 @@ namespace stormkit { inline namespace core { namespace math {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto abs(T n) noexcept -> T {
         if constexpr (not stormkit::meta::IsSigned<T>) return n;
-        else {
-            if consteval {
-                return (n > 0) ? n : n * T { -1 };
-            } else {
-                return as<T>(std::abs(n));
-            }
-        }
+        else
+            return as<T>(std::abs(n));
     }
 
     /////////////////////////////////////
@@ -175,19 +167,20 @@ namespace stormkit { inline namespace core { namespace math {
             return false;
     }
 
-#ifndef STORMKIT_OS_WINDOWS
-    #undef STORMKIT_CORE_API
-    #define STORMKIT_CORE_API
-#endif
+#ifndef STORMKIT_COMPILER_MSVC
+    #ifndef STORMKIT_OS_WINDOWS
+        #undef STORMKIT_CORE_API
+        #define STORMKIT_CORE_API
+    #endif
 
-#define INSTANCIATE(t)                                                  \
-    template STORMKIT_CORE_API auto is_positive<t>(t) noexcept -> bool; \
-    template STORMKIT_CORE_API auto is_negative<t>(t) noexcept -> bool; \
-    template STORMKIT_CORE_API auto abs<t>(t) noexcept -> t;            \
-    template STORMKIT_CORE_API auto min<t>(t, t) noexcept -> t;         \
-    template STORMKIT_CORE_API auto max<t>(t, t) noexcept -> t;         \
-    template STORMKIT_CORE_API auto log2<t>(t) noexcept -> t;           \
-    template STORMKIT_CORE_API auto floor<t>(t) noexcept -> t;
+    #define INSTANCIATE(t)                                                  \
+        template STORMKIT_CORE_API auto is_positive<t>(t) noexcept -> bool; \
+        template STORMKIT_CORE_API auto is_negative<t>(t) noexcept -> bool; \
+        template STORMKIT_CORE_API auto abs<t>(t) noexcept -> t;            \
+        template STORMKIT_CORE_API auto min<t>(t, t) noexcept -> t;         \
+        template STORMKIT_CORE_API auto max<t>(t, t) noexcept -> t;         \
+        template STORMKIT_CORE_API auto log2<t>(t) noexcept -> t;           \
+        template STORMKIT_CORE_API auto floor<t>(t) noexcept -> t;
 
     INSTANCIATE(u8);
     INSTANCIATE(i8);
@@ -197,11 +190,12 @@ namespace stormkit { inline namespace core { namespace math {
     INSTANCIATE(i32);
     INSTANCIATE(u64);
     INSTANCIATE(i64);
-    // INSTANCIATE(u128);
+    INSTANCIATE(u128);
     // INSTANCIATE(i128);
     INSTANCIATE(f32);
     INSTANCIATE(f64);
 
-#undef INSTANCIATE
+    #undef INSTANCIATE
+#endif
 
 }}} // namespace stormkit::core::math

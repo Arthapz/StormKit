@@ -49,7 +49,7 @@ namespace stormkit::wsi::win32 {
     auto load_monitors(HMONITOR native, HDC, LPRECT, LPARAM data) noexcept -> BOOL {
         if (native == nullptr) return TRUE;
 
-        auto& monitors = *std::bit_cast<dyn_array<Monitor>*>(data);
+        auto& monitors = *std::bit_cast<dynarray<Monitor>*>(data);
         monitors.emplace_back(load_monitor(native));
 
         return TRUE;
@@ -58,7 +58,7 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
     auto get_monitors(WM, bool update = false) noexcept -> array_view<const Monitor> {
-        thread_local auto monitors = dyn_array<Monitor> {};
+        thread_local auto monitors = dynarray<Monitor> {};
 
         if (update or stdr::empty(monitors))
             EnumDisplayMonitors(nullptr, nullptr, load_monitors, std::bit_cast<LPARAM>(&monitors));

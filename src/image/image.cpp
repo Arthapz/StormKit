@@ -56,7 +56,7 @@ namespace stormkit::image {
             return Image::Codec::UNKNOWN;
         }
 
-        auto header_to_codec(byte_view<> data) noexcept -> Image::Codec {
+        auto header_to_codec(byte_view data) noexcept -> Image::Codec {
             EXPECTS(std::size(data) >= 12);
 
             if (std::memcmp(std::data(data), std::data(KTX_HEADER), std::size(KTX_HEADER)) == 0) return Image::Codec::KTX;
@@ -70,7 +70,7 @@ namespace stormkit::image {
             return Image::Codec::UNKNOWN;
         }
 
-        auto map(byte_view<> bytes, u32 source_count, u32 destination_count) noexcept -> byte_dyn_array {
+        auto map(byte_view bytes, u32 source_count, u32 destination_count) noexcept -> byte_dynarray {
             EXPECTS(source_count <= 4u and source_count > 0u and destination_count <= 4u and destination_count > 0u);
 
             static constexpr auto BYTE_1_MIN = std::numeric_limits<u8>::min();
@@ -80,7 +80,7 @@ namespace stormkit::image {
             static constexpr auto BYTE_4_MIN = std::numeric_limits<u32>::min();
             static constexpr auto BYTE_4_MAX = std::numeric_limits<u32>::max();
 
-            auto data = byte_dyn_array {};
+            auto data = byte_dynarray {};
             data.resize(std::size(bytes) * destination_count);
 
             if (source_count == 1u and destination_count == 2u) {
@@ -150,7 +150,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Image::Image(byte_view<> data, Image::Codec codec) noexcept : Image {} {
+    Image::Image(byte_view data, Image::Codec codec) noexcept : Image {} {
         const auto _ = load_from_memory(data, codec);
     }
 
@@ -249,7 +249,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::load_from_memory(byte_view<> data, Image::Codec codec) noexcept -> std::expected<void, Error> {
+    auto Image::load_from_memory(byte_view data, Image::Codec codec) noexcept -> std::expected<void, Error> {
         EXPECTS(codec != Image::Codec::UNKNOWN);
         EXPECTS(!std::empty(data));
 
@@ -350,7 +350,7 @@ namespace stormkit::image {
                 std::format("Failed to load " _Name " image from data\n    > {}", result.error().str_error) \
             };                                                                                              \
         }                                                                                                   \
-        return std::expected<byte_dyn_array, Error> { std::in_place, std::move(*result) };                 \
+        return std::expected<byte_dynarray, Error> { std::in_place, std::move(*result) };                 \
     }
 #define CASE_ARGS_DO(_E, _Func, _Name)                                                                      \
     case Image::Codec::_E: {                                                                                \
@@ -362,17 +362,17 @@ namespace stormkit::image {
                 std::format("Failed to load " _Name " image from data\n    > {}", result.error().str_error) \
             };                                                                                              \
         }                                                                                                   \
-        return std::expected<byte_dyn_array, Error> { std::in_place, std::move(*result) };                 \
+        return std::expected<byte_dynarray, Error> { std::in_place, std::move(*result) };                 \
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::save_to_memory(Codec codec, CodecArgs args) const noexcept -> std::expected<byte_dyn_array, Error> {
+    auto Image::save_to_memory(Codec codec, CodecArgs args) const noexcept -> std::expected<byte_dynarray, Error> {
         EXPECTS(codec != Image::Codec::UNKNOWN);
         EXPECTS(codec != Image::Codec::AUTODETECT);
         EXPECTS(!std::empty(m_data.data));
 
-        auto output = byte_dyn_array {};
+        auto output = byte_dynarray {};
 
         switch (codec) {
             CASE_DO (JPEG, save_jpg, "JPEG")

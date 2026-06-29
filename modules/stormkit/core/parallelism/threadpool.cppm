@@ -84,7 +84,7 @@ export namespace stormkit { inline namespace core {
 
         u32 m_worker_count = 0;
 
-        dyn_array<std::jthread> m_workers;
+        dynarray<std::jthread> m_workers;
 
         mutable std::mutex          m_mutex;
         std::condition_variable     m_work_signal;
@@ -96,7 +96,7 @@ export namespace stormkit { inline namespace core {
     auto parallel_for(ThreadPool& pool, Range&& range, F&& f) noexcept -> void;
 
     template<std::ranges::input_range Range, std::invocable<meta::RangeType<Range>&> F>
-    auto parallel_for_async(ThreadPool& pool, Range& range, F&& f) noexcept -> dyn_array<std::future<void>>;
+    auto parallel_for_async(ThreadPool& pool, Range& range, F&& f) noexcept -> dynarray<std::future<void>>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -201,12 +201,12 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<std::ranges::input_range Range, std::invocable<meta::RangeType<Range>&> F>
-    inline auto parallel_for_async(ThreadPool& pool, Range& range, F&& f) noexcept -> dyn_array<std::future<void>> {
+    inline auto parallel_for_async(ThreadPool& pool, Range& range, F&& f) noexcept -> dynarray<std::future<void>> {
         const auto size        = stdr::size(range);
         const auto chunk_size  = size / pool.worker_count();
         const auto chunk_count = size / chunk_size;
 
-        auto out = dyn_array<std::future<void>> {};
+        auto out = dynarray<std::future<void>> {};
         out.reserve(chunk_count);
 
         for (auto chunk : stormkit::range(chunk_count)) {

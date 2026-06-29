@@ -13,12 +13,16 @@ import std;
 import frozen;
 
 import :typesafe.boolean;
+
+import :string.aliases;
 import :typesafe.flags;
 
 import :meta;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
+
+using namespace std::literals;
 
 export {
     namespace stormkit { inline namespace core {
@@ -130,15 +134,14 @@ export {
         auto format_as(const ConsoleStyle& style, FormatContext& ctx) noexcept -> decltype(ctx.out());
     }} // namespace stormkit::core
 
-    FLAG_ENUM(stormkit::core::StyleModifier)
+    template<>
+    inline constexpr auto stormkit::meta::FLAG_TRAIT<stormkit::StyleModifier> = true;
 
-    namespace std {
-        template<typename T, class CharT>
-        struct formatter<stormkit::core::Stylized<T>, CharT>: formatter<stormkit::meta::CanonicalType<T>, CharT> {
-            template<class FormatContext>
-            auto format(const stormkit::core::Stylized<T>& stylized, FormatContext& ctx) const noexcept -> decltype(ctx.out());
-        };
-    } // namespace std
+    template<typename T, class CharT>
+    struct std::formatter<stormkit::core::Stylized<T>, CharT>: formatter<stormkit::meta::CanonicalT<T>, CharT> {
+        template<class FormatContext>
+        auto format(const stormkit::core::Stylized<T>& stylized, FormatContext& ctx) const noexcept -> decltype(ctx.out());
+    };
 }
 
 ////////////////////////////////////////////////////////////////////

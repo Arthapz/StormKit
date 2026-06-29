@@ -18,10 +18,10 @@ namespace stormkit { inline namespace core { namespace meta {
         // concept PlainTypeTo = C<ToPlainType<T>>;
 
         template<typename T>
-        using CanonicalType = std::remove_cvref_t<T>;
+        using CanonicalT = std::remove_cvref_t<T>;
 
         template<auto value>
-        using CanonicalTypeOf = CanonicalType<decltype(value)>;
+        using CanonicalTOf = CanonicalT<decltype(value)>;
 
         template<typename T>
         using ToDecayedType = std::decay_t<T>;

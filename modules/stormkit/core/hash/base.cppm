@@ -86,7 +86,7 @@ namespace stormkit { inline namespace core {
 
         if constexpr (meta::HasHasher<T>) return hasher<Ret>(std::forward<T>(value));
         else {
-            const auto _hasher = std::hash<meta::CanonicalType<T>> {};
+            const auto _hasher = std::hash<meta::CanonicalT<T>> {};
             return static_cast<Ret>(_hasher(std::forward<T>(value)));
         }
     }

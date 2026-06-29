@@ -13,6 +13,6 @@ import std;
 import stormkit.core;
 import stormkit.entities;
 
-export namespace stormkit::lua::entities {
+namespace stormkit::lua::entities {
     auto init_lua(sol::state& global_state) noexcept -> void;
 } // namespace stormkit::lua::entities

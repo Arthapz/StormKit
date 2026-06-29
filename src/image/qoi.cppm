@@ -17,14 +17,14 @@ import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_qoi(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_qoi(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_qoi(const image::Image& image, const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto save_qoi(const image::Image& image) noexcept -> std::expected<byte_dyn_array, image::Image::Error>;
+    auto save_qoi(const image::Image& image) noexcept -> std::expected<byte_dynarray, image::Image::Error>;
 } // namespace stormkit::image::details
 
 using namespace std::literals;
@@ -86,7 +86,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_qoi(byte_view<> data) noexcept -> std::expected<image::Image, image::Image::Error> {
+    auto load_qoi(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error> {
         const auto  raw_header = data.subspan(SIZE_OF_HEADER);
         const auto* header     = std::bit_cast<const QOIHeader*>(stdr::data(raw_header));
 
@@ -101,7 +101,7 @@ namespace stormkit::image::details {
 
         const auto output_size = extent.width * extent.height * channels;
 
-        auto output = byte_dyn_array {};
+        auto output = byte_dynarray {};
         output.reserve(output_size);
 
         auto previous_pixel = Pixel { .rgba = { .a = 255 } };
@@ -202,7 +202,7 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     [[nodiscard]]
-    auto save_qoi(const image::Image&) noexcept -> std::expected<byte_dyn_array, image::Image::Error> {
+    auto save_qoi(const image::Image&) noexcept -> std::expected<byte_dynarray, image::Image::Error> {
         assert(false, "Not implemented yet !");
         return {};
     }

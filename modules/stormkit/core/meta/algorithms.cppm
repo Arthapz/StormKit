@@ -29,6 +29,19 @@ namespace stormkit { inline namespace core { namespace meta::details {
     struct If<true, LazyType, Then, OrElse> {
         using Type = LazyType<Then>::Type;
     };
+
+#if not(defined(__cpp_pack_indexing) and __cpp_pack_indexing >= 202311L)
+    template<std::size_t Index, typename... Args>
+    struct NthTImpl;
+
+    template<std::size_t Index, typename Head, typename... Args>
+    struct NthTImpl<Index, Head, Args...>: NthTImpl<Index - 1, Args...> {};
+
+    template<typename Head, typename... Args>
+    struct NthTImpl<0, Head, Args...> {
+        using Type = Head;
+    };
+#endif
 }}} // namespace stormkit::core::meta::details
 
 export namespace stormkit { inline namespace core { namespace meta {
@@ -40,6 +53,20 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
     constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept -> std::size_t;
+
+#if defined(__cpp_pack_indexing) and __cpp_pack_indexing >= 202311L
+    template<std::size_t At, typename... Args>
+    using NthT = Args...[At];
+#else
+    template<std::size_t At, typename... Args>
+    using NthT = typename details::NthTImpl<At, Args...>::Type;
+#endif
+
+    template<typename... Args>
+    using FirstT = NthT<0, Args...>;
+
+    template<typename... Args>
+    using LastT = NthT<sizeof...(Args) - 1, Args...>;
 }}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////

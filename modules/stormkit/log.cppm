@@ -5,7 +5,6 @@
 module;
 
 #include <stormkit/core/contract_macro.hpp>
-#include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #include <stormkit/log/api.hpp>
@@ -65,7 +64,7 @@ export {
 
             template<class T, typename... Args>
             [[nodiscard]]
-            static auto allocate_logger_instance(Args&&... param_args) noexcept -> Heap<T>;
+            static auto allocate_logger_instance(Args&&... param_args) noexcept -> heap_ptr<T>;
 
             template<class... Args>
             static auto log(Severity                    severity,
@@ -209,7 +208,9 @@ export {
             auto flush() noexcept -> void override;
         };
     } // namespace stormkit::log
-    FLAG_ENUM(stormkit::log::Severity)
+
+    template<>
+    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::log::Severity> = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -284,7 +285,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, typename... Args>
-    inline auto Logger::allocate_logger_instance(Args&&... param_args) noexcept -> Heap<T> {
+    inline auto Logger::allocate_logger_instance(Args&&... param_args) noexcept -> heap_ptr<T> {
         static_assert(std::is_base_of<Logger, T>::value, "T must inherit Logger");
 
         auto time_point = LogClock::now();
@@ -316,7 +317,7 @@ namespace stormkit::log {
             const auto _ = std::unique_lock(instance().mutex());
             instance().write(severity, m, string_view { stdr::begin(memory_buffer), end_it });
         } else {
-            auto memory_buffer = dyn_array<char> {};
+            auto memory_buffer = dynarray<char> {};
             memory_buffer.resize(size);
             const auto end_it = std::format_to(stdr::begin(memory_buffer),
                                                std::move(format_string),
@@ -375,7 +376,7 @@ namespace stormkit::log {
             const auto _ = std::unique_lock(instance().mutex());
             instance().write(severity, m, string_view { stdr::begin(memory_buffer), end_it });
         } else {
-            auto memory_buffer = dyn_array<char> {};
+            auto memory_buffer = dynarray<char> {};
             memory_buffer.resize(c.n);
             const auto end_it = std::vformat_to(stdr::begin(memory_buffer), std::move(format_string), args);
 
