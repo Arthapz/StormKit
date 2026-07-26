@@ -19,7 +19,7 @@
         ({                                                             \
             auto res = (m);                                            \
             if (not res.has_value()) [[unlikely]] {                    \
-                elog(msg, res.error());                                \
+                elog("{}\n    error: {}", msg, res.error());           \
                 return { std::unexpected { std::move(res.error()) } }; \
             }                                                          \
             *std::move(res);                                           \
@@ -28,7 +28,7 @@
         ({                                                             \
             auto res = (m);                                            \
             if (not res.has_value()) [[unlikely]] {                    \
-                logger(msg, res.error());                              \
+                logger("{}\n    error: {}", msg, res.error());         \
                 return { std::unexpected { std::move(res.error()) } }; \
             }                                                          \
             *std::move(res);                                           \
