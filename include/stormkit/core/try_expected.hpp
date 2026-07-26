@@ -72,6 +72,13 @@
                 return { std::unexpected { t(std::move(res.error())) } }; \
             *std::move(res);                                              \
         })
+    #define TryLiftTransformError(m, t)           \
+        ({                                        \
+            auto res = (m);                       \
+            if (not res.has_value()) [[unlikely]] \
+                return t(std::move(res.error())); \
+            *std::move(res);                      \
+        })
 
     #define TryDiscard(m)                                                 \
         ({                                                                \
@@ -127,8 +134,11 @@
             logger(msg, error);                               \
             return error;                                     \
         })
-    #define TryOr(m, t)                    co_await m.transform_error(t)
-    #define TryTransformError(m, t)        TryOr(m, t)
+    #define TryOr(m, t) co_await m.or_else(t)
+    #define TryTransformError(m, t) \
+        co_await m.transform_error([](auto&& error) { return std::unexpected { std::invoke(t, error) }; })
+    #define TryLiftTransformError(m, t) co_await m.transform_error([](auto&& error) { return std::invoke(t, error); })
+
     #define TryDiscard(m)                  co_await m.transform(stormkit::core::monadic::discard())
     #define TryDiscardOr(m, t)             co_await m.transform(stormkit::core::monadic::discard()).transform_error(t)
     #define TryDiscardTransformError(m, t) TryDiscardOr(m, t)
