@@ -33,6 +33,31 @@
             }                                                          \
             *std::move(res);                                           \
         })
+    #define TryLiftError(m)                       \
+        ({                                        \
+            auto res = (m);                       \
+            if (not res.has_value()) [[unlikely]] \
+                return std::move(res.error());    \
+            *std::move(res);                      \
+        })
+    #define TryLiftErrorLog(m, msg)                          \
+        ({                                                   \
+            auto res = (m);                                  \
+            if (not res.has_value()) [[unlikely]] {          \
+                elog("{}\n    error: {}", msg, res.error()); \
+                return std::move(res.error());               \
+            }                                                \
+            *std::move(res);                                 \
+        })
+    #define TryLiftErrorLogWith(m, logger, msg)                \
+        ({                                                     \
+            auto res = (m);                                    \
+            if (not res.has_value()) [[unlikely]] {            \
+                logger("{}\n    error: {}", msg, res.error()); \
+                return std::move(res.error());                 \
+            }                                                  \
+            *std::move(res);                                   \
+        })
     #define TryOr(m, t)                           \
         ({                                        \
             auto res = (m);                       \
@@ -79,6 +104,28 @@
         co_await m.transform_error([](auto&& error) static noexcept { \
             logger(msg, error);                                       \
             return error;                                             \
+        })
+    #define Try(m) co_await m
+    #define TryLog(m, msg)                                            \
+        co_await m.transform_error([](auto&& error) static noexcept { \
+            elog(msg, error);                                         \
+            return error;                                             \
+        })
+    #define TryLogWith(m, logger, msg)                                \
+        co_await m.transform_error([](auto&& error) static noexcept { \
+            logger(msg, error);                                       \
+            return error;                                             \
+        })
+    #define TryLiftError(m) co_await m.or_else(stormkit::core::monadic::unwrap_error())
+    #define TryLiftErrorLog(m, msg)                           \
+        co_await m.or_else([](auto&& error) static noexcept { \
+            elog(msg, error);                                 \
+            return error;                                     \
+        })
+    #define TryLiftErrorLogWith(m, logger, msg)               \
+        co_await m.or_else([](auto&& error) static noexcept { \
+            logger(msg, error);                               \
+            return error;                                     \
         })
     #define TryOr(m, t)                    co_await m.transform_error(t)
     #define TryTransformError(m, t)        TryOr(m, t)
