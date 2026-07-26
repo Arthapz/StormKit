@@ -58,18 +58,12 @@ constexpr auto format_as(const posix_code& error, auto& ctx) noexcept -> decltyp
 #ifdef STORMKIT_OS_WINDOWS
 STORMKIT_FORCE_INLINE
 constexpr auto format_as(const nt_code& error, auto& ctx) noexcept -> decltype(ctx.out()) {
-    return std::format_to(ctx.out(),
-                          "{:#x} ({})",
-                          static_cast<unsigned long long>(error.value()),
-                          std::string_view { error.message() });
+    return std::format_to(ctx.out(), "{:#x}", static_cast<unsigned long>(error.value()));
 }
 
 STORMKIT_FORCE_INLINE
 constexpr auto format_as(const win32_code& error, auto& ctx) noexcept -> decltype(ctx.out()) {
-    return std::format_to(ctx.out(),
-                          "{:#x} ({})",
-                          static_cast<unsigned long long>(error.value()),
-                          std::string_view { error.message() });
+    return std::format_to(ctx.out(), "{:#x}", static_cast<unsigned long>(error.value()));
 }
 #endif
 
