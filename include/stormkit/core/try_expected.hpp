@@ -15,6 +15,24 @@
                 return { std::unexpected { std::move(res.error()) } }; \
             std::move(*res);                                           \
         })
+    #define TryLog(m, msg)                                             \
+        ({                                                             \
+            auto res = (m);                                            \
+            if (not res.has_value()) [[unlikely]] {                    \
+                elog(msg, res.error());                                \
+                return { std::unexpected { std::move(res.error()) } }; \
+            }                                                          \
+            std::move(*res);                                           \
+        })
+    #define TryLogWith(m, logger, msg)                                 \
+        ({                                                             \
+            auto res = (m);                                            \
+            if (not res.has_value()) [[unlikely]] {                    \
+                logger(msg, res.error());                              \
+                return { std::unexpected { std::move(res.error()) } }; \
+            }                                                          \
+            std::move(*res);                                           \
+        })
     #define TryOr(m, t)                           \
         ({                                        \
             auto res = (m);                       \
@@ -51,7 +69,17 @@
 
     #define Return return
 #else
-    #define Try(m)                         co_await m
+    #define Try(m) co_await m
+    #define TryLog(m, msg)                                            \
+        co_await m.transform_error([](auto&& error) static noexcept { \
+            elog(msg, error);                                         \
+            return error;                                             \
+        })
+    #define TryLogWith(m, logger, msg)                                \
+        co_await m.transform_error([](auto&& error) static noexcept { \
+            logger(msg, error);                                       \
+            return error;                                             \
+        })
     #define TryOr(m, t)                    co_await m.transform_error(t)
     #define TryTransformError(m, t)        TryOr(m, t)
     #define TryDiscard(m)                  co_await m.transform(stormkit::core::monadic::discard())

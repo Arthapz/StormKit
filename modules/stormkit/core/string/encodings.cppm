@@ -114,13 +114,15 @@ namespace stormkit { inline namespace core {
         auto output = string {};
         output.resize(stdr::size(input));
 
-#if defined(STORMKIT_COMPILER_MSVC)
+        // #if defined(STORMKIT_COMPILER_MSVC)
         for (const auto& c : input) [[maybe_unused]]
-            auto _ = std::c16rtomb(stdr::data(output), narrow<char16_t>(c), &state);
-#elif defined(STORMKIT_COMPILER_CLANG)
-        output = std::bit_cast<char*>(stdr::data(input));
+            auto _ =
+#if defined(STORMKIT_OS_WINDOWS)
+              std::c16rtomb(stdr::data(output), narrow<char16_t>(c), &state);
+// #elif defined(STORMKIT_COMPILER_CLANG)
+//         output = std::bit_cast<char*>(stdr::data(input));
 #else
-        for (const auto& c : input) std::c8rtomb(stdr::data(output), narrow<char>(c), &state);
+              std::c8rtomb(stdr::data(output), narrow<char>(c), &state);
 #endif
 
         return output;
