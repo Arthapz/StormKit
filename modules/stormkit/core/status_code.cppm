@@ -41,23 +41,35 @@ SYSTEM_ERROR2_NAMESPACE_BEGIN
 
 STORMKIT_FORCE_INLINE
 constexpr auto format_as(const system_code& error, auto& ctx) noexcept -> decltype(ctx.out()) {
-    return std::format_to(ctx.out(), "{}", error.message());
+    return std::format_to(ctx.out(),
+                          "{:#x} ({})",
+                          static_cast<unsigned long long>(error.value()),
+                          std::string_view { error.message() });
 }
 
 STORMKIT_FORCE_INLINE
 constexpr auto format_as(const posix_code& error, auto& ctx) noexcept -> decltype(ctx.out()) {
-    return std::format_to(ctx.out(), "{}", error.message());
+    return std::format_to(ctx.out(),
+                          "{:#x} ({})",
+                          static_cast<unsigned long long>(error.value()),
+                          std::string_view { error.message() });
 }
 
 #ifdef STORMKIT_OS_WINDOWS
 STORMKIT_FORCE_INLINE
 constexpr auto format_as(const nt_code& error, auto& ctx) noexcept -> decltype(ctx.out()) {
-    return std::format_to(ctx.out(), "{}", error.message());
+    return std::format_to(ctx.out(),
+                          "{:#x} ({})",
+                          static_cast<unsigned long long>(error.value()),
+                          std::string_view { error.message() });
 }
 
 STORMKIT_FORCE_INLINE
 constexpr auto format_as(const win32_code& error, auto& ctx) noexcept -> decltype(ctx.out()) {
-    return std::format_to(ctx.out(), "{}", error.message());
+    return std::format_to(ctx.out(),
+                          "{:#x} ({})",
+                          static_cast<unsigned long long>(error.value()),
+                          std::string_view { error.message() });
 }
 #endif
 

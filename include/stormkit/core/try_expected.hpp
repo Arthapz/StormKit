@@ -48,17 +48,17 @@
 
 #define CustomLoggedTry(try_expression, logger, msg)          \
     TryTransform(try_expression, [&](auto&& error) noexcept { \
-        logger("{}\n    error: {}", msg, error);              \
+        logger("{}\n    > reason: {}", msg, error);           \
         return error;                                         \
     })
 #define CustomLoggedTryOr(try_expression, or_closure, logger, msg)      \
     TryOr(try_expression, [&]<typename Error>(Error&& error) noexcept { \
-        logger("{}\n    error: {}", msg, error);                        \
+        logger("{}\n    > reason: {}", msg, error);                     \
         return std::invoke(or_closure, std::forward<Error>(error));     \
     })
 #define CustomLoggedTryTransform(m, transform_closure, logger, msg)        \
     TryTransform(m, [&]<typename Error>(Error&& error) noexcept {          \
-        logger("{}\n    error: {}", msg, error);                           \
+        logger("{}\n    > reason: {}", msg, error);                        \
         return std::invoke(transform_closure, std::forward<Error>(error)); \
     })
 #define LoggedTry(try_expression, msg)               CustomLoggedTry(try_expression, elog, msg)
@@ -70,7 +70,7 @@
 
 #define CustomLoggedTryLift(try_expression, logger, msg) \
     TryOr(try_expression, [&](auto&& error) noexcept {   \
-        logger("{}\n    error: {}", msg, error);         \
+        logger("{}\n    > reason: {}", msg, error);      \
         return error;                                    \
     })
 #define LoggedTryLift(try_expression) CustomLoggedTryLift(try_expression, elog, msg)
