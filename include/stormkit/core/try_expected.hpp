@@ -13,7 +13,7 @@
             auto res = (m);                                            \
             if (not res.has_value()) [[unlikely]]                      \
                 return { std::unexpected { std::move(res.error()) } }; \
-            std::move(*res);                                           \
+            *std::move(res);                                           \
         })
     #define TryLog(m, msg)                                             \
         ({                                                             \
@@ -22,7 +22,7 @@
                 elog(msg, res.error());                                \
                 return { std::unexpected { std::move(res.error()) } }; \
             }                                                          \
-            std::move(*res);                                           \
+            *std::move(res);                                           \
         })
     #define TryLogWith(m, logger, msg)                                 \
         ({                                                             \
@@ -31,21 +31,21 @@
                 logger(msg, res.error());                              \
                 return { std::unexpected { std::move(res.error()) } }; \
             }                                                          \
-            std::move(*res);                                           \
+            *std::move(res);                                           \
         })
     #define TryOr(m, t)                           \
         ({                                        \
             auto res = (m);                       \
             if (not res.has_value()) [[unlikely]] \
                 t(std::move(res.error()));        \
-            std::move(*res);                      \
+            *std::move(res);                      \
         })
     #define TryTransformError(m, t)                                       \
         ({                                                                \
             auto res = (m);                                               \
             if (not res.has_value()) [[unlikely]]                         \
                 return { std::unexpected { t(std::move(res.error())) } }; \
-            std::move(*res);                                              \
+            *std::move(res);                                              \
         })
 
     #define TryDiscard(m)                                                 \
