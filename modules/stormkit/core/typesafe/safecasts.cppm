@@ -190,6 +190,14 @@ export {
         [[nodiscard]]
         constexpr auto narrow_impl(U value) noexcept -> T;
 
+        template<meta::IsEnumeration T, meta::Isbyte U>
+        [[nodiscard]]
+        constexpr auto narrow_impl(U value) noexcept -> T;
+
+        template<meta::Isbyte T, meta::IsEnumeration U>
+        [[nodiscard]]
+        constexpr auto narrow_impl(U value) noexcept -> T;
+
         ////////////////////////////////////////////////////////////////////
         ///                       ENUMERATION                            ///
         ////////////////////////////////////////////////////////////////////
@@ -435,6 +443,22 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<stormkit::meta::Isbyte T, stormkit::meta::IsArithmetic U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto narrow_impl(U value) noexcept -> T {
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::IsEnumeration T, stormkit::meta::Isbyte U>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    constexpr auto narrow_impl(U value) noexcept -> T {
+        return static_cast<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::meta::Isbyte T, stormkit::meta::IsEnumeration U>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
     constexpr auto narrow_impl(U value) noexcept -> T {
         return static_cast<T>(value);
