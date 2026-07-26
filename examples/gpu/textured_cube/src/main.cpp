@@ -266,7 +266,7 @@ class Application: public base::Application {
             TryAssert(staging_buffer.upload(image.data()), "Failed to upload texture data to staging buffer!");
 
             auto copy_cmb = TryAssert(m_command_pool->create_command_buffer(), "Failed to allocate copy texture buffer");
-            TryDiscardAssert((copy_cmb.record([&](auto cmb) noexcept {
+            DiscardTryAssert((copy_cmb.record([&](auto cmb) noexcept {
                                  const auto copy = array {
                                      gpu::BufferImageCopy {
                                                            .buffer_offset       = 0,
@@ -291,10 +291,10 @@ class Application: public base::Application {
                              })),
                              "Failed to record texture upload and transition cmb!");
 
-            TryDiscardAssert(copy_cmb.submit(m_raster_queue, {}, {}, {}, cpy_fence),
+            DiscardTryAssert(copy_cmb.submit(m_raster_queue, {}, {}, {}, cpy_fence),
                              "Failed to submit texture upload command buffer!");
 
-            TryDiscardAssert(cpy_fence.wait(), "Failed to create texture view!");
+            DiscardTryAssert(cpy_fence.wait(), "Failed to create texture view!");
         }
 
         m_texture_view         = TryAssert(gpu::ImageView::create(m_device, { m_texture }), "Failed to create texture view!");
@@ -369,7 +369,7 @@ class Application: public base::Application {
             const auto& resources = m_image_resources.back();
 
             auto& transition_cmb = transition_cmbs[image_index];
-            TryDiscardAssert((transition_cmb.record([&](auto cmb) noexcept {
+            DiscardTryAssert((transition_cmb.record([&](auto cmb) noexcept {
                                  cmb.begin_debug_region(std::format("Transition image {}", image_index))
                                    .transition_image_layout(swap_image,
                                                             gpu::ImageLayout::UNDEFINED,
@@ -390,7 +390,7 @@ class Application: public base::Application {
         const auto fence = TryAssert(gpu::Fence::create(m_device), "Failed to create transition fence!");
 
         const auto cmbs = to_views(transition_cmbs);
-        TryDiscardAssert(m_raster_queue->submit({ .command_buffers = cmbs }, fence),
+        DiscardTryAssert(m_raster_queue->submit({ .command_buffers = cmbs }, fence),
                          "Failed to submit texture transition command buffers!");
 
         // setup vertex buffer
@@ -418,8 +418,8 @@ class Application: public base::Application {
               .copy_buffer(staging_buffer, m_vertex_buffer, VERTICES_SIZE)
               .end_debug_region();
 
-            TryDiscardAssert(copy_cmb.end(), "Failed to begin vertices upload command buffer");
-            TryDiscardAssert(copy_cmb.submit(m_raster_queue, {}, {}, {}, cpy_fence),
+            DiscardTryAssert(copy_cmb.end(), "Failed to begin vertices upload command buffer");
+            DiscardTryAssert(copy_cmb.submit(m_raster_queue, {}, {}, {}, cpy_fence),
                              "Failed to submit vertices upload command buffer!");
             TryAssert(cpy_fence.wait(), "Failed to acquire next swapchain image!");
         }
@@ -482,7 +482,7 @@ class Application: public base::Application {
         const auto& descriptor_set = submission_resource.descriptor_set;
 
         TryAssert(render_cmb.reset(), std::format("Failed to reset render cmb {}!", image_index));
-        TryDiscardAssert((render_cmb.record([&](auto cmb) noexcept {
+        DiscardTryAssert((render_cmb.record([&](auto cmb) noexcept {
                              cmb
                                .transition_image_layout(swapchain_image_resource.image,
                                                         gpu::ImageLayout::PRESENT_SRC,
@@ -500,7 +500,7 @@ class Application: public base::Application {
                                                         gpu::ImageLayout::PRESENT_SRC);
                          })),
                          std::format("Failed to record render cmb {}!", image_index));
-        TryDiscardAssert(render_cmb.submit(m_raster_queue, gpu::as_views(wait), PIPELINE_FLAGS, gpu::as_views(signal), in_flight),
+        DiscardTryAssert(render_cmb.submit(m_raster_queue, gpu::as_views(wait), PIPELINE_FLAGS, gpu::as_views(signal), in_flight),
                          "Failed to submit render command buffer!");
 
         // present it

@@ -91,7 +91,7 @@ class Application: public base::Application {
                                                                        "signal semaphore!") });
 
             auto& transition_cmb = transition_cmbs[image_index];
-            TryDiscardAssert((transition_cmb.record([&](auto cmb) noexcept {
+            DiscardTryAssert((transition_cmb.record([&](auto cmb) noexcept {
                                  cmb.begin_debug_region(std::format("Transition image {}", image_index))
                                    .transition_image_layout(swap_image,
                                                             gpu::ImageLayout::UNDEFINED,
@@ -234,7 +234,7 @@ class Application: public base::Application {
         // render in it
         auto& render_cmb = submission_resource.render_cmb;
         TryAssert(render_cmb.reset(), std::format("Failed to reset render cmb {}!", image_index));
-        TryDiscardAssert((render_cmb.record([&](auto cmb) noexcept {
+        DiscardTryAssert((render_cmb.record([&](auto cmb) noexcept {
                              cmb
                                .transition_image_layout(swapchain_image_resource.image,
                                                         gpu::ImageLayout::PRESENT_SRC,
@@ -253,11 +253,11 @@ class Application: public base::Application {
                          })),
                          std::format("Failed to record render cmb {}!", image_index));
 
-        TryDiscardAssert(render_cmb.submit(m_raster_queue, gpu::as_views(wait), PIPELINE_FLAGS, gpu::as_views(signal), in_flight),
+        DiscardTryAssert(render_cmb.submit(m_raster_queue, gpu::as_views(wait), PIPELINE_FLAGS, gpu::as_views(signal), in_flight),
                          "Failed to submit render command buffer");
 
         // present it
-        TryDiscardAssert(m_raster_queue->present(gpu::as_views(m_swapchain), gpu::as_views(signal), as_view(image_index)),
+        DiscardTryAssert(m_raster_queue->present(gpu::as_views(m_swapchain), gpu::as_views(signal), as_view(image_index)),
                          "Failed to present swapchain image");
 
         if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;

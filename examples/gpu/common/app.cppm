@@ -63,7 +63,7 @@ export namespace base {
 
             self.m_window->event_loop([&self] noexcept { self.run_example(); });
 
-            TryDiscardAssert(self.m_raster_queue->wait_idle(), "Failed to wait for raster queue");
+            DiscardTryAssert(self.m_raster_queue->wait_idle(), "Failed to wait for raster queue");
             self.m_device->wait_idle();
 
             if constexpr (requires { self.deinit(); }) self.deinit();
@@ -92,7 +92,7 @@ export namespace base {
 
         auto init_gpu(string_view example_name) noexcept -> void {
             // initialize gpu backend (vulkan or webgpu depending the platform)
-            TryDiscardAssert(gpu::initialize_backend(), "Failed to initialize gpu backend");
+            DiscardTryAssert(gpu::initialize_backend(), "Failed to initialize gpu backend");
 
             // create gpu instance and attach surface to window
             m_instance = TryAssert(gpu::Instance::create({ .application_name         = string { example_name },

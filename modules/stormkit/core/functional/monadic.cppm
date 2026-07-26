@@ -58,6 +58,8 @@ export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]
     constexpr auto unwrap() noexcept -> decltype(auto);
     [[nodiscard]]
+    constexpr auto unwrap_error() noexcept -> decltype(auto);
+    [[nodiscard]]
     constexpr auto as_byte() noexcept -> decltype(auto);
     [[nodiscard]]
     constexpr auto as_bytes() noexcept -> decltype(auto);
@@ -212,7 +214,14 @@ namespace stormkit { inline namespace core { namespace monadic {
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto unwrap() noexcept -> decltype(auto) {
-        return []<typename T>(T&& value) noexcept -> decltype(auto) { return value.value(); };
+        return []<typename T>(T&& value) static noexcept -> decltype(auto) { return std::forward_like<T>(value.value()); };
+    };
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto unwrap_error() noexcept -> decltype(auto) {
+        return []<typename T>(T&& value) static noexcept -> decltype(auto) { return std::forward_like<T>(value.error()); };
     };
 
     ////////////////////////////////////////

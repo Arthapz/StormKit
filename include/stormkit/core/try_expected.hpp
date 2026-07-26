@@ -8,142 +8,100 @@
 #include <stormkit/core/platform_macro.hpp>
 
 #if (defined(__clang__) or defined(__GNUC__))
-    #define Try(m)                                                     \
+    #define Try(try_expression)                                        \
         ({                                                             \
-            auto res = (m);                                            \
+            auto res = (try_expression);                               \
             if (not res.has_value()) [[unlikely]]                      \
                 return { std::unexpected { std::move(res.error()) } }; \
             *std::move(res);                                           \
         })
-    #define TryLog(m, msg)                                             \
-        ({                                                             \
-            auto res = (m);                                            \
-            if (not res.has_value()) [[unlikely]] {                    \
-                elog("{}\n    error: {}", msg, res.error());           \
-                return { std::unexpected { std::move(res.error()) } }; \
-            }                                                          \
-            *std::move(res);                                           \
+    #define TryOr(try_expression, or_closure)                                                                 \
+        ({                                                                                                    \
+            auto res = (try_expression);                                                                      \
+            if (not res.has_value()) [[unlikely]] { return std::invoke(or_closure, std::move(res.error())); } \
+            *std::move(res);                                                                                  \
         })
-    #define TryLogWith(m, logger, msg)                                 \
-        ({                                                             \
-            auto res = (m);                                            \
-            if (not res.has_value()) [[unlikely]] {                    \
-                logger("{}\n    error: {}", msg, res.error());         \
-                return { std::unexpected { std::move(res.error()) } }; \
-            }                                                          \
-            *std::move(res);                                           \
+    #define TryTransform(try_expression, transform_closure)                                        \
+        ({                                                                                         \
+            auto res = (try_expression);                                                           \
+            if (not res.has_value()) [[unlikely]] {                                                \
+                return std::unexpected { std::invoke(transform_closure, std::move(res.error())) }; \
+            }                                                                                      \
+            *std::move(res);                                                                       \
         })
-    #define TryLiftError(m)                       \
-        ({                                        \
-            auto res = (m);                       \
-            if (not res.has_value()) [[unlikely]] \
-                return std::move(res.error());    \
-            *std::move(res);                      \
-        })
-    #define TryLiftErrorLog(m, msg)                          \
-        ({                                                   \
-            auto res = (m);                                  \
-            if (not res.has_value()) [[unlikely]] {          \
-                elog("{}\n    error: {}", msg, res.error()); \
-                return std::move(res.error());               \
-            }                                                \
-            *std::move(res);                                 \
-        })
-    #define TryLiftErrorLogWith(m, logger, msg)                \
-        ({                                                     \
-            auto res = (m);                                    \
-            if (not res.has_value()) [[unlikely]] {            \
-                logger("{}\n    error: {}", msg, res.error()); \
-                return std::move(res.error());                 \
-            }                                                  \
-            *std::move(res);                                   \
-        })
-    #define TryOr(m, t)                           \
-        ({                                        \
-            auto res = (m);                       \
-            if (not res.has_value()) [[unlikely]] \
-                t(std::move(res.error()));        \
-            *std::move(res);                      \
-        })
-    #define TryTransformError(m, t)                                       \
-        ({                                                                \
-            auto res = (m);                                               \
-            if (not res.has_value()) [[unlikely]]                         \
-                return { std::unexpected { t(std::move(res.error())) } }; \
-            *std::move(res);                                              \
-        })
-    #define TryLiftTransformError(m, t)           \
-        ({                                        \
-            auto res = (m);                       \
-            if (not res.has_value()) [[unlikely]] \
-                return t(std::move(res.error())); \
-            *std::move(res);                      \
-        })
-
-    #define TryDiscard(m)                                                 \
-        ({                                                                \
-            auto res = (m).transform(stormkit::core::monadic::discard()); \
-            if (not res.has_value()) [[unlikely]]                         \
-                return { std::unexpected { std::move(res.error()) } };    \
-        })
-    #define TryDiscardOr(m, t)                                            \
-        ({                                                                \
-            auto res = (m).transform(stormkit::core::monadic::discard()); \
-            if (not res.has_value()) [[unlikely]]                         \
-                t(std::move(res.error()));                                \
-        })
-    #define TryDiscardTransformError(m, t)                                \
-        ({                                                                \
-            auto res = (m).transform(stormkit::core::monadic::discard()); \
-            if (not res.has_value()) [[unlikely]]                         \
-                return { std::unexpected { t(std::move(res.error())) } }; \
+    #define TryAssert(try_expression, msg)                 \
+        ({                                                 \
+            auto res = (try_expression);                   \
+            stormkit::core::ensures(res.has_value(), msg); \
+            *std::move(res);                               \
         })
 
     #define Return return
 #else
-    #define Try(m) co_await m
-    #define TryLog(m, msg)                                            \
-        co_await m.transform_error([](auto&& error) static noexcept { \
-            elog(msg, error);                                         \
-            return error;                                             \
-        })
-    #define TryLogWith(m, logger, msg)                                \
-        co_await m.transform_error([](auto&& error) static noexcept { \
-            logger(msg, error);                                       \
-            return error;                                             \
-        })
-    #define Try(m) co_await m
-    #define TryLog(m, msg)                                            \
-        co_await m.transform_error([](auto&& error) static noexcept { \
-            elog(msg, error);                                         \
-            return error;                                             \
-        })
-    #define TryLogWith(m, logger, msg)                                \
-        co_await m.transform_error([](auto&& error) static noexcept { \
-            logger(msg, error);                                       \
-            return error;                                             \
-        })
-    #define TryLiftError(m) co_await m.or_else(stormkit::core::monadic::unwrap_error())
-    #define TryLiftErrorLog(m, msg)                           \
-        co_await m.or_else([](auto&& error) static noexcept { \
-            elog(msg, error);                                 \
-            return error;                                     \
-        })
-    #define TryLiftErrorLogWith(m, logger, msg)               \
-        co_await m.or_else([](auto&& error) static noexcept { \
-            logger(msg, error);                               \
-            return error;                                     \
-        })
-    #define TryOr(m, t) co_await m.or_else(t)
-    #define TryTransformError(m, t) \
-        co_await m.transform_error([](auto&& error) { return std::unexpected { std::invoke(t, error) }; })
-    #define TryLiftTransformError(m, t) co_await m.transform_error([](auto&& error) { return std::invoke(t, error); })
+    #define Try(try_expression)                             co_await (try_expression)
+    #define TryOr(try_expression, or_closure)               co_await (try_expression).or_else(or_closure)
+    #define TryTransform(try_expression, transform_closure) co_await (try_expression).transform_error(transform_closure)
+    #define TryAssert(try_expression, msg) co_await (try_expression).or_else(stormkit::core::monadic::assert(msg))
 
-    #define TryDiscard(m)                  co_await m.transform(stormkit::core::monadic::discard())
-    #define TryDiscardOr(m, t)             co_await m.transform(stormkit::core::monadic::discard()).transform_error(t)
-    #define TryDiscardTransformError(m, t) TryDiscardOr(m, t)
-    #define Return                         co_return
+    #define Return co_return
 #endif
-#define TryAssert(m, msg)        TryOr(m, stormkit::core::monadic::assert(msg))
-#define TryDiscardAssert(m, msg) TryDiscardOr(m, stormkit::core::monadic::assert(msg))
+
+#define CustomLoggedTry(try_expression, logger, msg)          \
+    TryTransform(try_expression, [&](auto&& error) noexcept { \
+        logger("{}\n    error: {}", msg, error);              \
+        return error;                                         \
+    })
+#define CustomLoggedTryOr(try_expression, or_closure, logger, msg)      \
+    TryOr(try_expression, [&]<typename Error>(Error&& error) noexcept { \
+        logger("{}\n    error: {}", msg, error);                        \
+        return std::invoke(or_closure, std::forward<Error>(error));     \
+    })
+#define CustomLoggedTryTransform(m, transform_closure, logger, msg)        \
+    TryTransform(m, [&]<typename Error>(Error&& error) noexcept {          \
+        logger("{}\n    error: {}", msg, error);                           \
+        return std::invoke(transform_closure, std::forward<Error>(error)); \
+    })
+#define LoggedTry(try_expression, msg)               CustomLoggedTry(try_expression, elog, msg)
+#define LoggedTryOr(try_expression, or_closure, msg) CustomLoggedTryOr(try_expression, or_closure, elog, msg)
+#define LoggedTryTransform(try_expression, transform_closure, msg) \
+    CustomLoggedTryTransform(try_expression, transform_closure, elog, msg)
+
+#define TryLift(try_expression) TryOr(try_expression, stormkit::core::monadic::identity())
+
+#define CustomLoggedTryLift(try_expression, logger, msg) \
+    TryOr(try_expression, [&](auto&& error) noexcept {   \
+        logger("{}\n    error: {}", msg, error);         \
+        return error;                                    \
+    })
+#define LoggedTryLift(try_expression) CustomLoggedTryLift(try_expression, elog, msg)
+
+#define DiscardTry(try_expression) \
+    [[maybe_unused]]               \
+    auto _ = Try(try_expression)
+#define DiscardTryOr(try_expression, or_closure) \
+    [[maybe_unused]]                             \
+    auto _ = TryOr(try_expression, or_closure)
+#define DiscardTryTransform(try_expression, transform_closure) \
+    [[maybe_unused]]                                           \
+    auto _ = TryTransform(try_expression, transform_closure)
+
+#define CustomLoggedDiscardTry(try_expression, logger, msg) \
+    [[maybe_unused]]                                        \
+    auto _ = CustomLoggedTry(try_expression, logger, msg)
+#define LoggedDiscardTry(try_expression, msg) CustomLoggedDiscardTry(try_expression, elog, msg)
+
+#define DiscardTryLift(try_expression) \
+    [[maybe_unused]]                   \
+    auto _ = TryLift(try_expression)
+#define CustomLoggedDiscardTryLift(try_expression, logger, msg) \
+    [[maybe_unused]]                                            \
+    auto _ = CustomLoggedTryLift(try_expression, logger, msg)
+#define LoggedDiscardTryLift(try_expression) \
+    [[maybe_unused]]                         \
+    auto _ = LoggedTryLift(try_expression, msg)
+
+#define DiscardTryAssert(try_expression, msg) \
+    [[maybe_unused]]                          \
+    auto _ = TryAssert(try_expression, msg)
+
 #endif

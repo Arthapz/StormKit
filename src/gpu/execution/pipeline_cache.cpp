@@ -88,10 +88,10 @@ namespace stormkit::gpu {
         const auto& device_table          = device.device_table();
         const auto& physical_device_infos = device.physical_device().info();
 
-        auto file = TryTransformError(io::File::open(m_path, io::Access::READ), sys_to_load_error);
-        TryTransformError(file.read_to(as_bytes_mut(m_serialized.guard)), sys_to_load_error);
-        TryTransformError(file.read_to(as_bytes_mut(m_serialized.infos)), sys_to_load_error);
-        TryTransformError(file.read_to(as_bytes_mut(m_serialized.uuid.value)), sys_to_load_error);
+        auto file = TryTransform(io::File::open(m_path, io::Access::READ), sys_to_load_error);
+        TryTransform(file.read_to(as_mutable_bytes(m_serialized.guard)), sys_to_load_error);
+        TryTransform(file.read_to(as_mutable_bytes(m_serialized.infos)), sys_to_load_error);
+        TryTransform(file.read_to(as_mutable_bytes(m_serialized.uuid.value)), sys_to_load_error);
 
         if (m_serialized.guard.magic != MAGIC) Return create_new_pipeline_cache();
         if (m_serialized.infos.version != VERSION) Return create_new_pipeline_cache();
@@ -103,7 +103,7 @@ namespace stormkit::gpu {
         auto data = byte_dyn_array {};
         data.resize(m_serialized.guard.data_size);
 
-        TryTransformError(io::read_to(m_path, data), sys_to_load_error);
+        TryTransform(io::read_to(m_path, data), sys_to_load_error);
 
         const auto create_info = VkPipelineCacheCreateInfo {
             .sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
@@ -113,7 +113,7 @@ namespace stormkit::gpu {
             .pInitialData    = stdr::data(data),
         };
 
-        m_vk_handle = TryTransformError(vk::call_checked<
+        m_vk_handle = TryTransform(vk::call_checked<
                                           VkPipelineCache>(device_table.vkCreatePipelineCache, device, &create_info, nullptr),
                                         result_to_load_error);
 
@@ -127,11 +127,11 @@ namespace stormkit::gpu {
         const auto& device_table = device.device_table();
 
         auto size = 0_usize;
-        TryTransformError(vk::call_checked(device_table.vkGetPipelineCacheData, device, m_vk_handle, &size, nullptr),
+        TryTransform(vk::call_checked(device_table.vkGetPipelineCacheData, device, m_vk_handle, &size, nullptr),
                           result_to_load_error);
         auto data = byte_dyn_array {};
         data.resize(size, 0_b);
-        TryTransformError(vk::call_checked(device_table.vkGetPipelineCacheData, device, m_vk_handle, &size, stdr::data(data)),
+        TryTransform(vk::call_checked(device_table.vkGetPipelineCacheData, device, m_vk_handle, &size, stdr::data(data)),
                           result_to_load_error);
 
         m_serialized.guard.data_size = stdr::size(data);
@@ -139,10 +139,10 @@ namespace stormkit::gpu {
 
         hash_combine(m_serialized.guard.data_hash, data);
 
-        auto file = TryTransformError(io::File::open(m_path, io::Access::WRITE), sys_to_load_error);
-        TryTransformError(file.write(as_bytes(m_serialized.infos)), sys_to_load_error);
-        TryTransformError(file.write(as_bytes(m_serialized.uuid.value)), sys_to_load_error);
-        TryTransformError(file.write(as_bytes(data)), sys_to_load_error);
+        auto file = TryTransform(io::File::open(m_path, io::Access::WRITE), sys_to_load_error);
+        TryTransform(file.write(as_bytes(m_serialized.infos)), sys_to_load_error);
+        TryTransform(file.write(as_bytes(m_serialized.uuid.value)), sys_to_load_error);
+        TryTransform(file.write(as_bytes(data)), sys_to_load_error);
 
         Return {};
     }
