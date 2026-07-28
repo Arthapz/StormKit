@@ -89,6 +89,15 @@
     [[maybe_unused]]                                        \
     auto _ = CustomLoggedTry(try_expression, logger, msg)
 #define LoggedDiscardTry(try_expression, msg) CustomLoggedDiscardTry(try_expression, elog, msg)
+#define CustomLoggedDiscardTryOr(try_expression, or_closure, logger, msg) \
+    [[maybe_unused]]                                                      \
+    auto _ = CustomLoggedTryOr(try_expression, or_closure, logger, msg)
+#define LoggedDiscardTryOr(try_expression, or_closure, msg) CustomLoggedDiscardTryOr(try_expression, or_closure, elog, msg)
+#define CustomLoggedDiscardTryTransform(try_expression, transform_closure, logger, msg) \
+    [[maybe_unused]]                                                                    \
+    auto _ = CustomLoggedTryTransform(try_expression, transform_closure, logger, msg)
+#define LoggedDiscardTryTransform(try_expression, transform_closure, msg) \
+    CustomLoggedDiscardTryTransform(try_expression, transform_closure, elog, msg)
 
 #define DiscardTryLift(try_expression) \
     [[maybe_unused]]                   \
