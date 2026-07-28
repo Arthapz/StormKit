@@ -12,6 +12,7 @@ import std;
 
 import :meta;
 import :typesafe.integer;
+import :typesafe.byte;
 import :typesafe.safecasts;
 import :utils.time;
 import :string.operations;
@@ -37,9 +38,10 @@ export {
         } format_fn = {};
 
         auto           format_as(const auto&, auto& ctx) noexcept -> decltype(ctx.out()) = delete;
-        constexpr auto format_as(std::byte, auto& ctx) noexcept -> decltype(ctx.out());
-        constexpr auto format_as(stormkit::fsecond, auto& ctx) noexcept -> decltype(ctx.out());
+        constexpr auto format_as(fsecond, auto& ctx) noexcept -> decltype(ctx.out());
     }} // namespace stormkit::core
+
+    constexpr auto format_as(byte, auto& ctx) noexcept -> decltype(ctx.out());
 
     template<stormkit::meta::HasFormatAs T, typename CharT>
     struct std::formatter<T, CharT> {
@@ -103,20 +105,20 @@ export {
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
+/////////////////////////////////////
+/////////////////////////////////////
+STORMKIT_FORCE_INLINE
+constexpr auto format_as(byte value, auto& ctx) noexcept -> decltype(ctx.out()) {
+    auto&& out = ctx.out();
+    return std::format_to(out, "{:#x}", narrow<u8>(value));
+}
+
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     constexpr auto FormatFN::operator()(const meta::HasFormatAs auto& value, auto& ctx) noexcept -> decltype(ctx.out()) {
         return format_as(value, ctx);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto format_as(std::byte value, auto& ctx) noexcept -> decltype(ctx.out()) {
-        auto&& out = ctx.out();
-        return std::format_to(out, "{}", narrow<i16>(value));
     }
 
     /////////////////////////////////////

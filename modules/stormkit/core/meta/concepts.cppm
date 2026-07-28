@@ -282,7 +282,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsPlainEnumeration = not IsScopedEnumeration<T> and std::is_enum_v<T> and IsNotbyte<T>;
 
     template<class T>
-    concept IsEnumeration = std::is_enum_v<T> and IsNotbyte<T>;
+    concept IsEnumeration = std::is_enum_v<T> and not SameAs<T, std::byte>;
 
     template<typename T>
     concept IsIntegral = (std::integral<T> and not SameAs<T, bool> and not Isbyte<T>)
