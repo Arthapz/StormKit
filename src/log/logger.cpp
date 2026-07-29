@@ -16,17 +16,11 @@ namespace stdr = std::ranges;
 
 namespace stormkit::log {
     namespace {
+        constexpr auto DEFAULT_LOG_MASK = Severity::INFO | Severity::ERROR | Severity::FATAL | Severity::WARNING;
+
         constinit Logger* logger = nullptr;
 
         constinit auto debug_enabled = false;
-
-        auto make_default_severity() noexcept {
-            auto severity = Severity::INFO | Severity::ERROR | Severity::FATAL | Severity::WARNING;
-
-            if (debug_enabled) severity |= Severity::DEBUG;
-
-            return severity;
-        }
     } // namespace
 
     /////////////////////////////////////
@@ -37,8 +31,10 @@ namespace stormkit::log {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Logger::Logger(LogClock::time_point start_time) noexcept : Logger { std::move(start_time), make_default_severity() } {
+    Logger::Logger(LogClock::time_point start_time) noexcept : Logger { std::move(start_time), DEFAULT_LOG_MASK } {
         EXPECTS(not logger);
+
+        if (debug_enabled) m_severity_mask |= Severity::DEBUG;
 
         logger = this;
     }
@@ -46,7 +42,7 @@ namespace stormkit::log {
     /////////////////////////////////////
     /////////////////////////////////////
     Logger::Logger(LogClock::time_point start_time, Severity log_level) noexcept
-        : m_start_time { std::move(start_time) }, m_log_level { log_level } {
+        : m_start_time { std::move(start_time) }, m_severity_mask { log_level } {
     }
 
     /////////////////////////////////////

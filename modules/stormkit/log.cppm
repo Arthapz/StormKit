@@ -28,6 +28,12 @@ export {
             FATAL   = 8,
             DEBUG   = 16,
         };
+    } // namespace stormkit::log
+
+    template<>
+    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::log::Severity> = true;
+
+    namespace stormkit::log {
 
         [[nodiscard]]
         constexpr auto as_string(Severity severity) noexcept -> string_view;
@@ -42,18 +48,18 @@ export {
             using LogClock = std::chrono::high_resolution_clock;
 
             explicit Logger(LogClock::time_point start) noexcept;
-            Logger(LogClock::time_point start, Severity log_level) noexcept;
+            Logger(LogClock::time_point start, Severity mask) noexcept;
             virtual ~Logger() noexcept;
 
             virtual auto write(Severity severity, const Module& module, std::string_view string) noexcept -> void = 0;
             virtual auto flush() noexcept -> void                                                                 = 0;
 
-            auto set_log_level(Severity log_level) noexcept -> void;
+            auto set_severity_mask(Severity mask) noexcept -> void;
 
             [[nodiscard]]
             auto start_time() const noexcept -> const LogClock::time_point&;
             [[nodiscard]]
-            auto log_level() const noexcept -> const Severity&;
+            auto severity_mask() const noexcept -> Severity;
 
             [[nodiscard]]
             auto mutex() noexcept -> std::mutex&;
@@ -133,7 +139,7 @@ export {
 
           protected:
             LogClock::time_point m_start_time;
-            Severity             m_log_level;
+            Severity             m_severity_mask;
 
             std::mutex m_mutex;
         };
@@ -173,7 +179,7 @@ export {
         class STORMKIT_LOG_API FileLogger final: public Logger {
           public:
             FileLogger(LogClock::time_point start, std::filesystem::path path) noexcept;
-            FileLogger(LogClock::time_point start, std::filesystem::path path, Severity log_level) noexcept;
+            FileLogger(LogClock::time_point start, std::filesystem::path path, Severity mask) noexcept;
             ~FileLogger() noexcept override;
 
             FileLogger(const FileLogger&) noexcept                    = delete;
@@ -194,7 +200,7 @@ export {
         class STORMKIT_LOG_API ConsoleLogger final: public Logger {
           public:
             explicit ConsoleLogger(LogClock::time_point start) noexcept;
-            ConsoleLogger(LogClock::time_point start, Severity log_level) noexcept;
+            ConsoleLogger(LogClock::time_point start, Severity mask) noexcept;
 
             ConsoleLogger(const ConsoleLogger&) noexcept                    = delete;
             auto operator=(const ConsoleLogger&) noexcept -> ConsoleLogger& = delete;
@@ -208,9 +214,6 @@ export {
             auto flush() noexcept -> void override;
         };
     } // namespace stormkit::log
-
-    template<>
-    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::log::Severity> = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,8 +249,8 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Logger::set_log_level(Severity log_level) noexcept -> void {
-        m_log_level = log_level;
+    inline auto Logger::set_severity_mask(Severity mask) noexcept -> void {
+        m_severity_mask = mask;
     }
 
     ////////////////////////////////////////
@@ -260,8 +263,8 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Logger::log_level() const noexcept -> const Severity& {
-        return m_log_level;
+    inline auto Logger::severity_mask() const noexcept -> Severity {
+        return m_severity_mask;
     }
 
     ////////////////////////////////////////
@@ -303,8 +306,8 @@ namespace stormkit::log {
                             Args&&... param_args) noexcept -> void {
         EXPECTS(has_logger());
 
-        const auto log_level = instance().log_level();
-        if (not check_flag_bit(log_level, severity)) return;
+        const auto mask = instance().severity_mask();
+        if (not check_flag_bit(mask, severity)) return;
 
         auto size = std::formatted_size(format_string, std::forward<Args>(param_args)...);
 
@@ -359,8 +362,8 @@ namespace stormkit::log {
             auto operator++(int) noexcept -> counter { return counter { n++ }; }
         };
 
-        const auto log_level = instance().log_level();
-        if (not check_flag_bit(log_level, severity)) return;
+        const auto mask = instance().severity_mask();
+        if (not check_flag_bit(mask, severity)) return;
 
         auto args = std::format_args { std::forward<Args>(param_args)... };
 
