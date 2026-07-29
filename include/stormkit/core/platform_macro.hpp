@@ -255,4 +255,10 @@ inline constexpr auto STORMKIT_CXX_LIBRARY = STORMKIT_MSSTL;
 inline constexpr auto STORMKIT_CXX_LIBRARY = STORMKIT_LIBSTDCXX;
 #endif
 
+#ifdef NDEBUG
+    #define STORMKIT_RELEASE_MODE
+#else
+    #define STORMKIT_DEBUG_MODE
+#endif
+
 #endif
