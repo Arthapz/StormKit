@@ -107,22 +107,30 @@ namespace stormkit { inline namespace core {
 
     namespace error {
 #ifdef STORMKIT_OS_WINDOWS
+        ////////////////////////////////////////
+        ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
         inline auto from_win32() noexcept -> Error {
             return system_error2::win32_code { GetLastError() };
         }
 
+        ////////////////////////////////////////
+        ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
         inline auto from_ntstatus(long status) noexcept -> Error {
             return system_error2::nt_code { status };
         }
 #endif
 
+        ////////////////////////////////////////
+        ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
         inline auto from_errno() noexcept -> Error {
             return system_error2::posix_code { errno };
         }
 
+        ////////////////////////////////////////
+        ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
         inline auto from_stderrc(std::errc code) noexcept -> Error {
             return Error { system_error2::posix_code { static_cast<i32>(code) } };
