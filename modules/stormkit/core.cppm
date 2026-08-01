@@ -20,3 +20,4 @@ export import :parallelism;
 export import :string;
 export import :typesafe;
 export import :utils;
+export import stormkit.core.at_scope_exit;
