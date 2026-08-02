@@ -65,7 +65,8 @@ outfile = io.open("{}", "w")
             for (auto c_buf : buff) {
                 auto str_char = *to_string(as<i32>(c_buf), 16).transform_error(monadic::assert());
                 if (stdr::size(str_char) == 1) str_char.insert(stdr::begin(str_char), '0');
-                out += "\\x" + str_char;
+                out += "\\x";
+                out += str_char;
             }
             out += "\")\n";
             buff.clear();
@@ -84,7 +85,8 @@ outfile = io.open("{}", "w")
     for (auto c_buf : buff) {
         auto str_char = *to_string(as<i32>(c_buf), 16).transform_error(monadic::assert());
         if (stdr::size(str_char) == 1) str_char.insert(stdr::begin(str_char), '0');
-        out += "\\x" + str_char;
+        out += "\\x";
+        out += str_char;
     }
 
     out += "\")\n";
