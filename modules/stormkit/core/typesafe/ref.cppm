@@ -8,18 +8,14 @@ module;
 
 #include <stormkit/core/contract_macro.hpp>
 
-export module stormkit.core:typesafe.ref;
+export module stormkit.core.typesafe.ref;
 
 import std;
 
-import :meta;
-
-import :utils.contract;
-
-import :typesafe.boolean;
-import :typesafe.integer;
-
-import :hash;
+import stormkit.core.meta;
+import stormkit.core.contract;
+import stormkit.core.hash;
+import stormkit.core.types;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -81,7 +77,7 @@ export {
 
             constexpr explicit operator bool() const noexcept;
             [[nodiscard]]
-            constexpr auto has_value() const noexcept -> Boolean;
+            constexpr auto has_value() const noexcept -> bool;
 
             [[nodiscard]]
             constexpr operator referenceType() const noexcept STORMKIT_LIFETIMEBOUND;
@@ -300,7 +296,7 @@ export {
         [[nodiscard]]
         constexpr auto unref_mut(T& value) noexcept -> meta::PointedType<T>&;
 
-        template<template<typename, std::size_t> typename Out = array, typename... Args>
+        template<template<typename, usize> typename Out = array, typename... Args>
             requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_refs(Args&&... args) noexcept -> decltype(auto);
@@ -310,7 +306,7 @@ export {
         [[nodiscard]]
         constexpr auto to_refs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename, std::size_t> typename Out = array, typename... Args>
+        template<template<typename, usize> typename Out = array, typename... Args>
             requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_ref_muts(Args&&... args) noexcept -> decltype(auto);
@@ -330,7 +326,7 @@ export {
         [[nodiscard]]
         constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto);
 
-        template<template<typename, std::size_t> typename Out = array, typename... Args>
+        template<template<typename, usize> typename Out = array, typename... Args>
             requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_optrefs(Args&&... args) noexcept -> decltype(auto);
@@ -340,7 +336,7 @@ export {
         [[nodiscard]]
         constexpr auto to_optrefs(Args&&... args) noexcept -> decltype(auto);
 
-        template<template<typename, std::size_t> typename Out = array, typename... Args>
+        template<template<typename, usize> typename Out = array, typename... Args>
             requires(not stdr::range<Args> and ...)
         [[nodiscard]]
         constexpr auto as_optref_muts(Args&&... args) noexcept -> decltype(auto);
@@ -502,7 +498,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, bool Optional>
     STORMKIT_FORCE_INLINE
-    constexpr auto ref<T, Optional>::has_value() const noexcept -> Boolean {
+    constexpr auto ref<T, Optional>::has_value() const noexcept -> bool {
         return operator bool();
     }
 
@@ -943,7 +939,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out, typename... Args>
+    template<template<typename, usize> typename Out, typename... Args>
         requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_refs(Args&&... args) noexcept -> decltype(auto) {
@@ -963,7 +959,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out, typename... Args>
+    template<template<typename, usize> typename Out, typename... Args>
         requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_ref_muts(Args&&... args) noexcept -> decltype(auto) {
@@ -1009,7 +1005,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out, typename... Args>
+    template<template<typename, usize> typename Out, typename... Args>
         requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_optrefs(Args&&... args) noexcept -> decltype(auto) {
@@ -1029,7 +1025,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, std::size_t> typename Out, typename... Args>
+    template<template<typename, usize> typename Out, typename... Args>
         requires(not stdr::range<Args> and ...)
     STORMKIT_FORCE_INLINE
     constexpr auto as_optref_muts(Args&&... args) noexcept -> decltype(auto) {

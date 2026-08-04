@@ -6,13 +6,13 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:typesafe.strong_type;
+export module stormkit.core.typesafe.strong_type;
 
 import std;
 
-import :meta;
-import :string.constexpr_string;
-import :hash;
+import stormkit.core.meta;
+import stormkit.core.hash;
+import stormkit.core.string.constexpr_string;
 
 export {
     namespace stormkit { inline namespace core {

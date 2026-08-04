@@ -8,18 +8,14 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:typesafe.checked_value;
+export module stormkit.core.typesafe.checked_value;
 
 import std;
 
-import :meta;
-
-import :typesafe.integer;
-import :typesafe.floating_point;
-
-import :math.arithmetic;
-
-import :utils.contract;
+import stormkit.core.meta;
+import stormkit.core.contract;
+import stormkit.core.types;
+import stormkit.core.math.arithmetic;
 
 namespace stormkit { inline namespace core {
     struct PositiveTag;

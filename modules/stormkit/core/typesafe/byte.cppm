@@ -8,21 +8,18 @@ module;
 
 #include <stormkit/core/contract_macro.hpp>
 
-export module stormkit.core:typesafe.byte;
+export module stormkit.core.typesafe.byte;
 
 import std;
 
-import :meta;
-
-import :typesafe.integer;
-
-import :containers.aliases;
-
-import :utils.contract;
-import :utils.tags;
+import stormkit.core.meta;
+import stormkit.core.contract;
+import stormkit.core.types;
 
 namespace stdr = std::ranges;
 namespace stdp = std::pmr;
+
+using namespace stormkit::core::literals;
 
 template<typename T, stormkit::usize EXTENT>
 consteval auto get_byte_extent_value_of() {
@@ -34,18 +31,6 @@ consteval auto get_byte_extent_value_of() {
 }
 
 export namespace stormkit { inline namespace core {
-    using std::byte;
-
-    template<usize N>
-    using byte_array    = array<byte, N>;
-    using byte_dynarray = dynarray<byte>;
-    using byte_view     = array_view<const byte>;
-    using byte_view_mut = array_view<byte>;
-
-    namespace pmr {
-        using byte_dynarray = dynarray<byte>;
-    } // namespace pmr
-
     template<typename T>
     constexpr auto zero_bytes(T& value) noexcept -> void;
 
@@ -61,10 +46,10 @@ export namespace stormkit { inline namespace core {
 
     template<typename T>
     [[nodiscard]]
-    constexpr auto as_bytes(const T* const ptr, usize size = 1) noexcept -> byte_view;
+    constexpr auto as_bytes(const T* const ptr, usize size = 1) noexcept -> array_view<const byte>;
 
     [[nodiscard]]
-    constexpr auto as_bytes(string_view string) noexcept -> byte_view;
+    constexpr auto as_bytes(string_view string) noexcept -> array_view<const byte>;
 
     template<class T>
     [[nodiscard]]
@@ -77,7 +62,7 @@ export namespace stormkit { inline namespace core {
 
     template<typename T>
     [[nodiscard]]
-    constexpr auto as_mutable_bytes(T* const ptr, usize size = 1) noexcept -> byte_view_mut;
+    constexpr auto as_mutable_bytes(T* const ptr, usize size = 1) noexcept -> array_view<byte>;
 
     template<class T>
     [[nodiscard]]
@@ -94,12 +79,12 @@ export namespace stormkit { inline namespace core {
 
     // template<typename T, usize EXTENT = std::dynamic_extent>
     // [[nodiscard]]
-    // constexpr auto bytes_as_span(byte_view<EXTENT> bytes) noexcept
+    // constexpr auto bytes_as_span(array_view<const byte><EXTENT> bytes) noexcept
     //   -> array_view<const T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)>;
 
     // template<class T, usize EXTENT>
     // [[nodiscard]]
-    // constexpr auto bytes_mut_as(byte_view_mut <EXTENT> bytes) noexcept -> T&;
+    // constexpr auto bytes_mut_as(array_view<byte> <EXTENT> bytes) noexcept -> T&;
 
     // template<typename T, stdr::range Range>
     //     requires(meta::SameAs<meta::ContainedType<Range>, byte> and not meta::IsConst<Range>)
@@ -108,34 +93,14 @@ export namespace stormkit { inline namespace core {
 
     // template<typename T, usize EXTENT>
     // [[nodiscard]]
-    // constexpr auto bytes_mut_as_span(byte_view_mut <EXTENT> bytes) noexcept
+    // constexpr auto bytes_mut_as_span(array_view<byte> <EXTENT> bytes) noexcept
     //   -> array_view<T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)>;
 
     template<typename T, usize N>
     [[nodiscard]]
-    constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> byte_array<N>;
+    constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> array<byte, N>;
 
     namespace literals {
-        [[nodiscard]]
-        constexpr auto operator""_b(unsigned long long value) noexcept -> byte;
-
-        [[nodiscard]]
-        constexpr auto operator""_kb(unsigned long long x) noexcept -> u64;
-
-        [[nodiscard]]
-        constexpr auto operator""_mb(unsigned long long x) noexcept -> u64;
-
-        [[nodiscard]]
-        constexpr auto operator""_gb(unsigned long long x) noexcept -> u64;
-
-        [[nodiscard]]
-        constexpr auto operator""_kib(unsigned long long x) noexcept -> u64;
-
-        [[nodiscard]]
-        constexpr auto operator""_mib(unsigned long long x) noexcept -> u64;
-
-        [[nodiscard]]
-        constexpr auto operator""_gib(unsigned long long x) noexcept -> u64;
 
     } // namespace literals
 }} // namespace stormkit::core
@@ -183,14 +148,14 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_bytes(const T* const ptr, usize size) noexcept -> byte_view {
+    constexpr auto as_bytes(const T* const ptr, usize size) noexcept -> array_view<const byte> {
         return as_bytes(array_view<const T> { ptr, size });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto as_bytes(string_view value) noexcept -> byte_view {
+    constexpr auto as_bytes(string_view value) noexcept -> array_view<const byte> {
         return as_bytes(array_view<const char> { stdr::data(value), stdr::size(value) });
     }
 
@@ -214,7 +179,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-    constexpr auto as_mutable_bytes(T* const ptr, usize size) noexcept -> byte_view_mut {
+    constexpr auto as_mutable_bytes(T* const ptr, usize size) noexcept -> array_view<byte> {
         return std::as_writable_bytes(array_view<T> { ptr, size });
     }
 
@@ -230,7 +195,7 @@ namespace stormkit { inline namespace core {
     // /////////////////////////////////////
     // template<class T, usize EXTENT>
     // STORMKIT_FORCE_INLINE
-    // constexpr auto bytes_as(byte_view<EXTENT> bytes) noexcept -> const T& {
+    // constexpr auto bytes_as(array_view<const byte><EXTENT> bytes) noexcept -> const T& {
     //     if constexpr (EXTENT != std::dynamic_extent) EXPECTS(EXTENT == sizeof(T));
     //     EXPECTS(stdr::size(bytes) == sizeof(T));
     //     return *std::launder(std::bit_cast<const T* const>(stdr::data(bytes)));
@@ -249,7 +214,7 @@ namespace stormkit { inline namespace core {
     // /////////////////////////////////////
     // template<typename T, usize EXTENT>
     // STORMKIT_FORCE_INLINE
-    // constexpr auto bytes_as_span(byte_view<EXTENT> bytes) noexcept
+    // constexpr auto bytes_as_span(array_view<const byte><EXTENT> bytes) noexcept
     //   -> array_view<const T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)> {
     //     if constexpr (EXTENT != std::dynamic_extent)
     //         return array_view<const T, EXTENT / sizeof(T)> { std::bit_cast<const T* const>(stdr::data(bytes)),
@@ -263,7 +228,7 @@ namespace stormkit { inline namespace core {
     // /////////////////////////////////////
     // template<class T, usize EXTENT>
     // STORMKIT_FORCE_INLINE
-    // constexpr auto bytes_mut_as(byte_view_mut <EXTENT> bytes) noexcept -> T& {
+    // constexpr auto bytes_mut_as(array_view<byte> <EXTENT> bytes) noexcept -> T& {
     //     if constexpr (EXTENT != std::dynamic_extent) EXPECTS(EXTENT == sizeof(T));
     //     EXPECTS(stdr::size(bytes) == sizeof(T));
     //     return *std::launder(std::bit_cast<T* const>(stdr::data(bytes)));
@@ -282,7 +247,7 @@ namespace stormkit { inline namespace core {
     // /////////////////////////////////////
     // template<typename T, usize EXTENT>
     // STORMKIT_FORCE_INLINE
-    // constexpr auto bytes_mut_as_span(byte_view_mut <EXTENT> bytes) noexcept
+    // constexpr auto bytes_mut_as_span(array_view<byte> <EXTENT> bytes) noexcept
     //   -> array_view<T, EXTENT == std::dynamic_extent ? EXTENT : EXTENT / sizeof(T)> {
     //     if constexpr (EXTENT != std::dynamic_extent)
     //         return array_view<T, EXTENT / sizeof(T)> { std::bit_cast<T* const>(stdr::data(bytes)), EXTENT / sizeof(T) };
@@ -294,62 +259,11 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, usize N>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> byte_array<N> {
+    constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> array<byte, N> {
         EXPECTS(static_cast<T>(static_cast<byte>(bytes[0])) == bytes[0]);
-        auto out = byte_array<N> {};
+        auto out = array<byte, N> {};
         auto i   = 0_usize;
         for (auto&& byte : bytes) out[i++] = static_cast<enum byte>(byte);
         return out;
     }
-
-    namespace literals {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-        constexpr auto operator""_b(unsigned long long value) noexcept -> byte {
-            return static_cast<byte>(value);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
-        constexpr auto operator""_kb(unsigned long long x) noexcept -> u64 {
-            return x * 1000ULL;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
-        constexpr auto operator""_mb(unsigned long long x) noexcept -> u64 {
-            return x * 1000_kb;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
-        constexpr auto operator""_gb(unsigned long long x) noexcept -> u64 {
-            return x * 1000_mb;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
-        constexpr auto operator""_kib(unsigned long long x) noexcept -> u64 {
-            return x * 1024;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
-        constexpr auto operator""_mib(unsigned long long x) noexcept -> u64 {
-            return x * 1024_kib;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
-        constexpr auto operator""_gib(unsigned long long x) noexcept -> u64 {
-            return x * 1024_mib;
-        }
-    } // namespace literals
 }} // namespace stormkit::core
