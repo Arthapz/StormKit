@@ -37,6 +37,7 @@ export namespace stormkit { inline namespace core { namespace meta {
         constexpr auto update_size() noexcept -> void;
 
         static constexpr auto STATIC_SIZE = as<usize>(N - 1u);
+        // static constexpr auto STATIC_SIZE = tag_invoke(as_fn<usize> {}, N - 1u);
 
         std::array<char, N> data   = {};
         usize               m_size = 0;

@@ -22,6 +22,9 @@ import std;
 
 namespace stdp = std::pmr;
 
+template<typename T>
+concept ShouldPassByValue = sizeof(T) <= (sizeof(void*) * 2) and std::is_trivially_copyable_v<T>;
+
 export {
     using uchar     = unsigned char;
     using ushort    = unsigned short;
@@ -141,6 +144,9 @@ export {
             using stdp::u8string;
             using stdp::wstring;
         } // namespace pmr
+
+        using source_location_arg = std::
+          conditional_t<ShouldPassByValue<std::source_location>, const std::source_location, const std::source_location&>;
 
         namespace literals {
             [[nodiscard]]
