@@ -6,24 +6,26 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:string.operations;
+export module stormkit.core.string.algorithms;
 
 import std;
 
-import :utils.contract;
-
-import :meta;
-
-import :typesafe.integer;
-
-import :string.aliases;
-
-import :typesafe.safecasts;
+import stormkit.core.contract;
+import stormkit.core.meta;
+import stormkit.core.types;
+import stormkit.core.typesafe;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 export namespace stormkit { inline namespace core {
+    namespace meta {
+        template<typename T>
+        concept Has_as_string = requires(const T& value) {
+            { as_string(value) } -> SameAs<string_view>;
+        };
+    } // namespace meta
+
     [[nodiscard]]
     constexpr auto split(string_view str, string_view delim) noexcept -> dynarray<string_view>;
     [[nodiscard]]
@@ -37,40 +39,6 @@ export namespace stormkit { inline namespace core {
 
     [[nodiscard]]
     constexpr auto replace(string_view in, string_view pattern, string_view replacement) noexcept -> string;
-
-    template<typename T>
-    [[nodiscard]]
-    constexpr auto as_string(T) noexcept -> string_view = delete;
-
-    template<typename T>
-    [[nodiscard]]
-    constexpr auto to_string(T) noexcept -> string = delete;
-
-    template<typename T>
-    [[nodiscard]]
-    constexpr auto from_string(string_view) noexcept -> T = delete;
-
-    template<typename T>
-        requires(as_string(std::declval<T>()))
-    [[nodiscard]]
-    constexpr auto to_string(T&& value) noexcept -> string;
-
-    template<meta::IsIntegral T>
-    [[nodiscard]]
-    constexpr auto to_string(T value, i32 base = 10) noexcept -> std::expected<string, std::errc>;
-
-    template<meta::IsFloatingPoint T>
-    [[nodiscard]]
-    auto to_string(T value, std::chars_format fmt = std::chars_format::general) noexcept -> std::expected<string, std::errc>;
-
-    template<meta::IsIntegral T>
-    [[nodiscard]]
-    constexpr auto from_string(string_view data, i32 base = 10) noexcept -> std::expected<T, std::errc>;
-
-    template<meta::IsFloatingPoint T>
-    [[nodiscard]]
-    auto from_string(string_view data, std::chars_format fmt = std::chars_format::general) noexcept
-      -> std::expected<T, std::errc>;
 
     [[nodiscard]]
     constexpr auto as_czstring(string_view value) noexcept -> czstring;
@@ -171,10 +139,9 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
-        requires(as_string(std::declval<T>()))
+    template<meta::Has_as_string T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto to_string(T&& value) noexcept -> string {
+    constexpr auto to_string(const T& value) noexcept -> string {
         return string { as_string(std::forward<T>(value)) };
     }
 

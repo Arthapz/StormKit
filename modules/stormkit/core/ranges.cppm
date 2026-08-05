@@ -2,8 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.core:utils.tags;
+export module stormkit.core.ranges;
 
-export namespace stormkit { inline namespace core {
-    struct Force {};
-}} // namespace stormkit::core
+export import stormkit.core.ranges.algorithms;
+export import stormkit.core.ranges.numeric_range;

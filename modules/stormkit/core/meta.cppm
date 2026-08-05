@@ -2,14 +2,19 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.core:meta;
+export module stormkit.core.meta;
 
-export import :meta.algorithms;
-export import :meta.concepts;
-export import :meta.type_traits;
-export import :meta.type_query;
-export import :meta.type_manipulation;
-export import :meta.priority_tag;
+import std;
+
+import stormkit.core.types;
+
+export import stormkit.core.meta.algorithms;
+export import stormkit.core.meta.concepts;
+export import stormkit.core.meta.type_traits;
+export import stormkit.core.meta.type_query;
+export import stormkit.core.meta.type_manipulation;
+export import stormkit.core.meta.priority_tag;
+export import stormkit.core.meta.tag_invoke;
 
 export namespace stormkit { inline namespace core {
     template<class... Ts>
@@ -22,7 +27,7 @@ export namespace stormkit { inline namespace core {
 
     namespace meta {
         template<class Type, class... Args>
-        consteval auto find_type_index_of() noexcept -> std::size_t {
+        consteval auto find_type_index_of() noexcept -> usize {
             static_assert(IsAnyOf<Type, Args...>);
             auto i = 0u;
             ((not Is<Type, Args> and ++i) and ...);

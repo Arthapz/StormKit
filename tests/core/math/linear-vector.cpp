@@ -104,7 +104,7 @@ namespace {
                 };
 
                 const auto result = math::normalize(a);
-                EXPECTS(is_equal(result.x, 1.f / std::sqrt(1.f + 4.f)));
+                EXPECTS(is(result.x, 1.f / std::sqrt(1.f + 4.f)));
                 EXPECTS(result.y == 2.f / std::sqrt(1.f + 4.f));
             },
           }, },

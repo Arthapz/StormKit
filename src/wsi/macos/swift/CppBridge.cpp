@@ -165,7 +165,7 @@ namespace stormkit::wsi::macos {
 
         for (auto i : range(256_u8)) {
             const auto key  = keys[i];
-            const auto _key = narrow<usize>(key);
+            const auto _key = unchecked_narrow<usize>(key);
             if (key != Key::UNKNOWN) out[_key] = i;
         }
 

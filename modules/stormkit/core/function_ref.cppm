@@ -1,4 +1,4 @@
-export module stormkit.core:utils.std23_functional;
+export module stormkit.core.function_ref;
 
 export import nontype_functional;
 

@@ -7,12 +7,12 @@ module;
 #include <stormkit/core/platform_macro.hpp>
 #include <stormkit/core/try_expected.hpp>
 
-export module stormkit.core:named_constructors;
+export module stormkit.core.named_constructors;
 
 import std;
 
-import :meta;
-import :utils.allocation;
+import stormkit.core.meta;
+import stormkit.core.heap;
 
 namespace stormkit { inline namespace core {
     export {

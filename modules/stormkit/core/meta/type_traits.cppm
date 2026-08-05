@@ -6,13 +6,9 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:meta.type_traits;
+export module stormkit.core.meta.type_traits;
 
 import std;
-
-import :meta.concepts;
-import :meta.type_manipulation;
-import :meta.type_query;
 
 // export {
 //     namespace stormkit { inline namespace core { namespace meta {

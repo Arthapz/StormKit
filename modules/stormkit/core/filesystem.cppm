@@ -25,20 +25,19 @@ module;
 
 #include <cstdio>
 
-export module stormkit.core:utils.filesystem;
+export module stormkit.core.filesystem;
 
 import std;
 
-import :errors;
-
-import :utils.contract;
-
-import :utils.allocation;
-import :typesafe;
-import :functional;
-import :meta;
-
-namespace stdfs = std::filesystem;
+import stormkit.core.errors;
+import stormkit.core.contract;
+import stormkit.core.heap;
+import stormkit.core.functional;
+import stormkit.core.meta;
+import stormkit.core.types;
+import stormkit.core.typesafe.flags;
+import stormkit.core.typesafe.safecasts;
+import stormkit.core.containers.safecasts;
 
 export {
     namespace stormkit { inline namespace core { namespace io {
@@ -58,83 +57,90 @@ namespace stormkit { inline namespace core { namespace io::meta {
 }}} // namespace stormkit::core::io::meta
 
 export {
-    namespace stormkit { inline namespace core { namespace io {
+    namespace stormkit { inline namespace core {
+        namespace stdfs = std::filesystem;
 
-        enum class Access {
-            READ,
-            WRITE,
-        };
+        namespace io {
 
-        template<Mode mode>
-        class Descriptor final {
-            struct Private_tag {};
+            enum class Access {
+                READ,
+                WRITE,
+            };
 
-          public:
+            template<Mode mode>
+            class Descriptor final {
+                struct Private_tag {};
+
+              public:
 #ifdef STORMKIT_OS_WINDOWS
-            static inline const auto INVALID_HANDLE = INVALID_HANDLE_VALUE;
-            using Native_handle                     = HANDLE;
+                static inline const auto INVALID_HANDLE = INVALID_HANDLE_VALUE;
+                using Native_handle                     = HANDLE;
 #else
-            static constexpr auto INVALID_HANDLE = 0;
-            using Native_handle                  = i32;
+                static constexpr auto INVALID_HANDLE = 0;
+                using Native_handle                  = i32;
 #endif
 
-            explicit Descriptor(Private_tag) noexcept;
-            ~Descriptor() noexcept;
+                explicit Descriptor(Private_tag) noexcept;
+                ~Descriptor() noexcept;
 
-            Descriptor(Descriptor&)                    = delete;
-            auto operator=(Descriptor&) -> Descriptor& = delete;
+                Descriptor(Descriptor&)                    = delete;
+                auto operator=(Descriptor&) -> Descriptor& = delete;
 
-            Descriptor(Descriptor&&) noexcept;
-            auto operator=(Descriptor&&) noexcept -> Descriptor&;
+                Descriptor(Descriptor&&) noexcept;
+                auto operator=(Descriptor&&) noexcept -> Descriptor&;
 
-            static auto open(const stdfs::path& path, Access access) noexcept -> Result<Descriptor>;
-            static auto allocate_and_open(const stdfs::path& path, Access access) noexcept -> Result<heap_ptr<Descriptor>>;
+                static auto open(const stdfs::path& path, Access access) noexcept -> System_result<Descriptor>;
+                static auto allocate_and_open(const stdfs::path& path, Access access) noexcept
+                  -> System_result<heap_ptr<Descriptor>>;
 
-            auto close() noexcept;
+                auto close() noexcept;
 
-            auto read_to(byte_view_mut out) noexcept -> Result<usize>;
-            auto read_to(array_view<char> out) noexcept -> Result<usize>
-                requires(mode == Mode::UTF8 or mode == Mode::AINSI);
-            auto read_to(array_view<wchar> out) noexcept -> Result<usize>
-                requires(mode == Mode::WIDE);
+                auto read_to(array_view<byte> out) noexcept -> System_result<usize>;
+                auto read_to(array_view<char> out) noexcept -> System_result<usize>
+                    requires(mode == Mode::UTF8 or mode == Mode::AINSI);
+                auto read_to(array_view<wchar> out) noexcept -> System_result<usize>
+                    requires(mode == Mode::WIDE);
 
-            auto write(byte_view bytes) noexcept -> Result<usize>;
-            auto write(array_view<const char> bytes) noexcept -> Result<usize>
-                requires(mode == Mode::UTF8 or mode == Mode::AINSI);
-            auto write(array_view<const wchar> bytes) noexcept -> Result<usize>
-                requires(mode == Mode::WIDE);
+                auto write(array_view<byte> bytes) noexcept -> System_result<usize>;
+                auto write(array_view<const char> bytes) noexcept -> System_result<usize>
+                    requires(mode == Mode::UTF8 or mode == Mode::AINSI);
+                auto write(array_view<const wchar> bytes) noexcept -> System_result<usize>
+                    requires(mode == Mode::WIDE);
 
-            auto flush() noexcept -> void;
+                auto flush() noexcept -> void;
 
-            auto position() const noexcept -> usize;
-            auto size() const noexcept -> usize;
+                auto position() const noexcept -> usize;
+                auto size() const noexcept -> usize;
 
-            auto native_descriptor() const noexcept -> Native_handle;
+                auto native_descriptor() const noexcept -> Native_handle;
 
-            auto do_init(Private_tag, const stdfs::path&, Access) noexcept -> Result<void>;
+                auto do_init(Private_tag, const stdfs::path&, Access) noexcept -> System_result<void>;
 
-          private:
-            Native_handle              m_descriptor = INVALID_HANDLE;
-            mutable std::atomic<usize> m_size       = 0;
-        };
+              private:
+                Native_handle              m_descriptor = INVALID_HANDLE;
+                mutable std::atomic<usize> m_size       = 0;
+            };
 
-        using File = Descriptor<Mode::BINARY>;
-        template<Mode mode = Mode::UTF8>
-            requires(mode != Mode::BINARY)
-        using TextFile = Descriptor<mode>;
+            using File = Descriptor<Mode::BINARY>;
+            template<Mode mode = Mode::UTF8>
+                requires(mode != Mode::BINARY)
+            using TextFile = Descriptor<mode>;
 
-        template<Mode mode = Mode::UTF8>
-        auto readfile_to(const stdfs::path& path, array_view<meta::ModeToCharType<mode>> output) noexcept -> Result<usize>;
-        template<Mode mode = Mode::UTF8>
-        auto readfile(const stdfs::path& path) noexcept -> Result<dynarray<meta::ModeToCharType<mode>>>;
+            template<Mode mode = Mode::UTF8>
+            auto readfile_to(const stdfs::path& path, array_view<meta::ModeToCharType<mode>> output) noexcept
+              -> System_result<usize>;
+            template<Mode mode = Mode::UTF8>
+            auto readfile(const stdfs::path& path) noexcept -> System_result<dynarray<meta::ModeToCharType<mode>>>;
 
-        auto readfile_to(const stdfs::path& path, byte_view_mut output) noexcept -> Result<usize>;
-        auto readfile(const stdfs::path& path) noexcept -> Result<byte_dynarray>;
+            auto readfile_to(const stdfs::path& path, array_view<byte> output) noexcept -> System_result<usize>;
+            auto readfile(const stdfs::path& path) noexcept -> System_result<dynarray<byte>>;
 
-        template<Mode mode = Mode::UTF8>
-        auto writefile(const stdfs::path& path, array_view<const meta::ModeToCharType<mode>> data) noexcept -> Result<usize>;
-        auto writefile(const stdfs::path& path, byte_view data) noexcept -> Result<usize>;
-    }}} // namespace stormkit::core::io
+            template<Mode mode = Mode::UTF8>
+            auto writefile(const stdfs::path& path, array_view<const meta::ModeToCharType<mode>> data) noexcept
+              -> System_result<usize>;
+            auto writefile(const stdfs::path& path, array_view<byte> data) noexcept -> System_result<usize>;
+        } // namespace io
+    }} // namespace stormkit::core
 
     template<>
     inline constexpr auto stormkit::meta::FLAG_TRAIT<stormkit::io::Access> = true;
@@ -191,7 +197,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::open(const stdfs::path& path, Access access) noexcept -> Result<Descriptor<mode>> {
+    inline auto Descriptor<mode>::open(const stdfs::path& path, Access access) noexcept -> System_result<Descriptor<mode>> {
         auto out = Descriptor<mode> { Private_tag {} };
         out.do_init(Private_tag {}, path, access);
         return out;
@@ -202,7 +208,7 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     STORMKIT_FORCE_INLINE
     inline auto Descriptor<mode>::allocate_and_open(const stdfs::path& path, Access access) noexcept
-      -> Result<heap_ptr<Descriptor<mode>>> {
+      -> System_result<heap_ptr<Descriptor<mode>>> {
         auto out = allocate_unsafe<Descriptor<mode>>(Private_tag {});
         out->do_init(Private_tag {}, path, access);
         return out;
@@ -230,7 +236,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::read_to(byte_view_mut out) noexcept -> Result<usize> {
+    inline auto Descriptor<mode>::read_to(array_view<byte> out) noexcept -> System_result<usize> {
         EXPECTS(m_descriptor != INVALID_HANDLE);
 #ifdef STORMKIT_OS_WINDOWS
         // TODO support async WriteFileEx
@@ -243,34 +249,34 @@ namespace stormkit { inline namespace core { namespace io {
         if (ret == -1) return std::unexpected { error::from_errno() };
 #endif
 
-        return Result<usize> { std::in_place, as<usize>(ret) };
+        return System_result<usize> { std::in_place, as<usize>(ret) };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::read_to(array_view<char> out) noexcept -> Result<usize>
+    inline auto Descriptor<mode>::read_to(array_view<char> out) noexcept -> System_result<usize>
         requires(mode == Mode::UTF8 or mode == Mode::AINSI)
     {
-        return read_to(as_mutable_bytes(out));
+        return read_to(as<Bytes>(out));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::read_to(array_view<wchar> out) noexcept -> Result<usize>
+    inline auto Descriptor<mode>::read_to(array_view<wchar> out) noexcept -> System_result<usize>
         requires(mode == Mode::WIDE)
     {
-        return read_to(as_mutable_bytes(out));
+        return read_to(as<Bytes>(out));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::write(byte_view data) noexcept -> Result<usize> {
+    inline auto Descriptor<mode>::write(array_view<byte> data) noexcept -> System_result<usize> {
         EXPECTS(m_descriptor != INVALID_HANDLE);
 #ifdef STORMKIT_OS_WINDOWS
         // TODO support async WriteFileEx
@@ -286,27 +292,27 @@ namespace stormkit { inline namespace core { namespace io {
         if (ret == -1) return std::unexpected { error::from_errno() };
 #endif
 
-        return Result<usize> { std::in_place, as<usize>(ret) };
+        return System_result<usize> { std::in_place, as<usize>(ret) };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::write(array_view<const char> data) noexcept -> Result<usize>
+    inline auto Descriptor<mode>::write(array_view<const char> data) noexcept -> System_result<usize>
         requires(mode == Mode::UTF8 or mode == Mode::AINSI)
     {
-        return write(as_bytes(data));
+        return write(as<Bytes>(data));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto Descriptor<mode>::write(array_view<const wchar> data) noexcept -> Result<usize>
+    inline auto Descriptor<mode>::write(array_view<const wchar> data) noexcept -> System_result<usize>
         requires(mode == Mode::WIDE)
     {
-        return write(as_bytes(data));
+        return write(as<Bytes>(data));
     }
 
     ////////////////////////////////////////
@@ -374,7 +380,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<Mode mode>
-    inline auto Descriptor<mode>::do_init(Private_tag, const stdfs::path& path, Access access) noexcept -> Result<void> {
+    inline auto Descriptor<mode>::do_init(Private_tag, const stdfs::path& path, Access access) noexcept -> System_result<void> {
         if (access == Access::READ and not stdfs::exists(path))
             return std::unexpected { error::from_stderrc(std::errc::no_such_file_or_directory) };
 
@@ -421,7 +427,8 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto readfile_to(const stdfs::path& path, array_view<meta::ModeToCharType<mode>> out) noexcept -> Result<usize> {
+    inline auto readfile_to(const stdfs::path& path, array_view<meta::ModeToCharType<mode>> out) noexcept
+      -> System_result<usize> {
         auto file = Try((TextFile<mode>::open(path, Access::READ)));
         ENSURES(stdr::size(out) >= file.size());
         Return Try(file.read_to(out));
@@ -431,7 +438,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
     STORMKIT_FORCE_INLINE
-    inline auto readfile(const stdfs::path& path) noexcept -> Result<dynarray<meta::ModeToCharType<mode>>> {
+    inline auto readfile(const stdfs::path& path) noexcept -> System_result<dynarray<meta::ModeToCharType<mode>>> {
         auto file = Try((TextFile<mode>::open(path, Access::READ)));
         auto out  = dynarray<meta::ModeToCharType<mode>> {};
         out.resize(file.size());
@@ -443,7 +450,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto readfile_to(const stdfs::path& path, byte_view_mut out) noexcept -> Result<usize> {
+    inline auto readfile_to(const stdfs::path& path, array_view<byte> out) noexcept -> System_result<usize> {
         auto   file = Try(File::open(path, Access::READ));
         Return Try(file.read_to(out));
     }
@@ -451,9 +458,9 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto readfile(const stdfs::path& path) noexcept -> Result<byte_dynarray> {
+    inline auto readfile(const stdfs::path& path) noexcept -> System_result<dynarray<byte>> {
         auto file = Try((File::open(path, Access::READ)));
-        auto out  = byte_dynarray {};
+        auto out  = dynarray<byte> {};
         out.resize(file.size());
         auto readed = Try(file.read_to(out));
         out.resize(readed);
@@ -464,7 +471,8 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<Mode mode>
         STORMKIT_FORCE_INLINE
-    inline auto writefile(const stdfs::path& path, array_view<const meta::ModeToCharType<mode>> data) noexcept -> Result<usize> {
+    inline auto writefile(const stdfs::path& path, array_view<const meta::ModeToCharType<mode>> data) noexcept
+      -> System_result<usize> {
         auto   file = Try((TextFile<mode>::open(path, Access::WRITE)));
         Return Try(file.write(data));
     }
@@ -472,7 +480,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto writefile(const stdfs::path& path, byte_view data) noexcept -> Result<usize> {
+    inline auto writefile(const stdfs::path& path, array_view<byte> data) noexcept -> System_result<usize> {
         auto   file = Try((File::open(path, Access::WRITE)));
         Return Try(file.write(data));
     }

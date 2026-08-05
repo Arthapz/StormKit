@@ -5,9 +5,13 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:coroutines;
+export module stormkit.core.coroutines;
 
+#if defined(__cpp_lib_generator) and __cpp_lib_generator < 202207L
 export import std;
+#else
+import std;
+#endif
 
 #if not defined(__cpp_lib_generator) or __cpp_lib_generator < 202207L
 export namespace std {

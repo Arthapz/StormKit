@@ -7,20 +7,17 @@ module;
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:math.linear.vector;
+export module stormkit.core.math.linear.vector;
 
 import std;
 
-import :meta;
+import stormkit.core.meta;
+import stormkit.core.typesafe.safecasts;
+import stormkit.core.hash;
+import stormkit.core.types;
+import stormkit.core.string;
 
-import :typesafe.integer;
-import :typesafe.floating_point;
-
-import :math.linear;
-
-import :hash.base;
-
-import :string.format;
+import stormkit.core.math.linear;
 
 export namespace stormkit { inline namespace core { namespace math {
     inline namespace vector {

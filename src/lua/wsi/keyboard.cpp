@@ -22,8 +22,8 @@ namespace stormkit::lua::wsi {
     ////////////////////////////////////////
     auto bind_keyboard(sol::state& global_state, sol::table& metatable) noexcept -> void {
         metatable["key"] = global_state.create_table_with(
-          sol::meta_function::to_string,
-          +[](Key key) { return to_string(key); },
+          sol::meta_function::as<string>,
+          +[](Key key) { return as<string>(key); },
           "A",
           Key::A,
           "B",

@@ -7,17 +7,17 @@ module;
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:parallelism.locked;
+export module stormkit.core.parallelism.locked;
 
 import std;
 
-import :meta;
-import :typesafe.integer;
-import :typesafe.ref;
+import stormkit.core.meta;
+import stormkit.core.types;
+import stormkit.core.typesafe;
 
 namespace stormkit { inline namespace core {
     export {
-        enum class LockAccessMode : core::u8 {
+        enum class LockAccessMode : u8 {
             READ_ONLY,
             READ_WRITE,
         };

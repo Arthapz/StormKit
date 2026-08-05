@@ -77,7 +77,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     /////////////////////////////////////
     auto seat_capabilities_handler(void* data, wl_seat* seat, u32 capabilities) noexcept -> void {
         auto& globals       = *std::bit_cast<Globals*>(data);
-        auto  _capabilities = narrow<wl_seat_capability>(capabilities);
+        auto  _capabilities = unchecked_narrow<wl_seat_capability>(capabilities);
         if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_KEYBOARD)) {
             auto& [keyboard, state] = globals.keyboards.emplace_back(wl::Keyboard::create(seat), KeyboardState {});
             wl_keyboard_add_listener(keyboard, &g_keyboard_listener, &state);

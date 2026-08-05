@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.core:console;
+export module stormkit.core.console;
 
-export import :console.style;
-export import :console.io;
+export import stormkit.core.console.style;
+export import stormkit.core.console.io;

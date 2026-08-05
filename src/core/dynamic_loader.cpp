@@ -15,9 +15,11 @@ module;
     #include <errno.h>
 #endif
 
-module stormkit.core;
+module stormkit.core.dynamic_loader;
 
 import std;
+
+import stormkit.core.typesafe.safecasts;
 
 namespace stormkit {
     /////////////////////////////////////

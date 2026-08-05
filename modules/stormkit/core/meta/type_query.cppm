@@ -6,12 +6,13 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:meta.type_query;
+export module stormkit.core.meta.type_query;
 
 import std;
 
-import :meta.concepts;
-import :meta.type_manipulation;
+import stormkit.core.meta.concepts;
+import stormkit.core.meta.type_manipulation;
+import stormkit.core.meta.algorithms;
 
 namespace stdr = std::ranges;
 

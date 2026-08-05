@@ -7,18 +7,17 @@ module;
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:parallelism.threadpool;
+export module stormkit.core.parallelism.threadpool;
 
 import std;
 
-import :parallelism.threadutils;
-
-import :meta;
-import :functional;
-
-import :utils.std23_functional;
-import :utils.numeric_range;
-import :typesafe.integer;
+import stormkit.core.meta;
+import stormkit.core.functional;
+import stormkit.core.function_ref;
+import stormkit.core.ranges;
+import stormkit.core.types;
+import stormkit.core.typesafe;
+import stormkit.core.parallelism.threadutils;
 
 export namespace stormkit { inline namespace core {
     class STORMKIT_CORE_API ThreadPool {

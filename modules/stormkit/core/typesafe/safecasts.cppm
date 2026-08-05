@@ -11,8 +11,12 @@ export module stormkit.core.typesafe.safecasts;
 
 import std;
 
-import stormkit.core.meta;
 import stormkit.core.contract;
+import stormkit.core.meta.concepts;
+import stormkit.core.meta.type_manipulation;
+import stormkit.core.meta.tag_invoke;
+import stormkit.core.meta.type_query;
+import stormkit.core.meta.algorithms;
 import stormkit.core.types;
 
 export {
@@ -27,25 +31,79 @@ export {
 
         template<typename To>
         struct as_fn final {
-            template<typename From>
-                requires(not meta::Is_tag_invocable<as_fn<To>, From, const std::source_location&>)
-            static constexpr auto operator()(From&&,
+            template<typename... Args>
+                requires(not meta::Is_tag_invocable<as_fn<To>, Args...>)
+            static constexpr auto operator()(Args&&...,
                                              const std::source_location& = std::source_location::
                                                current()) noexcept = delete ("As caster not defined for these types To, From!");
 
-            template<meta::ShouldPassByValue From>
+            /*
+
+
+
+
+
+            */
+
+            template<meta::arg::ShouldPassByValue From>
                 requires(meta::Is_tag_invocable<as_fn<To>, From, const std::source_location&>)
             [[nodiscard]]
-            static constexpr auto operator()(From                        from,
-                                             const std::source_location& location = std::source_location::current()) noexcept
+            static constexpr auto operator()(From from, const std::source_location& = std::source_location::current()) noexcept
               -> meta::tag_invoke_result<as_fn<To>, From, const std::source_location&>;
 
-            template<meta::Not<meta::ShouldPassByValue> From>
+            template<meta::arg::ShouldPassByRef From>
                 requires(meta::Is_tag_invocable<as_fn<To>, From, const std::source_location&>)
             [[nodiscard]]
-            static constexpr auto operator()(From&&                      from,
-                                             const std::source_location& location = std::source_location::current()) noexcept
+            static constexpr auto operator()(From&& from, const std::source_location& = std::source_location::current()) noexcept
               -> meta::tag_invoke_result<as_fn<To>, From, const std::source_location&>;
+
+            /*
+
+
+
+
+
+            */
+
+            template<meta::arg::ShouldPassByValue From, meta::arg::ShouldPassByValue Arg1>
+                requires(meta::Is_tag_invocable<as_fn<To>, From, Arg1, const std::source_location&>)
+            [[nodiscard]]
+            static constexpr auto operator()(From from,
+                                             Arg1 arg1,
+                                             const std::source_location& = std::source_location::current()) noexcept
+              -> meta::tag_invoke_result<as_fn<To>, From, Arg1, const std::source_location&>;
+
+            template<meta::arg::ShouldPassByValue From, meta::arg::ShouldPassByRef Arg1>
+                requires(meta::Is_tag_invocable<as_fn<To>, From, Arg1, const std::source_location&>)
+            [[nodiscard]]
+            static constexpr auto operator()(From   from,
+                                             Arg1&& arg1,
+                                             const std::source_location& = std::source_location::current()) noexcept
+              -> meta::tag_invoke_result<as_fn<To>, From, Arg1, const std::source_location&>;
+
+            /*
+
+
+
+
+
+            */
+
+            template<meta::arg::ShouldPassByRef From, meta::arg::ShouldPassByValue Arg1>
+                requires(meta::Is_tag_invocable<as_fn<To>, From, Arg1, const std::source_location&>)
+            [[nodiscard]]
+            static constexpr auto operator()(From&& from,
+                                             Arg1   arg1,
+                                             const std::source_location& = std::source_location::current()) noexcept
+              -> meta::tag_invoke_result<as_fn<To>, From, Arg1, const std::source_location&>;
+
+            template<meta::arg::ShouldPassByRef From, meta::arg::ShouldPassByRef Arg1>
+                requires(meta::Is_tag_invocable<as_fn<To>, From, Arg1, const std::source_location&>)
+            [[nodiscard]]
+            static constexpr auto operator()(From&& from,
+                                             Arg1&& arg1,
+                                             const std::source_location& = std::source_location::current()) noexcept
+              -> meta::tag_invoke_result<as_fn<To>, From, Arg1, const std::source_location&>;
         };
 
         template<typename To>
@@ -62,52 +120,16 @@ export {
             [[nodiscard]]
             static constexpr auto operator()(const U& from) noexcept -> bool;
 
-            template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
+            template<typename First, typename Second>
                 requires(not meta::Is_tag_invocable<is_fn<T>, First, Second> and meta::HasEqualityOperator<First, Second>)
             [[nodiscard]]
-            static constexpr auto operator()(First first, Second second) noexcept -> bool
+            static constexpr auto operator()(First&& first, Second&& second) noexcept -> bool
                 requires(meta::SameAs<T, Equal>);
 
-            template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
-                requires(not meta::Is_tag_invocable<is_fn<T>, First, Second> and meta::HasEqualityOperator<First, Second>)
-            [[nodiscard]]
-            static constexpr auto operator()(const First& first, const Second& second) noexcept -> bool
-                requires(meta::SameAs<T, Equal>);
-
-            template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
-                requires(not meta::Is_tag_invocable<is_fn<T>, First, Second> and meta::HasEqualityOperator<First, Second>)
-            [[nodiscard]]
-            static constexpr auto operator()(const First& first, Second second) noexcept -> bool
-                requires(meta::SameAs<T, Equal>);
-
-            template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
-                requires(not meta::Is_tag_invocable<is_fn<T>, First, Second> and meta::HasEqualityOperator<First, Second>)
-            [[nodiscard]]
-            static constexpr auto operator()(First first, const Second& second) noexcept -> bool
-                requires(meta::SameAs<T, Equal>);
-
-            template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
+            template<typename First, typename Second>
                 requires(meta::Is_tag_invocable<is_fn<T>, First, Second>)
             [[nodiscard]]
-            static constexpr auto operator()(First first, Second second) noexcept -> bool
-                requires(meta::SameAs<T, Equal>);
-
-            template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
-                requires(meta::Is_tag_invocable<is_fn<T>, First, Second>)
-            [[nodiscard]]
-            static constexpr auto operator()(const First& first, const Second& second) noexcept -> bool
-                requires(meta::SameAs<T, Equal>);
-
-            template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
-                requires(meta::Is_tag_invocable<is_fn<T>, First, Second>)
-            [[nodiscard]]
-            static constexpr auto operator()(const First& first, Second second) noexcept -> bool
-                requires(meta::SameAs<T, Equal>);
-
-            template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
-                requires(meta::Is_tag_invocable<is_fn<T>, First, Second>)
-            [[nodiscard]]
-            static constexpr auto operator()(First first, const Second& second) noexcept -> bool
+            static constexpr auto operator()(First&& first, Second&& second) noexcept -> bool
                 requires(meta::SameAs<T, Equal>);
         };
 
@@ -117,132 +139,63 @@ export {
         template<typename T, typename U>
         constexpr auto is(const U& value) noexcept -> bool;
 
-        template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
+        template<meta::arg::ShouldPassByValue First, meta::arg::ShouldPassByValue Second>
         constexpr auto is(First first, Second second) noexcept -> bool;
 
-        template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
+        template<meta::arg::ShouldPassByValue First, meta::arg::ShouldPassByRef Second>
         constexpr auto is(First first, Second&& second) noexcept -> bool;
 
-        template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
+        template<meta::arg::ShouldPassByRef First, meta::arg::ShouldPassByValue Second>
         constexpr auto is(const First& first, Second second) noexcept -> bool;
 
-        template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
+        template<meta::arg::ShouldPassByRef First, meta::arg::ShouldPassByRef Second>
         constexpr auto is(const First& first, Second&& second) noexcept -> bool;
 
-        template<typename To, meta::ShouldPassByValue From>
+        template<typename To, meta::arg::ShouldPassByValue From>
             requires(meta::IsNarrowing<To, From> or (meta::IsArithmetic<To> and meta::IsArithmetic<From>))
         [[nodiscard]]
         constexpr auto unchecked_narrow(From from) noexcept -> To;
 
-        template<typename To, meta::Not<meta::ShouldPassByValue> From>
+        template<typename To, meta::arg::ShouldPassByRef From>
             requires(meta::IsNarrowing<To, From> or (meta::IsArithmetic<To> and meta::IsArithmetic<From>))
         [[nodiscard]]
         constexpr auto unchecked_narrow(const From& from) noexcept -> To;
 
-        template<typename To, meta::ShouldPassByValue From>
-            requires(meta::SameAs<To, From>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<To>, From value, const std::source_location&) noexcept -> To;
-
-        template<typename To, meta::Not<meta::ShouldPassByValue> From>
-            requires(meta::SameAs<To, meta::ToPlainType<From>>)
+        template<typename To, meta::arg::PlainTypeTo<meta::SameAs, To> From>
         [[nodiscard]]
         constexpr auto tag_invoke(as_fn<To>, From&& value, const std::source_location&) noexcept -> meta::ForwardLike<From, To>;
 
         ////////////////////////////////////////////////////////////////////
         ///                      PREDICATE                               ///
         ////////////////////////////////////////////////////////////////////
-        template<meta::ShouldPassByValue First, meta::IsUnaryPredicate<First> Predicate>
+        template<typename First, meta::arg::PlainTypeTo<meta::IsUnaryPredicate, First> Predicate>
         [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, First value, Predicate&& predicate) noexcept -> bool;
-
-        template<meta::Not<meta::ShouldPassByValue> First, meta::IsUnaryPredicate<First> Predicate>
-        [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, const First& value, Predicate&& predicate) noexcept -> bool;
+        constexpr auto tag_invoke(is_fn<Equal>, First&& value, Predicate&& predicate) noexcept -> bool;
 
         ////////////////////////////////////////////////////////////////////
         ///                      ARITHMETIC                              ///
         ////////////////////////////////////////////////////////////////////
-        template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
-            requires(meta::IsFloatingPoint<First> and meta::IsFloatingPoint<Second>)
+        template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> First, meta::arg::PlainTypeTo<meta::IsFloatingPoint> Second>
         [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, First first, Second second) noexcept -> bool;
+        constexpr auto tag_invoke(is_fn<Equal>, First&& first, Second&& second) noexcept -> bool;
 
-        template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
-            requires(meta::IsFloatingPoint<First> and meta::IsFloatingPoint<Second>)
+        template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> First, meta::arg::PlainTypeTo<meta::IsIntegral> Second>
         [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, First first, const Second& second) noexcept -> bool;
+        constexpr auto tag_invoke(is_fn<Equal>, First&& first, Second&& second) noexcept -> bool;
 
-        template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
-            requires(meta::IsFloatingPoint<First> and meta::IsFloatingPoint<Second>)
+        template<meta::arg::PlainTypeTo<meta::IsIntegral> First, meta::arg::PlainTypeTo<meta::IsIntegral> Second>
         [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, const First& first, Second second) noexcept -> bool;
+        constexpr auto tag_invoke(is_fn<Equal>, First&& first, Second&& second) noexcept -> bool;
 
-        template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
-            requires(meta::IsFloatingPoint<First> and meta::IsFloatingPoint<Second>)
+        template<meta::IsArithmetic To, meta::arg::PlainTypeTo<meta::IsArithmetic> From>
+            requires(not meta::PlainTypeTo<meta::SameAs, To, From>)
         [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, const First& first, const Second& second) noexcept -> bool;
-
-        template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
-            requires(meta::IsFloatingPoint<First> and meta::IsIntegral<Second>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, First first, Second second) noexcept -> bool;
-
-        template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
-            requires(meta::IsFloatingPoint<First> and meta::IsIntegral<Second>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, First first, const Second& second) noexcept -> bool;
-
-        template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
-            requires(meta::IsFloatingPoint<First> and meta::IsIntegral<Second>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, const First& first, Second second) noexcept -> bool;
-
-        template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
-            requires(meta::IsFloatingPoint<First> and meta::IsIntegral<Second>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, const First& first, const Second& second) noexcept -> bool;
-
-        template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
-            requires(meta::IsIntegral<First> and meta::IsIntegral<Second>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, First first, Second second) noexcept -> bool;
-
-        template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
-            requires(meta::IsIntegral<First> and meta::IsIntegral<Second>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, First first, const Second& second) noexcept -> bool;
-
-        template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
-            requires(meta::IsIntegral<First> and meta::IsIntegral<Second>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, const First& first, Second second) noexcept -> bool;
-
-        template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
-            requires(meta::IsIntegral<First> and meta::IsIntegral<Second>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(is_fn<Equal>, const First& first, const Second& second) noexcept -> bool;
-
-        template<meta::IsArithmetic To, meta::IsArithmetic From>
-            requires(meta::ShouldPassByValue<From> and not meta::SameAs<To, From>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<To>, From value, const std::source_location&) noexcept -> To;
-
-        template<meta::IsArithmetic To, meta::IsArithmetic From>
-            requires(not meta::ShouldPassByValue<From> and not meta::SameAs<To, From>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<To>, const From& value, const std::source_location&) noexcept -> To;
+        constexpr auto tag_invoke(as_fn<To>, From&& value, const std::source_location&) noexcept -> To;
 
         ////////////////////////////////////////////////////////////////////
         ///                           BYTES                              ///
         ////////////////////////////////////////////////////////////////////
-        template<meta::IsArithmetic From>
-            requires(meta::ShouldPassByValue<From>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<byte>, From value, const std::source_location&) noexcept -> byte;
-
-        template<meta::IsArithmetic From>
-            requires(not meta::ShouldPassByValue<meta::ToPlainType<From>>)
+        template<meta::arg::PlainTypeTo<meta::IsArithmetic> From>
         [[nodiscard]]
         constexpr auto tag_invoke(as_fn<byte>, From&& value, const std::source_location&) noexcept -> byte;
 
@@ -250,13 +203,7 @@ export {
         [[nodiscard]]
         constexpr auto tag_invoke(as_fn<To>, byte value, const std::source_location&) noexcept -> To;
 
-        template<meta::IsEnumeration From>
-            requires(meta::ShouldPassByValue<From>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<byte>, From value, const std::source_location&) noexcept -> byte;
-
-        template<meta::IsEnumeration From>
-            requires(not meta::ShouldPassByValue<meta::ToPlainType<From>>)
+        template<meta::arg::PlainTypeTo<meta::IsEnumeration> From>
         [[nodiscard]]
         constexpr auto tag_invoke(as_fn<byte>, From&& value, const std::source_location&) noexcept -> byte;
 
@@ -267,37 +214,18 @@ export {
         ////////////////////////////////////////////////////////////////////
         ///                       ENUMERATION                            ///
         ////////////////////////////////////////////////////////////////////
-        template<meta::IsArithmetic To, meta::IsEnumeration From>
-            requires(meta::ShouldPassByValue<From>)
+        template<meta::IsArithmetic To, meta::arg::PlainTypeTo<meta::IsEnumeration> From>
         [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<To>, From value, const std::source_location&) noexcept -> To;
+        constexpr auto tag_invoke(as_fn<To>, From&& value, const std::source_location&) noexcept -> To;
 
-        template<meta::IsArithmetic To, meta::IsEnumeration From>
-            requires(not meta::ShouldPassByValue<From>)
+        template<meta::arg::PlainTypeTo<meta::IsEnumeration> From>
         [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<To>, const From& value, const std::source_location&) noexcept -> To;
-
-        template<meta::IsEnumeration From>
-            requires(meta::ShouldPassByValue<From>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<Underlying>, From value, const std::source_location&) noexcept
+        constexpr auto tag_invoke(as_fn<Underlying>, From&& value, const std::source_location&) noexcept
           -> std::underlying_type_t<From>;
 
-        template<meta::IsEnumeration From>
-            requires(not meta::ShouldPassByValue<From>)
+        template<meta::IsEnumeration To, meta::arg::PlainTypeTo<meta::IsArithmetic> From>
         [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<Underlying>, const From& value, const std::source_location&) noexcept
-          -> std::underlying_type_t<From>;
-
-        template<meta::IsEnumeration To, meta::IsArithmetic From>
-            requires(meta::ShouldPassByValue<From>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<To>, From value, const std::source_location&) noexcept -> To;
-
-        template<meta::IsEnumeration To, meta::IsArithmetic From>
-            requires(not meta::ShouldPassByValue<From>)
-        [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<To>, const From& value, const std::source_location&) noexcept -> To;
+        constexpr auto tag_invoke(as_fn<To>, From&& value, const std::source_location&) noexcept -> To;
 
         ////////////////////////////////////////////////////////////////////
         ///                          STL                                 ///
@@ -378,23 +306,67 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename To>
-    template<meta::ShouldPassByValue From>
+    template<meta::arg::ShouldPassByValue From>
         requires(meta::Is_tag_invocable<as_fn<To>, From, const std::source_location&>)
     STORMKIT_FORCE_INLINE
     constexpr auto as_fn<To>::operator()(From from, const std::source_location& location) noexcept
       -> meta::tag_invoke_result<as_fn<To>, From, const std::source_location&> {
-        return meta::tag_invoke_cpo(as_fn<To> {}, from, location);
+        return meta::tag_invoke_cpo(as_fn<To> {}, auto { from }, location);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename To>
-    template<meta::Not<meta::ShouldPassByValue> From>
+    template<meta::arg::ShouldPassByRef From>
         requires(meta::Is_tag_invocable<as_fn<To>, From, const std::source_location&>)
     STORMKIT_FORCE_INLINE
     constexpr auto as_fn<To>::operator()(From&& from, const std::source_location& location) noexcept
       -> meta::tag_invoke_result<as_fn<To>, From, const std::source_location&> {
         return meta::tag_invoke_cpo(as_fn<To> {}, std::forward<From>(from), location);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To>
+    template<meta::arg::ShouldPassByValue From, meta::arg::ShouldPassByValue Arg1>
+        requires(meta::Is_tag_invocable<as_fn<To>, From, Arg1, const std::source_location&>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_fn<To>::operator()(From from, Arg1 arg1, const std::source_location& location) noexcept
+      -> meta::tag_invoke_result<as_fn<To>, From, Arg1, const std::source_location&> {
+        return meta::tag_invoke_cpo(as_fn<To> {}, auto { from }, auto { arg1 }, location);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To>
+    template<meta::arg::ShouldPassByValue From, meta::arg::ShouldPassByRef Arg1>
+        requires(meta::Is_tag_invocable<as_fn<To>, From, Arg1, const std::source_location&>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_fn<To>::operator()(From from, Arg1&& arg1, const std::source_location& location) noexcept
+      -> meta::tag_invoke_result<as_fn<To>, From, Arg1, const std::source_location&> {
+        return meta::tag_invoke_cpo(as_fn<To> {}, auto { from }, std::forward<Arg1>(arg1), location);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To>
+    template<meta::arg::ShouldPassByRef From, meta::arg::ShouldPassByValue Arg1>
+        requires(meta::Is_tag_invocable<as_fn<To>, From, Arg1, const std::source_location&>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_fn<To>::operator()(From&& from, Arg1 arg1, const std::source_location& location) noexcept
+      -> meta::tag_invoke_result<as_fn<To>, From, Arg1, const std::source_location&> {
+        return meta::tag_invoke_cpo(as_fn<To> {}, std::forward<From>(from), auto { arg1 }, location);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To>
+    template<meta::arg::ShouldPassByRef From, meta::arg::ShouldPassByRef Arg1>
+        requires(meta::Is_tag_invocable<as_fn<To>, From, Arg1, const std::source_location&>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_fn<To>::operator()(From&& from, Arg1&& arg1, const std::source_location& location) noexcept
+      -> meta::tag_invoke_result<as_fn<To>, From, Arg1, const std::source_location&> {
+        return meta::tag_invoke_cpo(as_fn<To> {}, std::forward<From>(from), std::forward<Arg1>(arg1), location);
     }
 
     /////////////////////////////////////
@@ -410,10 +382,10 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
+    template<typename First, typename Second>
         requires(not meta::Is_tag_invocable<is_fn<T>, First, Second> and meta::HasEqualityOperator<First, Second>)
     STORMKIT_FORCE_INLINE
-    constexpr auto is_fn<T>::operator()(First first, Second second) noexcept -> bool
+    constexpr auto is_fn<T>::operator()(First&& first, Second&& second) noexcept -> bool
         requires(meta::SameAs<T, Equal>)
     {
         return first == second;
@@ -422,85 +394,13 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
-        requires(not meta::Is_tag_invocable<is_fn<T>, First, Second> and meta::HasEqualityOperator<First, Second>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto is_fn<T>::operator()(const First& first, const Second& second) noexcept -> bool
-        requires(meta::SameAs<T, Equal>)
-    {
-        return first == second;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
-        requires(not meta::Is_tag_invocable<is_fn<T>, First, Second> and meta::HasEqualityOperator<First, Second>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto is_fn<T>::operator()(const First& first, Second second) noexcept -> bool
-        requires(meta::SameAs<T, Equal>)
-    {
-        return first == second;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
-        requires(not meta::Is_tag_invocable<is_fn<T>, First, Second> and meta::HasEqualityOperator<First, Second>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto is_fn<T>::operator()(First first, const Second& second) noexcept -> bool
-        requires(meta::SameAs<T, Equal>)
-    {
-        return first == second;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
+    template<typename First, typename Second>
         requires(meta::Is_tag_invocable<is_fn<T>, First, Second>)
     STORMKIT_FORCE_INLINE
-    constexpr auto is_fn<T>::operator()(First first, Second second) noexcept -> bool
+    constexpr auto is_fn<T>::operator()(First&& first, Second&& second) noexcept -> bool
         requires(meta::SameAs<T, Equal>)
     {
-        return meta::tag_invoke_cpo(is_fn<T> {}, first, second);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
-        requires(meta::Is_tag_invocable<is_fn<T>, First, Second>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto is_fn<T>::operator()(const First& first, const Second& second) noexcept -> bool
-        requires(meta::SameAs<T, Equal>)
-    {
-        return meta::tag_invoke_cpo(is_fn<T> {}, first, second);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
-        requires(meta::Is_tag_invocable<is_fn<T>, First, Second>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto is_fn<T>::operator()(const First& first, Second second) noexcept -> bool
-        requires(meta::SameAs<T, Equal>)
-    {
-        return meta::tag_invoke_cpo(is_fn<T> {}, first, second);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
-        requires(meta::Is_tag_invocable<is_fn<T>, First, Second>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto is_fn<T>::operator()(First first, const Second& second) noexcept -> bool
-        requires(meta::SameAs<T, Equal>)
-    {
-        return meta::tag_invoke_cpo(is_fn<T> {}, first, second);
+        return meta::tag_invoke_cpo(is_fn<T> {}, std::forward<First>(first), std::forward<Second>(second));
     }
 
     /////////////////////////////////////
@@ -513,35 +413,35 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
+    template<meta::arg::ShouldPassByValue First, meta::arg::ShouldPassByValue Second>
     constexpr auto is(First first, Second second) noexcept -> bool {
         return is_cpo<Equal>(first, second);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
+    template<meta::arg::ShouldPassByValue First, meta::arg::ShouldPassByRef Second>
     constexpr auto is(First first, Second&& second) noexcept -> bool {
         return is_cpo<Equal>(first, std::forward<Second>(second));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
+    template<meta::arg::ShouldPassByRef First, meta::arg::ShouldPassByValue Second>
     constexpr auto is(const First& first, Second second) noexcept -> bool {
         return is_cpo<Equal>(first, second);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
+    template<meta::arg::ShouldPassByRef First, meta::arg::ShouldPassByRef Second>
     constexpr auto is(const First& first, Second&& second) noexcept -> bool {
         return is_cpo<Equal>(first, std::forward<Second>(second));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename To, meta::ShouldPassByValue From>
+    template<typename To, meta::arg::ShouldPassByValue From>
         requires(meta::IsNarrowing<To, From> or (meta::IsArithmetic<To> and meta::IsArithmetic<From>))
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
     constexpr auto unchecked_narrow(From from) noexcept -> To {
@@ -550,7 +450,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename To, meta::Not<meta::ShouldPassByValue> From>
+    template<typename To, meta::arg::ShouldPassByRef From>
         requires(meta::IsNarrowing<To, From> or (meta::IsArithmetic<To> and meta::IsArithmetic<From>))
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
     constexpr auto unchecked_narrow(const From& from) noexcept -> To {
@@ -559,17 +459,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename To, meta::ShouldPassByValue From>
-        requires(meta::SameAs<To, From>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto tag_invoke(as_fn<To>, From value, const std::source_location&) noexcept -> To {
-        return value;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename To, meta::Not<meta::ShouldPassByValue> From>
-        requires(meta::SameAs<To, meta::ToPlainType<From>>)
+    template<typename To, meta::arg::PlainTypeTo<meta::SameAs, To> From>
     STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(as_fn<To>, From&& value, const std::source_location&) noexcept -> meta::ForwardLike<From, To> {
         return std::forward<From>(value);
@@ -580,18 +470,10 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////////////////////////////////
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::ShouldPassByValue First, meta::IsUnaryPredicate<First> Predicate>
+    template<typename First, meta::arg::PlainTypeTo<meta::IsUnaryPredicate, First> Predicate>
         STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(is_fn<Equal>, First value, Predicate&& predicate) noexcept -> bool {
-        return std::forward<Predicate>(predicate)(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::Not<meta::ShouldPassByValue> First, meta::IsUnaryPredicate<First> Predicate>
-        STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(is_fn<Equal>, const First& value, Predicate&& predicate) noexcept -> bool {
-        return std::forward<Predicate>(predicate)(value);
+    constexpr auto tag_invoke(is_fn<Equal>, First&& value, Predicate&& predicate) noexcept -> bool {
+        return std::forward<Predicate>(predicate)(std::forward<First>(value));
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -603,132 +485,39 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
-        requires(meta::IsFloatingPoint<First> and meta::IsFloatingPoint<Second>)
+    template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> First, meta::arg::PlainTypeTo<meta::IsFloatingPoint> Second>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, First first, Second second) noexcept -> bool {
-        const auto second_ = as<First>(second);
+    constexpr auto tag_invoke(is_fn<Equal>, First&& first, Second&& second) noexcept -> bool {
+        using First_  = meta::ToPlainType<First>;
+        using Second_ = meta::ToPlainType<Second>;
+
+        const auto second_ = as<First_>(second);
 
         const auto diff = std::abs(first - second_);
         const auto a    = std::abs(first);
         const auto b    = std::abs(second_);
         const auto ab   = (a > b) ? b : a;
-        return diff <= (ab * std::numeric_limits<First>::epsilon());
+        return diff <= (ab * std::numeric_limits<First_>::epsilon());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
-        requires(meta::IsFloatingPoint<First> and meta::IsFloatingPoint<Second>)
+    template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> First, meta::arg::PlainTypeTo<meta::IsIntegral> Second>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, First first, const Second& second) noexcept -> bool {
-        const auto second_ = as<First>(second);
-
-        const auto diff = std::abs(first - second_);
-        const auto a    = std::abs(first);
-        const auto b    = std::abs(second_);
-        const auto ab   = (a > b) ? b : a;
-        return diff <= (ab * std::numeric_limits<First>::epsilon());
+    constexpr auto tag_invoke(is_fn<Equal> tag, First&& first, Second&& second) noexcept -> bool {
+        return tag_invoke(tag, std::forward<First>(first), as<First>(std::forward<Second>(second)));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
-        requires(meta::IsFloatingPoint<First> and meta::IsFloatingPoint<Second>)
+    template<meta::arg::PlainTypeTo<meta::IsIntegral> First, meta::arg::PlainTypeTo<meta::IsIntegral> Second>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, const First& first, Second second) noexcept -> bool {
-        const auto second_ = as<First>(second);
+    constexpr auto tag_invoke(is_fn<Equal>, First&& first, Second&& second) noexcept -> bool {
+        using First_  = meta::ToPlainType<First>;
+        using Second_ = meta::ToPlainType<Second>;
 
-        const auto diff = std::abs(first - second_);
-        const auto a    = std::abs(first);
-        const auto b    = std::abs(second_);
-        const auto ab   = (a > b) ? b : a;
-        return diff <= (ab * std::numeric_limits<First>::epsilon());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
-        requires(meta::IsFloatingPoint<First> and meta::IsFloatingPoint<Second>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, const First& first, const Second& second) noexcept -> bool {
-        const auto second_ = as<First>(second);
-
-        const auto diff = std::abs(first - second_);
-        const auto a    = std::abs(first);
-        const auto b    = std::abs(second_);
-        const auto ab   = (a > b) ? b : a;
-        return diff <= (ab * std::numeric_limits<First>::epsilon());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
-        requires(meta::IsFloatingPoint<First> and meta::IsIntegral<Second>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, First first, Second second) noexcept -> bool {
-        const auto second_ = as<First>(second);
-
-        const auto diff = std::abs(first - second_);
-        const auto a    = std::abs(first);
-        const auto b    = std::abs(second_);
-        const auto ab   = (a > b) ? b : a;
-        return diff <= (ab * std::numeric_limits<First>::epsilon());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
-        requires(meta::IsFloatingPoint<First> and meta::IsIntegral<Second>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, First first, const Second& second) noexcept -> bool {
-        const auto second_ = as<First>(second);
-
-        const auto diff = std::abs(first - second_);
-        const auto a    = std::abs(first);
-        const auto b    = std::abs(second_);
-        const auto ab   = (a > b) ? b : a;
-        return diff <= (ab * std::numeric_limits<First>::epsilon());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
-        requires(meta::IsFloatingPoint<First> and meta::IsIntegral<Second>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, const First& first, Second second) noexcept -> bool {
-        const auto second_ = as<First>(second);
-
-        const auto diff = std::abs(first - second_);
-        const auto a    = std::abs(first);
-        const auto b    = std::abs(second_);
-        const auto ab   = (a > b) ? b : a;
-        return diff <= (ab * std::numeric_limits<First>::epsilon());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
-        requires(meta::IsFloatingPoint<First> and meta::IsIntegral<Second>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, const First& first, const Second& second) noexcept -> bool {
-        const auto second_ = as<First>(second);
-
-        const auto diff = std::abs(first - second_);
-        const auto a    = std::abs(first);
-        const auto b    = std::abs(second_);
-        const auto ab   = (a > b) ? b : a;
-        return diff <= (ab * std::numeric_limits<First>::epsilon());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::ShouldPassByValue First, meta::ShouldPassByValue Second>
-        requires(meta::IsIntegral<First> and meta::IsIntegral<Second>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, First first, Second second) noexcept -> bool {
-        if constexpr (meta::IsNarrowing<First, Second>) {
-            using SafeT        = meta::SafeNarrowHelperType<First, Second>;
+        if constexpr (meta::IsNarrowing<First_, Second_>) {
+            using SafeT        = meta::SafeNarrowHelperType<First_, Second_>;
             const auto _first  = as<SafeT>(first);
             const auto _second = as<SafeT>(second);
             return _first == _second;
@@ -738,68 +527,13 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::ShouldPassByValue First, meta::Not<meta::ShouldPassByValue> Second>
-        requires(meta::IsIntegral<First> and meta::IsIntegral<Second>)
+    template<meta::IsArithmetic To, meta::arg::PlainTypeTo<meta::IsArithmetic> From>
+        requires(not meta::PlainTypeTo<meta::SameAs, To, From>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, First first, const Second& second) noexcept -> bool {
-        if constexpr (meta::IsNarrowing<First, Second>) {
-            using SafeT        = meta::SafeNarrowHelperType<First, Second>;
-            const auto _first  = as<SafeT>(first);
-            const auto _second = as<SafeT>(second);
-            return _first == _second;
-        } else
-            return first == second;
-    }
+    constexpr auto tag_invoke(as_fn<To>, From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> To {
+        using From_ = meta::ToPlainType<From>;
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::Not<meta::ShouldPassByValue> First, meta::ShouldPassByValue Second>
-        requires(meta::IsIntegral<First> and meta::IsIntegral<Second>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, const First& first, Second second) noexcept -> bool {
-        if constexpr (meta::IsNarrowing<First, Second>) {
-            using SafeT        = meta::SafeNarrowHelperType<First, Second>;
-            const auto _first  = as<SafeT>(first);
-            const auto _second = as<SafeT>(second);
-            return _first == _second;
-        } else
-            return first == second;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::Not<meta::ShouldPassByValue> First, meta::Not<meta::ShouldPassByValue> Second>
-        requires(meta::IsIntegral<First> and meta::IsIntegral<Second>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(is_fn<Equal>, const First& first, const Second& second) noexcept -> bool {
-        if constexpr (meta::IsNarrowing<First, Second>) {
-            using SafeT        = meta::SafeNarrowHelperType<First, Second>;
-            const auto _first  = as<SafeT>(first);
-            const auto _second = as<SafeT>(second);
-            return _first == _second;
-        } else
-            return first == second;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsArithmetic To, meta::IsArithmetic From>
-        requires(meta::ShouldPassByValue<From> and not meta::SameAs<To, From>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(as_fn<To>, From value, [[maybe_unused]] const std::source_location& location) noexcept -> To {
-        if constexpr (meta::IsNarrowing<To, From>) expects(details::is_safe_narrowing<To>(value), NARROWING_ERROR_MSG, location);
-
-        return static_cast<To>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsArithmetic To, meta::IsArithmetic From>
-        requires(not meta::ShouldPassByValue<From> and not meta::SameAs<To, From>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(as_fn<To>, const From& value, [[maybe_unused]] const std::source_location& location) noexcept
-      -> To {
-        if constexpr (meta::IsNarrowing<To, From>) expects(details::is_safe_narrowing<To>(value), NARROWING_ERROR_MSG, location);
+        if constexpr (meta::IsNarrowing<To, From_>) expects(details::is_safe_narrowing<To>(value), NARROWING_ERROR_MSG, location);
 
         return static_cast<To>(value);
     }
@@ -809,26 +543,15 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////////////////////////////////
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsArithmetic From>
-        requires(meta::ShouldPassByValue<From>)
+    template<meta::arg::PlainTypeTo<meta::IsArithmetic> From>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(as_fn<byte>, From value, const std::source_location& location) noexcept -> byte {
-        if constexpr (meta::IsNarrowing<byte, From>)
+    constexpr auto tag_invoke(as_fn<byte>, From&& value, const std::source_location& location) noexcept -> byte {
+        using From_ = meta::ToPlainType<From>;
+
+        if constexpr (meta::IsNarrowing<byte, From_>)
             expects(details::is_safe_narrowing<byte>(value), NARROWING_ERROR_MSG, location);
 
-        return static_cast<byte>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsArithmetic From>
-        requires(not meta::ShouldPassByValue<From>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(as_fn<byte>, const From& value, const std::source_location& location) noexcept -> byte {
-        if constexpr (meta::IsNarrowing<byte, From>)
-            expects(details::is_safe_narrowing<byte>(value), NARROWING_ERROR_MSG, location);
-
-        return static_cast<byte>(value);
+        return static_cast<byte>(std::forward<From>(value));
     }
 
     /////////////////////////////////////
@@ -841,23 +564,12 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsEnumeration From>
-        requires(meta::ShouldPassByValue<From>)
+    template<meta::arg::PlainTypeTo<meta::IsEnumeration> From>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(as_fn<byte>, From value, const std::source_location& location) noexcept -> byte {
-        if constexpr (meta::IsNarrowing<byte, From>)
-            expects(details::is_safe_narrowing<byte>(value), NARROWING_ERROR_MSG, location);
+    constexpr auto tag_invoke(as_fn<byte>, From&& value, const std::source_location& location) noexcept -> byte {
+        using From_ = meta::ToPlainType<From>;
 
-        return static_cast<byte>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsEnumeration From>
-        requires(not meta::ShouldPassByValue<From>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(as_fn<byte>, const From& value, const std::source_location& location) noexcept -> byte {
-        if constexpr (meta::IsNarrowing<byte, From>)
+        if constexpr (meta::IsNarrowing<byte, From_>)
             expects(details::is_safe_narrowing<byte>(value), NARROWING_ERROR_MSG, location);
 
         return static_cast<byte>(value);
@@ -876,69 +588,36 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////////////////////////////////
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsArithmetic To, meta::IsEnumeration From>
-        requires(meta::ShouldPassByValue<From>)
+    template<meta::IsArithmetic To, meta::arg::PlainTypeTo<meta::IsEnumeration> From>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(as_fn<To>, From value, [[maybe_unused]] const std::source_location& location) noexcept -> To {
-        if constexpr (meta::IsNarrowing<To, From>) expects(details::is_safe_narrowing<To>(value), NARROWING_ERROR_MSG, location);
+    constexpr auto tag_invoke(as_fn<To>, From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> To {
+        using From_ = meta::ToPlainType<From>;
 
-        return static_cast<To>(value);
+        if constexpr (meta::IsNarrowing<To, From_>) expects(details::is_safe_narrowing<To>(value), NARROWING_ERROR_MSG, location);
+
+        return static_cast<To>(std::forward<From>(value));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsArithmetic To, meta::IsEnumeration From>
-        requires(not meta::ShouldPassByValue<From>)
+    template<meta::arg::PlainTypeTo<meta::IsEnumeration> From>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(as_fn<To>, const From& value, [[maybe_unused]] const std::source_location& location) noexcept
-      -> To {
-        if constexpr (meta::IsNarrowing<To, From>) expects(details::is_safe_narrowing<To>(value), NARROWING_ERROR_MSG, location);
-
-        return static_cast<To>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsEnumeration From>
-        requires(meta::ShouldPassByValue<From>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(as_fn<Underlying>, From value, [[maybe_unused]] const std::source_location&) noexcept
+    constexpr auto tag_invoke(as_fn<Underlying>, From&& value, const std::source_location&) noexcept
       -> std::underlying_type_t<From> {
-        return std::to_underlying(value);
+        return std::to_underlying(std::forward<From>(value));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsEnumeration From>
-        requires(not meta::ShouldPassByValue<From>)
+    template<meta::IsEnumeration To, meta::arg::PlainTypeTo<meta::IsArithmetic> From>
     STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
-    constexpr auto tag_invoke(as_fn<Underlying>, const From& value, [[maybe_unused]] const std::source_location&) noexcept
-      -> std::underlying_type_t<From> {
-        return std::to_underlying(value);
-    }
+    constexpr auto tag_invoke(as_fn<To>, From&& value, const std::source_location& location) noexcept -> To {
+        using From_ = meta::ToPlainType<From>;
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsEnumeration To, meta::IsArithmetic From>
-        requires(meta::ShouldPassByValue<From>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<To>, From value, const std::source_location& location) noexcept -> To {
-        if constexpr (meta::IsNarrowing<std::underlying_type_t<To>, From>)
+        if constexpr (meta::IsNarrowing<std::underlying_type_t<To>, From_>)
             expects(details::is_safe_narrowing<std::underlying_type_t<To>>(value), NARROWING_ERROR_MSG, location);
 
-        return static_cast<To>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsEnumeration To, meta::IsArithmetic From>
-        requires(not meta::ShouldPassByValue<From>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<To>, const From& value, const std::source_location& location) noexcept -> To {
-        if constexpr (meta::IsNarrowing<std::underlying_type_t<To>, From>)
-            expects(details::is_safe_narrowing<std::underlying_type_t<To>>(value), NARROWING_ERROR_MSG, location);
-
-        return static_cast<To>(value);
+        return static_cast<To>(std::forward<From>(value));
     }
 
     ////////////////////////////////////////////////////////////////////

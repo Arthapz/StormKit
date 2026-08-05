@@ -10,18 +10,18 @@ module;
 
 #include <stormkit/core/contract_macro.hpp>
 
-export module stormkit.core:containers.dag;
+export module stormkit.core.containers.dag;
 
 import std;
 
-import :typesafe.integer;
-import :typesafe.byte;
-import :typesafe.safecasts;
-import :utils.handle;
-import :utils.contract;
-import :utils.std23_functional;
-import :utils.filesystem;
-import :string.format;
+import stormkit.core.typesafe;
+import stormkit.core.handle;
+import stormkit.core.contract;
+import stormkit.core.function_ref;
+import stormkit.core.filesystem;
+import stormkit.core.string;
+import stormkit.core.types;
+import stormkit.core.meta;
 
 namespace stdr  = std::ranges;
 namespace stdfs = std::filesystem;

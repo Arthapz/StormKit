@@ -6,13 +6,17 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:math.combinatoric;
+export module stormkit.core.math.combinatoric;
 
 import std;
 
-import :typesafe.integer;
-import :math.arithmetic;
-import :meta;
+import stormkit.core.types;
+import stormkit.core.typesafe;
+import stormkit.core.meta;
+
+import stormkit.core.math.arithmetic;
+
+namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core { namespace math {
     template<stormkit::core::meta::IsArithmetic T>

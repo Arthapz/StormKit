@@ -7,12 +7,12 @@ module;
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:parallelism.threadutils;
+export module stormkit.core.parallelism.threadutils;
 
 import std;
 
-import :meta;
-import :string.aliases;
+import stormkit.core.types;
+import stormkit.core.meta;
 
 export namespace stormkit { inline namespace core {
     STORMKIT_CORE_API

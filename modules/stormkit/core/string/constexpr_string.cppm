@@ -6,13 +6,12 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:string.constexpr_string;
+export module stormkit.core.string.constexpr_string;
 
 import std;
 
-import :containers.aliases;
-import :string.aliases;
-import :typesafe.integer;
+import stormkit.core.types;
+import stormkit.core.typesafe.safecasts;
 
 namespace stdr = std::ranges;
 
@@ -37,10 +36,10 @@ export namespace stormkit { inline namespace core { namespace meta {
 
         constexpr auto update_size() noexcept -> void;
 
-        static constexpr auto STATIC_SIZE = N - 1u;
+        static constexpr auto STATIC_SIZE = as<usize>(N - 1u);
 
-        array<char, N> data   = {};
-        usize          m_size = 0;
+        std::array<char, N> data   = {};
+        usize               m_size = 0;
     };
 }}} // namespace stormkit::core::meta
 
@@ -71,7 +70,7 @@ namespace stormkit { inline namespace core { namespace meta {
     template<usize N>
         STORMKIT_FORCE_INLINE
     constexpr auto ConstexprString<N>::end(this auto& self) noexcept -> decltype(auto) {
-        return stdr::begin(self.data) + static_cast<std::ptrdiff_t>(self.size());
+        return stdr::begin(self.data) + unchecked_narrow<std::ptrdiff_t>(self.size());
     }
 
     /////////////////////////////////////

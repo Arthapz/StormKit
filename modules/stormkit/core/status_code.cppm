@@ -7,7 +7,7 @@ module;
 
 #include <format>
 
-export module stormkit.core:status_code;
+export module stormkit.core.status_code;
 
 // clang-format off
 export SYSTEM_ERROR2_NAMESPACE_BEGIN

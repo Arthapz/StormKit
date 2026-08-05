@@ -2,8 +2,8 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.core:functional;
+export module stormkit.core.functional;
 
-export import :functional.error_handling;
-export import :functional.monadic;
-export import :functional.utils;
+export import stormkit.core.functional.error_handling;
+export import stormkit.core.functional.monadic;
+export import stormkit.core.functional.utils;

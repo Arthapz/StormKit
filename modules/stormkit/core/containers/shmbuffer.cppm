@@ -9,24 +9,29 @@ module;
 #include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:containers.shmbuffer;
+export module stormkit.core.containers.shmbuffer;
 
 import std;
 
-import :typesafe.flags;
-import :typesafe.integer;
-import :typesafe.byte;
-import :functional.monadic;
-import :utils.contract;
-import :named_constructors;
-import :utils.filesystem;
+import stormkit.core.typesafe;
+import stormkit.core.functional;
+import stormkit.core.contract;
+import stormkit.core.types;
+import stormkit.core.heap;
+import stormkit.core.meta.concepts;
+import stormkit.core.meta.type_manipulation;
+import stormkit.core.filesystem;
+import stormkit.core.private_tag;
+
+namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core {
-    class STORMKIT_CORE_API SHMBuffer final: public NamedConstructor<SHMBuffer, DoInitArgs<usize, string, io::Access>> {
-        using Base = NamedConstructor<SHMBuffer, DoInitArgs<usize, string, io::Access>>;
+    class STORMKIT_CORE_API SHMBuffer final {
+        using private_tag = private_tag<SHMBuffer>;
 
       public:
         using ValueType = byte;
+
         template<typename T>
         using ExpectedType = std::expected<T, std::error_code>;
 
@@ -37,7 +42,7 @@ export namespace stormkit { inline namespace core {
         static auto allocate(usize size, string name, io::Access access = io::Access::READ | io::Access::WRITE) noexcept
           -> ExpectedType<heap_ptr<SHMBuffer>>;
 
-        explicit SHMBuffer(PrivateTag) noexcept;
+        explicit SHMBuffer(private_tag) noexcept;
         ~SHMBuffer();
 
         SHMBuffer(const SHMBuffer&)                    = delete;
@@ -67,11 +72,8 @@ export namespace stormkit { inline namespace core {
         auto name() const noexcept -> string_view;
         auto access() const noexcept -> io::Access;
 
-        auto do_init(PrivateTag, usize, string, io::Access) noexcept -> ExpectedType<void>;
-
       private:
-        using Base::allocate;
-        using Base::create;
+        auto do_init(usize, string, io::Access) noexcept -> ExpectedType<void>;
 
         io::Access            m_access;
         void*                 m_handle = nullptr;
@@ -86,20 +88,24 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto SHMBuffer::create(usize size, string name, io::Access access) noexcept -> ExpectedType<SHMBuffer> {
-        return Base::create(size, std::move(name), access);
+        auto out = SHMBuffer { PRIVATE<SHMBuffer> };
+        out.do_init(size, std::move(name), access);
+        return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto SHMBuffer::allocate(usize size, string name, io::Access access) noexcept -> ExpectedType<heap_ptr<SHMBuffer>> {
-        return Base::allocate(size, std::move(name), access);
+        auto out = allocate_unsafe<SHMBuffer>(PRIVATE<SHMBuffer>);
+        out->do_init(size, std::move(name), access);
+        return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline SHMBuffer::SHMBuffer(PrivateTag) noexcept {
+    inline SHMBuffer::SHMBuffer(private_tag) noexcept {
     }
 
     /////////////////////////////////////

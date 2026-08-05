@@ -9,13 +9,16 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:string.encodings;
+#if defined(STORMKIT_OS_WINDOWS)
+    #include <stormkit/core/platform/windows.hpp>
+#endif
+
+export module stormkit.core.string.encodings;
 
 import std;
 
-import :typesafe.safecasts;
-import :typesafe.integer;
-import :typesafe.byte;
+import stormkit.core.types;
+import stormkit.core.typesafe;
 
 export namespace stormkit { inline namespace core {
     auto ascii_to_utf16(string_view) -> u16string;
@@ -82,22 +85,19 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     inline auto ascii_to_wide(string_view input) -> wstring {
         [[maybe_unused]]
-        auto state  = std::mbstate_t {};
         auto output = wstring {};
+#if defined(STORMKIT_OS_WINDOWS)
+        auto count = MultiByteToWideChar(CP_ACP, 0, stdr::data(input), stdr::size(input), nullptr, 0);
+        output.resize(count);
+
+        MultiByteToWideChar(CP_UTF8, 0, stdr::data(input), stdr::size(input), stdr::data(output), stdr::size(output));
+#else
+        auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
 
-        [[maybe_unused]]
-        auto len = 0ull;
-        [[maybe_unused]]
+        auto len      = 0ull;
         auto input_it = stdr::data(input);
-        [[maybe_unused]]
-        auto i = 0;
-#if defined(STORMKIT_COMPILER_MSVC)
-        while ((len = std::mbrtoc16(std::bit_cast<char16_t*>(stdr::data(output)) + i++, input_it, MB_CUR_MAX, &state)) > 0u)
-            input_it += len;
-#elif defined(STORMKIT_COMPILER_CLANG)
-        output = std::bit_cast<wchar_t*>(stdr::data(input));
-#else
+        auto i        = 0;
         while ((len = std::mbrtoc8(std::bit_cast<char8_t*>(stdr::data(output)) + i++, input_it, MB_CUR_MAX, &state)) > 0ull)
             input_it += len;
 #endif
@@ -109,20 +109,24 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     inline auto wide_to_ascii(wstring_view input) -> string {
         [[maybe_unused]]
-        auto state = std::mbstate_t {};
-        [[maybe_unused]]
         auto output = string {};
+#if defined(STORMKIT_OS_WINDOWS)
+        auto count = WideCharToMultiByte(CP_ACP, 0, stdr::data(input), stdr::size(input), nullptr, 0, nullptr, nullptr);
+        output.resize(count);
+
+        WideCharToMultiByte(CP_UTF8,
+                            0,
+                            stdr::data(input),
+                            stdr::size(input),
+                            stdr::data(output),
+                            stdr::size(output),
+                            nullptr,
+                            nullptr);
+#else
         output.resize(stdr::size(input));
 
-        // #if defined(STORMKIT_COMPILER_MSVC)
         for (const auto& c : input) [[maybe_unused]]
-            auto _ =
-#if defined(STORMKIT_OS_WINDOWS)
-              std::c16rtomb(stdr::data(output), narrow<char16_t>(c), &state);
-// #elif defined(STORMKIT_COMPILER_CLANG)
-//         output = std::bit_cast<char*>(stdr::data(input));
-#else
-              std::c8rtomb(stdr::data(output), narrow<char>(c), &state);
+            auto _ = std::c8rtomb(stdr::data(output), unchecked_narrow<char>(c), &state);
 #endif
 
         return output;
@@ -133,11 +137,11 @@ namespace stormkit { inline namespace core {
     inline auto ascii_to_utf8(string_view input) -> u8string {
         [[maybe_unused]]
         auto output = u8string {};
-        output.resize(stdr::size(input) * narrow<usize>(MB_LEN_MAX));
+        output.resize(stdr::size(input) * unchecked_narrow<usize>(MB_LEN_MAX));
 
 #if defined(STORMKIT_COMPILER_MSVC)
-        auto bytes = as_mutable_bytes(output);
-        stdr::copy(as_bytes(input), stdr::begin(bytes));
+        auto bytes = as<Bytes>(output);
+        stdr::copy(as<Bytes>(input), stdr::begin(bytes));
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<char8_t*>(stdr::data(input));
 #else
@@ -162,8 +166,8 @@ namespace stormkit { inline namespace core {
         output.resize(stdr::size(input));
 
 #if defined(STORMKIT_COMPILER_MSVC)
-        auto bytes = as_mutable_bytes(output);
-        stdr::copy(as_bytes(input), stdr::begin(bytes));
+        auto bytes = as<Bytes>(output);
+        stdr::copy(as<Bytes>(input), stdr::begin(bytes));
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<char*>(stdr::data(input));
 #else

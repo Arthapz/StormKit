@@ -6,14 +6,14 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:functional.error_handling;
+export module stormkit.core.functional.error_handling;
 
 import std;
 
-import :meta;
-
-import :console;
-import :utils.contract;
+import stormkit.core.meta;
+import stormkit.core.types;
+import stormkit.core.console;
+import stormkit.core.contract;
 
 export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]

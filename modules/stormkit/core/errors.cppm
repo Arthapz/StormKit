@@ -4,29 +4,20 @@
 
 module;
 
-#include <stormkit/core/platform_macro.hpp>
-
 #include <stormkit/core/contract_macro.hpp>
-
-// #include <status-code/error.hpp>
-// #include <status-code/status_code.hpp>
-// #include <status-code/std_error_code.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 #ifdef STORMKIT_OS_WINDOWS
     #include <stormkit/core/platform/windows.hpp>
 #endif
 
-export module stormkit.core:errors;
+export module stormkit.core.errors;
 
 import std;
 
-import :utils.contract;
-
-import :string.aliases;
-import :containers.aliases;
-export import :status_code;
-import :typesafe.integer;
-import :string.format;
+export import stormkit.core.status_code;
+import stormkit.core.types;
+import stormkit.core.typesafe.safecasts;
 
 export {
     namespace stormkit { inline namespace core {
@@ -81,19 +72,19 @@ export {
             }
         };
 #endif
-        using Error = system_error2::system_code;
+        using System_code = system_error2::system_code;
 
         namespace error {
 #ifdef STORMKIT_OS_WINDOWS
-            auto from_win32() noexcept -> Error;
-            auto from_ntstatus() noexcept -> Error;
+            auto from_win32() noexcept -> System_code;
+            auto from_ntstatus() noexcept -> System_code;
 #endif
-            auto from_errno() noexcept -> Error;
-            auto from_stderrc(std::errc code) noexcept -> Error;
+            auto from_errno() noexcept -> System_code;
+            auto from_stderrc(std::errc code) noexcept -> System_code;
         } // namespace error
 
         template<typename T>
-        using Result = Expected<T, Error>;
+        using System_result = Expected<T, System_code>;
     }} // namespace stormkit::core
 }
 
@@ -110,14 +101,14 @@ namespace stormkit { inline namespace core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto from_win32() noexcept -> Error {
+        inline auto from_win32() noexcept -> System_code {
             return system_error2::win32_code { GetLastError() };
         }
 
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto from_ntstatus(long status) noexcept -> Error {
+        inline auto from_ntstatus(long status) noexcept -> System_code {
             return system_error2::nt_code { status };
         }
 #endif
@@ -125,15 +116,15 @@ namespace stormkit { inline namespace core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto from_errno() noexcept -> Error {
+        inline auto from_errno() noexcept -> System_code {
             return system_error2::posix_code { errno };
         }
 
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto from_stderrc(std::errc code) noexcept -> Error {
-            return Error { system_error2::posix_code { static_cast<i32>(code) } };
+        inline auto from_stderrc(std::errc code) noexcept -> System_code {
+            return system_error2::posix_code { unchecked_narrow<i32>(code) };
         }
     } // namespace error
 

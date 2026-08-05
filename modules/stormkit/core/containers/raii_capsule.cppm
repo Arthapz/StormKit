@@ -6,14 +6,12 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:containers.raii_capsule;
+export module stormkit.core.containers.raii_capsule;
 
 import std;
 
-import :meta;
-
-import :utils.tags;
-import :functional.monadic;
+import stormkit.core.meta;
+import stormkit.core.functional;
 
 export namespace stormkit { inline namespace core {
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE = T {}>

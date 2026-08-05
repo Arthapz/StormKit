@@ -89,6 +89,6 @@ namespace stormkit::wsi::common {
     constexpr auto as_index(Key key) noexcept -> usize {
         EXPECTS(key != Key::UNKNOWN);
 
-        return narrow<usize>(key);
+        return unchecked_narrow<usize>(key);
     }
 } // namespace stormkit::wsi::common

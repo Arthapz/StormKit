@@ -8,12 +8,12 @@ module;
 
 #include <stormkit/core/contract_macro.hpp>
 
-export module stormkit.core:utils.pimpl;
+export module stormkit.core.pimpl;
 
 import std;
 
-import :meta;
-import :utils.contract;
+import stormkit.core.meta;
+import stormkit.core.contract;
 
 export namespace stormkit { inline namespace core {
     template<class T, bool Defer = false>

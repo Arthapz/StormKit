@@ -12,12 +12,18 @@ module;
     #define STD_STACKTRACE_SUPPORTED
 #endif
 
-module stormkit.core;
+module stormkit.core.stacktrace;
 
 import std;
 
-import :console;
-import :string.operations;
+import stormkit.core.console;
+import stormkit.core.string;
+import stormkit.core.types;
+import stormkit.core.parallelism.threadutils;
+
+namespace stdr = std::ranges;
+
+using namespace std::literals;
 
 namespace stormkit { inline namespace core {
     auto prettify(string_view str) -> string {
@@ -65,7 +71,7 @@ namespace stormkit { inline namespace core {
     #ifdef STORMKIT_COMPILER_MSSTL
             const auto frame_str        = std::to_string(frame);
             auto       splitted         = split(frame_str, "+");
-            const auto address          = from_string<u64>(splitted[1].substr(2), 16)
+            const auto address          = as<u64>(splitted[1].substr(2), 16)
                                             .transform_error([stderr, &splitted](auto&& err) noexcept {
                                        std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
                                        return 0;
@@ -82,7 +88,7 @@ namespace stormkit { inline namespace core {
             // clang-format on
             const auto frame_str = std::to_string(frame);
             const auto splitted  = split(frame_str, ": ");
-            const auto address   = from_string<u64>(splitted[0].substr(2), 16)
+            const auto address   = as<u64>(splitted[0].substr(2), 16)
                                      .transform_error([stderr, &splitted](auto&& err) noexcept {
                                        std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
                                        return 0;

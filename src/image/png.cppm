@@ -52,7 +52,7 @@ namespace stormkit::image::details {
         static auto read_func(png_struct* ps, png_byte* d, png_size_t length) noexcept -> void {
             auto& param = *std::bit_cast<ReadParam*>(png_get_io_ptr(ps));
 
-            auto _d   = as_mutable_bytes(d, length);
+            auto _d   = as<Bytes>(d, length);
             auto data = param.data.subspan(param.readed, length);
 
             stdr::copy(data, stdr::begin(_d));
@@ -65,7 +65,7 @@ namespace stormkit::image::details {
         static auto write_func(png_struct* ps, png_byte* d, png_size_t length) -> void {
             auto& param = *std::bit_cast<WriteParam*>(png_get_io_ptr(ps));
 
-            auto _d = as_bytes(d, length);
+            auto _d = as<Bytes>(d, length);
             param.data.reserve(std::size(param.data) + length);
 
             stdr::copy(_d, std::back_inserter(param.data));

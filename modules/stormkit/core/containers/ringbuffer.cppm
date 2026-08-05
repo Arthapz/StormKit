@@ -8,14 +8,14 @@ module;
 
 #include <stormkit/core/contract_macro.hpp>
 
-export module stormkit.core:containers.ringbuffer;
+export module stormkit.core.containers.ringbuffer;
 
 import std;
 
-import :utils.contract;
-import :typesafe.integer;
-import :typesafe.byte;
-import :meta;
+import stormkit.core.types;
+import stormkit.core.typesafe;
+import stormkit.core.meta;
+import stormkit.core.contract;
 
 export namespace stormkit { inline namespace core {
     template<class T>
@@ -74,7 +74,7 @@ export namespace stormkit { inline namespace core {
         ExtentType m_capacity = 0;
         ExtentType m_count    = 0;
 
-        byte_dynarray m_buffer;
+        dynarray<byte> m_buffer;
 
         ExtentType m_write = 0;
         ExtentType m_read  = 0;
@@ -140,7 +140,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T>
     RingBuffer<T>::RingBuffer(RingBuffer&& moved) noexcept {
-        m_buffer = std::exchange(moved.m_buffer, byte_dynarray {});
+        m_buffer = std::exchange(moved.m_buffer, dynarray<byte> {});
 
         m_capacity = std::exchange(moved.m_capacity, 0);
         m_count    = std::exchange(moved.m_count, 0);
@@ -154,7 +154,7 @@ namespace stormkit { inline namespace core {
     auto RingBuffer<T>::operator=(RingBuffer&& moved) noexcept -> RingBuffer& {
         if (&moved == this) return *this;
 
-        m_buffer = std::exchange(moved.m_buffer, byte_dynarray {});
+        m_buffer = std::exchange(moved.m_buffer, dynarray<byte> {});
 
         m_capacity = std::exchange(moved.m_capacity, 0);
         m_count    = std::exchange(moved.m_count, 0);

@@ -2,8 +2,8 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.core:parallelism;
+export module stormkit.core.parallelism;
 
-export import :parallelism.locked;
-export import :parallelism.threadpool;
-export import :parallelism.threadutils;
+export import stormkit.core.parallelism.locked;
+export import stormkit.core.parallelism.threadpool;
+export import stormkit.core.parallelism.threadutils;

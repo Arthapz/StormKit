@@ -8,13 +8,12 @@ module;
 #include <stormkit/core/format_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:utils.allocation;
+export module stormkit.core.heap;
 
 import std;
 
-import :meta;
-import :typesafe.safecasts;
-import :typesafe.integer;
+import stormkit.core.meta;
+import stormkit.core.types;
 
 export namespace stormkit { inline namespace core {
     struct MemoryAllocationError {

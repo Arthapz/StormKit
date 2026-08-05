@@ -3,11 +3,9 @@ module;
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:utils.stracktrace;
+export module stormkit.core.stacktrace;
 
 import std;
-
-import :parallelism.threadutils;
 
 export namespace stormkit { inline namespace core {
     STORMKIT_CORE_API

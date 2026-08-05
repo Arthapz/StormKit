@@ -6,11 +6,11 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:meta.algorithms;
+export module stormkit.core.meta.algorithms;
 
 import std;
 
-import :meta.concepts;
+import stormkit.core.meta.concepts;
 
 namespace stormkit { inline namespace core { namespace meta::details {
     template<class T>
@@ -53,6 +53,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
     constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept -> std::size_t;
+
+    template<typename T, template<typename...> class Variant, typename... Ts>
+    constexpr auto variant_contains_type(const Variant<Ts...>) noexcept -> bool;
 
 #if defined(__cpp_pack_indexing) and __cpp_pack_indexing >= 202311L
     template<std::size_t At, typename... Args>
@@ -97,5 +100,15 @@ namespace stormkit { inline namespace core { namespace meta {
     STORMKIT_FORCE_INLINE
     constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept -> std::size_t {
         return variant_type_find_if_impl<Ts...>(std::forward<Predicate>(predicate));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, template<typename...> class Variant, typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto variant_contains_type(const Variant<Ts...>&) noexcept -> bool {
+        if constexpr (meta::IsAnyOf<T, Ts...>) return true;
+        else
+            return false;
     }
 }}} // namespace stormkit::core::meta

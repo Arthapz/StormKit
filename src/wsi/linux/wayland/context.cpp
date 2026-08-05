@@ -197,7 +197,7 @@ namespace stormkit::wsi::linux::wayland::wl {
             auto cursor_size = 16;
 
             const auto size_str = std::getenv("XCURSOR_SIZE");
-            if (size_str) cursor_size = *from_string<i32>(size_str, 10);
+            if (size_str) cursor_size = *as<i32>(size_str, 10);
 
             const auto theme = std::getenv("XCURSOR_THEME");
 

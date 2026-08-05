@@ -313,7 +313,7 @@ namespace stormkit::entities {
 
         auto _component = add_raw_component(entity,
                                             component.type(),
-                                            as_bytes(std::forward<T>(component)),
+                                            as<Bytes>(std::forward<T>(component)),
                                             [](auto ptr) static noexcept { std::launder(std::bit_cast<PureT*>(ptr))->~PureT(); });
 
         return bytes_mut_as<PureT>(_component);

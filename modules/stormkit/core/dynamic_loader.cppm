@@ -9,12 +9,12 @@ module;
 #include <stormkit/core/memory_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:utils.dynamic_loader;
+export module stormkit.core.dynamic_loader;
 
 import std;
 
-import :utils.contract;
-import :utils.pimpl;
+import stormkit.core.contract;
+import stormkit.core.types;
 
 export namespace stormkit { inline namespace core {
     class STORMKIT_CORE_API DynamicLoader {

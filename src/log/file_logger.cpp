@@ -64,7 +64,7 @@ namespace stormkit::log {
         static constexpr auto LOG_LINE_MODULE = "[{}, {}, {}] {}\n"sv;
 
         auto       final_string = string {};
-        const auto severity_str = replace(as_string(severity), "Severity::", "");
+        const auto severity_str = replace(as<string_view>(severity), "Severity::", "");
         if (std::empty(m.name)) final_string = std::format(LOG_LINE, severity_str, time, str);
         else
             final_string = std::format(LOG_LINE_MODULE, severity_str, time, m.name, str);

@@ -6,21 +6,11 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-#ifdef STORMKIT_COMPILER_MSVC
-    #include <__msvc_int128.hpp>
-#endif
-
-export module stormkit.core:meta.concepts;
+export module stormkit.core.meta.concepts;
 
 import std;
 
-#if defined(STORMKIT_COMPILER_MSVC)
-using int128  = std::_Signed128;
-using uint128 = std::_Unsigned128;
-#else
-__extension__ using int128  = __int128;
-__extension__ using uint128 = unsigned __int128;
-#endif
+import stormkit.core.types;
 
 namespace stormkit { inline namespace core { namespace meta::details {
     template<class T>
@@ -64,9 +54,6 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<class T, class U>
     concept IsNot = not Is<T, U>;
-
-    // template<typename T, template<typename> concept C>
-    // concept Not = not C<T>;
 
     // template<typename T, template<typename> concept... C>
     // concept AllOf = (C<T> and ...);
@@ -286,10 +273,10 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename T>
     concept IsIntegral = (std::integral<T> and not SameAs<T, bool> and not Isbyte<T>)
-                         or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
-                         or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<unsigned long long, unsigned long long>>>
-                         or Is<T, int128>
-                         or Is<T, uint128>;
+                         or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<longlong, longlong>>>
+                         or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<ulonglong, ulonglong>>>
+                         or Is<T, i128>
+                         or Is<T, u128>;
 
     template<typename T>
     concept IsIntegralOrEnumeration = IsIntegral<T> or IsEnumeration<T>;
@@ -365,10 +352,10 @@ export namespace stormkit { inline namespace core { namespace meta {
     };
 
     template<typename T>
-    concept IsUnsigned = std::is_unsigned_v<T> or Is<T, uint128>;
+    concept IsUnsigned = std::is_unsigned_v<T> or Is<T, u128>;
 
     template<typename T>
-    concept IsSigned = std::is_signed_v<T> or Is<T, int128>;
+    concept IsSigned = std::is_signed_v<T> or Is<T, i128>;
 
     template<typename T, typename U>
     concept IsSameSigneness = (IsSigned<T> and IsSigned<U>) or (IsUnsigned<T> and IsUnsigned<U>);
@@ -388,7 +375,8 @@ export namespace stormkit { inline namespace core { namespace meta {
                           or (IsEnumeration<From>
                               and IsIntegral<To>
                               and (sizeof(From) > sizeof(To) or IsSignNarrowing<std::underlying_type_t<From>, From>))
-                          or (IsPointer<From> and Is<To, bool>);
+                          or (IsPointer<From> and Is<To, bool>)
+                          or (IsArithmetic<From> and SameAs<To, byte>);
 
     template<typename To, typename From>
     concept IsUnsafePointerConvertion = IsPointer<To> and IsPointer<From> and not requires(To to, From from) { to = from; };
@@ -450,4 +438,36 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename T, typename U>
     concept IsAssignable = std::is_assignable_v<T, U>;
+
+    template<typename T>
+    concept IsTriviallyCopyable = std::is_trivially_copyable_v<T>;
+
+    template<typename T>
+    concept ShouldPassByValue = sizeof(T) <= (sizeof(void*) * 2) and IsTriviallyCopyable<T>;
+
+    template<typename T>
+    concept ShouldPassByRef = not ShouldPassByValue<T>;
+
+    template<template<typename> typename TypeModifier, template<typename...> concept C, typename... Ts>
+    concept Apply = C<TypeModifier<Ts>...>;
+
+    template<template<typename...> concept C, typename... Ts>
+    concept PlainTypeTo = Apply<std::remove_cvref_t, C, Ts...>;
+
+    template<template<typename...> concept C, typename... Ts>
+    concept Not = not C<Ts...>;
+
+    namespace arg {
+        template<typename First, template<typename...> concept C, typename... Ts>
+        concept PlainTypeTo = meta::PlainTypeTo<C, First, Ts...>;
+
+        template<typename First, template<typename...> concept C, typename... Ts>
+        concept Not = meta::Not<C, First, Ts...>;
+
+        template<typename T>
+        concept ShouldPassByValue = meta::PlainTypeTo<meta::ShouldPassByValue, T>;
+
+        template<typename T>
+        concept ShouldPassByRef = meta::PlainTypeTo<meta::ShouldPassByRef, T>;
+    } // namespace arg
 }}} // namespace stormkit::core::meta

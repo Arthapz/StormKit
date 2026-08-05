@@ -2,12 +2,13 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.core:utils.algorithms;
+export module stormkit.core.ranges.algorithms;
 
 import std;
 
-import :meta;
-import :containers.aliases;
+import stormkit.core.meta;
+import stormkit.core.containers;
+import stormkit.core.types;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -21,13 +22,13 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto transform(Range&& input, Lambda&& lambda) noexcept -> decltype(auto);
 
-    template<stdr::input_range                                                       Range,
+    template<stdr::input_range                                                    Range,
              meta::IsUnaryPredicate<typename meta::CanonicalT<Range>::value_type> Predicate,
              std::invocable<const typename meta::CanonicalT<Range>::value_type&>  Lambda>
     [[nodiscard]]
     constexpr auto transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept -> decltype(auto);
 
-    template<stdr::input_range                                                                                          Range,
+    template<stdr::input_range                                                                                       Range,
              meta::IsUnaryPredicate<typename meta::CanonicalT<Range>::value_type>                                    Predicate,
              std::invocable<const typename meta::CanonicalT<Range>::value_type&>                                     Lambda,
              std::output_iterator<std::invoke_result_t<Lambda, const typename meta::CanonicalT<Range>::value_type&>> Iterator>
@@ -59,7 +60,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stdr::input_range                                                       Range,
+    template<stdr::input_range                                                    Range,
              meta::IsUnaryPredicate<typename meta::CanonicalT<Range>::value_type> Predicate,
              std::invocable<const typename meta::CanonicalT<Range>::value_type&>  Lambda>
     constexpr auto transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept -> decltype(auto) {
@@ -71,7 +72,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stdr::input_range                                                                                          Range,
+    template<stdr::input_range                                                                                       Range,
              meta::IsUnaryPredicate<typename meta::CanonicalT<Range>::value_type>                                    Predicate,
              std::invocable<const typename meta::CanonicalT<Range>::value_type&>                                     Lambda,
              std::output_iterator<std::invoke_result_t<Lambda, const typename meta::CanonicalT<Range>::value_type&>> Iterator>

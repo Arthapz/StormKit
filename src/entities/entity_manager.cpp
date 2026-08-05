@@ -76,7 +76,7 @@ namespace stormkit::entities {
     auto EntityManager::has_entity(Entity entity) const noexcept -> bool {
         EXPECTS(entity != INVALID_ENTITY);
 
-        return stdr::any_of(entities(), monadic::is_equal(entity)) or stdr::any_of(m_added_entities, monadic::is_equal(entity));
+        return stdr::any_of(entities(), monadic::is(entity)) or stdr::any_of(m_added_entities, monadic::is(entity));
     }
 
     /////////////////////////////////////
@@ -118,7 +118,7 @@ namespace stormkit::entities {
 
         auto& [_, size, entities, _, _] = *it;
 
-        return stdr::any_of(entities, monadic::is_equal(entity));
+        return stdr::any_of(entities, monadic::is(entity));
     }
 
     /////////////////////////////////////
@@ -149,7 +149,7 @@ namespace stormkit::entities {
 
                     remove_from_systems(entity);
 
-                    if (not stdr::any_of(m_added_entities, monadic::is_equal(entity))) m_free_entities.emplace_back(entity);
+                    if (not stdr::any_of(m_added_entities, monadic::is(entity))) m_free_entities.emplace_back(entity);
                 }
                 m_removed_entities.clear();
             }

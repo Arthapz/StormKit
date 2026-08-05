@@ -38,8 +38,9 @@ export {
             RESIZEABLE       = 0b100,
             EXTERNAL_CONTEXT = 0b1000,
         };
-        constexpr auto as_string(WindowFlag button) noexcept -> string_view;
-        constexpr auto to_string(WindowFlag button) noexcept -> string;
+
+        [[nodiscard]]
+        constexpr auto tag_invoke(as_fn<string_view>, WindowFlag value, const std::source_location&) noexcept -> string_view;
 
         enum class EventType : u8 {
             NONE = 0,

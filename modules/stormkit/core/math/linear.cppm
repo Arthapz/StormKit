@@ -7,17 +7,19 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:math.linear;
+export module stormkit.core.math.linear;
 
 import std;
 
-import :math.arithmetic;
+import stormkit.core.meta;
+import stormkit.core.typesafe;
+import stormkit.core.functional;
+import stormkit.core.types;
+import stormkit.core.contract;
 
-import :utils.contract;
+import stormkit.core.math.arithmetic;
 
-import :meta;
-import :typesafe;
-import :functional;
+namespace stdr = std::ranges;
 
 // TODO improve template deduction
 export namespace stormkit { inline namespace core { namespace math {
@@ -185,9 +187,9 @@ export namespace stormkit { inline namespace core { namespace math {
 
     template<typename T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
-    constexpr auto look_at(VectorSpan<T, 3>       eye,
-                           VectorSpan<T, 3>       center,
-                           VectorSpan<T, 3>       up,
+    constexpr auto look_at(VectorSpan<const T, 3> eye,
+                           VectorSpan<const T, 3> center,
+                           VectorSpan<const T, 3> up,
                            SquareMatrixSpan<T, 4> out) noexcept -> void;
 }}} // namespace stormkit::core::math
 
@@ -345,7 +347,7 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(a.data_handle() != out.data_handle());
         const auto sum = init_by<T>([&a](auto& out) noexcept {
             for (auto i = 0u; i < N; ++i) out += (a[i] * a[i]);
-            out = narrow<T>(std::sqrt(out));
+            out = unchecked_narrow<T>(std::sqrt(out));
         });
 
         for (auto i = 0u; i < N; ++i) out[i] = a[i] / sum;
@@ -398,7 +400,7 @@ namespace stormkit { inline namespace core { namespace math {
                     }
                 });
 
-                out[i, j] = narrow<T>(std::pow(-1, i + j)) * determinant(as_mdspan<N, N>(submatrix));
+                out[i, j] = unchecked_narrow<T>(std::pow(-1, i + j)) * determinant(as_mdspan<N, N>(submatrix));
             }
     }
 
@@ -435,7 +437,7 @@ namespace stormkit { inline namespace core { namespace math {
 
                 const auto det = determinant(as_mdspan<N, N>(submatrix));
 
-                result += mat[i, j] * narrow<T>(std::pow(-1, i + j)) * det;
+                result += mat[i, j] * unchecked_narrow<T>(std::pow(-1, i + j)) * det;
             }
             return result;
         }
@@ -607,8 +609,8 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(axis.data_handle() != out.data_handle());
 
-        const auto cos = narrow<T>(std::cos(angle.get()));
-        const auto sin = narrow<T>(std::sin(angle.get()));
+        const auto cos = unchecked_narrow<T>(std::cos(angle.get()));
+        const auto sin = unchecked_narrow<T>(std::sin(angle.get()));
 
         const auto axis_norm = [&axis] noexcept {
             auto axis_norm = vec3data<T> {};
@@ -667,8 +669,8 @@ namespace stormkit { inline namespace core { namespace math {
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto orthographique(T left, T right, T bottom, T top, SquareMatrixSpan<T, 4> out) noexcept -> void {
-        constexpr auto far  = core::as<T>(100);
-        constexpr auto near = core::narrow<T>(0.1);
+        static constexpr auto far  = core::as<T>(100);
+        static constexpr auto near = core::unchecked_narrow<T>(0.1);
 
         return orthographique(left, right, bottom, top, near, far, out);
     }
@@ -679,10 +681,10 @@ namespace stormkit { inline namespace core { namespace math {
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto perspective(angle::radian<T> fov_y, T aspect, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void {
-        EXPECTS(not is_equal(aspect, T { 0 }));
-        EXPECTS(not is_equal(near, far));
+        EXPECTS(not is(aspect, T { 0 }));
+        EXPECTS(not is(near, far));
 
-        const auto half_fov_y = narrow<T>(std::tan(fov_y.get() / T { 2 }));
+        const auto half_fov_y = unchecked_narrow<T>(std::tan(fov_y.get() / T { 2 }));
 
         stdr::fill(as_span_mut(out), T { 0 });
         out[0, 0] = T { 1 } / (aspect * half_fov_y);
@@ -697,10 +699,10 @@ namespace stormkit { inline namespace core { namespace math {
     template<typename T>
         requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto look_at(const VectorSpan<const T, 3>& eye,
-                           const VectorSpan<const T, 3>& center,
-                           const VectorSpan<const T, 3>& up,
-                           SquareMatrixSpan<T, 4>        out) noexcept -> void {
+    constexpr auto look_at(VectorSpan<const T, 3> eye,
+                           VectorSpan<const T, 3> center,
+                           VectorSpan<const T, 3> up,
+                           SquareMatrixSpan<T, 4> out) noexcept -> void {
         EXPECTS(eye.data_handle() != out.data_handle());
         EXPECTS(center.data_handle() != out.data_handle());
         EXPECTS(up.data_handle() != out.data_handle());

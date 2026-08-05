@@ -6,14 +6,15 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:math.extent;
+export module stormkit.core.math.extent;
 
 import std;
 
-import :utils.contract;
-import :meta;
-import :hash;
-import :typesafe;
+import stormkit.core.contract;
+import stormkit.core.meta;
+import stormkit.core.hash;
+import stormkit.core.types;
+import stormkit.core.typesafe;
 
 using namespace stormkit;
 using namespace std::literals;
@@ -129,16 +130,14 @@ export {
         /// `factor`
         template<meta::IsExtent Extent>
         [[nodiscard]]
-        constexpr auto operator*(Extent&& extent, typename Extent::ElemenType factor) noexcept
-          -> core::meta::CanonicalT<Extent>;
+        constexpr auto operator*(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalT<Extent>;
 
         /// @brief Divide an extent with a factor.
         /// @param factor ValueType factor to divide
         /// @returns A newly constructed extent equal to this extent Divided with `factor`
         template<meta::IsExtent Extent>
         [[nodiscard]]
-        constexpr auto operator/(Extent&& extent, typename Extent::ElemenType factor) noexcept
-          -> core::meta::CanonicalT<Extent>;
+        constexpr auto operator/(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalT<Extent>;
 
         /// @brief Multiply this extent with a factor.
         /// @param factor ValueType factor to multiply

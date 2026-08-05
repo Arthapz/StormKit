@@ -9,17 +9,17 @@ module;
 #include <stormkit/core/memory_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:containers.tree;
+export module stormkit.core.containers.tree;
 
 import std;
 
-import :typesafe.integer;
-import :typesafe.byte;
-import :typesafe.safecasts;
-import :utils.handle;
-import :utils.contract;
-import :utils.std23_functional;
-import :utils.filesystem;
+import stormkit.core.typesafe;
+import stormkit.core.handle;
+import stormkit.core.contract;
+import stormkit.core.function_ref;
+import stormkit.core.filesystem;
+import stormkit.core.types;
+import stormkit.core.errors;
 
 namespace stdr  = std::ranges;
 namespace stdfs = std::filesystem;
@@ -110,11 +110,11 @@ export namespace stormkit { inline namespace core {
         auto dirties() const noexcept -> array_view<const TreeNodeIndexType>;
 
         auto gen_dot_file(stdfs::path filepath, std23::function_ref<string_view(string_view)> colorize_node) const noexcept
-          -> Result<usize>;
+          -> System_result<usize>;
 
         auto gen_dot_file(stdfs::path                                   filepath,
                           core::u32                                     highlight,
-                          std23::function_ref<string_view(string_view)> colorize_node) const noexcept -> Result<usize>;
+                          std23::function_ref<string_view(string_view)> colorize_node) const noexcept -> System_result<usize>;
 
       private:
         TreeNodeIndexType           m_first_free_index = 0;
@@ -442,7 +442,7 @@ namespace stormkit { inline namespace core {
     template<class TreeNodeClass>
     auto Tree<TreeNodeClass>::gen_dot_file(stdfs::path                                   filepath,
                                            std23::function_ref<string_view(string_view)> colorize_node) const noexcept
-      -> Result<usize> {
+      -> System_result<usize> {
         using namespace stormkit::literals;
         auto out = string {};
         out.reserve(1_kb);
@@ -484,7 +484,7 @@ namespace stormkit { inline namespace core {
     auto Tree<TreeNodeClass>::gen_dot_file(stdfs::path                                   filepath,
                                            core::u32                                     highlight,
                                            std23::function_ref<string_view(string_view)> colorize_node) const noexcept
-      -> Result<usize> {
+      -> System_result<usize> {
         using namespace stormkit::literals;
         auto out = string {};
         out.reserve(1_kb);

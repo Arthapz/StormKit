@@ -2,10 +2,11 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.core:string;
+export module stormkit.core.string;
 
-export import :string.constexpr_string;
-export import :string.encodings;
-export import :string.format;
-export import :string.operations;
-export import :string.aliases;
+export import stormkit.core.string.constexpr_string;
+export import stormkit.core.string.algorithms;
+export import stormkit.core.string.safecasts;
+export import stormkit.core.string.format;
+export import stormkit.core.string.algorithms;
+export import stormkit.core.string.hash;

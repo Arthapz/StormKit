@@ -2,12 +2,12 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.core:meta.type_manipulation;
+export module stormkit.core.meta.type_manipulation;
 
 import std;
 
-import :meta.concepts;
-import :meta.algorithms;
+import stormkit.core.meta.concepts;
+import stormkit.core.meta.algorithms;
 
 namespace stormkit { inline namespace core { namespace meta {
     export {
@@ -89,5 +89,11 @@ namespace stormkit { inline namespace core { namespace meta {
 
         template<typename T, typename U>
         using ForwardLike = ForwardRefTo<T, ForwardConst<T, U>>;
+
+        template<typename T>
+        using In = If<ShouldPassByValue<T>, T, const T&>;
+
+        template<typename T>
+        using Take = If<ShouldPassByValue<T>, T, T&&>;
     }
 }}} // namespace stormkit::core::meta

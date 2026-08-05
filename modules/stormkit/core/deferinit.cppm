@@ -6,13 +6,13 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:utils.deferinit;
+export module stormkit.core.deferinit;
 
 import std;
 
-import :meta;
-
-import :utils.contract;
+import stormkit.core.meta;
+import stormkit.core.contract;
+import stormkit.core.types;
 
 export namespace stormkit { inline namespace core {
     template<typename T>

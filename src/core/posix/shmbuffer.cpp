@@ -12,9 +12,7 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-module stormkit.core;
-
-import :containers.shmbuffer;
+module stormkit.core.containers;
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
@@ -30,8 +28,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SHMBuffer::do_init(PrivateTag, usize size, string name, io::Access access) noexcept
-      -> std::expected<void, std::error_code> {
+    auto SHMBuffer::do_init(usize size, string name, io::Access access) noexcept -> std::expected<void, std::error_code> {
         m_size                = size;
         m_name                = std::move(name);
         m_access              = access;
@@ -48,7 +45,7 @@ namespace stormkit { inline namespace core {
             return std::unexpected {
                 std::error_code { as<i32>(errno), std::system_category() }
             };
-        const auto fd = narrow<i32>(std::bit_cast<iptr>(m_handle));
+        const auto fd = unchecked_narrow<i32>(std::bit_cast<iptr>(m_handle));
 
         const auto ret = ftruncate(fd, as<off_t>(m_size));
         if (ret < 0)

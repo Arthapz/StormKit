@@ -5,17 +5,16 @@
 module;
 
 #include <stormkit/core/memory_macro.hpp>
-
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:utils.handle;
+export module stormkit.core.handle;
 
 import std;
 
-import :hash;
-import :typesafe.safecasts;
-import :typesafe.integer;
-import :meta;
+import stormkit.core.meta;
+import stormkit.core.hash;
+import stormkit.core.types;
+import stormkit.core.typesafe.safecasts;
 
 export namespace stormkit { inline namespace core {
     template<class T, meta::IsIntegral _ID>

@@ -22,8 +22,8 @@ namespace stormkit::lua::wsi {
     ////////////////////////////////////////
     auto bind_core(sol::state& global_state, sol::table& metatable) noexcept -> void {
         metatable["window_manager"] = global_state.create_table_with(
-          sol::meta_function::to_string,
-          +[](WM wm) { return to_string(wm); },
+          sol::meta_function::as<string>,
+          +[](WM wm) { return as<string>(wm); },
           "WIN32",
           WM::WIN32,
           "WAYLAND",

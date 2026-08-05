@@ -6,12 +6,13 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:functional.utils;
+export module stormkit.core.functional.utils;
 
 import std;
 
-import :meta;
-import :typesafe.ref;
+import stormkit.core.meta;
+import stormkit.core.types;
+import stormkit.core.typesafe;
 
 namespace stormkit { inline namespace core { namespace details {
     struct EitherFunc {

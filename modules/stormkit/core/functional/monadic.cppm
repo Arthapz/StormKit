@@ -6,17 +6,17 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:functional.monadic;
+export module stormkit.core.functional.monadic;
 
 import std;
 
-import :meta;
+import stormkit.core.meta;
+import stormkit.core.types;
+import stormkit.core.typesafe;
+import stormkit.core.functional.utils;
+import stormkit.core.containers.utils;
 
-import :containers.utils;
-import :typesafe.safecasts;
-import :functional.utils;
-import :typesafe.ref;
-import :typesafe.byte;
+namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core { namespace monadic {
     struct Anything {
@@ -39,17 +39,17 @@ export namespace stormkit { inline namespace core { namespace monadic {
     constexpr auto as(const std::source_location& location = std::source_location::current()) noexcept -> decltype(auto);
     template<typename T>
     [[nodiscard]]
-    constexpr auto narrow() noexcept -> decltype(auto);
+    constexpr auto unchecked_narrow() noexcept -> decltype(auto);
     [[nodiscard]]
     constexpr auto discard() noexcept -> decltype(auto);
     [[nodiscard]]
     constexpr auto set(auto& output) noexcept -> decltype(auto);
     [[nodiscard]]
-    constexpr auto emplace_to(std::ranges::range auto& container) noexcept -> decltype(auto);
+    constexpr auto emplace_to(stdr::range auto& container) noexcept -> decltype(auto);
     [[nodiscard]]
     constexpr auto is_equal(auto&& value) noexcept -> decltype(auto);
     [[nodiscard]]
-    constexpr auto append_to(std::ranges::range auto& range) noexcept -> decltype(auto);
+    constexpr auto append_to(stdr::range auto& range) noexcept -> decltype(auto);
     [[nodiscard]]
     constexpr auto wrap(auto&& func) noexcept -> decltype(auto);
     template<auto Func>
@@ -63,8 +63,6 @@ export namespace stormkit { inline namespace core { namespace monadic {
     constexpr auto as_byte() noexcept -> decltype(auto);
     [[nodiscard]]
     constexpr auto as_bytes() noexcept -> decltype(auto);
-    [[nodiscard]]
-    constexpr auto as_bytes(Force) noexcept -> decltype(auto);
     [[nodiscard]]
     constexpr auto as_view() noexcept -> decltype(auto);
     // template<typename... Args>
@@ -97,7 +95,7 @@ export namespace stormkit { inline namespace core { namespace monadic {
     constexpr auto get() noexcept -> decltype(auto);
 
     [[nodiscard]]
-    constexpr auto is_equal() noexcept -> decltype(auto);
+    constexpr auto is() noexcept -> decltype(auto);
 
     template<typename T>
     [[nodiscard]]
@@ -179,8 +177,10 @@ namespace stormkit { inline namespace core { namespace monadic {
     template<typename T>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto narrow() noexcept -> decltype(auto) {
-        return []<typename U>(U&& value) static noexcept -> decltype(auto) { return core::narrow<T>(std::forward<U>(value)); };
+    constexpr auto unchecked_narrow() noexcept -> decltype(auto) {
+        return []<typename U>(U&& value) static noexcept -> decltype(auto) {
+            return core::unchecked_narrow<T>(std::forward<U>(value));
+        };
     }
 
     ////////////////////////////////////////
@@ -188,15 +188,15 @@ namespace stormkit { inline namespace core { namespace monadic {
     template<typename T>
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
-    constexpr auto is_equal(T&& value) noexcept -> decltype(auto) {
-        return [value = std::forward<T>(value)]<typename U>(U&& other) { return core::is_equal(value, std::forward<U>(other)); };
+    constexpr auto is(T&& value) noexcept -> decltype(auto) {
+        return [value = std::forward<T>(value)]<typename U>(U&& other) { return core::is(value, std::forward<U>(other)); };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto append_to(std::ranges::range auto& range) noexcept -> decltype(auto) {
-        return [&range]<typename T>(T&& val) noexcept { range.emplace(std::ranges::cend(range), std::forward<T>(val)); };
+    constexpr auto append_to(stdr::range auto& range) noexcept -> decltype(auto) {
+        return [&range]<typename T>(T&& val) noexcept { range.emplace(stdr::cend(range), std::forward<T>(val)); };
     }
 
     ////////////////////////////////////////
@@ -252,13 +252,6 @@ namespace stormkit { inline namespace core { namespace monadic {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_bytes(Force) noexcept -> decltype(auto) {
-        return [](const auto& val) static noexcept { return core::as_bytes(val, Force {}); };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto as_view() noexcept -> decltype(auto) {
         return []<typename T>(T& val) static noexcept { return core::as_view(val); };
     }
@@ -307,7 +300,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto emplace_to(std::ranges::range auto& container) noexcept -> decltype(auto) {
+    constexpr auto emplace_to(stdr::range auto& container) noexcept -> decltype(auto) {
         return [&container]<typename T>(T&& value) noexcept -> void { container.emplace_back(std::forward<T>(value)); };
     }
 
@@ -365,9 +358,9 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_equal() noexcept -> decltype(auto) {
+    constexpr auto is() noexcept -> decltype(auto) {
         return []<typename T, typename U>(T&& first, U&& second) static noexcept -> decltype(auto) {
-            return core::is_equal(std::forward<T>(first), std::forward<U>(second));
+            return core::is(std::forward<T>(first), std::forward<U>(second));
         };
     }
 

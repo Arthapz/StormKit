@@ -5,10 +5,9 @@ module;
 
 #include <csignal>
 
-module stormkit.core;
+module stormkit.core.stacktrace;
 
 import std;
-import :utils.stracktrace;
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////

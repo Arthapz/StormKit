@@ -4,18 +4,17 @@
 
 module;
 
-#include <stormkit/core/format_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:string.format;
+export module stormkit.core.string.format;
 
 import std;
 
-import :meta;
-import :typesafe.integer;
-import :typesafe.byte;
-import :typesafe.safecasts;
-import :utils.time;
-import :string.operations;
+import stormkit.core.meta;
+import stormkit.core.types;
+import stormkit.core.typesafe.safecasts;
+
+// import stormkit.core.string.algorithms;
 
 export {
     namespace stormkit { inline namespace core {
@@ -41,7 +40,7 @@ export {
         constexpr auto format_as(fsecond, auto& ctx) noexcept -> decltype(ctx.out());
     }} // namespace stormkit::core
 
-    constexpr auto format_as(byte, auto& ctx) noexcept -> decltype(ctx.out());
+    constexpr auto format_as(stormkit::byte, auto& ctx) noexcept -> decltype(ctx.out());
 
     template<stormkit::meta::HasFormatAs T, typename CharT>
     struct std::formatter<T, CharT> {
@@ -108,9 +107,9 @@ export {
 /////////////////////////////////////
 /////////////////////////////////////
 STORMKIT_FORCE_INLINE
-constexpr auto format_as(byte value, auto& ctx) noexcept -> decltype(ctx.out()) {
+constexpr auto format_as(stormkit::byte value, auto& ctx) noexcept -> decltype(ctx.out()) {
     auto&& out = ctx.out();
-    return std::format_to(out, "{:#x}", narrow<u8>(value));
+    return std::format_to(out, "{:#x}", unchecked_narrow<stormkit::u8>(value));
 }
 
 namespace stormkit { inline namespace core {

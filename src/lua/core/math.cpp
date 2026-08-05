@@ -80,8 +80,8 @@ namespace stormkit::lua::core {
         auto _bind_extent(string_view name, auto& parent, auto... values) {
             auto metatable = parent.template new_usertype<T>(name, sol::constructors<T(), Constructors...> {});
 
-            metatable[sol::meta_function::to_string] = &math::to_string<T>;
-            metatable[sol::meta_function::equal_to]  = +[](const T& first, const T& second) static noexcept {
+            metatable[sol::meta_function::as<string>] = &math::as<string><T>;
+            metatable[sol::meta_function::is]  = +[](const T& first, const T& second) static noexcept {
                 return first == second;
             };
 
@@ -101,8 +101,8 @@ namespace stormkit::lua::core {
         auto _bind_vector(string_view name, auto& parent, auto... values) {
             auto metatable = parent.template new_usertype<T>(name, sol::constructors<T(), Constructors...> {});
 
-            metatable[sol::meta_function::to_string] = +[](const T& value) static noexcept { return to_string(value); };
-            // metatable[sol::meta_function::equal_to]  = +[](const T& first, const T& second) static noexcept {
+            metatable[sol::meta_function::as<string>] = +[](const T& value) static noexcept { return as<string>(value); };
+            // metatable[sol::meta_function::is]  = +[](const T& first, const T& second) static noexcept {
             //     return first == second;
             // };
 
@@ -123,13 +123,13 @@ namespace stormkit::lua::core {
             metatable[sol::meta_function::index] = +[](T* value, usize index) static noexcept {
                 return array_view<typename T::value_type> { &((*value)[index, 0u]), T::EXTENTS[1] };
             };
-            metatable[sol::meta_function::to_string] = +[](const T& value) static noexcept { return math::to_string(value); };
+            metatable[sol::meta_function::as<string>] = +[](const T& value) static noexcept { return math::as<string>(value); };
 
             if constexpr (T::EXTENTS[0] == T::EXTENTS[1]) {
                 auto identity  = parent["identity"].template get_or_create<sol::table>();
                 identity[name] = T::identity();
             }
-            // metatable[sol::meta_function::equal_to]  = +[](const T& first, const T& second) static noexcept {
+            // metatable[sol::meta_function::is]  = +[](const T& first, const T& second) static noexcept {
             //     return first == second;
             // };
         }

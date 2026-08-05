@@ -19,8 +19,8 @@ namespace stormkit::lua::core {
         template<typename T, typename... Constructors>
         auto _bind_color(string_view name, auto& parent, auto... values) {
             auto metatable = parent.template new_usertype<T>(name, sol::constructors<T(), Constructors...> {});
-            metatable[sol::meta_function::to_string] = &stormkit::to_string<T::LAYOUT, typename T::Storage>;
-            metatable[sol::meta_function::equal_to]  = &T::operator==;
+            metatable[sol::meta_function::as<string>] = &stormkit::as<string><T::LAYOUT, typename T::Storage>;
+            metatable[sol::meta_function::is]  = &T::operator==;
 
             metatable["component_count"] = sol::var(std::cref(T::COMPONENTS_COUNT));
             metatable["layout"]          = sol::var(std::cref(T::LAYOUT));
@@ -57,8 +57,8 @@ namespace stormkit::lua::core {
     ////////////////////////////////////////
     auto bind_color(sol::state& global_state) noexcept -> void {
         global_state["color_layout"] = global_state.create_table_with(
-          sol::meta_function::to_string,
-          +[](ColorLayout layout) static noexcept { return to_string(layout); },
+          sol::meta_function::as<string>,
+          +[](ColorLayout layout) static noexcept { return as<string>(layout); },
           "R",
           ColorLayout::R,
           "RG",

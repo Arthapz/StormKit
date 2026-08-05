@@ -6,13 +6,13 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:utils.random;
+export module stormkit.core.random;
 
 import std;
 
-import :typesafe;
-
-import :meta;
+import stormkit.core.typesafe;
+import stormkit.core.meta;
+import stormkit.core.types;
 
 export namespace stormkit { inline namespace core {
     auto seed(u32 seed) noexcept -> void;
@@ -33,9 +33,8 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
     inline auto random_generator() noexcept -> std::default_random_engine& {
-        static auto generator = std::default_random_engine {};
+        thread_local auto generator = std::default_random_engine {};
         return generator;
     }
 

@@ -7,23 +7,19 @@ module;
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:math.linear.matrix;
+export module stormkit.core.math.linear.matrix;
 
 import std;
 
-import :meta;
+import stormkit.core.meta;
+import stormkit.core.types;
+import stormkit.core.typesafe;
+import stormkit.core.hash;
+import stormkit.core.string;
+import stormkit.core.ranges;
 
-import :typesafe.integer;
-import :typesafe.floating_point;
-
-import :math.linear;
-import :math.linear.vector;
-
-import :hash.base;
-
-import :string.format;
-
-import :utils.numeric_range;
+import stormkit.core.math.linear;
+import stormkit.core.math.linear.vector;
 
 export {
     namespace stormkit { inline namespace core { namespace math {
@@ -504,8 +500,8 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
     constexpr auto rotate(const mat4x4<T>& mat, angle::radian<T> angle, const vec3<T>& axis) noexcept -> mat4x4<T> {
         auto out = auto(mat);
 
-        const auto cos = narrow<T>(std::cos(angle.get()));
-        const auto sin = narrow<T>(std::sin(angle.get()));
+        const auto cos = unchecked_narrow<T>(std::cos(angle.get()));
+        const auto sin = unchecked_narrow<T>(std::sin(angle.get()));
 
         const auto axis_norm = normalize(axis);
         const auto temp      = mul(axis_norm, T { 1 } - cos);
@@ -649,11 +645,11 @@ namespace stormkit { inline namespace core { namespace math { inline namespace m
         auto max_digit = 0u;
         if constexpr (stormkit::meta::IsSigned<typename T::ValueType>)
             for (auto v : as_view(mat)) {
-                max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
+                max_digit = std::max(max_digit, unchecked_narrow<i64>(v) == 0 ? 2 : unchecked_narrow<u32>(std::log10(v) + 2));
                 if (v < 0) max_digit = max_digit + 1;
             }
         else
-            for (auto v : as_view(mat)) max_digit = std::max(max_digit, narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
+            for (auto v : as_view(mat)) max_digit = std::max(max_digit, unchecked_narrow<i64>(v) == 0 ? 2 : unchecked_narrow<u32>(std::log10(v) + 2));
 
         format_to(out, "[mat ");
 

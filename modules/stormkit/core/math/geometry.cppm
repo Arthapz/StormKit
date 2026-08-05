@@ -6,16 +6,19 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:math.geometry;
+export module stormkit.core.math.geometry;
 
 import std;
 
-import :meta;
-import :typesafe;
+import stormkit.core.meta;
+import stormkit.core.typesafe.safecasts;
+import stormkit.core.typesafe.checked_value;
+import stormkit.core.types;
+import stormkit.core.hash;
 
-import :math.arithmetic;
-import :math.extent;
-import :math.linear.vector;
+import stormkit.core.math.arithmetic;
+import stormkit.core.math.extent;
+import stormkit.core.math.linear.vector;
 
 export namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T>

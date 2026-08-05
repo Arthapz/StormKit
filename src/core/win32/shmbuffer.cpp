@@ -8,9 +8,7 @@ module;
 
 #include <WinNT.h>
 
-module stormkit.core;
-
-import :containers.shmbuffer;
+module stormkit.core.containers.shmbuffer;
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
@@ -26,8 +24,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SHMBuffer::do_init(PrivateTag, usize size, string name, io::Access access) noexcept
-      -> std::expected<void, std::error_code> {
+    auto SHMBuffer::do_init(usize size, string name, io::Access access) noexcept -> std::expected<void, std::error_code> {
         m_size                 = size;
         m_name                 = std::move(name);
         m_access               = access;

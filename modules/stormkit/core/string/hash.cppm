@@ -6,17 +6,15 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:hash.string;
-
-import :hash.base;
-
-import :string.aliases;
-import :typesafe.integer;
-import :typesafe.safecasts;
+export module stormkit.core.string.hash;
 
 import std;
 import ankerl.unordered_dense;
 import frozen;
+
+import stormkit.core.types;
+import stormkit.core.hash;
+import stormkit.core.typesafe.safecasts;
 
 export namespace stormkit { inline namespace core {
     struct StringHash {

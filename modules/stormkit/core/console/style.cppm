@@ -7,17 +7,15 @@ module;
 #include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:console.style;
+export module stormkit.core.console.style;
 
 import std;
 import frozen;
 
-import :typesafe.boolean;
-
-import :string.aliases;
-import :typesafe.flags;
-
-import :meta;
+import stormkit.core.types;
+import stormkit.core.string;
+import stormkit.core.meta;
+import stormkit.core.typesafe.flags;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -135,7 +133,7 @@ export {
     }} // namespace stormkit::core
 
     template<>
-    inline constexpr auto stormkit::meta::FLAG_TRAIT<stormkit::StyleModifier> = true;
+    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::StyleModifier> = true;
 
     template<typename T, class CharT>
     struct std::formatter<stormkit::core::Stylized<T>, CharT>: formatter<stormkit::meta::CanonicalT<T>, CharT> {

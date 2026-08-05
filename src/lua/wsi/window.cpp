@@ -50,8 +50,8 @@ namespace stormkit::lua::wsi {
     ////////////////////////////////////////
     auto bind_window(sol::state& global_state, sol::table& metatable) noexcept -> void {
         metatable["window_flag"] = global_state.create_table_with(
-          sol::meta_function::to_string,
-          +[](WindowFlag flags) { return to_string(flags); },
+          sol::meta_function::as<string>,
+          +[](WindowFlag flags) { return as<string>(flags); },
           "DEFAULT",
           WindowFlag::DEFAULT,
           "BORDERLESS",
@@ -61,8 +61,8 @@ namespace stormkit::lua::wsi {
           "EXTERNAL_CONTEXT",
           WindowFlag::EXTERNAL_CONTEXT);
         metatable["event_type"] = global_state.create_table_with(
-          sol::meta_function::to_string,
-          +[](EventType type) { return to_string(type); },
+          sol::meta_function::as<string>,
+          +[](EventType type) { return as<string>(type); },
           "NONE",
           EventType::NONE,
           "CLOSED",

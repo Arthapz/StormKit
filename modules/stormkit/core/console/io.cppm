@@ -8,7 +8,7 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:console.io;
+export module stormkit.core.console.io;
 
 import std;
 

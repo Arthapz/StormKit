@@ -8,12 +8,13 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:containers.utils;
+export module stormkit.core.containers.utils;
 
 import std;
 
-import :meta;
-import :typesafe.byte;
+import stormkit.core.meta;
+import stormkit.core.types;
+import stormkit.core.typesafe;
 
 namespace stdr = std::ranges;
 
@@ -72,9 +73,6 @@ export namespace stormkit { inline namespace core {
 
     template<stdr::contiguous_range T>
     constexpr auto as_view(T& range) noexcept -> array_view<meta::ForwardConst<T, stdr::range_value_t<T>>>;
-
-    template<stdr::contiguous_range T>
-    constexpr auto as_view(T& range, Force) noexcept -> array_view<meta::ForwardConst<T, stdr::range_value_t<T>>>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -223,14 +221,6 @@ namespace stormkit { inline namespace core {
     template<stdr::contiguous_range T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto as_view(T& range) noexcept -> array_view<meta::ForwardConst<T, stdr::range_value_t<T>>> {
-        return { range };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<stdr::contiguous_range T>
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto as_view(T& range, Force) noexcept -> array_view<meta::ForwardConst<T, stdr::range_value_t<T>>> {
         return { range };
     }
 }} // namespace stormkit::core

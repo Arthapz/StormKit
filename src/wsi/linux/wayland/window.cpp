@@ -613,11 +613,11 @@ namespace stormkit::wsi::linux::wayland {
                        .transform_error(monadic::assert());
 
             m_shm_pool = wl::ShmPool::create(globals.shm,
-                                             narrow<i32>(std::bit_cast<uptr>(m_shm_buffer->native_handle())),
-                                             narrow<i32>(size));
+                                             unchecked_narrow<i32>(std::bit_cast<uptr>(m_shm_buffer->native_handle())),
+                                             unchecked_narrow<i32>(size));
 
             m_pixel_buffer = wl::Buffer::
-              take(wl_shm_pool_create_buffer(m_shm_pool, 0, width, height, narrow<i32>(stride), WL_SHM_FORMAT_XRGB8888));
+              take(wl_shm_pool_create_buffer(m_shm_pool, 0, width, height, unchecked_narrow<i32>(stride), WL_SHM_FORMAT_XRGB8888));
 
             wl_buffer_add_listener(m_pixel_buffer, &wl::g_buffer_listener, &m_pixel_buffer);
         }

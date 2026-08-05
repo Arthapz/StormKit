@@ -6,15 +6,14 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:utils.numeric_range;
+export module stormkit.core.ranges.numeric_range;
 
 import std;
 
-import :meta;
-
-import :typesafe;
-
-import :coroutines;
+import stormkit.core.meta;
+import stormkit.core.typesafe;
+import stormkit.core.coroutines;
+import stormkit.core.types;
 
 export namespace stormkit { inline namespace core {
     template<meta::IsArithmetic T>
@@ -200,7 +199,7 @@ namespace stormkit { inline namespace core {
             }
 
             constexpr auto operator+(std::size_t index) noexcept -> decltype(auto) {
-                auto cpy = clone(*this);
+                auto cpy = auto { *this };
                 for (auto i = 0u; i < index; ++i) ++cpy;
                 return cpy;
             }
@@ -211,7 +210,7 @@ namespace stormkit { inline namespace core {
             }
 
             constexpr auto operator++(int) noexcept -> decltype(auto) {
-                auto old = clone(*this);
+                auto old = auto { *this };
                 m_val += m_step;
                 return old;
             }
@@ -222,7 +221,7 @@ namespace stormkit { inline namespace core {
             }
 
             constexpr auto operator--(int) noexcept -> decltype(auto) {
-                auto old = clone(*this);
+                auto old = auto { *this };
                 m_val -= m_step;
                 return old;
             }

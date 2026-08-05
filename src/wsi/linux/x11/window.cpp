@@ -156,8 +156,8 @@ namespace stormkit::wsi::linux::x11 {
                                                           screen->root,
                                                           0,
                                                           0,
-                                                          narrow<u16>(width),
-                                                          narrow<u16>(height),
+                                                          unchecked_narrow<u16>(width),
+                                                          unchecked_narrow<u16>(height),
                                                           1,
                                                           XCB_WINDOW_CLASS_INPUT_OUTPUT,
                                                           screen->root_visual,
@@ -648,8 +648,8 @@ namespace stormkit::wsi::linux::x11 {
             case XCB_MOTION_NOTIFY: {
                 auto mouse_event = std::bit_cast<xcb_motion_notify_event_t*>(xevent);
 
-                const auto x = narrow<u32>(mouse_event->event_x);
-                const auto y = narrow<u32>(mouse_event->event_y);
+                const auto x = unchecked_narrow<u32>(mouse_event->event_x);
+                const auto y = unchecked_narrow<u32>(mouse_event->event_y);
 
                 if (m_mouse_states[GLOBAL_MOUSE_ID].locked)
                     if (x == m_mouse_states[GLOBAL_MOUSE_ID].locked_at.x and y == m_mouse_states[GLOBAL_MOUSE_ID].locked_at.y)

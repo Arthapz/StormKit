@@ -4,7 +4,7 @@
 
 module;
 
-export module stormkit.core:math.hypercomplex;
+export module stormkit.core.math.hypercomplex;
 
 import std;
 

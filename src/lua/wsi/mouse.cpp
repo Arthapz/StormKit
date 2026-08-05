@@ -22,8 +22,8 @@ namespace stormkit::lua::wsi {
     ////////////////////////////////////////
     auto bind_mouse(sol::state& global_state, sol::table& metatable) noexcept -> void {
         metatable["mouse_button"] = global_state.create_table_with(
-          sol::meta_function::to_string,
-          +[](MouseButton mouse_button) { return to_string(mouse_button); },
+          sol::meta_function::as<string>,
+          +[](MouseButton mouse_button) { return as<string>(mouse_button); },
           "LEFT",
           MouseButton::LEFT,
           "RIGHT",

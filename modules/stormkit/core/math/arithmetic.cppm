@@ -7,13 +7,13 @@ module;
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core:math.arithmetic;
+export module stormkit.core.math.arithmetic;
 
 import std;
 
-import :meta;
-
-import :typesafe.safecasts;
+import stormkit.core.meta.concepts;
+import stormkit.core.types;
+import stormkit.core.typesafe.safecasts;
 
 export {
     namespace stormkit { inline namespace core { namespace math {
@@ -190,7 +190,7 @@ namespace stormkit { inline namespace core { namespace math {
     INSTANCIATE(i32);
     INSTANCIATE(u64);
     INSTANCIATE(i64);
-    INSTANCIATE(u128);
+    // INSTANCIATE(u128);
     // INSTANCIATE(i128);
     INSTANCIATE(f32);
     INSTANCIATE(f64);
