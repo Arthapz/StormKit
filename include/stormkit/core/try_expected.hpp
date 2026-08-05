@@ -9,20 +9,20 @@
 
 #if (defined(__clang__) or defined(__GNUC__))
     #define Try(try_expression)                                        \
-        ({                                                             \
+        __extension__({                                                \
             auto res = (try_expression);                               \
             if (not res.has_value()) [[unlikely]]                      \
                 return { std::unexpected { std::move(res.error()) } }; \
             *std::move(res);                                           \
         })
     #define TryOr(try_expression, or_closure)                                                                 \
-        ({                                                                                                    \
+        __extension__({                                                                                       \
             auto res = (try_expression);                                                                      \
             if (not res.has_value()) [[unlikely]] { return std::invoke(or_closure, std::move(res.error())); } \
             *std::move(res);                                                                                  \
         })
     #define TryTransform(try_expression, transform_closure)                                        \
-        ({                                                                                         \
+        __extension__({                                                                            \
             auto res = (try_expression);                                                           \
             if (not res.has_value()) [[unlikely]] {                                                \
                 return std::unexpected { std::invoke(transform_closure, std::move(res.error())) }; \
@@ -30,7 +30,7 @@
             *std::move(res);                                                                       \
         })
     #define TryAssert(try_expression, msg)                 \
-        ({                                                 \
+        __extension__({                                    \
             auto res = (try_expression);                   \
             stormkit::core::ensures(res.has_value(), msg); \
             *std::move(res);                               \
