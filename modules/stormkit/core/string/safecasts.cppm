@@ -29,35 +29,36 @@ export namespace stormkit { inline namespace core {
 
     template<meta::Has_as_string_view From>
     [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<string>, From&& value, const std::source_location&) noexcept -> string;
+    constexpr auto tag_invoke(as_fn<string>, From&& value, source_location_arg = std::source_location::current()) noexcept
+      -> string;
 
     template<meta::arg::PlainTypeTo<meta::IsIntegral> From>
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<string>,
                               From value,
-                              i32  base                   = 10,
-                              const std::source_location& = std::source_location::current()) noexcept -> System_result<string>;
+                              i32  base           = 10,
+                              source_location_arg = std::source_location::current()) noexcept -> System_result<string>;
 
     template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> From>
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<string>,
                               From              value,
-                              std::chars_format fmt       = std::chars_format::general,
-                              const std::source_location& = std::source_location::current()) noexcept -> System_result<string>;
+                              std::chars_format fmt = std::chars_format::general,
+                              source_location_arg   = std::source_location::current()) noexcept -> System_result<string>;
 
     template<meta::arg::PlainTypeTo<meta::IsIntegral> To>
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<To>,
                               std::string_view value,
-                              i32              base       = 10,
-                              const std::source_location& = std::source_location::current()) noexcept -> System_result<To>;
+                              i32              base = 10,
+                              source_location_arg   = std::source_location::current()) noexcept -> System_result<To>;
 
     template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> To>
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<To>,
                               std::string_view  value,
-                              std::chars_format fmt       = std::chars_format::general,
-                              const std::source_location& = std::source_location::current()) noexcept -> System_result<To>;
+                              std::chars_format fmt = std::chars_format::general,
+                              source_location_arg   = std::source_location::current()) noexcept -> System_result<To>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -69,15 +70,14 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::Has_as_string_view From>
         STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(as_fn<string>, From value, const std::source_location&) noexcept -> string {
+    constexpr auto tag_invoke(as_fn<string>, From value, source_location_arg) noexcept -> string {
         return string { as<string_view>(std::forward<From>(value)) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::arg::PlainTypeTo<meta::IsIntegral> From>
-    constexpr auto tag_invoke(as_fn<string>, From value, i32 base, const std::source_location&) noexcept
-      -> System_result<string> {
+    constexpr auto tag_invoke(as_fn<string>, From value, i32 base, source_location_arg) noexcept -> System_result<string> {
         auto out = System_result<string> { std::in_place };
         out->resize(16);
         auto&& [ptr, errc] = std::to_chars(stdr::data(*out), stdr::data(*out) + stdr::size(*out), value, base);
@@ -94,7 +94,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> From>
-    constexpr auto tag_invoke(as_fn<string>, From value, std::chars_format fmt, const std::source_location&) noexcept
+    constexpr auto tag_invoke(as_fn<string>, From value, std::chars_format fmt, source_location_arg) noexcept
       -> System_result<string> {
         auto out = System_result<string> { std::in_place };
         out->resize(16, '\0');
@@ -112,8 +112,7 @@ namespace stormkit { inline namespace core {
 
     template<meta::arg::PlainTypeTo<meta::IsIntegral> To>
     [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<To>, std::string_view value, i32 base, const std::source_location&) noexcept
-      -> System_result<To> {
+    constexpr auto tag_invoke(as_fn<To>, std::string_view value, i32 base, source_location_arg) noexcept -> System_result<To> {
         auto out         = System_result<To> { std::in_place };
         auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), out.value(), base);
         if (errc != std::errc {}) [[unlikely]]
@@ -124,7 +123,7 @@ namespace stormkit { inline namespace core {
 
     template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> To>
     [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<To>, std::string_view value, std::chars_format fmt, const std::source_location&) noexcept
+    constexpr auto tag_invoke(as_fn<To>, std::string_view value, std::chars_format fmt, source_location_arg) noexcept
       -> System_result<To> {
         auto out         = System_result<To> { std::in_place };
         auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), out.value(), fmt);
