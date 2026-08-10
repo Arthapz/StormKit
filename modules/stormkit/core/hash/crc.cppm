@@ -152,7 +152,7 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         /////////////////////////////////////
         constexpr auto crc32(array_view<const byte> bytes, u32 seed) -> hash32 {
-            for (const auto it : range(stdr::size(details::crc32_table))) {
+            for (const auto it : range(stdr::size(bytes))) {
                 const auto index = as<usize>(seed & 0xFF) ^ bytes[it];
                 seed             = details::crc64_table[index] ^ (seed >> 8);
             }
@@ -163,7 +163,7 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         /////////////////////////////////////
         constexpr auto crc64(array_view<const byte> bytes, u64 seed) -> hash64 {
-            for (const auto it : range(stdr::size(details::crc64_table))) {
+            for (const auto it : range(stdr::size(bytes))) {
                 const auto index = as<usize>(seed & 0xFF) ^ bytes[it];
                 seed             = details::crc64_table[index] ^ (seed >> 8);
             }
