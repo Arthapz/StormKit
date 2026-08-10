@@ -15,23 +15,3 @@ export import stormkit.core.meta.type_query;
 export import stormkit.core.meta.type_manipulation;
 export import stormkit.core.meta.priority_tag;
 export import stormkit.core.meta.tag_invoke;
-
-export namespace stormkit { inline namespace core {
-    template<class... Ts>
-    struct Overloaded: Ts... {
-        using Ts::operator()...;
-    };
-
-    template<class... Ts>
-    Overloaded(Ts...) -> Overloaded<Ts...>;
-
-    namespace meta {
-        template<class Type, class... Ts>
-        consteval auto find_type_index_of() noexcept -> usize {
-            static_assert(is_any_of<Type, Ts...>);
-            auto i = 0u;
-            ((not is<Type, Ts> and ++i) and ...);
-            return i;
-        }
-    } // namespace meta
-}} // namespace stormkit::core

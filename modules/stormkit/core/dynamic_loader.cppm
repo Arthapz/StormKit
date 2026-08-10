@@ -6,8 +6,8 @@ module;
 
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/contract_macro.hpp>
-#include <stormkit/core/memory_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
+#include <stormkit/core/try_expected.hpp>
 
 export module stormkit.core.dynamic_loader;
 
@@ -16,45 +16,50 @@ import std;
 import stormkit.core.contract;
 import stormkit.core.types;
 
+import stormkit.core.heap;
+import stormkit.core.errors;
+import stormkit.core.function_ref;
+import stormkit.core.private_tag;
+
+namespace stdfs = std::filesystem;
+
 export namespace stormkit { inline namespace core {
-    class STORMKIT_CORE_API DynamicLoader {
+    class STORMKIT_CORE_API dynamic_loader {
+        using private_tag = private_tag<dynamic_loader>;
+
       public:
-        template<class T>
-        using Expected = std::expected<T, std::error_code>;
+        explicit dynamic_loader(private_tag) noexcept;
+        ~dynamic_loader();
 
-        ~DynamicLoader();
+        dynamic_loader(const dynamic_loader&)                    = delete;
+        auto operator=(const dynamic_loader&) -> dynamic_loader& = delete;
 
-        DynamicLoader(const DynamicLoader&)                    = delete;
-        auto operator=(const DynamicLoader&) -> DynamicLoader& = delete;
-
-        DynamicLoader(DynamicLoader&&) noexcept;
-        auto operator=(DynamicLoader&&) noexcept -> DynamicLoader&;
+        dynamic_loader(dynamic_loader&&) noexcept;
+        auto operator=(dynamic_loader&&) noexcept -> dynamic_loader&;
 
         [[nodiscard]]
-        static auto load(std::filesystem::path filepath) noexcept -> Expected<DynamicLoader>;
+        static auto load(const stdfs::path& filepath) noexcept -> system_result<dynamic_loader>;
 
         [[nodiscard]]
-        static auto allocate_and_load(std::filesystem::path filepath) noexcept -> Expected<std::unique_ptr<DynamicLoader>>;
+        static auto allocate_and_load(const stdfs::path& filepath) noexcept -> system_result<heap_ptr<dynamic_loader>>;
 
         template<class Signature>
         [[nodiscard]]
-        auto func(string_view name) const noexcept -> Expected<std::function<Signature>>;
+        auto func(string_view name) const noexcept -> system_result<std23::function_ref<Signature>>;
 
         template<class Signature>
         [[nodiscard]]
-        auto c_func(string_view name) const noexcept -> Expected<Signature*>;
+        auto c_func(string_view name) const noexcept -> system_result<Signature*>;
 
         [[nodiscard]]
-        auto filepath() const noexcept -> const std::filesystem::path&;
+        auto filepath() const noexcept -> const stdfs::path&;
 
       private:
-        DynamicLoader() noexcept;
+        auto do_load(const stdfs::path& filepath) -> system_result<void>;
+        auto do_get_func(string_view name) const -> system_result<void*>;
 
-        auto do_load(std::filesystem::path filepath) -> Expected<void>;
-        auto do_get_func(string_view name) const -> Expected<void*>;
-
-        std::filesystem::path m_filepath;
-        void*                 m_library_handle = nullptr;
+        stdfs::path m_filepath;
+        void*       m_library_handle = nullptr;
     };
 }} // namespace stormkit::core
 
@@ -66,19 +71,19 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline DynamicLoader::DynamicLoader() noexcept = default;
+    inline dynamic_loader::dynamic_loader(private_tag) noexcept {};
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline DynamicLoader::DynamicLoader(DynamicLoader&& other) noexcept
+    inline dynamic_loader::dynamic_loader(dynamic_loader&& other) noexcept
         : m_filepath { std::move(other.m_filepath) }, m_library_handle { std::exchange(other.m_library_handle, nullptr) } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto DynamicLoader::operator=(DynamicLoader&& other) noexcept -> DynamicLoader& {
+    inline auto dynamic_loader::operator=(dynamic_loader&& other) noexcept -> dynamic_loader& {
         if (&other == this) [[unlikely]]
             return *this;
 
@@ -90,45 +95,43 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto DynamicLoader::load(std::filesystem::path filepath) noexcept -> Expected<DynamicLoader> {
-        auto loader = DynamicLoader {};
-
-        return loader.do_load(std::move(filepath)).transform([&]() { return std::move(loader); });
+    inline auto dynamic_loader::load(const stdfs::path& filepath) noexcept -> system_result<dynamic_loader> {
+        auto loader = dynamic_loader { PRIVATE<dynamic_loader> };
+        Try(loader.do_load(filepath));
+        return { std::move(loader) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto DynamicLoader::allocate_and_load(std::filesystem::path filepath) noexcept
-      -> Expected<std::unique_ptr<DynamicLoader>> {
-        return load(std::move(filepath)).transform([](auto&& loader) {
-            return std::make_unique<DynamicLoader>(std::move(loader));
-        });
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class Signature>
-    inline auto DynamicLoader::func(string_view name) const noexcept -> Expected<std::function<Signature>> {
-        return c_func<Signature>(name).transform([]<typename T>(T&& value) {
-            return std::function<Signature> { std::forward<T>(value) };
-        });
+    inline auto dynamic_loader::allocate_and_load(const stdfs::path& filepath) noexcept
+      -> system_result<heap_ptr<dynamic_loader>> {
+        auto loader = allocate_unsafe<dynamic_loader>(PRIVATE<dynamic_loader>);
+        Try(loader->do_load(filepath));
+        return { std::move(loader) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class Signature>
-    inline auto DynamicLoader::c_func(string_view name) const noexcept -> Expected<Signature*> {
+    inline auto dynamic_loader::func(string_view name) const noexcept -> system_result<std23::function_ref<Signature>> {
+        TryTo(raw_func, c_func<Signature>(name));
+        return { std23::function_ref<Signature> { raw_func } };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<class Signature>
+    inline auto dynamic_loader::c_func(string_view name) const noexcept -> system_result<Signature*> {
         EXPECTS(not std::empty(name));
 
-        return do_get_func(name).transform([]<typename T>(T&& value) {
-            return std::bit_cast<Signature*>(std::forward<T>(value));
-        });
+        TryTo(raw_func, do_get_func(name));
+        return { std::bit_cast<Signature*>(raw_func) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto DynamicLoader::filepath() const noexcept -> const std::filesystem::path& {
+    inline auto dynamic_loader::filepath() const noexcept -> const stdfs::path& {
         return m_filepath;
     }
 }} // namespace stormkit::core

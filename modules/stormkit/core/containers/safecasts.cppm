@@ -49,24 +49,24 @@ constexpr auto get_constexpr_size() -> stormkit::usize {
 }
 
 export namespace stormkit { inline namespace core {
-    struct Bytes {};
+    struct bytes_view {};
 
     template<meta::std_span From>
     [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<Bytes>, From value, source_location_arg = std::source_location::current()) noexcept
+    constexpr auto tag_invoke(as_fn<bytes_view>, From value, source_location_arg = std::source_location::current()) noexcept
       -> array_view<meta::forward_const_to<meta::value_type<From>, byte>,
                     get_byte_extent_value_of<meta::value_type<From>, get_constexpr_size<From>()>()>;
 
     template<stdr::contiguous_range From>
         requires(not meta::std_span<From>)
     [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<Bytes>, From& value, source_location_arg = std::source_location::current()) noexcept
+    constexpr auto tag_invoke(as_fn<bytes_view>, From& value, source_location_arg = std::source_location::current()) noexcept
       -> array_view<meta::forward_const_to<From, byte>, get_byte_extent_value_of<From, get_constexpr_size<From>()>()>;
 
     template<typename From>
         requires(not stdr::contiguous_range<From>)
     [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<Bytes>, From& value, source_location_arg = std::source_location::current()) noexcept
+    constexpr auto tag_invoke(as_fn<bytes_view>, From& value, source_location_arg = std::source_location::current()) noexcept
       -> array_view<meta::forward_const_to<From, byte>, get_byte_extent_value_of<From, get_constexpr_size<From>()>()>;
 
     template<typename To, usize EXTENT>
@@ -94,7 +94,7 @@ export namespace stormkit { inline namespace core {
 
     template<meta::explicitly_convertible_to<byte> T, usize EXTENT>
     [[nodiscard]]
-    constexpr auto tag_invoke(into_fn<Bytes>,
+    constexpr auto tag_invoke(into_fn<bytes_view>,
                               array<T, EXTENT> value,
                               source_location_arg = std::source_location::current()) noexcept -> array<byte, EXTENT>;
 }} // namespace stormkit::core
@@ -108,7 +108,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::std_span From>
     STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(as_fn<Bytes>, From value, source_location_arg) noexcept
+    constexpr auto tag_invoke(as_fn<bytes_view>, From value, source_location_arg) noexcept
       -> array_view<meta::forward_const_to<meta::value_type<From>, byte>,
                     get_byte_extent_value_of<meta::value_type<From>, get_constexpr_size<From>()>()> {
         return { std::bit_cast<meta::forward_const_to<From, byte>*>(stdr::data(value)),
@@ -119,7 +119,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<stdr::contiguous_range From>
     STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(as_fn<Bytes>, From& value, source_location_arg) noexcept
+    constexpr auto tag_invoke(as_fn<bytes_view>, From& value, source_location_arg) noexcept
       -> array_view<meta::forward_const_to<From, byte>, get_byte_extent_value_of<From, get_constexpr_size<From>()>()> {
         return { std::bit_cast<meta::forward_const_to<From, byte>*>(stdr::data(value)),
                  get_byte_extent_value_of<From, get_constexpr_size<From>()>() };
@@ -130,7 +130,7 @@ namespace stormkit { inline namespace core {
     template<typename From>
         requires(not stdr::contiguous_range<From>)
     STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(as_fn<Bytes>, From& value, source_location_arg) noexcept
+    constexpr auto tag_invoke(as_fn<bytes_view>, From& value, source_location_arg) noexcept
       -> array_view<meta::forward_const_to<From, byte>, get_byte_extent_value_of<From, 1>> {
         return { std::bit_cast<meta::forward_const_to<From, byte>*>(&value), get_byte_extent_value_of<From, 1>() };
     }
@@ -190,7 +190,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::explicitly_convertible_to<byte> T, usize EXTENT>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto tag_invoke(into_fn<Bytes>, array<T, EXTENT> values, source_location_arg) noexcept -> array<byte, EXTENT> {
+    constexpr auto tag_invoke(into_fn<bytes_view>, array<T, EXTENT> values, source_location_arg) noexcept -> array<byte, EXTENT> {
         auto out = array<byte, EXTENT> {};
         stdr::transform(values, stdr::begin(out), [](auto&& value) static noexcept { return static_cast<byte>(value); });
         return out;

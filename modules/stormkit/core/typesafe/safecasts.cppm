@@ -65,7 +65,7 @@ export {
             template<typename... Ts>
             static constexpr auto operator()(Ts&&...) noexcept
                 requires(not IS_TAG_INVOKABLE<Ts...>)
-            = delete ("Try_as caster not defined for these types!");
+            = delete ("TryX_as caster not defined for these types!");
 
             template<typename... Ts>
             [[nodiscard]]
@@ -290,7 +290,7 @@ export {
         template<typename T, meta::std_expected Expected>
         [[nodiscard]]
         constexpr auto tag_invoke(is_fn<T>, const Expected& expected) noexcept -> bool
-            requires(meta::same_as<T, std::unexpected<typename Expected::error_type>>);
+            requires(meta::same_as<T, std::unexpected<meta::error_type<Expected>>>);
 
         template<typename To, meta::plain::apply_to<meta::std_expected> Expected>
         [[nodiscard]]
@@ -302,7 +302,7 @@ export {
         [[nodiscard]]
         constexpr auto tag_invoke(as_fn<To>, Expected&& expected, source_location_arg = std::source_location::current()) noexcept
           -> meta::forward_like<Expected, To>
-            requires(meta::same_as<To, std::unexpected<typename Expected::error_type>>);
+            requires(meta::same_as<To, std::unexpected<meta::error_type<Expected>>>);
 
         template<meta::negate<meta::plain::const_type> To, meta::plain::prefer_pass_by_value Value>
         constexpr auto take(Value value) noexcept -> To
@@ -729,7 +729,7 @@ namespace stormkit { inline namespace core {
     template<typename T, meta::std_expected Expected>
     STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(is_fn<T>, const Expected& value) noexcept -> bool
-        requires(meta::same_as<T, std::unexpected<typename Expected::error_type>>)
+        requires(meta::same_as<T, std::unexpected<meta::error_type<Expected>>>)
     {
         return not value.has_value();
     }
@@ -753,7 +753,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(as_fn<To>, Expected&& value, source_location_arg location) noexcept
       -> meta::forward_like<Expected, To>
-        requires(meta::same_as<To, std::unexpected<typename Expected::error_type>>)
+        requires(meta::same_as<To, std::unexpected<meta::error_type<Expected>>>)
     {
         ensures(not value.has_value(), "Bad expected access!", location);
 

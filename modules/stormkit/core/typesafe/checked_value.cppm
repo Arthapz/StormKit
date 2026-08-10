@@ -12,13 +12,17 @@ export module stormkit.core.typesafe.checked_value;
 
 import std;
 
-import stormkit.core.meta;
-import stormkit.core.contract;
 import stormkit.core.types;
 
+import stormkit.core.meta.concepts;
+import stormkit.core.meta.type_manipulation;
+import stormkit.core.meta.type_query;
+import stormkit.core.contract;
+import stormkit.core.string.format;
+
 export namespace stormkit { inline namespace core {
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     struct checked_value final {
       private:
         static constexpr auto IS_ARITHMETIC = meta::arithmetic<T>;
@@ -116,8 +120,10 @@ export namespace stormkit { inline namespace core {
         else
             return false;
     }>;
-    // template<meta::IsFormattable T, meta::is_decayed Tag, auto check_fn, typename FormatContext>
-    // constexpr auto format_as(const checked_value<T, Tag, check_fn>& val, FormatContext& ctx) -> decltype(ctx.out());
+
+    template<typename CharT, typename FormatContext, meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+    constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<checked_value<T, Tag, CHECK_FN>> value, FormatContext& ctx)
+      -> decltype(ctx.out());
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -127,74 +133,74 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr checked_value<T, Tag, check_fn>::checked_value() noexcept(meta::noexcept_default_constructible<value_type>)
+    constexpr checked_value<T, Tag, CHECK_FN>::checked_value() noexcept(meta::noexcept_default_constructible<value_type>)
         requires(meta::default_constructible<value_type>)
         : value {} {
         // FORMAT HERE
-        expects(check_fn(value), "Checked value predicated violation!");
+        expects(CHECK_FN(value), "Checked value predicated violation!");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr checked_value<T, Tag, check_fn>::checked_value(copy_param_type value_) noexcept(meta::noexcept_copyable<value_type>)
+    constexpr checked_value<T, Tag, CHECK_FN>::checked_value(copy_param_type value_) noexcept(meta::noexcept_copyable<value_type>)
         requires(meta::copyable<value_type>)
         : value { value_ } {
-        expects(check_fn(value), "Checked value predicated violation!");
+        expects(CHECK_FN(value), "Checked value predicated violation!");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr checked_value<T, Tag, check_fn>::checked_value(value_type&& value_) noexcept(meta::noexcept_movable<value_type>)
+    constexpr checked_value<T, Tag, CHECK_FN>::checked_value(value_type&& value_) noexcept(meta::noexcept_movable<value_type>)
         requires(not BY_VALUE and meta::movable<value_type>)
         : value { std::move(value_) } {
-        expects(check_fn(value), "Checked value predicated violation!");
+        expects(CHECK_FN(value), "Checked value predicated violation!");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr checked_value<T, Tag, check_fn>::~checked_value() noexcept(meta::noexcept_destructible<value_type>) = default;
+    constexpr checked_value<T, Tag, CHECK_FN>::~checked_value() noexcept(meta::noexcept_destructible<value_type>) = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr checked_value<T, Tag, check_fn>::checked_value(const checked_value&
+    constexpr checked_value<T, Tag, CHECK_FN>::checked_value(const checked_value&
                                                                other) noexcept(meta::noexcept_copyable<value_type>)
         requires(meta::copyable<value_type>)
         : value { other.value } {
-        expects(check_fn(value), "Checked value predicated violation!");
+        expects(CHECK_FN(value), "Checked value predicated violation!");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr checked_value<T, Tag, check_fn>::checked_value(checked_value&& other) noexcept(meta::noexcept_movable<value_type>)
+    constexpr checked_value<T, Tag, CHECK_FN>::checked_value(checked_value&& other) noexcept(meta::noexcept_movable<value_type>)
         requires(meta::movable<value_type>)
         : value { std::move(other.value) } {
-        expects(check_fn(value), "Checked value predicated violation!");
+        expects(CHECK_FN(value), "Checked value predicated violation!");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator=(const checked_value&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator=(const checked_value&
                                                                 other) noexcept(meta::noexcept_copy_assignable<value_type>)
       -> checked_value&
         requires(meta::copy_assignable<value_type>)
@@ -203,16 +209,16 @@ namespace stormkit { inline namespace core {
             return *this;
 
         value = other.value;
-        expects(check_fn(value), "Checked value predicated violation!");
+        expects(CHECK_FN(value), "Checked value predicated violation!");
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator=(checked_value&&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator=(checked_value&&
                                                                 other) noexcept(meta::noexcept_move_assignable<value_type>)
       -> checked_value&
         requires(meta::move_assignable<value_type>)
@@ -221,64 +227,64 @@ namespace stormkit { inline namespace core {
             return *this;
 
         value = std::move(other.value);
-        expects(check_fn(value), "Checked value predicated violation!");
+        expects(CHECK_FN(value), "Checked value predicated violation!");
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator=(copy_param_type
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator=(copy_param_type
                                                                 value_) noexcept(meta::noexcept_copy_assignable<value_type>)
       -> checked_value&
         requires(meta::copy_assignable<value_type>)
     {
         value = value_;
-        expects(check_fn(value), "Checked value predicated violation!");
+        expects(CHECK_FN(value), "Checked value predicated violation!");
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator=(value_type&&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator=(value_type&&
                                                                 value_) noexcept(meta::noexcept_move_assignable<value_type>)
       -> checked_value&
         requires(meta::move_assignable<value_type> and not BY_VALUE)
     {
         value = std::move(value_);
-        expects(check_fn(value), "Checked value predicated violation!");
+        expects(CHECK_FN(value), "Checked value predicated violation!");
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr checked_value<T, Tag, check_fn>::operator reference_type() noexcept {
+    constexpr checked_value<T, Tag, CHECK_FN>::operator reference_type() noexcept {
         return value;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr checked_value<T, Tag, check_fn>::operator const_reference_type() const noexcept {
+    constexpr checked_value<T, Tag, CHECK_FN>::operator const_reference_type() const noexcept {
         return value;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto checked_value<T, Tag, check_fn>::operator+(copy_param_type other) const noexcept -> checked_value
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator+(copy_param_type other) const noexcept -> checked_value
         requires(IS_ARITHMETIC)
     {
         return { value + other };
@@ -286,10 +292,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto checked_value<T, Tag, check_fn>::operator+(checked_param_type other) const noexcept -> checked_value
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator+(checked_param_type other) const noexcept -> checked_value
         requires(IS_ARITHMETIC)
     {
         return { value + other.value };
@@ -297,10 +303,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator+=(copy_param_type other) noexcept -> checked_value&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator+=(copy_param_type other) noexcept -> checked_value&
         requires(IS_ARITHMETIC)
     {
         value += other;
@@ -309,10 +315,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator+=(checked_param_type other) noexcept -> checked_value&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator+=(checked_param_type other) noexcept -> checked_value&
         requires(IS_ARITHMETIC)
     {
         value += other.value;
@@ -321,10 +327,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto checked_value<T, Tag, check_fn>::operator-(copy_param_type other) const noexcept -> checked_value
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator-(copy_param_type other) const noexcept -> checked_value
         requires(IS_ARITHMETIC)
     {
         return { value - other };
@@ -332,10 +338,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto checked_value<T, Tag, check_fn>::operator-(checked_param_type other) const noexcept -> checked_value
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator-(checked_param_type other) const noexcept -> checked_value
         requires(IS_ARITHMETIC)
     {
         return { value - other.value };
@@ -343,10 +349,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator-=(copy_param_type other) noexcept -> checked_value&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator-=(copy_param_type other) noexcept -> checked_value&
         requires(IS_ARITHMETIC)
     {
         value -= other;
@@ -355,10 +361,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator-=(checked_param_type other) noexcept -> checked_value&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator-=(checked_param_type other) noexcept -> checked_value&
         requires(IS_ARITHMETIC)
     {
         value -= other.value;
@@ -367,10 +373,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto checked_value<T, Tag, check_fn>::operator*(copy_param_type other) const noexcept -> checked_value
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator*(copy_param_type other) const noexcept -> checked_value
         requires(IS_ARITHMETIC)
     {
         return { value * other };
@@ -378,10 +384,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto checked_value<T, Tag, check_fn>::operator*(checked_param_type other) const noexcept -> checked_value
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator*(checked_param_type other) const noexcept -> checked_value
         requires(IS_ARITHMETIC)
     {
         return { value * other.value };
@@ -389,10 +395,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator*=(copy_param_type other) noexcept -> checked_value&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator*=(copy_param_type other) noexcept -> checked_value&
         requires(IS_ARITHMETIC)
     {
         value *= other;
@@ -401,10 +407,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator*=(checked_param_type other) noexcept -> checked_value&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator*=(checked_param_type other) noexcept -> checked_value&
         requires(IS_ARITHMETIC)
     {
         value *= other.value;
@@ -413,10 +419,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto checked_value<T, Tag, check_fn>::operator/(copy_param_type other) const noexcept -> checked_value
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator/(copy_param_type other) const noexcept -> checked_value
         requires(IS_ARITHMETIC)
     {
         return { value / other };
@@ -424,10 +430,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto checked_value<T, Tag, check_fn>::operator/(checked_param_type other) const noexcept -> checked_value
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator/(checked_param_type other) const noexcept -> checked_value
         requires(IS_ARITHMETIC)
     {
         return { value / other.value };
@@ -435,10 +441,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator/=(copy_param_type other) noexcept -> checked_value&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator/=(copy_param_type other) noexcept -> checked_value&
         requires(IS_ARITHMETIC)
     {
         value /= other;
@@ -447,22 +453,21 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
-        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto checked_value<T, Tag, check_fn>::operator/=(checked_param_type other) noexcept -> checked_value&
+    constexpr auto checked_value<T, Tag, CHECK_FN>::operator/=(checked_param_type other) noexcept -> checked_value&
         requires(IS_ARITHMETIC)
     {
         value /= other.value;
         return *this;
     }
 
-    // /////////////////////////////////////
-    // /////////////////////////////////////
-    // template<meta::IsFormattable T, meta::is_decayed Tag, auto check_fn, typename FormatContext>
-    //     STORMKIT_FORCE_INLINE
-    // constexpr auto format_as(const checked_value<T, Tag, check_fn>& val, FormatContext& ctx) -> decltype(ctx.out()) {
-    //     auto&& out = ctx.out();
-    //     return std::format_to(out, "{}", val.value);
-    // }
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename CharT, typename FormatContext, meta::is_decayed T, meta::is_decayed Tag, auto CHECK_FN>
+    constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<checked_value<T, Tag, CHECK_FN>> value, FormatContext& ctx)
+      -> decltype(ctx.out()) {
+        return std::format_to(ctx.out(), "{}", value.value);
+    }
 }} // namespace stormkit::core

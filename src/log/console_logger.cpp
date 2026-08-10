@@ -19,12 +19,12 @@ namespace stdr = std::ranges;
 
 namespace stormkit::log {
     namespace {
-        constexpr auto StyleMap = frozen::make_unordered_map<Severity, ConsoleStyle>({
-          { Severity::INFO,    ConsoleStyle { .fg = ConsoleColor::GREEN, .modifiers = StyleModifier::INVERSE }   },
-          { Severity::WARNING, ConsoleStyle { .fg = ConsoleColor::MAGENTA, .modifiers = StyleModifier::INVERSE } },
-          { Severity::ERROR,   ConsoleStyle { .fg = ConsoleColor::YELLOW, .modifiers = StyleModifier::INVERSE }  },
-          { Severity::FATAL,   ConsoleStyle { .fg = ConsoleColor::RED, .modifiers = StyleModifier::INVERSE }     },
-          { Severity::DEBUG,   ConsoleStyle { .fg = ConsoleColor::CYAN, .modifiers = StyleModifier::INVERSE }    },
+        constexpr auto StyleMap = frozen::make_unordered_map<Severity, console_style>({
+          { Severity::INFO,    console_style { .fg = console_color::GREEN, .modifiers = style_modifier::INVERSE }   },
+          { Severity::WARNING, console_style { .fg = console_color::MAGENTA, .modifiers = style_modifier::INVERSE } },
+          { Severity::ERROR,   console_style { .fg = console_color::YELLOW, .modifiers = style_modifier::INVERSE }  },
+          { Severity::FATAL,   console_style { .fg = console_color::RED, .modifiers = style_modifier::INVERSE }     },
+          { Severity::DEBUG,   console_style { .fg = console_color::CYAN, .modifiers = style_modifier::INVERSE }    },
         });
 
         constexpr auto format_string_with_module = "{}[{}, {:%S}, {}]{} {}"sv;

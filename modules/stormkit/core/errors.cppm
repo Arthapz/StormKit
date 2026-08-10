@@ -15,18 +15,19 @@ export module stormkit.core.errors;
 
 import std;
 
-export import stormkit.core.status_code;
 import stormkit.core.types;
-import stormkit.core.typesafe.safecasts;
+
+export import stormkit.core.status_code;
+import stormkit.core.string.format;
+import stormkit.core.meta.type_query;
 
 export {
     namespace stormkit { inline namespace core {
-#if (defined(__clang__) or defined(__GNUC__))
         template<typename Val, typename Err>
-        using Expected = std::expected<Val, Err>;
-#else
+        using expected = std::expected<Val, Err>;
+#if not(defined(__clang__) or defined(__GNUC__)) and STORMKIT_TRYX_COROUTINES
         template<typename VAL, typename ERR>
-        class Expected: public std::expected<VAL, ERR> {
+        class expected: public std::expected<VAL, ERR> {
           public:
             using std::expected<VAL, ERR>::expected;
 
@@ -35,17 +36,17 @@ export {
 
                 constexpr auto final_suspend() const noexcept -> std::suspend_never { return {}; }
 
-                constexpr auto get_return_object() noexcept -> Expected { return Expected { this }; }
+                constexpr auto get_return_object() noexcept -> expected { return expected { this }; }
 
                 template<typename... Ts>
                 constexpr auto return_value(Ts&&... args) noexcept {
                     EXPECTS(expected_ptr != nullptr);
-                    *expected_ptr = Expected { std::in_place, std::forward<Ts>(args)... };
+                    *expected_ptr = expected { std::in_place, std::forward<Ts>(args)... };
                 }
 
                 constexpr auto return_value(ERR error) noexcept {
                     EXPECTS(expected_ptr != nullptr);
-                    *expected_ptr = Expected {
+                    *expected_ptr = expected {
                         std::unexpected<ERR> { std::in_place, std::move(error) }
                     };
                 }
@@ -55,10 +56,10 @@ export {
                     std::abort();
                 }
 
-                Expected* expected_ptr = nullptr;
+                expected* expected_ptr = nullptr;
             };
 
-            constexpr Expected(promise_type* promise) noexcept : Expected {} { promise->expected_ptr = this; }
+            constexpr expected(promise_type* promise) noexcept : expected {} { promise->expected_ptr = this; }
 
             constexpr auto await_ready() const noexcept -> bool { return this->has_value(); }
 
@@ -72,19 +73,22 @@ export {
             }
         };
 #endif
-        using System_code = system_error2::system_code;
+        using system_code = system_error2::system_code;
 
         namespace error_code {
 #ifdef STORMKIT_OS_WINDOWS
-            auto from_win32() noexcept -> System_code;
-            auto from_ntstatus() noexcept -> System_code;
+            auto from_win32() noexcept -> system_code;
+            auto from_ntstatus(long code) noexcept -> system_code;
 #endif
-            auto from_errno() noexcept -> System_code;
-            auto from_stderrc(std::errc code) noexcept -> System_code;
+            auto from_errno() noexcept -> system_code;
+            auto from_stderrc(std::errc code) noexcept -> system_code;
         } // namespace error_code
 
         template<typename T>
-        using System_result = Expected<T, System_code>;
+        using system_result = expected<T, system_code>;
+
+        template<typename CharT, typename FormatContext>
+        constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<system_code> value, FormatContext& ctx) -> decltype(ctx.out());
     }} // namespace stormkit::core
 }
 
@@ -100,14 +104,14 @@ namespace stormkit { inline namespace core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto from_win32() noexcept -> System_code {
+        inline auto from_win32() noexcept -> system_code {
             return system_error2::win32_code { GetLastError() };
         }
 
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto from_ntstatus(long status) noexcept -> System_code {
+        inline auto from_ntstatus(long status) noexcept -> system_code {
             return system_error2::nt_code { status };
         }
 #endif
@@ -115,34 +119,26 @@ namespace stormkit { inline namespace core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto from_errno() noexcept -> System_code {
+        inline auto from_errno() noexcept -> system_code {
             return system_error2::posix_code { errno };
         }
 
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto from_stderrc(std::errc code) noexcept -> System_code {
-            return system_error2::posix_code { unchecked_narrow<i32>(code) };
+        inline auto from_stderrc(std::errc code) noexcept -> system_code {
+            return system_error2::posix_code { static_cast<i32>(code) };
         }
     } // namespace error_code
 
-    //    ////////////////////////////////////////
-    //    ////////////////////////////////////////
-    //    STORMKIT_FORCE_INLINE
-    //    inline auto to_string(const System_error& error) noexcept -> string {
-    //        const auto code = static_cast<int>(error.code);
-    // #ifdef STORMKIT_OS_WINDOWS
-    //        thread_local auto STRERROR_BUFFER = array<char, 512> {};
-    //        strerror_s(stdr::data(STRERROR_BUFFER), stdr::size(STRERROR_BUFFER), code);
-    //        return string { stdr::data(STRERROR_BUFFER) };
-    // #else
-    //        return std::strerror(code);
-    // #endif
-    //    }
-
-    // template<typename FormatContext>
-    // constexpr auto format_as(const Error& point, FormatContext& ctx) -> decltype(ctx.out()) {
-    //     return std::format_to(ctx.out(), "[]");
-    // }
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename CharT, typename FormatContext>
+    STORMKIT_FORCE_INLINE
+    constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<system_code> error, FormatContext& ctx) -> decltype(ctx.out()) {
+        return std::format_to(ctx.out(),
+                              "{:#x} ({})",
+                              static_cast<unsigned long long>(error.value()),
+                              std::string_view { error.message() });
+    }
 }} // namespace stormkit::core

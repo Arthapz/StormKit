@@ -59,6 +59,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<stdr::input_range Range>
     using range_type = remove_refs_of<stdr::range_reference_t<Range>>;
 
+    template<stdr::input_range Range>
+    using range_type_ref = stdr::range_reference_t<Range>;
+
     template<typename T>
     using in = lazy_conditional<prefer_pass_by_value<T>, T, const T&>;
 

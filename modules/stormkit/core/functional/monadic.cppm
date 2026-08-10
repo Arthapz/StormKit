@@ -346,7 +346,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_PURE
     constexpr auto either(Ts&&... visitors) noexcept -> decltype(auto) {
         return [... visitors = std::forward<Ts>(visitors)]<typename T>(T&& variant) mutable noexcept -> decltype(auto) {
-            return std::visit(core::Overloaded { std::forward<Ts>(visitors)... }, std::forward<T>(variant));
+            return std::visit(core::overload_set { std::forward<Ts>(visitors)... }, std::forward<T>(variant));
         };
     }
 

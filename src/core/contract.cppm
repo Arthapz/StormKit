@@ -21,13 +21,13 @@ import stormkit.core.typesafe.flags;
 namespace stormkit { inline namespace core {
     static auto mutex = std::mutex {};
 
-    // extern constexpr auto as_string(Assert_type value) noexcept -> string_view;
+    // extern constexpr auto as_string(assert_type value) noexcept -> string_view;
 
     /////////////////////////////////////
     /////////////////////////////////////
     // STORMKIT_FORCE_INLINE STORMKIT_CONST
-    // static constexpr auto as_string(Assert_type value) noexcept -> string_view {
-    //     using enum Assert_type;
+    // static constexpr auto as_string(assert_type value) noexcept -> string_view {
+    //     using enum assert_type;
     //     switch (value) {
     //         case ASSERTION: return "Contract check";
     //         case PRE_CONDITION: return "Pre condition check";
@@ -40,11 +40,11 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto assert_base(bool cond, Assert_type type, string_view message, const std::source_location& location) noexcept -> void {
+    auto assert_base(bool cond, assert_type type, string_view message, const std::source_location& location) noexcept -> void {
         if constexpr (STORMKIT_ASSERT == 1) {
-            constexpr auto ASSERTION_PREFIX = ConsoleStyle {
-                .fg        = ConsoleColor::BRIGHT_RED,
-                .modifiers = StyleModifier::BOLD | StyleModifier::INVERSE
+            constexpr auto ASSERTION_PREFIX = console_style {
+                .fg        = console_color::BRIGHT_RED,
+                .modifiers = style_modifier::BOLD | style_modifier::INVERSE
             } | "[Assertion]"sv;
             if (not cond) [[unlikely]] {
                 auto lock = std::unique_lock { mutex };
@@ -55,11 +55,11 @@ namespace stormkit { inline namespace core {
                              "      reason:   {}",
                              ASSERTION_PREFIX,
                              as_string(type),
-                             ConsoleStyle { .fg = ConsoleColor::GREEN } | location.file_name(),
-                             ConsoleStyle { .fg = ConsoleColor::BLUE } | location.line(),
-                             ConsoleStyle { .fg = ConsoleColor::BLUE } | location.column(),
-                             ConsoleStyle { .fg = ConsoleColor::YELLOW } | location.function_name(),
-                             ConsoleStyle { .fg = ConsoleColor::RED, .modifiers = StyleModifier::BOLD } | message);
+                             console_style { .fg = console_color::GREEN } | location.file_name(),
+                             console_style { .fg = console_color::BLUE } | location.line(),
+                             console_style { .fg = console_color::BLUE } | location.column(),
+                             console_style { .fg = console_color::YELLOW } | location.function_name(),
+                             console_style { .fg = console_color::RED, .modifiers = style_modifier::BOLD } | message);
                 std::fflush(get_stderr());
 #if defined(__cpp_lib_debugging) and __cpp_lib_debugging >= 202311L
                 if (std::is_debugger_present) { std::breakpoint(); }

@@ -140,8 +140,8 @@ namespace stormkit { inline namespace core {
         output.resize(stdr::size(input) * unchecked_narrow<usize>(MB_LEN_MAX));
 
 #if defined(STORMKIT_COMPILER_MSVC)
-        auto bytes = as<Bytes>(output);
-        stdr::copy(as<Bytes>(input), stdr::begin(bytes));
+        auto bytes = as<bytes_view>(output);
+        stdr::copy(as<bytes_view>(input), stdr::begin(bytes));
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<char8_t*>(stdr::data(input));
 #else
@@ -166,8 +166,8 @@ namespace stormkit { inline namespace core {
         output.resize(stdr::size(input));
 
 #if defined(STORMKIT_COMPILER_MSVC)
-        auto bytes = as<Bytes>(output);
-        stdr::copy(as<Bytes>(input), stdr::begin(bytes));
+        auto bytes = as<bytes_view>(output);
+        stdr::copy(as<bytes_view>(input), stdr::begin(bytes));
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<char*>(stdr::data(input));
 #else

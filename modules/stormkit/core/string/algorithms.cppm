@@ -44,9 +44,9 @@ export namespace stormkit { inline namespace core {
     constexpr auto as_czstring(string_view value) noexcept -> czstring;
 
     template<typename T>
-        requires(as_string(std::declval<T>()))
     [[nodiscard]]
-    constexpr auto as_czstring(T&& value) noexcept -> czstring;
+    constexpr auto as_czstring(T&& value) noexcept -> czstring
+        requires(as_string(std::declval<T>()));
 
     template<meta::char_type T>
     constexpr auto is_text(T c) noexcept -> bool;
@@ -216,9 +216,10 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-        requires(as_string(std::declval<T>()))
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_czstring(T value) noexcept -> czstring {
+    constexpr auto as_czstring(T value) noexcept -> czstring
+        requires(as_string(std::declval<T>()))
+    {
         return stdr::data(as_string(std::forward<T>(value)));
     }
 

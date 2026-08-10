@@ -16,15 +16,29 @@ import stormkit.core.typesafe.safecasts;
 import stormkit.core.contract;
 import stormkit.core.meta.concepts;
 import stormkit.core.meta.type_manipulation;
+import stormkit.core.string.format;
 
 namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core {
     namespace meta {
-        template<typename T>
+        template<typename T, typename CharT = char>
         concept has_as_string_view = requires(const T& value) {
-            { as<string_view>(value) } -> same_as<string_view>;
+            { as<basic_string_view<CharT>>(value) } -> same_as<basic_string_view<CharT>>;
         };
+
+        template<typename T, typename CharT = char>
+        concept has_as_string = requires(const T& value) {
+            { as<basic_string<CharT>>(value) } -> same_as<basic_string<CharT>>;
+        };
+
+        namespace plain {
+            template<typename T, typename CharT = char>
+            concept has_as_string_view = apply_to<T, meta::has_as_string_view, CharT>;
+
+            template<typename T, typename CharT = char>
+            concept has_as_string = apply_to<T, meta::has_as_string, CharT>;
+        } // namespace plain
     } // namespace meta
 
     template<meta::has_as_string_view From>
@@ -65,28 +79,28 @@ export namespace stormkit { inline namespace core {
     constexpr auto tag_invoke(try_as_fn<string>,
                               From value,
                               i32  base                   = 10,
-                              const std::source_location& = std::source_location::current()) noexcept -> System_result<string>;
+                              const std::source_location& = std::source_location::current()) noexcept -> system_result<string>;
 
     template<meta::plain::floating_point From>
     [[nodiscard]]
     constexpr auto tag_invoke(try_as_fn<string>,
                               From              value,
                               std::chars_format fmt       = std::chars_format::general,
-                              const std::source_location& = std::source_location::current()) noexcept -> System_result<string>;
+                              const std::source_location& = std::source_location::current()) noexcept -> system_result<string>;
 
     template<meta::plain::integral To>
     [[nodiscard]]
     constexpr auto tag_invoke(try_as_fn<To>,
                               string_view value,
                               i32         base            = 10,
-                              const std::source_location& = std::source_location::current()) noexcept -> System_result<To>;
+                              const std::source_location& = std::source_location::current()) noexcept -> system_result<To>;
 
     template<meta::plain::floating_point To>
     [[nodiscard]]
     constexpr auto tag_invoke(try_as_fn<To>,
                               string_view       value,
                               std::chars_format fmt       = std::chars_format::general,
-                              const std::source_location& = std::source_location::current()) noexcept -> System_result<To>;
+                              const std::source_location& = std::source_location::current()) noexcept -> system_result<To>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -187,12 +201,12 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::plain::integral From>
     constexpr auto tag_invoke(try_as_fn<string>, From&& value, i32 base, const std::source_location&) noexcept
-      -> System_result<string> {
-        auto out = System_result<string> { std::in_place };
+      -> system_result<string> {
+        auto out = system_result<string> { std::in_place };
         out->resize(16);
         auto&& [ptr, errc] = std::to_chars(stdr::data(*out), stdr::data(*out) + stdr::size(*out), value, base);
         if (errc != std::errc {}) [[unlikely]]
-            out = std::unexpected<System_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
+            out = std::unexpected<system_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
         else {
             const auto size = std::distance(stdr::data(*out), ptr);
             out->resize(as<usize>(size));
@@ -205,13 +219,13 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::plain::floating_point From>
     constexpr auto tag_invoke(try_as_fn<string>, From&& value, std::chars_format fmt, const std::source_location&) noexcept
-      -> System_result<string> {
-        auto out = System_result<string> { std::in_place };
+      -> system_result<string> {
+        auto out = system_result<string> { std::in_place };
         out->resize(16, '\0');
 
         auto&& [ptr, errc] = std::to_chars(stdr::data(*out), stdr::data(*out) + stdr::size(*out), value, fmt);
         if (errc != std::errc {}) [[unlikely]]
-            out = std::unexpected<System_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
+            out = std::unexpected<system_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
         else {
             const auto size = std::distance(stdr::data(*out), ptr);
             out->resize(size);
@@ -224,11 +238,11 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::plain::integral To>
     constexpr auto tag_invoke(try_as_fn<To>, string_view value, i32 base, const std::source_location&) noexcept
-      -> System_result<To> {
-        auto out         = System_result<To> { std::in_place };
+      -> system_result<To> {
+        auto out         = system_result<To> { std::in_place };
         auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), *out, base);
         if (errc != std::errc {}) [[unlikely]]
-            out = std::unexpected<System_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
+            out = std::unexpected<system_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
 
         return out;
     }
@@ -237,11 +251,11 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::plain::floating_point To>
     constexpr auto tag_invoke(try_as_fn<To>, string_view value, std::chars_format fmt, const std::source_location&) noexcept
-      -> System_result<To> {
-        auto out         = System_result<To> { std::in_place };
+      -> system_result<To> {
+        auto out         = system_result<To> { std::in_place };
         auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), *out, fmt);
         if (errc != std::errc {}) [[unlikely]]
-            out = std::unexpected<System_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
+            out = std::unexpected<system_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
 
         return out;
     }

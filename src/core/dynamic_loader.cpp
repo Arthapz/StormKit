@@ -24,7 +24,7 @@ import stormkit.core.typesafe.safecasts;
 namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
-    DynamicLoader::~DynamicLoader() {
+    dynamic_loader::~dynamic_loader() {
         if (m_library_handle != nullptr) [[likely]] {
 #ifdef STORMKIT_OS_WINDOWS
             FreeLibrary(std::bit_cast<HMODULE>(m_library_handle));
@@ -37,7 +37,7 @@ namespace stormkit {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DynamicLoader::do_load(std::filesystem::path filepath) -> Expected<void> {
+    auto dynamic_loader::do_load(std::filesystem::path filepath) -> expected<void> {
 #ifdef STORMKIT_OS_WINDOWS
         const auto wfilepath = filepath.wstring();
 
@@ -59,7 +59,7 @@ namespace stormkit {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DynamicLoader::do_get_func(string_view name) const -> Expected<void*> {
+    auto dynamic_loader::do_get_func(string_view name) const -> expected<void*> {
         EXPECTS(m_library_handle);
 #ifdef STORMKIT_OS_WINDOWS
         auto func = ::GetProcAddress(std::bit_cast<HMODULE>(m_library_handle), std::data(name));

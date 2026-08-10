@@ -12,9 +12,13 @@ export module stormkit.core.typesafe.ref_ptr;
 
 import std;
 
-import stormkit.core.meta;
-import stormkit.core.contract;
 import stormkit.core.types;
+
+import stormkit.core.meta.type_manipulation;
+import stormkit.core.meta.concepts;
+import stormkit.core.meta.algorithms;
+import stormkit.core.meta.type_query;
+import stormkit.core.contract;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -282,12 +286,7 @@ export {
             requires(stdr::range<Out<typename T::value_type>>)
         [[nodiscard]]
         constexpr auto to_mut_optrefs(T& range) noexcept -> decltype(auto);
-
-        template<meta::hash_type Ret = hash32, typename T>
-        constexpr auto hasher(const ref_ptr<T>& value) noexcept -> Ret;
-
-        template<typename T, bool Optional, typename FormatContext>
-        auto format_as(const ref<T, Optional>& value, FormatContext& ctx) noexcept -> decltype(ctx.out()); */
+        */
     }} // namespace stormkit::core
 
     template<typename T>
@@ -887,25 +886,5 @@ namespace stormkit { inline namespace core {
                      return as_optref_mut(std::forward<U>(val));
                  })
                | stdr::to<Out<ref<value_type>>>();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, meta::hash_type Ret>
-    STORMKIT_FORCE_INLINE
-    constexpr auto hasher(const ref_ptr<T>& value) noexcept -> Ret {
-        return hash<Ret>(value.get());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, bool Optional, typename FormatContext>
-    inline auto format_as(const ref<T, Optional>& value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
-        if constexpr (Optional) {
-            if (value == nullptr) return std::format_to(ctx.out(), "[ref value: null]");
-            else
-                return std::format_to(ctx.out(), "[ref value: {}]", *value);
-        } else
-            return std::format_to(ctx.out(), "[ref value: {}]", *value);
     }*/
 }} // namespace stormkit::core

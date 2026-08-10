@@ -66,16 +66,16 @@ namespace test {
     };
 
     namespace {
-        constexpr auto StyleMap = frozen::make_unordered_map<Status, ConsoleStyle>({
-          { Status::Passed,    ConsoleStyle { .fg = ConsoleColor::BLACK, .bg = ConsoleColor::GREEN } },
-          { Status::NotPassed, ConsoleStyle { .fg = ConsoleColor::BLACK, .bg = ConsoleColor::RED }   },
+        constexpr auto StyleMap = frozen::make_unordered_map<Status, console_style>({
+          { Status::Passed,    console_style { .fg = console_color::BLACK, .bg = console_color::GREEN } },
+          { Status::NotPassed, console_style { .fg = console_color::BLACK, .bg = console_color::RED }   },
           { Status::CheckMark,
-           ConsoleStyle {
-              .fg = ConsoleColor::GREEN,
+           console_style {
+              .fg = console_color::GREEN,
             }                                                                                        },
           { Status::CrossMark,
-           ConsoleStyle {
-              .fg = ConsoleColor::RED,
+           console_style {
+              .fg = console_color::RED,
             }                                                                                        },
         });
 

@@ -110,11 +110,11 @@ export namespace stormkit { inline namespace core {
         auto dirties() const noexcept -> array_view<const TreeNodeIndexType>;
 
         auto gen_dot_file(stdfs::path filepath, std23::function_ref<string_view(string_view)> colorize_node) const noexcept
-          -> System_result<usize>;
+          -> system_result<usize>;
 
         auto gen_dot_file(stdfs::path                                   filepath,
                           core::u32                                     highlight,
-                          std23::function_ref<string_view(string_view)> colorize_node) const noexcept -> System_result<usize>;
+                          std23::function_ref<string_view(string_view)> colorize_node) const noexcept -> system_result<usize>;
 
       private:
         TreeNodeIndexType           m_first_free_index = 0;
@@ -442,7 +442,7 @@ namespace stormkit { inline namespace core {
     template<class TreeNodeClass>
     auto Tree<TreeNodeClass>::gen_dot_file(stdfs::path                                   filepath,
                                            std23::function_ref<string_view(string_view)> colorize_node) const noexcept
-      -> System_result<usize> {
+      -> system_result<usize> {
         using namespace stormkit::literals;
         auto out = string {};
         out.reserve(1_kb);
@@ -484,7 +484,7 @@ namespace stormkit { inline namespace core {
     auto Tree<TreeNodeClass>::gen_dot_file(stdfs::path                                   filepath,
                                            core::u32                                     highlight,
                                            std23::function_ref<string_view(string_view)> colorize_node) const noexcept
-      -> System_result<usize> {
+      -> system_result<usize> {
         using namespace stormkit::literals;
         auto out = string {};
         out.reserve(1_kb);

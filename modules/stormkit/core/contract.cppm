@@ -19,7 +19,7 @@ import stormkit.core.stacktrace;
 import stormkit.core.types;
 
 export namespace stormkit { inline namespace core {
-    enum class Assert_type {
+    enum class assert_type {
         ASSERTION,
         PRE_CONDITION,
         POST_CONDITION,
@@ -27,11 +27,11 @@ export namespace stormkit { inline namespace core {
 
     STORMKIT_CORE_API
     auto assert_base(bool                        cond,
-                     Assert_type                 type,
+                     assert_type                 type,
                      string_view                 message,
                      const std::source_location& location = std::source_location::current()) noexcept -> void;
 
-    consteval auto consteval_assert_base(bool cond, Assert_type type, string_view message) noexcept -> void;
+    consteval auto consteval_assert_base(bool cond, assert_type type, string_view message) noexcept -> void;
 
     constexpr auto assert(bool                        cond,
                           string_view                 message,
@@ -71,8 +71,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(Assert_type value) noexcept -> string_view {
-        using enum Assert_type;
+    constexpr auto as_string(assert_type value) noexcept -> string_view {
+        using enum assert_type;
         switch (value) {
             case ASSERTION: return "Contract check";
             case PRE_CONDITION: return "Pre condition check";
@@ -85,7 +85,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    consteval auto generateConstevalMessage(Assert_type type, string_view message) noexcept -> StringLiteral {
+    consteval auto generateConstevalMessage(assert_type type, string_view message) noexcept -> StringLiteral {
         auto       result = StringLiteral {};
         const auto str    = "[ASSERTION]"s + as_string(type) + ": " + message;
         std::ranges::copy(str, std::begin(result.buff));
@@ -96,7 +96,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    consteval auto consteval_assert_base(bool cond, Assert_type type, string_view message) noexcept -> void {
+    consteval auto consteval_assert_base(bool cond, assert_type type, string_view message) noexcept -> void {
         if (not cond) [[unlikely]] { constevalFailure(generateConstevalMessage(type, message)); }
     }
 
@@ -106,9 +106,9 @@ namespace stormkit { inline namespace core {
     constexpr auto assert(bool cond, string_view message, [[maybe_unused]] const std::source_location& location) noexcept
       -> void {
         if consteval {
-            consteval_assert_base(cond, Assert_type::ASSERTION, message);
+            consteval_assert_base(cond, assert_type::ASSERTION, message);
         } else {
-            assert_base(cond, Assert_type::ASSERTION, message, location);
+            assert_base(cond, assert_type::ASSERTION, message, location);
         }
     }
 
@@ -124,9 +124,9 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr auto expects(bool cond, string_view message, const std::source_location& location) noexcept -> void {
         if consteval {
-            consteval_assert_base(cond, Assert_type::PRE_CONDITION, message);
+            consteval_assert_base(cond, assert_type::PRE_CONDITION, message);
         } else {
-            assert_base(cond, Assert_type::PRE_CONDITION, message, location);
+            assert_base(cond, assert_type::PRE_CONDITION, message, location);
         }
     }
 
@@ -142,9 +142,9 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr auto ensures(bool cond, string_view message, const std::source_location& location) noexcept -> void {
         if consteval {
-            consteval_assert_base(cond, Assert_type::POST_CONDITION, message);
+            consteval_assert_base(cond, assert_type::POST_CONDITION, message);
         } else {
-            assert_base(cond, Assert_type::POST_CONDITION, message, location);
+            assert_base(cond, assert_type::POST_CONDITION, message, location);
         }
     }
 

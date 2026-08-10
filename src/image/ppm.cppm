@@ -76,12 +76,12 @@ namespace stormkit::image::details {
             }
 
             output.reserve(std::size(result));
-            std::ranges::copy(as<Bytes>(result), std::back_inserter(output));
+            std::ranges::copy(as<bytes_view>(result), std::back_inserter(output));
         } else if (args == image::Image::CodecTs::BINARY) {
             auto header = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
             output.reserve(std::size(output) + std::size(output_image));
 
-            std::ranges::copy(as<Bytes>(header), std::back_inserter(output));
+            std::ranges::copy(as<bytes_view>(header), std::back_inserter(output));
             std::ranges::copy(output_image, std::back_inserter(output));
         }
 

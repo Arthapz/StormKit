@@ -15,11 +15,12 @@ import stormkit.core.hash;
 import stormkit.core.string.static_string;
 import stormkit.core.meta.concepts;
 import stormkit.core.meta.algorithms;
+import stormkit.core.string.format;
 
 namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core {
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     class strong_type;
 
@@ -150,7 +151,7 @@ export namespace stormkit { inline namespace core {
         } // namespace meta
     } // namespace capabilities
 
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     class STORMKIT_OWNER strong_type final: public Capabilities<T>... {
       public:
@@ -186,7 +187,7 @@ export namespace stormkit { inline namespace core {
 
         template<typename Self>
         [[nodiscard]]
-        constexpr auto get(STORMKIT_LIFETIMEBOUND this Self&& self) noexcept -> meta::forward_like<Self, value_type>;
+        constexpr auto value(STORMKIT_LIFETIMEBOUND this Self&& self) noexcept -> meta::forward_like<Self, value_type>;
 
       private:
         friend class Capabilities<T>...;
@@ -194,44 +195,15 @@ export namespace stormkit { inline namespace core {
         value_type m_value;
     };
 
-    // template<typename T>
-    // constexpr auto value_of(T&& value) noexcept -> decltype(auto);
-
-    // template<meta::is_strong_type                                    First,
-    //          meta::plain::is<typename to_plain_type<First>::value_type> Second>
-    //     requires(meta::HasArithmeticCapability<to_plain_type<First>>)
-    // constexpr auto operator+(First&& first, Second&& second) {
-    //     return to_plain_type<First> { std::forward<First>(first).get()
-    //                                 + std::forward<Second>(second) };
-    // }
-
-    // template<meta::is_strong_type First, meta::plain::is<First> Second>
-    //     requires(meta::HasArithmeticCapability<to_plain_type<First>>)
-    // constexpr auto operator+(First&& first, Second&& second) {
-    //     return to_plain_type<First> { std::forward<First>(first).get()
-    //                                 + std::forward<Second>(second).get() };
-    // }
-
-    // template<meta::is_strong_type                                    First,
-    //          meta::plain::is<typename to_plain_type<First>::value_type> Second>
-    //     requires(meta::HasArithmeticCapability<to_plain_type<First>>)
-    // constexpr auto operator+=(First& first, Second&& second) {
-    //     first.get() += std::forward<Second>(second);
-    // }
-
-    // template<meta::is_strong_type First, meta::plain::is<First> Second>
-    //     requires(meta::HasArithmeticCapability<to_plain_type<First>>)
-    // constexpr auto operator+=(First& first, Second&& second) {
-    //     first.get() += std::forward<Second>(second).get();
-    // }
-
-    // template<meta::hash_type Ret = hash32, meta::is_strong_type T>
-    // constexpr auto hasher(const T& value) noexcept -> Ret;
-
-    // template<meta::is_decayed T, typename Tag, meta::static_string Name, typename... Capabilities, typename
-    // FormatContext> auto format_as(const strong_type<T, Tag, Name, Capabilities...>& value, FormatContext& ctx) noexcept
-    //   -> decltype(ctx.out());
-
+    template<typename CharT,
+             typename FormatContext,
+             meta::is_decayed T,
+             typename Tag,
+             static_string NAME_,
+             template<class> typename... Capabilities>
+    constexpr auto tag_invoke(format_as_fn<CharT>,
+                              meta::in<strong_type<T, Tag, NAME_, Capabilities...>> value,
+                              FormatContext&                                        ctx) -> decltype(ctx.out());
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -241,7 +213,7 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
     constexpr strong_type<T, Tag, NAME_, Capabilities...>::
@@ -251,7 +223,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     template<class... Ts>
     STORMKIT_FORCE_INLINE
@@ -263,7 +235,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
     constexpr strong_type<T, Tag, NAME_, Capabilities...>::
@@ -271,7 +243,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
     constexpr strong_type<T, Tag, NAME_, Capabilities...>::
@@ -281,7 +253,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
     constexpr strong_type<T, Tag, NAME_, Capabilities...>::strong_type(strong_type&&) noexcept(meta::noexcept_movable<value_type>)
@@ -290,7 +262,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto strong_type<T, Tag, NAME_, Capabilities...>::
@@ -300,7 +272,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto strong_type<T, Tag, NAME_, Capabilities...>::
@@ -310,7 +282,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     template<typename Self>
     STORMKIT_FORCE_INLINE
@@ -321,33 +293,29 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    constexpr auto strong_type<T, Tag, NAME_, Capabilities...>::get(this Self&& self) noexcept
+    constexpr auto strong_type<T, Tag, NAME_, Capabilities...>::value(this Self&& self) noexcept
       -> meta::forward_like<Self, value_type> {
         return std::forward_like<Self>(self.m_value);
     }
 
-    // ////////////////////////////////////////
-    // ////////////////////////////////////////
-    // template<meta::hash_type Ret, meta::is_strong_type T>
-    // STORMKIT_FORCE_INLINE
-    // constexpr auto hasher(const T& value) noexcept -> Ret {
-    //     return hash<Ret>(value.get());
-    // }
-
-    // ////////////////////////////////////////
-    // ////////////////////////////////////////
-    // template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities,
-
-    // requires(meta::destructible<T>)
-    // typename FormatContext> STORMKIT_FORCE_INLINE inline auto format_as(const strong_type<T, Tag, NAME_, Capabilities...>&
-    // value, FormatContext& ctx) noexcept
-    //   -> decltype(ctx.out()) {
-    //     return std::format_to(ctx.out(), "[{} value: {}]", NAME, value.get());
-    // }
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename CharT,
+             typename FormatContext,
+             meta::is_decayed T,
+             typename Tag,
+             static_string NAME_,
+             template<class> typename... Capabilities>
+             STORMKIT_FORCE_INLINE
+    constexpr auto tag_invoke(format_as_fn<CharT>,
+                              meta::in<strong_type<T, Tag, NAME_, Capabilities...>> value,
+                              FormatContext&                                        ctx) -> decltype(ctx.out()) {
+        return std::format_to(ctx.out(), "{{{} {}}}", NAME_, value.value());
+    }
 
     namespace capabilities {
         ////////////////////////////////////////

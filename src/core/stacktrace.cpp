@@ -51,10 +51,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto print_stacktrace(int ignore_count) noexcept -> void {
+    auto print_stacktrace(u32 ignore_count) noexcept -> void {
         const auto thread_name = get_current_thread_name();
         const auto stderr      = get_stderr();
-        ;
+
         if (not std::empty(thread_name))
             std::println(stderr,
                          "================= CALLSTACK (thread name: {}, id: {}) =================",

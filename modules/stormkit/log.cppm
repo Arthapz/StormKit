@@ -171,7 +171,7 @@ export {
             string_view name = "";
         };
 
-        template<meta::static_string str>
+        template<static_string str>
         [[nodiscard]]
         constexpr auto operator""_module() noexcept -> stormkit::log::Module;
 
@@ -647,7 +647,7 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::static_string str>
+    template<static_string str>
     STORMKIT_FORCE_INLINE
     constexpr auto operator""_module() noexcept -> stormkit::log::Module {
         return Module { str.view() };

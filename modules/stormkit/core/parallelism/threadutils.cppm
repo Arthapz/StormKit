@@ -12,7 +12,11 @@ export module stormkit.core.parallelism.threadutils;
 import std;
 
 import stormkit.core.types;
-import stormkit.core.meta;
+import stormkit.core.meta.concepts;
+import stormkit.core.meta.type_query;
+import stormkit.core.meta.type_manipulation;
+
+namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core {
     STORMKIT_CORE_API
@@ -28,9 +32,23 @@ export namespace stormkit { inline namespace core {
     STORMKIT_CORE_API
     auto get_thread_name(const std::jthread& thread) noexcept -> string;
 
-    template<std::ranges::input_range Range>
-        requires(meta::specialization_of<meta::range_type<Range>, std::future>)
-    inline auto wait_all(Range&& futures) noexcept {
+    template<meta::plain::apply_to<stdr::input_range> Range>
+    auto wait_all(Range&& futures) noexcept
+        requires(meta::specialization_of<meta::range_type<meta::to_plain_type<Range>>, std::future>);
+}} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::plain::apply_to<stdr::input_range> Range>
+        STORMKIT_FORCE_INLINE
+    inline auto wait_all(Range&& futures) noexcept
+        requires(meta::specialization_of<meta::range_type<meta::to_plain_type<Range>>, std::future>)
+    {
         for (auto&& future : std::forward<Range>(futures)) future.wait();
     }
 }} // namespace stormkit::core

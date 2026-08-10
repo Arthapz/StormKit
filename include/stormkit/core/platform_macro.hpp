@@ -5,6 +5,8 @@
 #ifndef STORMKIT_PLATFORM_MACRO_HPP
 #define STORMKIT_PLATFORM_MACRO_HPP
 
+#include <stormkit/core/macro_utils.hpp>
+
 #include <version>
 
 #if defined(__cplusplus)
@@ -16,10 +18,6 @@
 #else
     #error "Stormkit need a c++ compiler"
 #endif
-
-#define STORMKIT_STRINGIFY_DETAILS(x)  #x
-#define STORMKIT_STRINGIFY(x)          STORMKIT_STRINGIFY_DETAILS(x)
-#define STORMKIT_PRAGMA_FROM_STRING(x) _Pragma(STORMKIT_STRINGIFY(x))
 
 #if defined(_MSC_VER) and not defined(__clang__)
     #pragma warning(disable: 4251)

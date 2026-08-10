@@ -336,6 +336,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename T>
     concept prefer_pass_by_ref = not prefer_pass_by_value<T>;
+
+    template<typename T>
+    concept hash_type = is_any_of<T, hash32, hash64>;
 }}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////

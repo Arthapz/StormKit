@@ -12,16 +12,20 @@ import std;
 
 import stormkit.core.types;
 import stormkit.core.hash;
+import stormkit.core.meta.concepts;
 import stormkit.core.containers.hash_map;
 import stormkit.core.typesafe.safecasts;
+
+namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core {
     struct string_hash_fn {
         using is_transparent = void;
         using is_avalanching = void;
 
+        template<typename T = u64>
         [[nodiscard]]
-        static constexpr auto operator()(string_view value, u64 seed = 0) noexcept -> u64;
+        static constexpr auto operator()(string_view value, T seed = 0) noexcept -> T;
     };
 
     template<class Value, usize SIZE, class Key = string>
@@ -176,7 +180,6 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto string_hash_fn::operator()(string_view value, T seed) noexcept -> T {
-        return hash_of(value, seed);
         auto mask   = u8 { 0b01111 };
         auto hasher = lehmer_128_hasher<T> { seed };
         hash_selected_characters(mask, hasher, stdr::data(value), stdr::size(value));

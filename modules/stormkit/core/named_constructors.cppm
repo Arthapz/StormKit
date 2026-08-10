@@ -18,7 +18,7 @@ namespace stormkit { inline namespace core {
     export {
         namespace meta {
             template<typename NewT, std_expected Oldreturn_type>
-            using TransformExpectedValueTo = std::expected<NewT, typename Oldreturn_type::error_type>;
+            using TransformexpectedValueTo = std::expected<NewT, typename Oldreturn_type::error_type>;
         } // namespace meta
     }
 
@@ -184,7 +184,7 @@ namespace stormkit { inline namespace core {
             out.do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(d_args)...);
             return out;
         } else {
-            using return_type = meta::TransformExpectedValueTo<value_type, DoInitreturn_type>;
+            using return_type = meta::TransformexpectedValueTo<value_type, DoInitreturn_type>;
 
 #ifdef STORMKIT_COMPILER_CLANG
             auto out = value_type { PrivateTagBase::PRIVATE, std::forward<TConstructorTs>(c_args)... };
@@ -214,7 +214,7 @@ namespace stormkit { inline namespace core {
             out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(d_args)...);
             return out;
         } else {
-            using return_type = meta::TransformExpectedValueTo<heap_ptr<value_type>, DoInitreturn_type>;
+            using return_type = meta::TransformexpectedValueTo<heap_ptr<value_type>, DoInitreturn_type>;
 
 #ifdef STORMKIT_COMPILER_CLANG
             auto out = core::allocate_unsafe<value_type>(PrivateTagBase::PRIVATE, std::forward<TConstructorTs>(c_args)...);
@@ -246,7 +246,7 @@ namespace stormkit { inline namespace core {
             out.do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(args)...);
             return out;
         } else {
-            using return_type = meta::TransformExpectedValueTo<value_type, DoInitreturn_type>;
+            using return_type = meta::TransformexpectedValueTo<value_type, DoInitreturn_type>;
 
 #ifdef STORMKIT_COMPILER_CLANG
             auto out = value_type { PrivateTagBase::PRIVATE };
@@ -275,7 +275,7 @@ namespace stormkit { inline namespace core {
             out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(args)...);
             return out;
         } else {
-            using return_type = meta::TransformExpectedValueTo<heap_ptr<value_type>, DoInitreturn_type>;
+            using return_type = meta::TransformexpectedValueTo<heap_ptr<value_type>, DoInitreturn_type>;
 
 #ifdef STORMKIT_COMPILER_CLANG
             auto out = core::allocate_unsafe<value_type>(PrivateTagBase::PRIVATE);

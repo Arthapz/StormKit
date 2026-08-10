@@ -13,6 +13,8 @@ import std;
 import stormkit.core.types;
 
 import stormkit.core.ranges.numeric_range;
+import stormkit.core.typesafe.safecasts;
+import stormkit.core.containers.safecasts;
 
 using namespace stormkit::literals;
 
@@ -153,7 +155,7 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         constexpr auto crc32(array_view<const byte> bytes, u32 seed) -> hash32 {
             for (const auto it : range(stdr::size(bytes))) {
-                const auto index = as<usize>(seed & 0xFF) ^ bytes[it];
+                const auto index = as<usize>(seed & 0xFF) ^ std::bit_cast<u8>(bytes[it]);
                 seed             = details::crc64_table[index] ^ (seed >> 8);
             }
 
@@ -164,7 +166,7 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         constexpr auto crc64(array_view<const byte> bytes, u64 seed) -> hash64 {
             for (const auto it : range(stdr::size(bytes))) {
-                const auto index = as<usize>(seed & 0xFF) ^ bytes[it];
+                const auto index = as<usize>(seed & 0xFF) ^ std::bit_cast<u8>(bytes[it]);
                 seed             = details::crc64_table[index] ^ (seed >> 8);
             }
 
@@ -177,28 +179,28 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
         constexpr auto operator""_crc32(unsigned long long int value) -> hash32 {
-            return hash::crc32(as<Bytes>(value));
+            return hash::crc32(as<bytes_view>(value));
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
         constexpr auto operator""_crc32(long double value) -> hash32 {
-            return hash::crc32(as<Bytes>(value));
+            return hash::crc32(as<bytes_view>(value));
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
         constexpr auto operator""_crc64(unsigned long long int value) -> hash64 {
-            return hash::crc64(as<Bytes>(value));
+            return hash::crc64(as<bytes_view>(value));
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE STORMKIT_CONST
         constexpr auto operator""_crc64(long double value) -> hash64 {
-            return hash::crc64(as<Bytes>(value));
+            return hash::crc64(as<bytes_view>(value));
         }
     } // namespace literals
 }} // namespace stormkit::core

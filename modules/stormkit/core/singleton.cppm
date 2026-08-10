@@ -6,27 +6,33 @@ export module stormkit.core.singleton;
 
 import std;
 
+import stormkit.core.types;
+
+import stormkit.core.heap;
+import stormkit.core.meta.type_query;
+import stormkit.core.meta.concepts;
+
 export namespace stormkit { inline namespace core {
-    template<class T>
-    class Singleton {
+    template<typename T>
+    class singleton {
       public:
-        template<class... Ts>
-        static auto instance(Ts&&... args) noexcept(std::is_nothrow_constructible_v<T>) -> T&;
+        template<typename... Ts>
+        static auto instance(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>) -> T&;
 
-        Singleton(Singleton&&)      = delete;
-        Singleton(const Singleton&) = delete;
+        singleton(singleton&&)      = delete;
+        singleton(const singleton&) = delete;
 
-        auto operator=(Singleton&&) -> Singleton&      = delete;
-        auto operator=(const Singleton&) -> Singleton& = delete;
+        auto operator=(singleton&&) -> singleton&      = delete;
+        auto operator=(const singleton&) -> singleton& = delete;
 
       protected:
-        Singleton() noexcept  = default;
-        ~Singleton() noexcept = default;
+        singleton() noexcept;
+        ~singleton() noexcept;
 
       private:
         static auto once_flag() noexcept -> std::once_flag&;
 
-        static inline std::unique_ptr<T> m_instance = nullptr;
+        static inline heap_ptr<T> m_instance = nullptr;
     };
 }} // namespace stormkit::core
 
@@ -37,20 +43,30 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T>
-    template<class... Ts>
-    auto Singleton<T>::instance(Ts&&... args) noexcept(std::is_nothrow_constructible_v<T>) -> T& {
-        auto lambdas = [](Ts&&... args) mutable { m_instance = std::make_unique<T>(std::forward<Ts>(args)...); };
+    template<typename T>
+    singleton<T>::singleton() noexcept = default;
 
-        std::call_once(once_flag(), lambdas, std::forward<Ts>(args)...);
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    singleton<T>::~singleton() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    template<typename... Ts>
+    auto singleton<T>::instance(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>) -> T& {
+        const auto init = [](Ts&&... args) { m_instance = allocate_unsafe<T>(std::forward<Ts>(args)...); };
+
+        std::call_once(once_flag(), init, std::forward<Ts>(args)...);
 
         return *m_instance;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T>
-    auto Singleton<T>::once_flag() noexcept -> std::once_flag& {
+    template<typename T>
+    auto singleton<T>::once_flag() noexcept -> std::once_flag& {
         static auto once_flag = std::once_flag {};
         return once_flag;
     }

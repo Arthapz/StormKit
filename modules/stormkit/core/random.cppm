@@ -21,7 +21,7 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     auto rand(T min, T max) noexcept -> T;
 
-    template<std::integral T>
+    template<meta::integral T>
     [[nodiscard]]
     auto rand(T min, T max) noexcept -> T;
 }} // namespace stormkit::core
@@ -56,7 +56,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::integral T>
+    template<meta::integral T>
     STORMKIT_FORCE_INLINE
     inline auto rand(T min, T max) noexcept -> T {
         std::uniform_int_distribution<T> dis(min, max);

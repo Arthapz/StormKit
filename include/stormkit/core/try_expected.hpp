@@ -5,112 +5,75 @@
 #ifndef STORMKIT_TRY_EXPECTED_HPP
 #define STORMKIT_TRY_EXPECTED_HPP
 
-#include <stormkit/core/platform_macro.hpp>
+#include <stormkit/core/macro_utils.hpp>
 
-#if (defined(__clang__) or defined(__GNUC__))
-    #define Try(try_expression)                                        \
-        __extension__({                                                \
-            auto res = (try_expression);                               \
-            if (not res.has_value()) [[unlikely]]                      \
-                return { std::unexpected { std::move(res.error()) } }; \
-            *std::move(res);                                           \
-        })
-    #define TryOr(try_expression, or_closure)                                                                 \
-        __extension__({                                                                                       \
-            auto res = (try_expression);                                                                      \
-            if (not res.has_value()) [[unlikely]] { return std::invoke(or_closure, std::move(res.error())); } \
-            *std::move(res);                                                                                  \
-        })
-    #define TryTransform(try_expression, transform_closure)                                        \
-        __extension__({                                                                            \
-            auto res = (try_expression);                                                           \
-            if (not res.has_value()) [[unlikely]] {                                                \
-                return std::unexpected { std::invoke(transform_closure, std::move(res.error())) }; \
-            }                                                                                      \
-            *std::move(res);                                                                       \
-        })
-    #define TryAssert(try_expression, msg)                 \
-        __extension__({                                    \
-            auto res = (try_expression);                   \
-            stormkit::core::ensures(res.has_value(), msg); \
-            *std::move(res);                               \
-        })
+#define Try_impl(expected_var_name, try_expression)                              \
+    auto expected_var_name = (try_expression);                                   \
+    do {                                                                         \
+        if (not expected_var_name.has_value()) [[unlikely]] {                    \
+            return { std::unexpected { std::move(expected_var_name.error()) } }; \
+        }                                                                        \
+    } while (false)
 
-    #define Return return
-#else
-    #define Try(try_expression)                             co_await (try_expression)
-    #define TryOr(try_expression, or_closure)               co_await (try_expression).or_else(or_closure)
-    #define TryTransform(try_expression, transform_closure) co_await (try_expression).transform_error(transform_closure)
-    #define TryAssert(try_expression, msg) co_await (try_expression).or_else(stormkit::core::monadic::assert(msg))
+#define TryOr_impl(expected_var_name, try_expression, or_closure)                \
+    auto expected_var_name = (try_expression);                                   \
+    do                                                                           \
+        if (not expected_var_name.has_value()) [[unlikely]] {                    \
+            return std::invoke(or_closure, std::move(expected_var_name.error())) \
+        }                                                                        \
+    }                                                                            \
+    while (false)
 
-    #define Return co_return
-#endif
+#define TryTransform_impl(expected_var_name, try_expression, transform_closure)                              \
+    auto expected_var_name = (try_expression);                                                               \
+    do {                                                                                                     \
+        if (not expected_var_name.has_value()) [[unlikely]] {                                                \
+            return std::unexpected { std::invoke(transform_closure, std::move(expected_var_name.error())) }; \
+        }                                                                                                    \
+    } while (false)
 
-#define CustomLoggedTry(try_expression, logger, msg)          \
-    TryTransform(try_expression, [&](auto&& error) noexcept { \
-        logger("{}\n    > reason: {}", msg, error);           \
-        return error;                                         \
+#define TryAssert_impl(expected_var_name, try_expression, msg) \
+    auto expected_var_name = (try_expression);                 \
+    stormkit::core::ensures(expected_var_name.has_value(), msg)
+
+#define TryTo_impl(name, expected_var_name, try_expression) \
+    Try_impl(expected_var_name, try_expression);            \
+    auto name = *std::move(expected_var_name)
+#define TryToOr_impl(name, expected_var_name, try_expression, or_closure) \
+    TryOr_impl(expected_var_name, try_expression, or_closure);            \
+    auto name = *std::move(expected_var_name)
+#define TryToTransform_impl(name, expected_var_name, try_expression, transform_closure) \
+    TryTransform_impl(expected_var_name, try_expression, transform_closure);            \
+    auto name = *std::move(expected_var_name)
+#define TryToAssert_impl(name, expected_var_name, try_expression, msg) \
+    TryAssert_impl(expected_var_name, try_expression, msg);            \
+    auto name = *std::move(expected_var_name)
+
+#define Try(try_expression)               Try_impl(STORMKIT_UNIQUE_NAME(temp), try_expression)
+#define TryOr(try_expression, or_closure) TryOr_impl(STORMKIT_UNIQUE_NAME(temp), try_expression, or_closure)
+#define TryTransform(try_expression, transform_closure) \
+    TryTransform_impl(STORMKIT_UNIQUE_NAME(temp), try_expression, transform_closure)
+#define TryAssert(try_expression, msg) TryAssert_impl(STORMKIT_UNIQUE_NAME(temp), try_expression, msg)
+
+#define TryTo(name, try_expression)               TryTo_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression)
+#define TryToOr(name, try_expression, or_closure) TryToOr_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression, or_closure)
+#define TryToTransform(name, try_expression, transform_closure) \
+    TryToTransform_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression, transform_closure)
+#define TryToAssert(name, try_expression, msg) TryToAssert_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression, msg)
+
+#define CustomLoggedTryTo(name, try_expression, logger, msg)                                    \
+    TryToOr_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression, [&](auto&& error) noexcept { \
+        logger("{}\n    > reason: {}", msg, error);                                             \
+        return error;                                                                           \
     })
-#define CustomLoggedTryOr(try_expression, or_closure, logger, msg)      \
-    TryOr(try_expression, [&]<typename Error>(Error&& error) noexcept { \
-        logger("{}\n    > reason: {}", msg, error);                     \
-        return std::invoke(or_closure, std::forward<Error>(error));     \
+
+#define LoggedTryTo(name, try_expression, logger, msg) CustomLoggerTryTo(name, try_expression, elog, msg)
+
+#define CustomLoggedTry(name, try_expression, logger, msg)                                    \
+    TryOr_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression, [&](auto&& error) noexcept { \
+        logger("{}\n    > reason: {}", msg, error);                                           \
+        return error;                                                                         \
     })
-#define CustomLoggedTryTransform(m, transform_closure, logger, msg)        \
-    TryTransform(m, [&]<typename Error>(Error&& error) noexcept {          \
-        logger("{}\n    > reason: {}", msg, error);                        \
-        return std::invoke(transform_closure, std::forward<Error>(error)); \
-    })
-#define LoggedTry(try_expression, msg)               CustomLoggedTry(try_expression, elog, msg)
-#define LoggedTryOr(try_expression, or_closure, msg) CustomLoggedTryOr(try_expression, or_closure, elog, msg)
-#define LoggedTryTransform(try_expression, transform_closure, msg) \
-    CustomLoggedTryTransform(try_expression, transform_closure, elog, msg)
-
-#define TryLift(try_expression) TryOr(try_expression, stormkit::core::monadic::identity())
-
-#define CustomLoggedTryLift(try_expression, logger, msg) \
-    TryOr(try_expression, [&](auto&& error) noexcept {   \
-        logger("{}\n    > reason: {}", msg, error);      \
-        return error;                                    \
-    })
-#define LoggedTryLift(try_expression) CustomLoggedTryLift(try_expression, elog, msg)
-
-#define DiscardTry(try_expression) \
-    [[maybe_unused]]               \
-    auto _ = Try(try_expression)
-#define DiscardTryOr(try_expression, or_closure) \
-    [[maybe_unused]]                             \
-    auto _ = TryOr(try_expression, or_closure)
-#define DiscardTryTransform(try_expression, transform_closure) \
-    [[maybe_unused]]                                           \
-    auto _ = TryTransform(try_expression, transform_closure)
-
-#define CustomLoggedDiscardTry(try_expression, logger, msg) \
-    [[maybe_unused]]                                        \
-    auto _ = CustomLoggedTry(try_expression, logger, msg)
-#define LoggedDiscardTry(try_expression, msg) CustomLoggedDiscardTry(try_expression, elog, msg)
-#define CustomLoggedDiscardTryOr(try_expression, or_closure, logger, msg) \
-    [[maybe_unused]]                                                      \
-    auto _ = CustomLoggedTryOr(try_expression, or_closure, logger, msg)
-#define LoggedDiscardTryOr(try_expression, or_closure, msg) CustomLoggedDiscardTryOr(try_expression, or_closure, elog, msg)
-#define CustomLoggedDiscardTryTransform(try_expression, transform_closure, logger, msg) \
-    [[maybe_unused]]                                                                    \
-    auto _ = CustomLoggedTryTransform(try_expression, transform_closure, logger, msg)
-#define LoggedDiscardTryTransform(try_expression, transform_closure, msg) \
-    CustomLoggedDiscardTryTransform(try_expression, transform_closure, elog, msg)
-
-#define DiscardTryLift(try_expression) \
-    [[maybe_unused]]                   \
-    auto _ = TryLift(try_expression)
-#define CustomLoggedDiscardTryLift(try_expression, logger, msg) \
-    [[maybe_unused]]                                            \
-    auto _ = CustomLoggedTryLift(try_expression, logger, msg)
-#define LoggedDiscardTryLift(try_expression) \
-    [[maybe_unused]]                         \
-    auto _ = LoggedTryLift(try_expression, msg)
-
-#define DiscardTryAssert(try_expression, msg) \
-    [[maybe_unused]]                          \
-    auto _ = TryAssert(try_expression, msg)
+#define LoggedTry(name, try_expression, logger, msg) CustomLoggerTry(name, try_expression, elog, msg)
 
 #endif

@@ -479,7 +479,7 @@ namespace stormkit::lua::core {
         bind_linear_matrix(parent);
     }
 
-    template<typename T, meta::static_string Name>
+    template<typename T, static_string Name>
     struct _Rect {
         using type                 = T;
         static constexpr auto name = Name;

@@ -14,25 +14,41 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 export namespace stormkit { inline namespace core {
-    template<stdr::input_range Range, meta::unary_predicate<typename meta::to_plain_type<Range>::value_type> Predicate>
+    namespace meta {
+        template<typename T>
+        concept range_predicate = meta::unary_predicate<meta::range_type<T>>;
+
+        namespace plain {
+            template<typename T>
+            concept range_predicate = meta::plain::apply_to<range_predicate, T>;
+        }
+
+        template<typename T, typename U>
+        concept range_unary_op = meta::regular_invocable<T, meta::range_type_ref<U>>;
+
+        namespace plain {
+            template<typename T, typename U>
+            concept range_unary_op = meta::plain::apply_to<range_unary_op, T, U>;
+        }
+    } // namespace meta
+
+    template<stdr::input_range Range, meta::plain::range_predicate Predicate>
     [[nodiscard]]
     constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept -> decltype(auto);
 
-    template<stdr::input_range Range, std::invocable<const typename meta::to_plain_type<Range>::value_type&> Lambda>
+    template<stdr::input_range Range, meta::plain::range_unary_op Operation>
     [[nodiscard]]
-    constexpr auto transform(Range&& input, Lambda&& lambda) noexcept -> decltype(auto);
+    constexpr auto transform(Range&& input, Operation&& op) noexcept -> decltype(auto);
 
-    template<stdr::input_range                                                    Range,
-             meta::unary_predicate<typename meta::to_plain_type<Range>::value_type> Predicate,
-             std::invocable<const typename meta::to_plain_type<Range>::value_type&>  Lambda>
+    template<stdr::input_range Range, meta::plain::range_predicate Predicate, meta::plain::range_unary_op Operation>
     [[nodiscard]]
-    constexpr auto transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept -> decltype(auto);
+    constexpr auto transform_if(Range&& input, Predicate&& predicate, Operation&& op) noexcept -> decltype(auto);
 
-    template<stdr::input_range                                                                                       Range,
-             meta::unary_predicate<typename meta::to_plain_type<Range>::value_type>                                    Predicate,
-             std::invocable<const typename meta::to_plain_type<Range>::value_type&>                                     Lambda,
-             std::output_iterator<std::invoke_result_t<Lambda, const typename meta::to_plain_type<Range>::value_type&>> Iterator>
-    constexpr auto transform_if(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept -> void;
+    template<stdr::input_range                                                                         Range,
+             meta::plain::range_predicate                                                              Predicate,
+             meta::plain::range_unary_op                                                               Operation,
+             std::output_iterator<std::invoke_result_t<Operation, meta::plain::range_type_ref<Range>>> Iterator>
+    constexpr auto transform_if(Range&& input, Iterator&& it, Predicate&& predicate, Operation&& op) noexcept -> void;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -42,41 +58,39 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stdr::input_range Range, meta::unary_predicate<typename meta::to_plain_type<Range>::value_type> Predicate>
+    template<stdr::input_range Range, meta::plain::range_predicate Predicate>
     constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept -> decltype(auto) {
         return std::forward<Range>(input)
                | stdv::filter(std::forward<Predicate>(predicate))
-               | stdr::to<dynarray<typename Range::value_type>>();
+               | stdr::to<dynarray<meta::range_type<Range>>>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stdr::input_range Range, std::invocable<const typename meta::to_plain_type<Range>::value_type&> Lambda>
-    constexpr auto transform(Range&& input, Lambda&& lambda) noexcept -> decltype(auto) {
+    template<stdr::input_range Range, meta::plain::range_unary_op Operation>
+    constexpr auto transform(Range&& input, Operation&& op) noexcept -> decltype(auto) {
         return std::forward<Range>(input)
                | stdv::transform(lambda)
-               | stdr::to<dynarray<std::invoke_result_t<Lambda, const typename meta::to_plain_type<Range>::value_type>>>();
+               | stdr::to<dynarray<std::invoke_result_t<Operation, meta::range_type<meta::to_plain_type<Range>>>>>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stdr::input_range                                                    Range,
-             meta::unary_predicate<typename meta::to_plain_type<Range>::value_type> Predicate,
-             std::invocable<const typename meta::to_plain_type<Range>::value_type&>  Lambda>
-    constexpr auto transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept -> decltype(auto) {
+    template<stdr::input_range Range, meta::plain::range_predicate Predicate, meta::plain::range_unary_op Operation>
+    constexpr auto transform_if(Range&& input, Predicate&& predicate, Operation&& op) noexcept -> decltype(auto) {
         return std::forward<Range>(input)
                | stdv::filter(std::forward<Predicate>(predicate))
-               | stdv::transform(std::forward<Lambda>(lambda))
-               | stdr::to<dynarray<std::invoke_result_t<Lambda, const typename meta::to_plain_type<Range>::value_type>>>();
+               | stdv::transform(std::forward<Operation>(op))
+               | stdr::to<dynarray<std::invoke_result_t<Operation, meta::range_type<meta::to_plain_type<Range>>>>>();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<stdr::input_range                                                                                       Range,
-             meta::unary_predicate<typename meta::to_plain_type<Range>::value_type>                                    Predicate,
-             std::invocable<const typename meta::to_plain_type<Range>::value_type&>                                     Lambda,
-             std::output_iterator<std::invoke_result_t<Lambda, const typename meta::to_plain_type<Range>::value_type&>> Iterator>
-    constexpr auto transform_if(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept -> void {
+             meta::plain::range_predicate                                                                            Predicate,
+             meta::plain::range_unary_op                                                                             Operation,
+             std::output_iterator<std::invoke_result_t<Operation, meta::range_type_ref<meta::to_plain_type<Range>>>> Iterator>
+    constexpr auto transform_if(Range&& input, Iterator&& it, Predicate&& predicate, Operation&& op) noexcept -> void {
         stdr::for_each(std::forward<Range>(input), [&it, &predicate, &lambda](auto&& elem) {
             if (predicate(elem)) *it++ = lambda(elem);
         });
