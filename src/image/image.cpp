@@ -23,13 +23,13 @@ import :tga;
 namespace stormkit::image {
     namespace details {
         using namespace stormkit::literals;
-        inline constexpr auto KTX_HEADER = into_bytes({ 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A });
+        inline constexpr auto KTX_HEADER = into<Bytes>({ 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A });
 
-        inline constexpr auto PNG_HEADER = into_bytes({ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
+        inline constexpr auto PNG_HEADER = into<Bytes>({ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
 
-        inline constexpr auto QOI_HEADER = into_bytes({ 0x71, 0x6f, 0x69, 0x66 });
+        inline constexpr auto QOI_HEADER = into<Bytes>({ 0x71, 0x6f, 0x69, 0x66 });
 
-        inline constexpr auto JPEG_HEADER = into_bytes({ 0xFF, 0xD8 });
+        inline constexpr auto JPEG_HEADER = into<Bytes>({ 0xFF, 0xD8 });
 
         auto filename_to_codec(const std::filesystem::path& filename) noexcept -> Image::Codec {
             EXPECTS(std::filesystem::exists(filename));
@@ -305,7 +305,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::save_to_file(std::filesystem::path filepath, Codec codec, CodecArgs args) const noexcept
+    auto Image::save_to_file(std::filesystem::path filepath, Codec codec, CodecTs args) const noexcept
       -> std::expected<void, Error> {
         filepath = std::filesystem::canonical(filepath.parent_path()) / filepath.filename();
 
@@ -367,7 +367,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::save_to_memory(Codec codec, CodecArgs args) const noexcept -> std::expected<byte_dynarray, Error> {
+    auto Image::save_to_memory(Codec codec, CodecTs args) const noexcept -> std::expected<byte_dynarray, Error> {
         EXPECTS(codec != Image::Codec::UNKNOWN);
         EXPECTS(codec != Image::Codec::AUTODETECT);
         EXPECTS(!std::empty(m_data.data));

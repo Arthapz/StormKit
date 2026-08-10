@@ -15,115 +15,109 @@ import std;
 import stormkit.core.meta;
 import stormkit.core.contract;
 import stormkit.core.types;
-import stormkit.core.math.arithmetic;
-
-namespace stormkit { inline namespace core {
-    struct PositiveTag;
-    struct NegativeTag;
-
-    namespace meta {
-        template<typename T>
-        concept IsCheckedValueArithmetic = meta::IsArithmetic<meta::ValueType<meta::ToPlainType<T>>>;
-
-        template<typename T, typename U>
-        concept IsCheckedValueValueType = meta::PlainIs<T, meta::ValueType<meta::ToPlainType<U>>>;
-    } // namespace meta
-}} // namespace stormkit::core
 
 export namespace stormkit { inline namespace core {
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    struct CheckedValue final {
-        using ValueType  = T;
-        using value_type = ValueType;
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    struct checked_value final {
+      private:
+        static constexpr auto IS_ARITHMETIC = meta::arithmetic<T>;
 
-        template<meta::PlainIs<T> U>
-        constexpr CheckedValue(U&& _value) noexcept;
+        static constexpr auto BY_VALUE = meta::prefer_pass_by_value<T>;
 
-        template<meta::PlainIs<T> U>
-        constexpr auto operator=(U&& _value) noexcept -> CheckedValue&;
+      public:
+        using value_type           = T;
+        using reference_type       = T&;
+        using const_reference_type = T&;
+        using copy_param_type      = meta::in<T>;
+        using checked_param_type   = meta::in<checked_value>;
 
-        constexpr operator T() noexcept;
+        constexpr checked_value() noexcept(meta::noexcept_default_constructible<value_type>)
+            requires(meta::default_constructible<value_type>);
 
-        constexpr auto operator+(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
-            requires(meta::IsArithmetic<T>);
+        constexpr checked_value(copy_param_type value) noexcept(meta::noexcept_copyable<value_type>)
+            requires(meta::copyable<value_type>);
+        constexpr checked_value(value_type&& value) noexcept(meta::noexcept_movable<value_type>)
+            requires(not BY_VALUE and meta::movable<value_type>);
+        constexpr ~checked_value() noexcept(meta::noexcept_destructible<value_type>);
 
-        constexpr auto operator+(meta::PlainIs<CheckedValue> auto&& other) const noexcept -> CheckedValue
-            requires(meta::IsArithmetic<T>);
+        constexpr checked_value(const checked_value&) noexcept(meta::noexcept_copyable<value_type>)
+            requires(meta::copyable<value_type>);
+        constexpr checked_value(checked_value&&) noexcept(meta::noexcept_movable<value_type>)
+            requires(meta::movable<value_type>);
 
-        constexpr auto operator+=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
-            requires(meta::IsArithmetic<T>);
+        constexpr auto operator=(const checked_value&) noexcept(meta::noexcept_copy_assignable<value_type>) -> checked_value&
+            requires(meta::copy_assignable<value_type>);
+        constexpr auto operator=(checked_value&&) noexcept(meta::noexcept_move_assignable<value_type>) -> checked_value&
+            requires(meta::move_assignable<value_type>);
 
-        constexpr auto operator+=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
-            requires(meta::IsArithmetic<T>);
+        constexpr auto operator=(copy_param_type value) noexcept(meta::noexcept_copy_assignable<value_type>) -> checked_value&
+            requires(meta::copy_assignable<value_type>);
+        constexpr auto operator=(value_type&& value) noexcept(meta::noexcept_move_assignable<value_type>) -> checked_value&
+            requires(meta::move_assignable<value_type> and not BY_VALUE);
 
-        constexpr auto operator-(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
-            requires(meta::IsArithmetic<T>);
+        constexpr operator reference_type() noexcept STORMKIT_LIFETIMEBOUND;
+        constexpr operator const_reference_type() const noexcept STORMKIT_LIFETIMEBOUND;
 
-        constexpr auto operator-(meta::PlainIs<CheckedValue> auto&& other) const noexcept -> CheckedValue
-            requires(meta::IsArithmetic<T>);
+        constexpr auto operator+(copy_param_type other) const noexcept -> checked_value
+            requires(IS_ARITHMETIC);
+        constexpr auto operator+(checked_param_type other) const noexcept -> checked_value
+            requires(IS_ARITHMETIC);
+        constexpr auto operator+=(copy_param_type other) noexcept -> checked_value&
+            requires(IS_ARITHMETIC);
+        constexpr auto operator+=(checked_param_type other) noexcept -> checked_value&
+            requires(IS_ARITHMETIC);
 
-        constexpr auto operator-=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
-            requires(meta::IsArithmetic<T>);
+        constexpr auto operator-(copy_param_type other) const noexcept -> checked_value
+            requires(IS_ARITHMETIC);
+        constexpr auto operator-(checked_param_type other) const noexcept -> checked_value
+            requires(IS_ARITHMETIC);
+        constexpr auto operator-=(copy_param_type other) noexcept -> checked_value&
+            requires(IS_ARITHMETIC);
+        constexpr auto operator-=(checked_param_type other) noexcept -> checked_value&
+            requires(IS_ARITHMETIC);
 
-        constexpr auto operator-=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
-            requires(meta::IsArithmetic<T>);
+        constexpr auto operator*(copy_param_type other) const noexcept -> checked_value
+            requires(IS_ARITHMETIC);
+        constexpr auto operator*(checked_param_type other) const noexcept -> checked_value
+            requires(IS_ARITHMETIC);
+        constexpr auto operator*=(copy_param_type other) noexcept -> checked_value&
+            requires(IS_ARITHMETIC);
+        constexpr auto operator*=(checked_param_type other) noexcept -> checked_value&
+            requires(IS_ARITHMETIC);
 
-        constexpr auto operator*(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
-            requires(meta::IsArithmetic<T>);
+        constexpr auto operator/(copy_param_type other) const noexcept -> checked_value
+            requires(IS_ARITHMETIC);
+        constexpr auto operator/(checked_param_type other) const noexcept -> checked_value
+            requires(IS_ARITHMETIC);
+        constexpr auto operator/=(copy_param_type other) noexcept -> checked_value&
+            requires(IS_ARITHMETIC);
+        constexpr auto operator/=(checked_param_type other) noexcept -> checked_value&
+            requires(IS_ARITHMETIC);
 
-        constexpr auto operator*(meta::PlainIs<CheckedValue> auto&& other) const noexcept -> CheckedValue
-            requires(meta::IsArithmetic<T>);
-
-        constexpr auto operator*=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
-            requires(meta::IsArithmetic<T>);
-
-        constexpr auto operator*=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
-            requires(meta::IsArithmetic<T>);
-
-        constexpr auto operator/(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
-            requires(meta::IsArithmetic<T>);
-
-        constexpr auto operator/(meta::PlainIs<CheckedValue> auto&& other) const noexcept -> CheckedValue
-            requires(meta::IsArithmetic<T>);
-
-        constexpr auto operator/=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
-            requires(meta::IsArithmetic<T>);
-
-        constexpr auto operator/=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
-            requires(meta::IsArithmetic<T>);
-
-        T value;
+        value_type value;
     };
 
     namespace meta {
         template<typename T>
-        concept IsCheckedValue = IsSpecializationOfNTTP_TTV<ToPlainType<T>, CheckedValue>;
+        concept is_checked_value = plain::specialization_of_nttp_ttv<T, checked_value>;
     }
 
-    template<meta::IsArithmetic T>
-    using Positive = CheckedValue<T, PositiveTag, math::is_positive<T>>;
+    template<meta::arithmetic T>
+    using positive = checked_value<T, struct positive_tag, [](T value) static noexcept {
+        if constexpr (meta::unsigned_type<T>) return true;
+        else
+            return value >= 0;
+    }>;
 
-    template<meta::IsArithmetic T>
-    using Negative = CheckedValue<T, NegativeTag, math::is_negative<T>>;
-
-    template<meta::IsCheckedValue T>
-        requires(meta::IsCheckedValueArithmetic<T>)
-    constexpr auto operator+(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T>;
-
-    template<meta::IsCheckedValue T>
-        requires(meta::IsCheckedValueArithmetic<T>)
-    constexpr auto operator-(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T>;
-
-    template<meta::IsCheckedValue T>
-        requires(meta::IsCheckedValueArithmetic<T>)
-    constexpr auto operator*(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T>;
-
-    template<meta::IsCheckedValue T>
-        requires(meta::IsCheckedValueArithmetic<T>)
-    constexpr auto operator/(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T>;
-
-    template<meta::IsFormattable T, meta::IsPlain Tag, auto check_fn, typename FormatContext>
-    constexpr auto format_as(const CheckedValue<T, Tag, check_fn>& val, FormatContext& ctx) -> decltype(ctx.out());
+    template<meta::arithmetic T>
+    using negative = checked_value<T, struct negative_tag, [](T value) static noexcept {
+        if constexpr (meta::signed_type<T>) return value < 0;
+        else
+            return false;
+    }>;
+    // template<meta::IsFormattable T, meta::is_decayed Tag, auto check_fn, typename FormatContext>
+    // constexpr auto format_as(const checked_value<T, Tag, check_fn>& val, FormatContext& ctx) -> decltype(ctx.out());
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -133,267 +127,342 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    template<meta::PlainIs<T> U>
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE
-    constexpr CheckedValue<T, Tag, check_fn>::CheckedValue(U&& _value) noexcept
-        : value { std::forward<U>(_value) } {
-        EXPECTS(check_fn(value));
+    constexpr checked_value<T, Tag, check_fn>::checked_value() noexcept(meta::noexcept_default_constructible<value_type>)
+        requires(meta::default_constructible<value_type>)
+        : value {} {
+        // FORMAT HERE
+        expects(check_fn(value), "Checked value predicated violation!");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    template<meta::PlainIs<T> U>
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator=(U&& _value) noexcept -> CheckedValue& {
-        value = _value;
-        ENSURES(check_fn(value));
+    constexpr checked_value<T, Tag, check_fn>::checked_value(copy_param_type value_) noexcept(meta::noexcept_copyable<value_type>)
+        requires(meta::copyable<value_type>)
+        : value { value_ } {
+        expects(check_fn(value), "Checked value predicated violation!");
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr checked_value<T, Tag, check_fn>::checked_value(value_type&& value_) noexcept(meta::noexcept_movable<value_type>)
+        requires(not BY_VALUE and meta::movable<value_type>)
+        : value { std::move(value_) } {
+        expects(check_fn(value), "Checked value predicated violation!");
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr checked_value<T, Tag, check_fn>::~checked_value() noexcept(meta::noexcept_destructible<value_type>) = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr checked_value<T, Tag, check_fn>::checked_value(const checked_value&
+                                                               other) noexcept(meta::noexcept_copyable<value_type>)
+        requires(meta::copyable<value_type>)
+        : value { other.value } {
+        expects(check_fn(value), "Checked value predicated violation!");
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr checked_value<T, Tag, check_fn>::checked_value(checked_value&& other) noexcept(meta::noexcept_movable<value_type>)
+        requires(meta::movable<value_type>)
+        : value { std::move(other.value) } {
+        expects(check_fn(value), "Checked value predicated violation!");
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto checked_value<T, Tag, check_fn>::operator=(const checked_value&
+                                                                other) noexcept(meta::noexcept_copy_assignable<value_type>)
+      -> checked_value&
+        requires(meta::copy_assignable<value_type>)
+    {
+        if (&other == this) [[unlikely]]
+            return *this;
+
+        value = other.value;
+        expects(check_fn(value), "Checked value predicated violation!");
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE
-    constexpr CheckedValue<T, Tag, check_fn>::operator T() noexcept {
+    constexpr auto checked_value<T, Tag, check_fn>::operator=(checked_value&&
+                                                                other) noexcept(meta::noexcept_move_assignable<value_type>)
+      -> checked_value&
+        requires(meta::move_assignable<value_type>)
+    {
+        if (&other == this) [[unlikely]]
+            return *this;
+
+        value = std::move(other.value);
+        expects(check_fn(value), "Checked value predicated violation!");
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto checked_value<T, Tag, check_fn>::operator=(copy_param_type
+                                                                value_) noexcept(meta::noexcept_copy_assignable<value_type>)
+      -> checked_value&
+        requires(meta::copy_assignable<value_type>)
+    {
+        value = value_;
+        expects(check_fn(value), "Checked value predicated violation!");
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto checked_value<T, Tag, check_fn>::operator=(value_type&&
+                                                                value_) noexcept(meta::noexcept_move_assignable<value_type>)
+      -> checked_value&
+        requires(meta::move_assignable<value_type> and not BY_VALUE)
+    {
+        value = std::move(value_);
+        expects(check_fn(value), "Checked value predicated violation!");
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr checked_value<T, Tag, check_fn>::operator reference_type() noexcept {
         return value;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return { value + std::forward<decltype(other)>(other) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-      -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator+(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
+    constexpr checked_value<T, Tag, check_fn>::operator const_reference_type() const noexcept {
+        return value;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto checked_value<T, Tag, check_fn>::operator+(copy_param_type other) const noexcept -> checked_value
+        requires(IS_ARITHMETIC)
     {
-        value += std::forward<decltype(other)>(other);
+        return { value + other };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto checked_value<T, Tag, check_fn>::operator+(checked_param_type other) const noexcept -> checked_value
+        requires(IS_ARITHMETIC)
+    {
+        return { value + other.value };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto checked_value<T, Tag, check_fn>::operator+=(copy_param_type other) noexcept -> checked_value&
+        requires(IS_ARITHMETIC)
+    {
+        value += other;
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator+=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
+    constexpr auto checked_value<T, Tag, check_fn>::operator+=(checked_param_type other) noexcept -> checked_value&
+        requires(IS_ARITHMETIC)
     {
-        return operator+=(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return { value - std::forward<decltype(other)>(other) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-      -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator-(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        value -= std::forward<decltype(other)>(other);
+        value += other.value;
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator-=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator-=(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
+    constexpr auto checked_value<T, Tag, check_fn>::operator-(copy_param_type other) const noexcept -> checked_value
+        requires(IS_ARITHMETIC)
     {
-        return { value * std::forward<decltype(other)>(other) };
+        return { value - other };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-      -> CheckedValue
-        requires(meta::IsArithmetic<T>)
+    constexpr auto checked_value<T, Tag, check_fn>::operator-(checked_param_type other) const noexcept -> checked_value
+        requires(IS_ARITHMETIC)
     {
-        return operator*(std::forward_like<decltype(other)>(other.value));
+        return { value - other.value };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
+    constexpr auto checked_value<T, Tag, check_fn>::operator-=(copy_param_type other) noexcept -> checked_value&
+        requires(IS_ARITHMETIC)
     {
-        value *= std::forward<decltype(other)>(other);
+        value -= other;
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator*=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
+    constexpr auto checked_value<T, Tag, check_fn>::operator-=(checked_param_type other) noexcept -> checked_value&
+        requires(IS_ARITHMETIC)
     {
-        return operator*=(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/(meta::PlainIs<ValueType> auto&& other) const noexcept -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return { value / std::forward<decltype(other)>(other) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/(meta::PlainIs<CheckedValue> auto&& other) const noexcept
-      -> CheckedValue
-        requires(meta::IsArithmetic<T>)
-    {
-        return operator/(std::forward_like<decltype(other)>(other.value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/=(meta::PlainIs<ValueType> auto&& other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
-    {
-        value /= std::forward<decltype(other)>(other);
+        value -= other.value;
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsPlain T, meta::IsPlain Tag, auto check_fn>
-    STORMKIT_FORCE_INLINE
-    constexpr auto CheckedValue<T, Tag, check_fn>::operator/=(meta::PlainIs<CheckedValue> auto&& other) noexcept -> CheckedValue&
-        requires(meta::IsArithmetic<T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto checked_value<T, Tag, check_fn>::operator*(copy_param_type other) const noexcept -> checked_value
+        requires(IS_ARITHMETIC)
     {
-        return operator/=(std::forward_like<decltype(other)>(other.value));
+        return { value * other };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsCheckedValue T>
-        requires(meta::IsCheckedValueArithmetic<T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator+(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T> {
-        return std::forward<T>(second).operator+(std::forward<decltype(first)>(first));
+    constexpr auto checked_value<T, Tag, check_fn>::operator*(checked_param_type other) const noexcept -> checked_value
+        requires(IS_ARITHMETIC)
+    {
+        return { value * other.value };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsCheckedValue T>
-        requires(meta::IsCheckedValueArithmetic<T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto checked_value<T, Tag, check_fn>::operator*=(copy_param_type other) noexcept -> checked_value&
+        requires(IS_ARITHMETIC)
+    {
+        value *= other;
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto checked_value<T, Tag, check_fn>::operator*=(checked_param_type other) noexcept -> checked_value&
+        requires(IS_ARITHMETIC)
+    {
+        value *= other.value;
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator-(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T> {
-        return std::forward<T>(second).operator-(std::forward<decltype(first)>(first));
+    constexpr auto checked_value<T, Tag, check_fn>::operator/(copy_param_type other) const noexcept -> checked_value
+        requires(IS_ARITHMETIC)
+    {
+        return { value / other };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsCheckedValue T>
-        requires(meta::IsCheckedValueArithmetic<T>)
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator*(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T> {
-        return std::forward<T>(second).operator*(std::forward<decltype(first)>(first));
+    constexpr auto checked_value<T, Tag, check_fn>::operator/(checked_param_type other) const noexcept -> checked_value
+        requires(IS_ARITHMETIC)
+    {
+        return { value / other.value };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsCheckedValue T>
-        requires(meta::IsCheckedValueArithmetic<T>)
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto operator/(meta::IsCheckedValueValueType<T> auto&& first, T&& second) noexcept -> meta::ToPlainType<T> {
-        return std::forward<T>(second).operator/(std::forward<decltype(first)>(first));
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto checked_value<T, Tag, check_fn>::operator/=(copy_param_type other) noexcept -> checked_value&
+        requires(IS_ARITHMETIC)
+    {
+        value /= other;
+        return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsFormattable T, meta::IsPlain Tag, auto check_fn, typename FormatContext>
-        STORMKIT_FORCE_INLINE
-    constexpr auto format_as(const CheckedValue<T, Tag, check_fn>& val, FormatContext& ctx) -> decltype(ctx.out()) {
-        auto&& out = ctx.out();
-        return std::format_to(out, "{}", val.value);
+    template<meta::is_decayed T, meta::is_decayed Tag, auto check_fn>
+        requires(meta::destructible<T> and meta::unary_predicate<decltype(check_fn), T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto checked_value<T, Tag, check_fn>::operator/=(checked_param_type other) noexcept -> checked_value&
+        requires(IS_ARITHMETIC)
+    {
+        value /= other.value;
+        return *this;
     }
 
-#ifndef STORMKIT_OS_WINDOWS
-    #undef STORMKIT_CORE_API
-    #define STORMKIT_CORE_API
-#endif
-
-#define INSTANCIATE(t)                                                                    \
-    template struct STORMKIT_CORE_API CheckedValue<t, PositiveTag, math::is_positive<t>>; \
-    template struct STORMKIT_CORE_API CheckedValue<t, NegativeTag, math::is_positive<t>>
-
-    INSTANCIATE(u8);
-    INSTANCIATE(i8);
-    INSTANCIATE(u16);
-    INSTANCIATE(i16);
-    INSTANCIATE(u32);
-    INSTANCIATE(i32);
-    INSTANCIATE(u64);
-    INSTANCIATE(i64);
-    INSTANCIATE(u128);
-    INSTANCIATE(i128);
-    INSTANCIATE(f32);
-    INSTANCIATE(f64);
-
-#undef INSTANCIATE
+    // /////////////////////////////////////
+    // /////////////////////////////////////
+    // template<meta::IsFormattable T, meta::is_decayed Tag, auto check_fn, typename FormatContext>
+    //     STORMKIT_FORCE_INLINE
+    // constexpr auto format_as(const checked_value<T, Tag, check_fn>& val, FormatContext& ctx) -> decltype(ctx.out()) {
+    //     auto&& out = ctx.out();
+    //     return std::format_to(out, "{}", val.value);
+    // }
 }} // namespace stormkit::core

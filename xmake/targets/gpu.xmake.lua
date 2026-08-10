@@ -40,7 +40,7 @@ target("gpu", function()
     add_deps("core", "wsi", "image")
     add_deps("log", { public = false })
 
-    add_packages("volk", "vulkan-headers", "vulkan-memory-allocator")
+    add_packages("volk", "vulkan-headers", "vulkan-memory-allocator", { public = true })
 
     add_options("sanitizers")
 

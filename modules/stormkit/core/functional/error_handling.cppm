@@ -75,7 +75,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_FORCE_INLINE
     constexpr auto log(std::invocable auto&& logger, string&& message) noexcept -> decltype(auto) {
         return [logger  = std::forward<decltype(logger)>,
-                message = std::move(message)](auto&& error) -> std::expected<void, meta::CanonicalT<decltype(error)>> {
+                message = std::move(message)](auto&& error) -> std::expected<void, meta::to_plain_type<decltype(error)>> {
             logger(message, error);
 
             return {};
@@ -86,7 +86,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     constexpr auto throw_as_exception() noexcept -> decltype(auto) {
-        return [] NORETURN_LAMBDA(auto&& error) static -> std::expected<void, meta::CanonicalT<decltype(error)>> {
+        return [] NORETURN_LAMBDA(auto&& error) static -> std::expected<void, meta::to_plain_type<decltype(error)>> {
             throw std::forward<decltype(error)>(error);
         };
     }

@@ -17,7 +17,7 @@ import stormkit.core.types;
 export namespace stormkit { inline namespace core {
     auto seed(u32 seed) noexcept -> void;
 
-    template<std::floating_point T>
+    template<meta::floating_point T>
     [[nodiscard]]
     auto rand(T min, T max) noexcept -> T;
 
@@ -47,7 +47,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::floating_point T>
+    template<meta::floating_point T>
     STORMKIT_FORCE_INLINE
     inline auto rand(T min, T max) noexcept -> T {
         std::uniform_real_distribution<T> dis(min, max);

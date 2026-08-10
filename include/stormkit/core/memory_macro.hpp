@@ -14,9 +14,9 @@
 // TODO remove all usage of this macro, prefer use stormkit::RAIICapsule instead
 #define STORMKIT_RAII_CAPSULE_OPAQUE(name, x, _constructor, _deleter, release_value) \
     struct name##Scoped {                                                            \
-        template<class... Args>                                                      \
-        name##Scoped(Args&&... args) noexcept {                                      \
-            m_handle = _constructor(std::forward<Args>(args)...);                    \
+        template<class... Ts>                                                      \
+        name##Scoped(Ts&&... args) noexcept {                                      \
+            m_handle = _constructor(std::forward<Ts>(args)...);                    \
         }                                                                            \
         explicit name##Scoped(x v) noexcept { m_handle = v; }                        \
         ~name##Scoped() noexcept { destroy(); }                                      \

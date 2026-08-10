@@ -37,10 +37,10 @@ export {
 
                 constexpr auto get_return_object() noexcept -> Expected { return Expected { this }; }
 
-                template<typename... Args>
-                constexpr auto return_value(Args&&... args) noexcept {
+                template<typename... Ts>
+                constexpr auto return_value(Ts&&... args) noexcept {
                     EXPECTS(expected_ptr != nullptr);
-                    *expected_ptr = Expected { std::in_place, std::forward<Args>(args)... };
+                    *expected_ptr = Expected { std::in_place, std::forward<Ts>(args)... };
                 }
 
                 constexpr auto return_value(ERR error) noexcept {
@@ -74,14 +74,14 @@ export {
 #endif
         using System_code = system_error2::system_code;
 
-        namespace error {
+        namespace error_code {
 #ifdef STORMKIT_OS_WINDOWS
             auto from_win32() noexcept -> System_code;
             auto from_ntstatus() noexcept -> System_code;
 #endif
             auto from_errno() noexcept -> System_code;
             auto from_stderrc(std::errc code) noexcept -> System_code;
-        } // namespace error
+        } // namespace error_code
 
         template<typename T>
         using System_result = Expected<T, System_code>;
@@ -95,8 +95,7 @@ export {
 namespace stdr = std::ranges;
 
 namespace stormkit { inline namespace core {
-
-    namespace error {
+    namespace error_code {
 #ifdef STORMKIT_OS_WINDOWS
         ////////////////////////////////////////
         ////////////////////////////////////////
@@ -126,7 +125,7 @@ namespace stormkit { inline namespace core {
         inline auto from_stderrc(std::errc code) noexcept -> System_code {
             return system_error2::posix_code { unchecked_narrow<i32>(code) };
         }
-    } // namespace error
+    } // namespace error_code
 
     //    ////////////////////////////////////////
     //    ////////////////////////////////////////

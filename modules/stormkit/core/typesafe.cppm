@@ -9,10 +9,7 @@ module;
 export module stormkit.core.typesafe;
 
 export import stormkit.core.typesafe.strong_type;
-export import stormkit.core.typesafe.byte;
-export import stormkit.core.typesafe.ref;
-export import stormkit.core.typesafe.integer;
-export import stormkit.core.typesafe.floating_point;
+export import stormkit.core.typesafe.ref_ptr;
 export import stormkit.core.typesafe.flags;
 export import stormkit.core.typesafe.safecasts;
 export import stormkit.core.typesafe.checked_value;

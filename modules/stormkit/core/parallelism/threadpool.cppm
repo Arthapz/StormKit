@@ -72,10 +72,10 @@ export namespace stormkit { inline namespace core {
         };
 
         template<class T>
-        auto post_task(Task::Type type, Closure<T> task) noexcept -> decltype(auto);
+        auto post_task(Task::type type, Closure<T> task) noexcept -> decltype(auto);
 
         template<class T>
-        auto post_task(Task::Type type, Closure<T> task, NoFutureType) noexcept -> void;
+        auto post_task(Task::type type, Closure<T> task, NoFutureType) noexcept -> void;
 
         auto worker_main(i32 id) noexcept -> void;
 
@@ -91,10 +91,10 @@ export namespace stormkit { inline namespace core {
         std::queue<Task>            m_tasks;
     };
 
-    template<std::ranges::input_range Range, std::invocable<meta::RangeType<Range>&> F>
+    template<std::ranges::input_range Range, std::invocable<meta::range_type<Range>&> F>
     auto parallel_for(ThreadPool& pool, Range&& range, F&& f) noexcept -> void;
 
-    template<std::ranges::input_range Range, std::invocable<meta::RangeType<Range>&> F>
+    template<std::ranges::input_range Range, std::invocable<meta::range_type<Range>&> F>
     auto parallel_for_async(ThreadPool& pool, Range& range, F&& f) noexcept -> dynarray<std::future<void>>;
 }} // namespace stormkit::core
 
@@ -142,7 +142,7 @@ namespace stormkit { inline namespace core {
     template<class T>
     STORMKIT_FORCE_INLINE
     inline auto ThreadPool::post_task(Closure<T> task) noexcept -> decltype(auto) {
-        return post_task<T>(Task::Type::Standard, std::move(task));
+        return post_task<T>(Task::type::Standard, std::move(task));
     }
 
     ////////////////////////////////////////
@@ -150,13 +150,13 @@ namespace stormkit { inline namespace core {
     template<class T>
     STORMKIT_FORCE_INLINE
     inline auto ThreadPool::post_task(Closure<T> task, NoFutureType t) noexcept -> void {
-        post_task<T>(Task::Type::Standard, std::move(task), t);
+        post_task<T>(Task::type::Standard, std::move(task), t);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    inline auto ThreadPool::post_task(Task::Type type, Closure<T> closure) noexcept -> decltype(auto) {
+    inline auto ThreadPool::post_task(Task::type type, Closure<T> closure) noexcept -> decltype(auto) {
         auto packaged_task = std::make_shared<std::packaged_task<T()>>(std::move(closure));
 
         auto future = packaged_task->get_future();
@@ -177,7 +177,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    inline auto ThreadPool::post_task(Task::Type type, Closure<T> closure, NoFutureType) noexcept -> void {
+    inline auto ThreadPool::post_task(Task::type type, Closure<T> closure, NoFutureType) noexcept -> void {
         auto task = Task { type, [task = std::move(closure)]() mutable noexcept { task(); } };
 
         {
@@ -191,7 +191,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<std::ranges::input_range Range, std::invocable<meta::RangeType<Range>&> F>
+    template<std::ranges::input_range Range, std::invocable<meta::range_type<Range>&> F>
     inline auto parallel_for(ThreadPool& pool, Range&& range, F&& f) noexcept -> void {
         auto futures = parallel_for_async(pool, range, std::forward<F>(f));
         wait_all(futures);
@@ -199,7 +199,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<std::ranges::input_range Range, std::invocable<meta::RangeType<Range>&> F>
+    template<std::ranges::input_range Range, std::invocable<meta::range_type<Range>&> F>
     inline auto parallel_for_async(ThreadPool& pool, Range& range, F&& f) noexcept -> dynarray<std::future<void>> {
         const auto size        = stdr::size(range);
         const auto chunk_size  = size / pool.worker_count();

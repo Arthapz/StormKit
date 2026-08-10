@@ -116,6 +116,18 @@
     #define STORMKIT_PURE
 #endif
 
+#if __has_cpp_attribute(gsl::Owner)
+    #define STORMKIT_OWNER [[gsl::Owner]]
+#else
+    #define STORMKIT_OWNER [[gsl::Owner]]
+#endif
+
+#if __has_cpp_attribute(gsl::Pointer)
+    #define STORMKIT_VIEW [[gsl::Pointer]]
+#else
+    #define STORMKIT_VIEW [[gsl::Pointer]]
+#endif
+
 #if not defined(STORMKIT_COMPILER_MSVC)
     #if __has_cpp_attribute(gnu::const)
         #define STORMKIT_CONST [[gnu::const]]
@@ -140,13 +152,13 @@
         #define STORMKIT_PUSH_WARNINGS  _Pragma("clang diagnostic push")
         #define STORMKIT_POP_WARNINGS   _Pragma("clang diagnostic pop")
     #elif defined(__GNUC__) or defined(__GNUG__)
-        #define STORMKIT_COMPILER_GCC          \
-            "MinGW GCC "                       \
+        #define STORMKIT_COMPILER_GCC           \
+            "MinGW GCC "                        \
               + std::as<string>(__GNUC__)       \
-              + "."                            \
+              + "."                             \
               + std::as<string>(__GNUC_MINOR__) \
-              + "."                            \
-              + "."                            \
+              + "."                             \
+              + "."                             \
               + std::as<string>(__GNUC_PATCHLEVEL__)
         #define STORMKIT_COMPILER_MINGW STORMKIT_COMPILER_GCC
         #define STORMKIT_PUSH_WARNINGS  _Pragma("GCC diagnostic push")
@@ -164,8 +176,14 @@
     #define STORMKIT_WARNING_IGNORE_CLANG(warning) STORMKIT_PRAGMA_FROM_STRING(clang diagnostic ignore warning)
     #define STORMKIT_POP_WARNINGS                  _Pragma("clang diagnostic pop")
 #elif defined(__GNUC__) or defined(__GNUG__)
-    #define STORMKIT_COMPILER_GCC \
-        "GCC " + std::as<string>(__GNUC__) + "." + std::as<string>(__GNUC_MINOR__) + "." + "." + std::as<string>(__GNUC_PATCHLEVEL__)
+    #define STORMKIT_COMPILER_GCC           \
+        "GCC "                              \
+          + std::as<string>(__GNUC__)       \
+          + "."                             \
+          + std::as<string>(__GNUC_MINOR__) \
+          + "."                             \
+          + "."                             \
+          + std::as<string>(__GNUC_PATCHLEVEL__)
     #define STORMKIT_COMPILER      STORMKIT_COMPILER_GCC
     #define STORMKIT_PUSH_WARNINGS _Pragma("GCC diagnostic push")
     #define STORMKIT_WARNING_IGNORE_CLANG(_)

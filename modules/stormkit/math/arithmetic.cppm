@@ -7,7 +7,7 @@ module;
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core.math.arithmetic;
+export module stormkit.math.arithmetic;
 
 import std;
 
@@ -17,42 +17,43 @@ import stormkit.core.typesafe.safecasts;
 
 export {
     namespace stormkit { inline namespace core { namespace math {
-        template<meta::IsArithmetic T>
+        template<meta::arithmetic T>
         [[nodiscard]]
         constexpr auto floor(T v) noexcept -> T;
 
-        template<meta::IsArithmetic T>
+        template<meta::arithmetic T>
         [[nodiscard]]
         constexpr auto log2(T v) noexcept -> T;
 
-        template<meta::IsArithmetic T>
+        template<meta::arithmetic T>
         [[nodiscard]]
         constexpr auto min(T a, T b) noexcept -> T;
 
-        template<meta::IsArithmetic T>
+        template<meta::arithmetic T>
         [[nodiscard]]
         constexpr auto max(T a, T b) noexcept -> T;
 
-        template<meta::IsArithmetic T, meta::IsArithmetic U>
+        template<meta::arithmetic T, meta::arithmetic U>
         [[nodiscard]]
         constexpr auto scale(U x, U rmin, U rmax, T tmin, T tmax) noexcept -> T;
 
-        template<meta::IsIntegral T>
+        template<meta::integral T>
         [[nodiscard]]
         constexpr auto scale(T x, T rmin, T rmax, T tmin, T tmax) noexcept -> T;
 
-        template<meta::IsFloatingPoint T>
+        template<meta::floating_point T>
         [[nodiscard]]
         constexpr auto scale(T x, T rmin, T rmax, T tmin, T tmax) noexcept -> T;
 
-        template<stormkit::core::meta::IsArithmetic T>
+        template<stormkit::core::meta::arithmetic T>
         [[nodiscard]]
         constexpr auto abs(T n) noexcept -> T;
 
-        template<meta::IsArithmetic T>
+        template<meta::arithmetic T>
         [[nodiscard]]
         constexpr auto is_positive(T value) noexcept -> bool;
-        template<meta::IsArithmetic T>
+
+        template<meta::arithmetic T>
         [[nodiscard]]
         constexpr auto is_negative(T value) noexcept -> bool;
     }}} // namespace stormkit::core::math
@@ -65,11 +66,11 @@ export {
 namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsArithmetic T>
+    template<meta::arithmetic T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto floor(T v) noexcept -> T {
         // if consteval {
-        //     if constexpr (meta::IsIntegral<T>) return as<T>(std::floor(v));
+        //     if constexpr (meta::integral<T>) return as<T>(std::floor(v));
         //     else
         //         return as<T>(as<i64>(v));
         // } else {
@@ -79,7 +80,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsArithmetic T>
+    template<meta::arithmetic T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto log2(T v) noexcept -> T {
         if consteval {
@@ -97,7 +98,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsArithmetic T>
+    template<meta::arithmetic T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto min(T a, T b) noexcept -> T {
         return (a < b) ? a : b;
@@ -105,7 +106,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsArithmetic T>
+    template<meta::arithmetic T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto max(T a, T b) noexcept -> T {
         return (a > b) ? a : b;
@@ -113,7 +114,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
+    template<core::meta::arithmetic T, core::meta::arithmetic U>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto scale(U x, U rmin, U rmax, T tmin, T tmax) noexcept -> T {
         return scale(as<T>(x), as<T>(rmin), as<T>(rmax), tmin, tmax);
@@ -121,7 +122,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsIntegral T>
+    template<core::meta::integral T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto scale(T x, T rmin, T rmax, T tmin, T tmax) noexcept -> T {
         return (x - rmin) * (tmax - tmin) / (rmax - rmin) + tmin;
@@ -129,7 +130,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsFloatingPoint T>
+    template<meta::floating_point T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto scale(T x, T rmin, T rmax, T tmin, T tmax) noexcept -> T {
         if (x < rmin) return rmin;
@@ -139,30 +140,30 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::core::meta::IsArithmetic T>
+    template<stormkit::core::meta::arithmetic T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto abs(T n) noexcept -> T {
-        if constexpr (not stormkit::meta::IsSigned<T>) return n;
+        if constexpr (not stormkit::meta::signed_type<T>) return n;
         else
             return as<T>(std::abs(n));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsArithmetic T>
+    template<meta::arithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_positive(T value) noexcept -> bool {
-        if constexpr (meta::IsUnsigned<T>) return true;
+        if constexpr (meta::unsigned_type<T>) return true;
         else
             return value >= 0;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsArithmetic T>
+    template<meta::arithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_negative(T value) noexcept -> bool {
-        if constexpr (meta::IsSigned<T>) return value < 0;
+        if constexpr (meta::signed_type<T>) return value < 0;
         else
             return false;
     }

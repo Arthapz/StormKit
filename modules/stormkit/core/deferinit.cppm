@@ -21,13 +21,13 @@ export namespace stormkit { inline namespace core {
     template<typename T, typename Storage = DeferInitDefaultStorage<T>>
     class [[nodiscard]] DeferInit {
       public:
-        using ValueType     = T;
-        using PointerType   = ValueType*;
-        using ReferenceType = ValueType&;
+        using value_type    = T;
+        using pointer_type  = value_type*;
+        using ReferenceType = value_type&;
 
         // STL compatible
-        using value_type = ValueType;
-        using pointer    = PointerType;
+        using value_type = value_type;
+        using pointer    = pointer_type;
 
         constexpr DeferInit();
         constexpr ~DeferInit();
@@ -38,11 +38,11 @@ export namespace stormkit { inline namespace core {
         constexpr DeferInit(DeferInit&& other) noexcept(noexcept(std::is_nothrow_move_constructible_v<T>));
         constexpr auto operator=(DeferInit&& other) noexcept(noexcept(std::is_nothrow_move_assignable_v<T>)) -> DeferInit&;
 
-        template<typename... Args>
-        constexpr auto construct(Args&&... args) noexcept(noexcept(std::is_nothrow_constructible_v<T, Args...>)) -> void;
+        template<typename... Ts>
+        constexpr auto construct(Ts&&... args) noexcept(noexcept(std::is_nothrow_constructible_v<T, Ts...>)) -> void;
 
-        template<typename... Args>
-        constexpr auto construct_with_narrowing(Args&&... args) noexcept(noexcept(std::is_nothrow_constructible_v<T, Args...>))
+        template<typename... Ts>
+        constexpr auto construct_with_narrowing(Ts&&... args) noexcept(noexcept(std::is_nothrow_constructible_v<T, Ts...>))
           -> void;
 
         constexpr auto operator=(T&& value) noexcept(noexcept(std::is_nothrow_move_constructible_v<T>)) -> void;
@@ -61,7 +61,7 @@ export namespace stormkit { inline namespace core {
         constexpr auto reset() noexcept -> void;
 
         alignas(T) Storage m_data;
-        PointerType m_pointer = nullptr;
+        pointer_type m_pointer = nullptr;
     };
 }} // namespace stormkit::core
 
@@ -121,26 +121,26 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, typename Storage>
-    template<typename... Args>
+    template<typename... Ts>
     STORMKIT_FORCE_INLINE
     constexpr auto DeferInit<T,
-                             Storage>::construct(Args&&... args) noexcept(noexcept(std::is_nothrow_constructible_v<T, Args...>))
+                             Storage>::construct(Ts&&... args) noexcept(noexcept(std::is_nothrow_constructible_v<T, Ts...>))
       -> void {
         reset();
 
-        m_pointer = new (std::data(m_data)) T { std::forward<Args>(args)... };
+        m_pointer = new (std::data(m_data)) T { std::forward<Ts>(args)... };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, typename Storage>
-    template<typename... Args>
+    template<typename... Ts>
     STORMKIT_FORCE_INLINE
     constexpr auto DeferInit<T, Storage>::
-      construct_with_narrowing(Args&&... args) noexcept(noexcept(std::is_nothrow_constructible_v<T, Args...>)) -> void {
+      construct_with_narrowing(Ts&&... args) noexcept(noexcept(std::is_nothrow_constructible_v<T, Ts...>)) -> void {
         reset();
 
-        m_pointer = new (std::data(m_data)) T(std::forward<Args>(args)...);
+        m_pointer = new (std::data(m_data)) T(std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -225,5 +225,3 @@ namespace stormkit { inline namespace core {
         return value();
     }
 }} // namespace stormkit::core
-
-static_assert(stormkit::meta::IsContainer<stormkit::DeferInit<int>>);

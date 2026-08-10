@@ -10,8 +10,8 @@ export namespace stormkit { inline namespace core {
     template<class T>
     class Singleton {
       public:
-        template<class... Args>
-        static auto instance(Args&&... args) noexcept(std::is_nothrow_constructible_v<T>) -> T&;
+        template<class... Ts>
+        static auto instance(Ts&&... args) noexcept(std::is_nothrow_constructible_v<T>) -> T&;
 
         Singleton(Singleton&&)      = delete;
         Singleton(const Singleton&) = delete;
@@ -38,11 +38,11 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
-    template<class... Args>
-    auto Singleton<T>::instance(Args&&... args) noexcept(std::is_nothrow_constructible_v<T>) -> T& {
-        auto lambdas = [](Args&&... args) mutable { m_instance = std::make_unique<T>(std::forward<Args>(args)...); };
+    template<class... Ts>
+    auto Singleton<T>::instance(Ts&&... args) noexcept(std::is_nothrow_constructible_v<T>) -> T& {
+        auto lambdas = [](Ts&&... args) mutable { m_instance = std::make_unique<T>(std::forward<Ts>(args)...); };
 
-        std::call_once(once_flag(), lambdas, std::forward<Args>(args)...);
+        std::call_once(once_flag(), lambdas, std::forward<Ts>(args)...);
 
         return *m_instance;
     }

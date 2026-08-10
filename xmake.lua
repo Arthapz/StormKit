@@ -70,7 +70,7 @@ namespace("stormkit", function()
     includes("xmake/targets/core.xmake.lua")
     includes("xmake/targets/main.xmake.lua")
 
-    for _, name in ipairs({ "log", "entities", "gpu", "image", "wsi", "lua" }) do
+    for _, name in ipairs({ "math", "log", "entities", "gpu", "image", "wsi", "lua" }) do
         if get_config(name) then includes("xmake/targets/" .. name .. ".xmake.lua") end
     end
 

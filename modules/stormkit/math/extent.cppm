@@ -6,7 +6,7 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core.math.extent;
+export module stormkit.math.extent;
 
 import std;
 
@@ -23,82 +23,82 @@ namespace stdr = std::ranges;
 
 export {
     namespace stormkit { inline namespace core { namespace math {
-        template<core::meta::IsArithmetic T, usize N>
+        template<core::meta::arithmetic T, usize N>
         struct extent;
 
-        template<core::meta::IsArithmetic T>
+        template<core::meta::arithmetic T>
         struct alignas(array<T, 2>) extent<T, 2> {
             static constexpr auto RANK = 2uz;
-            using ValueType            = T;
-            using OrderingType         = meta::ArithmeticOrderingType<T>;
+            using value_type            = T;
+            using OrderingType         = meta::arithmetic_ordering_type<T>;
 
-            template<core::meta::IsArithmetic U>
+            template<core::meta::arithmetic U>
             constexpr auto narrow_to() const noexcept -> extent<U, 2>;
 
-            template<core::meta::IsArithmetic U>
+            template<core::meta::arithmetic U>
             constexpr auto to(const std::source_location& = std::source_location::current()) const noexcept -> extent<U, 2>;
 
             template<usize NEW_RANK>
             constexpr auto to() const noexcept -> extent<T, NEW_RANK>;
 
             /// @brief The extent width
-            ValueType width = 0;
+            value_type width = 0;
 
             /// @brief The extent height
-            ValueType height = 0;
+            value_type height = 0;
         };
 
-        template<core::meta::IsArithmetic T>
+        template<core::meta::arithmetic T>
         using extent2 = extent<T, 2>;
 
         using fextent2 = extent2<f32>;
         using uextent2 = extent2<u32>;
         using iextent2 = extent2<i32>;
 
-        template<core::meta::IsArithmetic T>
+        template<core::meta::arithmetic T>
         struct alignas(array<T, 3>) extent<T, 3> {
             static constexpr auto RANK = 3uz;
-            using ValueType            = T;
-            using OrderingType         = meta::ArithmeticOrderingType<T>;
+            using value_type            = T;
+            using OrderingType         = meta::arithmetic_ordering_type<T>;
 
-            template<core::meta::IsArithmetic U>
+            template<core::meta::arithmetic U>
             constexpr auto narrow_to() const noexcept -> extent<U, 3>;
 
-            template<core::meta::IsArithmetic U>
+            template<core::meta::arithmetic U>
             constexpr auto to(const std::source_location& = std::source_location::current()) const noexcept -> extent<U, 3>;
 
             template<usize NEW_RANK>
             constexpr auto to() const noexcept -> extent<T, NEW_RANK>;
 
             /// @brief The extent width
-            ValueType width = 0;
+            value_type width = 0;
 
             /// @brief The extent height
-            ValueType height = 0;
+            value_type height = 0;
 
             /// @brief The extent depth
-            ValueType depth = 1;
+            value_type depth = 1;
         };
 
-        template<core::meta::IsArithmetic T>
+        template<core::meta::arithmetic T>
         using extent3 = extent<T, 3>;
 
         using fextent3 = extent3<f32>;
         using uextent3 = extent3<u32>;
         using iextent3 = extent3<i32>;
 
-        template<core::meta::IsArithmetic T>
+        template<core::meta::arithmetic T>
         extent(T, T) -> extent<T, 2>;
 
-        template<core::meta::IsArithmetic T>
+        template<core::meta::arithmetic T>
         extent(T, T, T) -> extent<T, 3>;
 
         namespace meta {
             template<class T>
             concept IsExtent = requires(T&&) {
-                typename T::ValueType;
+                typename T::value_type;
                 typename T::OrderingType;
-                { T::RANK } -> core::meta::Is<const usize&>;
+                { T::RANK } -> core::meta::is<const usize&>;
             };
 
             template<class T>
@@ -109,49 +109,49 @@ export {
         } // namespace meta
 
         /// @output_section Publics operators members
-        /// @brief ValueType the ordering with an other extent.
-        /// @param other ValueType extent to test
+        /// @brief value_type the ordering with an other extent.
+        /// @param other value_type extent to test
         /// @returns true if this extent is equal to `other`, otherwise returns false.
         template<meta::IsExtent Extent>
         [[nodiscard]]
         constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept -> typename Extent::OrderingType;
 
         /// @output_section Publics operators members
-        /// @brief ValueType the equality with an other extent.
-        /// @param other ValueType extent to test
+        /// @brief value_type the equality with an other extent.
+        /// @param other value_type extent to test
         /// @returns true if this extent is equal to `other`, otherwise returns false.
         template<meta::IsExtent Extent>
         [[nodiscard]]
         constexpr auto operator==(const Extent& first, const Extent& second) noexcept -> bool;
 
         /// @brief Multiply an extent with a factor.
-        /// @param factor ValueType factor to multiply
+        /// @param factor value_type factor to multiply
         /// @returns A newly constructed extent equal to this extent multiplied with
         /// `factor`
         template<meta::IsExtent Extent>
         [[nodiscard]]
-        constexpr auto operator*(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalT<Extent>;
+        constexpr auto operator*(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::to_plain_type<Extent>;
 
         /// @brief Divide an extent with a factor.
-        /// @param factor ValueType factor to divide
+        /// @param factor value_type factor to divide
         /// @returns A newly constructed extent equal to this extent Divided with `factor`
         template<meta::IsExtent Extent>
         [[nodiscard]]
-        constexpr auto operator/(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalT<Extent>;
+        constexpr auto operator/(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::to_plain_type<Extent>;
 
         /// @brief Multiply this extent with a factor.
-        /// @param factor ValueType factor to multiply
+        /// @param factor value_type factor to multiply
         /// @returns A reference to this after the multiplication with `factor`
         template<meta::IsExtent Extent>
         [[nodiscard]]
-        constexpr auto operator*=(Extent& extent, typename Extent::ValueType factor) noexcept -> Extent&;
+        constexpr auto operator*=(Extent& extent, typename Extent::value_type factor) noexcept -> Extent&;
 
         /// @brief Divide this extent with a factor.
-        /// @param factor ValueType factor to divide
+        /// @param factor value_type factor to divide
         /// @returns A reference to this after the division with `factor`
         template<meta::IsExtent Extent>
         [[nodiscard]]
-        constexpr auto operator/=(Extent& extent, typename Extent::ValueType factor) noexcept -> Extent&;
+        constexpr auto operator/=(Extent& extent, typename Extent::value_type factor) noexcept -> Extent&;
 
         template<meta::IsExtent2 Extent>
         auto to_string(const Extent& extent) noexcept -> string;
@@ -159,16 +159,16 @@ export {
         template<meta::IsExtent3 Extent>
         auto to_string(const Extent& extent) noexcept -> string;
 
-        template<core::meta::IsArithmetic T, typename FormatContext>
+        template<core::meta::arithmetic T, typename FormatContext>
         auto format_as(const extent<T, 2>& extent, FormatContext& ctx) noexcept -> decltype(ctx.out());
 
-        template<core::meta::IsArithmetic T, typename FormatContext>
+        template<core::meta::arithmetic T, typename FormatContext>
         auto format_as(const extent<T, 3>& extent, FormatContext& ctx) noexcept -> decltype(ctx.out());
 
-        template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+        template<core::meta::hash_type Ret = hash32, core::meta::arithmetic T>
         constexpr auto hasher(const extent<T, 2>& extent) noexcept -> Ret;
 
-        template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+        template<core::meta::hash_type Ret = hash32, core::meta::arithmetic T>
         constexpr auto hasher(const extent<T, 3>& extent) noexcept -> Ret;
     }}} // namespace stormkit::core::math
 }
@@ -180,8 +180,8 @@ export {
 namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-    template<core::meta::IsArithmetic U>
+    template<core::meta::arithmetic T>
+    template<core::meta::arithmetic U>
     STORMKIT_PURE
     constexpr auto extent<T, 2>::narrow_to() const noexcept -> extent<U, 2> {
         return { .width = narrow<U>(width), .height = narrow<U>(height) };
@@ -189,8 +189,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-    template<core::meta::IsArithmetic U>
+    template<core::meta::arithmetic T>
+    template<core::meta::arithmetic U>
     STORMKIT_PURE
     constexpr auto extent<T, 2>::to(const std::source_location& location) const noexcept -> extent<U, 2> {
         return { .width = as<U>(width, location), .height = as<U>(height, location) };
@@ -198,13 +198,13 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     template<usize NEW_RANK>
     STORMKIT_PURE
     constexpr auto extent<T, 2>::to() const noexcept -> extent<T, NEW_RANK> {
-        using Out        = extent<ValueType, NEW_RANK>;
-        using Array      = array<ValueType, RANK>;
-        using OtherArray = array<typename Out::ValueType, Out::RANK>;
+        using Out        = extent<value_type, NEW_RANK>;
+        using Array      = array<value_type, RANK>;
+        using OtherArray = array<typename Out::value_type, Out::RANK>;
 
         auto out = Out {};
 
@@ -221,8 +221,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-    template<core::meta::IsArithmetic U>
+    template<core::meta::arithmetic T>
+    template<core::meta::arithmetic U>
     STORMKIT_PURE
     constexpr auto extent<T, 3>::narrow_to() const noexcept -> extent<U, 3> {
         return { .width = narrow<U>(width), .height = narrow<U>(height), .depth = narrow<U>(depth) };
@@ -230,8 +230,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-    template<core::meta::IsArithmetic U>
+    template<core::meta::arithmetic T>
+    template<core::meta::arithmetic U>
     STORMKIT_PURE
     constexpr auto extent<T, 3>::to(const std::source_location& location) const noexcept -> extent<U, 3> {
         return { .width = as<U>(width, location), .height = as<U>(height, location), .depth = as<U>(depth, location) };
@@ -239,13 +239,13 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     template<usize NEW_RANK>
     STORMKIT_PURE
     constexpr auto extent<T, 3>::to() const noexcept -> extent<T, NEW_RANK> {
-        using Out        = extent<ValueType, NEW_RANK>;
-        using Array      = array<ValueType, RANK>;
-        using OtherArray = array<typename Out::ValueType, Out::RANK>;
+        using Out        = extent<value_type, NEW_RANK>;
+        using Array      = array<value_type, RANK>;
+        using OtherArray = array<typename Out::value_type, Out::RANK>;
 
         auto out = Out {};
 
@@ -265,7 +265,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<meta::IsExtent Extent>
     STORMKIT_PURE
     constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept -> typename Extent::OrderingType {
-        using Array                = array<typename Extent::ValueType, Extent::RANK>;
+        using Array                = array<typename Extent::value_type, Extent::RANK>;
         using OrderingType         = typename Extent::OrderingType;
         static constexpr auto RANK = Extent::RANK;
 
@@ -283,7 +283,7 @@ namespace stormkit { inline namespace core { namespace math {
     template<meta::IsExtent Extent>
     STORMKIT_PURE
     constexpr auto operator==(const Extent& first, const Extent& second) noexcept -> bool {
-        using Array                = array<typename Extent::ValueType, Extent::RANK>;
+        using Array                = array<typename Extent::value_type, Extent::RANK>;
         static constexpr auto RANK = Extent::RANK;
 
         const auto& values       = *std::bit_cast<Array*>(&first);
@@ -299,26 +299,26 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator*(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalT<Extent> {
-        return core::meta::CanonicalT<Extent> { std::forward<Extent>(extent) } *= factor;
+    constexpr auto operator*(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::to_plain_type<Extent> {
+        return core::meta::to_plain_type<Extent> { std::forward<Extent>(extent) } *= factor;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator/(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::CanonicalT<Extent> {
-        return core::meta::CanonicalT<Extent> { std::forward<Extent>(extent) } /= factor;
+    constexpr auto operator/(Extent&& extent, typename Extent::ElemenType factor) noexcept -> core::meta::to_plain_type<Extent> {
+        return core::meta::to_plain_type<Extent> { std::forward<Extent>(extent) } /= factor;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator*=(Extent& extent, typename Extent::ValueType factor) noexcept -> Extent& {
-        using ValueType              = typename Extent::ValueType;
+    constexpr auto operator*=(Extent& extent, typename Extent::value_type factor) noexcept -> Extent& {
+        using value_type              = typename Extent::value_type;
         static constexpr auto RANK   = Extent::RANK;
-        auto&                 values = *std::bit_cast<array<ValueType, RANK>>(&extent);
+        auto&                 values = *std::bit_cast<array<value_type, RANK>>(&extent);
         for (auto&& val : values) val *= factor;
         return extent;
     }
@@ -327,10 +327,10 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<meta::IsExtent Extent>
     STORMKIT_PURE
-    constexpr auto operator/=(Extent& extent, typename Extent::ValueType factor) noexcept -> Extent& {
-        using ValueType              = typename Extent::ValueType;
+    constexpr auto operator/=(Extent& extent, typename Extent::value_type factor) noexcept -> Extent& {
+        using value_type              = typename Extent::value_type;
         static constexpr auto RANK   = Extent::RANK;
-        auto&                 values = *std::bit_cast<array<ValueType, RANK>>(&extent);
+        auto&                 values = *std::bit_cast<array<value_type, RANK>>(&extent);
         for (auto&& val : values) val /= factor;
         return extent;
     }
@@ -353,7 +353,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::IsArithmetic T, typename FormatContext>
+    template<core::meta::arithmetic T, typename FormatContext>
     STORMKIT_FORCE_INLINE
     inline auto format_as(const extent<T, 2>& extent, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         return std::format_to(ctx.out(), "[extent2 width: {}, height: {}]", extent.width, extent.height);
@@ -361,7 +361,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::IsArithmetic T, typename FormatContext>
+    template<core::meta::arithmetic T, typename FormatContext>
     STORMKIT_FORCE_INLINE
     inline auto format_as(const extent<T, 3>& extent, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         return std::format_to(ctx.out(), "[extent3 width: {}, height: {}, depth: {}]", extent.width, extent.height, extent.depth);
@@ -369,7 +369,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret, core::meta::IsArithmetic T>
+    template<core::meta::hash_type Ret, core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const extent<T, 2>& extent) noexcept -> Ret {
         return hash<Ret>(extent.width, extent.height);
@@ -377,7 +377,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret, core::meta::IsArithmetic T>
+    template<core::meta::hash_type Ret, core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const extent<T, 3>& extent) noexcept -> Ret {
         return hash<Ret>(extent.width, extent.height, extent.depth);

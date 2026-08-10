@@ -26,11 +26,11 @@ export namespace stormkit { inline namespace core {
     Overloaded(Ts...) -> Overloaded<Ts...>;
 
     namespace meta {
-        template<class Type, class... Args>
+        template<class Type, class... Ts>
         consteval auto find_type_index_of() noexcept -> usize {
-            static_assert(IsAnyOf<Type, Args...>);
+            static_assert(is_any_of<Type, Ts...>);
             auto i = 0u;
-            ((not Is<Type, Args> and ++i) and ...);
+            ((not is<Type, Ts> and ++i) and ...);
             return i;
         }
     } // namespace meta

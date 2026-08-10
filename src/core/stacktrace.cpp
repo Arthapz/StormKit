@@ -18,7 +18,9 @@ import std;
 
 import stormkit.core.console;
 import stormkit.core.string;
+import stormkit.core.errors;
 import stormkit.core.types;
+import stormkit.core.typesafe.safecasts;
 import stormkit.core.parallelism.threadutils;
 
 namespace stdr = std::ranges;
@@ -88,12 +90,11 @@ namespace stormkit { inline namespace core {
             // clang-format on
             const auto frame_str = std::to_string(frame);
             const auto splitted  = split(frame_str, ": ");
-            const auto address   = as<u64>(splitted[0].substr(2), 16)
-                                     .transform_error([stderr, &splitted](auto&& err) noexcept {
-                                       std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
-                                       return 0;
-                                     })
-                                     .value();
+            const auto
+              address = *try_as<u64>(splitted[0].substr(2), 16).transform_error([stderr, &splitted](auto&& err) noexcept {
+                  std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
+                  return 0;
+              });
 
             const auto formatted_symbol = prettify((stdr::size(splitted) > 2)
                                                      ? "\n    in " + (YELLOW_TEXT_STYLE | splitted[1]).render()

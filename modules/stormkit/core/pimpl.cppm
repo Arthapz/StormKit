@@ -12,45 +12,55 @@ export module stormkit.core.pimpl;
 
 import std;
 
-import stormkit.core.meta;
+import stormkit.core.heap;
+import stormkit.core.meta.concepts;
+import stormkit.core.meta.type_manipulation;
 import stormkit.core.contract;
+import stormkit.core.typesafe.ref_ptr;
 
 export namespace stormkit { inline namespace core {
-    template<class T, bool Defer = false>
-    class Pimpl {
+    template<class T, bool DEFER = false>
+    class STORMKIT_OWNER pimpl {
       public:
-        Pimpl() noexcept(not Defer);
-        ~Pimpl();
+        using element_type = T;
+        using pointer      = T*;
 
-#if defined(STORMKIT_COMPILER_CLANG) and __clang_major__ < 21
-        template<class... Args>
-            requires(meta::EnableCtor<Pimpl<T, Defer>, Args...>)
-        Pimpl(Args&&... args);
-#else
-        template<class... Args>
-            requires(meta::EnableCtor<Pimpl<T, Defer>, Args...>)
-        explicit(sizeof...(Args) == 1) Pimpl(Args&&... args);
-#endif
+        constexpr pimpl() noexcept
+            requires(DEFER);
+        template<typename... Ts>
+        constexpr pimpl(Ts&&... args) noexcept(meta::noexcept_constructible_from<element_type, Ts...>)
+            requires(not DEFER);
+        constexpr ~pimpl() noexcept(meta::noexcept_destructible<element_type>);
 
-        Pimpl(Pimpl&&) noexcept;
-        auto operator=(Pimpl&&) noexcept -> Pimpl&;
+        pimpl(const pimpl&) noexcept                    = delete;
+        auto operator=(const pimpl&) noexcept -> pimpl& = delete;
 
-        template<class... Args>
-        auto init(Args&&... args) -> void;
+        constexpr pimpl(pimpl&&) noexcept;
+        constexpr auto operator=(pimpl&&) noexcept -> pimpl&;
 
-        auto operator->() noexcept -> T*;
-        auto operator->() const noexcept -> const T*;
+        template<typename... Ts>
+        constexpr auto init(Ts&&... args) noexcept(meta::noexcept_constructible_from<element_type, Ts...>) -> void;
 
-        auto operator*() noexcept -> T&;
-        auto operator*() const noexcept -> const T&;
+        template<typename Self>
+        [[nodiscard]]
+        constexpr auto operator->(STORMKIT_LIFETIMEBOUND this Self& self) noexcept -> meta::forward_const_to<Self, element_type>*;
 
-        auto get() noexcept -> T&;
-        auto get() const noexcept -> const T&;
+        template<typename Self>
+        [[nodiscard]]
+        constexpr auto operator*(STORMKIT_LIFETIMEBOUND this Self& self) noexcept -> meta::forward_const_to<Self, element_type>&;
 
-        explicit operator bool() const noexcept;
+        template<typename Self>
+        [[nodiscard]]
+        constexpr auto get(STORMKIT_LIFETIMEBOUND this Self& self) noexcept
+          -> ref_ptr<meta::forward_const_to<Self, element_type>>;
+
+        [[nodiscard]]
+        constexpr auto operator==(std::nullptr_t) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr explicit operator bool() const noexcept;
 
       private:
-        std::unique_ptr<T> m_data;
+        heap_ptr<element_type> m_implementation;
     };
 }} // namespace stormkit::core
 
@@ -61,104 +71,95 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, bool Defer>
+    template<class T, bool DEFER>
     STORMKIT_FORCE_INLINE
-    inline Pimpl<T, Defer>::Pimpl() noexcept(not Defer) {
-        if constexpr (not Defer) init();
+    constexpr pimpl<T, DEFER>::pimpl() noexcept
+        requires(DEFER)
+    = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<class T, bool DEFER>
+    template<class... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr pimpl<T, DEFER>::pimpl(Ts&&... args) noexcept(meta::noexcept_constructible_from<element_type, Ts...>)
+        requires(not DEFER)
+    {
+        init(std::forward<Ts>(args)...);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, bool Defer>
+    template<class T, bool DEFER>
     STORMKIT_FORCE_INLINE
-    inline Pimpl<T, Defer>::~Pimpl() = default;
+    constexpr pimpl<T, DEFER>::~pimpl() noexcept(meta::noexcept_destructible<element_type>) = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, bool Defer>
-    template<class... Args>
-        requires(meta::EnableCtor<Pimpl<T, Defer>, Args...>)
+    template<class T, bool DEFER>
     STORMKIT_FORCE_INLINE
-    inline Pimpl<T, Defer>::Pimpl(Args&&... args) {
-        init(std::forward<Args>(args)...);
+    constexpr pimpl<T, DEFER>::pimpl(pimpl&&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<class T, bool DEFER>
+    STORMKIT_FORCE_INLINE
+    constexpr auto pimpl<T, DEFER>::operator=(pimpl&&) noexcept -> pimpl& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<class T, bool DEFER>
+    template<class... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto pimpl<T, DEFER>::init(Ts&&... args) noexcept(meta::noexcept_constructible_from<element_type, Ts...>)
+      -> void {
+        EXPECTS(m_implementation == nullptr);
+        m_implementation = allocate_unsafe<T>(std::forward<Ts>(args)...);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, bool Defer>
+    template<class T, bool DEFER>
+    template<typename Self>
     STORMKIT_FORCE_INLINE
-    inline Pimpl<T, Defer>::Pimpl(Pimpl&&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class T, bool Defer>
-    STORMKIT_FORCE_INLINE
-    inline auto Pimpl<T, Defer>::operator=(Pimpl&&) noexcept -> Pimpl& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class T, bool Defer>
-    template<class... Args>
-    STORMKIT_FORCE_INLINE
-    inline auto Pimpl<T, Defer>::init(Args&&... args) -> void {
-        m_data = std::make_unique<T>(std::forward<Args>(args)...);
+    constexpr auto pimpl<T, DEFER>::operator->(this Self& self) noexcept -> meta::forward_const_to<Self, element_type>* {
+        EXPECTS(self.m_implementation != nullptr);
+        return self.m_implementation.get();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, bool Defer>
+    template<class T, bool DEFER>
+    template<typename Self>
     STORMKIT_FORCE_INLINE
-    inline auto Pimpl<T, Defer>::operator->() noexcept -> T* {
-        return &get();
+    constexpr auto pimpl<T, DEFER>::operator*(this Self& self) noexcept -> meta::forward_const_to<Self, element_type>& {
+        EXPECTS(self.m_implementation != nullptr);
+        return *self.m_implementation;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, bool Defer>
+    template<class T, bool DEFER>
+    template<typename Self>
     STORMKIT_FORCE_INLINE
-    inline auto Pimpl<T, Defer>::operator->() const noexcept -> const T* {
-        return &get();
+    constexpr auto pimpl<T, DEFER>::get(this Self& self) noexcept -> ref_ptr<meta::forward_const_to<Self, element_type>> {
+        EXPECTS(self.m_implementation != nullptr);
+        return *self.m_implementation;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, bool Defer>
+    template<class T, bool DEFER>
     STORMKIT_FORCE_INLINE
-    inline auto Pimpl<T, Defer>::operator*() noexcept -> T& {
-        return get();
+    constexpr auto pimpl<T, DEFER>::operator==(std::nullptr_t) const noexcept -> bool {
+        return m_implementation != nullptr;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, bool Defer>
+    template<class T, bool DEFER>
     STORMKIT_FORCE_INLINE
-    inline auto Pimpl<T, Defer>::operator*() const noexcept -> const T& {
-        return get();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class T, bool Defer>
-    STORMKIT_FORCE_INLINE
-    inline auto Pimpl<T, Defer>::get() noexcept -> T& {
-        EXPECTS(m_data != nullptr);
-        return *m_data;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class T, bool Defer>
-    STORMKIT_FORCE_INLINE
-    inline auto Pimpl<T, Defer>::get() const noexcept -> const T& {
-        EXPECTS(m_data != nullptr);
-        return *m_data;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class T, bool Defer>
-    STORMKIT_FORCE_INLINE
-    inline Pimpl<T, Defer>::operator bool() const noexcept {
-        return m_data != nullptr;
+    constexpr pimpl<T, DEFER>::operator bool() const noexcept {
+        return m_implementation != nullptr;
     }
 }} // namespace stormkit::core

@@ -286,12 +286,12 @@ namespace stormkit::wsi::linux::x11 {
 
         window_hints.flags = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
 
-        if (not check_flag_bit(flags, WindowFlag::BORDERLESS)) {
+        if (not has_flag_bit(flags, WindowFlag::BORDERLESS)) {
             window_hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MENU;
             window_hints.functions |= MWM_FUNC_MOVE | MWM_FUNC_CLOSE;
         }
 
-        if (check_flag_bit(flags, WindowFlag::RESIZEABLE)) {
+        if (has_flag_bit(flags, WindowFlag::RESIZEABLE)) {
             window_hints.decorations |= MWM_DECOR_RESIZE | MWM_DECOR_MAXIMIZE;
             window_hints.functions |= MWM_FUNC_RESIZE | MWM_FUNC_MAXIMIZE;
         } else {
@@ -348,7 +348,7 @@ namespace stormkit::wsi::linux::x11 {
 
         xcb_flush(connection);
 
-        if (not check_flag_bit(flags, WindowFlag::EXTERNAL_CONTEXT)) {
+        if (not has_flag_bit(flags, WindowFlag::EXTERNAL_CONTEXT)) {
             m_graphics_context = xcb::GraphicsContext::create(connection);
             const auto values  = array<u32, 3> { screen->white_pixel, screen->black_pixel, 0_u32 };
             xcb_create_gc(connection,

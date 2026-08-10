@@ -6,7 +6,7 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core.math.combinatoric;
+export module stormkit.math.combinatoric;
 
 import std;
 
@@ -14,12 +14,12 @@ import stormkit.core.types;
 import stormkit.core.typesafe;
 import stormkit.core.meta;
 
-import stormkit.core.math.arithmetic;
+import stormkit.math.arithmetic;
 
 namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core { namespace math {
-    template<stormkit::core::meta::IsArithmetic T>
+    template<stormkit::core::meta::arithmetic T>
     constexpr auto factoriel(T n) noexcept -> T;
 }}} // namespace stormkit::core::math
 
@@ -34,12 +34,12 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::core::meta::IsArithmetic T>
+    template<stormkit::core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto factoriel(T n) noexcept -> T {
-        if constexpr (stormkit::meta::IsIntegral<T>) {
+        if constexpr (stormkit::meta::integral<T>) {
             const auto i = [](auto n) static noexcept {
-                if constexpr (stormkit::meta::IsSigned<T>) return abs(static_cast<usize>(n));
+                if constexpr (stormkit::meta::signed_type<T>) return abs(static_cast<usize>(n));
                 else
                     return static_cast<usize>(n);
             }(n);

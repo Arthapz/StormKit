@@ -17,7 +17,7 @@ import stormkit.core.types;
 import stormkit.core.typesafe.safecasts;
 
 export namespace stormkit { inline namespace core {
-    template<class T, meta::IsIntegral _ID>
+    template<class T, meta::integral _ID>
     struct Handle {
         using ID = _ID;
 
@@ -51,10 +51,10 @@ export namespace stormkit { inline namespace core {
     template<class T>
     using Handle64 = Handle<T, u64>;
 
-    template<meta::HashType Ret = hash32, class T, meta::IsIntegral _ID>
+    template<meta::hash_type Ret = hash32, class T, meta::integral _ID>
     constexpr auto hasher(const Handle<T, _ID>& value) noexcept -> Ret;
 
-    template<class T, meta::IsIntegral _ID, typename FormatContext>
+    template<class T, meta::integral _ID, typename FormatContext>
     auto format_as(const Handle<T, _ID>& value, FormatContext& ctx) noexcept -> decltype(ctx.out());
 }} // namespace stormkit::core
 
@@ -65,7 +65,7 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, meta::IsIntegral _ID>
+    template<class T, meta::integral _ID>
     template<std::derived_from<T> U>
     constexpr Handle<T, _ID>::operator Handle<U, _ID>() const noexcept {
         return Handle<U, _ID> { id };
@@ -73,7 +73,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, meta::IsIntegral _ID>
+    template<class T, meta::integral _ID>
     constexpr auto& Handle<T, _ID>::operator++() noexcept {
         ++id;
         return *this;
@@ -81,7 +81,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, meta::IsIntegral _ID>
+    template<class T, meta::integral _ID>
     constexpr auto Handle<T, _ID>::operator++(int) noexcept {
         auto old = *this;
         operator++();
@@ -90,7 +90,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, meta::IsIntegral _ID>
+    template<class T, meta::integral _ID>
     constexpr auto& Handle<T, _ID>::operator--() noexcept {
         --id;
         return *this;
@@ -98,7 +98,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, meta::IsIntegral _ID>
+    template<class T, meta::integral _ID>
     constexpr auto Handle<T, _ID>::operator--(int) noexcept {
         auto old = *this;
         operator--();
@@ -107,28 +107,28 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, meta::IsIntegral _ID>
+    template<class T, meta::integral _ID>
     constexpr Handle<T, _ID>::operator ID() const noexcept {
         return id;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, meta::IsIntegral _ID>
+    template<class T, meta::integral _ID>
     constexpr auto Handle<T, _ID>::invalid_handle() noexcept -> Handle {
         return Handle {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::HashType Ret, class T, meta::IsIntegral _ID>
+    template<meta::hash_type Ret, class T, meta::integral _ID>
     constexpr auto hasher(const Handle<T, _ID>& value) noexcept -> Ret {
         return hash<Ret>(value.id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T, meta::IsIntegral _ID, typename FormatContext>
+    template<class T, meta::integral _ID, typename FormatContext>
     auto format_as(const Handle<T, _ID>& value, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
         return std::format_to(ctx.out(), "[handle id: {}]", value.id);
     }

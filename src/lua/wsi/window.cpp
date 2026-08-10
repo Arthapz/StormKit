@@ -26,11 +26,11 @@ namespace stormkit::lua::wsi {
     namespace {
         ////////////////////////////////////////
         ////////////////////////////////////////
-        template<wsi::EventType EVENT_TYPE, typename... Args>
+        template<wsi::EventType EVENT_TYPE, typename... Ts>
         constexpr auto make_lua_closure() noexcept {
             return [](Window* window, sol::protected_function closure) static noexcept {
-                window->on<EVENT_TYPE>([closure = std::move(closure)](Args&&... args) noexcept {
-                    auto result = closure(std::forward<Args>(args)...);
+                window->on<EVENT_TYPE>([closure = std::move(closure)](Ts&&... args) noexcept {
+                    auto result = closure(std::forward<Ts>(args)...);
                     if (not result.valid())
                         ensures(false,
                                 std::format("lua runtime error!\nlua callstack -------------------------\n{}",

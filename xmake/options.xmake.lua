@@ -39,7 +39,7 @@ option("examples_lua", {
         if option:dep("examples"):enabled() then option:enable(option:dep("lua"):enabled()) end
     end,
 })
-option("examples", { default = false, category = "root menu/build" })
+option("examples", { default = true, category = "root menu/build" })
 option("tools", {
     default = false,
     category = "root menu/build",
@@ -53,12 +53,13 @@ option("on_ci", { default = false, category = "root menu/build" })
 option("rad", { default = false, category = "root menu/build" })
 
 ---------------------------- module options ----------------------------
-option("log", { default = true, category = "root menu/modules" })
-option("entities", { default = true, category = "root menu/modules" })
-option("image", { default = true, category = "root menu/modules", deps = { "log" } })
-option("wsi", { default = true, category = "root menu/modules", deps = { "log" } })
-option("gpu", { default = true, category = "root menu/modules", deps = { "log", "image", "wsi" } })
-option("lua", { default = true, category = "root menu/modules", deps = { "log" } })
+option("log", { default = false, category = "root menu/modules" })
+option("math", { default = false, category = "root menu/modules" })
+option("entities", { default = false, category = "root menu/modules" })
+option("image", { default = false, category = "root menu/modules", deps = { "log" } })
+option("wsi", { default = false, category = "root menu/modules", deps = { "log" } })
+option("gpu", { default = false, category = "root menu/modules", deps = { "log", "image", "wsi" } })
+option("lua", { default = false, category = "root menu/modules", deps = { "log" } })
 
 option("compile_commands", { default = false, category = "root menu/support" })
 option("vsxmake", { default = false, category = "root menu/support" })

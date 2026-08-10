@@ -29,7 +29,7 @@ export namespace stormkit { inline namespace core {
     auto get_thread_name(const std::jthread& thread) noexcept -> string;
 
     template<std::ranges::input_range Range>
-        requires(meta::IsSpecializationOf<meta::RangeType<Range>, std::future>)
+        requires(meta::specialization_of<meta::range_type<Range>, std::future>)
     inline auto wait_all(Range&& futures) noexcept {
         for (auto&& future : std::forward<Range>(futures)) future.wait();
     }

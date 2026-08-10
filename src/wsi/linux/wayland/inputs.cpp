@@ -78,20 +78,20 @@ namespace stormkit::wsi::linux::wayland::wl {
     auto seat_capabilities_handler(void* data, wl_seat* seat, u32 capabilities) noexcept -> void {
         auto& globals       = *std::bit_cast<Globals*>(data);
         auto  _capabilities = unchecked_narrow<wl_seat_capability>(capabilities);
-        if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_KEYBOARD)) {
+        if (has_flag_bit(_capabilities, WL_SEAT_CAPABILITY_KEYBOARD)) {
             auto& [keyboard, state] = globals.keyboards.emplace_back(wl::Keyboard::create(seat), KeyboardState {});
             wl_keyboard_add_listener(keyboard, &g_keyboard_listener, &state);
 
             state.repeat.timer_fd = common::FD::take(timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK));
         }
-        if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_POINTER)) {
+        if (has_flag_bit(_capabilities, WL_SEAT_CAPABILITY_POINTER)) {
             auto& [pointer, state] = globals.pointers.emplace_back(wl::Pointer::create(seat), PointerState {});
             wl_pointer_add_listener(pointer, &g_pointer_listener, &state);
             state.cursor.surface = wl::Surface::create(globals.compositor);
             if (globals.cursor_shape_manager)
                 state.cursor.shape_device = wl::CursorShapeDevice::create(globals.cursor_shape_manager, pointer);
         }
-        if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_TOUCH)) {
+        if (has_flag_bit(_capabilities, WL_SEAT_CAPABILITY_TOUCH)) {
             auto& _ = globals.touchs.emplace_back(wl::Touch::create(seat), TouchState {});
             // wl_touch_add_listener(touch, &g_touch_listener, &globals);
         }
@@ -125,7 +125,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& state          = *std::bit_cast<KeyboardState*>(data);
         state.focused_window = nullptr;
 
-        const auto timer = zeroed<itimerspec>();
+        const auto timer = itimerspec {};
         timerfd_settime(state.repeat.timer_fd, 0, &timer, nullptr);
     }
 
@@ -294,7 +294,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         if (data == nullptr) return;
 
         auto& state = *std::bit_cast<PointerState*>(data);
-        if (not state.focused_window or (state.relative_pointer and check_flag_bit(state.flags, PointerState::Flag::RELATIVE)))
+        if (not state.focused_window or (state.relative_pointer and has_flag_bit(state.flags, PointerState::Flag::RELATIVE)))
             return;
 
         state.x = surface_x;

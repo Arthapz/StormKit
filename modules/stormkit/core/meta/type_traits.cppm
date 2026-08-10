@@ -69,43 +69,43 @@ import std;
 // }}} // namespace stormkit::core::meta
 
 //    template<typename T, typename U>
-//        requires(stormkit::meta::PlainIs<T, U>
-//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::ToPlainType<T>>)
+//        requires(stormkit::meta::plain::is<T, U>
+//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::to_plain_type<T>>)
 //    auto operator+(T&& first, U&& second) noexcept -> decltype(auto);
 
 //    template<typename T, typename U>
-//        requires(stormkit::meta::PlainIs<T, U>
-//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::ToPlainType<T>>)
+//        requires(stormkit::meta::plain::is<T, U>
+//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::to_plain_type<T>>)
 //    auto operator+=(T&& first, U&& second) noexcept -> decltype(auto);
 
 //    template<typename T, typename U>
-//        requires(stormkit::meta::PlainIs<T, U>
-//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::ToPlainType<T>>)
+//        requires(stormkit::meta::plain::is<T, U>
+//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::to_plain_type<T>>)
 //    auto operator-(T&& first, U&& second) noexcept -> decltype(auto);
 
 //    template<typename T, typename U>
-//        requires(stormkit::meta::PlainIs<T, U>
-//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::ToPlainType<T>>)
+//        requires(stormkit::meta::plain::is<T, U>
+//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::to_plain_type<T>>)
 //    auto operator-=(T&& first, U&& second) noexcept -> decltype(auto);
 
 //    template<typename T, typename U>
-//        requires(stormkit::meta::PlainIs<T, U>
-//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::ToPlainType<T>>)
+//        requires(stormkit::meta::plain::is<T, U>
+//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::to_plain_type<T>>)
 //    auto operator*(T&& first, U&& second) noexcept -> decltype(auto);
 
 //    template<typename T, typename U>
-//        requires(stormkit::meta::PlainIs<T, U>
-//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::ToPlainType<T>>)
+//        requires(stormkit::meta::plain::is<T, U>
+//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::to_plain_type<T>>)
 //    auto operator*=(T&& first, U&& second) noexcept -> decltype(auto);
 
 //    template<typename T, typename U>
-//        requires(stormkit::meta::PlainIs<T, U>
-//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::ToPlainType<T>>)
+//        requires(stormkit::meta::plain::is<T, U>
+//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::to_plain_type<T>>)
 //    auto operator/(T&& first, U&& second) noexcept -> decltype(auto);
 
 //    template<typename T, typename U>
-//        requires(stormkit::meta::PlainIs<T, U>
-//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::ToPlainType<T>>)
+//        requires(stormkit::meta::plain::is<T, U>
+//                 and stormkit::meta::ImplementsArithmetic<stormkit::meta::to_plain_type<T>>)
 //    auto operator/=(T&& first, U&& second) noexcept -> decltype(auto);
 // }
 
@@ -125,75 +125,75 @@ import std;
 // ////////////////////////////////////////
 // ////////////////////////////////////////
 // template<typename T, typename U>
-//     requires(PlainIs<T, U> and ImplementsArithmetic<ToPlainType<T>>)
+//     requires(PlainIs<T, U> and ImplementsArithmetic<to_plain_type<T>>)
 // STORMKIT_FORCE_INLINE
 // auto operator+(T&& first, U&& second) noexcept -> decltype(auto) {
-//     return ArithmeticTrait<ToPlainType<T>>::add(std::forward<T>(first), std::forward<U>(second));
+//     return ArithmeticTrait<to_plain_type<T>>::add(std::forward<T>(first), std::forward<U>(second));
 // }
 
 // ////////////////////////////////////////
 // ////////////////////////////////////////
 // template<typename T, typename U>
-//     requires(PlainIs<T, U> and ImplementsArithmetic<ToPlainType<T>>)
+//     requires(PlainIs<T, U> and ImplementsArithmetic<to_plain_type<T>>)
 // STORMKIT_FORCE_INLINE
 // auto operator+=(T&& first, U&& second) noexcept -> decltype(auto) {
-//     return ArithmeticTrait<ToPlainType<T>>::add_eq(std::forward<T>(first),
+//     return ArithmeticTrait<to_plain_type<T>>::add_eq(std::forward<T>(first),
 //     std::forward<U>(second));
 // }
 
 // ////////////////////////////////////////
 // ////////////////////////////////////////
 // template<typename T, typename U>
-//     requires(PlainIs<T, U> and ImplementsArithmetic<ToPlainType<T>>)
+//     requires(PlainIs<T, U> and ImplementsArithmetic<to_plain_type<T>>)
 // STORMKIT_FORCE_INLINE
 // auto operator-(T&& first, U&& second) noexcept -> decltype(auto) {
-//     return ArithmeticTrait<ToPlainType<T>>::sub(std::forward<T>(first), std::forward<U>(second));
+//     return ArithmeticTrait<to_plain_type<T>>::sub(std::forward<T>(first), std::forward<U>(second));
 // }
 
 // ////////////////////////////////////////
 // ////////////////////////////////////////
 // template<typename T, typename U>
-//     requires(PlainIs<T, U> and ImplementsArithmetic<ToPlainType<T>>)
+//     requires(PlainIs<T, U> and ImplementsArithmetic<to_plain_type<T>>)
 // STORMKIT_FORCE_INLINE
 // auto operator-=(T&& first, U&& second) noexcept -> decltype(auto) {
-//     return ArithmeticTrait<ToPlainType<T>>::sub_eq(std::forward<T>(first),
+//     return ArithmeticTrait<to_plain_type<T>>::sub_eq(std::forward<T>(first),
 //     std::forward<U>(second));
 // }
 
 // ////////////////////////////////////////
 // ////////////////////////////////////////
 // template<typename T, typename U>
-//     requires(PlainIs<T, U> and ImplementsArithmetic<ToPlainType<T>>)
+//     requires(PlainIs<T, U> and ImplementsArithmetic<to_plain_type<T>>)
 // STORMKIT_FORCE_INLINE
 // auto operator*(T&& first, U&& second) noexcept -> decltype(auto) {
-//     return ArithmeticTrait<ToPlainType<T>>::mul(std::forward<T>(first), std::forward<U>(second));
+//     return ArithmeticTrait<to_plain_type<T>>::mul(std::forward<T>(first), std::forward<U>(second));
 // }
 
 // ////////////////////////////////////////
 // ////////////////////////////////////////
 // template<typename T, typename U>
-//     requires(PlainIs<T, U> and ImplementsArithmetic<ToPlainType<T>>)
+//     requires(PlainIs<T, U> and ImplementsArithmetic<to_plain_type<T>>)
 // STORMKIT_FORCE_INLINE
 // auto operator*=(T&& first, U&& second) noexcept -> decltype(auto) {
-//     return ArithmeticTrait<ToPlainType<T>>::mul_eq(std::forward<T>(first),
+//     return ArithmeticTrait<to_plain_type<T>>::mul_eq(std::forward<T>(first),
 //     std::forward<U>(second));
 // }
 
 // ////////////////////////////////////////
 // ////////////////////////////////////////
 // template<typename T, typename U>
-//     requires(PlainIs<T, U> and ImplementsArithmetic<ToPlainType<T>>)
+//     requires(PlainIs<T, U> and ImplementsArithmetic<to_plain_type<T>>)
 // STORMKIT_FORCE_INLINE
 // auto operator/(T&& first, U&& second) noexcept -> decltype(auto) {
-//     return ArithmeticTrait<ToPlainType<T>>::div(std::forward<T>(first), std::forward<U>(second));
+//     return ArithmeticTrait<to_plain_type<T>>::div(std::forward<T>(first), std::forward<U>(second));
 // }
 
 // ////////////////////////////////////////
 // ////////////////////////////////////////
 // template<typename T, typename U>
-//     requires(PlainIs<T, U> and ImplementsArithmetic<ToPlainType<T>>)
+//     requires(PlainIs<T, U> and ImplementsArithmetic<to_plain_type<T>>)
 // STORMKIT_FORCE_INLINE
 // auto operator/=(T&& first, U&& second) noexcept -> decltype(auto) {
-//     return ArithmeticTrait<ToPlainType<T>>::div_eq(std::forward<T>(first),
+//     return ArithmeticTrait<to_plain_type<T>>::div_eq(std::forward<T>(first),
 //     std::forward<U>(second));
 // }

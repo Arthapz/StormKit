@@ -55,7 +55,7 @@ namespace {
 
             if (alloc_console) {
                 // set the screen buffer to be big enough to let us scroll text
-                auto coninfo = zeroed<CONSOLE_SCREEN_BUFFER_INFO>();
+                auto coninfo = CONSOLE_SCREEN_BUFFER_INFO {};
 
                 GetConsoleScreenBufferInfo(std_handle, &coninfo);
                 coninfo.dwSize.Y = MAX_CONSOLE_LINES;

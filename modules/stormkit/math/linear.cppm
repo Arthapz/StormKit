@@ -7,7 +7,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core.math.linear;
+export module stormkit.math.linear;
 
 import std;
 
@@ -17,25 +17,25 @@ import stormkit.core.functional;
 import stormkit.core.types;
 import stormkit.core.contract;
 
-import stormkit.core.math.arithmetic;
+import stormkit.math.arithmetic;
 
 namespace stdr = std::ranges;
 
 // TODO improve template deduction
 export namespace stormkit { inline namespace core { namespace math {
     namespace angle {
-        template<core::meta::IsFloatingPoint T>
-        using euler = StrongType<T, struct EulerAngleTag, "euler", ArithmeticTag, ImplicitConvertionTag>;
+        template<meta::floating_point T>
+        using euler = strong_type<T, struct EulerAngleTag, "euler", capabilities::arithmetic, ImplicitConvertionTag>;
 
-        template<core::meta::IsFloatingPoint T>
-        using radian = StrongType<T, struct RadianAngleTag, "radian", ArithmeticTag, ImplicitConvertionTag>;
+        template<meta::floating_point T>
+        using radian = strong_type<T, struct RadianAngleTag, "radian", capabilities::arithmetic, ImplicitConvertionTag>;
 
-        template<core::meta::IsFloatingPoint T>
+        template<meta::floating_point T>
         [[nodiscard]]
         constexpr auto radians(T degres) noexcept -> radian<T>;
     } // namespace angle
 
-    template<core::meta::IsArithmetic T, usize... Sizes>
+    template<core::meta::arithmetic T, usize... Sizes>
         requires(sizeof...(Sizes) >= 1)
     using TensorSpan = mdarray_view<T, std::extents<u8, Sizes...>>;
 
@@ -53,7 +53,7 @@ export namespace stormkit { inline namespace core { namespace math {
         concept IsTensorSpan = core::meta::IsSpecializationWithNTTPOf<T, TensorSpan>;
     }
 
-    // template<core::meta::IsArithmetic T, usize... Sizes>
+    // template<core::meta::arithmetic T, usize... Sizes>
     // [[nodiscard]]
     // constexpr auto as_span(TensorSpan<T, Sizes...>& tensor) noexcept -> array_view<T, (Sizes *
     // ...)>;
@@ -63,55 +63,55 @@ export namespace stormkit { inline namespace core { namespace math {
     constexpr auto as_span(const TensorSpan<const T, Sizes...>& tensor) noexcept -> array_view<const T, (Sizes * ...)>;
 
     template<typename T, usize... Sizes>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     [[nodiscard]]
     constexpr auto as_span_mut(TensorSpan<T, Sizes...> tensor) noexcept -> array_view<T, (Sizes * ...)>;
 
     template<usize... Sizes, stdr::contiguous_range T>
-        requires(core::meta::IsArithmetic<core::meta::RangeType<T>>)
+        requires(core::meta::arithmetic<core::meta::range_type<T>>)
     [[nodiscard]]
-    constexpr auto as_mdspan(const T& data) noexcept -> TensorSpan<const core::meta::RangeType<T>, Sizes...>;
+    constexpr auto as_mdspan(const T& data) noexcept -> TensorSpan<const core::meta::range_type<T>, Sizes...>;
 
     template<usize... Sizes, stdr::contiguous_range T>
-        requires(core::meta::IsArithmetic<core::meta::RangeType<T>> and not core::meta::IsConst<core::meta::RangeType<T>>)
+        requires(core::meta::arithmetic<core::meta::range_type<T>> and not core::meta::const_type<core::meta::range_type<T>>)
     [[nodiscard]]
-    constexpr auto as_mdspan_mut(T& data) noexcept -> TensorSpan<core::meta::RangeType<T>, Sizes...>;
+    constexpr auto as_mdspan_mut(T& data) noexcept -> TensorSpan<core::meta::range_type<T>, Sizes...>;
 
     template<meta::IsTensorSpan To, meta::IsTensorSpan From>
     [[nodiscard]]
     constexpr auto as(const From& data) noexcept -> To;
 
     template<typename T, usize... Sizes>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto add(const TensorSpan<const T, Sizes...>& a,
                        const TensorSpan<const T, Sizes...>& b,
                        TensorSpan<T, Sizes...>              out) noexcept -> void;
 
     template<typename T, usize... Sizes>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto sub(const TensorSpan<const T, Sizes...>& a,
                        const TensorSpan<const T, Sizes...>& b,
                        TensorSpan<T, Sizes...>              out) noexcept -> void;
 
-    template<core::meta::IsArithmetic T, usize... Sizes>
-        requires(not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T, usize... Sizes>
+        requires(not core::meta::const_type<T>)
     constexpr auto mul(const TensorSpan<const T, Sizes...>& a, T b, TensorSpan<T, Sizes...> out) noexcept -> void;
 
-    template<core::meta::IsArithmetic T, usize... Sizes>
-        requires(not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T, usize... Sizes>
+        requires(not core::meta::const_type<T>)
     constexpr auto div(const TensorSpan<const T, Sizes...>& a, T b, TensorSpan<T, Sizes...> out) noexcept -> void;
     // TODO WAIT FOR SUBMDSPAN
-    // template<core::meta::IsArithmetic T, usize... Sizes>
+    // template<core::meta::arithmetic T, usize... Sizes>
     // constexpr auto normalize(TensorSpan<const T, Sizes...> a,
     //                           TensorSpan<T, Sizes...> out) noexcept -> void;
 
     /* vector */
     template<typename T, usize N>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto normalize(const VectorSpan<const T, N>& a, VectorSpan<T, N> out) noexcept -> void;
 
     template<typename T, usize N>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto transpose(const VectorSpan<const T, N>& a, VectorSpan<T, N> out) noexcept -> void;
 
     template<typename T, usize N>
@@ -119,17 +119,17 @@ export namespace stormkit { inline namespace core { namespace math {
     constexpr auto dot(const VectorSpan<const T, N>& a, const VectorSpan<const T, N>& b) noexcept -> T;
 
     template<typename T>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto cross(const VectorSpan<const T, 3>& a, const VectorSpan<const T, 3>& b, VectorSpan<T, 3> out) noexcept -> void;
 
     /* matrix */
     template<typename T, usize N>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     [[nodiscard]]
     constexpr auto determinant(const SquareMatrixSpan<const T, N>& a) noexcept -> T;
 
     template<typename T, usize N>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto transpose(const SquareMatrixSpan<const T, N>& a, SquareMatrixSpan<T, N> out) noexcept -> void;
 
     template<typename T, usize M, usize N>
@@ -137,7 +137,7 @@ export namespace stormkit { inline namespace core { namespace math {
     constexpr auto is_inversible(const MatrixSpan<T, M, N>& mat) noexcept -> bool;
 
     template<typename T, usize N>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto inverse(const SquareMatrixSpan<const T, N>& a, SquareMatrixSpan<T, N> out) noexcept -> void;
 
     template<typename T, usize M, usize N>
@@ -145,12 +145,12 @@ export namespace stormkit { inline namespace core { namespace math {
     constexpr auto is_orthogonal(const MatrixSpan<T, M, N>& mat) noexcept -> bool;
 
     template<typename T, usize M, usize N, usize K>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto mul(const MatrixSpan<const T, M, N>& a, const MatrixSpan<const T, N, K>& b, MatrixSpan<T, M, K> out) noexcept
       -> void;
 
     template<typename T, usize M, usize N, usize K>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto div(const MatrixSpan<const T, M, N>&    a,
                        const SquareMatrixSpan<const T, N>& b,
                        SquareMatrixSpan<T, N>              out) noexcept -> void;
@@ -165,28 +165,28 @@ export namespace stormkit { inline namespace core { namespace math {
                          const VectorSpan<const T, 3>&       translation,
                          SquareMatrixSpan<T, 4>              out) noexcept -> void;
 
-    template<core::meta::IsArithmetic T>
-        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::const_type<T>)
     constexpr auto rotate(const SquareMatrixSpan<const T, 4>& mat,
                           T                                   angle,
                           const VectorSpan<const T, 3>&       axis,
                           SquareMatrixSpan<T, 4>              out) noexcept -> void;
 
     /* graphics */
-    template<core::meta::IsArithmetic T>
-        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::const_type<T>)
     constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void;
 
-    template<core::meta::IsArithmetic T>
-        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::const_type<T>)
     constexpr auto orthographique(T left, T right, T bottom, T top, SquareMatrixSpan<T, 4> out) noexcept -> void;
 
-    template<core::meta::IsArithmetic T>
-        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::const_type<T>)
     constexpr auto perspective(angle::radian<T> fov_y, T aspect, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void;
 
     template<typename T>
-        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+        requires(std::is_signed_v<T> and not core::meta::const_type<T>)
     constexpr auto look_at(VectorSpan<const T, 3> eye,
                            VectorSpan<const T, 3> center,
                            VectorSpan<const T, 3> up,
@@ -203,7 +203,7 @@ namespace stormkit { inline namespace core { namespace math {
     namespace angle {
         ////////////////////////////////////////
         ////////////////////////////////////////
-        template<core::meta::IsFloatingPoint T>
+        template<meta::floating_point T>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
         constexpr auto radians(T degres) noexcept -> radian<T> {
             static constexpr auto one_rad = std::numbers::pi_v<T> / T { 180 };
@@ -230,7 +230,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     // ////////////////////////////////////////
     // ////////////////////////////////////////
-    // template<core::meta::IsArithmetic T, usize... Sizes>
+    // template<core::meta::arithmetic T, usize... Sizes>
     // [[nodiscard]]
     // constexpr auto as_span(const TensorSpan<T, Sizes...>& tensor) noexcept
     //   -> array_view<T, (Sizes * ...)> {
@@ -248,7 +248,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize... Sizes>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     [[nodiscard]]
     constexpr auto as_span_mut(TensorSpan<T, Sizes...> tensor) noexcept -> array_view<T, (Sizes * ...)> {
         return array_view<T, (Sizes * ...)> { tensor.data_handle(), (Sizes * ...) };
@@ -257,21 +257,21 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<usize... Sizes, stdr::contiguous_range T>
-        requires(core::meta::IsArithmetic<core::meta::RangeType<T>>)
+        requires(core::meta::arithmetic<core::meta::range_type<T>>)
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto as_mdspan(const T& data) noexcept -> TensorSpan<const core::meta::RangeType<T>, Sizes...> {
+    constexpr auto as_mdspan(const T& data) noexcept -> TensorSpan<const core::meta::range_type<T>, Sizes...> {
         EXPECTS(stdr::size(data) == (Sizes * ...));
-        return TensorSpan<const core::meta::RangeType<T>, Sizes...> { stdr::data(data), Sizes... };
+        return TensorSpan<const core::meta::range_type<T>, Sizes...> { stdr::data(data), Sizes... };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<usize... Sizes, stdr::contiguous_range T>
-        requires(core::meta::IsArithmetic<core::meta::RangeType<T>> and not core::meta::IsConst<core::meta::RangeType<T>>)
+        requires(core::meta::arithmetic<core::meta::range_type<T>> and not core::meta::const_type<core::meta::range_type<T>>)
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto as_mdspan_mut(T& data) noexcept -> TensorSpan<core::meta::RangeType<T>, Sizes...> {
+    constexpr auto as_mdspan_mut(T& data) noexcept -> TensorSpan<core::meta::range_type<T>, Sizes...> {
         EXPECTS(stdr::size(data) == (Sizes * ...));
-        return TensorSpan<core::meta::RangeType<T>, Sizes...> { stdr::data(data), Sizes... };
+        return TensorSpan<core::meta::range_type<T>, Sizes...> { stdr::data(data), Sizes... };
     }
 
     ////////////////////////////////////////
@@ -285,7 +285,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize... Sizes>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto add(const TensorSpan<const T, Sizes...>& a,
                        const TensorSpan<const T, Sizes...>& b,
@@ -301,7 +301,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize... Sizes>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto sub(const TensorSpan<const T, Sizes...>& a,
                        const TensorSpan<const T, Sizes...>& b,
@@ -316,8 +316,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T, usize... Sizes>
-        requires(not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T, usize... Sizes>
+        requires(not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto mul(const TensorSpan<const T, Sizes...>& a, T b, TensorSpan<T, Sizes...> out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
@@ -328,8 +328,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T, usize... Sizes>
-        requires(not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T, usize... Sizes>
+        requires(not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto div(const TensorSpan<const T, Sizes...>& a, T b, TensorSpan<T, Sizes...> out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
@@ -341,7 +341,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize N>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto normalize(const VectorSpan<const T, N>& a, VectorSpan<T, N> out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
@@ -366,7 +366,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto cross(const VectorSpan<const T, 3>& a, const VectorSpan<const T, 3>& b, VectorSpan<T, 3> out) noexcept
       -> void {
@@ -381,7 +381,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize M>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto cofactor(const SquareMatrixSpan<const T, M>& mat, SquareMatrixSpan<T, M> out) noexcept -> void {
         static constexpr auto N = M - 1u;
 
@@ -408,7 +408,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize M>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     STORMKIT_PURE
     constexpr auto determinant(const SquareMatrixSpan<const T, M>& mat) noexcept -> T {
         if constexpr (M == 0) return 1;
@@ -446,7 +446,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize N>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto transpose(const SquareMatrixSpan<const T, N>& a, SquareMatrixSpan<T, N> out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
@@ -472,7 +472,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize N>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     constexpr auto inverse(const SquareMatrixSpan<const T, N>& a, SquareMatrixSpan<T, N> out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(is_inversible(a));
@@ -524,7 +524,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize M, usize N, usize K>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto mul(const MatrixSpan<const T, M, N>& a, const MatrixSpan<const T, N, K>& b, MatrixSpan<T, M, K> out) noexcept
       -> void {
@@ -536,7 +536,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, usize M, usize N>
-        requires(not core::meta::IsConst<T>)
+        requires(not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto div(const MatrixSpan<const T, M, N>&    a,
                        const SquareMatrixSpan<const T, N>& b,
@@ -599,8 +599,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto rotate(const SquareMatrixSpan<const T, 4>& a,
                           angle::radian<T>                    angle,
@@ -650,8 +650,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void {
         out[0, 0] = core::as<T>(2) / (right - left);
@@ -665,8 +665,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto orthographique(T left, T right, T bottom, T top, SquareMatrixSpan<T, 4> out) noexcept -> void {
         static constexpr auto far  = core::as<T>(100);
@@ -677,8 +677,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    template<core::meta::arithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto perspective(angle::radian<T> fov_y, T aspect, T near, T far, SquareMatrixSpan<T, 4> out) noexcept -> void {
         EXPECTS(not is(aspect, T { 0 }));
@@ -697,7 +697,7 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+        requires(std::is_signed_v<T> and not core::meta::const_type<T>)
     STORMKIT_FORCE_INLINE
     constexpr auto look_at(VectorSpan<const T, 3> eye,
                            VectorSpan<const T, 3> center,

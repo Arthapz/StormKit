@@ -30,7 +30,7 @@ namespace stormkit::wsi::linux {
     auto get_primary_monitor(WM wm) noexcept -> const Monitor& {
         const auto monitors = get_monitors(wm);
         auto       it       = stdr::find_if(monitors, [](const auto& monitor) static noexcept {
-            return check_flag_bit(monitor.flags, Monitor::Flags::PRIMARY);
+            return has_flag_bit(monitor.flags, Monitor::Flags::PRIMARY);
         });
         return *it;
     }

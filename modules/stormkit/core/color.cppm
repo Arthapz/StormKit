@@ -20,8 +20,23 @@ import stormkit.core.contract;
 export namespace stormkit { inline namespace core {
     namespace meta {
         template<class T>
-        concept ColorComponentStorageType = SameAs<T, f32> or SameAs<T, u8>;
-    }
+        concept IsColorComponent = is_any_of<
+          T,
+          float,
+          std::uint8_t
+#ifdef __STDCPP_FLOAT32_T__
+          ,
+          std::float32_t
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+          ,
+          std::float64_t
+#endif
+          >;
+
+        template<class T>
+        concept ColorComponentStorageType = is<T, f32> or is<T, u8>;
+    } // namespace meta
 
     enum class ColorLayout {
         R,
@@ -200,7 +215,7 @@ export namespace stormkit { inline namespace core {
     template<ColorLayout LAYOUT, meta::ColorComponentStorageType T, typename FormatContext>
     auto format_as(const color<LAYOUT, T>& color, FormatContext& ctx) noexcept -> decltype(ctx.out());
 
-    template<meta::HashType Ret = hash32, ColorLayout LAYOUT, meta::ColorComponentStorageType T>
+    template<meta::hash_type Ret = hash32, ColorLayout LAYOUT, meta::ColorComponentStorageType T>
     constexpr auto hasher(const color<LAYOUT, T>& color) noexcept -> Ret;
 }} // namespace stormkit::core
 
@@ -377,7 +392,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::ColorComponentStorageType U, ColorLayout LAYOUT_T, meta::ColorComponentStorageType T>
     constexpr auto to_storage(const color<LAYOUT_T, T>& in) noexcept -> stormkit::color<LAYOUT_T, U> {
-        if constexpr (meta::SameAs<T, U>) return in;
+        if constexpr (meta::same_as<T, U>) return in;
         else {
             using OutColor = color<LAYOUT_T, U>;
             auto out       = OutColor {};
@@ -421,7 +436,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::ColorComponentStorageType T>
     constexpr auto ColorComponent<T>::max() noexcept -> T {
-        if constexpr (meta::SameAs<T, f32>) return 1.f;
+        if constexpr (meta::same_as<T, f32>) return 1.f;
         else
             return 255u;
     }
@@ -430,7 +445,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::ColorComponentStorageType To, meta::ColorComponentStorageType From>
     constexpr auto as_impl(ColorComponent<From> component) noexcept -> ColorComponent<To> {
-        if constexpr (meta::SameAs<To, f32>) return ColorComponent<To> { as<f32>(component.value) / 255.f };
+        if constexpr (meta::same_as<To, f32>) return ColorComponent<To> { as<f32>(component.value) / 255.f };
         else
             return ColorComponent<To> { as<u8>(component.value) * 255.f };
     }
@@ -584,7 +599,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::HashType Ret, ColorLayout LAYOUT, meta::ColorComponentStorageType T>
+    template<meta::hash_type Ret, ColorLayout LAYOUT, meta::ColorComponentStorageType T>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const color<LAYOUT, T>& color) noexcept -> Ret {
         if constexpr (LAYOUT == ColorLayout::R) return hash(color.r);

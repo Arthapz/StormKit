@@ -63,7 +63,7 @@ outfile = io.open("{}", "w")
             // flush tmp buff to render buffer
             out += "outfile:write(\"";
             for (auto c_buf : buff) {
-                auto str_char = *(as<string>(as<i32>(c_buf), 16).transform_error(monadic::assert()));
+                auto str_char = as<string>(as<i32>(c_buf), 16);
                 if (stdr::size(str_char) == 1) str_char.insert(stdr::begin(str_char), '0');
                 out += "\\x";
                 out += str_char;
@@ -83,7 +83,7 @@ outfile = io.open("{}", "w")
     out += "outfile:write(\"";
 
     for (auto c_buf : buff) {
-        auto str_char = *as<string>(as<i32>(c_buf), 16).transform_error(monadic::assert());
+        auto str_char = as<string>(as<i32>(c_buf), 16);
         if (stdr::size(str_char) == 1) str_char.insert(stdr::begin(str_char), '0');
         out += "\\x";
         out += str_char;

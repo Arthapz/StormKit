@@ -12,187 +12,227 @@ import std;
 
 import stormkit.core.meta;
 import stormkit.core.hash;
-import stormkit.core.string.constexpr_string;
+import stormkit.core.string.static_string;
+import stormkit.core.meta.concepts;
+import stormkit.core.meta.algorithms;
 
-export {
-    namespace stormkit { inline namespace core {
-        struct ArithmeticTag {
-            template<typename T>
-            using Type = meta::ValueType<meta::ToPlainType<T>>;
+namespace stdr = std::ranges;
 
-            template<typename Self>
-            constexpr auto operator+(this Self&& self, meta::PlainIs<Type<Self>> auto&& other) noexcept
-              -> meta::ToPlainType<Self> {
-                return meta::ToPlainType<Self> { std::forward<Self>(self).get() + std::forward<decltype(other)>(other) };
-            }
+export namespace stormkit { inline namespace core {
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
+    class strong_type;
 
-            template<typename Self>
-            constexpr auto operator+=(this Self& self, meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
-                self.get() += std::forward<decltype(other)>(other);
-                return self;
-            }
+    namespace meta {
+        template<typename T>
+        concept is_strong_type = specialization_of_nttp_ttvtcs<T, strong_type>;
 
-            template<typename Self>
-            constexpr auto operator-(this Self&& self, meta::PlainIs<Type<Self>> auto&& other) noexcept
-              -> meta::ToPlainType<Self> {
-                return meta::ToPlainType<Self> { std::forward<Self>(self).get() - std::forward<decltype(other)>(other) };
-            }
+        template<typename T, typename Capability>
+        concept has_capability = derived_from<T, Capability>;
+    } // namespace meta
 
-            template<typename Self>
-            constexpr auto operator-=(this Self& self, meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
-                self.get() -= std::forward<decltype(other)>(other);
-                return self;
-            }
+    namespace capabilities {
+        template<typename T>
+        struct arithmetic {
+            using type       = T;
+            using param_type = meta::in<type>;
 
             template<typename Self>
-            constexpr auto operator*(this Self&& self, meta::PlainIs<Type<Self>> auto&& other) noexcept
-              -> meta::ToPlainType<Self> {
-                return meta::ToPlainType<Self> { std::forward<Self>(self).get() * std::forward<decltype(other)>(other) };
-            }
+            constexpr auto operator+(this Self self, param_type other) noexcept -> Self
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator+(this const Self& self, param_type other) noexcept -> const Self&
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator+(this Self self, Self other) noexcept -> Self
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator+(this const Self& self, const Self& other) noexcept -> Self
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator+=(this Self self, param_type other) noexcept -> Self&
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator+=(this Self& self, param_type other) noexcept -> Self&
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator+=(this Self self, Self other) noexcept -> Self&
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator+=(this Self& self, const Self& other) noexcept -> Self&
+                requires(meta::prefer_pass_by_ref<Self>);
 
             template<typename Self>
-            constexpr auto operator*=(this Self& self, meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
-                self.get() *= std::forward<decltype(other)>(other);
-                return self;
-            }
+            constexpr auto operator-(this Self self, param_type other) noexcept -> Self
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator-(this const Self& self, param_type other) noexcept -> const Self&
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator-(this Self self, Self other) noexcept -> Self
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator-(this const Self& self, const Self& other) noexcept -> Self
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator-=(this Self self, param_type other) noexcept -> Self&
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator-=(this Self& self, param_type other) noexcept -> Self&
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator-=(this Self self, Self other) noexcept -> Self&
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator-=(this Self& self, const Self& other) noexcept -> Self&
+                requires(meta::prefer_pass_by_ref<Self>);
 
             template<typename Self>
-            constexpr auto operator/(this Self&& self, meta::PlainIs<Type<Self>> auto&& other) noexcept
-              -> meta::ToPlainType<Self> {
-                return meta::ToPlainType<Self> { std::forward<Self>(self).get() / std::forward<decltype(other)>(other) };
-            }
+            constexpr auto operator*(this Self self, param_type other) noexcept -> Self
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator*(this const Self& self, param_type other) noexcept -> const Self&
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator*(this Self self, Self other) noexcept -> Self
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator*(this const Self& self, const Self& other) noexcept -> Self
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator*=(this Self self, param_type other) noexcept -> Self&
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator*=(this Self& self, param_type other) noexcept -> Self&
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator*=(this Self self, Self other) noexcept -> Self&
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator*=(this Self& self, const Self& other) noexcept -> Self&
+                requires(meta::prefer_pass_by_ref<Self>);
 
             template<typename Self>
-            constexpr auto operator/=(this Self& self, meta::PlainIs<Type<Self>> auto&& other) noexcept -> Self& {
-                self.get() /= std::forward<decltype(other)>(other);
-                return self;
-            }
+            constexpr auto operator/(this Self self, param_type other) noexcept -> Self
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator/(this const Self& self, param_type other) noexcept -> const Self&
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator/(this Self self, Self other) noexcept -> Self
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator/(this const Self& self, const Self& other) noexcept -> Self
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator/=(this Self self, param_type other) noexcept -> Self&
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator/=(this Self& self, param_type other) noexcept -> Self&
+                requires(meta::prefer_pass_by_ref<Self>);
+            template<typename Self>
+            constexpr auto operator/=(this Self self, Self other) noexcept -> Self&
+                requires(meta::prefer_pass_by_value<Self>);
+            template<typename Self>
+            constexpr auto operator/=(this Self& self, const Self& other) noexcept -> Self&
+                requires(meta::prefer_pass_by_ref<Self>);
         };
 
-        struct ImplicitConvertionTag {};
-
-        template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
-        class StrongType;
+        template<typename T>
+        struct implicit_convertion {};
 
         namespace meta {
-            template<typename T>
-            concept IsStrongType = IsSpecializationOfNTTP_TTVTs<T, StrongType>;
+            template<template<class> typename... Capabilities>
+            concept has_arithmetic = core::meta::is_any_of<arithmetic<int>, Capabilities<int>...>;
 
-            template<typename T, typename Capability>
-            concept HasCapability = DerivedFrom<T, Capability>;
-
-            template<typename... Capabilities>
-            concept HasArithmeticCapability = IsAnyOf<ArithmeticTag, Capabilities...>;
-
-            template<typename... Capabilities>
-            concept HasImplicitConvertionCapability = IsAnyOf<ImplicitConvertionTag, Capabilities...>;
+            template<template<class> typename... Capabilities>
+            concept has_implicit_convertion = core::meta::is_any_of<implicit_convertion<int>, Capabilities<int>...>;
         } // namespace meta
+    } // namespace capabilities
 
-        template<typename T>
-            requires(meta::IsStrongType<meta::ToPlainType<T>>)
-        constexpr auto operator+(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first, T&& second) noexcept
-          -> meta::ToPlainType<T> {
-            return meta::ToPlainType<T> { std::forward<T>(second).get() + std::forward<decltype(first)>(first) };
-        }
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
+    class STORMKIT_OWNER strong_type final: public Capabilities<T>... {
+      public:
+        using value_type = T;
+        using param_type = meta::in<T>;
 
-        template<typename T>
-            requires(meta::IsStrongType<meta::ToPlainType<T>>)
-        constexpr auto operator-(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first, T&& second) noexcept
-          -> meta::ToPlainType<T> {
-            return meta::ToPlainType<T> { std::forward<T>(second).get() - std::forward<decltype(first)>(first) };
-        }
+        static constexpr auto NAME = std::string_view { stdr::data(NAME_), stdr::size(NAME_) };
 
-        template<typename T>
-            requires(meta::IsStrongType<meta::ToPlainType<T>>)
-        constexpr auto operator*(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first, T&& second) noexcept
-          -> meta::ToPlainType<T> {
-            return meta::ToPlainType<T> { std::forward<T>(second).get() * std::forward<decltype(first)>(first) };
-        }
+        constexpr explicit strong_type(meta::take<value_type>
+                                         value) noexcept(meta::noexcept_constructible_from<value_type, meta::take<value_type>>);
 
-        template<typename T>
-            requires(meta::IsStrongType<meta::ToPlainType<T>>)
-        constexpr auto operator/(meta::PlainIs<ArithmeticTag::Type<T>> auto&& first, T&& second) noexcept
-          -> meta::ToPlainType<T> {
-            return meta::ToPlainType<T> { std::forward<T>(second).get() / std::forward<decltype(first)>(first) };
-        }
+        template<class... Ts>
+        constexpr explicit(sizeof...(Ts) == 1)
+          strong_type(std::in_place_t, Ts&&... args) noexcept(meta::noexcept_constructible_from<value_type, Ts...>)
+            requires(not meta::decayed::is<meta::first_type<Ts...>, T> and meta::constructible_from<value_type, Ts...>);
 
-        template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
-        class StrongType: public Capabilities... {
-          public:
-            using ValueType = T;
+        constexpr ~strong_type() noexcept(meta::noexcept_destructible<value_type>);
 
-            constexpr explicit StrongType(ValueType value) noexcept(meta::IsNoexceptConstructible<ValueType, ValueType>);
-            template<class... Args>
-            constexpr explicit(sizeof...(Args) == 1)
-              StrongType(std::in_place_t, Args&&... args) noexcept(meta::IsNoexceptConstructible<ValueType, Args...>)
-                requires(meta::IsConstructible<ValueType, Args...>);
-            constexpr ~StrongType() noexcept(meta::IsNoexceptDestructible<ValueType>);
+        constexpr strong_type(const strong_type&) noexcept(meta::noexcept_copyable<value_type>)
+            requires(meta::copyable<value_type>);
+        constexpr strong_type(strong_type&&) noexcept(meta::noexcept_movable<value_type>)
+            requires(meta::movable<value_type>);
 
-            constexpr StrongType(const StrongType&) noexcept(meta::IsNoexceptCopyConstructible<ValueType>)
-                requires(meta::IsCopyConstructible<ValueType>);
-            constexpr auto operator=(const StrongType&) noexcept(meta::IsNoexceptCopyAssignable<ValueType>) -> StrongType&
-                requires(meta::IsCopyAssignable<ValueType>);
+        constexpr auto operator=(const strong_type&) noexcept(meta::noexcept_copy_assignable<value_type>) -> strong_type&
+            requires(meta::copy_assignable<value_type>);
+        constexpr auto operator=(strong_type&&) noexcept(meta::noexcept_move_assignable<value_type>) -> strong_type&
+            requires(meta::move_assignable<value_type>);
 
-            constexpr StrongType(StrongType&&) noexcept(meta::IsNoexceptMoveConstructible<ValueType>)
-                requires(meta::IsMoveConstructible<ValueType>);
-            constexpr auto operator=(StrongType&&) noexcept(meta::IsNoexceptMoveAssignable<ValueType>) -> StrongType&
-                requires(meta::IsMoveAssignable<ValueType>);
+        template<typename Self>
+        [[nodiscard]]
+        constexpr explicit(not capabilities::meta::has_implicit_convertion<Capabilities...>) operator meta::
+          forward_like<Self, value_type>(STORMKIT_LIFETIMEBOUND this Self&& self) noexcept;
 
-            template<typename Self>
-            [[nodiscard]]
-            constexpr explicit(not meta::HasImplicitConvertionCapability<Capabilities...>) operator T(this Self&& self) noexcept;
+        template<typename Self>
+        [[nodiscard]]
+        constexpr auto get(STORMKIT_LIFETIMEBOUND this Self&& self) noexcept -> meta::forward_like<Self, value_type>;
 
-            [[nodiscard]]
-            constexpr explicit(not meta::HasImplicitConvertionCapability<Capabilities...>) operator T&() & noexcept;
-            [[nodiscard]]
-            constexpr explicit(not meta::HasImplicitConvertionCapability<Capabilities...>) operator const T&() const & noexcept;
+      private:
+        friend class Capabilities<T>...;
 
-            [[nodiscard]]
-            constexpr auto get(this auto&& self) noexcept -> decltype(auto);
+        value_type m_value;
+    };
 
-          private:
-            ValueType m_value;
-        };
+    // template<typename T>
+    // constexpr auto value_of(T&& value) noexcept -> decltype(auto);
 
-        template<typename T>
-        constexpr auto value_of(T&& value) noexcept -> decltype(auto);
+    // template<meta::is_strong_type                                    First,
+    //          meta::plain::is<typename to_plain_type<First>::value_type> Second>
+    //     requires(meta::HasArithmeticCapability<to_plain_type<First>>)
+    // constexpr auto operator+(First&& first, Second&& second) {
+    //     return to_plain_type<First> { std::forward<First>(first).get()
+    //                                 + std::forward<Second>(second) };
+    // }
 
-        // template<meta::IsStrongType                                    First,
-        //          meta::PlainIs<typename ToPlainType<First>::ValueType> Second>
-        //     requires(meta::HasArithmeticCapability<ToPlainType<First>>)
-        // constexpr auto operator+(First&& first, Second&& second) {
-        //     return ToPlainType<First> { std::forward<First>(first).get()
-        //                                 + std::forward<Second>(second) };
-        // }
+    // template<meta::is_strong_type First, meta::plain::is<First> Second>
+    //     requires(meta::HasArithmeticCapability<to_plain_type<First>>)
+    // constexpr auto operator+(First&& first, Second&& second) {
+    //     return to_plain_type<First> { std::forward<First>(first).get()
+    //                                 + std::forward<Second>(second).get() };
+    // }
 
-        // template<meta::IsStrongType First, meta::PlainIs<First> Second>
-        //     requires(meta::HasArithmeticCapability<ToPlainType<First>>)
-        // constexpr auto operator+(First&& first, Second&& second) {
-        //     return ToPlainType<First> { std::forward<First>(first).get()
-        //                                 + std::forward<Second>(second).get() };
-        // }
+    // template<meta::is_strong_type                                    First,
+    //          meta::plain::is<typename to_plain_type<First>::value_type> Second>
+    //     requires(meta::HasArithmeticCapability<to_plain_type<First>>)
+    // constexpr auto operator+=(First& first, Second&& second) {
+    //     first.get() += std::forward<Second>(second);
+    // }
 
-        // template<meta::IsStrongType                                    First,
-        //          meta::PlainIs<typename ToPlainType<First>::ValueType> Second>
-        //     requires(meta::HasArithmeticCapability<ToPlainType<First>>)
-        // constexpr auto operator+=(First& first, Second&& second) {
-        //     first.get() += std::forward<Second>(second);
-        // }
+    // template<meta::is_strong_type First, meta::plain::is<First> Second>
+    //     requires(meta::HasArithmeticCapability<to_plain_type<First>>)
+    // constexpr auto operator+=(First& first, Second&& second) {
+    //     first.get() += std::forward<Second>(second).get();
+    // }
 
-        // template<meta::IsStrongType First, meta::PlainIs<First> Second>
-        //     requires(meta::HasArithmeticCapability<ToPlainType<First>>)
-        // constexpr auto operator+=(First& first, Second&& second) {
-        //     first.get() += std::forward<Second>(second).get();
-        // }
+    // template<meta::hash_type Ret = hash32, meta::is_strong_type T>
+    // constexpr auto hasher(const T& value) noexcept -> Ret;
 
-        template<meta::HashType Ret = hash32, meta::IsStrongType T>
-        constexpr auto hasher(const T& value) noexcept -> Ret;
+    // template<meta::is_decayed T, typename Tag, meta::static_string Name, typename... Capabilities, typename
+    // FormatContext> auto format_as(const strong_type<T, Tag, Name, Capabilities...>& value, FormatContext& ctx) noexcept
+    //   -> decltype(ctx.out());
 
-        template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities, typename FormatContext>
-        auto format_as(const StrongType<T, Tag, Name, Capabilities...>& value, FormatContext& ctx) noexcept
-          -> decltype(ctx.out());
-    }} // namespace stormkit::core
-}
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
@@ -201,124 +241,465 @@ export {
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::
-      StrongType(ValueType value) noexcept(meta::IsNoexceptConstructible<ValueType, ValueType>)
-        : m_value { value } {
+    constexpr strong_type<T, Tag, NAME_, Capabilities...>::
+      strong_type(meta::take<value_type> value) noexcept(meta::noexcept_constructible_from<value_type, meta::take<value_type>>)
+        : m_value { std::forward<meta::take<value_type>>(value) } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
-    template<class... Args>
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
+    template<class... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::
-      StrongType(std::in_place_t, Args&&... args) noexcept(meta::IsNoexceptConstructible<ValueType, Args...>)
-        requires(meta::IsConstructible<ValueType, Args...>)
-        : m_value { std::forward<Args>(args)... } {
+    constexpr strong_type<T, Tag, NAME_, Capabilities...>::
+      strong_type(std::in_place_t, Ts&&... args) noexcept(meta::noexcept_constructible_from<value_type, Ts...>)
+        requires(not meta::decayed::is<meta::first_type<Ts...>, T> and meta::constructible_from<value_type, Ts...>)
+        : m_value { std::forward<Ts>(args)... } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::
-      ~StrongType() noexcept(meta::IsNoexceptDestructible<ValueType>) = default;
+    constexpr strong_type<T, Tag, NAME_, Capabilities...>::
+      ~strong_type() noexcept(meta::noexcept_destructible<value_type>) = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::
-      StrongType(const StrongType&) noexcept(meta::IsNoexceptCopyConstructible<ValueType>)
-        requires(meta::IsCopyConstructible<ValueType>)
+    constexpr strong_type<T, Tag, NAME_, Capabilities...>::
+      strong_type(const strong_type&) noexcept(meta::noexcept_copyable<value_type>)
+        requires(meta::copyable<value_type>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto StrongType<T, Tag, Name, Capabilities...>::
-      operator=(const StrongType&) noexcept(meta::IsNoexceptCopyAssignable<ValueType>) -> StrongType&
-        requires(meta::IsCopyAssignable<ValueType>)
+    constexpr strong_type<T, Tag, NAME_, Capabilities...>::strong_type(strong_type&&) noexcept(meta::noexcept_movable<value_type>)
+        requires(meta::movable<value_type>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::
-      StrongType(StrongType&&) noexcept(meta::IsNoexceptMoveConstructible<ValueType>)
-        requires(meta::IsMoveConstructible<ValueType>)
+    constexpr auto strong_type<T, Tag, NAME_, Capabilities...>::
+      operator=(const strong_type&) noexcept(meta::noexcept_copy_assignable<value_type>) -> strong_type&
+        requires(meta::copy_assignable<value_type>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto StrongType<T, Tag, Name, Capabilities...>::
-      operator=(StrongType&&) noexcept(meta::IsNoexceptMoveAssignable<ValueType>) -> StrongType&
-        requires(meta::IsMoveAssignable<ValueType>)
+    constexpr auto strong_type<T, Tag, NAME_, Capabilities...>::
+      operator=(strong_type&&) noexcept(meta::noexcept_move_assignable<value_type>) -> strong_type&
+        requires(meta::move_assignable<value_type>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
     template<typename Self>
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::operator T(this Self&& self) noexcept {
-        return std::forward_like<decltype(self)>(self.m_value);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::operator T&() & noexcept {
-        return get();
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr StrongType<T, Tag, Name, Capabilities...>::operator const T&() const & noexcept {
-        return get();
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities>
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto StrongType<T, Tag, Name, Capabilities...>::get(this auto&& self) noexcept -> decltype(auto) {
-        return std::forward_like<decltype(self)>(self.m_value);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto value_of(T&& value) noexcept -> decltype(auto) {
-        if constexpr (meta::IsStrongType<T>) return std::forward<T>(value).get();
-        else
-            return std::forward<T>(value);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<meta::HashType Ret, meta::IsStrongType T>
     STORMKIT_FORCE_INLINE
-    constexpr auto hasher(const T& value) noexcept -> Ret {
-        return hash<Ret>(value.get());
+    constexpr strong_type<T, Tag, NAME_, Capabilities...>::operator meta::forward_like<Self,
+                                                                                       value_type>(this Self&& self) noexcept {
+        return std::forward_like<Self>(self.m_value);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsPlain T, typename Tag, meta::ConstexprString Name, typename... Capabilities, typename FormatContext>
+    template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities>
+        requires(meta::destructible<T>)
+    template<typename Self>
     STORMKIT_FORCE_INLINE
-    inline auto format_as(const StrongType<T, Tag, Name, Capabilities...>& value, FormatContext& ctx) noexcept
-      -> decltype(ctx.out()) {
-        return std::format_to(ctx.out(), "[{} value: {}]", Name, value.get());
+    constexpr auto strong_type<T, Tag, NAME_, Capabilities...>::get(this Self&& self) noexcept
+      -> meta::forward_like<Self, value_type> {
+        return std::forward_like<Self>(self.m_value);
     }
+
+    // ////////////////////////////////////////
+    // ////////////////////////////////////////
+    // template<meta::hash_type Ret, meta::is_strong_type T>
+    // STORMKIT_FORCE_INLINE
+    // constexpr auto hasher(const T& value) noexcept -> Ret {
+    //     return hash<Ret>(value.get());
+    // }
+
+    // ////////////////////////////////////////
+    // ////////////////////////////////////////
+    // template<meta::is_decayed T, typename Tag, meta::static_string NAME_, template<class> typename... Capabilities,
+
+    // requires(meta::destructible<T>)
+    // typename FormatContext> STORMKIT_FORCE_INLINE inline auto format_as(const strong_type<T, Tag, NAME_, Capabilities...>&
+    // value, FormatContext& ctx) noexcept
+    //   -> decltype(ctx.out()) {
+    //     return std::format_to(ctx.out(), "[{} value: {}]", NAME, value.get());
+    // }
+
+    namespace capabilities {
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator+(this Self self, param_type other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            return Self { self.m_value + other };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator+(this const Self& self, param_type other) noexcept -> const Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            return Self { self.m_value + other };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator+(this Self self, Self other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            return Self { self.m_value + other.m_value };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator+(this const Self& self, const Self& other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            return Self { self.m_value + other.m_value };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator+=(this Self self, param_type other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            self.m_value += other;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator+=(this Self& self, param_type other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            self.m_value += other;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator+=(this Self self, Self other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            self.m_value += other.m_value;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator+=(this Self& self, const Self& other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            self.m_value += other.m_value;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator-(this Self self, param_type other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            return Self { self.m_value - other };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator-(this const Self& self, param_type other) noexcept -> const Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            return Self { self.m_value - other };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator-(this Self self, Self other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            return Self { self.m_value - other.m_value };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator-(this const Self& self, const Self& other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            return Self { self.m_value - other.m_value };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator-=(this Self self, param_type other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            self.m_value -= other;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator-=(this Self& self, param_type other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            self.m_value -= other;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator-=(this Self self, Self other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            self.m_value -= other.m_value;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator-=(this Self& self, const Self& other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            self.m_value -= other.m_value;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator*(this Self self, param_type other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            return Self { self.m_value * other };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator*(this const Self& self, param_type other) noexcept -> const Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            return Self { self.m_value * other };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator*(this Self self, Self other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            return Self { self.m_value * other.m_value };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator*(this const Self& self, const Self& other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            return Self { self.m_value * other.m_value };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator*=(this Self self, param_type other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            self.m_value *= other;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator*=(this Self& self, param_type other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            self.m_value *= other;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator*=(this Self self, Self other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            self.m_value *= other.m_value;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator*=(this Self& self, const Self& other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            self.m_value *= other.m_value;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator/(this Self self, param_type other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            return Self { self.m_value / other };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator/(this const Self& self, param_type other) noexcept -> const Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            return Self { self.m_value / other };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator/(this Self self, Self other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            return Self { self.m_value / other.m_value };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator/(this const Self& self, const Self& other) noexcept -> Self
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            return Self { self.m_value / other.m_value };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator/=(this Self self, param_type other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            self.m_value /= other;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator/=(this Self& self, param_type other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            self.m_value /= other;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator/=(this Self self, Self other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_value<Self>)
+        {
+            self.m_value /= other.m_value;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self>
+            STORMKIT_FORCE_INLINE
+        constexpr auto arithmetic<T>::operator/=(this Self& self, const Self& other) noexcept -> Self&
+            requires(core::meta::prefer_pass_by_ref<Self>)
+        {
+            self.m_value /= other.m_value;
+        }
+    } // namespace capabilities
 }} // namespace stormkit::core

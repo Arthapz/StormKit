@@ -6,7 +6,7 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.core.math.geometry;
+export module stormkit.math.geometry;
 
 import std;
 
@@ -16,25 +16,25 @@ import stormkit.core.typesafe.checked_value;
 import stormkit.core.types;
 import stormkit.core.hash;
 
-import stormkit.core.math.arithmetic;
-import stormkit.core.math.extent;
-import stormkit.core.math.linear.vector;
+import stormkit.math.arithmetic;
+import stormkit.math.extent;
+import stormkit.math.linear.vector;
 
 export namespace stormkit { inline namespace core { namespace math {
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     struct rect {
-        using ValueType  = T;
+        using value_type  = T;
         using value_type = T;
 
-        ValueType           x      = ValueType { 0 };
-        ValueType           y      = ValueType { 0 };
-        Positive<ValueType> width  = ValueType { 0 };
-        Positive<ValueType> height = ValueType { 0 };
+        value_type           x      = value_type { 0 };
+        value_type           y      = value_type { 0 };
+        Positive<value_type> width  = value_type { 0 };
+        Positive<value_type> height = value_type { 0 };
 
-        constexpr auto position() const noexcept -> vec2<ValueType>;
-        constexpr auto extent() const noexcept -> extent2<ValueType>;
+        constexpr auto position() const noexcept -> vec2<value_type>;
+        constexpr auto extent() const noexcept -> extent2<value_type>;
 
-        template<core::meta::IsArithmetic U>
+        template<core::meta::arithmetic U>
         constexpr auto to() const noexcept -> rect<U>;
     };
 
@@ -42,23 +42,23 @@ export namespace stormkit { inline namespace core { namespace math {
     using urect = rect<u32>;
     using frect = rect<f32>;
 
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     rect(T, T, T, T) -> rect<T>;
 
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     struct bounding_rect {
-        using ValueType  = T;
+        using value_type  = T;
         using value_type = T;
 
-        ValueType left   = ValueType { 0 };
-        ValueType top    = ValueType { 0 };
-        ValueType right  = ValueType { 0 };
-        ValueType bottom = ValueType { 0 };
+        value_type left   = value_type { 0 };
+        value_type top    = value_type { 0 };
+        value_type right  = value_type { 0 };
+        value_type bottom = value_type { 0 };
 
-        constexpr auto topleft() const noexcept -> vec2<ValueType>;
-        constexpr auto bottomright() const noexcept -> vec2<ValueType>;
+        constexpr auto topleft() const noexcept -> vec2<value_type>;
+        constexpr auto bottomright() const noexcept -> vec2<value_type>;
 
-        template<core::meta::IsArithmetic U>
+        template<core::meta::arithmetic U>
         constexpr auto to() const noexcept -> rect<U>;
     };
 
@@ -66,22 +66,22 @@ export namespace stormkit { inline namespace core { namespace math {
     using ubounding_rect = bounding_rect<u32>;
     using fbounding_rect = bounding_rect<f32>;
 
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     auto to_string(const rect<T>& value) noexcept -> string;
 
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     auto to_string(const bounding_rect<T>& value) noexcept -> string;
 
-    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+    template<core::meta::hash_type Ret = hash32, core::meta::arithmetic T>
     constexpr auto hasher(const rect<T>& value) noexcept -> Ret;
 
-    template<core::meta::HashType Ret = hash32, core::meta::IsArithmetic T>
+    template<core::meta::hash_type Ret = hash32, core::meta::arithmetic T>
     constexpr auto hasher(const bounding_rect<T>& value) noexcept -> Ret;
 
-    template<core::meta::IsArithmetic T, typename FormatContext>
+    template<core::meta::arithmetic T, typename FormatContext>
     auto format_as(const rect<T>& value, FormatContext& ctx) -> decltype(ctx.out());
 
-    template<core::meta::IsArithmetic T, typename FormatContext>
+    template<core::meta::arithmetic T, typename FormatContext>
     auto format_as(const bounding_rect<T>& value, FormatContext& ctx) -> decltype(ctx.out());
 
     template<typename T>
@@ -103,7 +103,7 @@ export namespace stormkit { inline namespace core { namespace math {
 namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto rect<T>::position() const noexcept -> vec2<T> {
         return { x, y };
@@ -111,7 +111,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto rect<T>::extent() const noexcept -> extent2<T> {
         return { width.value, height.value };
@@ -119,8 +119,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-    template<core::meta::IsArithmetic U>
+    template<core::meta::arithmetic T>
+    template<core::meta::arithmetic U>
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
     constexpr auto rect<T>::to() const noexcept -> rect<U> {
@@ -129,7 +129,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto bounding_rect<T>::topleft() const noexcept -> vec2<T> {
         return { left, top };
@@ -137,7 +137,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto bounding_rect<T>::bottomright() const noexcept -> vec2<T> {
         return { right, bottom };
@@ -145,8 +145,8 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
-    template<core::meta::IsArithmetic U>
+    template<core::meta::arithmetic T>
+    template<core::meta::arithmetic U>
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
     constexpr auto bounding_rect<T>::to() const noexcept -> rect<U> {
@@ -155,7 +155,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE
     inline auto to_string(const rect<T>& value) noexcept -> string {
         return std::format("{}", value);
@@ -163,7 +163,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T>
+    template<core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE
     inline auto to_string(const bounding_rect<T>& value) noexcept -> string {
         return std::format("{}", value);
@@ -171,7 +171,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::HashType Ret, core::meta::IsArithmetic T>
+    template<core::meta::hash_type Ret, core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const rect<T>& value) noexcept -> Ret {
         return hash<Ret>(value.x, value.y, value.width, value.height);
@@ -179,7 +179,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::HashType Ret, core::meta::IsArithmetic T>
+    template<core::meta::hash_type Ret, core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const bounding_rect<T>& value) noexcept -> Ret {
         return hash(value.left, value.top, value.right, value.bottom);
@@ -187,7 +187,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T, typename FormatContext>
+    template<core::meta::arithmetic T, typename FormatContext>
     STORMKIT_FORCE_INLINE
     inline auto format_as(const rect<T>& point, FormatContext& ctx) -> decltype(ctx.out()) {
         return std::format_to(ctx.out(),
@@ -200,7 +200,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::IsArithmetic T, typename FormatContext>
+    template<core::meta::arithmetic T, typename FormatContext>
     STORMKIT_FORCE_INLINE
     inline auto format_as(const bounding_rect<T>& point, FormatContext& ctx) -> decltype(ctx.out()) {
         return std::format_to(ctx.out(),

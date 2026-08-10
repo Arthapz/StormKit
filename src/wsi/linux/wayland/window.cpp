@@ -159,7 +159,7 @@ namespace stormkit::wsi::linux::wayland {
             wp_viewport_set_destination(m_viewport, _extent.width, _extent.height);
         }
 
-        if (not check_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
+        if (not has_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
 
         wl_surface_commit(m_surface);
         wl_display_roundtrip(globals.display);
@@ -257,10 +257,10 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [pointer, state] = globals.pointers[mouse_id];
 
-        if (not state.serial or check_flag_bit(state.flags, wl::PointerState::Flag::LOCKED)) return;
+        if (not state.serial or has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED)) return;
 
         if (confined) {
-            if (not check_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) {
+            if (not has_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) {
                 state.confined_pointer = wl::ConfinedPointer ::
                   create(globals.pointer_constraints, m_surface, pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
 
@@ -283,7 +283,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         const auto& [_, state] = globals.pointers[mouse_id];
 
-        return check_flag_bit(state.flags, wl::PointerState::Flag::CONFINED);
+        return has_flag_bit(state.flags, wl::PointerState::Flag::CONFINED);
     }
 
     /////////////////////////////////////
@@ -300,10 +300,10 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [pointer, state] = globals.pointers[mouse_id];
 
-        if (not state.serial or check_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) return;
+        if (not state.serial or has_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) return;
 
         if (locked) {
-            if (not check_flag_bit(state.flags, wl::PointerState::Flag::LOCKED)) {
+            if (not has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED)) {
                 state.locked_pointer = wl::LockedPointer::create(globals.pointer_constraints,
                                                                  m_surface,
                                                                  pointer,
@@ -330,7 +330,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         const auto& [_, state] = globals.pointers[mouse_id];
 
-        return check_flag_bit(state.flags, wl::PointerState::Flag::LOCKED);
+        return has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED);
     }
 
     /////////////////////////////////////
@@ -353,7 +353,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [_, state] = globals.pointers[mouse_id];
 
-        return check_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN);
+        return has_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN);
     }
 
     /////////////////////////////////////
@@ -372,7 +372,7 @@ namespace stormkit::wsi::linux::wayland {
         auto& [pointer, state] = globals.pointers[mouse_id];
 
         if (enabled) {
-            if (not check_flag_bit(state.flags, wl::PointerState::Flag::RELATIVE)) {
+            if (not has_flag_bit(state.flags, wl::PointerState::Flag::RELATIVE)) {
                 state.relative_pointer = wl::RelativePointer::create(globals.relative_pointer_manager, pointer);
                 zwp_relative_pointer_v1_add_listener(state.relative_pointer, &wl::g_relative_pointer_listener, &state);
 
@@ -393,7 +393,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [_, state] = globals.pointers[mouse_id];
 
-        return check_flag_bit(state.flags, wl::PointerState::Flag::RELATIVE);
+        return has_flag_bit(state.flags, wl::PointerState::Flag::RELATIVE);
     }
 
     /////////////////////////////////////
@@ -437,7 +437,7 @@ namespace stormkit::wsi::linux::wayland {
 
         if (not state.serial) return;
 
-        if (check_flag_bit(state.flags, wl::PointerState::Flag::LOCKED))
+        if (has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED))
             zwp_locked_pointer_v1_set_cursor_position_hint(state.locked_pointer,
                                                            wl_fixed_to_int(position.x),
                                                            wl_fixed_to_int(position.y));
@@ -466,7 +466,7 @@ namespace stormkit::wsi::linux::wayland {
         if (m_pending_state.resizing) {
             m_state.extent = m_pending_state.resizing.value();
 
-            if (not check_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
+            if (not has_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
 
             if (m_viewport) {
                 const auto _extent = m_state.extent.to<i32>();
@@ -503,7 +503,7 @@ namespace stormkit::wsi::linux::wayland {
       -> void {
         m_state.open = true;
 
-        if (not check_flag_bit(m_flags, wsi::WindowFlag::RESIZEABLE)) {
+        if (not has_flag_bit(m_flags, wsi::WindowFlag::RESIZEABLE)) {
             xdg_toplevel_set_min_size(m_xdg_top_level, as<i32>(width), as<i32>(height));
             xdg_toplevel_set_max_size(m_xdg_top_level, as<i32>(width), as<i32>(height));
         }
@@ -531,7 +531,7 @@ namespace stormkit::wsi::linux::wayland {
         const auto& monitor = wl::get_monitor(wl::get_globals(), output);
         if (as<f32>(monitor.scale_factor) != m_state.dpi) {
             m_state.dpi = as<f32>(monitor.scale_factor);
-            if (not check_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
+            if (not has_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
         }
     }
 
@@ -546,7 +546,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::handle_pointer_enter(wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
-        if (check_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN)) hide_mouse(true, pointer, state);
+        if (has_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN)) hide_mouse(true, pointer, state);
 
         // mouse_entered_event(GLOBAL_MOUSE_ID);
     }

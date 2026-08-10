@@ -20,15 +20,15 @@ export {
     namespace stormkit { inline namespace core {
 
         namespace meta {
-            template<meta::IsEnumeration T>
+            template<meta::enumeration T>
             inline constexpr auto DISABLE_DEFAULT_FORMATTER_FOR_ENUM = false;
 
             template<typename T>
-            concept IsDefaultFormattedEnumeration = IsEnumeration<T> and not DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>;
+            concept IsDefaultFormattedEnumeration = enumeration<T> and not DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>;
 
             template<typename T>
             concept HasFormatAs = requires(const T& val) {
-                { format_as(val, std::declval<std::format_context&>()) } -> Is<std::format_context::iterator>;
+                { format_as(val, std::declval<std::format_context&>()) } -> is<std::format_context::iterator>;
             };
         } // namespace meta
 
@@ -68,16 +68,16 @@ export {
 
             auto&& out = ctx.out();
             if constexpr (requires {
-                              { as_string(value) } -> meta::Is<string_view>;
+                              { as_string(value) } -> meta::is<string_view>;
                           }) {
                 const auto strvalue = as_string(value);
                 return format_to(out, "{}", strvalue);
             } else
-                return format_to(out, "{}", as<Underlying>(value));
+                return format_to(out, "{}", as<underlying>(value));
         }
     };
 
-    template<stormkit::meta::IsPointer T, typename CharT>
+    template<stormkit::meta::pointer T, typename CharT>
     struct std::formatter<T, CharT>: public formatter<std::uintptr_t, CharT> {
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
@@ -158,17 +158,17 @@ constexpr auto std::formatter<T, CharT>::format(const T& value, auto& ctx) const
 // constexpr auto std::formatter<T, CharT>::format(const T& value, auto& ctx) const noexcept -> decltype(ctx.out()) {
 //     auto&& out = ctx.out();
 //     if constexpr (requires {
-//                       { as_string(value) } -> meta::Is<string_view>;
+//                       { as_string(value) } -> meta::is<string_view>;
 //                   }) {
 //         const auto strvalue = as_string(value);
 //         return format_to(out, "{}", strvalue);
 //     } else
-//         return format_to(out, "{}", as<Underlying>(value));
+//         return format_to(out, "{}", as<underlying>(value));
 // }
 
 /////////////////////////////////////
 /////////////////////////////////////
-// template<meta::IsPointer T, typename CharT>
+// template<meta::pointer T, typename CharT>
 // constexpr auto std::formatter<T, CharT>::format(const T& value, auto& ctx) const noexcept -> decltype(ctx.out()) {
 //     auto&& out = ctx.out();
 //     return format_to(out, "{:#0x}", std::bit_cast<std::uintptr_t>(std::to_address(value)));

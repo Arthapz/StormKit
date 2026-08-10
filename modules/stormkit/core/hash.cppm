@@ -10,55 +10,56 @@ export module stormkit.core.hash;
 
 import std;
 
-import stormkit.core.meta;
+import stormkit.core.types;
+import stormkit.core.meta.concepts;
+import stormkit.core.meta.tag_invoke;
+import stormkit.core.hash.crc;
 
 export namespace stormkit { inline namespace core {
-    using hash32 = std::uint32_t;
-    using hash64 = std::uint64_t;
-
     namespace meta {
-        template<typename T>
-        concept HashType = meta::IsAnyOf<T, hash32, hash64>;
-    }
+        template<class T>
+        concept has_std_hash = requires(T a) { std::hash<T> {}(a); };
 
-    template<meta::HashType Ret = hash32, typename T>
-    constexpr auto hasher(const T& value) noexcept -> Ret = delete;
-
-    namespace meta {
         template<typename T>
-        concept HasHasher = requires(T&& value) {
-            { hasher(std::forward<T>(value)) } -> meta::HashType;
-        };
+        concept hash_type = meta::is_any_of<T, hash32, hash64>;
     } // namespace meta
 
-    template<meta::HashType Ret = hash32, typename... Args>
-        requires(sizeof...(Args) >= 2)
-    constexpr auto hash(Args&&... values) noexcept -> Ret;
+    template<meta::hash_type Ret, typename T>
+    struct hash_fn final {
+      private:
+        template<typename... Ts>
+        using invoke_result = meta::tag_invoke_result<hash_fn<Ret, T>, T, source_location_arg>;
 
-    template<meta::HashType Ret = hash32, typename T>
-    constexpr auto hash(T&& value) noexcept -> Ret;
+        template<typename... Ts>
+        static constexpr auto IS_TAG_INVOKABLE = meta::tag_invocable<hash_fn<Ret, T>, T, source_location_arg>;
 
-    template<meta::HashType Ret = hash32, meta::IsArithmetic T>
-        requires(sizeof(T) <= sizeof(Ret))
-    constexpr auto hasher(T value) noexcept -> Ret;
+      public:
+        using param_type = meta::in<T>;
 
-    template<meta::HashType Ret = hash32, meta::IsEnumeration T>
-        requires(sizeof(T) <= sizeof(Ret))
-    constexpr auto hasher(T value) noexcept -> Ret;
+        [[nodiscard]]
+        static constexpr auto operator()(const T& value) noexcept
+            requires(not IS_TAG_INVOKABLE<T>)
+        = delete ("No hasher defined for this type");
 
-    template<meta::HashType Ret = hash32, typename T>
-    constexpr auto hash_combine(Ret& hash, T&& value) noexcept -> void;
+        [[nodiscard]]
+        static constexpr auto operator()(param_type value) noexcept -> invoke_result<T>
+            requires(meta::trivially_copyable<T> and not IS_TAG_INVOKABLE<T>);
 
-    template<meta::HashType Ret = hash32, typename... Args>
-        requires(sizeof...(Args) >= 2)
-    constexpr auto hash_combine(Ret& hash, Args&&... args) noexcept -> void;
+        [[nodiscard]]
+        static constexpr auto operator()(param_type value) noexcept -> invoke_result<T>
+            requires(IS_TAG_INVOKABLE<T>);
+    };
 
-    namespace literals {
-        constexpr auto operator""_hash32(unsigned long long int) -> hash32;
-        constexpr auto operator""_hash32(long double) -> hash32;
-        constexpr auto operator""_hash64(unsigned long long int) -> hash64;
-        constexpr auto operator""_hash64(long double) -> hash64;
-    } // namespace literals
+    template<meta::hash_type Ret, typename T>
+    inline constexpr auto hash_cpo = hash_fn {};
+
+    template<meta::hash_type Ret = hash64, typename... Ts>
+        requires(sizeof...(Ts) >= 1)
+    constexpr auto hash_of(Ts&&... values) noexcept -> Ret;
+
+    template<meta::hash_type Ret = hash64, typename... Ts>
+        requires(sizeof...(Ts) >= 1)
+    constexpr auto hash_combine(Ret hash, Ts&&... args) noexcept -> Ret;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -68,98 +69,54 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::HashType Ret, typename... Args>
-        requires(sizeof...(Args) >= 2)
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto hash(Args&&... values) noexcept -> Ret {
-        auto out = Ret { 0 };
-        stormkit::hash_combine(out, std::forward<Args>(values)...);
+    template<meta::hash_type Ret = hash64, typename T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto operator()(param_type value) noexcept -> invoke_result<T>
+        requires(meta::trivially_copyable<T> and not IS_TAG_INVOKABLE<T>)
+    {
+        if constexpr (meta::is<Ret, hash32>) return hash::crc32(as<Bytes>(arg));
+        else
+            return hash::crc64(as<Bytes>(arg));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::hash_type Ret = hash64, typename T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto operator()(param_type value) noexcept -> invoke_result<T>
+        requires(IS_TAG_INVOKABLE<T>)
+    {
+        return tag_invoke(hash_fn<Ret, T>, value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::hash_type Ret = hash64, typename... Ts>
+        requires(sizeof...(Ts) >= 1)
+    constexpr auto hash_of(const Ts&... values) noexcept -> Ret {
+        auto out = Ret {};
+
+        (out = hash_combine(out, value), ...);
+
         return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::HashType Ret, typename T>
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto hash(T&& value) noexcept -> Ret {
-        static_assert(meta::HasHasher<T> or meta::HasStdHashSpecialization<T>, "No hasher or std::hash specialization!");
+    template<meta::hash_type Ret, typename... Ts>
+        requires(sizeof...(Ts) >= 1)
+    constexpr auto hash_combine(Ret with, const Ts&... values) noexcept -> void {
+        static constexpr auto combine = []<typename T>(Ret with, const T& value) static noexcept {
+            if constexpr (stdr::input_range<T>)
+                for (const auto& elem : value) stormkit::hash_combine<Ret>(with, elem);
+            else
+                with ^= hash_cpo<Ret, T>(value) + 0x9e3779b9 + (with << 6) + (with >> 2);
+            return with;
+        };
 
-        if constexpr (meta::HasHasher<T>) return hasher<Ret>(std::forward<T>(value));
-        else {
-            const auto _hasher = std::hash<meta::CanonicalT<T>> {};
-            return static_cast<Ret>(_hasher(std::forward<T>(value)));
-        }
+        (with = COMBINE(with, values), ...);
+
+        return with;
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::HashType Ret, meta::IsArithmetic T>
-        requires(sizeof(T) <= sizeof(Ret))
-        STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto hasher(T value) noexcept -> Ret {
-        return static_cast<Ret>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::HashType Ret, meta::IsEnumeration T>
-        requires(sizeof(T) <= sizeof(Ret))
-        STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto hasher(T value) noexcept -> Ret {
-        return static_cast<Ret>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::HashType Ret, typename T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto hash_combine(Ret& out, T&& value) noexcept -> void {
-        if constexpr (std::ranges::range<T>)
-            for (auto&& elem : value) stormkit::hash_combine<Ret>(out, elem);
-        else { out ^= hash<Ret>(std::forward<T>(value)) + 0x9e3779b9 + (out << 6) + (out >> 2); }
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::HashType Ret, typename... Args>
-        requires(sizeof...(Args) >= 2)
-    STORMKIT_FORCE_INLINE
-    constexpr auto hash_combine(Ret& out, Args&&... args) noexcept -> void {
-#if defined(__cpp_expansion_statements) and __cpp_expansion_statements >= 202500L
-        template for (constexpr auto elem : { std::forward<Args>(args)... })
-          stormkit::hash_combine<Ret>(out, std::forward<decltype(elem)>(elem));
-#else
-        (stormkit::hash_combine<Ret>(out, std::forward<Args>(args)), ...);
-#endif
-    }
-
-    namespace literals {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        constexpr auto operator""_hash32(unsigned long long int value) -> hash32 {
-            return hash<hash32>(value);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        constexpr auto operator""_hash32(long double value) -> hash32 {
-            return hash<hash32>(value);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        constexpr auto operator""_hash64(unsigned long long int value) -> hash64 {
-            return hash<hash64>(value);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE
-        constexpr auto operator""_hash64(long double value) -> hash64 {
-            return hash<hash64>(value);
-        }
-    } // namespace literals
 }} // namespace stormkit::core

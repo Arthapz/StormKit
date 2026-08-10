@@ -21,8 +21,8 @@ namespace stdv = std::views;
 export namespace stormkit { inline namespace core {
     namespace meta {
         template<typename T>
-        concept Has_as_string = requires(const T& value) {
-            { as_string(value) } -> SameAs<string_view>;
+        concept has_as_string = requires(const T& value) {
+            { as_string(value) } -> is<string_view>;
         };
     } // namespace meta
 
@@ -48,7 +48,7 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto as_czstring(T&& value) noexcept -> czstring;
 
-    template<meta::IsCharType T>
+    template<meta::char_type T>
     constexpr auto is_text(T c) noexcept -> bool;
 }} // namespace stormkit::core
 
@@ -139,7 +139,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::Has_as_string T>
+    template<meta::has_as_string T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto to_string(const T& value) noexcept -> string {
         return string { as_string(std::forward<T>(value)) };
@@ -147,7 +147,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsIntegral T>
+    template<meta::integral T>
     constexpr auto to_string(T value, int base) noexcept -> std::expected<string, std::errc> {
         auto out = std::expected<string, std::errc> { std::in_place };
         out->resize(16);
@@ -165,7 +165,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     // TODO add an argument to customize string buffer size
-    template<meta::IsFloatingPoint T>
+    template<meta::floating_point T>
     [[nodiscard]]
     auto to_string(T value, std::chars_format fmt) noexcept -> std::expected<string, std::errc> {
         auto out = std::expected<string, std::errc> { std::in_place };
@@ -184,7 +184,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsIntegral T>
+    template<meta::integral T>
     inline constexpr auto from_string(string_view data, i32 base) noexcept -> std::expected<T, std::errc> {
         auto value       = T {};
         auto&& [_, errc] = std::from_chars(stdr::data(data), stdr::data(data) + stdr::size(data), value, base);
@@ -196,7 +196,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsFloatingPoint T>
+    template<meta::floating_point T>
     inline auto from_string(string_view data, std::chars_format fmt) noexcept -> std::expected<T, std::errc> {
         auto value       = T {};
         auto&& [_, errc] = std::from_chars(stdr::data(data), stdr::data(data) + stdr::size(data), value, fmt);
@@ -224,7 +224,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::IsCharType T>
+    template<meta::char_type T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_text(T c) noexcept -> bool {
         return (c >= 32 and c <= 126) or (c >= 128);

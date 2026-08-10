@@ -13,461 +13,379 @@ import std;
 import stormkit.core.types;
 
 namespace stormkit { inline namespace core { namespace meta::details {
-    template<class T>
-    concept IsBooleanTestable = std::convertible_to<T, bool>;
-
-    template<template<typename...> class T, typename... Args>
-    constexpr auto is_specialization_of_helper(const T<Args...>&) noexcept -> std::true_type {
-        return {};
-    }
-
-    template<template<typename, auto...> class T, typename T2, auto... Args>
-    constexpr auto is_specialization_of_with_nttp_helper(const T<T2, Args...>&) noexcept -> std::true_type {
-        return {};
-    }
-
-    template<template<typename, auto...> class T, typename T1, auto... Args>
-    constexpr auto is_specialization_of_helper_nttp_tv(const T<T1, Args...>&) noexcept -> std::true_type {
-        return {};
-    }
-
-    template<template<class, class, auto...> typename T, typename T1, typename T2, auto... Args>
-    constexpr auto is_specialization_of_helper_nttp_ttv(const T<T1, T2, Args...>&) noexcept -> std::true_type {
-        return {};
-    }
-
+    template<template<typename...> class T, typename... Ts>
+    constexpr auto is_specialization_of_helper(const T<Ts...>&) noexcept -> std::true_type;
+    template<template<typename, auto...> class T, typename T2, auto... Ts>
+    constexpr auto is_specialization_of_with_nttp_helper(const T<T2, Ts...>&) noexcept -> std::true_type;
+    template<template<typename, auto...> class T, typename T1, auto... Ts>
+    constexpr auto is_specialization_of_helper_nttp_tv(const T<T1, Ts...>&) noexcept -> std::true_type;
+    template<template<class, class, auto...> typename T, typename T1, typename T2, auto... Ts>
+    constexpr auto is_specialization_of_helper_nttp_ttv(const T<T1, T2, Ts...>&) noexcept -> std::true_type;
     template<template<class, class, auto, class...> typename T, typename T1, typename T2, auto Arg, typename... Ts>
-    constexpr auto is_specialization_of_helper_nttp_ttvts(const T<T1, T2, Arg, Ts...>&) noexcept -> std::true_type {
-        return {};
-    }
+    constexpr auto is_specialization_of_helper_nttp_ttvts(const T<T1, T2, Arg, Ts...>&) noexcept -> std::true_type;
+    template<template<class, class, auto, template<class> class...> typename T,
+             typename T1,
+             typename T2,
+             auto Arg,
+             template<class> typename... Ts>
+    constexpr auto is_specialization_of_helper_nttp_ttvtcs(const T<T1, T2, Arg, Ts...>&) noexcept -> std::true_type;
 }}} // namespace stormkit::core::meta::details
 
+namespace stdr = std::ranges;
+
 export namespace stormkit { inline namespace core { namespace meta {
-    template<class T, class U>
-    concept SameAs = std::same_as<T, U>;
+    using std::same_as;
 
-    template<typename T, typename U>
-    concept DerivedFrom = std::derived_from<T, U>;
+    using std::derived_from;
 
     template<class T, class U>
-    concept Is = SameAs<T, U> or DerivedFrom<T, U>;
+    concept is = same_as<T, U> or (std::is_polymorphic_v<T> and std::is_polymorphic_v<U> and std::derived_from<T, U>);
 
-    template<class T, class U>
-    concept IsNot = not Is<T, U>;
+    template<class T, class... U>
+    concept is_any_of = (is<T, U> or ...);
 
-    // template<typename T, template<typename> concept... C>
-    // concept AllOf = (C<T> and ...);
+    template<class T, class... U>
+    concept same_as_any_of = (same_as<T, U> or ...);
 
-    // template<typename T, template<typename> concept... C>
-    // concept AnyOf = (C<T> or ...);
+    using std::convertible_to;
+
+    template<typename From, typename To>
+    concept explicitly_convertible_to = convertible_to<From, To> or requires(From val) { static_cast<To>(val); };
+
+    template<typename T>
+    concept is_decayed = same_as<T, std::decay_t<T>>;
 
     template<class T>
-    concept IsBooleanTestable = details::IsBooleanTestable<T> && requires(T&& t) {
-        { not std::forward<T>(t) } -> details::IsBooleanTestable;
-    };
+    concept boolean_testable = convertible_to<T, bool>;
 
     template<typename S, template<typename...> class T>
-    concept IsSpecializationOf = requires(S&& s) {
-        { details::is_specialization_of_helper<T>(std::forward<S>(s)) } -> SameAs<std::true_type>;
+    concept specialization_of = requires(S&& s) {
+        { details::is_specialization_of_helper<T>(std::forward<S>(s)) } -> is<std::true_type>;
     };
 
     template<typename S, template<class, auto...> typename T>
-    concept IsSpecializationOfNTTP_TV = requires(S&& s) {
-        { details::is_specialization_of_helper_nttp_tv<T>(std::forward<S>(s)) } -> SameAs<std::true_type>;
+    concept specialization_of_nttp_tv = requires(S&& s) {
+        { details::is_specialization_of_helper_nttp_tv<T>(std::forward<S>(s)) } -> is<std::true_type>;
     };
 
     template<typename S, template<class, class, auto> typename T>
-    concept IsSpecializationOfNTTP_TTV = requires(S&& s) {
-        { details::is_specialization_of_helper_nttp_ttv<T>(std::forward<S>(s)) } -> SameAs<std::true_type>;
+    concept specialization_of_nttp_ttv = requires(S&& s) {
+        { details::is_specialization_of_helper_nttp_ttv<T>(std::forward<S>(s)) } -> is<std::true_type>;
     };
 
     template<typename S, template<class, class, auto, class...> typename T>
-    concept IsSpecializationOfNTTP_TTVTs = requires(S&& s) {
-        { details::is_specialization_of_helper_nttp_ttvts<T>(std::forward<S>(s)) } -> SameAs<std::true_type>;
+    concept specialization_of_nttp_ttvts = requires(S&& s) {
+        { details::is_specialization_of_helper_nttp_ttvts<T>(std::forward<S>(s)) } -> is<std::true_type>;
     };
 
-    template<typename S, template<typename, auto...> class T>
-    concept IsSpecializationWithNTTPOf = requires(S&& s) {
-        { details::is_specialization_of_with_nttp_helper<T>(std::forward<S>(s)) } -> SameAs<std::true_type>;
+    template<typename S, template<class, class, auto, template<class> class...> typename T>
+    concept specialization_of_nttp_ttvtcs = requires(S&& s) {
+        { details::is_specialization_of_helper_nttp_ttvtcs<T>(std::forward<S>(s)) } -> is<std::true_type>;
     };
 
-    template<class From, typename To>
-    concept ConvertibleTo = std::convertible_to<From, To>;
-
-    template<class From, typename To>
-    concept IsConvertibleTo = std::convertible_to<From, To>;
+    template<class T>
+    concept std_optional = specialization_of<T, std::optional>;
 
     template<class T>
-    concept HasStdHashSpecialization = requires(T&& a) { std::hash<std::remove_cvref_t<T>> {}(std::forward<T>(a)); };
-
-    template<class T, class U>
-    concept IsCanonical = SameAs<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
-
-    template<typename T, typename U>
-    concept PlainIs = Is<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+    concept std_expected = specialization_of<T, std::expected>;
 
     template<class T>
-    concept IsPlain = Is<T, std::remove_cvref_t<T>>;
-
-    template<class T, class... U>
-    concept Are = (Is<T, U> and ...);
-
-    template<class T, class... U>
-    concept IsAnyOf = (Is<T, U> or ...);
-
-    template<class T, class... U>
-    concept SameAsAnyOf = (SameAs<T, U> or ...);
+    concept std_variant = specialization_of<T, std::variant>;
 
     template<class T>
-    concept Isbyte = SameAs<T, std::byte>;
+    concept std_span = specialization_of_nttp_tv<T, std::span>;
 
     template<class T>
-    concept IsbyteSized = sizeof(T) == sizeof(std::byte);
+    concept std_mdspan = specialization_of<T, std::mdspan>;
 
     template<class T>
-    concept IsNotbyte = not Isbyte<T>;
-
-    template<class T>
-    concept IsStringLike = std::convertible_to<T, std::string_view>;
-
-    template<class T>
-    concept IsStdOptional = IsSpecializationOf<T, std::optional>;
-
-    template<class T>
-    concept IsStdExpected = IsSpecializationOf<T, std::expected>;
-
-    template<class T>
-    concept IsStdVariant = IsSpecializationOf<T, std::variant>;
-
-    template<class T>
-    concept IsStdSpan = IsSpecializationOfNTTP_TV<T, std::span>;
-
-    template<class T>
-    concept IsStdMdspan = IsSpecializationOf<T, std::mdspan>;
-
-    template<class T>
-    concept IsStdArray = IsSpecializationWithNTTPOf<T, std::array>;
+    concept std_array = specialization_of_nttp_tv<T, std::array>;
 
     template<typename T>
-    concept IsStdReferenceWrapper = IsSpecializationOf<T, std::reference_wrapper>;
+    concept std_reference_wrapper = specialization_of<T, std::reference_wrapper>;
 
     template<class T>
-    concept IsLValueReference = std::is_lvalue_reference_v<T>;
+    concept lvalue_ref = std::is_lvalue_reference_v<T>;
 
     template<class T>
-    concept IsRValueReference = std::is_rvalue_reference_v<T>;
+    concept rvalue_ref = std::is_rvalue_reference_v<T>;
 
     template<class T>
-    concept IsReference = IsLValueReference<T> or IsRValueReference<T>;
-
-    template<class T>
-    concept IsNotReference = not IsReference<T>;
+    concept reference = lvalue_ref<T> or rvalue_ref<T>;
 
     template<class T, class U>
-    concept IsReferenceTo = IsReference<T> and Is<std::remove_reference_t<T>, U>;
+    concept reference_to = reference<T> and is<std::remove_reference_t<T>, U>;
 
     template<class T>
-    concept IsRawPointer = std::is_pointer_v<T>;
+    concept raw_pointer = std::is_pointer_v<T>;
 
     template<class T>
-    concept IsNonOwningPointer = IsRawPointer<T> or (requires {
+    concept view_pointer = raw_pointer<T> or (requires {
         typename std::pointer_traits<T>::element_type;
     } and requires(T a) {
-        { a.operator->() } -> std::convertible_to<decltype(&*a)>;
+        { a.operator->() } -> convertible_to<decltype(&*a)>;
         { a.operator*() };
-        { a == nullptr } -> IsBooleanTestable;
-    }) or IsStdReferenceWrapper<T>;
+        { a == nullptr } -> boolean_testable;
+    }) or std_reference_wrapper<T>;
 
     template<class T>
-    concept IsOwningPointer = IsNonOwningPointer<T> and requires(T a) {
+    concept owning_pointer = view_pointer<T> and requires(T a) {
         { a.reset() };
     };
 
     template<class T>
-    concept IsPointer = IsNonOwningPointer<T> or IsOwningPointer<T>;
-
-    template<class T>
-    concept IsNotPointer = not IsPointer<T>;
+    concept pointer = view_pointer<T> or owning_pointer<T>;
 
     template<class T, class U>
-    concept IsPointerOf = IsPointer<T> and SameAs<typename std::pointer_traits<T>::element_type, U>;
+    concept pointer_to = pointer<T> and is<typename std::pointer_traits<T>::element_type, U>;
 
     template<class T>
-    concept IsMovedOwningPointer = IsOwningPointer<T> and IsRValueReference<T>;
-
-    template<class T>
-    concept IsViewPointer = (IsOwningPointer<std::remove_cvref_t<T>> and not IsMovedOwningPointer<T>)
-                            or IsNonOwningPointer<std::remove_cvref_t<T>>;
-
-    template<typename T>
-    concept IsRawPointerOrLValueReference = IsRawPointer<T> or IsLValueReference<T>;
-
-    template<class T>
-    concept IsIndirection = IsLValueReference<T> or IsPointer<T>;
+    concept indirection = reference<T> or pointer<T>;
 
     template<class T, class U>
-    concept IsIndirectionTo = IsIndirection<T> and SameAs<std::remove_pointer_t<std::remove_reference_t<T>>, U>;
-
-    template<class... T>
-    concept AreIndirections = ((IsLValueReference<T> or IsPointer<T>) and ...);
-
-    template<typename T>
-    concept HasElementType = requires() { typename T::ElementType; } or requires() { typename T::element_type; };
-
-    template<typename T>
-    concept HasValueType = requires() { typename T::ValueType; } or requires() { typename T::value_type; };
-
-    template<typename T>
-    concept HasExpectedType = requires() { typename T::ExpectedType; } and IsStdExpected<typename T::ExpectedType>;
+    concept indirection_to = indirection<T> and (pointer_to<T, U> or reference_to<T, U>);
 
     template<class T>
-    concept IsContainer = HasValueType<T> and requires(T& val) {
-        { val.operator*() } -> IsReferenceTo<typename T::value_type>;
-        { val.operator->() } -> IsReferenceTo<typename T::value_type*>;
+    concept raw_indirection = reference<T> or raw_pointer<T>;
+
+    template<class T, class U>
+    concept raw_indirection_to = raw_indirection<T> and (pointer_to<T, U> or reference_to<T, U>);
+
+    template<typename T>
+    concept has_element_type = requires() { typename T::element_type; };
+
+    template<typename T>
+    concept has_value_type = requires() { typename T::value_type; };
+
+    template<typename T>
+    concept has_error_type = requires() { typename T::error_type; };
+
+    template<typename T>
+    concept has_expected_type = requires() { typename T::expected_type; } and std_expected<typename T::expected_type>;
+
+    // template<class T>
+    // concept IsContainer = has_value_type<T> and requires(T& val) {
+    //     { val.operator*() } -> reference_to<typename T::value_type>;
+    //     { val.operator->() } -> reference_to<typename T::value_type*>;
+    // };
+
+    // template<class T, class U>
+    // concept IsContainerOf = IsContainer<T> and is<typename T::value_type, U>;
+
+    template<class T>
+    concept wrapped_value = has_value_type<T> and requires(T& val) {
+        { val.value() } -> reference_to<typename T::value_type>;
+        { val.operator*() } -> reference_to<typename T::value_type>;
+        { val.operator->() } -> reference_to<typename T::value_type*>;
     };
 
     template<class T, class U>
-    concept IsContainerOf = IsContainer<T> and SameAs<typename T::value_type, U>;
+    concept wrapped_value_of = wrapped_value<T> and is<typename T::value_type, U>;
 
     template<class T>
-    concept IsContainerOrPointer = IsContainer<T> or IsPointer<T>;
-
-    template<class T, class U>
-    concept IsContainerOrPointerOf = IsContainerOf<T, U> or IsPointerOf<T, U>;
+    concept polymorphic_type = std::is_polymorphic_v<T>;
 
     template<class T>
-    concept IsContainerOrIndirection = IsContainer<T> or IsIndirection<T>;
-
-    template<class T, class U>
-    concept IsContainerOrIndirectionOf = IsContainerOf<T, U> or IsIndirectionTo<T, U>;
+    concept polymorphic_pointer = pointer<T> and polymorphic_type<typename std::pointer_traits<T>::element_type>;
 
     template<class T>
-    concept IsPolymorphic = std::is_polymorphic_v<T>;
+    concept polymorphic_reference = reference<T> and polymorphic_type<std::remove_reference_t<T>>;
 
     template<class T>
-    concept IsPolymorphicPointer = IsPointer<T> and IsPolymorphic<typename std::pointer_traits<T>::element_type>;
+    concept polymorphic_indirection = polymorphic_reference<T> or polymorphic_pointer<T>;
 
     template<class T>
-    concept IsPolymorphicReference = IsReference<T> and IsPolymorphic<std::remove_reference_t<T>>;
+    concept scoped_enum = std::is_scoped_enum_v<T> and not is<T, byte>;
 
     template<class T>
-    concept IsPolymorphicIndirection = IsPolymorphicReference<T> or IsPolymorphicPointer<T>;
+    concept c_enum = not scoped_enum<T> and std::is_enum_v<T> and not is<T, byte>;
 
     template<class T>
-    concept IsRawIndirection = IsLValueReference<T> or IsRawPointer<T>;
-
-    template<class T>
-    concept IsNotRawIndirection = not IsRawIndirection<T>;
-
-    template<class T>
-    concept IsNotIndirection = not IsIndirection<T>;
-
-    template<class T>
-    concept IsScopedEnumeration = std::is_scoped_enum_v<T> and IsNotbyte<T>;
-
-    template<class T>
-    concept IsPlainEnumeration = not IsScopedEnumeration<T> and std::is_enum_v<T> and IsNotbyte<T>;
-
-    template<class T>
-    concept IsEnumeration = std::is_enum_v<T> and not SameAs<T, std::byte>;
+    concept enumeration = std::is_enum_v<T> and not is<T, std::byte>;
 
     template<typename T>
-    concept IsIntegral = (std::integral<T> and not SameAs<T, bool> and not Isbyte<T>)
-                         or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<longlong, longlong>>>
-                         or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<ulonglong, ulonglong>>>
-                         or Is<T, i128>
-                         or Is<T, u128>;
+    concept integral = (std::integral<T> and not is<T, bool> and not is<T, byte>)
+                       or is<T, stdr::range_difference_t<stdr::iota_view<longlong, longlong>>>
+                       or is<T, stdr::range_difference_t<stdr::iota_view<ulonglong, ulonglong>>>
+                       or is<T, i128>
+                       or is<T, u128>;
 
-    template<typename T>
-    concept IsIntegralOrEnumeration = IsIntegral<T> or IsEnumeration<T>;
-
-    template<typename T>
-    concept IsFloatingPoint = std::floating_point<T>;
+    using std::floating_point;
 
     template<class T>
-    concept IsArithmetic = (IsIntegral<T> or IsFloatingPoint<T>) and not IsPointer<T> and not IsEnumeration<T>;
+    concept arithmetic = (integral<T> or floating_point<T>) and not pointer<T> and not enumeration<T>;
 
     template<class T>
-    concept IsScalar = IsArithmetic<T> or IsPointer<T> or IsEnumeration<T>;
+    concept scalar = arithmetic<T> or raw_pointer<T> or enumeration<T>;
 
-    template<class T>
-    concept IsPreIncrementable = requires(T& a) { a.operator--(); };
-
-    template<class T, class... Args>
-    concept IsPredicate = std::predicate<T, Args...>;
+    using std::predicate;
 
     template<class T, class U>
-    concept IsUnaryPredicate = IsPredicate<T, const U&>;
+    concept unary_predicate = predicate<T, const U&>;
 
     template<class T, class U>
-    concept IsBinaryPredicate = IsPredicate<T, const U&, const U&>;
-
-    template<class T, class U>
-    concept IsHashFunc = std::regular_invocable<T, U> and std::convertible_to<std::invoke_result_t<T, U>, std::uint64_t>;
-
-    // doesn't work atm
-    template<class T, class CharT = char>
-    concept IsFormattable = true; // requires(std::formatter<T, CharT> f, T val) { f.format("{}",
-                                  // val); };
+    concept binary_predicate = predicate<T, const U&, const U&>;
 
     template<class T>
-    concept IsCharacter = IsAnyOf<T, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
+    concept char_type = is_any_of<T, char, wchar_t, char8_t, char16_t, char32_t>;
 
     template<class T>
-    concept IsCharType = IsAnyOf<T, char, wchar_t, char8_t, char16_t, char32_t>;
+    concept const_type = std::is_const_v<T>;
 
     template<class T>
-    concept IsColorComponent = IsAnyOf<
-      T,
-      float,
-      std::uint8_t
-#ifdef __STDCPP_FLOAT32_T__
-      ,
-      std::float32_t
-#endif
-#ifdef __STDCPP_FLOAT64_T__
-      ,
-      std::float64_t
-#endif
-      >;
-
-    template<class T>
-    concept IsConst = std::is_const_v<T>;
-
-    template<class T>
-    concept IsNotConst = not IsConst<T>;
-
-    template<class T>
-    concept IsVolatile = std::is_volatile_v<T>;
+    concept volatile_type = std::is_volatile_v<T>;
 
     template<class From, typename To>
-    concept IsBraceInitializableTo = requires(From&& from) { To { std::forward<From>(from) }; };
-
-    template<class T, class... U>
-    concept IsConvertibleToOneOf = (IsConvertibleTo<T, U> or ...);
-
-    template<class From, typename To>
-    concept IsExplicitConvertibleTo = IsConvertibleTo<From, To> or requires(From&& from) {
-        { static_cast<To>(std::forward<From>(from)) } -> Is<To>;
-    };
+    concept brace_initializable_to = requires(From&& from) { To { std::forward<From>(from) }; };
 
     template<typename T>
-    concept IsUnsigned = std::is_unsigned_v<T> or Is<T, u128>;
+    concept structural_type = requires { []<T t> {}; };
 
     template<typename T>
-    concept IsSigned = std::is_signed_v<T> or Is<T, i128>;
+    concept unsigned_type = std::is_unsigned_v<T> or is<T, u128>;
+
+    template<typename T>
+    concept signed_type = std::is_signed_v<T> or is<T, i128>;
 
     template<typename T, typename U>
-    concept IsSameSigneness = (IsSigned<T> and IsSigned<U>) or (IsUnsigned<T> and IsUnsigned<U>);
+    concept has_same_signeness = (signed_type<T> and signed_type<U>) or (unsigned_type<T> and unsigned_type<U>);
 
     template<typename To, typename From>
-    concept IsSignNarrowing = (IsSigned<From> ? not IsSigned<To> : IsSigned<To> and sizeof(From) == sizeof(To));
+    concept is_sign_narrowing = (signed_type<From> ? not signed_type<To> : signed_type<To> and sizeof(From) == sizeof(To));
 
     template<typename To, typename From>
-    concept IsbyteNarrowing = ((IsArithmetic<To> and Isbyte<From>) or (Isbyte<To> and IsArithmetic<From>))
-                              and (Isbyte<To> and sizeof(To) != sizeof(From));
+    concept is_byte_narrowing = ((arithmetic<To> and is<From, byte>) or (is<To, byte> and arithmetic<From>))
+                                and (is<To, byte> and sizeof(To) != sizeof(From));
 
     template<typename To, typename From>
-    concept IsNarrowing = (IsFloatingPoint<From> and IsIntegral<To>)
-                          or (IsFloatingPoint<From> and IsFloatingPoint<To> and sizeof(From) > sizeof(To))
-                          or (IsIntegralOrEnumeration<From> and IsFloatingPoint<To>)
-                          or (IsIntegral<From> and IsIntegral<To> and (sizeof(From) > sizeof(To) or IsSignNarrowing<To, From>))
-                          or (IsEnumeration<From>
-                              and IsIntegral<To>
-                              and (sizeof(From) > sizeof(To) or IsSignNarrowing<std::underlying_type_t<From>, From>))
-                          or (IsPointer<From> and Is<To, bool>)
-                          or (IsArithmetic<From> and SameAs<To, byte>);
-
-    template<typename To, typename From>
-    concept IsUnsafePointerConvertion = IsPointer<To> and IsPointer<From> and not requires(To to, From from) { to = from; };
-
-    template<typename To, auto from>
-    concept IsSafeNarrowing = IsArithmetic<To> and IsArithmetic<decltype(from)> and not is_safe_narrowing<To>(from);
+    concept is_narrowing = (floating_point<From> and integral<To>)
+                           or (floating_point<From> and meta::floating_point<To> and sizeof(From) > sizeof(To))
+                           or ((integral<From> or enumeration<From>) and meta::floating_point<To>)
+                           or (integral<From> and integral<To> and (sizeof(From) > sizeof(To) or is_sign_narrowing<To, From>))
+                           or (enumeration<From>
+                               and integral<To>
+                               and (sizeof(From) > sizeof(To) or is_sign_narrowing<std::underlying_type_t<From>, From>))
+                           or (pointer<From> and is<To, bool>)
+                           or (arithmetic<From> and is<To, byte>);
 
     template<typename T1, typename T2>
-    concept HasEqualityOperator = requires(const T1& first, const T2& second) {
-        { first == second } -> IsBooleanTestable;
+    concept has_equality_operator = requires(const T1& first, const T2& second) {
+        { first == second } -> boolean_testable;
     };
 
-    static_assert(HasEqualityOperator<char*, std::string>);
+    template<typename T>
+    concept default_constructible = std::default_initializable<T>;
 
-    template<typename T, typename... Args>
-    concept EnableCtor = sizeof...(Args) != 1 || (sizeof...(Args) == 1 && !Is<T, typename std::remove_cvref<Args...>::type>);
+    using std::assignable_from;
+
+    using std::constructible_from;
+
+    using std::destructible;
+
+    using std::copyable;
+
+    using std::movable;
 
     template<typename T>
-    concept IsNoexceptDefaultConstructible = std::is_nothrow_default_constructible_v<T>;
-
-    template<typename T, typename... Args>
-    concept IsNoexceptConstructible = std::is_nothrow_constructible_v<T, Args...>;
+    concept copy_assignable = assignable_from<T&, const T&>;
 
     template<typename T>
-    concept IsNoexceptCopyConstructible = std::is_nothrow_copy_constructible_v<T>;
+    concept move_assignable = assignable_from<T&, T&&>;
 
     template<typename T>
-    concept IsNoexceptMoveConstructible = std::is_nothrow_move_constructible_v<T>;
+    concept trivially_copyable = copyable<T> and std::is_trivially_copy_constructible_v<T>;
 
     template<typename T>
-    concept IsNoexceptCopyAssignable = std::is_nothrow_copy_assignable_v<T>;
-
-    template<typename T>
-    concept IsNoexceptMoveAssignable = std::is_nothrow_move_assignable_v<T>;
+    concept trivially_movable = movable<T> and std::is_trivially_move_constructible_v<T>;
 
     template<typename T, typename U>
-    concept IsNoexceptAssignable = std::is_nothrow_assignable_v<T, U>;
+    concept trivially_assignable_from = assignable_from<T, U> and std::is_trivially_assignable_v<std::remove_reference_t<T>, U>;
 
     template<typename T>
-    concept IsNoexceptDestructible = std::is_nothrow_destructible_v<T>;
+    concept trivially_copy_assignable = assignable_from<T&, const T&> and std::is_trivially_copy_assignable_v<T>;
 
     template<typename T>
-    concept IsDefaultConstructible = std::is_default_constructible_v<T>;
-
-    template<typename T, typename... Args>
-    concept IsConstructible = std::is_constructible_v<T, Args...>;
+    concept trivially_move_assignable = assignable_from<T&, T&&> and std::is_trivially_move_assignable_v<T>;
 
     template<typename T>
-    concept IsCopyConstructible = std::is_copy_constructible_v<T>;
+    concept noexcept_default_constructible = default_constructible<T> and std::is_nothrow_default_constructible_v<T>;
+
+    template<typename T, typename... Ts>
+    concept noexcept_constructible_from = constructible_from<T, Ts...> and std::is_nothrow_constructible_v<T, Ts...>;
 
     template<typename T>
-    concept IsMoveConstructible = std::is_move_constructible_v<T>;
+    concept noexcept_copyable = copyable<T> and std::is_nothrow_copy_constructible_v<T>;
 
     template<typename T>
-    concept IsCopyAssignable = std::is_copy_assignable_v<T>;
+    concept noexcept_movable = movable<T> and std::is_nothrow_move_constructible_v<T>;
 
     template<typename T>
-    concept IsMoveAssignable = std::is_move_assignable_v<T>;
+    concept noexcept_copy_assignable = copy_assignable<T> and std::is_nothrow_copy_assignable_v<T>;
+
+    template<typename T>
+    concept noexcept_move_assignable = move_assignable<T> and std::is_nothrow_move_assignable_v<T>;
 
     template<typename T, typename U>
-    concept IsAssignable = std::is_assignable_v<T, U>;
+    concept noexcept_assignable_from = assignable_from<T&, U> and std::is_nothrow_assignable_v<T, U>;
 
     template<typename T>
-    concept IsTriviallyCopyable = std::is_trivially_copyable_v<T>;
+    concept noexcept_destructible = destructible<T> and std::is_nothrow_destructible_v<T>;
 
     template<typename T>
-    concept ShouldPassByValue = sizeof(T) <= (sizeof(void*) * 2) and IsTriviallyCopyable<T>;
+    concept prefer_pass_by_value = sizeof(T) <= (sizeof(void*) * 2) and trivially_copyable<T>;
 
     template<typename T>
-    concept ShouldPassByRef = not ShouldPassByValue<T>;
-
-    template<template<typename> typename TypeModifier, template<typename...> concept C, typename... Ts>
-    concept Apply = C<TypeModifier<Ts>...>;
-
-    template<template<typename...> concept C, typename... Ts>
-    concept PlainTypeTo = Apply<std::remove_cvref_t, C, Ts...>;
-
-    template<template<typename...> concept C, typename... Ts>
-    concept Not = not C<Ts...>;
-
-    namespace arg {
-        template<typename First, template<typename...> concept C, typename... Ts>
-        concept PlainTypeTo = meta::PlainTypeTo<C, First, Ts...>;
-
-        template<typename First, template<typename...> concept C, typename... Ts>
-        concept Not = meta::Not<C, First, Ts...>;
-
-        template<typename T>
-        concept ShouldPassByValue = meta::PlainTypeTo<meta::ShouldPassByValue, T>;
-
-        template<typename T>
-        concept ShouldPassByRef = meta::PlainTypeTo<meta::ShouldPassByRef, T>;
-    } // namespace arg
+    concept prefer_pass_by_ref = not prefer_pass_by_value<T>;
 }}} // namespace stormkit::core::meta
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core { namespace meta::details {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<typename...> class T, typename... Ts>
+    constexpr auto is_specialization_of_helper(const T<Ts...>&) noexcept -> std::true_type {
+        return {};
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<typename, auto...> class T, typename T2, auto... Ts>
+    constexpr auto is_specialization_of_with_nttp_helper(const T<T2, Ts...>&) noexcept -> std::true_type {
+        return {};
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<typename, auto...> class T, typename T1, auto... Ts>
+    constexpr auto is_specialization_of_helper_nttp_tv(const T<T1, Ts...>&) noexcept -> std::true_type {
+        return {};
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, class, auto...> typename T, typename T1, typename T2, auto... Ts>
+    constexpr auto is_specialization_of_helper_nttp_ttv(const T<T1, T2, Ts...>&) noexcept -> std::true_type {
+        return {};
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, class, auto, class...> typename T, typename T1, typename T2, auto Arg, typename... Ts>
+    constexpr auto is_specialization_of_helper_nttp_ttvts(const T<T1, T2, Arg, Ts...>&) noexcept -> std::true_type {
+        return {};
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, class, auto, template<class> class...> typename T,
+             typename T1,
+             typename T2,
+             auto Arg,
+             template<class> typename... Ts>
+    constexpr auto is_specialization_of_helper_nttp_ttvtcs(const T<T1, T2, Arg, Ts...>&) noexcept -> std::true_type {
+        return {};
+    }
+}}} // namespace stormkit::core::meta::details

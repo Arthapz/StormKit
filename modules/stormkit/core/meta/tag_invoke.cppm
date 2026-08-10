@@ -4,7 +4,6 @@
 
 module;
 
-#include <stormkit/core/api.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core.meta.tag_invoke;
@@ -14,53 +13,37 @@ import std;
 import stormkit.core.meta.concepts;
 import stormkit.core.meta.type_manipulation;
 
-namespace stormkit { inline namespace core { namespace meta::details {
-    auto tag_invoke(auto&&...) = delete ("No default implementation for this CPO!");
-}}} // namespace stormkit::core::meta::details
-
-template<typename... Ts>
-struct print_types;
-
 export namespace stormkit { inline namespace core { namespace meta {
-    inline constexpr struct final {
-        template<typename Tag, meta::arg::ShouldPassByValue Arg1, typename... Args>
-        static constexpr auto operator()(Tag tag, Arg1 arg1, Args&&... args) noexcept
-          -> decltype(tag_invoke(std::forward<Tag>(tag), arg1, std::forward<Args>(args)...)) {
-            using details::tag_invoke;
-
-            return tag_invoke(std::forward<Tag>(tag), arg1, std::forward<Args>(args)...);
-        }
-
-        template<typename Tag, meta::arg::ShouldPassByValue Arg1, meta::arg::ShouldPassByValue Arg2, typename... Args>
-        static constexpr auto operator()(Tag tag, Arg1 arg1, Arg2 arg2, Args&&... args) noexcept
-          -> decltype(tag_invoke(std::forward<Tag>(tag), arg1, arg2, std::forward<Args>(args)...)) {
-            using details::tag_invoke;
-
-            return tag_invoke(std::forward<Tag>(tag), arg1, arg2, std::forward<Args>(args)...);
-        }
-
-        template<typename Tag, meta::arg::ShouldPassByRef Arg1, meta::arg::ShouldPassByValue Arg2, typename... Args>
-        static constexpr auto operator()(Tag tag, Arg1&& arg1, Arg2 arg2, Args&&... args) noexcept
-          -> decltype(tag_invoke(std::forward<Tag>(tag), std::forward<Arg1>(arg1), arg2, std::forward<Args>(args)...)) {
-            using details::tag_invoke;
-
-            return tag_invoke(std::forward<Tag>(tag), std::forward<Arg1>(arg1), arg2, std::forward<Args>(args)...);
-        }
-
-        template<typename Tag, typename... Args>
-        static constexpr auto operator()(Tag tag, Args&&... args) noexcept
-          -> decltype(tag_invoke(std::forward<Tag>(tag), std::forward<Args>(args)...)) {
-            using details::tag_invoke;
-
-            return tag_invoke(std::forward<Tag>(tag), std::forward<Args>(args)...);
-        }
-    } tag_invoke_cpo;
-
-    template<typename Tag, typename... Args>
-    using tag_invoke_result = decltype(tag_invoke(std::declval<Tag>(), std::declval<Args>()...));
-
-    template<typename Customisation_point, typename... Args>
-    concept Is_tag_invocable = requires(const Customisation_point& cpo, Args... args) {
-        tag_invoke(cpo, std::forward<Args>(args)...);
+    template<typename Customisation_point, typename... Ts>
+    concept tag_invocable = requires(const Customisation_point& cpo, Ts&&... args) {
+        tag_invoke(cpo, std::forward<Ts>(args)...);
     };
+
+    template<typename Tag, typename... Ts>
+    using tag_invoke_result = decltype(tag_invoke(std::declval<Tag>(), std::declval<Ts>()...));
+
+    inline constexpr struct tag_invoke_fn final {
+        template<typename Tag, typename... Ts>
+        static constexpr auto operator()(Tag tag, Ts&&... args) noexcept -> tag_invoke_result<Tag, Ts...>;
+    } tag_invoke_cpo;
+}}} // namespace stormkit::core::meta
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core { namespace meta {
+    namespace details {
+        auto tag_invoke(auto&&...) = delete ("No default implementation for this CPO!");
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Tag, typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto tag_invoke_fn::operator()(Tag tag, Ts&&... args) noexcept -> tag_invoke_result<Tag, Ts...> {
+        using details::tag_invoke;
+
+        return tag_invoke(tag, std::forward<Ts>(args)...);
+    }
 }}} // namespace stormkit::core::meta

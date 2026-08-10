@@ -17,8 +17,8 @@ import stormkit.core.heap;
 namespace stormkit { inline namespace core {
     export {
         namespace meta {
-            template<typename NewT, IsStdExpected OldExpectedType>
-            using TransformExpectedValueTo = std::expected<NewT, typename OldExpectedType::error_type>;
+            template<typename NewT, std_expected Oldreturn_type>
+            using TransformExpectedValueTo = std::expected<NewT, typename Oldreturn_type::error_type>;
         } // namespace meta
     }
 
@@ -40,10 +40,10 @@ namespace stormkit { inline namespace core {
         using PrivateTag = PrivateTagBase::Tag;
 
         template<typename...>
-        struct ConstructorArgs {};
+        struct ConstructorTs {};
 
         template<typename...>
-        struct DoInitArgs {};
+        struct DoInitTs {};
 
         template<typename...>
         class NamedConstructor {
@@ -61,55 +61,55 @@ namespace stormkit { inline namespace core {
             constexpr NamedConstructor() noexcept;
         };
 
-        template<typename T, typename... TConstructorArgs>
-        class NamedConstructor<T, ConstructorArgs<TConstructorArgs...>>: public NamedConstructor<> {
-            using ValueType = T;
+        template<typename T, typename... TConstructorTs>
+        class NamedConstructor<T, ConstructorTs<TConstructorTs...>>: public NamedConstructor<> {
+            using value_type = T;
 
           public:
             using NamedConstructor<>::NamedConstructor;
             using NamedConstructor<>::operator=;
 
             [[nodiscard]]
-            static constexpr auto create(TConstructorArgs... c_args) noexcept -> ValueType;
+            static constexpr auto create(TConstructorTs... c_args) noexcept -> value_type;
 
             [[nodiscard]]
-            static constexpr auto allocate(TConstructorArgs... c_args) noexcept -> heap_ptr<ValueType>;
+            static constexpr auto allocate(TConstructorTs... c_args) noexcept -> heap_ptr<value_type>;
         };
 
         template<typename T>
-        class NamedConstructor<T>: NamedConstructor<T, ConstructorArgs<>> {
+        class NamedConstructor<T>: NamedConstructor<T, ConstructorTs<>> {
           public:
-            using NamedConstructor<T, ConstructorArgs<>>::NamedConstructor;
-            using NamedConstructor<T, ConstructorArgs<>>::operator=;
+            using NamedConstructor<T, ConstructorTs<>>::NamedConstructor;
+            using NamedConstructor<T, ConstructorTs<>>::operator=;
         };
 
-        template<typename T, typename... TConstructorArgs, typename... TDoInitArgs>
-        class NamedConstructor<T, ConstructorArgs<TConstructorArgs...>, DoInitArgs<TDoInitArgs...>>: public NamedConstructor<> {
-            using ValueType = T;
+        template<typename T, typename... TConstructorTs, typename... TDoInitTs>
+        class NamedConstructor<T, ConstructorTs<TConstructorTs...>, DoInitTs<TDoInitTs...>>: public NamedConstructor<> {
+            using value_type = T;
 
           public:
             using NamedConstructor<>::NamedConstructor;
             using NamedConstructor<>::operator=;
 
             [[nodiscard]]
-            static constexpr auto create(TConstructorArgs... c_args, TDoInitArgs... d_args) noexcept -> decltype(auto);
+            static constexpr auto create(TConstructorTs... c_args, TDoInitTs... d_args) noexcept -> decltype(auto);
 
             [[nodiscard]]
-            static constexpr auto allocate(TConstructorArgs... c_args, TDoInitArgs... d_args) noexcept -> decltype(auto);
+            static constexpr auto allocate(TConstructorTs... c_args, TDoInitTs... d_args) noexcept -> decltype(auto);
         };
 
-        template<typename T, typename... TDoInitArgs>
-        class NamedConstructor<T, DoInitArgs<TDoInitArgs...>>: public NamedConstructor<> {
-            using ValueType = T;
+        template<typename T, typename... TDoInitTs>
+        class NamedConstructor<T, DoInitTs<TDoInitTs...>>: public NamedConstructor<> {
+            using value_type = T;
 
           public:
             using NamedConstructor<>::NamedConstructor;
             using NamedConstructor<>::operator=;
             [[nodiscard]]
-            static constexpr auto create(TDoInitArgs... args) noexcept -> decltype(auto);
+            static constexpr auto create(TDoInitTs... args) noexcept -> decltype(auto);
 
             [[nodiscard]]
-            static constexpr auto allocate(TDoInitArgs... args) noexcept -> decltype(auto);
+            static constexpr auto allocate(TDoInitTs... args) noexcept -> decltype(auto);
         };
     }
 }} // namespace stormkit::core
@@ -121,80 +121,80 @@ namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename... Args>
+    template<typename... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr NamedConstructor<Args...>::NamedConstructor() noexcept = default;
+    constexpr NamedConstructor<Ts...>::NamedConstructor() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename... Args>
+    template<typename... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr NamedConstructor<Args...>::~NamedConstructor() noexcept = default;
+    constexpr NamedConstructor<Ts...>::~NamedConstructor() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename... Args>
+    template<typename... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr auto NamedConstructor<Args...>::operator=(const NamedConstructor&) noexcept -> NamedConstructor& = default;
+    constexpr auto NamedConstructor<Ts...>::operator=(const NamedConstructor&) noexcept -> NamedConstructor& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename... Args>
+    template<typename... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr NamedConstructor<Args...>::NamedConstructor(const NamedConstructor&) noexcept = default;
+    constexpr NamedConstructor<Ts...>::NamedConstructor(const NamedConstructor&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename... Args>
+    template<typename... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr auto NamedConstructor<Args...>::operator=(NamedConstructor&&) noexcept -> NamedConstructor& = default;
+    constexpr auto NamedConstructor<Ts...>::operator=(NamedConstructor&&) noexcept -> NamedConstructor& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename... Args>
+    template<typename... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr NamedConstructor<Args...>::NamedConstructor(NamedConstructor&&) noexcept = default;
+    constexpr NamedConstructor<Ts...>::NamedConstructor(NamedConstructor&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, typename... TConstructorArgs>
+    template<typename T, typename... TConstructorTs>
     STORMKIT_FORCE_INLINE
-    constexpr auto NamedConstructor<T, ConstructorArgs<TConstructorArgs...>>::create(TConstructorArgs... args) noexcept
-      -> ValueType {
-        return ValueType { PrivateTagBase::PRIVATE, std::forward<TConstructorArgs>(args)... };
+    constexpr auto NamedConstructor<T, ConstructorTs<TConstructorTs...>>::create(TConstructorTs... args) noexcept
+      -> value_type {
+        return value_type { PrivateTagBase::PRIVATE, std::forward<TConstructorTs>(args)... };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, typename... TConstructorArgs>
+    template<typename T, typename... TConstructorTs>
     STORMKIT_FORCE_INLINE
-    constexpr auto NamedConstructor<T, ConstructorArgs<TConstructorArgs...>>::allocate(TConstructorArgs... args) noexcept
-      -> heap_ptr<ValueType> {
-        return core::allocate_unsafe<ValueType>(PrivateTagBase::PRIVATE, std::forward<TConstructorArgs>(args)...);
+    constexpr auto NamedConstructor<T, ConstructorTs<TConstructorTs...>>::allocate(TConstructorTs... args) noexcept
+      -> heap_ptr<value_type> {
+        return core::allocate_unsafe<value_type>(PrivateTagBase::PRIVATE, std::forward<TConstructorTs>(args)...);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, typename... TConstructorArgs, typename... TDoInitArgs>
-    constexpr auto NamedConstructor<T, ConstructorArgs<TConstructorArgs...>, DoInitArgs<TDoInitArgs...>>::
-      create(TConstructorArgs... c_args, TDoInitArgs... d_args) noexcept -> decltype(auto) {
-        using DoInitReturnType = decltype(std::declval<T>().do_init(PRIVATE, std::declval<TDoInitArgs>()...));
-        if constexpr (not meta::IsStdExpected<DoInitReturnType>) {
-            auto out = ValueType { PrivateTagBase::PRIVATE, std::forward<TConstructorArgs>(c_args)... };
-            out.do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(d_args)...);
+    template<typename T, typename... TConstructorTs, typename... TDoInitTs>
+    constexpr auto NamedConstructor<T, ConstructorTs<TConstructorTs...>, DoInitTs<TDoInitTs...>>::
+      create(TConstructorTs... c_args, TDoInitTs... d_args) noexcept -> decltype(auto) {
+        using DoInitreturn_type = decltype(std::declval<T>().do_init(PRIVATE, std::declval<TDoInitTs>()...));
+        if constexpr (not meta::std_expected<DoInitreturn_type>) {
+            auto out = value_type { PrivateTagBase::PRIVATE, std::forward<TConstructorTs>(c_args)... };
+            out.do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(d_args)...);
             return out;
         } else {
-            using ReturnType = meta::TransformExpectedValueTo<ValueType, DoInitReturnType>;
+            using return_type = meta::TransformExpectedValueTo<value_type, DoInitreturn_type>;
 
 #ifdef STORMKIT_COMPILER_CLANG
-            auto out = ValueType { PrivateTagBase::PRIVATE, std::forward<TConstructorArgs>(c_args)... };
-            if (auto result = out.do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(d_args)...); not result)
-                return ReturnType { std::unexpect, std::move(result).error() };
+            auto out = value_type { PrivateTagBase::PRIVATE, std::forward<TConstructorTs>(c_args)... };
+            if (auto result = out.do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(d_args)...); not result)
+                return return_type { std::unexpect, std::move(result).error() };
 
-            return ReturnType { std::in_place, std::move(out) };
+            return return_type { std::in_place, std::move(out) };
 #else
-            auto out_expected = ReturnType { std::in_place, PrivateTagBase::PRIVATE, std::forward<TConstructorArgs>(c_args)... };
-            if (auto result = out_expected.value().do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(d_args)...);
+            auto out_expected = return_type { std::in_place, PrivateTagBase::PRIVATE, std::forward<TConstructorTs>(c_args)... };
+            if (auto result = out_expected.value().do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(d_args)...);
                 not result)
                 out_expected = std::unexpected { std::move(result).error() };
 
@@ -205,29 +205,29 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, typename... TConstructorArgs, typename... TDoInitArgs>
-    constexpr auto NamedConstructor<T, ConstructorArgs<TConstructorArgs...>, DoInitArgs<TDoInitArgs...>>::
-      allocate(TConstructorArgs... c_args, TDoInitArgs... d_args) noexcept -> decltype(auto) {
-        using DoInitReturnType = decltype(std::declval<T>().do_init(PRIVATE, std::declval<TDoInitArgs>()...));
-        if constexpr (not meta::IsStdExpected<DoInitReturnType>) {
-            auto out = core::allocate_unsafe<ValueType>(PrivateTagBase::PRIVATE, std::forward<TConstructorArgs>(c_args)...);
-            out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(d_args)...);
+    template<typename T, typename... TConstructorTs, typename... TDoInitTs>
+    constexpr auto NamedConstructor<T, ConstructorTs<TConstructorTs...>, DoInitTs<TDoInitTs...>>::
+      allocate(TConstructorTs... c_args, TDoInitTs... d_args) noexcept -> decltype(auto) {
+        using DoInitreturn_type = decltype(std::declval<T>().do_init(PRIVATE, std::declval<TDoInitTs>()...));
+        if constexpr (not meta::std_expected<DoInitreturn_type>) {
+            auto out = core::allocate_unsafe<value_type>(PrivateTagBase::PRIVATE, std::forward<TConstructorTs>(c_args)...);
+            out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(d_args)...);
             return out;
         } else {
-            using ReturnType = meta::TransformExpectedValueTo<heap_ptr<ValueType>, DoInitReturnType>;
+            using return_type = meta::TransformExpectedValueTo<heap_ptr<value_type>, DoInitreturn_type>;
 
 #ifdef STORMKIT_COMPILER_CLANG
-            auto out = core::allocate_unsafe<ValueType>(PrivateTagBase::PRIVATE, std::forward<TConstructorArgs>(c_args)...);
-            if (auto result = out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(d_args)...); not result)
-                return ReturnType { std::unexpect, std::move(result).error() };
+            auto out = core::allocate_unsafe<value_type>(PrivateTagBase::PRIVATE, std::forward<TConstructorTs>(c_args)...);
+            if (auto result = out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(d_args)...); not result)
+                return return_type { std::unexpect, std::move(result).error() };
 
-            return ReturnType { std::in_place, std::move(out) };
+            return return_type { std::in_place, std::move(out) };
 #else
-            auto out_expected = ReturnType {
+            auto out_expected = return_type {
                 std::in_place,
-                core::allocate_unsafe<ValueType>(PrivateTagBase::PRIVATE, std::forward<TConstructorArgs>(c_args)...)
+                core::allocate_unsafe<value_type>(PrivateTagBase::PRIVATE, std::forward<TConstructorTs>(c_args)...)
             };
-            if (auto result = out_expected.value()->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(d_args)...);
+            if (auto result = out_expected.value()->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(d_args)...);
                 not result)
                 out_expected = std::unexpected { std::move(result).error() };
 
@@ -238,25 +238,25 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, typename... TDoInitArgs>
-    constexpr auto NamedConstructor<T, DoInitArgs<TDoInitArgs...>>::create(TDoInitArgs... args) noexcept -> decltype(auto) {
-        using DoInitReturnType = decltype(std::declval<T>().do_init(PRIVATE, std::declval<TDoInitArgs>()...));
-        if constexpr (not meta::IsStdExpected<DoInitReturnType>) {
-            auto out = ValueType { PrivateTagBase::PRIVATE };
-            out.do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(args)...);
+    template<typename T, typename... TDoInitTs>
+    constexpr auto NamedConstructor<T, DoInitTs<TDoInitTs...>>::create(TDoInitTs... args) noexcept -> decltype(auto) {
+        using DoInitreturn_type = decltype(std::declval<T>().do_init(PRIVATE, std::declval<TDoInitTs>()...));
+        if constexpr (not meta::std_expected<DoInitreturn_type>) {
+            auto out = value_type { PrivateTagBase::PRIVATE };
+            out.do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(args)...);
             return out;
         } else {
-            using ReturnType = meta::TransformExpectedValueTo<ValueType, DoInitReturnType>;
+            using return_type = meta::TransformExpectedValueTo<value_type, DoInitreturn_type>;
 
 #ifdef STORMKIT_COMPILER_CLANG
-            auto out = ValueType { PrivateTagBase::PRIVATE };
-            if (auto result = out.do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(args)...); not result)
-                return ReturnType { std::unexpect, std::move(result).error() };
+            auto out = value_type { PrivateTagBase::PRIVATE };
+            if (auto result = out.do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(args)...); not result)
+                return return_type { std::unexpect, std::move(result).error() };
 
-            return ReturnType { std::in_place, std::move(out) };
+            return return_type { std::in_place, std::move(out) };
 #else
-            auto out_expected = ReturnType { std::in_place, PrivateTagBase::PRIVATE };
-            if (auto result = out_expected.value().do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(args)...);
+            auto out_expected = return_type { std::in_place, PrivateTagBase::PRIVATE };
+            if (auto result = out_expected.value().do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(args)...);
                 not result)
                 out_expected = std::unexpected { std::move(result).error() };
 
@@ -267,25 +267,25 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, typename... TDoInitArgs>
-    constexpr auto NamedConstructor<T, DoInitArgs<TDoInitArgs...>>::allocate(TDoInitArgs... args) noexcept -> decltype(auto) {
-        using DoInitReturnType = decltype(std::declval<T>().do_init(PRIVATE, std::declval<TDoInitArgs>()...));
-        if constexpr (not meta::IsStdExpected<DoInitReturnType>) {
-            auto out = core::allocate_unsafe<ValueType>(PrivateTagBase::PRIVATE);
-            out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(args)...);
+    template<typename T, typename... TDoInitTs>
+    constexpr auto NamedConstructor<T, DoInitTs<TDoInitTs...>>::allocate(TDoInitTs... args) noexcept -> decltype(auto) {
+        using DoInitreturn_type = decltype(std::declval<T>().do_init(PRIVATE, std::declval<TDoInitTs>()...));
+        if constexpr (not meta::std_expected<DoInitreturn_type>) {
+            auto out = core::allocate_unsafe<value_type>(PrivateTagBase::PRIVATE);
+            out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(args)...);
             return out;
         } else {
-            using ReturnType = meta::TransformExpectedValueTo<heap_ptr<ValueType>, DoInitReturnType>;
+            using return_type = meta::TransformExpectedValueTo<heap_ptr<value_type>, DoInitreturn_type>;
 
 #ifdef STORMKIT_COMPILER_CLANG
-            auto out = core::allocate_unsafe<ValueType>(PrivateTagBase::PRIVATE);
-            if (auto result = out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(args)...); not result)
-                return ReturnType { std::unexpect, std::move(result).error() };
+            auto out = core::allocate_unsafe<value_type>(PrivateTagBase::PRIVATE);
+            if (auto result = out->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(args)...); not result)
+                return return_type { std::unexpect, std::move(result).error() };
 
-            return ReturnType { std::in_place, std::move(out) };
+            return return_type { std::in_place, std::move(out) };
 #else
-            auto out_expected = ReturnType { std::in_place, core::allocate_unsafe<ValueType>(PrivateTagBase::PRIVATE...) };
-            if (auto result = out_expected.value()->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitArgs>(args)...);
+            auto out_expected = return_type { std::in_place, core::allocate_unsafe<value_type>(PrivateTagBase::PRIVATE...) };
+            if (auto result = out_expected.value()->do_init(PrivateTagBase::PRIVATE, std::forward<TDoInitTs>(args)...);
                 not result)
                 out_expected = std::unexpected { std::move(result).error() };
 

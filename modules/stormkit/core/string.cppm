@@ -4,9 +4,9 @@
 
 export module stormkit.core.string;
 
-export import stormkit.core.string.constexpr_string;
+export import stormkit.core.string.static_string;
 export import stormkit.core.string.algorithms;
 export import stormkit.core.string.safecasts;
 export import stormkit.core.string.format;
-export import stormkit.core.string.algorithms;
+export import stormkit.core.string.encodings;
 export import stormkit.core.string.hash;

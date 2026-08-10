@@ -60,15 +60,6 @@ export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]
     constexpr auto unwrap_error() noexcept -> decltype(auto);
     [[nodiscard]]
-    constexpr auto as_byte() noexcept -> decltype(auto);
-    [[nodiscard]]
-    constexpr auto as_bytes() noexcept -> decltype(auto);
-    [[nodiscard]]
-    constexpr auto as_view() noexcept -> decltype(auto);
-    // template<typename... Args>
-    [[nodiscard]]
-    constexpr auto as_tuple(auto&&... args) noexcept -> decltype(auto);
-    [[nodiscard]]
     constexpr auto unpack_tuple_to(auto&& func) noexcept -> decltype(auto);
 
     [[nodiscard]]
@@ -86,7 +77,7 @@ export namespace stormkit { inline namespace core { namespace monadic {
 
     template<typename T>
     [[nodiscard]]
-    constexpr auto either(meta::IsUnaryPredicate<T> auto&& predicate,
+    constexpr auto either(meta::unary_predicate<T> auto&& predicate,
                           std::invocable<T> auto&&         true_,
                           std::invocable<T> auto&&         false_) noexcept -> decltype(auto);
 
@@ -150,7 +141,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto consume(auto&& value) noexcept -> decltype(auto) {
-        return [value = std::move(value)](auto&&...) mutable noexcept -> meta::CanonicalT<decltype(value)> {
+        return [value = std::move(value)](auto&&...) mutable noexcept -> meta::to_plain_type<decltype(value)> {
             return std::move(value);
         };
     }
@@ -160,7 +151,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto value() noexcept -> decltype(auto) {
         return
-          []<meta::IsOwningPointer T>(T&& value) static noexcept -> decltype(auto) { return std::forward_like<T>(value.get()); };
+          []<meta::owning_pointer T>(T&& value) static noexcept -> decltype(auto) { return std::forward_like<T>(value.get()); };
     }
 
     /////////////////////////////////////
@@ -189,7 +180,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
     constexpr auto is(T&& value) noexcept -> decltype(auto) {
-        return [value = std::forward<T>(value)]<typename U>(U&& other) { return core::is(value, std::forward<U>(other)); };
+        return [value = std::forward<T>(value)]<typename U>(U&& other) { return core::is<equal>(value, std::forward<U>(other)); };
     }
 
     ////////////////////////////////////////
@@ -205,8 +196,8 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
     constexpr auto wrap(T&& func) noexcept {
-        return [func = std::forward<T>(func)]<typename... Args>(Args&&... args) noexcept -> decltype(auto) {
-            return std::invoke(func, std::forward<Args>(args)...);
+        return [func = std::forward<T>(func)]<typename... Ts>(Ts&&... args) noexcept -> decltype(auto) {
+            return std::invoke(func, std::forward<Ts>(args)...);
         };
     }
 
@@ -230,8 +221,8 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto wrap() noexcept {
-        return []<typename... Args>(Args&&... args) static noexcept -> decltype(auto) {
-            return std::invoke(Func, std::forward<Args>(args)...);
+        return []<typename... Ts>(Ts&&... args) static noexcept -> decltype(auto) {
+            return std::invoke(Func, std::forward<Ts>(args)...);
         };
     }
 
@@ -241,31 +232,6 @@ namespace stormkit { inline namespace core { namespace monadic {
     // constexpr auto as_byte() noexcept -> decltype(auto) {
     //     return [](auto&& val) static noexcept { return core::as_byte(val); };
     // }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_bytes() noexcept -> decltype(auto) {
-        return [](const auto& val) static noexcept { return core::as_bytes(val); };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_view() noexcept -> decltype(auto) {
-        return []<typename T>(T& val) static noexcept { return core::as_view(val); };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename... Args>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_PURE
-    constexpr auto as_tuple(Args&&... args) noexcept -> decltype(auto) {
-        return [... args = std::forward<Args>(args)]<typename T>(T&& arg) mutable noexcept {
-            return std::make_tuple(std::forward<Args>(args)..., std::forward<T>(arg));
-        };
-    }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -304,8 +270,8 @@ namespace stormkit { inline namespace core { namespace monadic {
         return [&container]<typename T>(T&& value) noexcept -> void { container.emplace_back(std::forward<T>(value)); };
     }
 
-    template<typename First, typename Second, typename... Args>
-    constexpr auto is_noexcept = noexcept(std::declval<Second>()(std::declval<First>()(std::declval<Args>()...)));
+    template<typename First, typename Second, typename... Ts>
+    constexpr auto is_noexcept = noexcept(std::declval<Second>()(std::declval<First>()(std::declval<Ts>()...)));
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -322,12 +288,12 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
     constexpr auto map(First&& first, Second&& second) noexcept -> decltype(auto) {
-        using FirstP  = meta::CanonicalT<First>;
-        using SecondP = meta::CanonicalT<Second>;
+        using FirstP  = meta::to_plain_type<First>;
+        using SecondP = meta::to_plain_type<Second>;
 
         return [first = std::forward<First>(first), second = std::forward<Second>(second)]<
-                 typename... Args>(Args&&... args) noexcept(is_noexcept<FirstP, SecondP, Args...>) -> decltype(auto) {
-            return second(first(std::forward<Args>(args)...));
+                 typename... Ts>(Ts&&... args) noexcept(is_noexcept<FirstP, SecondP, Ts...>) -> decltype(auto) {
+            return second(first(std::forward<Ts>(args)...));
         };
     }
 
@@ -335,7 +301,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto either(meta::IsUnaryPredicate<T> auto&& predicate,
+    constexpr auto either(meta::unary_predicate<T> auto&& predicate,
                           std::invocable<T> auto&&         true_,
                           std::invocable<T> auto&&         false_) noexcept -> decltype(auto) {
         [predicate = std::move(predicate),
@@ -360,7 +326,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is() noexcept -> decltype(auto) {
         return []<typename T, typename U>(T&& first, U&& second) static noexcept -> decltype(auto) {
-            return core::is(std::forward<T>(first), std::forward<U>(second));
+            return core::is<equal>(std::forward<T>(first), std::forward<U>(second));
         };
     }
 
@@ -375,12 +341,12 @@ namespace stormkit { inline namespace core { namespace monadic {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::regular_invocable<Anything>... Args>
+    template<std::regular_invocable<Anything>... Ts>
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
-    constexpr auto either(Args&&... visitors) noexcept -> decltype(auto) {
-        return [... visitors = std::forward<Args>(visitors)]<typename T>(T&& variant) mutable noexcept -> decltype(auto) {
-            return std::visit(core::Overloaded { std::forward<Args>(visitors)... }, std::forward<T>(variant));
+    constexpr auto either(Ts&&... visitors) noexcept -> decltype(auto) {
+        return [... visitors = std::forward<Ts>(visitors)]<typename T>(T&& variant) mutable noexcept -> decltype(auto) {
+            return std::visit(core::Overloaded { std::forward<Ts>(visitors)... }, std::forward<T>(variant));
         };
     }
 
@@ -388,7 +354,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto clone() noexcept -> decltype(auto) {
-        return []<typename T>(T&& value) static noexcept(noexcept(std::is_nothrow_copy_constructible_v<meta::CanonicalT<T>>))
+        return []<typename T>(T&& value) static noexcept(noexcept(std::is_nothrow_copy_constructible_v<meta::to_plain_type<T>>))
                  -> decltype(auto) { return auto(std::forward<T>(value)); };
     }
 
@@ -398,18 +364,18 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto init() noexcept -> decltype(auto) {
-        return []<typename... Args>(Args&&... args) static noexcept(noexcept(std::is_nothrow_constructible_v<T, Args...>))
-                 -> decltype(auto) { return T { std::forward<Args>(args)... }; };
+        return []<typename... Ts>(Ts&&... args) static noexcept(noexcept(std::is_nothrow_constructible_v<T, Ts...>))
+                 -> decltype(auto) { return T { std::forward<Ts>(args)... }; };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, typename... Args>
+    template<typename T, typename... Ts>
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
-    constexpr auto init(Args&&... args) noexcept -> decltype(auto) {
-        return [... args = std::forward<Args>(args)]() mutable noexcept(noexcept(std::is_nothrow_constructible_v<T, Args...>))
-                 -> decltype(auto) { return T { std::forward<Args>(args)... }; };
+    constexpr auto init(Ts&&... args) noexcept -> decltype(auto) {
+        return [... args = std::forward<Ts>(args)]() mutable noexcept(noexcept(std::is_nothrow_constructible_v<T, Ts...>))
+                 -> decltype(auto) { return T { std::forward<Ts>(args)... }; };
     }
 
     /////////////////////////////////////
@@ -418,8 +384,8 @@ namespace stormkit { inline namespace core { namespace monadic {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto init_by() noexcept -> decltype(auto) {
-        return []<typename... Args>(Args&&... args) static noexcept -> decltype(auto) {
-            return stormkit::init_by<T>(Initializer, std::forward<Args>(args)...);
+        return []<typename... Ts>(Ts&&... args) static noexcept -> decltype(auto) {
+            return stormkit::init_by<T>(Initializer, std::forward<Ts>(args)...);
         };
     }
 

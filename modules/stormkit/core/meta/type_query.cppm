@@ -16,232 +16,72 @@ import stormkit.core.meta.algorithms;
 
 namespace stdr = std::ranges;
 
-namespace stormkit { inline namespace core { namespace meta {
-    namespace details {
-        template<typename... Ts>
-        struct AlwaysTrue: std::false_type {};
+namespace stormkit { inline namespace core { namespace meta::details {
+    template<typename T>
+    struct pointer_type;
+    template<typename T>
+    struct pointed_type;
+    template<class T>
+    struct callable_trait;
+}}} // namespace stormkit::core::meta::details
 
-        template<typename... Ts>
-        struct AlwaysFalse: std::false_type {};
+export namespace stormkit { inline namespace core { namespace meta {
+    template<typename T>
+    using underlying_type = std::underlying_type_t<T>;
 
-        template<typename T>
-        struct UnderlyingType;
+    template<typename T>
+    using pointer_type = details::pointer_type<T>::type;
 
-        template<typename T>
-        struct PointerType;
+    template<typename T>
+    using pointed_type = details::pointed_type<T>::type;
 
-        template<IsPointer T>
-        struct PointerType<T> {
-            using Type = typename std::pointer_traits<T>::pointer;
-        };
+    template<typename T>
+    using return_type = details::callable_trait<T>::return_type;
 
-        template<typename T>
-        struct PointerType<std::reference_wrapper<T>> {
-            using Type = std::reference_wrapper<T>::type*;
-        };
+    template<has_expected_type T>
+    using expected_type = typename T::expected_type;
 
-        template<typename T>
-        struct PointedType;
+    template<has_element_type T>
+    using element_type = typename T::element_type;
 
-        template<IsPointer T>
-        struct PointedType<T> {
-            using Type = typename std::pointer_traits<T>::element_type;
-        };
+    template<has_value_type T>
+    using value_type = typename T::value_type;
 
-        template<typename T>
-        struct PointedType<std::reference_wrapper<T>> {
-            using Type = std::reference_wrapper<T>::type;
-        };
+    template<has_value_type T>
+    using error_type = typename T::error_type;
 
-        template<typename T>
-        struct ContainedType;
+    template<stdr::range Range>
+    using iterator_type = stdr::iterator_t<Range>;
 
-        template<IsContainer T>
-        struct ContainedType<T> {
-            using Type = typename T::value_type;
-        };
+    template<stdr::range Range>
+    using sentinel_type = stdr::sentinel_t<Range>;
 
-        template<stdr::range T>
-        struct ContainedType<T> {
-            using Type = typename T::value_type;
-        };
+    template<stdr::input_range Range>
+    using range_type = remove_refs_of<stdr::range_reference_t<Range>>;
 
-        template<typename T>
-        struct ContainedOrPointedOrTType {
-            using Type = T;
-        };
+    template<typename T>
+    using in = lazy_conditional<prefer_pass_by_value<T>, T, const T&>;
 
-        template<IsContainer T>
-        struct ContainedOrPointedOrTType<T>: ContainedType<T> {};
+    template<typename T>
+    using take = lazy_conditional<prefer_pass_by_value<T>, T, T&&>;
 
-        template<IsPointer T>
-        struct ContainedOrPointedOrTType<T>: PointedType<T> {};
+    template<arithmetic T, arithmetic V>
+    constexpr auto is_greater() noexcept;
 
-        template<typename T>
-        struct ContainedOrPointedType;
+    template<arithmetic T, arithmetic V>
+    using safe_narrow_type = conditional<is_greater<T, V>(), T, V>;
 
-        template<IsContainer T>
-        struct ContainedOrPointedType<T>: ContainedType<T> {};
+    template<arithmetic T, arithmetic V>
+    using safe_narrow_other_type = conditional<is_greater<T, V>(), V, T>;
 
-        template<IsPointer T>
-        struct ContainedOrPointedType<T>: PointedType<T> {};
+    template<arithmetic T>
+    using arithmetic_ordering_type = conditional<integral<T>, std::strong_ordering, std::partial_ordering>;
 
-        template<class T>
-        struct CallableTrait;
+    template<enumeration>
+    constexpr auto enumerate() noexcept -> decltype(auto) = delete;
 
-        template<class Return, class... Args>
-        struct SignatureTrait {
-            using ReturnType = Return;
-            // using ArgumentsTypes = std::tuple<Args...>;
-        };
-
-        template<class Return, class... Args>
-        struct CallableTrait<Return(Args...)>: SignatureTrait<Return, Args...> {};
-
-        template<class Return, class... Args>
-        struct CallableTrait<Return(Args...) noexcept>: SignatureTrait<Return, Args...> {};
-
-        template<class Return, class... Args>
-        struct CallableTrait<Return (*)(Args...)>: CallableTrait<Return(Args...)> {};
-
-        template<class Return, class... Args>
-        struct CallableTrait<Return (*)(Args...) noexcept>: CallableTrait<Return(Args...) noexcept> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...)>: CallableTrait<Return(Args...)> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) const>: CallableTrait<Return(Args...)> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) &>: CallableTrait<Return(Args...)> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) const &>: CallableTrait<Return(Args...)> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) &&>: CallableTrait<Return(Args...)> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) const &&>: CallableTrait<Return(Args...)> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) noexcept>: CallableTrait<Return(Args...) noexcept> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) const noexcept>: CallableTrait<Return(Args...) noexcept> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) & noexcept>: CallableTrait<Return(Args...) noexcept> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) const & noexcept>: CallableTrait<Return(Args...) noexcept> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) && noexcept>: CallableTrait<Return(Args...) noexcept> {};
-
-        template<class Object, class Return, class... Args>
-        struct CallableTrait<Return (Object::*)(Args...) const && noexcept>: CallableTrait<Return(Args...) noexcept> {};
-
-        template<typename T>
-        concept HasStdValueType = requires() { typename T::value_type; };
-
-        template<typename T>
-        concept HasValueType = requires() { typename T::ValueType; };
-
-        template<typename T>
-        struct ValueType;
-
-        template<HasValueType T>
-        struct ValueType<T> {
-            using Type = typename T::ValueType;
-        };
-
-        template<HasStdValueType T>
-            requires(not HasValueType<T>)
-        struct ValueType<T> {
-            using Type = typename T::value_type;
-        };
-
-        template<typename T>
-        concept HasStdElementType = requires() { typename T::element_type; };
-
-        template<typename T>
-        concept HasElementType = requires() { typename T::ElementType; };
-
-        template<typename T>
-        struct ElementType;
-
-        template<HasElementType T>
-        struct ElementType<T> {
-            using Type = typename T::ElementType;
-        };
-
-        template<HasStdElementType T>
-            requires(not HasElementType<T>)
-        struct ElementType<T> {
-            using Type = typename T::element_type;
-        };
-    } // namespace details
-
-    export {
-        template<typename T>
-        using UnderlyingType = std::underlying_type_t<T>;
-
-        template<typename T>
-        using PointerType = details::PointerType<T>::Type;
-
-        template<typename T>
-        using PointedType = details::PointedType<T>::Type;
-
-        template<typename T>
-        using ContainedType = details::ContainedType<T>::Type;
-
-        template<typename T>
-        using ContainedOrPointedType = details::ContainedOrPointedType<T>::Type;
-
-        template<typename T>
-        using ContainedOrPointedOrTType = details::ContainedOrPointedOrTType<T>::Type;
-
-        template<typename T>
-        using ReturnType = details::CallableTrait<T>::ReturnType;
-
-        template<HasExpectedType T>
-        using ExpectedType = typename T::ExpectedType;
-
-        template<HasValueType T>
-        using ElementType = details::ElementType<T>::Type;
-
-        template<HasValueType T>
-        using ValueType = details::ValueType<T>::Type;
-
-        template<stdr::range Range>
-        using IteratorType = stdr::iterator_t<Range>;
-
-        template<stdr::range Range>
-        using SentinelType = stdr::sentinel_t<Range>;
-
-        template<stdr::input_range Range>
-        using RangeType = RemoveReferencesType<stdr::range_reference_t<Range>>;
-
-        template<IsArithmetic T, IsArithmetic V>
-        constexpr auto is_greater() noexcept;
-
-        template<IsArithmetic T, IsArithmetic V>
-        using SafeNarrowHelperType = Select<is_greater<T, V>(), T, V>;
-
-        template<IsArithmetic T, IsArithmetic V>
-        using SafeNarrowHelperOtherType = Select<is_greater<T, V>(), V, T>;
-
-        template<IsArithmetic T>
-        using ArithmeticOrderingType = Select<IsIntegral<T>, std::strong_ordering, std::partial_ordering>;
-
-        template<IsEnumeration>
-        constexpr auto enumerate() noexcept -> decltype(auto) = delete;
-
-        template<typename T>
-        consteval auto name_of() noexcept -> std::string_view;
-    }
+    template<typename T>
+    consteval auto name_of() noexcept -> std::string_view;
 }}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
@@ -249,13 +89,89 @@ namespace stormkit { inline namespace core { namespace meta {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core { namespace meta {
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<IsArithmetic T, IsArithmetic V>
-    constexpr auto is_greater() noexcept {
-        using Type = decltype(T {} + V {});
+    namespace details {
+        template<pointer T>
+        struct pointer_type<T> {
+            using type = typename std::pointer_traits<T>::pointer;
+        };
 
-        return static_cast<Type>(std::numeric_limits<T>::max()) > static_cast<Type>(std::numeric_limits<V>::max());
+        template<typename T>
+        struct pointer_type<std::reference_wrapper<T>> {
+            using type = std::reference_wrapper<T>::type*;
+        };
+
+        template<pointer T>
+        struct pointed_type<T> {
+            using type = typename std::pointer_traits<T>::element_type;
+        };
+
+        template<typename T>
+        struct pointed_type<std::reference_wrapper<T>> {
+            using type = std::reference_wrapper<T>::type;
+        };
+
+        template<class Return, class... Ts>
+        struct signature_trait {
+            using return_type = Return;
+        };
+
+        template<class Return, class... Ts>
+        struct callable_trait<Return(Ts...)>: signature_trait<Return, Ts...> {};
+
+        template<class Return, class... Ts>
+        struct callable_trait<Return(Ts...) noexcept>: signature_trait<Return, Ts...> {};
+
+        template<class Return, class... Ts>
+        struct callable_trait<Return (*)(Ts...)>: callable_trait<Return(Ts...)> {};
+
+        template<class Return, class... Ts>
+        struct callable_trait<Return (*)(Ts...) noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...)>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) const>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) &>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) const &>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) &&>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) const &&>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) const noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) & noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) const & noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) && noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::*)(Ts...) const && noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+    } // namespace details
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<arithmetic T, arithmetic V>
+    constexpr auto is_greater() noexcept {
+        using type = decltype(T {} + V {});
+
+        return static_cast<type>(std::numeric_limits<T>::max()) > static_cast<type>(std::numeric_limits<V>::max());
     }
 
     ////////////////////////////////////////

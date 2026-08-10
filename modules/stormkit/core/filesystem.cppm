@@ -53,7 +53,7 @@ export {
 namespace stormkit { inline namespace core { namespace io::meta {
     template<Mode mode>
         requires(mode != Mode::BINARY)
-    using ModeToCharType = core::meta::If<mode == Mode::WIDE, wchar, char>;
+    using ModeToCharType = core::meta::lazy_conditional<mode == Mode::WIDE, wchar, char>;
 }}} // namespace stormkit::core::io::meta
 
 export {
@@ -243,10 +243,10 @@ namespace stormkit { inline namespace core { namespace io {
         auto ret = DWORD { 0 };
         const auto
           succeed = ReadFile(m_descriptor, std::bit_cast<void*>(stdr::data(out)), as<DWORD>(stdr::size(out)), &ret, nullptr);
-        if (not succeed) return std::unexpected { error::from_win32() };
+        if (not succeed) return std::unexpected { error_code::from_win32() };
 #else
         const auto ret = ::read(m_descriptor, std::bit_cast<void*>(stdr::data(out)), as<u32>(stdr::size(out)));
-        if (ret == -1) return std::unexpected { error::from_errno() };
+        if (ret == -1) return std::unexpected { error_code::from_errno() };
 #endif
 
         return System_result<usize> { std::in_place, as<usize>(ret) };
@@ -286,10 +286,10 @@ namespace stormkit { inline namespace core { namespace io {
                                        as<DWORD>(stdr::size(data)),
                                        &ret,
                                        nullptr);
-        if (not succeed) return std::unexpected { error::from_win32() };
+        if (not succeed) return std::unexpected { error_code::from_win32() };
 #else
         const auto ret = ::write(m_descriptor, std::bit_cast<const void*>(stdr::data(data)), as<u32>(stdr::size(data)));
-        if (ret == -1) return std::unexpected { error::from_errno() };
+        if (ret == -1) return std::unexpected { error_code::from_errno() };
 #endif
 
         return System_result<usize> { std::in_place, as<usize>(ret) };
@@ -382,9 +382,9 @@ namespace stormkit { inline namespace core { namespace io {
     template<Mode mode>
     inline auto Descriptor<mode>::do_init(Private_tag, const stdfs::path& path, Access access) noexcept -> System_result<void> {
         if (access == Access::READ and not stdfs::exists(path))
-            return std::unexpected { error::from_stderrc(std::errc::no_such_file_or_directory) };
+            return std::unexpected { error_code::from_stderrc(std::errc::no_such_file_or_directory) };
 
-        if (stdfs::is_directory(path)) return std::unexpected { error::from_stderrc(std::errc::is_a_directory) };
+        if (stdfs::is_directory(path)) return std::unexpected { error_code::from_stderrc(std::errc::is_a_directory) };
 
 #ifdef STORMKIT_OS_WINDOWS
         const auto path_ = "\\\\?\\" / path;
@@ -405,7 +405,7 @@ namespace stormkit { inline namespace core { namespace io {
                                                OPEN_ALWAYS,
                                                FILE_ATTRIBUTE_NORMAL,
                                                INVALID_HANDLE_VALUE);
-        if (ret == INVALID_HANDLE_VALUE) return std::unexpected { error::from_win32() };
+        if (ret == INVALID_HANDLE_VALUE) return std::unexpected { error_code::from_win32() };
 #else
         const auto posix_access = [&access]() noexcept {
             if (access == Access::READ) return O_RDONLY;
@@ -417,7 +417,7 @@ namespace stormkit { inline namespace core { namespace io {
         }();
 
         const auto ret = ::open(path.c_str(), posix_access);
-        if (ret == -1) return std::unexpected { error::from_errno() };
+        if (ret == -1) return std::unexpected { error_code::from_errno() };
 #endif
         m_descriptor = ret;
         return {};

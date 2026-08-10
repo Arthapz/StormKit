@@ -58,9 +58,9 @@ export namespace stormkit::wsi::macos {
 
         auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept
           -> void {
-            const auto resizeable  = check_flag_bit(flags, WindowFlag::RESIZEABLE);
-            const auto borderless  = check_flag_bit(flags, WindowFlag::BORDERLESS);
-            const auto metal_layer = check_flag_bit(flags, WindowFlag::EXTERNAL_CONTEXT);
+            const auto resizeable  = has_flag_bit(flags, WindowFlag::RESIZEABLE);
+            const auto borderless  = has_flag_bit(flags, WindowFlag::BORDERLESS);
+            const auto metal_layer = has_flag_bit(flags, WindowFlag::EXTERNAL_CONTEXT);
             m_window               = macOS::Window::init(swift::String { title },
                                            as<f64>(size.width),
                                            as<f64>(size.height),

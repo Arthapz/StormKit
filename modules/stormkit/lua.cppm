@@ -62,8 +62,8 @@ export namespace stormkit::lua {
         dynarray<char> m_script;
     };
 
-    template<typename... Args>
-    auto luacall(const sol::protected_function& function, Args&&... args) noexcept -> decltype(function());
+    template<typename... Ts>
+    auto luacall(const sol::protected_function& function, Ts&&... args) noexcept -> decltype(function());
 } // namespace stormkit::lua
 
 ////////////////////////////////////////////////////////////////////
@@ -105,10 +105,10 @@ namespace stormkit::lua {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename... Args>
+    template<typename... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto luacall(const sol::protected_function& function, Args&&... args) noexcept -> decltype(function()) {
-        auto result = function(std::forward<Args>(args)...);
+    inline auto luacall(const sol::protected_function& function, Ts&&... args) noexcept -> decltype(function()) {
+        auto result = function(std::forward<Ts>(args)...);
         if (not result.valid())
             ensures(false,
                     std::format("lua runtime error!\n-----------------------------------------\n{}",

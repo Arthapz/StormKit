@@ -49,7 +49,7 @@ export namespace stormkit { inline namespace core {
         using ColorizeClosure    = std23::function_ref<string(const VertexValue&)>;
         using FormatValueClosure = std23::function_ref<string(const VertexValue&)>;
 
-        using ValueType = Vertex;
+        using value_type = Vertex;
 
         struct Closures {
             std::optional<ColorizeClosure>    colorize     = std::nullopt;
@@ -76,19 +76,19 @@ export namespace stormkit { inline namespace core {
         constexpr auto empty() const noexcept -> bool;
 
         constexpr auto add_vertex(const VertexValue& vertex) noexcept -> dag::VertexID
-            requires(meta::IsCopyConstructible<VertexValue>);
+            requires(meta::copy_constructible<VertexValue>);
         constexpr auto add_vertex(VertexValue&& vertex) noexcept -> dag::VertexID
-            requires(meta::IsMoveConstructible<VertexValue>);
-        template<typename... Args>
-        constexpr auto emplace_vertex(Args&&... vertex) noexcept -> dag::VertexID
-            requires(meta::IsConstructible<VertexValue, Args...>);
+            requires(meta::move_constructible<VertexValue>);
+        template<typename... Ts>
+        constexpr auto emplace_vertex(Ts&&... vertex) noexcept -> dag::VertexID
+            requires(meta::constructible<VertexValue, Ts...>);
         template<typename Self>
-        constexpr auto get_vertex_value(this Self&& self, dag::VertexID id) noexcept -> meta::ForwardLike<Self, VertexValue>;
+        constexpr auto get_vertex_value(this Self&& self, dag::VertexID id) noexcept -> meta::forward_like<Self, VertexValue>;
         constexpr auto has_vertex(const VertexValue& vertex) const noexcept -> bool
-            requires(meta::HasEqualityOperator<VertexValue, VertexValue>);
+            requires(meta::has_equality_operator<VertexValue, VertexValue>);
         constexpr auto has_vertex(dag::VertexID vertex) const noexcept -> bool;
         constexpr auto remove_vertex(const VertexValue& vertex) noexcept -> void
-            requires(meta::HasEqualityOperator<VertexValue, VertexValue>);
+            requires(meta::has_equality_operator<VertexValue, VertexValue>);
         constexpr auto remove_vertex(dag::VertexID id) noexcept -> void;
 
         constexpr auto add_edge(dag::VertexID from, dag::VertexID to) noexcept -> void;
@@ -188,7 +188,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename VertexValue>
     constexpr auto DAG<VertexValue>::add_vertex(const VertexValue& vertex) noexcept -> dag::VertexID
-        requires(meta::IsCopyConstructible<VertexValue>)
+        requires(meta::copy_constructible<VertexValue>)
     {
         const auto id = m_next_id++;
         m_vertices.emplace_back(id, vertex);
@@ -200,7 +200,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename VertexValue>
     constexpr auto DAG<VertexValue>::add_vertex(VertexValue&& vertex) noexcept -> dag::VertexID
-        requires(meta::IsMoveConstructible<VertexValue>)
+        requires(meta::move_constructible<VertexValue>)
     {
         const auto id = m_next_id++;
         m_vertices.emplace_back(id, std::move(vertex));
@@ -211,11 +211,11 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename VertexValue>
-    template<typename... Args>
-    constexpr auto DAG<VertexValue>::emplace_vertex(Args&&... args) noexcept -> dag::VertexID
-        requires(meta::IsConstructible<VertexValue, Args...>)
+    template<typename... Ts>
+    constexpr auto DAG<VertexValue>::emplace_vertex(Ts&&... args) noexcept -> dag::VertexID
+        requires(meta::constructible<VertexValue, Ts...>)
     {
-        return add_vertex(VertexValue { std::forward<Args>(args)... });
+        return add_vertex(VertexValue { std::forward<Ts>(args)... });
     }
 
     ////////////////////////////////////////
@@ -223,7 +223,7 @@ namespace stormkit { inline namespace core {
     template<typename VertexValue>
     template<typename Self>
     constexpr auto DAG<VertexValue>::get_vertex_value(this Self&& self, dag::VertexID id) noexcept
-      -> meta::ForwardLike<Self, VertexValue> {
+      -> meta::forward_like<Self, VertexValue> {
         expects(self.has_vertex(id), std::format("Unknown DAG vertex id: {}!", id));
 
         return std::forward_like<Self>(stdr::find_if(self.m_vertices, [id](const auto& other) noexcept {
@@ -236,7 +236,7 @@ namespace stormkit { inline namespace core {
     template<typename VertexValue>
     STORMKIT_FORCE_INLINE
     constexpr auto DAG<VertexValue>::has_vertex(const VertexValue& vertex) const noexcept -> bool
-        requires(meta::HasEqualityOperator<VertexValue, VertexValue>)
+        requires(meta::has_equality_operator<VertexValue, VertexValue>)
     {
         return stdr::any_of(m_vertices, [&vertex](const auto& other) noexcept { return vertex == other.value; });
     }
@@ -253,7 +253,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename VertexValue>
     constexpr auto DAG<VertexValue>::remove_vertex(const VertexValue& vertex) noexcept -> void
-        requires(meta::HasEqualityOperator<VertexValue, VertexValue>)
+        requires(meta::has_equality_operator<VertexValue, VertexValue>)
     {
         if constexpr (std::formattable<VertexValue, char>) expects(has_vertex(vertex), "Unknown DAG vertex value: {}!", vertex);
         else

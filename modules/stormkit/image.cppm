@@ -89,7 +89,7 @@ export namespace stormkit::image {
             UNKNOWN    = 255,
         };
 
-        enum class CodecArgs : u8 {
+        enum class CodecTs : u8 {
             BINARY = 0,
             ASCII  = 1,
         };
@@ -138,11 +138,11 @@ export namespace stormkit::image {
         [[nodiscard]]
         auto load_from_memory(byte_view data, Codec codec = Codec::AUTODETECT) noexcept -> std::expected<void, Error>;
         [[nodiscard]]
-        auto save_to_file(std::filesystem::path filename, Codec codec, CodecArgs args = CodecArgs::BINARY) const noexcept
+        auto save_to_file(std::filesystem::path filename, Codec codec, CodecTs args = CodecTs::BINARY) const noexcept
           -> std::expected<void, Error>;
 
         [[nodiscard]]
-        auto save_to_memory(Codec codec, CodecArgs args = CodecArgs::BINARY) const noexcept
+        auto save_to_memory(Codec codec, CodecTs args = CodecTs::BINARY) const noexcept
           -> std::expected<byte_dynarray, Error>;
 
         auto create(math::uextent3 extent, Format format) noexcept -> void;

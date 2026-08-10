@@ -27,9 +27,9 @@ export namespace std {
 
         ~__manual_lifetime() {}
 
-        template<class... _Args>
-        _T& construct(_Args&&... __args) noexcept(is_nothrow_constructible_v<_T, _Args...>) {
-            return *::new (static_cast<void*>(addressof(__value_))) _T((_Args&&)__args...);
+        template<class... _Ts>
+        _T& construct(_Ts&&... __args) noexcept(is_nothrow_constructible_v<_T, _Ts...>) {
+            return *::new (static_cast<void*>(addressof(__value_))) _T((_Ts&&)__args...);
         }
 
         void destruct() noexcept(is_nothrow_destructible_v<_T>) { __value_.~_T(); }
@@ -147,8 +147,8 @@ export namespace std {
         }
 
       public:
-        template<class... _Args>
-        static void* operator new(size_t __frameSize, allocator_arg_t, _Alloc __alloc, _Args&...) {
+        template<class... _Ts>
+        static void* operator new(size_t __frameSize, allocator_arg_t, _Alloc __alloc, _Ts&...) {
             void* __frame = __alloc.allocate(__padded_frame_size(__frameSize));
 
             // Store allocator at end of the coroutine frame.
@@ -159,8 +159,8 @@ export namespace std {
             return __frame;
         }
 
-        template<class _This, typename... _Args>
-        static void* operator new(size_t __frameSize, _This&, allocator_arg_t, _Alloc __alloc, _Args&...) {
+        template<class _This, typename... _Ts>
+        static void* operator new(size_t __frameSize, _This&, allocator_arg_t, _Alloc __alloc, _Ts&...) {
             return __promise_base_alloc::operator new(__frameSize, allocator_arg, move(__alloc));
         }
 
@@ -353,14 +353,14 @@ export namespace std {
     using __byte_allocator_t = typename allocator_traits<remove_cvref_t<_Alloc>>::template rebind_alloc<byte>;
 
     // Type-erased allocator with default allocator behaviour.
-    template<class _Ref, typename _Value, typename... _Args>
-    struct coroutine_traits<generator<_Ref, _Value>, _Args...> {
+    template<class _Ref, typename _Value, typename... _Ts>
+    struct coroutine_traits<generator<_Ref, _Value>, _Ts...> {
         using promise_type = __generator_promise<generator<_Ref, _Value>, allocator<byte>>;
     };
 
     // Type-erased allocator with allocator_arg parameter
-    template<class _Ref, typename _Value, typename _Alloc, typename... _Args>
-    struct coroutine_traits<generator<_Ref, _Value>, allocator_arg_t, _Alloc, _Args...> {
+    template<class _Ref, typename _Value, typename _Alloc, typename... _Ts>
+    struct coroutine_traits<generator<_Ref, _Value>, allocator_arg_t, _Alloc, _Ts...> {
       private:
         using __byte_allocator = __byte_allocator_t<_Alloc>;
 
@@ -369,8 +369,8 @@ export namespace std {
     };
 
     // Type-erased allocator with allocator_arg parameter (non-static member functions)
-    template<class _Ref, typename _Value, typename _This, typename _Alloc, typename... _Args>
-    struct coroutine_traits<generator<_Ref, _Value>, _This, allocator_arg_t, _Alloc, _Args...> {
+    template<class _Ref, typename _Value, typename _This, typename _Alloc, typename... _Ts>
+    struct coroutine_traits<generator<_Ref, _Value>, _This, allocator_arg_t, _Alloc, _Ts...> {
       private:
         using __byte_allocator = __byte_allocator_t<_Alloc>;
 
@@ -379,8 +379,8 @@ export namespace std {
     };
 
     // Generator with specified allocator type
-    template<class _Ref, typename _Value, typename _Alloc, typename... _Args>
-    struct coroutine_traits<generator<_Ref, _Value, _Alloc>, _Args...> {
+    template<class _Ref, typename _Value, typename _Alloc, typename... _Ts>
+    struct coroutine_traits<generator<_Ref, _Value, _Alloc>, _Ts...> {
         using __byte_allocator = __byte_allocator_t<_Alloc>;
 
       public:

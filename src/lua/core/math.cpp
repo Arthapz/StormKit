@@ -20,8 +20,8 @@ namespace stormkit::lua::core {
         auto _bind_rect(auto& parent) {
             (
               [&] noexcept {
-                  using Type = typename decltype(Rects)::Type;
-                  using Rect = math::rect<Type>;
+                  using type = typename decltype(Rects)::type;
+                  using Rect = math::rect<type>;
 
                   parent.template new_usertype<Rect>(
                     string { Rects.name },
@@ -31,7 +31,7 @@ namespace stormkit::lua::core {
                     "extent",
                     &Rect::extent,
                     "to_bounding_rect",
-                    +[](const Rect* rect) noexcept -> math::bounding_rect<Type> { return to_bounding_rect<Type>(*rect); });
+                    +[](const Rect* rect) noexcept -> math::bounding_rect<type> { return to_bounding_rect<type>(*rect); });
               }(),
               ...);
         }
@@ -42,8 +42,8 @@ namespace stormkit::lua::core {
         auto _bind_bounding_rect(auto& parent) {
             (
               [&] noexcept {
-                  using Type = typename decltype(Rects)::Type;
-                  using Rect = math::bounding_rect<Type>;
+                  using type = typename decltype(Rects)::type;
+                  using Rect = math::bounding_rect<type>;
 
                   parent.template new_usertype<Rect>(
                     string { Rects.name },
@@ -53,7 +53,7 @@ namespace stormkit::lua::core {
                     "bottomright",
                     &Rect::bottomright,
                     "to_rect",
-                    +[](const Rect* rect) noexcept -> math::rect<Type> { return to_rect<Type>(*rect); });
+                    +[](const Rect* rect) noexcept -> math::rect<type> { return to_rect<type>(*rect); });
               }(),
               ...);
         }
@@ -479,9 +479,9 @@ namespace stormkit::lua::core {
         bind_linear_matrix(parent);
     }
 
-    template<typename T, meta::ConstexprString Name>
+    template<typename T, meta::static_string Name>
     struct _Rect {
-        using Type                 = T;
+        using type                 = T;
         static constexpr auto name = Name;
     };
 

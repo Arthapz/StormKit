@@ -10,66 +10,77 @@ export module stormkit.core.meta.algorithms;
 
 import std;
 
+import stormkit.core.types;
+
 import stormkit.core.meta.concepts;
 
 namespace stormkit { inline namespace core { namespace meta::details {
     template<class T>
-    struct LazyType {
-        using Type = T;
+    struct lazy_type {
+        using type = T;
     };
     template<bool, template<class...> typename, typename, typename>
-    struct If;
+    struct lazy_conditional;
 
-    template<template<class...> typename LazyType, typename Then, typename OrElse>
-    struct If<false, LazyType, Then, OrElse> {
-        using Type = LazyType<OrElse>::Type;
+    template<template<class...> typename lazy_type, typename Then, typename OrElse>
+    struct lazy_conditional<false, lazy_type, Then, OrElse> {
+        using type = lazy_type<OrElse>::type;
     };
 
-    template<template<class...> typename LazyType, typename Then, typename OrElse>
-    struct If<true, LazyType, Then, OrElse> {
-        using Type = LazyType<Then>::Type;
+    template<template<class...> typename lazy_type, typename Then, typename OrElse>
+    struct lazy_conditional<true, lazy_type, Then, OrElse> {
+        using type = lazy_type<Then>::type;
     };
 
 #if not(defined(__cpp_pack_indexing) and __cpp_pack_indexing >= 202311L)
-    template<std::size_t Index, typename... Args>
-    struct NthTImpl;
+    template<usize AT, typename... Ts>
+    struct nth_type_impl;
 
-    template<std::size_t Index, typename Head, typename... Args>
-    struct NthTImpl<Index, Head, Args...>: NthTImpl<Index - 1, Args...> {};
+    template<usize AT, typename Head, typename... Ts>
+    struct nth_type_impl<AT, Head, Ts...>: nth_type_impl<AT - 1, Ts...> {};
 
-    template<typename Head, typename... Args>
-    struct NthTImpl<0, Head, Args...> {
-        using Type = Head;
+    template<typename Head, typename... Ts>
+    struct nth_type_impl<0, Head, Ts...> {
+        using type = Head;
     };
 #endif
 }}} // namespace stormkit::core::meta::details
 
 export namespace stormkit { inline namespace core { namespace meta {
-    template<bool Cond, typename Then, typename OrElse>
-    using If = details::If<Cond, details::LazyType, Then, OrElse>::Type;
+    template<bool COND, typename Then, typename OrElse>
+    using lazy_conditional = details::lazy_conditional<COND, details::lazy_type, Then, OrElse>::type;
 
-    template<bool Cond, typename Then, typename OrElse>
-    using Select = std::conditional_t<Cond, Then, OrElse>;
+    template<bool COND, typename Then, typename OrElse>
+    using conditional = std::conditional_t<COND, Then, OrElse>;
+
+    template<typename T, template<typename...> concept C, typename... Ts>
+    concept negate = not C<T, Ts...>;
+
+    template<typename T, template<typename> concept... C>
+    concept all_of = (C<T> and ...);
+
+    template<typename T, template<typename> concept... C>
+    concept any_of = (C<T> or ...);
 
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
-    constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept -> std::size_t;
+    constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept -> usize;
 
     template<typename T, template<typename...> class Variant, typename... Ts>
     constexpr auto variant_contains_type(const Variant<Ts...>) noexcept -> bool;
 
 #if defined(__cpp_pack_indexing) and __cpp_pack_indexing >= 202311L
-    template<std::size_t At, typename... Args>
-    using NthT = Args...[At];
+    template<usize AT, typename... Ts>
+    using nth_type = Ts...[AT];
 #else
-    template<std::size_t At, typename... Args>
-    using NthT = typename details::NthTImpl<At, Args...>::Type;
+    template<usize AT, typename... Ts>
+    using nth_type = typename details::nth_type_impl<AT, Ts...>::type;
 #endif
 
-    template<typename... Args>
-    using FirstT = NthT<0, Args...>;
+    template<typename... Ts>
+    using first_type = nth_type<0, Ts...>;
 
-    template<typename... Args>
-    using LastT = NthT<sizeof...(Args) - 1, Args...>;
+    template<typename... Ts>
+    using last_type = nth_type<sizeof...(Ts) - 1, Ts...>;
 }}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
@@ -81,11 +92,11 @@ namespace stormkit { inline namespace core { namespace meta {
     /////////////////////////////////////
     template<typename... Ts, typename Predicate>
     STORMKIT_FORCE_INLINE
-    constexpr auto variant_type_find_if_impl(Predicate&& predicate) noexcept -> std::size_t {
+    constexpr auto variant_type_find_if_impl(Predicate&& predicate) noexcept -> usize {
         auto found = std::variant_npos;
-        [&]<std::size_t... Indices>(std::index_sequence<Indices...>) noexcept {
+        [&]<usize... Indices>(std::index_sequence<Indices...>) noexcept {
             if constexpr ((requires {
-                              { std::forward<Predicate>(predicate).template operator()<Indices, Ts> } -> IsBooleanTestable;
+                              { std::forward<Predicate>(predicate).template operator()<Indices, Ts> } -> boolean_testable;
                           } and ...))
                 (((std::forward<Predicate>(predicate).template operator()<Indices, Ts>()) and (found = Indices, true)) or ...);
             else
@@ -98,7 +109,7 @@ namespace stormkit { inline namespace core { namespace meta {
     /////////////////////////////////////
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept -> std::size_t {
+    constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept -> usize {
         return variant_type_find_if_impl<Ts...>(std::forward<Predicate>(predicate));
     }
 
@@ -107,7 +118,7 @@ namespace stormkit { inline namespace core { namespace meta {
     template<typename T, template<typename...> class Variant, typename... Ts>
     STORMKIT_FORCE_INLINE
     constexpr auto variant_contains_type(const Variant<Ts...>&) noexcept -> bool {
-        if constexpr (meta::IsAnyOf<T, Ts...>) return true;
+        if constexpr (meta::is_any_of<T, Ts...>) return true;
         else
             return false;
     }

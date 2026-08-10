@@ -23,7 +23,7 @@ import std;
 namespace stdp = std::pmr;
 
 template<typename T>
-concept ShouldPassByValue = sizeof(T) <= (sizeof(void*) * 2) and std::is_trivially_copyable_v<T>;
+concept prefer_pass_by_value = sizeof(T) <= (sizeof(void*) * 2) and std::is_trivially_copyable_v<T>;
 
 export {
     using uchar     = unsigned char;
@@ -69,6 +69,11 @@ export {
         using iptr    = std::intptr_t;
 
         using std::byte;
+
+        enum class hash32 : u32 {
+        };
+        enum class hash64 : u64 {
+        };
 
         using c8    = char8_t;
         using c16   = char16_t;
@@ -118,6 +123,8 @@ export {
         template<class T, class Extents, class LayoutPolicy = std::layout_right, class AccessorPolicy = std::default_accessor<T>>
         using mdarray_view = std::mdspan<T, Extents, LayoutPolicy, AccessorPolicy>;
 
+        using std::basic_string;
+        using std::basic_string_view;
         using std::string;
         using std::string_view;
         using std::u16string;
@@ -146,7 +153,7 @@ export {
         } // namespace pmr
 
         using source_location_arg = std::
-          conditional_t<ShouldPassByValue<std::source_location>, const std::source_location, const std::source_location&>;
+          conditional_t<prefer_pass_by_value<std::source_location>, const std::source_location, const std::source_location&>;
 
         namespace literals {
             [[nodiscard]]

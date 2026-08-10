@@ -32,12 +32,12 @@ namespace stormkit { inline namespace core {
         m_size                = size;
         m_name                = std::move(name);
         m_access              = access;
-        const auto shm_access = (check_flag_bit(m_access, io::Access::WRITE) ? O_RDWR : O_RDONLY)
+        const auto shm_access = (has_flag_bit(m_access, io::Access::WRITE) ? O_RDWR : O_RDONLY)
                                 | ((m_handle != nullptr) ? O_TRUNC : O_CREAT);
 
         const auto mode = init_by<mode_t>([access = m_access](auto& mode) noexcept {
-            if (check_flag_bit(access, io::Access::READ)) mode |= S_IRUSR;
-            if (check_flag_bit(access, io::Access::WRITE)) mode |= S_IWUSR;
+            if (has_flag_bit(access, io::Access::READ)) mode |= S_IRUSR;
+            if (has_flag_bit(access, io::Access::WRITE)) mode |= S_IWUSR;
         });
 
         m_handle = std::bit_cast<void*>(iptr { shm_open(stdr::data(m_name), shm_access, mode) });
@@ -54,8 +54,8 @@ namespace stormkit { inline namespace core {
             };
 
         const auto prot_access = init_by<i32>([access = m_access](auto& prot_access) noexcept {
-            if (check_flag_bit(access, io::Access::READ)) prot_access |= PROT_READ;
-            if (check_flag_bit(access, io::Access::WRITE)) prot_access |= PROT_WRITE;
+            if (has_flag_bit(access, io::Access::READ)) prot_access |= PROT_READ;
+            if (has_flag_bit(access, io::Access::WRITE)) prot_access |= PROT_WRITE;
         });
 
         auto buf = mmap(nullptr, m_size, prot_access, MAP_SHARED, fd, 0);

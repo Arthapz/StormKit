@@ -10,12 +10,13 @@ import stormkit.test;
 #include <stormkit/test/test_macro.hpp>
 
 using namespace stormkit::core;
+using namespace stormkit::literals;
 
 struct Foo {
     int b;
 };
 
-template<stormkit::meta::IsIntegral T>
+template<stormkit::meta::integral T>
 constexpr auto as_impl(const Foo& value, const std::source_location&) noexcept -> T {
     return static_cast<T>(value.b);
 }
@@ -25,7 +26,7 @@ namespace bar {
         int b;
     };
 
-    template<stormkit::meta::IsIntegral T>
+    template<stormkit::meta::integral T>
     constexpr auto as_impl(const Foo& value, const std::source_location&) noexcept -> T {
         return static_cast<T>(value.b);
     }
@@ -96,14 +97,14 @@ namespace {
             } },
           { "arithmetic.as.integral",
             [] static noexcept {
-                static_assert(meta::IsSignNarrowing<i32, u32>);
-                static_assert(meta::IsSignNarrowing<u32, i32>);
-                static_assert(not meta::IsSignNarrowing<i8, u32>);
-                static_assert(meta::IsSignNarrowing<u32, i8>);
-                static_assert(meta::IsNarrowing<i16, i32>);
-                static_assert(not meta::IsNarrowing<i32, i16>);
-                static_assert(meta::IsNarrowing<i32, u32>);
-                static_assert(meta::IsNarrowing<u32, i32>);
+                static_assert(meta::is_sign_narrowing<i32, u32>);
+                static_assert(meta::is_sign_narrowing<u32, i32>);
+                static_assert(not meta::is_sign_narrowing<i8, u32>);
+                static_assert(meta::is_sign_narrowing<u32, i8>);
+                static_assert(meta::is_narrowing<i16, i32>);
+                static_assert(not meta::is_narrowing<i32, i16>);
+                static_assert(meta::is_narrowing<i32, u32>);
+                static_assert(meta::is_narrowing<u32, i32>);
 
                 EXPECTS(as<i8>(127) == i8 { 127 });
                 EXPECTS(as<i8>(-80) != i8 { -81 });

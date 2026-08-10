@@ -239,7 +239,7 @@ export {
 
             WM m_wm;
 
-            Pimpl<WindowImpl> m_impl;
+            pimpl<WindowImpl> m_impl;
         };
     }} // namespace stormkit::wsi
 

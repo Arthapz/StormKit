@@ -94,8 +94,8 @@ namespace stormkit::wsi::linux::wayland::wl {
         template<auto member>
         constexpr auto make_binder() noexcept -> decltype(auto) {
             return [](Globals& _globals, void* ptr) static noexcept {
-                using U            = meta::ToPlainType<decltype(globals.*member)>;
-                (_globals.*member) = U::take(std::bit_cast<meta::ValueType<U>>(ptr));
+                using U            = meta::to_plain_type<decltype(globals.*member)>;
+                (_globals.*member) = U::take(std::bit_cast<meta::value_type<U>>(ptr));
             };
         }
 
@@ -104,9 +104,9 @@ namespace stormkit::wsi::linux::wayland::wl {
         template<auto member>
         constexpr auto make_binder_to_array() noexcept -> decltype(auto) {
             return [](Globals& _globals, void* ptr) static noexcept {
-                using Vec = meta::ToPlainType<decltype(globals.*member)>;
-                using U   = meta::ValueType<Vec>;
-                (_globals.*member).push_back(U::take(std::bit_cast<meta::ValueType<U>>(ptr)));
+                using Vec = meta::to_plain_type<decltype(globals.*member)>;
+                using U   = meta::value_type<Vec>;
+                (_globals.*member).push_back(U::take(std::bit_cast<meta::value_type<U>>(ptr)));
             };
         }
 

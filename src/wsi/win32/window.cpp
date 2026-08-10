@@ -74,7 +74,7 @@ namespace stormkit::wsi::win32 {
         if (g_window_count == 0) {
             SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
             auto h_instance   = GetModuleHandleA(nullptr);
-            auto window_class = zeroed<WNDCLASSA>();
+            auto window_class = WNDCLASSA {};
             if (GetClassInfoA(h_instance, CLASS_NAME, &window_class) == FALSE) {
                 window_class.lpfnWndProc   = &global_on_event;
                 window_class.hInstance     = GetModuleHandleA(nullptr);
@@ -110,14 +110,14 @@ namespace stormkit::wsi::win32 {
         auto style_ex   = DWORD { 0 };
         auto h_instance = GetModuleHandleA(nullptr);
 
-        if (check_flag_bit(flags, WindowFlag::BORDERLESS)) style |= WS_POPUP | WS_EX_CLIENTEDGE;
+        if (has_flag_bit(flags, WindowFlag::BORDERLESS)) style |= WS_POPUP | WS_EX_CLIENTEDGE;
         else
             style |= (WS_OVERLAPPED | WS_CAPTION);
 
-        if (check_flag_bit(flags, WindowFlag::RESIZEABLE)) style |= WS_MAXIMIZEBOX | WS_THICKFRAME;
+        if (has_flag_bit(flags, WindowFlag::RESIZEABLE)) style |= WS_MAXIMIZEBOX | WS_THICKFRAME;
 
         auto gdi = true;
-        if (check_flag_bit(flags, WindowFlag::EXTERNAL_CONTEXT)) {
+        if (has_flag_bit(flags, WindowFlag::EXTERNAL_CONTEXT)) {
             m_win32_state.external_context = true;
             style_ex |= WS_EX_NOREDIRECTIONBITMAP;
             gdi = false;
@@ -454,10 +454,9 @@ namespace stormkit::wsi::win32 {
             .biClrImportant  = 0,
         };
 
-        auto ptr                 = core::ptr<void> { nullptr };
-        m_gdi_frame_data.context = Hdc::create(hdesktop);
-        m_gdi_frame_data
-          .bitmap                   = HBitmap::create(m_gdi_frame_data.context,
+        auto ptr                    = core::ptr<void> { nullptr };
+        m_gdi_frame_data.context    = Hdc::create(hdesktop);
+        m_gdi_frame_data.bitmap     = HBitmap::create(m_gdi_frame_data.context,
                                                       std::bit_cast<const BITMAPINFO*>(&frame_bitmap_info),
                                                       as<UINT>(DIB_RGB_COLORS),
                                                       &ptr,
@@ -644,7 +643,7 @@ namespace stormkit::wsi::win32 {
 
                     const auto key       = extract_key(w_param, l_param);
                     const auto character = extract_key_to_char(w_param, l_param);
-                    const auto to_index  = as<Underlying>(key);
+                    const auto to_index  = as<underlying>(key);
 
                     if (state.keys[to_index] == common::KeyState::UP) {
                         window.key_down_event(GLOBAL_KEYBOARD_ID, key, character);
@@ -658,7 +657,7 @@ namespace stormkit::wsi::win32 {
 
                     const auto key       = extract_key(w_param, l_param);
                     const auto character = extract_key_to_char(w_param, l_param);
-                    const auto to_index  = as<Underlying>(key);
+                    const auto to_index  = as<underlying>(key);
 
                     window.key_up_event(GLOBAL_KEYBOARD_ID, key, character);
                     state.keys[to_index] = common::KeyState::UP;

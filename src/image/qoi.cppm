@@ -53,7 +53,7 @@ namespace stormkit::image::details {
           { 4, array { image::Image::Format::SRGBA8, image::Image::Format::RGBA8_UNORM } }
         });
 
-        constexpr auto END_OF_FILE = into_bytes({ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 });
+        constexpr auto END_OF_FILE = into<Bytes>({ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 });
 
         constexpr auto PIXEL_CACHE_SIZE = 64u;
     } // namespace

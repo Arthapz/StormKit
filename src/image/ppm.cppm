@@ -18,11 +18,11 @@ export namespace stormkit::image::details {
     auto load_ppm(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
-    auto save_ppm(const image::Image& image, image::Image::CodecArgs args, const std::filesystem::path& filepath) noexcept
+    auto save_ppm(const image::Image& image, image::Image::CodecTs args, const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto save_ppm(const image::Image& image, image::Image::CodecArgs args) noexcept
+    auto save_ppm(const image::Image& image, image::Image::CodecTs args) noexcept
       -> std::expected<byte_dynarray, image::Image::Error>;
 } // namespace stormkit::image::details
 
@@ -44,7 +44,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_ppm(const image::Image& image, image::Image::CodecArgs args, const std::filesystem::path& filepath) noexcept
+    auto save_ppm(const image::Image& image, image::Image::CodecTs args, const std::filesystem::path& filepath) noexcept
       -> std::expected<void, image::Image::Error> {
         return save_ppm(image, args)
           .and_then([&filepath](auto&& val) noexcept {
@@ -57,13 +57,13 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_ppm(const image::Image& image, image::Image::CodecArgs args) noexcept
+    auto save_ppm(const image::Image& image, image::Image::CodecTs args) noexcept
       -> std::expected<byte_dynarray, image::Image::Error> {
         const auto  output_image = image.convert_to(Format::RGB8_UNORM);
         const auto& data         = output_image.image_data();
 
         auto output = byte_dynarray {};
-        if (args == image::Image::CodecArgs::ASCII) {
+        if (args == image::Image::CodecTs::ASCII) {
             auto result = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
 
             const auto& extent = output_image.extent();
@@ -77,7 +77,7 @@ namespace stormkit::image::details {
 
             output.reserve(std::size(result));
             std::ranges::copy(as<Bytes>(result), std::back_inserter(output));
-        } else if (args == image::Image::CodecArgs::BINARY) {
+        } else if (args == image::Image::CodecTs::BINARY) {
             auto header = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
             output.reserve(std::size(output) + std::size(output_image));
 

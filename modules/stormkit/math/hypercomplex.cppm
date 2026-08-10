@@ -4,7 +4,7 @@
 
 module;
 
-export module stormkit.core.math.trigonometry;
+export module stormkit.math.hypercomplex;
 
 import std;
 

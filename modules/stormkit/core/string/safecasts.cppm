@@ -22,43 +22,71 @@ namespace stdr = std::ranges;
 export namespace stormkit { inline namespace core {
     namespace meta {
         template<typename T>
-        concept Has_as_string_view = requires(const T& value) {
-            { as<string_view>(value) } -> SameAs<string_view>;
+        concept has_as_string_view = requires(const T& value) {
+            { as<string_view>(value) } -> same_as<string_view>;
         };
     } // namespace meta
 
-    template<meta::Has_as_string_view From>
+    template<meta::has_as_string_view From>
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<string>, From&& value, source_location_arg = std::source_location::current()) noexcept
       -> string;
 
-    template<meta::arg::PlainTypeTo<meta::IsIntegral> From>
+    template<meta::plain::integral From>
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<string>,
                               From value,
                               i32  base           = 10,
-                              source_location_arg = std::source_location::current()) noexcept -> System_result<string>;
+                              source_location_arg = std::source_location::current()) noexcept -> string;
 
-    template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> From>
+    template<meta::plain::floating_point From>
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<string>,
                               From              value,
                               std::chars_format fmt = std::chars_format::general,
-                              source_location_arg   = std::source_location::current()) noexcept -> System_result<string>;
+                              source_location_arg   = std::source_location::current()) noexcept -> string;
 
-    template<meta::arg::PlainTypeTo<meta::IsIntegral> To>
+    template<meta::plain::integral To>
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<To>,
-                              std::string_view value,
-                              i32              base = 10,
-                              source_location_arg   = std::source_location::current()) noexcept -> System_result<To>;
+                              string_view value,
+                              i32         base    = 10,
+                              source_location_arg = std::source_location::current()) noexcept -> To;
 
-    template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> To>
+    template<meta::plain::floating_point To>
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<To>,
-                              std::string_view  value,
+                              string_view       value,
                               std::chars_format fmt = std::chars_format::general,
-                              source_location_arg   = std::source_location::current()) noexcept -> System_result<To>;
+                              source_location_arg   = std::source_location::current()) noexcept -> To;
+
+    template<meta::plain::integral From>
+    [[nodiscard]]
+    constexpr auto tag_invoke(try_as_fn<string>,
+                              From value,
+                              i32  base                   = 10,
+                              const std::source_location& = std::source_location::current()) noexcept -> System_result<string>;
+
+    template<meta::plain::floating_point From>
+    [[nodiscard]]
+    constexpr auto tag_invoke(try_as_fn<string>,
+                              From              value,
+                              std::chars_format fmt       = std::chars_format::general,
+                              const std::source_location& = std::source_location::current()) noexcept -> System_result<string>;
+
+    template<meta::plain::integral To>
+    [[nodiscard]]
+    constexpr auto tag_invoke(try_as_fn<To>,
+                              string_view value,
+                              i32         base            = 10,
+                              const std::source_location& = std::source_location::current()) noexcept -> System_result<To>;
+
+    template<meta::plain::floating_point To>
+    [[nodiscard]]
+    constexpr auto tag_invoke(try_as_fn<To>,
+                              string_view       value,
+                              std::chars_format fmt       = std::chars_format::general,
+                              const std::source_location& = std::source_location::current()) noexcept -> System_result<To>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -68,7 +96,7 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::Has_as_string_view From>
+    template<meta::has_as_string_view From>
         STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(as_fn<string>, From value, source_location_arg) noexcept -> string {
         return string { as<string_view>(std::forward<From>(value)) };
@@ -76,13 +104,95 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::arg::PlainTypeTo<meta::IsIntegral> From>
-    constexpr auto tag_invoke(as_fn<string>, From value, i32 base, source_location_arg) noexcept -> System_result<string> {
+    template<meta::plain::integral From>
+    constexpr auto tag_invoke(as_fn<string>, From value, i32 base, source_location_arg) noexcept -> string {
+        auto out = std::string {};
+        out.resize(16);
+        auto&& [ptr, errc] = std::to_chars(stdr::data(out), stdr::data(out) + stdr::size(out), value, base);
+        if consteval {
+            ensures(errc != std::errc {}, "Failed to convert to string");
+        } else {
+            ensures(errc != std::errc {},
+                    std::format("Failed to convert {} {} to string, reason: {}!", value, base, error_code::from_stderrc(errc)));
+        }
+
+        const auto size = std::distance(stdr::data(out), ptr);
+        out.resize(as<usize>(size));
+
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::plain::floating_point From>
+    constexpr auto tag_invoke(as_fn<string>, From value, std::chars_format fmt, source_location_arg) noexcept -> string {
+        auto out = std::string {};
+        out.resize(16, '\0');
+        auto&& [ptr, errc] = std::to_chars(stdr::data(out), stdr::data(out) + stdr::size(out), value, fmt);
+        if consteval {
+            ensures(errc != std::errc {}, "Failed to convert to string");
+        } else {
+            ensures(errc != std::errc {},
+                    std::format("Failed to convert {} (fmt: {}) to string, reason: {}!",
+                                value,
+                                fmt,
+                                error_code::from_stderrc(errc)));
+        }
+
+        const auto size = std::distance(stdr::data(out), ptr);
+        out.resize(as<usize>(size));
+
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::plain::integral To>
+    constexpr auto tag_invoke(as_fn<To>, string_view value, i32 base, source_location_arg) noexcept -> To {
+        auto out         = To { 0 };
+        auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), out, base);
+        if consteval {
+            ensures(errc != std::errc {}, "Failed to convert from string");
+        } else {
+            ensures(errc != std::errc {},
+                    std::format("Failed to convert from string {} (base: {}), reason: {}!",
+                                value,
+                                base,
+                                error_code::from_stderrc(errc)));
+        }
+
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::plain::floating_point To>
+    constexpr auto tag_invoke(as_fn<To>, string_view value, std::chars_format fmt, source_location_arg) noexcept -> To {
+        auto out         = To { 0. };
+        auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), out, fmt);
+        if consteval {
+            ensures(errc != std::errc {}, "Failed to convert from string");
+        } else {
+            ensures(errc != std::errc {},
+                    std::format("Failed to convert from string {} (fmt: {}), reason: {}!",
+                                value,
+                                fmt,
+                                error_code::from_stderrc(errc)));
+        }
+
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::plain::integral From>
+    constexpr auto tag_invoke(try_as_fn<string>, From&& value, i32 base, const std::source_location&) noexcept
+      -> System_result<string> {
         auto out = System_result<string> { std::in_place };
         out->resize(16);
         auto&& [ptr, errc] = std::to_chars(stdr::data(*out), stdr::data(*out) + stdr::size(*out), value, base);
         if (errc != std::errc {}) [[unlikely]]
-            out = std::unexpected<System_code> { std::in_place, error::from_stderrc(std::move(errc)) };
+            out = std::unexpected<System_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
         else {
             const auto size = std::distance(stdr::data(*out), ptr);
             out->resize(as<usize>(size));
@@ -93,15 +203,15 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> From>
-    constexpr auto tag_invoke(as_fn<string>, From value, std::chars_format fmt, source_location_arg) noexcept
+    template<meta::plain::floating_point From>
+    constexpr auto tag_invoke(try_as_fn<string>, From&& value, std::chars_format fmt, const std::source_location&) noexcept
       -> System_result<string> {
         auto out = System_result<string> { std::in_place };
         out->resize(16, '\0');
 
         auto&& [ptr, errc] = std::to_chars(stdr::data(*out), stdr::data(*out) + stdr::size(*out), value, fmt);
         if (errc != std::errc {}) [[unlikely]]
-            out = std::unexpected<System_code> { std::in_place, error::from_stderrc(std::move(errc)) };
+            out = std::unexpected<System_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
         else {
             const auto size = std::distance(stdr::data(*out), ptr);
             out->resize(size);
@@ -110,25 +220,28 @@ namespace stormkit { inline namespace core {
         return out;
     }
 
-    template<meta::arg::PlainTypeTo<meta::IsIntegral> To>
-    [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<To>, std::string_view value, i32 base, source_location_arg) noexcept -> System_result<To> {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::plain::integral To>
+    constexpr auto tag_invoke(try_as_fn<To>, string_view value, i32 base, const std::source_location&) noexcept
+      -> System_result<To> {
         auto out         = System_result<To> { std::in_place };
-        auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), out.value(), base);
+        auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), *out, base);
         if (errc != std::errc {}) [[unlikely]]
-            out = std::unexpected<System_code> { std::in_place, error::from_stderrc(std::move(errc)) };
+            out = std::unexpected<System_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
 
         return out;
     }
 
-    template<meta::arg::PlainTypeTo<meta::IsFloatingPoint> To>
-    [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<To>, std::string_view value, std::chars_format fmt, source_location_arg) noexcept
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::plain::floating_point To>
+    constexpr auto tag_invoke(try_as_fn<To>, string_view value, std::chars_format fmt, const std::source_location&) noexcept
       -> System_result<To> {
         auto out         = System_result<To> { std::in_place };
-        auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), out.value(), fmt);
+        auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), *out, fmt);
         if (errc != std::errc {}) [[unlikely]]
-            out = std::unexpected<System_code> { std::in_place, error::from_stderrc(std::move(errc)) };
+            out = std::unexpected<System_code> { std::in_place, error_code::from_stderrc(std::move(errc)) };
 
         return out;
     }

@@ -110,7 +110,7 @@ namespace {
                 auto j       = 0u;
 
                 for (auto [v1, v2] : multi_range(10, 5u)) {
-                    if (v1 != i or v2 != j or not std::same_as<decltype(v2), decltype(j)>) {
+                    if (v1 != i or v2 != j or not meta::same_as<decltype(v2), decltype(j)>) {
                         success = false;
                         break;
                     }

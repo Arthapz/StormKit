@@ -19,26 +19,24 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
     auto load_monitor(HMONITOR native) noexcept -> Monitor {
-        auto monitor_info   = zeroed<MONITORINFOEX>();
+        auto monitor_info   = MONITORINFOEX {};
         monitor_info.cbSize = sizeof(MONITORINFOEX);
 
         GetMonitorInfo(native, &monitor_info);
 
         auto monitor          = Monitor {};
         monitor.native_handle = native;
-        if ((monitor_info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY)
-            monitor.flags = Monitor::Flags::PRIMARY;
+        if ((monitor_info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY) monitor.flags = Monitor::Flags::PRIMARY;
 
         monitor.name = string { monitor_info.szDevice };
 
-        auto dm = zeroed<DEVMODE>();
+        auto dm = DEVMODE {};
 
         for (auto i = 0; EnumDisplaySettings(monitor_info.szDevice, i, &dm) != 0; ++i) {
             monitor.extents.emplace_back(as<u32>(dm.dmPelsWidth), as<u32>(dm.dmPelsHeight));
         }
 
-        monitor.extents.erase(std::unique(std::begin(monitor.extents), std::end(monitor.extents)),
-                              std::end(monitor.extents));
+        monitor.extents.erase(std::unique(std::begin(monitor.extents), std::end(monitor.extents)), std::end(monitor.extents));
         stdr::sort(monitor.extents);
 
         return monitor;
@@ -71,7 +69,7 @@ namespace stormkit::wsi::win32 {
     auto get_primary_monitor(WM wm) noexcept -> const Monitor& {
         const auto monitors = get_monitors(wm);
         auto       it       = stdr::find_if(monitors, [](const auto& monitor) static noexcept {
-            return check_flag_bit(monitor.flags, Monitor::Flags::PRIMARY);
+            return has_flag_bit(monitor.flags, Monitor::Flags::PRIMARY);
         });
         return *it;
     }

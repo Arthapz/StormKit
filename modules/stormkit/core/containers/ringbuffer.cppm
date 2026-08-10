@@ -21,10 +21,10 @@ export namespace stormkit { inline namespace core {
     template<class T>
     class RingBuffer {
       public:
-        using ValueType  = T;
+        using value_type  = T;
         using ExtentType = usize;
 
-        using value_type = ValueType;
+        using value_type = value_type;
         using size_type  = ExtentType;
 
         RingBuffer(ExtentType capacity);
@@ -49,11 +49,11 @@ export namespace stormkit { inline namespace core {
         auto capacity() const noexcept -> ExtentType;
 
         template<typename U>
-            requires meta::Is<T, meta::CanonicalT<U>>
-        auto push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>) -> void;
+            requires meta::is<T, meta::to_plain_type<U>>
+        auto push(U&& value) noexcept(std::is_nothrow_constructible_v<value_type, U>) -> void;
 
-        template<class... Args>
-        auto emplace(Args&&... values) noexcept(std::is_nothrow_constructible_v<ValueType, Args...>) -> void;
+        template<class... Ts>
+        auto emplace(Ts&&... values) noexcept(std::is_nothrow_constructible_v<value_type, Ts...>) -> void;
 
         auto next() noexcept -> void;
 
@@ -64,7 +64,7 @@ export namespace stormkit { inline namespace core {
         auto get(this Self& self) noexcept -> decltype(auto);
 
         [[nodiscard]]
-        auto data() const noexcept -> array_view<const ValueType>;
+        auto data() const noexcept -> array_view<const value_type>;
 
       private:
         template<class Self>
@@ -90,7 +90,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T>
     RingBuffer<T>::RingBuffer(ExtentType capacity) : m_capacity { capacity } {
-        m_buffer.resize(m_capacity * sizeof(ValueType));
+        m_buffer.resize(m_capacity * sizeof(value_type));
     }
 
     ////////////////////////////////////////
@@ -102,10 +102,10 @@ namespace stormkit { inline namespace core {
         m_write    = copy.m_write;
         m_read     = copy.m_read;
 
-        m_buffer.resize(m_capacity * sizeof(ValueType));
+        m_buffer.resize(m_capacity * sizeof(value_type));
         if (not empty()) {
             for (auto i = m_read; i < m_write;) {
-                new (&m_buffer[i * sizeof(ValueType)]) T { *copy.get_ptr(i) };
+                new (&m_buffer[i * sizeof(value_type)]) T { *copy.get_ptr(i) };
 
                 i += 1;
                 if (i >= m_capacity) i -= m_capacity;
@@ -124,10 +124,10 @@ namespace stormkit { inline namespace core {
         m_write    = copy.m_write;
         m_read     = copy.m_read;
 
-        m_buffer.resize(m_capacity * sizeof(ValueType));
+        m_buffer.resize(m_capacity * sizeof(value_type));
         if (not empty())
             for (auto i = m_read; i < m_write;) {
-                new (&m_buffer[i * sizeof(ValueType)]) T { *copy.get_ptr(i) };
+                new (&m_buffer[i * sizeof(value_type)]) T { *copy.get_ptr(i) };
 
                 i += 1;
                 if (i >= m_capacity) i -= m_capacity;
@@ -210,19 +210,19 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T>
     template<typename U>
-        requires meta::Is<T, meta::CanonicalT<U>>
-    auto RingBuffer<T>::push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>) -> void {
+        requires meta::is<T, meta::to_plain_type<U>>
+    auto RingBuffer<T>::push(U&& value) noexcept(std::is_nothrow_constructible_v<value_type, U>) -> void {
         emplace(std::forward(value));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    template<class... Args>
-    auto RingBuffer<T>::emplace(Args&&... values) noexcept(std::is_nothrow_constructible_v<ValueType, Args...>) -> void {
+    template<class... Ts>
+    auto RingBuffer<T>::emplace(Ts&&... values) noexcept(std::is_nothrow_constructible_v<value_type, Ts...>) -> void {
         if (m_count == m_capacity) pop();
 
-        new (&m_buffer[m_write * sizeof(ValueType)]) ValueType { std::forward<Args>(values)... };
+        new (&m_buffer[m_write * sizeof(value_type)]) value_type { std::forward<Ts>(values)... };
 
         m_write += 1;
         if (m_write >= m_capacity) m_write -= m_capacity;
@@ -244,7 +244,7 @@ namespace stormkit { inline namespace core {
     auto RingBuffer<T>::pop() noexcept -> void {
         EXPECTS(not empty());
 
-        get_ptr(m_write)->~ValueType();
+        get_ptr(m_write)->~value_type();
 
         --m_count;
     }
@@ -262,8 +262,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    auto RingBuffer<T>::data() const noexcept -> array_view<const ValueType> {
-        return array_view<const ValueType> { get_ptr(0), m_capacity };
+    auto RingBuffer<T>::data() const noexcept -> array_view<const value_type> {
+        return array_view<const value_type> { get_ptr(0), m_capacity };
     }
 
     ////////////////////////////////////////
@@ -271,8 +271,8 @@ namespace stormkit { inline namespace core {
     template<class T>
     template<class Self>
     auto RingBuffer<T>::get_ptr(this Self& self, ExtentType pos) noexcept -> decltype(auto) {
-        using OutPtr = meta::ForwardConst<Self, T*>;
-        auto addr    = std::forward_like<Self>(&(self.m_buffer[pos * sizeof(ValueType)]));
+        using OutPtr = meta::forward_const_to<Self, T*>;
+        auto addr    = std::forward_like<Self>(&(self.m_buffer[pos * sizeof(value_type)]));
 
         return std::launder(std::bit_cast<OutPtr>(addr));
     }

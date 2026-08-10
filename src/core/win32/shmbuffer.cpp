@@ -28,7 +28,7 @@ namespace stormkit { inline namespace core {
         m_size                 = size;
         m_name                 = std::move(name);
         m_access               = access;
-        const auto page_access = (check_flag_bit(m_access, io::Access::WRITE) ? PAGE_READWRITE : PAGE_READONLY);
+        const auto page_access = (has_flag_bit(m_access, io::Access::WRITE) ? PAGE_READWRITE : PAGE_READONLY);
 
         // TODO handle reallocation
         m_handle = ::CreateFileMapping(INVALID_HANDLE_VALUE,
@@ -43,8 +43,8 @@ namespace stormkit { inline namespace core {
             };
 
         const auto file_access = init_by<u32>([access = m_access](auto& file_access) noexcept {
-            if (check_flag_bit(access, io::Access::READ)) file_access |= FILE_MAP_READ;
-            if (check_flag_bit(access, io::Access::WRITE)) file_access |= FILE_MAP_WRITE;
+            if (has_flag_bit(access, io::Access::READ)) file_access |= FILE_MAP_READ;
+            if (has_flag_bit(access, io::Access::WRITE)) file_access |= FILE_MAP_WRITE;
         });
 
         auto buf = ::MapViewOfFile(m_handle, file_access, 0, 0, as<DWORD>(m_size));

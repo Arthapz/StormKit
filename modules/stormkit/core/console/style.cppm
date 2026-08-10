@@ -136,7 +136,7 @@ export {
     inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::StyleModifier> = true;
 
     template<typename T, class CharT>
-    struct std::formatter<stormkit::core::Stylized<T>, CharT>: formatter<stormkit::meta::CanonicalT<T>, CharT> {
+    struct std::formatter<stormkit::core::Stylized<T>, CharT>: formatter<stormkit::meta::to_plain_type<T>, CharT> {
         template<class FormatContext>
         auto format(const stormkit::core::Stylized<T>& stylized, FormatContext& ctx) const noexcept -> decltype(ctx.out());
     };
@@ -164,8 +164,8 @@ namespace stormkit { inline namespace core {
         auto       out  = string {};
         const auto size = [this] noexcept {
             if constexpr (requires { stdr::size(value); }) return stdr::size(value);
-            else if constexpr (requires { std::char_traits<meta::RemoveIndirectionsType<T>>::length(value); })
-                return std::char_traits<meta::RemoveIndirectionsType<T>>::length(value);
+            else if constexpr (requires { std::char_traits<meta::remove_indirections_of<T>>::length(value); })
+                return std::char_traits<meta::remove_indirections_of<T>>::length(value);
             else {
                 (void)this;
                 return 1uz;
@@ -182,11 +182,11 @@ namespace stormkit { inline namespace core {
     constexpr auto Stylized<T>::render_into(stdr::output_range<char> auto& out) const noexcept -> void {
         if (fg) out.append_range(ecma48::FOREGROUND.at(*fg));
         if (bg) out.append_range(ecma48::BACKGROUND.at(*bg));
-        if (check_flag_bit(modifiers, StyleModifier::BOLD)) out.append(ecma48::BOLD);
-        if (check_flag_bit(modifiers, StyleModifier::FAINT)) out.append(ecma48::FAINT);
-        if (check_flag_bit(modifiers, StyleModifier::ITALIC)) out.append(ecma48::ITALIC);
-        if (check_flag_bit(modifiers, StyleModifier::INVERSE)) out.append(ecma48::INVERSE);
-        if (check_flag_bit(modifiers, StyleModifier::UNDERLINE)) out.append(ecma48::UNDERLINE);
+        if (has_flag_bit(modifiers, StyleModifier::BOLD)) out.append(ecma48::BOLD);
+        if (has_flag_bit(modifiers, StyleModifier::FAINT)) out.append(ecma48::FAINT);
+        if (has_flag_bit(modifiers, StyleModifier::ITALIC)) out.append(ecma48::ITALIC);
+        if (has_flag_bit(modifiers, StyleModifier::INVERSE)) out.append(ecma48::INVERSE);
+        if (has_flag_bit(modifiers, StyleModifier::UNDERLINE)) out.append(ecma48::UNDERLINE);
         if constexpr (meta::IsStringLike<T>) out.append_range(string_view { value });
         else
             out.append_range(std::format("{}", value));
@@ -209,23 +209,23 @@ namespace stormkit { inline namespace core {
             auto [_, end_] = stdr::copy(ecma48::BACKGROUND.at(*style.bg), end);
             end            = end_;
         }
-        if (check_flag_bit(style.modifiers, StyleModifier::BOLD)) {
+        if (has_flag_bit(style.modifiers, StyleModifier::BOLD)) {
             auto [_, end_] = stdr::copy(ecma48::BOLD, end);
             end            = end_;
         }
-        if (check_flag_bit(style.modifiers, StyleModifier::FAINT)) {
+        if (has_flag_bit(style.modifiers, StyleModifier::FAINT)) {
             auto [_, end_] = stdr::copy(ecma48::FAINT, end);
             end            = end_;
         }
-        if (check_flag_bit(style.modifiers, StyleModifier::ITALIC)) {
+        if (has_flag_bit(style.modifiers, StyleModifier::ITALIC)) {
             auto [_, end_] = stdr::copy(ecma48::ITALIC, end);
             end            = end_;
         }
-        if (check_flag_bit(style.modifiers, StyleModifier::INVERSE)) {
+        if (has_flag_bit(style.modifiers, StyleModifier::INVERSE)) {
             auto [_, end_] = stdr::copy(ecma48::INVERSE, end);
             end            = end_;
         }
-        if (check_flag_bit(style.modifiers, StyleModifier::UNDERLINE)) {
+        if (has_flag_bit(style.modifiers, StyleModifier::UNDERLINE)) {
             auto [_, end_] = stdr::copy(ecma48::UNDERLINE, end);
             end            = end_;
         }

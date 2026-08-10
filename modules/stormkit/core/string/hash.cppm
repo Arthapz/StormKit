@@ -9,15 +9,14 @@ module;
 export module stormkit.core.string.hash;
 
 import std;
-import ankerl.unordered_dense;
-import frozen;
 
 import stormkit.core.types;
 import stormkit.core.hash;
+import stormkit.core.containers.hash_map;
 import stormkit.core.typesafe.safecasts;
 
 export namespace stormkit { inline namespace core {
-    struct StringHash {
+    struct string_hash_fn {
         using is_transparent = void;
         using is_avalanching = void;
 
@@ -25,22 +24,20 @@ export namespace stormkit { inline namespace core {
         static constexpr auto operator()(string_view value, u64 seed = 0) noexcept -> u64;
     };
 
-    template<class Value, class Key = string>
-    using string_hash_map = ankerl::unordered_dense::
-      map<std::remove_cvref_t<Key>, std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
+    template<class Value, usize SIZE, class Key = string>
+    using static_string_hash_map = static_hash_map<Key, Value, SIZE, string_hash_fn, std::equal_to<>>;
 
-    template<class Value, std::size_t Size, class Key = string>
-    using Frozenstring_hash_map = frozen::
-      unordered_map<std::remove_cvref_t<Key>, std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
+    template<usize SIZE, class Value = string>
+    using static_string_hash_set = static_hash_set<Value, SIZE, string_hash_fn, std::equal_to<>>;
+
+    template<class Value, class Key = string>
+    using string_hash_map = hash_map<Key, Value, string_hash_fn, std::equal_to<>>;
 
     template<class Value = string>
-    using string_hash_set = ankerl::unordered_dense::set<std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
+    using string_hash_set = hash_set<Value, string_hash_fn, std::equal_to<>>;
 
-    template<std::size_t Size, class Value = string>
-    using frozen_string_hash_set = frozen::unordered_set<std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
-
-    template<meta::HashType Ret = hash32>
-    constexpr auto hasher(string_view value) noexcept -> Ret;
+    template<meta::hash_type Ret>
+    constexpr auto tag_invoke(hash_fn<Ret, string_view>, string_view value) noexcept -> Ret;
 
     namespace literals {
         constexpr auto operator""_hash32(czstring str, usize size) -> hash32;
@@ -53,45 +50,50 @@ export namespace stormkit { inline namespace core {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core {
-    class Lehmer128Hasher {
+    template<typename T>
+    class lehmer_128_hasher {
       public:
         STORMKIT_FORCE_INLINE
-        explicit constexpr Lehmer128Hasher(u64 basis) noexcept
+        explicit constexpr lehmer_128_hasher(T basis) noexcept
             : m_hash { basis } {}
 
         STORMKIT_FORCE_INLINE
-        constexpr auto bytes(array_view<const std::byte, 4> bytes) noexcept -> void {
+        constexpr auto bytes(array_view<const byte, 4> bytes) noexcept -> void {
             bytes_4(bytes);
         }
 
         STORMKIT_FORCE_INLINE
-        constexpr auto bytes_4(array_view<const std::byte, 4> bytes) noexcept -> void {
-            const auto val = u64(bytes[0]) << 0 | u64(bytes[1]) << 8 | u64(bytes[2]) << 16 | u64(bytes[3]) << 24;
+        constexpr auto bytes_4(array_view<const byte, 4> bytes) noexcept -> void {
+            const auto val = T(bytes[0]) << 0 | T(bytes[1]) << 8 | T(bytes[2]) << 16 | T(bytes[3]) << 24;
             dword(val);
         }
 
         STORMKIT_FORCE_INLINE
-        constexpr auto dword(u64 val) noexcept -> void {
+        constexpr auto dword(T val) noexcept -> void {
             m_hash = mix(val ^ m_hash);
         }
 
         STORMKIT_FORCE_INLINE
-        constexpr auto hash() const noexcept -> u64 {
+        constexpr auto hash() const noexcept -> T {
             return m_hash;
         }
 
       private:
-        static constexpr u64 mix(u64 seed) noexcept {
+        static constexpr T mix(T seed) noexcept {
             auto seed128 = static_cast<u128>(seed);
             // Pierre L’Ecuyer. 1999. Tables of linear congruential generators of different sizes
             // and good lattice structure. Mathematics of Computation of the American Mathematical
             // Society 68, 225 (1999), 249–260.
             // https://www.ams.org/journals/mcom/1999-68-225/S0025-5718-99-00996-5/S0025-5718-99-00996-5.pdf
             seed128 *= 4292484099903637661;
-            return static_cast<u64>(seed128 >> 64);
+            if constexpr (meta::is<T, u64>) return static_cast<T>(seed128 >> 64);
+            else if constexpr (meta::is<T, u32>)
+                return static_cast<T>(seed128 >> 96);
+            else
+                std::unreachable();
         }
 
-        u64 m_hash;
+        T m_hash;
     };
 
     template<class Hasher>
@@ -154,37 +156,39 @@ namespace stormkit { inline namespace core {
 
             hasher.dword(dword);
         } else {
-            array<std::byte, 5> bytes;
-            auto                i = usize { 0 };
+            array<byte, 5> bytes;
+            auto           i = usize { 0 };
 
-            if (mask & (1 << 0)) bytes[i++] = static_cast<std::byte>(s[0]);
-            if (mask & (1 << 1)) bytes[i++] = static_cast<std::byte>(s[1]);
+            if (mask & (1 << 0)) bytes[i++] = static_cast<byte>(s[0]);
+            if (mask & (1 << 1)) bytes[i++] = static_cast<byte>(s[1]);
 
-            if (mask & (1 << 2)) bytes[i++] = static_cast<std::byte>(s[size - 2]);
-            if (mask & (1 << 3)) bytes[i++] = static_cast<std::byte>(s[size - 1]);
+            if (mask & (1 << 2)) bytes[i++] = static_cast<byte>(s[size - 2]);
+            if (mask & (1 << 3)) bytes[i++] = static_cast<byte>(s[size - 1]);
 
-            if (mask & (1 << 4)) bytes[i++] = static_cast<std::byte>(size);
+            if (mask & (1 << 4)) bytes[i++] = static_cast<byte>(size);
 
-            hasher.bytes(array_view<const std::byte, 4> { std::data(bytes), i });
+            hasher.bytes(array_view<const byte, 4> { stdr::data(bytes), i });
         }
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    template<typename T>
     STORMKIT_FORCE_INLINE
-    constexpr auto StringHash::operator()(string_view value, u64 seed) noexcept -> u64 {
+    constexpr auto string_hash_fn::operator()(string_view value, T seed) noexcept -> T {
+        return hash_of(value, seed);
         auto mask   = u8 { 0b01111 };
-        auto hasher = Lehmer128Hasher { seed };
-        hash_selected_characters(mask, hasher, std::data(value), std::size(value));
+        auto hasher = lehmer_128_hasher<T> { seed };
+        hash_selected_characters(mask, hasher, stdr::data(value), stdr::size(value));
         return hasher.hash();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::HashType Ret>
+    template<meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
-    constexpr auto hasher(string_view value) noexcept -> Ret {
-        return StringHash::operator()(value);
+    constexpr auto tag_invoke(hash_fn<Ret, string_view>, string_view value) noexcept -> Ret {
+        return string_hash_fn::operator()(value);
     }
 
     namespace literals {
@@ -192,14 +196,14 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
         constexpr auto operator""_hash32(czstring str, usize size) -> hash32 {
-            return hash<hash32>(string_view { str, size });
+            return hash_of<hash32>(string_view { str, size });
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
         constexpr auto operator""_hash64(czstring str, usize size) -> hash64 {
-            return hash<hash64>(string_view { str, size });
+            return hash_of(string_view { str, size });
         }
     } // namespace literals
 }} // namespace stormkit::core

@@ -7,6 +7,9 @@ export module stormkit.core.containers.hash_map;
 import std;
 
 import ankerl.unordered_dense;
+import frozen;
+
+import stormkit.core.types;
 
 export namespace stormkit { inline namespace core {
     template<class Key,
@@ -21,4 +24,17 @@ export namespace stormkit { inline namespace core {
              class KeyEqual             = std::equal_to<Key>,
              class AllocatorOrContainer = std::allocator<Key>>
     using hash_set = ankerl::unordered_dense::set<Key, Hash, KeyEqual, AllocatorOrContainer>;
+
+    template<class Key,
+             class T,
+             class Hash                 = ankerl::unordered_dense::hash<Key>,
+             class KeyEqual             = std::equal_to<Key>,
+             class AllocatorOrContainer = std::allocator<std::pair<Key, T>>>
+    using static_hash_map = ankerl::unordered_dense::map<Key, T, Hash, KeyEqual, AllocatorOrContainer>;
+
+    template<class Key,
+             class Hash                 = ankerl::unordered_dense::hash<Key>,
+             class KeyEqual             = std::equal_to<Key>,
+             class AllocatorOrContainer = std::allocator<Key>>
+    using static_hash_set = ankerl::unordered_dense::set<Key, Hash, KeyEqual, AllocatorOrContainer>;
 }} // namespace stormkit::core

@@ -7,6 +7,7 @@ export module stormkit.core;
 import std.compat;
 
 export import stormkit.core.at_scope_exit;
+export import stormkit.core.byte;
 export import stormkit.core.color;
 export import stormkit.core.config;
 export import stormkit.core.console;
@@ -23,7 +24,6 @@ export import stormkit.core.handle;
 export import stormkit.core.hash;
 export import stormkit.core.heap;
 export import stormkit.core.ranges;
-export import stormkit.core.math;
 export import stormkit.core.meta;
 export import stormkit.core.named_constructors;
 export import stormkit.core.parallelism;
