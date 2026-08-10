@@ -177,28 +177,28 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
         constexpr auto operator""_hash32(unsigned long long int value) -> hash32 {
-            return hash::crc32(as<Byte>(value));
+            return hash::crc32(as<Bytes>(value));
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
         constexpr auto operator""_hash32(long double value) -> hash32 {
-            return hash::crc32(as<Byte>(value));
+            return hash::crc32(as<Bytes>(value));
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
         constexpr auto operator""_hash64(unsigned long long int value) -> hash64 {
-            return hash::crc64(as<Byte>(value));
+            return hash::crc64(as<Bytes>(value));
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
         constexpr auto operator""_hash64(long double value) -> hash64 {
-            return hash::crc64(as<Byte>(value));
+            return hash::crc64(as<Bytes>(value));
         }
     } // namespace literals
 }} // namespace stormkit::core
