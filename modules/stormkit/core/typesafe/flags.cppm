@@ -22,7 +22,7 @@ export {
             template<enumeration T>
             inline constexpr auto FLAG_TRAIT = false;
 
-            template<class T>
+            template<typename T>
             concept is_flag = FLAG_TRAIT<T>;
         } // namespace meta
 
@@ -110,7 +110,7 @@ constexpr auto operator~(T lhs) noexcept -> T {
 /////////////////////////////////////
 /////////////////////////////////////
 template<stormkit::meta::is_flag T>
-STORMKIT_FORCE_INLINE STORMKIT_CONST
+STORMKIT_FORCE_INLINE
 constexpr auto operator|=(T& lhs, T rhs) noexcept -> T& {
     lhs = lhs | rhs;
     return lhs;
@@ -119,7 +119,7 @@ constexpr auto operator|=(T& lhs, T rhs) noexcept -> T& {
 /////////////////////////////////////
 /////////////////////////////////////
 template<stormkit::meta::is_flag T>
-STORMKIT_FORCE_INLINE STORMKIT_CONST
+STORMKIT_FORCE_INLINE
 constexpr auto operator&=(T& lhs, T rhs) noexcept -> T& {
     lhs = lhs & rhs;
     return lhs;
@@ -128,7 +128,7 @@ constexpr auto operator&=(T& lhs, T rhs) noexcept -> T& {
 /////////////////////////////////////
 /////////////////////////////////////
 template<stormkit::meta::is_flag T>
-STORMKIT_FORCE_INLINE STORMKIT_CONST
+STORMKIT_FORCE_INLINE
 constexpr auto operator^=(T& lhs, T rhs) noexcept -> T& {
     lhs = lhs ^ rhs;
     return lhs;

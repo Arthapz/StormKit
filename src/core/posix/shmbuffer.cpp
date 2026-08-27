@@ -17,7 +17,7 @@ module stormkit.core.containers;
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    SHMBuffer::~SHMBuffer() {
+    shm_buffer::~shm_buffer() {
         if (m_handle) {
             munmap(stdr::data(m_data), m_size);
             shm_unlink(stdr::data(m_name));
@@ -28,7 +28,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SHMBuffer::do_init(usize size, string name, io::Access access) noexcept -> std::expected<void, std::error_code> {
+    auto shm_buffer::do_init(usize size, string name, io::Access access) noexcept -> std::expected<void, std::error_code> {
         m_size                = size;
         m_name                = std::move(name);
         m_access              = access;

@@ -310,7 +310,7 @@ export namespace std {
                       [[maybe_unused]]
                       _Allocator alloc,
                       auto&&     __rng) -> generator<_Ref, remove_cvref_t<_Ref>, _Allocator> {
-                for (auto&& e : __rng) co_yield static_cast<decltype(e)>(e);
+                for (const auto& e : __rng) co_yield static_cast<decltype(e)>(e);
             }(allocator_arg, __x.get_allocator(), forward<_Rng>(__x.get()));
         }
 
@@ -344,7 +344,7 @@ export namespace std {
                           "allocator_arg so an allocator needs to be passed "
                           "explicitely to elements_of");
             return [](auto&& __rng) -> generator<_Ref, _Value, _Alloc> {
-                for (auto&& e : __rng) co_yield static_cast<decltype(e)>(e);
+                for (const auto& e : __rng) co_yield static_cast<decltype(e)>(e);
             }(forward<_Rng>(__x.get()));
         }
     };

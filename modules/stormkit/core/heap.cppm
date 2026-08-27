@@ -27,18 +27,18 @@ export namespace stormkit { inline namespace core {
     using shared_heap_ptr = std::shared_ptr<T>;
     using std::weak_ptr;
 
-    template<class T, class... Ts>
+    template<typename T, class... Ts>
     auto allocate(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>)
       -> std::expected<heap_ptr<T>, allocation_error>;
 
-    template<class T, class... Ts>
+    template<typename T, class... Ts>
     auto allocate_unsafe(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>) -> heap_ptr<T>;
 
-    template<class T, class... Ts>
+    template<typename T, class... Ts>
     auto allocate_shared(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>)
       -> std::expected<shared_heap_ptr<T>, allocation_error>;
 
-    template<class T, class... Ts>
+    template<typename T, class... Ts>
     auto allocate_shared_unsafe(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>) -> shared_heap_ptr<T>;
 }} // namespace stormkit::core
 
@@ -49,7 +49,7 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<class T, class... Ts>
+    template<typename T, class... Ts>
     STORMKIT_FORCE_INLINE
     auto allocate(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>)
       -> std::expected<heap_ptr<T>, allocation_error> {
@@ -61,7 +61,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<class T, class... Ts>
+    template<typename T, class... Ts>
     STORMKIT_FORCE_INLINE
     auto allocate_unsafe(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>) -> heap_ptr<T> {
         return heap_ptr<T> { new (std::nothrow) T(std::forward<Ts>(args)...) };
@@ -69,7 +69,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<class T, class... Ts>
+    template<typename T, class... Ts>
     STORMKIT_FORCE_INLINE
     auto allocate_shared(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>)
       -> std::expected<shared_heap_ptr<T>, allocation_error> {
@@ -81,7 +81,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<class T, class... Ts>
+    template<typename T, class... Ts>
     STORMKIT_FORCE_INLINE
     auto allocate_shared_unsafe(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>) -> shared_heap_ptr<T> {
         return shared_heap_ptr<T> { new (std::nothrow) T(std::forward<Ts>(args)...) };

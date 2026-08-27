@@ -16,9 +16,9 @@ namespace stdr = std::ranges;
 
 namespace stormkit::log {
     namespace {
-        constexpr auto DEFAULT_LOG_MASK = Severity::INFO | Severity::ERROR | Severity::FATAL | Severity::WARNING;
+        constexpr auto DEFAULT_LOG_MASK = severity::INFO | severity::ERROR | severity::FATAL | severity::WARNING;
 
-        constinit Logger* logger = nullptr;
+        constinit logger* logger = nullptr;
 
         constinit auto debug_enabled = false;
     } // namespace
@@ -31,29 +31,29 @@ namespace stormkit::log {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Logger::Logger(LogClock::time_point start_time) noexcept : Logger { std::move(start_time), DEFAULT_LOG_MASK } {
+    logger::logger(clock_type::time_point start_time) noexcept : logger { std::move(start_time), DEFAULT_LOG_MASK } {
         EXPECTS(not logger);
 
-        if (debug_enabled) m_severity_mask |= Severity::DEBUG;
+        if (debug_enabled) m_severity_mask |= severity::DEBUG;
 
         logger = this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Logger::Logger(LogClock::time_point start_time, Severity log_level) noexcept
+    logger::logger(clock_type::time_point start_time, severity log_level) noexcept
         : m_start_time { std::move(start_time) }, m_severity_mask { log_level } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Logger::~Logger() noexcept {
+    logger::~logger() noexcept {
         logger = nullptr;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Logger::has_logger() noexcept -> bool {
+    auto logger::has_logger() noexcept -> bool {
         if (logger) [[likely]]
             return true;
         return false;
@@ -61,7 +61,7 @@ namespace stormkit::log {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Logger::instance() noexcept -> Logger& {
+    auto logger::instance() noexcept -> logger& {
         EXPECTS(logger);
 
         return *logger;

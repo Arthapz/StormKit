@@ -34,7 +34,7 @@ export namespace stormkit { inline namespace core {
 
     template<meta::plain::apply_to<stdr::input_range> Range>
     auto wait_all(Range&& futures) noexcept
-        requires(meta::specialization_of<meta::range_type<meta::to_plain_type<Range>>, std::future>);
+        requires(meta::specialization_of<meta::range_value_type<meta::to_plain_type<Range>>, std::future>);
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -47,8 +47,8 @@ namespace stormkit { inline namespace core {
     template<meta::plain::apply_to<stdr::input_range> Range>
         STORMKIT_FORCE_INLINE
     inline auto wait_all(Range&& futures) noexcept
-        requires(meta::specialization_of<meta::range_type<meta::to_plain_type<Range>>, std::future>)
+        requires(meta::specialization_of<meta::range_value_type<meta::to_plain_type<Range>>, std::future>)
     {
-        for (auto&& future : std::forward<Range>(futures)) future.wait();
+        for (const auto& future : std::forward<Range>(futures)) future.wait();
     }
 }} // namespace stormkit::core

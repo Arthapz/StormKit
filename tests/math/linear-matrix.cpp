@@ -14,7 +14,7 @@ using namespace stormkit::core;
 using namespace std::literals;
 
 namespace {
-    auto _ = test::TestSuite {
+    auto _ = test::test_suite {
         "core.math.linear.matrix",
         {
           { "linear.matrix.as_view",

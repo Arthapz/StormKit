@@ -10,16 +10,15 @@ module;
 export module stormkit.core.console.style;
 
 import std;
-import frozen;
 
 import stormkit.core.types;
-
 import stormkit.core.string.format;
 import stormkit.core.string.static_string;
 import stormkit.core.meta.type_manipulation;
 import stormkit.core.meta.concepts;
 import stormkit.core.meta.type_query;
 import stormkit.core.typesafe.flags;
+import stormkit.core.containers.hash_map;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -86,7 +85,7 @@ export {
         inline constexpr auto BLACK_TEXT_STYLE   = console_style { .fg = console_color::BLACK };
 
         namespace ecma48 {
-            inline constexpr auto FOREGROUND = frozen::make_unordered_map<console_color, string_view>({
+            inline constexpr auto FOREGROUND = make_static_hash_map<console_color, string_view>({
               { console_color::BLACK,          "\x1B[30m" },
               { console_color::RED,            "\x1B[31m" },
               { console_color::GREEN,          "\x1B[32m" },
@@ -105,7 +104,7 @@ export {
               { console_color::BRIGHT_WHITE,   "\x1B[97m" },
             });
 
-            inline constexpr auto BACKGROUND = frozen::make_unordered_map<console_color, string_view>({
+            inline constexpr auto BACKGROUND = make_static_hash_map<console_color, string_view>({
               { console_color::BLACK,          "\x1B[40m"  },
               { console_color::RED,            "\x1B[41m"  },
               { console_color::GREEN,          "\x1B[42m"  },
@@ -136,7 +135,7 @@ export {
         constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<console_style> value, FormatContext& ctx) -> decltype(ctx.out());
 
         template<typename CharT, typename FormatContext, typename T>
-        constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<stylized<T>> value, FormatContext& ctx) -> decltype(ctx.out());
+        constexpr auto tag_invoke(format_as_fn<CharT>, const stylized<T>& value, FormatContext& ctx) -> decltype(ctx.out());
     }} // namespace stormkit::core
 
     template<>
@@ -237,7 +236,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename CharT, typename FormatContext, typename T>
-    constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<stylized<T>> value, FormatContext& ctx) -> decltype(ctx.out()) {
+    constexpr auto tag_invoke(format_as_fn<CharT>, const stylized<T>& value, FormatContext& ctx) -> decltype(ctx.out()) {
         return std::format_to(ctx.out(), "{}", value.render());
     }
 }} // namespace stormkit::core

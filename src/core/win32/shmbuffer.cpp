@@ -13,7 +13,7 @@ module stormkit.core.containers.shmbuffer;
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    SHMBuffer::~SHMBuffer() {
+    shm_buffer::~shm_buffer() {
         if (m_handle) {
             UnmapViewOfFile(stdr::data(m_data));
             CloseHandle(std::bit_cast<HANDLE>(m_handle));
@@ -24,11 +24,11 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SHMBuffer::do_init(usize size, string name, io::Access access) noexcept -> std::expected<void, std::error_code> {
+    auto shm_buffer::do_init(usize size, string name, io::access access) noexcept -> system_result<void> {
         m_size                 = size;
         m_name                 = std::move(name);
         m_access               = access;
-        const auto page_access = (has_flag_bit(m_access, io::Access::WRITE) ? PAGE_READWRITE : PAGE_READONLY);
+        const auto page_access = (has_flag_bit(m_access, io::access::WRITE) ? PAGE_READWRITE : PAGE_READONLY);
 
         // TODO handle reallocation
         m_handle = ::CreateFileMapping(INVALID_HANDLE_VALUE,
@@ -37,21 +37,15 @@ namespace stormkit { inline namespace core {
                                        0,
                                        as<DWORD>(m_size),
                                        stdr::data(m_name));
-        if (m_handle == nullptr)
-            return std::unexpected {
-                std::error_code { as<i32>(GetLastError()), std::system_category() }
-            };
+        if (m_handle == nullptr) return std::unexpected { error_code::from_win32() };
 
         const auto file_access = init_by<u32>([access = m_access](auto& file_access) noexcept {
-            if (has_flag_bit(access, io::Access::READ)) file_access |= FILE_MAP_READ;
-            if (has_flag_bit(access, io::Access::WRITE)) file_access |= FILE_MAP_WRITE;
+            if (has_flag_bit(access, io::access::READ)) file_access |= FILE_MAP_READ;
+            if (has_flag_bit(access, io::access::WRITE)) file_access |= FILE_MAP_WRITE;
         });
 
         auto buf = ::MapViewOfFile(m_handle, file_access, 0, 0, as<DWORD>(m_size));
-        if (buf == nullptr)
-            return std::unexpected {
-                std::error_code { as<i32>(GetLastError()), std::system_category() }
-            };
+        if (buf == nullptr) return std::unexpected { error_code::from_win32() };
 
         m_data = { std::bit_cast<byte*>(buf), m_size };
 

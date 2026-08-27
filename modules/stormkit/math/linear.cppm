@@ -68,14 +68,14 @@ export namespace stormkit { inline namespace core { namespace math {
     constexpr auto as_span_mut(TensorSpan<T, Sizes...> tensor) noexcept -> array_view<T, (Sizes * ...)>;
 
     template<usize... Sizes, stdr::contiguous_range T>
-        requires(core::meta::arithmetic<core::meta::range_type<T>>)
+        requires(core::meta::arithmetic<core::meta::range_value_type<T>>)
     [[nodiscard]]
-    constexpr auto as_mdspan(const T& data) noexcept -> TensorSpan<const core::meta::range_type<T>, Sizes...>;
+    constexpr auto as_mdspan(const T& data) noexcept -> TensorSpan<const core::meta::range_value_type<T>, Sizes...>;
 
     template<usize... Sizes, stdr::contiguous_range T>
-        requires(core::meta::arithmetic<core::meta::range_type<T>> and not core::meta::const_type<core::meta::range_type<T>>)
+        requires(core::meta::arithmetic<core::meta::range_value_type<T>> and not core::meta::const_type<core::meta::range_value_type<T>>)
     [[nodiscard]]
-    constexpr auto as_mdspan_mut(T& data) noexcept -> TensorSpan<core::meta::range_type<T>, Sizes...>;
+    constexpr auto as_mdspan_mut(T& data) noexcept -> TensorSpan<core::meta::range_value_type<T>, Sizes...>;
 
     template<meta::IsTensorSpan To, meta::IsTensorSpan From>
     [[nodiscard]]
@@ -257,21 +257,21 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<usize... Sizes, stdr::contiguous_range T>
-        requires(core::meta::arithmetic<core::meta::range_type<T>>)
+        requires(core::meta::arithmetic<core::meta::range_value_type<T>>)
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto as_mdspan(const T& data) noexcept -> TensorSpan<const core::meta::range_type<T>, Sizes...> {
+    constexpr auto as_mdspan(const T& data) noexcept -> TensorSpan<const core::meta::range_value_type<T>, Sizes...> {
         EXPECTS(stdr::size(data) == (Sizes * ...));
-        return TensorSpan<const core::meta::range_type<T>, Sizes...> { stdr::data(data), Sizes... };
+        return TensorSpan<const core::meta::range_value_type<T>, Sizes...> { stdr::data(data), Sizes... };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<usize... Sizes, stdr::contiguous_range T>
-        requires(core::meta::arithmetic<core::meta::range_type<T>> and not core::meta::const_type<core::meta::range_type<T>>)
+        requires(core::meta::arithmetic<core::meta::range_value_type<T>> and not core::meta::const_type<core::meta::range_value_type<T>>)
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto as_mdspan_mut(T& data) noexcept -> TensorSpan<core::meta::range_type<T>, Sizes...> {
+    constexpr auto as_mdspan_mut(T& data) noexcept -> TensorSpan<core::meta::range_value_type<T>, Sizes...> {
         EXPECTS(stdr::size(data) == (Sizes * ...));
-        return TensorSpan<core::meta::range_type<T>, Sizes...> { stdr::data(data), Sizes... };
+        return TensorSpan<core::meta::range_value_type<T>, Sizes...> { stdr::data(data), Sizes... };
     }
 
     ////////////////////////////////////////

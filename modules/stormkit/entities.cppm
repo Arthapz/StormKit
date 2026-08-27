@@ -313,7 +313,7 @@ namespace stormkit::entities {
 
         auto _component = add_raw_component(entity,
                                             component.type(),
-                                            as<bytes_view>(std::forward<T>(component)),
+                                            as<array_view>(as_bytes, std::forward<T>(component)),
                                             [](auto ptr) static noexcept { std::launder(std::bit_cast<PureT*>(ptr))->~PureT(); });
 
         return bytes_mut_as<PureT>(_component);
@@ -421,7 +421,7 @@ namespace stormkit::entities {
         EXPECTS(has_entity(entity));
 
         auto out = dynarray<ComponentType> {};
-        for (auto&& [type, _, entities, _, _] : m_components) {
+        for (const auto& [type, _, entities, _, _] : m_components) {
             for (auto e : entities)
                 if (e == entity) {
                     out.emplace_back(type);

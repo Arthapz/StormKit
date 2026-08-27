@@ -123,7 +123,7 @@ export {
             wl::ContentType           m_content_type             = wl::ContentType::empty();
             wl::Viewport              m_viewport                 = wl::Viewport::empty();
 
-            defer_init<SHMBuffer> m_shm_buffer;
+            defer_init<shm_buffer> m_shm_buffer;
             wl::ShmPool          m_shm_pool     = wl::ShmPool::empty();
             wl::Buffer           m_pixel_buffer = wl::Buffer::empty();
 

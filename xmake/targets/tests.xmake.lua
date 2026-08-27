@@ -11,7 +11,7 @@ namespace("tests", function()
                         function parseTestFile()
                             local code = io.readfile(file)
 
-                            local suite_name_regex = [[TestSuite%s-{.-"(.-)",]]
+                            local suite_name_regex = [[test_suite%s-{.-"(.-)",]]
                             local test_name_regex = [[{%s-"(.-)"%s-,]]
 
                             local suite_name = code:match(suite_name_regex)

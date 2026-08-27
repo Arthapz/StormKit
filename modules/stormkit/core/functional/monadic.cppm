@@ -15,11 +15,12 @@ import stormkit.core.types;
 import stormkit.core.typesafe;
 import stormkit.core.functional.utils;
 import stormkit.core.containers.utils;
+import stormkit.core.overload_set;
 
 namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core { namespace monadic {
-    struct Anything {
+    struct anything {
         template<typename T>
         operator T&(this auto& self) noexcept;
 
@@ -47,8 +48,6 @@ export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]
     constexpr auto emplace_to(stdr::range auto& container) noexcept -> decltype(auto);
     [[nodiscard]]
-    constexpr auto is_equal(auto&& value) noexcept -> decltype(auto);
-    [[nodiscard]]
     constexpr auto append_to(stdr::range auto& range) noexcept -> decltype(auto);
     [[nodiscard]]
     constexpr auto wrap(auto&& func) noexcept -> decltype(auto);
@@ -73,13 +72,13 @@ export namespace stormkit { inline namespace core { namespace monadic {
     constexpr auto map(auto&& first, auto&& second) noexcept -> decltype(auto);
 
     [[nodiscard]]
-    constexpr auto either(std::regular_invocable<Anything> auto&&... visitors) noexcept -> decltype(auto);
+    constexpr auto either(std::regular_invocable<anything> auto&&... visitors) noexcept -> decltype(auto);
 
     template<typename T>
     [[nodiscard]]
     constexpr auto either(meta::unary_predicate<T> auto&& predicate,
-                          std::invocable<T> auto&&         true_,
-                          std::invocable<T> auto&&         false_) noexcept -> decltype(auto);
+                          std::invocable<T> auto&&        true_,
+                          std::invocable<T> auto&&        false_) noexcept -> decltype(auto);
 
     template<auto Index>
     [[nodiscard]]
@@ -108,14 +107,7 @@ export namespace stormkit { inline namespace core { namespace monadic {
     constexpr auto init_by() noexcept -> decltype(auto);
 
     [[nodiscard]]
-    constexpr auto as_ref() noexcept -> decltype(auto);
-    [[nodiscard]]
-    constexpr auto as_ref_mut() noexcept -> decltype(auto);
-
-    [[nodiscard]]
     constexpr auto unref() noexcept -> decltype(auto);
-    [[nodiscard]]
-    constexpr auto unref_mut() noexcept -> decltype(auto);
 
     template<typename T>
     [[nodiscard]]
@@ -130,7 +122,6 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    [[nodiscard]]
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto identity(T&& value) noexcept -> decltype(auto) {
         return [value = std::forward<T>(value)] mutable noexcept -> decltype(auto) { return std::forward_like<T>(value); };
@@ -138,7 +129,6 @@ namespace stormkit { inline namespace core { namespace monadic {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    [[nodiscard]]
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto consume(auto&& value) noexcept -> decltype(auto) {
         return [value = std::move(value)](auto&&...) mutable noexcept -> meta::to_plain_type<decltype(value)> {
@@ -226,13 +216,6 @@ namespace stormkit { inline namespace core { namespace monadic {
         };
     }
 
-    // ////////////////////////////////////////
-    // ////////////////////////////////////////
-    // STORMKIT_FORCE_INLINE STORMKIT_CONST
-    // constexpr auto as_byte() noexcept -> decltype(auto) {
-    //     return [](auto&& val) static noexcept { return core::as_byte(val); };
-    // }
-
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
@@ -291,10 +274,9 @@ namespace stormkit { inline namespace core { namespace monadic {
         using FirstP  = meta::to_plain_type<First>;
         using SecondP = meta::to_plain_type<Second>;
 
-        return [first = std::forward<First>(first), second = std::forward<Second>(second)]<
-                 typename... Ts>(Ts&&... args) noexcept(is_noexcept<FirstP, SecondP, Ts...>) -> decltype(auto) {
-            return second(first(std::forward<Ts>(args)...));
-        };
+        return [first  = std::forward<First>(first),
+                second = std::forward<Second>(second)]<typename... Ts>(Ts&&... args) noexcept(is_noexcept<FirstP, SecondP, Ts...>)
+                 -> decltype(auto) { return second(first(std::forward<Ts>(args)...)); };
     }
 
     /////////////////////////////////////
@@ -302,8 +284,8 @@ namespace stormkit { inline namespace core { namespace monadic {
     template<typename T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto either(meta::unary_predicate<T> auto&& predicate,
-                          std::invocable<T> auto&&         true_,
-                          std::invocable<T> auto&&         false_) noexcept -> decltype(auto) {
+                          std::invocable<T> auto&&        true_,
+                          std::invocable<T> auto&&        false_) noexcept -> decltype(auto) {
         [predicate = std::move(predicate),
          true_     = std::move(true_),
          false_    = std::move(false_)](auto&& elem) noexcept -> decltype(auto) {
@@ -341,7 +323,7 @@ namespace stormkit { inline namespace core { namespace monadic {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::regular_invocable<Anything>... Ts>
+    template<std::regular_invocable<anything>... Ts>
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
     constexpr auto either(Ts&&... visitors) noexcept -> decltype(auto) {
@@ -392,29 +374,8 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_ref() noexcept -> decltype(auto) {
-        return []<typename T>(T&& value) static noexcept -> decltype(auto) { return core::as_ref(std::forward<T>(value)); };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_ref_mut() noexcept -> decltype(auto) {
-        return []<typename T>(T&& value) static noexcept -> decltype(auto) { return core::as_ref_mut(std::forward<T>(value)); };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto unref() noexcept -> decltype(auto) {
-        return [](const auto& value) static noexcept -> decltype(auto) { return core::unref(value); };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto unref_mut() noexcept -> decltype(auto) {
-        return [](const auto& value) static noexcept -> decltype(auto) { return core::unref_mut(value); };
+        return [](const auto& value) static noexcept -> decltype(auto) { return *value; };
     }
 
     /////////////////////////////////////

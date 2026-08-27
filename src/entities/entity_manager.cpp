@@ -65,7 +65,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     auto EntityManager::destroy_all_entities() noexcept -> void {
-        for (auto&& e : entities()) {
+        for (const auto& e : entities()) {
             m_removed_entities.emplace(e);
             m_message_bus.push(Message { REMOVED_ENTITY_MESSAGE_ID, { e } });
         }

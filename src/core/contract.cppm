@@ -14,29 +14,14 @@ module stormkit.core.contract;
 
 import std;
 
-import stormkit.core.console;
-import stormkit.core.string;
+import stormkit.core.string.format;
 import stormkit.core.typesafe.flags;
+import stormkit.core.typesafe.safecasts;
+import stormkit.core.console.style;
+import stormkit.core.console.io;
 
 namespace stormkit { inline namespace core {
     static auto mutex = std::mutex {};
-
-    // extern constexpr auto as_string(assert_type value) noexcept -> string_view;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    // STORMKIT_FORCE_INLINE STORMKIT_CONST
-    // static constexpr auto as_string(assert_type value) noexcept -> string_view {
-    //     using enum assert_type;
-    //     switch (value) {
-    //         case ASSERTION: return "Contract check";
-    //         case PRE_CONDITION: return "Pre condition check";
-    //         case POST_CONDITION: return "Post condition check";
-    //         default: break;
-    //     };
-
-    //    std::unreachable();
-    // }
 
     /////////////////////////////////////
     /////////////////////////////////////

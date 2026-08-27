@@ -15,7 +15,7 @@ import stormkit.core.types;
 import stormkit.core.meta.concepts;
 
 namespace stormkit { inline namespace core { namespace meta::details {
-    template<class T>
+    template<typename T>
     struct lazy_type {
         using type = T;
     };

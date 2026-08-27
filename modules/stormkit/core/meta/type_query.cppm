@@ -21,7 +21,9 @@ namespace stormkit { inline namespace core { namespace meta::details {
     struct pointer_type;
     template<typename T>
     struct pointed_type;
-    template<class T>
+    template<typename T>
+    struct indirection_target_type;
+    template<typename T>
     struct callable_trait;
 }}} // namespace stormkit::core::meta::details
 
@@ -34,6 +36,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename T>
     using pointed_type = details::pointed_type<T>::type;
+
+    template<typename T>
+    using indirection_target_type = details::indirection_target_type<T>::type;
 
     template<typename T>
     using return_type = details::callable_trait<T>::return_type;
@@ -57,10 +62,10 @@ export namespace stormkit { inline namespace core { namespace meta {
     using sentinel_type = stdr::sentinel_t<Range>;
 
     template<stdr::input_range Range>
-    using range_type = remove_refs_of<stdr::range_reference_t<Range>>;
+    using range_value_type = stdr::range_value_t<Range>;
 
     template<stdr::input_range Range>
-    using range_type_ref = stdr::range_reference_t<Range>;
+    using range_value_type_ref = stdr::range_reference_t<Range>;
 
     template<typename T>
     using in = lazy_conditional<prefer_pass_by_value<T>, T, const T&>;
@@ -110,6 +115,22 @@ namespace stormkit { inline namespace core { namespace meta {
 
         template<typename T>
         struct pointed_type<std::reference_wrapper<T>> {
+            using type = std::reference_wrapper<T>::type;
+        };
+
+        template<reference T>
+            requires(not meta::pointer<meta::remove_refs_of<T>>)
+        struct indirection_target_type<T> {
+            using type = meta::remove_refs_of<T>;
+        };
+
+        template<plain::pointer T>
+        struct indirection_target_type<T> {
+            using type = typename std::pointer_traits<remove_refs_of<T>>::element_type;
+        };
+
+        template<typename T>
+        struct indirection_target_type<std::reference_wrapper<T>> {
             using type = std::reference_wrapper<T>::type;
         };
 

@@ -17,8 +17,8 @@ namespace {
 namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    FileLogger::FileLogger(LogClock::time_point start, std::filesystem::path path) noexcept
-        : Logger { std::move(start) }, m_base_path { std::move(path) } {
+    file_logger::file_logger(clock_type::time_point start, std::filesystem::path path) noexcept
+        : logger { std::move(start) }, m_base_path { std::move(path) } {
         if (not std::filesystem::exists(m_base_path)) std::filesystem::create_directory(m_base_path);
 
         expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
@@ -29,8 +29,8 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    FileLogger::FileLogger(LogClock::time_point start, std::filesystem::path path, Severity log_level) noexcept
-        : Logger { std::move(start), log_level }, m_base_path { std::move(path) } {
+    file_logger::file_logger(clock_type::time_point start, std::filesystem::path path, severity log_level) noexcept
+        : logger { std::move(start), log_level }, m_base_path { std::move(path) } {
         if (not std::filesystem::exists(m_base_path)) std::filesystem::create_directory(m_base_path);
 
         expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
@@ -41,14 +41,14 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto FileLogger::flush() noexcept -> void {
+    auto file_logger::flush() noexcept -> void {
         for (auto& [path, stream] : m_streams) stream.flush();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto FileLogger::write(Severity severity, const Module& m, std::string_view str) noexcept -> void {
-        const auto now  = LogClock::now();
+    auto file_logger::write(severity severity, const module& m, std::string_view str) noexcept -> void {
+        const auto now  = clock_type::now();
         const auto time = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
 
         auto filepath = m_base_path / std::filesystem::path { to_native_encoding(LOG_FILE_NAME) };
@@ -64,7 +64,7 @@ namespace stormkit::log {
         static constexpr auto LOG_LINE_MODULE = "[{}, {}, {}] {}\n"sv;
 
         auto       final_string = string {};
-        const auto severity_str = replace(as<string_view>(severity), "Severity::", "");
+        const auto severity_str = replace(as<string_view>(severity), "severity::", "");
         if (std::empty(m.name)) final_string = std::format(LOG_LINE, severity_str, time, str);
         else
             final_string = std::format(LOG_LINE_MODULE, severity_str, time, m.name, str);

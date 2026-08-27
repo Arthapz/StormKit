@@ -110,7 +110,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals = get_globals();
 
         auto& state = *std::bit_cast<KeyboardState*>(data);
-        for (auto&& [_surface, window] : globals.windows) {
+        for (const auto& [_surface, window] : globals.windows) {
             if (_surface == surface) {
                 state.focused_window = window;
                 break;
@@ -261,7 +261,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals = get_globals();
 
         auto& state = *std::bit_cast<PointerState*>(data);
-        for (auto&& [_surface, window] : globals.windows) {
+        for (const auto& [_surface, window] : globals.windows) {
             if (_surface == surface) {
                 state.focused_window = window;
                 break;

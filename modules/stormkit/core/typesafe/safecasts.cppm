@@ -49,8 +49,56 @@ export {
                 requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>);
         };
 
-        template<typename To>
-        inline constexpr auto as = as_fn<To> {};
+        template<template<class...> typename To>
+        struct as_nttp_fn final {
+          private:
+            template<typename... Ts>
+            using invoke_result = meta::tag_invoke_result<as_nttp_fn<To>, Ts..., source_location_arg>;
+
+            template<typename... Ts>
+            static constexpr auto IS_TAG_INVOKABLE = meta::tag_invocable<as_nttp_fn<To>, Ts..., source_location_arg>;
+
+          public:
+            template<typename... Ts>
+            static constexpr auto operator()(Ts&&...) noexcept
+                requires(not IS_TAG_INVOKABLE<Ts...>)
+            = delete ("As caster not defined for these types!");
+
+            template<typename... Ts>
+            [[nodiscard]]
+            static constexpr auto operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+                requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>);
+        };
+
+        template<template<class, usize, class...> typename To>
+        struct as_nttp_v_fn final {
+          private:
+            template<typename... Ts>
+            using invoke_result = meta::tag_invoke_result<as_nttp_v_fn<To>, Ts..., source_location_arg>;
+
+            template<typename... Ts>
+            static constexpr auto IS_TAG_INVOKABLE = meta::tag_invocable<as_nttp_v_fn<To>, Ts..., source_location_arg>;
+
+          public:
+            template<typename... Ts>
+            static constexpr auto operator()(Ts&&...) noexcept
+                requires(not IS_TAG_INVOKABLE<Ts...>)
+            = delete ("As caster not defined for these types!");
+
+            template<typename... Ts>
+            [[nodiscard]]
+            static constexpr auto operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+                requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>);
+        };
+
+        template<typename To, typename... Ts>
+        constexpr auto as(Ts&&... args) -> decltype(auto);
+
+        template<template<class...> typename To, typename... Ts>
+        constexpr auto as(Ts&&... args) -> decltype(auto);
+
+        template<template<class, usize, class...> typename To, typename... Ts>
+        constexpr auto as(Ts&&... args) -> decltype(auto);
 
         template<typename To>
         struct try_as_fn final {
@@ -65,26 +113,73 @@ export {
             template<typename... Ts>
             static constexpr auto operator()(Ts&&...) noexcept
                 requires(not IS_TAG_INVOKABLE<Ts...>)
-            = delete ("TryX_as caster not defined for these types!");
+            = delete ("Try_as caster not defined for these types!");
 
             template<typename... Ts>
             [[nodiscard]]
-            static constexpr auto operator()(Ts&&... args, source_location_arg = std::source_location::current()) noexcept
-              -> invoke_result<Ts...>
-                requires(IS_TAG_INVOKABLE<Ts...>);
+            static constexpr auto operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+                requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>);
         };
 
-        template<typename To>
-        inline constexpr auto try_as = try_as_fn<To> {};
-
-        template<typename To>
-        struct into_fn final {
+        template<template<class...> typename To>
+        struct try_as_nttp_fn final {
           private:
             template<typename... Ts>
-            using invoke_result = meta::tag_invoke_result<into_fn<To>, Ts..., source_location_arg>;
+            using invoke_result = meta::tag_invoke_result<try_as_nttp_fn<To>, Ts..., source_location_arg>;
 
             template<typename... Ts>
-            static constexpr auto IS_TAG_INVOKABLE = meta::tag_invocable<into_fn<To>, Ts..., source_location_arg>;
+            static constexpr auto IS_TAG_INVOKABLE = meta::tag_invocable<try_as_nttp_fn<To>, Ts..., source_location_arg>;
+
+          public:
+            template<typename... Ts>
+            static constexpr auto operator()(Ts&&...) noexcept
+                requires(not IS_TAG_INVOKABLE<Ts...>)
+            = delete ("Try_as caster not defined for these types!");
+
+            template<typename... Ts>
+            [[nodiscard]]
+            static constexpr auto operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+                requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>);
+        };
+
+        template<template<class, usize, class...> typename To>
+        struct try_as_nttp_v_fn final {
+          private:
+            template<typename... Ts>
+            using invoke_result = meta::tag_invoke_result<try_as_nttp_v_fn<To>, Ts..., source_location_arg>;
+
+            template<typename... Ts>
+            static constexpr auto IS_TAG_INVOKABLE = meta::tag_invocable<try_as_nttp_v_fn<To>, Ts..., source_location_arg>;
+
+          public:
+            template<typename... Ts>
+            static constexpr auto operator()(Ts&&...) noexcept
+                requires(not IS_TAG_INVOKABLE<Ts...>)
+            = delete ("Try_as caster not defined for these types!");
+
+            template<typename... Ts>
+            [[nodiscard]]
+            static constexpr auto operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+                requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>);
+        };
+
+        template<typename To, typename... Ts>
+        constexpr auto try_as(Ts&&... args) -> decltype(auto);
+
+        template<template<class...> typename To, typename... Ts>
+        constexpr auto try_as(Ts&&... args) -> decltype(auto);
+
+        template<template<class, usize, class...> typename To, typename... Ts>
+        constexpr auto try_as(Ts&&... args) -> decltype(auto);
+
+        template<template<class...> typename To>
+        struct into_nttp_fn final {
+          private:
+            template<typename... Ts>
+            using invoke_result = meta::tag_invoke_result<into_nttp_fn<To>, Ts...>;
+
+            template<typename... Ts>
+            static constexpr auto IS_TAG_INVOKABLE = meta::tag_invocable<into_nttp_fn<To>, Ts...>;
 
           public:
             template<typename... Ts>
@@ -92,15 +187,70 @@ export {
                 requires(not IS_TAG_INVOKABLE<Ts...>)
             = delete ("Into caster not defined for these types!");
 
+            template<typename T, usize N>
+            [[nodiscard]]
+            static constexpr auto operator()(T (&values)[N]) noexcept -> invoke_result<decltype(values)>
+                requires(IS_TAG_INVOKABLE<decltype(values)>);
+
+            template<typename T, usize N>
+            [[nodiscard]]
+            static constexpr auto operator()(T (&&values)[N]) noexcept -> invoke_result<decltype(values)>
+                requires(IS_TAG_INVOKABLE<decltype(values)>);
+
             template<typename... Ts>
             [[nodiscard]]
-            static constexpr auto operator()(Ts&&... args, source_location_arg = std::source_location::current()) noexcept
-              -> invoke_result<Ts...>
+            static constexpr auto operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
                 requires(IS_TAG_INVOKABLE<Ts...>);
         };
 
-        template<typename To>
-        inline constexpr auto into = into_fn<To> {};
+        template<template<class, usize, class...> typename To>
+        struct into_nttp_v_fn final {
+          private:
+            template<typename... Ts>
+            using invoke_result = meta::tag_invoke_result<into_nttp_v_fn<To>, Ts...>;
+
+            template<typename... Ts>
+            static constexpr auto IS_TAG_INVOKABLE = meta::tag_invocable<into_nttp_v_fn<To>, Ts...>;
+
+          public:
+            template<typename... Ts>
+            static constexpr auto operator()(Ts&&...) noexcept
+                requires(not IS_TAG_INVOKABLE<Ts...>)
+            = delete ("Into caster not defined for these types!");
+
+            template<typename T, usize N>
+            [[nodiscard]]
+            static constexpr auto operator()(T (&values)[N]) noexcept -> invoke_result<decltype(values)>
+                requires(IS_TAG_INVOKABLE<decltype(values)>);
+
+            template<typename T, usize N>
+            [[nodiscard]]
+            static constexpr auto operator()(T (&&values)[N]) noexcept -> invoke_result<decltype(values)>
+                requires(IS_TAG_INVOKABLE<decltype(values)>);
+
+            template<typename... Ts>
+            [[nodiscard]]
+            static constexpr auto operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+                requires(IS_TAG_INVOKABLE<Ts...>);
+        };
+
+        template<template<class...> typename To, typename T, usize N>
+        constexpr auto into(T (&values)[N]) -> decltype(auto);
+
+        template<template<class, usize, class...> typename To, typename T, usize N>
+        constexpr auto into(T (&values)[N]) -> decltype(auto);
+
+        template<template<class...> typename To, typename T, usize N>
+        constexpr auto into(T (&&values)[N]) -> decltype(auto);
+
+        template<template<class, usize, class...> typename To, typename T, usize N>
+        constexpr auto into(T (&&values)[N]) -> decltype(auto);
+
+        template<template<class...> typename To, typename... Ts>
+        constexpr auto into(Ts&&... args) -> decltype(auto);
+
+        template<template<class, usize, class...> typename To, typename... Ts>
+        constexpr auto into(Ts&&... args) -> decltype(auto);
 
         template<typename T>
         struct is_fn final {
@@ -339,8 +489,6 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    /////////////////////////////////////
-    /////////////////////////////////////
     template<typename To>
     template<typename... Ts>
     STORMKIT_FORCE_INLINE
@@ -352,13 +500,48 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename To>
+    template<template<class...> typename To>
     template<typename... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr auto try_as_fn<To>::operator()(Ts&&... args, source_location_arg location) noexcept -> invoke_result<Ts...>
-        requires(IS_TAG_INVOKABLE<Ts...>)
+    constexpr auto as_nttp_fn<To>::operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+        requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>)
     {
-        return meta::tag_invoke_cpo(try_as_fn<To> {}, std::forward<Ts>(args)..., location);
+        return meta::tag_invoke_cpo(as_nttp_fn<To> {}, std::forward<Ts>(args)..., std::source_location::current());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, usize, class...> typename To>
+    template<typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto as_nttp_v_fn<To>::operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+        requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>)
+    {
+        return meta::tag_invoke_cpo(as_nttp_v_fn<To> {}, std::forward<Ts>(args)..., std::source_location::current());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To, typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto as(Ts&&... args) -> decltype(auto) {
+        return as_fn<To> {}(std::forward<Ts>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class...> typename To, typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto as(Ts&&... args) -> decltype(auto) {
+        return as_nttp_fn<To> {}(std::forward<Ts>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, usize, class...> typename To, typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto as(Ts&&... args) -> decltype(auto) {
+        return as_nttp_v_fn<To> {}(std::forward<Ts>(args)...);
     }
 
     /////////////////////////////////////
@@ -366,10 +549,170 @@ namespace stormkit { inline namespace core {
     template<typename To>
     template<typename... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr auto into_fn<To>::operator()(Ts&&... args, source_location_arg location) noexcept -> invoke_result<Ts...>
+    constexpr auto try_as_fn<To>::operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+        requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>)
+    {
+        return meta::tag_invoke_cpo(try_as_fn<To> {}, std::forward<Ts>(args)..., std::source_location::current());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class...> typename To>
+    template<typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto try_as_nttp_fn<To>::operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+        requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>)
+    {
+        return meta::tag_invoke_cpo(try_as_nttp_fn<To> {}, std::forward<Ts>(args)..., std::source_location::current());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, usize, class...> typename To>
+    template<typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto try_as_nttp_v_fn<To>::operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+        requires(sizeof...(Ts) >= 1 and IS_TAG_INVOKABLE<Ts...>)
+    {
+        return meta::tag_invoke_cpo(try_as_nttp_v_fn<To> {}, std::forward<Ts>(args)..., std::source_location::current());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To, typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto try_as(Ts&&... args) -> decltype(auto) {
+        return try_as_fn<To> {}(std::forward<Ts>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class...> typename To, typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto try_as(Ts&&... args) -> decltype(auto) {
+        return try_as_nttp_fn<To> {}(std::forward<Ts>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, usize, class...> typename To, typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto try_as(Ts&&... args) -> decltype(auto) {
+        return try_as_nttp_v_fn<To> {}(std::forward<Ts>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class...> typename To>
+    template<typename T, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into_nttp_fn<To>::operator()(T (&values)[N]) noexcept -> invoke_result<decltype(values)>
+        requires(IS_TAG_INVOKABLE<decltype(values)>)
+    {
+        return meta::tag_invoke_cpo(into_nttp_fn<To> {}, values);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class...> typename To>
+    template<typename T, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into_nttp_fn<To>::operator()(T (&&values)[N]) noexcept -> invoke_result<decltype(values)>
+        requires(IS_TAG_INVOKABLE<decltype(values)>)
+    {
+        return meta::tag_invoke_cpo(into_nttp_fn<To> {}, values);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class...> typename To>
+    template<typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into_nttp_fn<To>::operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
         requires(IS_TAG_INVOKABLE<Ts...>)
     {
-        return meta::tag_invoke_cpo(into_fn<To> {}, std::forward<Ts>(args)..., location);
+        return meta::tag_invoke_cpo(into_nttp_fn<To> {}, std::forward<Ts>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, usize, class...> typename To>
+    template<typename T, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into_nttp_v_fn<To>::operator()(T (&values)[N]) noexcept -> invoke_result<decltype(values)>
+        requires(IS_TAG_INVOKABLE<decltype(values)>)
+    {
+        return meta::tag_invoke_cpo(into_nttp_v_fn<To> {}, values);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, usize, class...> typename To>
+    template<typename T, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into_nttp_v_fn<To>::operator()(T (&&values)[N]) noexcept -> invoke_result<decltype(values)>
+        requires(IS_TAG_INVOKABLE<decltype(values)>)
+    {
+        return meta::tag_invoke_cpo(into_nttp_v_fn<To> {}, values);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, usize, class...> typename To>
+    template<typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into_nttp_v_fn<To>::operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
+        requires(IS_TAG_INVOKABLE<Ts...>)
+    {
+        return meta::tag_invoke_cpo(into_nttp_v_fn<To> {}, std::forward<Ts>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class...> typename To, typename T, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into(T (&values)[N]) -> decltype(auto) {
+        return into_nttp_fn<To> {}(values);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, usize, class...> typename To, typename T, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into(T (&values)[N]) -> decltype(auto) {
+        return into_nttp_v_fn<To> {}(values);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class...> typename To, typename T, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into(T (&&values)[N]) -> decltype(auto) {
+        return into_nttp_fn<To> {}(std::move(values));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, usize, class...> typename To, typename T, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into(T (&&values)[N]) -> decltype(auto) {
+        return into_nttp_v_fn<To> {}(std::move(values));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class...> typename To, typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into(Ts&&... args) -> decltype(auto) {
+        return into_nttp_fn<To> {}(std::forward<Ts>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<class, usize, class...> typename To, typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto into(Ts&&... args) -> decltype(auto) {
+        return into_nttp_v_fn<To> {}(std::forward<Ts>(args)...);
     }
 
     /////////////////////////////////////
@@ -419,7 +762,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename First, typename Second>
     STORMKIT_FORCE_INLINE
-    constexpr auto is(const First& first, Second&& second) noexcept -> bool {
+    constexpr auto is(const First& first, const Second& second) noexcept -> bool {
         return is_cpo<equal>(first, second);
     }
 

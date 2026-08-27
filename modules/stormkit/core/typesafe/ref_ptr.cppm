@@ -29,13 +29,16 @@ export {
         using owned_raw_ptr = T*;
 
         template<meta::negate<meta::raw_indirection> T>
-        class STORMKIT_VIEW ref_ptr {
+        class STORMKIT_VIEW STORMKIT_TRIVIALLY_RELOCATABLE ref_ptr {
           public:
             using element_type  = T;
             using pointer       = T*;
             using const_pointer = const T*;
 
-            constexpr ref_ptr(pointer pointed STORMKIT_LIFETIMEBOUND) noexcept;
+            constexpr ref_ptr(T& pointed STORMKIT_LIFETIMEBOUND) noexcept;
+
+            template<meta::plain::pointer_to<T> U>
+            constexpr ref_ptr(const U& pointed STORMKIT_LIFETIMEBOUND) noexcept;
             constexpr ~ref_ptr() noexcept;
 
             template<meta::is<element_type> U>
@@ -105,188 +108,6 @@ export {
           private:
             pointer m_pointed;
         };
-
-        /*
-        template<typename T>
-        [[nodiscard]]
-        constexpr auto as_ref_raw(const T& value) noexcept -> ref<const T>;
-
-        template<typename T>
-            requires(not meta::IsContainerOrPointer<T>)
-        [[nodiscard]]
-        constexpr auto as_ref(const T& value) noexcept -> ref<const T>;
-
-        template<meta::pointer T>
-        [[nodiscard]]
-        constexpr auto as_ref(const T& value) noexcept -> ref<const meta::pointed_type<T>>;
-
-        template<meta::IsContainer T>
-        [[nodiscard]]
-        constexpr auto as_ref(const T& value) noexcept -> ref<const meta::ContainedType<T>>;
-
-        template<typename T>
-        [[nodiscard]]
-        constexpr auto as_ref_mut_raw(const T& value) noexcept -> ref<const T>;
-
-        template<typename T>
-            requires(not meta::IsContainerOrPointer<T> and not meta::const_type<T>)
-        [[nodiscard]]
-        constexpr auto as_ref_mut(T& value) noexcept -> ref_ptr<T>;
-
-        template<meta::pointer T>
-            requires(not meta::const_type<meta::pointed_type<T>>)
-        [[nodiscard]]
-        constexpr auto as_ref_mut(T& value) noexcept -> ref<meta::pointed_type<T>>;
-
-        template<meta::IsContainer T>
-            requires(not meta::const_type<meta::ContainedType<T>>)
-        [[nodiscard]]
-        constexpr auto as_ref_mut(T& value) noexcept -> ref<meta::ContainedType<T>>;
-
-        template<typename T>
-        [[nodiscard]]
-        constexpr auto as_ref_mut_like(const T& value) noexcept -> ref<const T>;
-
-        template<typename T>
-        [[nodiscard]]
-        constexpr auto as_ref_like_raw(T& value) noexcept -> ref_ptr<T>;
-
-        template<typename T>
-            requires(not meta::IsContainerOrPointer<T>)
-        [[nodiscard]]
-        constexpr auto as_ref_like(T& value) noexcept -> ref_ptr<T>;
-
-        template<meta::pointer T>
-        [[nodiscard]]
-        constexpr auto as_ref_like(T& value) noexcept -> ref<meta::pointed_type<T>>;
-
-        template<meta::IsContainer T>
-        [[nodiscard]]
-        constexpr auto as_ref_like(T& value) noexcept -> ref<meta::ContainedType<T>>;
-
-        template<typename T>
-        [[nodiscard]]
-        constexpr auto as_optref_raw(const T& value) noexcept -> optref<const T>;
-
-        template<typename T>
-            requires(not meta::IsContainerOrPointer<T>)
-        [[nodiscard]]
-        constexpr auto as_optref(const T& value) noexcept -> optref<const T>;
-
-        template<meta::pointer T>
-        [[nodiscard]]
-        constexpr auto as_optref(const T& value) noexcept -> optref<const meta::pointed_type<T>>;
-
-        template<meta::IsContainer T>
-        [[nodiscard]]
-        constexpr auto as_optref(const T& value) noexcept -> optref<const meta::ContainedType<T>>;
-
-        template<typename T>
-            requires(not meta::const_type<T>)
-        [[nodiscard]]
-        constexpr auto as_optref_mut_raw(T& value) noexcept -> optref_ptr<T>;
-
-        template<typename T>
-            requires(not meta::IsContainerOrPointer<T> and not meta::const_type<T>)
-        [[nodiscard]]
-        constexpr auto as_optref_mut(T& value) noexcept -> optref_ptr<T>;
-
-        template<meta::pointer T>
-            requires(not meta::const_type<meta::pointed_type<T>>)
-        [[nodiscard]]
-        constexpr auto as_optref_mut(T& value) noexcept -> optref<meta::pointed_type<T>>;
-
-        template<meta::IsContainer T>
-            requires(not meta::const_type<meta::ContainedType<T>>)
-        [[nodiscard]]
-        constexpr auto as_optref_mut(T& value) noexcept -> optref<meta::ContainedType<T>>;
-
-        template<typename T>
-        [[nodiscard]]
-        constexpr auto as_optref_like_raw(T& value) noexcept -> optref_ptr<T>;
-
-        template<typename T>
-            requires(not meta::IsContainerOrPointer<T>)
-        [[nodiscard]]
-        constexpr auto as_optref_like(T& value) noexcept -> optref_ptr<T>;
-
-        template<meta::pointer T>
-        [[nodiscard]]
-        constexpr auto as_optref_like(T& value) noexcept -> optref<meta::pointed_type<T>>;
-
-        template<meta::IsContainer T>
-        [[nodiscard]]
-        constexpr auto as_optref_like(T& value) noexcept -> optref<meta::ContainedType<T>>;
-
-        template<meta::pointer T>
-        [[nodiscard]]
-        constexpr auto unref(const T& value) noexcept -> const meta::pointed_type<T>&;
-
-        template<meta::pointer T>
-            requires(not meta::const_type<meta::pointed_type<T>>)
-        [[nodiscard]]
-        constexpr auto unref_mut(T& value) noexcept -> meta::pointed_type<T>&;
-
-        template<template<typename, usize> typename Out = array, typename... Ts>
-            requires(not stdr::range<Ts> and ...)
-        [[nodiscard]]
-        constexpr auto as_refs(Ts&&... args) noexcept -> decltype(auto);
-
-        template<template<typename...> typename Out = dynarray, typename... Ts>
-            requires(not stdr::range<Ts> and ...)
-        [[nodiscard]]
-        constexpr auto to_refs(Ts&&... args) noexcept -> decltype(auto);
-
-        template<template<typename, usize> typename Out = array, typename... Ts>
-            requires(not stdr::range<Ts> and ...)
-        [[nodiscard]]
-        constexpr auto as_ref_muts(Ts&&... args) noexcept -> decltype(auto);
-
-        template<template<typename...> typename Out = dynarray, typename... Ts>
-            requires(not stdr::range<Ts> and ...)
-        [[nodiscard]]
-        constexpr auto to_ref_muts(Ts&&... args) noexcept -> decltype(auto);
-
-        template<template<typename...> class Out = dynarray, stdr::range T>
-            requires(stdr::range<Out<typename T::value_type>>)
-        [[nodiscard]]
-        constexpr auto to_refs(const T& range) noexcept -> decltype(auto);
-
-        template<template<typename...> class Out = dynarray, stdr::range T>
-            requires(stdr::range<Out<typename T::value_type>>)
-        [[nodiscard]]
-        constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto);
-
-        template<template<typename, usize> typename Out = array, typename... Ts>
-            requires(not stdr::range<Ts> and ...)
-        [[nodiscard]]
-        constexpr auto as_optrefs(Ts&&... args) noexcept -> decltype(auto);
-
-        template<template<typename...> typename Out = dynarray, typename... Ts>
-            requires(not stdr::range<Ts> and ...)
-        [[nodiscard]]
-        constexpr auto to_optrefs(Ts&&... args) noexcept -> decltype(auto);
-
-        template<template<typename, usize> typename Out = array, typename... Ts>
-            requires(not stdr::range<Ts> and ...)
-        [[nodiscard]]
-        constexpr auto as_optref_muts(Ts&&... args) noexcept -> decltype(auto);
-
-        template<template<typename...> typename Out = dynarray, typename... Ts>
-            requires(not stdr::range<Ts> and ...)
-        [[nodiscard]]
-        constexpr auto to_optref_muts(Ts&&... args) noexcept -> decltype(auto);
-
-        template<template<typename...> class Out = dynarray, stdr::range T>
-            requires(stdr::range<Out<typename T::value_type>>)
-        [[nodiscard]]
-        constexpr auto to_optrefs(const T& range) noexcept -> decltype(auto);
-
-        template<template<typename...> class Out = dynarray, stdr::range T>
-            requires(stdr::range<Out<typename T::value_type>>)
-        [[nodiscard]]
-        constexpr auto to_mut_optrefs(T& range) noexcept -> decltype(auto);
-        */
     }} // namespace stormkit::core
 
     template<typename T>
@@ -306,8 +127,17 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::negate<meta::raw_indirection> T>
     STORMKIT_FORCE_INLINE
-    constexpr ref_ptr<T>::ref_ptr(pointer pointed STORMKIT_LIFETIMEBOUND) noexcept
-        : m_pointed { pointed } {
+    constexpr ref_ptr<T>::ref_ptr(T& pointed STORMKIT_LIFETIMEBOUND) noexcept
+        : m_pointed { std::addressof(pointed) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::negate<meta::raw_indirection> T>
+    template<meta::plain::pointer_to<T> U>
+    STORMKIT_FORCE_INLINE
+    constexpr ref_ptr<T>::ref_ptr(const U& pointed STORMKIT_LIFETIMEBOUND) noexcept
+        : m_pointed { std::addressof(*pointed) } {
     }
 
     /////////////////////////////////////
@@ -322,7 +152,7 @@ namespace stormkit { inline namespace core {
     template<meta::is<meta::element_type<ref_ptr<T>>> U>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::ref_ptr(const ref_ptr<U>& other) noexcept
-        : m_pointed { as<pointer>(other.m_pointed) } {
+        : m_pointed { static_cast<pointer>(other.m_pointed) } {
     }
 
     /////////////////////////////////////
@@ -331,7 +161,7 @@ namespace stormkit { inline namespace core {
     template<meta::is<meta::element_type<ref_ptr<T>>> U>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::ref_ptr(ref_ptr<U>&& other) noexcept
-        : m_pointed { as<pointer>(other.m_pointed) } {
+        : m_pointed { static_cast<pointer>(other.m_pointed) } {
     }
 
     /////////////////////////////////////
@@ -372,7 +202,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     template<typename Self>
     constexpr auto ref_ptr<T>::get(this Self& self) noexcept -> meta::forward_const_to<Self, element_type>* {
-        return as<meta::forward_const_to<Self, element_type>*>(self.m_pointed);
+        return static_cast<meta::forward_const_to<Self, element_type>*>(self.m_pointed);
     }
 
     /////////////////////////////////////
@@ -388,7 +218,7 @@ namespace stormkit { inline namespace core {
     template<meta::negate<meta::raw_indirection> T>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::operator const_pointer() const noexcept {
-        return as<const_pointer>(m_pointed);
+        return static_cast<const_pointer>(m_pointed);
     }
 
     /////////////////////////////////////
@@ -515,376 +345,4 @@ namespace stormkit { inline namespace core {
     {
         return m_pointed <=> other.m_pointed;
     }
-
-    /*
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_raw(const T& value) noexcept -> ref<const T> {
-        return { std::addressof(value) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-        requires(not meta::IsContainerOrPointer<T>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref(const T& value) noexcept -> ref<const T> {
-        return as_ref_raw(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::pointer T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref(const T& value) noexcept -> ref<const meta::pointed_type<T>> {
-        EXPECTS(value != nullptr);
-        return as_ref(unref(value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsContainer T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref(const T& value) noexcept -> ref<const meta::ContainedType<T>> {
-        EXPECTS(value.operator bool());
-        return as_ref(value.value());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-        requires(not meta::const_type<T>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_mut_raw(T& value) noexcept -> ref_ptr<T> {
-        return { std::addressof(value) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-        requires(not meta::IsContainerOrPointer<T> and not meta::const_type<T>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_mut(T& value) noexcept -> ref_ptr<T> {
-        return as_ref_mut_raw(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::pointer T>
-        requires(not meta::const_type<meta::pointed_type<T>>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_mut(T& value) noexcept -> ref<meta::pointed_type<T>> {
-        EXPECTS(value != nullptr);
-        return as_ref_mut(unref_mut(value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsContainer T>
-        requires(not meta::const_type<meta::ContainedType<T>>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_mut(T& value) noexcept -> ref<meta::ContainedType<T>> {
-        if constexpr (requires { value.has_value(); }) EXPECTS(value.has_value());
-        return as_ref_mut(value.value());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_like_raw(T& value) noexcept -> ref_ptr<T> {
-        return { std::addressof(value) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-        requires(not meta::IsContainerOrPointer<T>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_like(T& value, Raw) noexcept -> ref_ptr<T> {
-        return as_ref_like_raw(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::pointer T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_like(T& value) noexcept -> ref<meta::pointed_type<T>> {
-        EXPECTS(value != nullptr);
-        if (meta::const_type<meta::pointed_type<T>>) return as_ref_like(unref(value));
-        else
-            return as_ref_like(unref_mut(value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsContainer T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_like(T& value) noexcept -> ref<meta::ContainedType<T>> {
-        if constexpr (requires { value.has_value(); }) EXPECTS(value.has_value());
-        return as_ref_like(value.value());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_raw(const T& value) noexcept -> optref<const T> {
-        return { std::addressof(value) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-        requires(not meta::IsContainerOrPointer<T>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref(const T& value) noexcept -> optref<const T> {
-        return as_optref_raw(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::pointer T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref(const T& value) noexcept -> optref<const meta::pointed_type<T>> {
-        EXPECTS(value != nullptr);
-        return as_optref(unref(value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsContainer T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref(const T& value) noexcept -> optref<const meta::ContainedType<T>> {
-        EXPECTS(value.operator bool());
-        return as_optref(value.value());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-        requires(not meta::const_type<T>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_mut_raw(T& value) noexcept -> optref_ptr<T> {
-        return { std::addressof(value) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-        requires(not meta::IsContainerOrPointer<T> and not meta::const_type<T>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_mut(T& value) noexcept -> optref_ptr<T> {
-        return as_optref_mut(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::pointer T>
-        requires(not meta::const_type<meta::pointed_type<T>>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_mut(T& value) noexcept -> optref<meta::pointed_type<T>> {
-        EXPECTS(value != nullptr);
-        return as_optref_mut(unref_mut(value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsContainer T>
-        requires(not meta::const_type<meta::ContainedType<T>>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_mut(T& value) noexcept -> optref<meta::ContainedType<T>> {
-        if constexpr (requires { value.has_value(); }) EXPECTS(value.has_value());
-        return as_optref_mut(value.value());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_like_raw(T& value) noexcept -> optref_ptr<T> {
-        return { std::addressof(value) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-        requires(not meta::IsContainerOrPointer<T>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_like(T& value) noexcept -> optref_ptr<T> {
-        return as_optref_like_raw(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::pointer T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_like(T& value) noexcept -> optref<meta::pointed_type<T>> {
-        EXPECTS(value != nullptr);
-        if (meta::const_type<meta::pointed_type<T>>) return as_optref_like(unref(value));
-        else
-            return as_optref_like(unref_mut(value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::IsContainer T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_like(T& value) noexcept -> optref<meta::ContainedType<T>> {
-        if constexpr (requires { value.has_value(); }) EXPECTS(value.has_value());
-        return as_optref_like(value.value());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::pointer T>
-        STORMKIT_FORCE_INLINE
-    constexpr auto unref(const T& value) noexcept -> const meta::pointed_type<T>& {
-        return *value;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<meta::pointer T>
-        requires(not meta::const_type<meta::pointed_type<T>>)
-        STORMKIT_FORCE_INLINE
-    constexpr auto unref_mut(T& value) noexcept -> meta::pointed_type<T>& {
-        return *value;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename, usize> typename Out, typename... Ts>
-        requires(not stdr::range<Ts> and ...)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_refs(Ts&&... args) noexcept -> decltype(auto) {
-        using value_type = std::common_type_t<meta::ContainedOrPointedOrTType<meta::remove_indirections_of<Ts>>...>;
-        return Out<ref<const value_type>, sizeof...(args)> { as_ref(std::forward<Ts>(args))... };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename...> typename Out, typename... Ts>
-        requires(not stdr::range<Ts> and ...)
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_refs(Ts&&... args) noexcept -> decltype(auto) {
-        using value_type = std::common_type_t<meta::ContainedOrPointedOrTType<meta::remove_indirections_of<Ts>>...>;
-        return Out<ref<const value_type>> { as_ref(std::forward<Ts>(args))... };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename, usize> typename Out, typename... Ts>
-        requires(not stdr::range<Ts> and ...)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_ref_muts(Ts&&... args) noexcept -> decltype(auto) {
-        using value_type = std::common_type_t<meta::ContainedOrPointedOrTType<meta::remove_indirections_of<Ts>>...>;
-        return Out<ref<value_type>, sizeof...(args)> { as_ref_mut(std::forward<Ts>(args))... };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename...> typename Out, typename... Ts>
-        requires(not stdr::range<Ts> and ...)
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_ref_muts(Ts&&... args) noexcept -> decltype(auto) {
-        using value_type = std::common_type_t<meta::ContainedOrPointedOrTType<meta::remove_indirections_of<Ts>>...>;
-        return Out<ref<value_type>> { as_ref_mut(std::forward<Ts>(args))... };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename...> class Out, stdr::range T>
-        requires(stdr::range<Out<typename T::value_type>>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_refs(const T& range) noexcept -> decltype(auto) {
-        using value_type = stdr::range_value_t<T>;
-        return range
-               | stdv::transform([]<class U>(U&& val) static noexcept -> decltype(auto) { return as_ref(std::forward<U>(val)); })
-               | stdr::to<Out<ref<const value_type>>>();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename...> class Out, stdr::range T>
-        requires(stdr::range<Out<typename T::value_type>>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto) {
-        using value_type = stdr::range_value_t<T>;
-        return range
-               | stdv::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
-                     return as_ref_mut(std::forward<U>(val));
-                 })
-               | stdr::to<Out<ref<value_type>>>();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename, usize> typename Out, typename... Ts>
-        requires(not stdr::range<Ts> and ...)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optrefs(Ts&&... args) noexcept -> decltype(auto) {
-        using value_type = std::common_type_t<meta::ContainedOrPointedOrTType<meta::remove_indirections_of<Ts>>...>;
-        return Out<optref<const value_type>, sizeof...(args)> { as_optref(std::forward<Ts>(args))... };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename...> typename Out, typename... Ts>
-        requires(not stdr::range<Ts> and ...)
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_optrefs(Ts&&... args) noexcept -> decltype(auto) {
-        using value_type = std::common_type_t<meta::ContainedOrPointedOrTType<meta::remove_indirections_of<Ts>>...>;
-        return Out<optref<const value_type>> { optas_ref(std::forward<Ts>(args))... };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename, usize> typename Out, typename... Ts>
-        requires(not stdr::range<Ts> and ...)
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_optref_muts(Ts&&... args) noexcept -> decltype(auto) {
-        using value_type = std::common_type_t<meta::ContainedOrPointedOrTType<meta::remove_indirections_of<Ts>>...>;
-        return Out<optref<value_type>, sizeof...(args)> { as_optref_mut(std::forward<Ts>(args))... };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename...> typename Out, typename... Ts>
-        requires(not stdr::range<Ts> and ...)
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_optref_muts(Ts&&... args) noexcept -> decltype(auto) {
-        using value_type = std::common_type_t<meta::ContainedOrPointedOrTType<meta::remove_indirections_of<Ts>>...>;
-        return Out<optref<value_type>> { as_optref_mut(std::forward<Ts>(args))... };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename...> class Out, stdr::range T>
-        requires(stdr::range<Out<typename T::value_type>>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_optrefs(const T& range) noexcept -> decltype(auto) {
-        using value_type = stdr::range_value_t<T>;
-        return range
-               | stdv::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
-                     return as_optref(std::forward<U>(val));
-                 })
-               | stdr::to<Out<ref<const value_type>>>();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename...> class Out, stdr::range T>
-        requires(stdr::range<Out<typename T::value_type>>)
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_mut_optrefs(T& range) noexcept -> decltype(auto) {
-        using value_type = stdr::range_value_t<T>;
-        return range
-               | stdv::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
-                     return as_optref_mut(std::forward<U>(val));
-                 })
-               | stdr::to<Out<ref<value_type>>>();
-    }*/
 }} // namespace stormkit::core

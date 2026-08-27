@@ -116,7 +116,7 @@ namespace stormkit::image::details {
         /*auto image_memory = byte_dynarray {};*/
         /*image_memory.resize(image.size());*/
         /**/
-        /*std::ranges::copy(as<bytes_view>(image.data(), image.size()), std::begin(image_memory));*/
+        /*std::ranges::copy(as<array_view>(as_bytes, image.data(), image.size()), std::begin(image_memory));*/
         /**/
         /*auto image_data = image::Image::ImageData {};*/
         /**/

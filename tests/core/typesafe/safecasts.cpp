@@ -32,8 +32,8 @@ namespace bar {
 } // namespace bar
 
 namespace {
-    auto _ = test::TestSuite {
-        "Core.typesafe.safecasts",
+    auto _ = test::test_suite {
+        "core.typesafe.safecasts",
         {
           { "common.same_value",
             [] static noexcept {

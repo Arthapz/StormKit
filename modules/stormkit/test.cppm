@@ -14,35 +14,34 @@ export module stormkit.test;
 
 import stormkit.core;
 import std;
-import frozen;
 
 using namespace stormkit;
 
 export namespace test {
-    struct TestFunc {
+    struct test_func {
         string                name;
         std::function<void()> func;
     };
 
-    struct TestSuiteHolder {
-        auto                 hasTest(string_view name) noexcept;
-        auto                 runTest(string_view name) noexcept;
-        auto                 runTests() noexcept;
+    struct test_suite_holder {
+        auto                 has_test(string_view name) noexcept;
+        auto                 run_test(string_view name) noexcept;
+        auto                 run_tests() noexcept;
         string               name;
-        dynarray<TestFunc>   tests;
+        dynarray<test_func>  tests;
         std::source_location location;
     };
 
-    struct TestSuite {
-        TestSuite(string&&                    name,
-                  dynarray<TestFunc>&&        tests,
-                  const std::source_location& location = std::source_location::current()) noexcept;
+    struct test_suite {
+        test_suite(string&&              name,
+                   dynarray<test_func>&& tests,
+                   source_location_arg   location = std::source_location::current()) noexcept;
     };
 
-    auto expects(bool cond, string_view message, const std::source_location& location = std::source_location::current()) noexcept;
+    auto expects(bool cond, string_view message, source_location_arg location = std::source_location::current()) noexcept;
 
     auto parse_args(array_view<const string_view> args) noexcept -> void;
-    auto runTests() noexcept -> int;
+    auto run_tests() noexcept -> int;
 } // namespace test
 
 // module :private;
@@ -50,85 +49,85 @@ export namespace test {
 using namespace std::literals;
 
 namespace test {
-    enum class Status {
-        Passed,
-        NotPassed,
-        CheckMark,
-        CrossMark,
+    enum class status {
+        PASSED,
+        NOT_PASSED,
+        CHECK_MARK,
+        CROSS_MARK,
     };
 
-    struct TestState {
-        dynarray<std::unique_ptr<TestSuiteHolder>> test_suites;
-        bool                                       verbose        = false;
-        bool                                       failed         = false;
-        bool                                       plain          = false;
-        std::optional<string>                      requested_test = std::nullopt;
+    struct test_state {
+        dynarray<std::unique_ptr<test_suite_holder>> test_suites;
+        bool                                         verbose        = false;
+        bool                                         failed         = false;
+        bool                                         plain          = false;
+        std::optional<string>                        requested_test = std::nullopt;
     };
 
     namespace {
-        constexpr auto StyleMap = frozen::make_unordered_map<Status, console_style>({
-          { Status::Passed,    console_style { .fg = console_color::BLACK, .bg = console_color::GREEN } },
-          { Status::NotPassed, console_style { .fg = console_color::BLACK, .bg = console_color::RED }   },
-          { Status::CheckMark,
+        constexpr auto STYLE_MAP = make_static_hash_map<status, console_style>({
+          { status::PASSED,     console_style { .fg = console_color::BLACK, .bg = console_color::GREEN } },
+          { status::NOT_PASSED, console_style { .fg = console_color::BLACK, .bg = console_color::RED }   },
+          { status::CHECK_MARK,
            console_style {
               .fg = console_color::GREEN,
-            }                                                                                        },
-          { Status::CrossMark,
+            }                                                                                            },
+          { status::CROSS_MARK,
            console_style {
               .fg = console_color::RED,
-            }                                                                                        },
+            }                                                                                            },
         });
 
-        constexpr auto passed     = StyleMap.at(Status::Passed) | "Passed"sv;
-        constexpr auto not_passed = StyleMap.at(Status::NotPassed) | "Not Passed"sv;
-        constexpr auto check_mark = StyleMap.at(Status::CheckMark) | "✔ "sv;
-        constexpr auto cross_mark = StyleMap.at(Status::CrossMark) | "❌"sv;
+        constexpr auto PASSED     = STYLE_MAP.at(status::PASSED) | "Passed"sv;
+        constexpr auto NOT_PASSED = STYLE_MAP.at(status::NOT_PASSED) | "Not Passed"sv;
+        constexpr auto CHECK_MARK = STYLE_MAP.at(status::CHECK_MARK) | "✔ "sv;
+        constexpr auto CROSS_MARK = STYLE_MAP.at(status::CROSS_MARK) | "❌"sv;
     } // namespace
 
-    auto state = TestState {};
+    auto state = test_state {};
 
-    auto TestSuiteHolder::hasTest(string_view _name) noexcept {
-        for (auto&& test : tests) {
+    auto test_suite_holder::has_test(string_view _name) noexcept {
+        for (const auto& test : tests) {
             if (test.name == _name) return true;
         }
 
         return false;
     }
 
-    auto TestSuiteHolder::runTest(string_view _name) noexcept {
-        for (auto&& test : tests) {
+    auto test_suite_holder::run_test(string_view _name) noexcept {
+        for (const auto& test : tests) {
             if (test.name == _name) {
                 if (state.verbose) std::println("     running test {}", test.name);
                 test.func();
-                std::println("     {}", (state.failed) ? not_passed : passed);
+                std::println("     {}", (state.failed) ? NOT_PASSED : PASSED);
                 return not state.failed;
             }
         }
         return true;
     }
 
-    auto TestSuiteHolder::runTests() noexcept {
+    auto test_suite_holder::run_tests() noexcept {
         if (state.verbose) { std::println("   > file: {}", location.file_name()); }
 
         auto passed_tests = 0;
         auto failed_tests = 0;
 
-        for (auto&& test : tests) {
+        for (const auto& test : tests) {
             state.failed = false;
             if (state.verbose) std::println("     running test {}", test.name);
             test.func();
 
-            if (state.verbose) std::println("     {}", (state.failed) ? not_passed : passed);
+            if (state.verbose) std::println("     {}", (state.failed) ? NOT_PASSED : PASSED);
             if (not state.failed) ++passed_tests;
             else
                 ++failed_tests;
         }
 
-        if (not state.plain) std::print("{}", check_mark);
-        std::print("{} test passed", passed_tests);
+        if (not state.plain) std::print("{}", CHECK_MARK);
+        std::print("{} test PASSED", passed_tests);
         if (failed_tests > 0) {
             std::print(", ");
-            if (not state.plain) std::print("{}", cross_mark);
+            if (not state.plain) std::print("{}", CROSS_MARK);
             std::print("{} test state.failed", failed_tests);
         }
         std::println("");
@@ -136,17 +135,17 @@ namespace test {
         return failed_tests == 0;
     }
 
-    TestSuite::TestSuite(string&& _name, dynarray<TestFunc>&& tests, const std::source_location& location) noexcept {
-        state.test_suites.emplace_back(std::make_unique<TestSuiteHolder>(std::move(_name), std::move(tests), location));
+    test_suite::test_suite(string&& _name, dynarray<test_func>&& tests, source_location_arg location) noexcept {
+        state.test_suites.emplace_back(std::make_unique<test_suite_holder>(std::move(_name), std::move(tests), location));
     }
 
-    auto expects(bool cond, string_view message, const std::source_location& location) noexcept {
+    auto expects(bool cond, string_view message, source_location_arg location) noexcept {
         if (not cond) [[unlikely]] {
             state.failed = true;
             if (state.verbose) {
                 std::println("{} on expression \"{}\" \n"
                              "          > line: {}",
-                             StyleMap.at(Status::NotPassed) | "FAILURE",
+                             STYLE_MAP.at(status::NOT_PASSED) | "FAILURE",
                              message,
                              location.line());
             }
@@ -171,7 +170,7 @@ namespace test {
     }
 
     auto parse_args(array_view<const string_view> args) noexcept -> void {
-        for (auto&& arg : args) {
+        for (const auto& arg : args) {
             if (arg == "--verbose" or arg == "-v") state.verbose = true;
             else if (arg == "--plain" or arg == "-p")
                 state.plain = true;
@@ -179,20 +178,20 @@ namespace test {
         }
     }
 
-    auto runTests() noexcept -> int {
+    auto run_tests() noexcept -> int {
         auto return_code = 0;
 
         if (state.requested_test) {
-            for (auto&& suite : state.test_suites) {
-                if (suite->hasTest(*state.requested_test)) {
-                    if (not suite->runTest(*state.requested_test)) return_code = -1;
+            for (const auto& suite : state.test_suites) {
+                if (suite->has_test(*state.requested_test)) {
+                    if (not suite->run_test(*state.requested_test)) return_code = -1;
                     break;
                 }
             }
         } else
-            for (auto&& suite : state.test_suites) {
+            for (const auto& suite : state.test_suites) {
                 std::println("Running test suite {} ({} tests)", suite->name, std::size(suite->tests));
-                if (not suite->runTests()) return_code = -1;
+                if (not suite->run_tests()) return_code = -1;
             }
 
         return return_code;

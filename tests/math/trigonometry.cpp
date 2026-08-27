@@ -13,5 +13,5 @@ using namespace stormkit::core;
 using namespace std::literals;
 
 namespace {
-    auto _ = test::TestSuite { "core.math.trigonometry", {} };
+    auto _ = test::test_suite { "core.math.trigonometry", {} };
 } // namespace

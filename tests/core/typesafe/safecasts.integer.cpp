@@ -17,7 +17,7 @@ struct Foo {
 };
 
 template<stormkit::meta::integral T>
-constexpr auto as_impl(const Foo& value, const std::source_location&) noexcept -> T {
+constexpr auto tag_invoke(as_fn<T>, const Foo& value, source_location_arg) noexcept -> T {
     return static_cast<T>(value.b);
 }
 
@@ -27,7 +27,7 @@ namespace bar {
     };
 
     template<stormkit::meta::integral T>
-    constexpr auto as_impl(const Foo& value, const std::source_location&) noexcept -> T {
+    constexpr auto tag_invoke(as_fn<T>, const Foo& value, source_location_arg) noexcept -> T {
         return static_cast<T>(value.b);
     }
 } // namespace bar
@@ -83,8 +83,8 @@ namespace {
     [[maybe_unused]]
     const auto u128_2 = u128 { 2 };
 
-    auto _ = test::TestSuite {
-        "Core.typesafe.safecasts",
+    auto _ = test::test_suite {
+        "core.typesafe.safecasts",
         {
           { "arithmetic.integrals",
             [] static noexcept {

@@ -13,7 +13,6 @@ module;
 export module stormkit.wsi:window;
 
 import std;
-import frozen;
 
 import stormkit.core;
 

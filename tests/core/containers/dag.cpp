@@ -15,31 +15,32 @@ using namespace std::literals;
 namespace stdr = std::ranges;
 
 namespace {
-    auto _ = test::TestSuite {
+    auto _ = test::test_suite {
         "core.containers.dag",
         {
           { "topological_sort",
             [] {
-                using Edge = std::pair<dag::VertexID, dag::VertexID>;
-                constexpr auto
-                  edges = into_array(Edge { 0, 5 },
-                                     Edge { 0, 2 },
-                                     Edge { 0, 1 },
-                                     Edge { 3, 6 },
-                                     Edge { 3, 5 },
-                                     Edge { 3, 4 },
-                                     Edge { 5, 4 },
-                                     Edge { 6, 4 },
-                                     Edge { 6, 0 },
-                                     Edge { 3, 2 },
-                                     Edge { 1, 4 });
+                using my_dag         = dag<i32>;
+                using Edge           = std::pair<my_dag::index_type, my_dag::index_type>;
+                constexpr auto edges = into<array>({
+                  my_dag::edge { 0, 5 },
+                  my_dag::edge { 0, 2 },
+                  my_dag::edge { 0, 1 },
+                  my_dag::edge { 3, 6 },
+                  my_dag::edge { 3, 5 },
+                  my_dag::edge { 3, 4 },
+                  my_dag::edge { 5, 4 },
+                  my_dag::edge { 6, 4 },
+                  my_dag::edge { 6, 0 },
+                  my_dag::edge { 3, 2 },
+                  my_dag::edge { 1, 4 } });
 
-                auto dag = DAG<i32> {};
-                for (auto i : range(7)) dag.add_vertex(i);
+                auto dag_ = my_dag {};
+                for (auto i : range(7)) dag_.add_vertex(i);
 
-                for (auto&& [from, to] : edges) dag.add_edge(from, to);
+                for (auto&& [from, to] : edges) dag_.add_edge(from, to);
 
-                auto result = dag.topological_sort();
+                auto result = dag_.topological_sort();
                 if (not result) {
                     for (auto id : result.error()) std::println("    {} ->", id);
                 }
@@ -47,7 +48,7 @@ namespace {
 
                 auto ordered = std::move(*result);
 
-                auto orders = hash_map<dag::VertexID, u32> {};
+                auto orders = hash_map<my_dag::index_type, u32> {};
                 {
                     auto i = 0;
                     for (auto id : ordered) orders.emplace(id, i++);
@@ -57,33 +58,33 @@ namespace {
             } },
           { "remove_edge_and_vertex",
             [] {
-                auto dag = DAG<string> {};
-                dag.emplace_vertex("a");
-                dag.emplace_vertex("b");
-                dag.emplace_vertex("c");
-                dag.emplace_vertex("d");
+                auto dag_ = dag<string> {};
+                dag_.emplace_vertex("a");
+                dag_.emplace_vertex("b");
+                dag_.emplace_vertex("c");
+                dag_.emplace_vertex("d");
 
-                dag.add_edge(0, 1);
-                dag.add_edge(1, 2);
-                dag.add_edge(2, 3);
-                dag.add_edge(0, 3);
+                dag_.add_edge(0, 1);
+                dag_.add_edge(1, 2);
+                dag_.add_edge(2, 3);
+                dag_.add_edge(0, 3);
 
-                EXPECTS(dag.has_edge(0, 1));
+                EXPECTS(dag_.has_edge(0, 1));
 
-                dag.remove_edge(0, 1);
+                dag_.remove_edge(0, 1);
 
-                EXPECTS(not dag.has_edge(0, 1));
-                EXPECTS(dag.has_edge(0, 3));
+                EXPECTS(not dag_.has_edge(0, 1));
+                EXPECTS(dag_.has_edge(0, 3));
 
-                dag.remove_vertex(2);
+                dag_.remove_vertex(2);
 
-                EXPECTS(not dag.has_edge(1, 2));
-                EXPECTS(not dag.has_edge(2, 3));
+                EXPECTS(not dag_.has_edge(1, 2));
+                EXPECTS(not dag_.has_edge(2, 3));
 
-                EXPECTS(stdr::size(dag.vertices()) == 3);
+                EXPECTS(stdr::size(dag_.vertices()) == 3);
 
                 {
-                    auto result = dag.topological_sort();
+                    auto result = dag_.topological_sort();
                     if (not result) {
                         for (auto id : result.error()) std::println("    {} ->", id);
                     }
@@ -91,62 +92,62 @@ namespace {
                     EXPECTS(stdr::size(*result) == 3);
                 }
 
-                dag.add_edge(1, 0);
-                dag.add_edge(3, 1);
+                dag_.add_edge(1, 0);
+                dag_.add_edge(3, 1);
                 {
-                    auto result = dag.topological_sort();
+                    auto result = dag_.topological_sort();
                     EXPECTS((not result.has_value()));
                 }
             } },
           { "find_cycle",
             [] {
-                auto dag = DAG<i32> {};
-                dag.add_vertex(0);
-                dag.add_vertex(1);
-                dag.add_vertex(4);
-                dag.add_vertex(5);
-                dag.add_vertex(6);
-                dag.add_vertex(9);
+                auto dag_ = dag<i32> {};
+                dag_.add_vertex(0);
+                dag_.add_vertex(1);
+                dag_.add_vertex(4);
+                dag_.add_vertex(5);
+                dag_.add_vertex(6);
+                dag_.add_vertex(9);
 
-                dag.add_edge(5, 1);
-                dag.add_edge(1, 4);
-                dag.add_edge(4, 0);
-                dag.add_edge(0, 1);
-                dag.add_edge(2, 3);
+                dag_.add_edge(5, 1);
+                dag_.add_edge(1, 4);
+                dag_.add_edge(4, 0);
+                dag_.add_edge(0, 1);
+                dag_.add_edge(2, 3);
 
                 {
-                    auto result = dag.find_cycle();
+                    auto result = dag_.find_cycle();
                     EXPECTS(result.has_value());
 
                     auto&& cycle = std::move(*result);
                     EXPECTS(stdr::size(cycle) == 4);
-                    EXPECTS(dag.get_vertex_value(cycle[0]) == 0);
-                    EXPECTS(dag.get_vertex_value(cycle[1]) == 1);
-                    EXPECTS(dag.get_vertex_value(cycle[2]) == 6);
-                    EXPECTS(dag.get_vertex_value(cycle[3]) == 0);
+                    EXPECTS(dag_.get_vertex_value(cycle[0]) == 0);
+                    EXPECTS(dag_.get_vertex_value(cycle[1]) == 1);
+                    EXPECTS(dag_.get_vertex_value(cycle[2]) == 6);
+                    EXPECTS(dag_.get_vertex_value(cycle[3]) == 0);
                 }
 
                 {
-                    auto result = dag.topological_sort();
+                    auto result = dag_.topological_sort();
                     EXPECTS(not result.has_value());
                 }
             } },
           { "reverse_view",
             [] {
-                auto dag = DAG<string> {};
-                dag.emplace_vertex("a");
-                dag.emplace_vertex("b");
-                dag.emplace_vertex("c");
-                dag.emplace_vertex("d");
+                auto dag_ = dag<string> {};
+                dag_.emplace_vertex("a");
+                dag_.emplace_vertex("b");
+                dag_.emplace_vertex("c");
+                dag_.emplace_vertex("d");
 
-                dag.add_edge(0, 1);
-                dag.add_edge(1, 2);
-                dag.add_edge(2, 3);
-                dag.add_edge(0, 3);
+                dag_.add_edge(0, 1);
+                dag_.add_edge(1, 2);
+                dag_.add_edge(2, 3);
+                dag_.add_edge(0, 3);
 
-                auto reversed = dag.reverse_view();
+                auto reversed = dag_.reverse_view();
 
-                const auto& edges  = dag.edges();
+                const auto& edges  = dag_.edges();
                 const auto& redges = reversed.edges();
 
                 for (auto i : range(4u)) {
@@ -157,20 +158,20 @@ namespace {
             } },
           { "reverse_clone",
             [] {
-                auto dag = DAG<string> {};
-                dag.emplace_vertex("a");
-                dag.emplace_vertex("b");
-                dag.emplace_vertex("c");
-                dag.emplace_vertex("d");
+                auto dag_ = dag<string> {};
+                dag_.emplace_vertex("a");
+                dag_.emplace_vertex("b");
+                dag_.emplace_vertex("c");
+                dag_.emplace_vertex("d");
 
-                dag.add_edge(0, 1);
-                dag.add_edge(1, 2);
-                dag.add_edge(2, 3);
-                dag.add_edge(0, 3);
+                dag_.add_edge(0, 1);
+                dag_.add_edge(1, 2);
+                dag_.add_edge(2, 3);
+                dag_.add_edge(0, 3);
 
-                auto reversed = dag.reverse_clone();
+                auto reversed = dag_.reverse_clone();
 
-                const auto& edges  = dag.edges();
+                const auto& edges  = dag_.edges();
                 const auto& redges = reversed.edges();
 
                 for (auto i : range(4u)) {
@@ -181,16 +182,16 @@ namespace {
             } },
           { "dump",
             [] {
-                auto dag = DAG<string> {};
-                dag.emplace_vertex("a");
-                dag.emplace_vertex("b");
-                dag.emplace_vertex("c");
-                dag.emplace_vertex("d");
+                auto dag_ = dag<string> {};
+                dag_.emplace_vertex("a");
+                dag_.emplace_vertex("b");
+                dag_.emplace_vertex("c");
+                dag_.emplace_vertex("d");
 
-                dag.add_edge(0, 1);
-                dag.add_edge(1, 2);
-                dag.add_edge(2, 3);
-                dag.add_edge(0, 3);
+                dag_.add_edge(0, 1);
+                dag_.add_edge(1, 2);
+                dag_.add_edge(2, 3);
+                dag_.add_edge(0, 3);
 
                 const auto required_result = "digraph G {\n"
                                              "    rankdir = LR\n"
@@ -206,7 +207,7 @@ namespace {
                                              "    \"node0\" -> \"node3\" [color=seagreen];\n"
                                              "}"sv;
 
-                const auto out = dag.dump();
+                const auto out = dag_.dump();
                 EXPECTS(out == required_result);
             } },
           }

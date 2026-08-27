@@ -94,17 +94,17 @@ export {
         extent(T, T, T) -> extent<T, 3>;
 
         namespace meta {
-            template<class T>
+            template<typename T>
             concept IsExtent = requires(T&&) {
                 typename T::value_type;
                 typename T::OrderingType;
                 { T::RANK } -> core::meta::is<const usize&>;
             };
 
-            template<class T>
+            template<typename T>
             concept IsExtent2 = IsExtent<T> and requires(T&&) { requires T::RANK == 2uz; };
 
-            template<class T>
+            template<typename T>
             concept IsExtent3 = IsExtent<T> and requires(T&&) { requires T::RANK == 3uz; };
         } // namespace meta
 
@@ -319,7 +319,7 @@ namespace stormkit { inline namespace core { namespace math {
         using value_type              = typename Extent::value_type;
         static constexpr auto RANK   = Extent::RANK;
         auto&                 values = *std::bit_cast<array<value_type, RANK>>(&extent);
-        for (auto&& val : values) val *= factor;
+        for (const auto& val : values) val *= factor;
         return extent;
     }
 
@@ -331,7 +331,7 @@ namespace stormkit { inline namespace core { namespace math {
         using value_type              = typename Extent::value_type;
         static constexpr auto RANK   = Extent::RANK;
         auto&                 values = *std::bit_cast<array<value_type, RANK>>(&extent);
-        for (auto&& val : values) val /= factor;
+        for (const auto& val : values) val /= factor;
         return extent;
     }
 

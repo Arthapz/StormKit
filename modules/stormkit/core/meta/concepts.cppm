@@ -13,11 +13,11 @@ import std;
 import stormkit.core.types;
 
 namespace stormkit { inline namespace core { namespace meta::details {
-    template<template<typename...> class T, typename... Ts>
+    template<template<class...> typename T, typename... Ts>
     constexpr auto is_specialization_of_helper(const T<Ts...>&) noexcept -> std::true_type;
-    template<template<typename, auto...> class T, typename T2, auto... Ts>
+    template<template<typename, auto...> typename T, typename T2, auto... Ts>
     constexpr auto is_specialization_of_with_nttp_helper(const T<T2, Ts...>&) noexcept -> std::true_type;
-    template<template<typename, auto...> class T, typename T1, auto... Ts>
+    template<template<typename, auto...> typename T, typename T1, auto... Ts>
     constexpr auto is_specialization_of_helper_nttp_tv(const T<T1, Ts...>&) noexcept -> std::true_type;
     template<template<class, class, auto...> typename T, typename T1, typename T2, auto... Ts>
     constexpr auto is_specialization_of_helper_nttp_ttv(const T<T1, T2, Ts...>&) noexcept -> std::true_type;
@@ -38,14 +38,17 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     using std::derived_from;
 
-    template<class T, class U>
+    template<typename T, typename U>
     concept is = same_as<T, U> or (std::is_polymorphic_v<T> and std::is_polymorphic_v<U> and std::derived_from<T, U>);
 
-    template<class T, class... U>
+    template<typename T, typename... U>
     concept is_any_of = (is<T, U> or ...);
 
-    template<class T, class... U>
+    template<typename T, typename... U>
     concept same_as_any_of = (same_as<T, U> or ...);
+
+    template<typename T, typename... Ts>
+    concept same_types_as = (same_as<T, Ts> and ...);
 
     using std::convertible_to;
 
@@ -55,10 +58,10 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T>
     concept is_decayed = same_as<T, std::decay_t<T>>;
 
-    template<class T>
+    template<typename T>
     concept boolean_testable = convertible_to<T, bool>;
 
-    template<typename S, template<typename...> class T>
+    template<typename S, template<class...> typename T>
     concept specialization_of = requires(S&& s) {
         { details::is_specialization_of_helper<T>(std::forward<S>(s)) } -> is<std::true_type>;
     };
@@ -83,72 +86,75 @@ export namespace stormkit { inline namespace core { namespace meta {
         { details::is_specialization_of_helper_nttp_ttvtcs<T>(std::forward<S>(s)) } -> is<std::true_type>;
     };
 
-    template<class T>
+    template<typename T>
     concept std_optional = specialization_of<T, std::optional>;
 
-    template<class T>
+    template<typename T>
     concept std_expected = specialization_of<T, std::expected>;
 
-    template<class T>
+    template<typename T>
     concept std_variant = specialization_of<T, std::variant>;
 
-    template<class T>
+    template<typename T>
     concept std_span = specialization_of_nttp_tv<T, std::span>;
 
-    template<class T>
+    template<typename T>
     concept std_mdspan = specialization_of<T, std::mdspan>;
 
-    template<class T>
+    template<typename T>
     concept std_array = specialization_of_nttp_tv<T, std::array>;
 
     template<typename T>
     concept std_reference_wrapper = specialization_of<T, std::reference_wrapper>;
 
-    template<class T>
+    template<typename T>
     concept lvalue_ref = std::is_lvalue_reference_v<T>;
 
-    template<class T>
+    template<typename T>
     concept rvalue_ref = std::is_rvalue_reference_v<T>;
 
-    template<class T>
+    template<typename T>
     concept reference = lvalue_ref<T> or rvalue_ref<T>;
 
-    template<class T, class U>
+    template<typename T, typename U>
     concept reference_to = reference<T> and is<std::remove_reference_t<T>, U>;
 
-    template<class T>
+    template<typename T>
     concept raw_pointer = std::is_pointer_v<T>;
 
-    template<class T>
-    concept view_pointer = raw_pointer<T> or (requires {
+    template<typename T>
+    concept owning_pointer = requires { typename std::pointer_traits<T>::element_type; } and requires(T a) {
+        { a.operator->() } -> convertible_to<decltype(&*a)>;
+        { a.operator*() };
+        { a == nullptr } -> boolean_testable;
+        { a.reset() };
+    };
+
+    template<typename T>
+    concept view_pointer = not owning_pointer<T> and (raw_pointer<T> or (requires {
         typename std::pointer_traits<T>::element_type;
     } and requires(T a) {
         { a.operator->() } -> convertible_to<decltype(&*a)>;
         { a.operator*() };
         { a == nullptr } -> boolean_testable;
-    }) or std_reference_wrapper<T>;
+    }) or std_reference_wrapper<T>);
 
-    template<class T>
-    concept owning_pointer = view_pointer<T> and requires(T a) {
-        { a.reset() };
-    };
-
-    template<class T>
+    template<typename T>
     concept pointer = view_pointer<T> or owning_pointer<T>;
 
-    template<class T, class U>
+    template<typename T, typename U>
     concept pointer_to = pointer<T> and is<typename std::pointer_traits<T>::element_type, U>;
 
-    template<class T>
+    template<typename T>
     concept indirection = reference<T> or pointer<T>;
 
-    template<class T, class U>
+    template<typename T, typename U>
     concept indirection_to = indirection<T> and (pointer_to<T, U> or reference_to<T, U>);
 
-    template<class T>
+    template<typename T>
     concept raw_indirection = reference<T> or raw_pointer<T>;
 
-    template<class T, class U>
+    template<typename T, typename U>
     concept raw_indirection_to = raw_indirection<T> and (pointer_to<T, U> or reference_to<T, U>);
 
     template<typename T>
@@ -163,44 +169,35 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T>
     concept has_expected_type = requires() { typename T::expected_type; } and std_expected<typename T::expected_type>;
 
-    // template<class T>
-    // concept IsContainer = has_value_type<T> and requires(T& val) {
-    //     { val.operator*() } -> reference_to<typename T::value_type>;
-    //     { val.operator->() } -> reference_to<typename T::value_type*>;
-    // };
-
-    // template<class T, class U>
-    // concept IsContainerOf = IsContainer<T> and is<typename T::value_type, U>;
-
-    template<class T>
+    template<typename T>
     concept wrapped_value = has_value_type<T> and requires(T& val) {
         { val.value() } -> reference_to<typename T::value_type>;
         { val.operator*() } -> reference_to<typename T::value_type>;
         { val.operator->() } -> reference_to<typename T::value_type*>;
     };
 
-    template<class T, class U>
+    template<typename T, typename U>
     concept wrapped_value_of = wrapped_value<T> and is<typename T::value_type, U>;
 
-    template<class T>
+    template<typename T>
     concept polymorphic_type = std::is_polymorphic_v<T>;
 
-    template<class T>
+    template<typename T>
     concept polymorphic_pointer = pointer<T> and polymorphic_type<typename std::pointer_traits<T>::element_type>;
 
-    template<class T>
+    template<typename T>
     concept polymorphic_reference = reference<T> and polymorphic_type<std::remove_reference_t<T>>;
 
-    template<class T>
+    template<typename T>
     concept polymorphic_indirection = polymorphic_reference<T> or polymorphic_pointer<T>;
 
-    template<class T>
+    template<typename T>
     concept scoped_enum = std::is_scoped_enum_v<T> and not is<T, byte>;
 
-    template<class T>
+    template<typename T>
     concept c_enum = not scoped_enum<T> and std::is_enum_v<T> and not is<T, byte>;
 
-    template<class T>
+    template<typename T>
     concept enumeration = std::is_enum_v<T> and not is<T, std::byte>;
 
     template<typename T>
@@ -212,27 +209,27 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     using std::floating_point;
 
-    template<class T>
+    template<typename T>
     concept arithmetic = (integral<T> or floating_point<T>) and not pointer<T> and not enumeration<T>;
 
-    template<class T>
+    template<typename T>
     concept scalar = arithmetic<T> or raw_pointer<T> or enumeration<T>;
 
     using std::predicate;
 
-    template<class T, class U>
+    template<typename T, typename U>
     concept unary_predicate = predicate<T, const U&>;
 
-    template<class T, class U>
+    template<typename T, typename U>
     concept binary_predicate = predicate<T, const U&, const U&>;
 
-    template<class T>
+    template<typename T>
     concept char_type = is_any_of<T, char, wchar_t, char8_t, char16_t, char32_t>;
 
-    template<class T>
+    template<typename T>
     concept const_type = std::is_const_v<T>;
 
-    template<class T>
+    template<typename T>
     concept volatile_type = std::is_volatile_v<T>;
 
     template<class From, typename To>
@@ -298,6 +295,17 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T>
     concept trivially_movable = movable<T> and std::is_trivially_move_constructible_v<T>;
 
+    template<typename T>
+    concept trivially_destructible = destructible<T> and std::is_trivially_destructible_v<T>;
+
+    template<typename T>
+    concept trivially_relocatable = (trivially_copyable<T> and trivially_destructible<T>)
+#if defined(__has_builtin)
+    #if __has_builtin(__is_trivially_relocatable)
+                                    or __is_trivially_relocatable(T)
+    #endif
+#endif
+      ;
     template<typename T, typename U>
     concept trivially_assignable_from = assignable_from<T, U> and std::is_trivially_assignable_v<std::remove_reference_t<T>, U>;
 
@@ -348,21 +356,21 @@ export namespace stormkit { inline namespace core { namespace meta {
 namespace stormkit { inline namespace core { namespace meta::details {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename...> class T, typename... Ts>
+    template<template<class...> typename T, typename... Ts>
     constexpr auto is_specialization_of_helper(const T<Ts...>&) noexcept -> std::true_type {
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, auto...> class T, typename T2, auto... Ts>
+    template<template<typename, auto...> typename T, typename T2, auto... Ts>
     constexpr auto is_specialization_of_with_nttp_helper(const T<T2, Ts...>&) noexcept -> std::true_type {
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<template<typename, auto...> class T, typename T1, auto... Ts>
+    template<template<typename, auto...> typename T, typename T1, auto... Ts>
     constexpr auto is_specialization_of_helper_nttp_tv(const T<T1, Ts...>&) noexcept -> std::true_type {
         return {};
     }

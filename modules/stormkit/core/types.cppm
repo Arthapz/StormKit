@@ -120,7 +120,7 @@ export {
         template<typename T, std::size_t Extent = std::dynamic_extent>
         using array_view = std::span<T, Extent>;
 
-        template<class T, class Extents, class LayoutPolicy = std::layout_right, class AccessorPolicy = std::default_accessor<T>>
+        template<typename T, class Extents, class LayoutPolicy = std::layout_right, class AccessorPolicy = std::default_accessor<T>>
         using mdarray_view = std::mdspan<T, Extents, LayoutPolicy, AccessorPolicy>;
 
         using std::basic_string;

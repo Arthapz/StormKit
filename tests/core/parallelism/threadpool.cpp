@@ -17,23 +17,23 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 namespace {
-    auto _ = test::TestSuite {
-        "Core.parallelism",
+    auto _ = test::test_suite {
+        "core.parallelism",
         {
-          { "ThreadPool.post_task_future_void",
+          { "thread_pool.post_task_future_void",
             [] static noexcept {
-                auto thread_pool = ThreadPool {};
+                auto thread_pool_ = thread_pool {};
 
-                auto future = thread_pool.post_task<void>([] static noexcept { std::println("Hello from a thread!"); });
+                auto future = thread_pool_.post_task<void>([] static noexcept { std::println("Hello from a thread!"); });
 
                 EXPECTS(future.valid());
                 future.wait();
             } },
-          { "ThreadPool.post_task_future_int",
+          { "thread_pool.post_task_future_int",
             [] static noexcept {
-                auto thread_pool = ThreadPool {};
+                auto thread_pool_ = thread_pool {};
 
-                auto future = thread_pool.post_task<int>([] static noexcept {
+                auto future = thread_pool_.post_task<int>([] static noexcept {
                     std::println("Hello from a thread!");
                     return 8;
                 });
@@ -42,57 +42,57 @@ namespace {
                 future.wait();
                 EXPECTS(future.get() == 8);
             } },
-          { "ThreadPool.post_task_no_future",
+          { "thread_pool.post_task_no_future",
             [] static noexcept {
-                auto thread_pool = ThreadPool {};
+                auto thread_pool_ = thread_pool {};
 
                 auto val = std::atomic_int { 5 };
 
-                thread_pool.post_task<void>(
+                thread_pool_.post_task<void>(
                   [&val] noexcept {
                       std::println("Hello from a thread!");
                       val = 8;
                   },
-                  ThreadPool::NO_FUTURE);
+                  thread_pool::NO_FUTURE);
 
                 std::this_thread::sleep_for(1s);
 
                 EXPECTS(val == 8);
             } },
-          { "ThreadPool.post_task_from_other_task",
+          { "thread_pool.post_task_from_other_task",
             [] static noexcept {
-                auto thread_pool = ThreadPool {};
+                auto thread_pool_ = thread_pool {};
 
                 auto val = std::atomic_int { 5 };
 
-                thread_pool.post_task<void>(
-                  [&val, &thread_pool] noexcept {
-                      thread_pool.post_task<void>(
+                thread_pool_.post_task<void>(
+                  [&val, &thread_pool_] noexcept {
+                      thread_pool_.post_task<void>(
                         [&val] noexcept {
                             std::println("Hello from a thread!");
                             val = 8;
                         },
-                        ThreadPool::NO_FUTURE);
+                        thread_pool::NO_FUTURE);
                   },
-                  ThreadPool::NO_FUTURE);
+                  thread_pool::NO_FUTURE);
 
                 std::this_thread::sleep_for(1s);
 
                 EXPECTS(val == 8);
             } },
-          { "ThreadPool.post_task_from_other_thread",
+          { "thread_pool.post_task_from_other_thread",
             [] static noexcept {
-                auto thread_pool = ThreadPool {};
+                auto thread_pool_ = thread_pool {};
 
                 auto val = std::atomic_int { 5 };
 
-                auto thread = std::jthread { [&val, &thread_pool] noexcept {
-                    thread_pool.post_task<void>(
+                auto thread = std::jthread { [&val, &thread_pool_] noexcept {
+                    thread_pool_.post_task<void>(
                       [&val] noexcept {
                           std::println("Hello from a thread!");
                           val = 8;
                       },
-                      ThreadPool::NO_FUTURE);
+                      thread_pool::NO_FUTURE);
                 } };
 
                 std::this_thread::sleep_for(1s);
@@ -101,12 +101,12 @@ namespace {
 
                 EXPECTS(val == 8);
             } },
-          { "ThreadPool.parallel_for",
+          { "thread_pool.parallel_for",
             [] static noexcept {
-                auto thread_pool = ThreadPool {};
+                auto thread_pool_ = thread_pool {};
 
                 auto values = dynarray<i32> { std::from_range, range(0, 1000000) };
-                parallel_for(thread_pool, values, [](auto& value) { value += value; });
+                parallel_for(thread_pool_, values, [](auto& value) { value += value; });
 
                 auto k = 0;
                 for (auto v : values) EXPECTS(v == (k++ * 2));

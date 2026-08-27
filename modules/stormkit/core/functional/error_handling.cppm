@@ -10,10 +10,11 @@ export module stormkit.core.functional.error_handling;
 
 import std;
 
-import stormkit.core.meta;
 import stormkit.core.types;
-import stormkit.core.console;
+
+import stormkit.core.console.io;
 import stormkit.core.contract;
+import stormkit.core.meta.type_manipulation;
 
 export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]

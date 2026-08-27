@@ -44,7 +44,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto zero_bytes(T& value) noexcept -> void {
-        auto bytes = as<bytes_view>(value);
+        auto bytes = as<array_view>(as_bytes, value);
         stdr::fill(bytes, byte { 0 });
     }
 

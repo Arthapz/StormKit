@@ -18,7 +18,6 @@ import std;
 import stormkit.core.types;
 
 export import stormkit.core.status_code;
-import stormkit.core.string.format;
 import stormkit.core.meta.type_query;
 
 export {
@@ -86,9 +85,6 @@ export {
 
         template<typename T>
         using system_result = expected<T, system_code>;
-
-        template<typename CharT, typename FormatContext>
-        constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<system_code> value, FormatContext& ctx) -> decltype(ctx.out());
     }} // namespace stormkit::core
 }
 
@@ -131,14 +127,14 @@ namespace stormkit { inline namespace core {
         }
     } // namespace error_code
 
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename CharT, typename FormatContext>
-    STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<system_code> error, FormatContext& ctx) -> decltype(ctx.out()) {
-        return std::format_to(ctx.out(),
-                              "{:#x} ({})",
-                              static_cast<unsigned long long>(error.value()),
-                              std::string_view { error.message() });
-    }
+    // ////////////////////////////////////////
+    // ////////////////////////////////////////
+    // template<typename CharT, typename FormatContext>
+    // STORMKIT_FORCE_INLINE
+    // constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<system_code> error, FormatContext& ctx) -> decltype(ctx.out()) {
+    //     return std::format_to(ctx.out(),
+    //                           "{:#x} ({})",
+    //                           static_cast<unsigned long long>(error.value()),
+    //                           std::string_view { error.message() });
+    // }
 }} // namespace stormkit::core

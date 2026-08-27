@@ -12,7 +12,6 @@ module;
 export module stormkit.wsi:win32.keyboard;
 
 import std;
-import frozen;
 
 import stormkit.core;
 import stormkit.wsi;
@@ -31,7 +30,7 @@ namespace stdr = std::ranges;
 
 namespace stormkit::wsi::win32 {
     namespace {
-        constexpr auto SCANCODE_AS_KEY = frozen::make_map<WPARAM, std::pair<Key, char>>({
+        constexpr auto SCANCODE_AS_KEY = make_static_hash_map<WPARAM, std::pair<Key, char>>({
           { 'A',           { Key::A, 'A' }               },
           { 'B',           { Key::B, 'B' }               },
           { 'C',           { Key::C, 'C' }               },
@@ -156,10 +155,9 @@ namespace stormkit::wsi::win32 {
         constexpr auto KEY_AS_SCANCODE = [] static noexcept -> decltype(auto) {
             auto out = array<std::pair<Key, WPARAM>, 111> {};
             auto i   = 0_usize;
-            for (const auto& [key, value] : SCANCODE_AS_KEY)
-                out[i++] = std::make_pair(value.first, key);
+            for (const auto& [key, value] : SCANCODE_AS_KEY) out[i++] = std::make_pair(value.first, key);
 
-            return frozen::make_map(out);
+            return make_static_hash_map(out);
         }();
     } // namespace
 

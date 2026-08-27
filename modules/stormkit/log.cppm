@@ -12,7 +12,6 @@ module;
 export module stormkit.log;
 
 import std;
-import frozen;
 
 import stormkit.core;
 
@@ -20,8 +19,8 @@ namespace stdr = std::ranges;
 
 export {
     namespace stormkit::log {
-        struct Module;
-        enum class Severity : u8 {
+        struct module;
+        enum class severity : u8 {
             INFO    = 1,
             WARNING = 2,
             ERROR   = 4,
@@ -31,61 +30,61 @@ export {
     } // namespace stormkit::log
 
     template<>
-    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::log::Severity> = true;
+    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::log::severity> = true;
 
     namespace stormkit::log {
         [[nodiscard]]
         constexpr auto tag_invoke(as_fn<string_view>,
-                                  Severity value,
+                                  severity value,
                                   source_location_arg = std::source_location::current()) noexcept -> string_view;
 
         STORMKIT_LOG_API
         auto parse_args(array_view<const string_view> args) noexcept -> void;
 
-        class STORMKIT_LOG_API Logger {
+        class STORMKIT_LOG_API logger {
           public:
-            using LogClock = std::chrono::high_resolution_clock;
+            using clock_type = std::chrono::high_resolution_clock;
 
-            explicit Logger(LogClock::time_point start) noexcept;
-            Logger(LogClock::time_point start, Severity mask) noexcept;
-            virtual ~Logger() noexcept;
+            explicit logger(clock_type::time_point start) noexcept;
+            logger(clock_type::time_point start, severity mask) noexcept;
+            virtual ~logger() noexcept;
 
-            virtual auto write(Severity severity, const Module& module, std::string_view string) noexcept -> void = 0;
-            virtual auto flush() noexcept -> void                                                                 = 0;
+            virtual auto write(severity severity, const module& module, string_view string) noexcept -> void = 0;
+            virtual auto flush() noexcept -> void                                                            = 0;
 
-            auto set_severity_mask(Severity mask) noexcept -> void;
+            auto set_severity_mask(severity mask) noexcept -> void;
 
             [[nodiscard]]
-            auto start_time() const noexcept -> const LogClock::time_point&;
+            auto start_time() const noexcept -> const clock_type::time_point&;
             [[nodiscard]]
-            auto severity_mask() const noexcept -> Severity;
+            auto severity_mask() const noexcept -> severity;
 
             [[nodiscard]]
             auto mutex() noexcept -> std::mutex&;
 
-            template<class T, typename... Ts>
+            template<typename T, typename... Ts>
             [[nodiscard]]
             static auto create_logger_instance(Ts&&... param_args) noexcept -> T;
 
-            template<class T, typename... Ts>
+            template<typename T, typename... Ts>
             [[nodiscard]]
             static auto allocate_logger_instance(Ts&&... param_args) noexcept -> heap_ptr<T>;
 
             template<class... Ts>
-            static auto log(Severity                    severity,
-                            const Module&               module,
+            static auto log(severity                  severity,
+                            const module&             module,
                             std::format_string<Ts...> format_string,
                             Ts&&... args) noexcept -> void;
 
             template<class... Ts>
-            static auto log(Severity severity, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
+            static auto log(severity severity, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
 
             template<class... Ts>
-            static auto log_runtime(Severity severity, const Module& module, string_view format_string, Ts&&... args) noexcept
+            static auto log_runtime(severity severity, const module& module, string_view format_string, Ts&&... args) noexcept
               -> void;
 
             template<class... Ts>
-            static auto log_runtime(Severity severity, string_view format_string, Ts&&... args) noexcept -> void;
+            static auto log_runtime(severity severity, string_view format_string, Ts&&... args) noexcept -> void;
 
             template<class... Ts>
             static auto dlog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
@@ -99,51 +98,51 @@ export {
             static auto flog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
 
             template<class... Ts>
-            static auto dlog(const Module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
+            static auto dlog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto ilog(const Module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
+            static auto ilog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto wlog(const Module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
+            static auto wlog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto elog(const Module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
+            static auto elog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto flog(const Module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
+            static auto flog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void;
 
             template<class... Ts>
-            static auto dlog_runtime(std::string_view format_string, Ts&&... args) noexcept -> void;
+            static auto dlog_runtime(string_view format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto ilog_runtime(std::string_view format_string, Ts&&... args) noexcept -> void;
+            static auto ilog_runtime(string_view format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto wlog_runtime(std::string_view format_string, Ts&&... args) noexcept -> void;
+            static auto wlog_runtime(string_view format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto elog_runtime(std::string_view format_string, Ts&&... args) noexcept -> void;
+            static auto elog_runtime(string_view format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto flog_runtime(std::string_view format_string, Ts&&... args) noexcept -> void;
+            static auto flog_runtime(string_view format_string, Ts&&... args) noexcept -> void;
 
             template<class... Ts>
-            static auto dlog_runtime(const Module& module, std::string_view format_string, Ts&&... args) noexcept -> void;
+            static auto dlog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto ilog_runtime(const Module& module, std::string_view format_string, Ts&&... args) noexcept -> void;
+            static auto ilog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto wlog_runtime(const Module& module, std::string_view format_string, Ts&&... args) noexcept -> void;
+            static auto wlog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto elog_runtime(const Module& module, std::string_view format_string, Ts&&... args) noexcept -> void;
+            static auto elog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void;
             template<class... Ts>
-            static auto flog_runtime(const Module& module, std::string_view format_string, Ts&&... args) noexcept -> void;
+            static auto flog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void;
 
             [[nodiscard]]
             static auto has_logger() noexcept -> bool;
             [[nodiscard]]
-            static auto instance() noexcept -> Logger&;
+            static auto instance() noexcept -> logger&;
 
           protected:
-            LogClock::time_point m_start_time;
-            Severity             m_severity_mask;
+            clock_type::time_point m_start_time;
+            severity               m_severity_mask;
 
             std::mutex m_mutex;
         };
 
-        struct Module {
+        struct module {
             template<class... Ts>
             auto dlog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void;
             template<class... Ts>
@@ -156,15 +155,15 @@ export {
             auto flog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void;
 
             template<class... Ts>
-            auto dlog_runtime(std::string_view format_string, Ts&&... args) const noexcept -> void;
+            auto dlog_runtime(string_view format_string, Ts&&... args) const noexcept -> void;
             template<class... Ts>
-            auto ilog_runtime(std::string_view format_string, Ts&&... args) const noexcept -> void;
+            auto ilog_runtime(string_view format_string, Ts&&... args) const noexcept -> void;
             template<class... Ts>
-            auto wlog_runtime(std::string_view format_string, Ts&&... args) const noexcept -> void;
+            auto wlog_runtime(string_view format_string, Ts&&... args) const noexcept -> void;
             template<class... Ts>
-            auto elog_runtime(std::string_view format_string, Ts&&... args) const noexcept -> void;
+            auto elog_runtime(string_view format_string, Ts&&... args) const noexcept -> void;
             template<class... Ts>
-            auto flog_runtime(std::string_view format_string, Ts&&... args) const noexcept -> void;
+            auto flog_runtime(string_view format_string, Ts&&... args) const noexcept -> void;
 
             auto flush() const noexcept -> void;
 
@@ -173,21 +172,21 @@ export {
 
         template<static_string str>
         [[nodiscard]]
-        constexpr auto operator""_module() noexcept -> stormkit::log::Module;
+        constexpr auto operator""_module() noexcept -> stormkit::log::module;
 
-        class STORMKIT_LOG_API FileLogger final: public Logger {
+        class STORMKIT_LOG_API file_logger final: public logger {
           public:
-            FileLogger(LogClock::time_point start, std::filesystem::path path) noexcept;
-            FileLogger(LogClock::time_point start, std::filesystem::path path, Severity mask) noexcept;
-            ~FileLogger() noexcept override;
+            file_logger(clock_type::time_point start, std::filesystem::path path) noexcept;
+            file_logger(clock_type::time_point start, std::filesystem::path path, severity mask) noexcept;
+            ~file_logger() noexcept override;
 
-            FileLogger(const FileLogger&) noexcept                    = delete;
-            auto operator=(const FileLogger&) noexcept -> FileLogger& = delete;
+            file_logger(const file_logger&) noexcept                    = delete;
+            auto operator=(const file_logger&) noexcept -> file_logger& = delete;
 
-            FileLogger(FileLogger&&) noexcept                    = delete;
-            auto operator=(FileLogger&&) noexcept -> FileLogger& = delete;
+            file_logger(file_logger&&) noexcept                    = delete;
+            auto operator=(file_logger&&) noexcept -> file_logger& = delete;
 
-            auto write(Severity severity, const Module& module, std::string_view string) noexcept -> void override;
+            auto write(severity severity, const module& module, string_view string) noexcept -> void override;
             auto flush() noexcept -> void override;
 
           private:
@@ -196,20 +195,20 @@ export {
             std::filesystem::path m_base_path;
         };
 
-        class STORMKIT_LOG_API ConsoleLogger final: public Logger {
+        class STORMKIT_LOG_API console_logger final: public logger {
           public:
-            explicit ConsoleLogger(LogClock::time_point start) noexcept;
-            ConsoleLogger(LogClock::time_point start, Severity mask) noexcept;
+            explicit console_logger(clock_type::time_point start) noexcept;
+            console_logger(clock_type::time_point start, severity mask) noexcept;
 
-            ConsoleLogger(const ConsoleLogger&) noexcept                    = delete;
-            auto operator=(const ConsoleLogger&) noexcept -> ConsoleLogger& = delete;
+            console_logger(const console_logger&) noexcept                    = delete;
+            auto operator=(const console_logger&) noexcept -> console_logger& = delete;
 
-            ConsoleLogger(ConsoleLogger&&) noexcept                    = delete;
-            auto operator=(ConsoleLogger&&) noexcept -> ConsoleLogger& = delete;
+            console_logger(console_logger&&) noexcept                    = delete;
+            auto operator=(console_logger&&) noexcept -> console_logger& = delete;
 
-            ~ConsoleLogger() noexcept override;
+            ~console_logger() noexcept override;
 
-            auto write(Severity severity, const Module& module, std::string_view string) noexcept -> void override;
+            auto write(severity severity, const module& module, string_view string) noexcept -> void override;
             auto flush() noexcept -> void override;
         };
     } // namespace stormkit::log
@@ -225,13 +224,13 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto tag_invoke(as_fn<string_view>, Severity severity, source_location_arg) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, severity severity, source_location_arg) noexcept -> string_view {
         switch (severity) {
-            case Severity::INFO: return "INFO";
-            case Severity::WARNING: return "WARNING";
-            case Severity::ERROR: return "ERROR";
-            case Severity::FATAL: return "FATAL";
-            case Severity::DEBUG: return "DEBUG";
+            case severity::INFO: return "INFO";
+            case severity::WARNING: return "WARNING";
+            case severity::ERROR: return "ERROR";
+            case severity::FATAL: return "FATAL";
+            case severity::DEBUG: return "DEBUG";
             default: break;
         }
 
@@ -241,49 +240,49 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Logger::set_severity_mask(Severity mask) noexcept -> void {
+    inline auto logger::set_severity_mask(severity mask) noexcept -> void {
         m_severity_mask = mask;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Logger::start_time() const noexcept -> const LogClock::time_point& {
+    inline auto logger::start_time() const noexcept -> const clock_type::time_point& {
         return m_start_time;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Logger::severity_mask() const noexcept -> Severity {
+    inline auto logger::severity_mask() const noexcept -> severity {
         return m_severity_mask;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Logger::mutex() noexcept -> std::mutex& {
+    inline auto logger::mutex() noexcept -> std::mutex& {
         return m_mutex;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<class T, typename... Ts>
-    inline auto Logger::create_logger_instance(Ts&&... param_args) noexcept -> T {
-        static_assert(std::is_base_of<Logger, T>::value, "T must inherit Logger");
+    template<typename T, typename... Ts>
+    inline auto logger::create_logger_instance(Ts&&... param_args) noexcept -> T {
+        static_assert(std::is_base_of<logger, T>::value, "T must inherit logger");
 
-        auto time_point = LogClock::now();
+        auto time_point = clock_type::now();
 
         return T { std::move(time_point), std::forward<Ts>(param_args)... };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<class T, typename... Ts>
-    inline auto Logger::allocate_logger_instance(Ts&&... param_args) noexcept -> heap_ptr<T> {
-        static_assert(std::is_base_of<Logger, T>::value, "T must inherit Logger");
+    template<typename T, typename... Ts>
+    inline auto logger::allocate_logger_instance(Ts&&... param_args) noexcept -> heap_ptr<T> {
+        static_assert(std::is_base_of<logger, T>::value, "T must inherit logger");
 
-        auto time_point = LogClock::now();
+        auto time_point = clock_type::now();
 
         return *allocate<T>(std::move(time_point), std::forward<Ts>(param_args)...)
                   .transform_error(core::monadic::assert("Failed to allocate logger instance"));
@@ -292,8 +291,8 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
-    inline auto Logger::log(Severity                    severity,
-                            const Module&               m,
+    inline auto logger::log(severity                  severity,
+                            const module&             m,
                             std::format_string<Ts...> format_string,
                             Ts&&... param_args) noexcept -> void {
         EXPECTS(has_logger());
@@ -327,17 +326,15 @@ namespace stormkit::log {
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::log(Severity severity, std::format_string<Ts...> format_string, Ts&&... param_args) noexcept -> void {
-        log(severity, Module {}, std::move(format_string), std::forward<Ts>(param_args)...);
+    inline auto logger::log(severity severity, std::format_string<Ts...> format_string, Ts&&... param_args) noexcept -> void {
+        log(severity, module {}, std::move(format_string), std::forward<Ts>(param_args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
-    inline auto Logger::log_runtime(Severity         severity,
-                                    const Module&    m,
-                                    std::string_view format_string,
-                                    Ts&&... param_args) noexcept -> void {
+    inline auto logger::log_runtime(severity severity, const module& m, string_view format_string, Ts&&... param_args) noexcept
+      -> void {
         EXPECTS(has_logger());
 
         struct counter {
@@ -384,272 +381,272 @@ namespace stormkit::log {
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::log_runtime(Severity severity, string_view format_string, Ts&&... param_args) noexcept -> void {
-        log(severity, Module {}, std::move(format_string), std::forward<Ts>(param_args)...);
+    inline auto logger::log_runtime(severity severity, string_view format_string, Ts&&... param_args) noexcept -> void {
+        log(severity, module {}, std::move(format_string), std::forward<Ts>(param_args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline ConsoleLogger::~ConsoleLogger() noexcept = default;
+    inline console_logger::~console_logger() noexcept = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline FileLogger::~FileLogger() noexcept = default;
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<class... Ts>
-    STORMKIT_FORCE_INLINE
-    inline auto Logger::dlog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(Severity::DEBUG, std::move(format_string), std::forward<Ts>(args)...);
-    }
+    inline file_logger::~file_logger() noexcept = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::ilog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(Severity::INFO, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::dlog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
+        log(severity::DEBUG, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::wlog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(Severity::WARNING, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::ilog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
+        log(severity::INFO, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::elog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(Severity::ERROR, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::wlog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
+        log(severity::WARNING, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::flog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(Severity::FATAL, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::elog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
+        log(severity::ERROR, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::dlog(const Module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(Severity::DEBUG, module, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::flog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
+        log(severity::FATAL, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::ilog(const Module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(Severity::INFO, module, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::dlog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
+        log(severity::DEBUG, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::wlog(const Module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(Severity::WARNING, module, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::ilog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
+        log(severity::INFO, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::elog(const Module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(Severity::ERROR, module, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::wlog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
+        log(severity::WARNING, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::flog(const Module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(Severity::FATAL, module, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::elog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
+        log(severity::ERROR, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::dlog_runtime(std::string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(Severity::DEBUG, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::flog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
+        log(severity::FATAL, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::ilog_runtime(std::string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(Severity::INFO, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::dlog_runtime(string_view format_string, Ts&&... args) noexcept -> void {
+        log_runtime(severity::DEBUG, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::wlog_runtime(std::string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(Severity::WARNING, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::ilog_runtime(string_view format_string, Ts&&... args) noexcept -> void {
+        log_runtime(severity::INFO, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::elog_runtime(std::string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(Severity::ERROR, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::wlog_runtime(string_view format_string, Ts&&... args) noexcept -> void {
+        log_runtime(severity::WARNING, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::flog_runtime(std::string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(Severity::FATAL, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::elog_runtime(string_view format_string, Ts&&... args) noexcept -> void {
+        log_runtime(severity::ERROR, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::dlog_runtime(const Module& module, std::string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(Severity::DEBUG, module, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::flog_runtime(string_view format_string, Ts&&... args) noexcept -> void {
+        log_runtime(severity::FATAL, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::ilog_runtime(const Module& module, std::string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(Severity::INFO, module, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::dlog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void {
+        log_runtime(severity::DEBUG, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::wlog_runtime(const Module& module, std::string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(Severity::WARNING, module, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::ilog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void {
+        log_runtime(severity::INFO, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::elog_runtime(const Module& module, std::string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(Severity::ERROR, module, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::wlog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void {
+        log_runtime(severity::WARNING, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Logger::flog_runtime(const Module& module, std::string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(Severity::FATAL, module, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::elog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void {
+        log_runtime(severity::ERROR, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Module::dlog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void {
-        Logger::dlog(*this, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto logger::flog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void {
+        log_runtime(severity::FATAL, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Module::ilog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void {
-        Logger::ilog(*this, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto module::dlog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void {
+        logger::dlog(*this, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Module::wlog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void {
-        Logger::wlog(*this, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto module::ilog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void {
+        logger::ilog(*this, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Module::elog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void {
-        Logger::elog(*this, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto module::wlog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void {
+        logger::wlog(*this, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Module::flog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void {
-        Logger::flog(*this, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto module::elog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void {
+        logger::elog(*this, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Module::dlog_runtime(std::string_view format_string, Ts&&... args) const noexcept -> void {
-        Logger::dlog_runtime(*this, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto module::flog(std::format_string<Ts...> format_string, Ts&&... args) const noexcept -> void {
+        logger::flog(*this, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Module::ilog_runtime(std::string_view format_string, Ts&&... args) const noexcept -> void {
-        Logger::ilog_runtime(*this, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto module::dlog_runtime(string_view format_string, Ts&&... args) const noexcept -> void {
+        logger::dlog_runtime(*this, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Module::wlog_runtime(std::string_view format_string, Ts&&... args) const noexcept -> void {
-        Logger::wlog_runtime(*this, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto module::ilog_runtime(string_view format_string, Ts&&... args) const noexcept -> void {
+        logger::ilog_runtime(*this, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Module::elog_runtime(std::string_view format_string, Ts&&... args) const noexcept -> void {
-        Logger::elog_runtime(*this, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto module::wlog_runtime(string_view format_string, Ts&&... args) const noexcept -> void {
+        logger::wlog_runtime(*this, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    inline auto Module::flog_runtime(std::string_view format_string, Ts&&... args) const noexcept -> void {
-        Logger::flog_runtime(*this, std::move(format_string), std::forward<Ts>(args)...);
+    inline auto module::elog_runtime(string_view format_string, Ts&&... args) const noexcept -> void {
+        logger::elog_runtime(*this, std::move(format_string), std::forward<Ts>(args)...);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class... Ts>
+    STORMKIT_FORCE_INLINE
+    inline auto module::flog_runtime(string_view format_string, Ts&&... args) const noexcept -> void {
+        logger::flog_runtime(*this, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Module::flush() const noexcept -> void {
-        Logger::instance().flush();
+    inline auto module::flush() const noexcept -> void {
+        logger::instance().flush();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<static_string str>
     STORMKIT_FORCE_INLINE
-    constexpr auto operator""_module() noexcept -> stormkit::log::Module {
-        return Module { str.view() };
+    constexpr auto operator""_module() noexcept -> stormkit::log::module {
+        return module { str.view() };
     }
 } // namespace stormkit::log

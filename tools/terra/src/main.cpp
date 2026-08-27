@@ -4,7 +4,7 @@ import stormkit.core;
 
 #include <stormkit/main/main_macro.hpp>
 
-#include <stormkit/core/try_expected.hpp>
+#include <stormkit/core/tryx_expected.hpp>
 
 namespace stdr  = std::ranges;
 namespace stdfs = std::filesystem;
@@ -32,8 +32,8 @@ auto main(const array_view<const string_view> args) noexcept -> int {
         return stdfs::path { args[2] };
     }();
 
-    const auto template_data = TryXAssert(io::readfile<io::Mode::AINSI>(template_path),
-                                         std::format("Failed to read file {}, reason: ", template_path.string()));
+    const auto template_data = TryXAssert(io::readfile<io::open_mode::AINSI>(template_path),
+                                          std::format("Failed to read file {}, reason: ", template_path.string()));
 
     auto out = string {};
     out.reserve(stdr::size(template_data));
@@ -50,7 +50,7 @@ outfile = io.open("{}", "w")
     bool last_char_was_bracket = false;
     bool is_parsing_lua        = false;
     auto i                     = 0uz;
-    for (auto&& c : template_data) {
+    for (const auto& c : template_data) {
         if (is_parsing_lua) {
             if (c == '%' and i + 1 < stdr::size(template_data) and template_data[i + 1] == '}') {
             } else if (c == '}' and i > 0 and template_data[i - 1] == '%') {

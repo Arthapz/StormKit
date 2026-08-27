@@ -15,9 +15,13 @@ module;
     template<typename First, typename... Ts>                                                               \
     concept same_as_any_of = apply_to<First, meta::same_as_any_of, Ts...>;                                 \
     template<typename First, typename... Ts>                                                               \
+    concept same_types_as = apply_to<First, meta::same_types_as, Ts...>;                                   \
+    template<typename First, typename... Ts>                                                               \
     concept convertible_to = apply_to<First, meta::convertible_to, Ts...>;                                 \
     template<typename First, typename... Ts>                                                               \
     concept explicitly_convertible_to = apply_to<First, meta::explicitly_convertible_to, Ts...>;           \
+    template<typename First, typename... Ts>                                                               \
+    concept boolean_testable = apply_to<First, meta::boolean_testable, Ts...>;                             \
     template<typename First, typename... Ts>                                                               \
     concept std_optional = apply_to<First, meta::std_optional, Ts...>;                                     \
     template<typename First, typename... Ts>                                                               \
@@ -149,7 +153,9 @@ module;
     template<typename First, typename... Ts>                                                               \
     concept prefer_pass_by_value = apply_to<First, meta::prefer_pass_by_value, Ts...>;                     \
     template<typename First, typename... Ts>                                                               \
-    concept prefer_pass_by_ref = apply_to<First, meta::prefer_pass_by_ref, Ts...>;
+    concept prefer_pass_by_ref = apply_to<First, meta::prefer_pass_by_ref, Ts...>;                         \
+    template<typename First, typename... Ts>                                                               \
+    concept hash_type = apply_to<First, meta::hash_type, Ts...>;
 
 export module stormkit.core.meta.type_manipulation;
 
@@ -213,7 +219,7 @@ export namespace stormkit { inline namespace core { namespace meta {
         template<typename First, template<typename...> concept C, typename... Ts>
         concept apply_to = apply<meta::to_decayed_type, C, Ts..., First>;
 
-        template<typename S, template<typename...> class T>
+        template<typename S, template<typename...> typename T>
         concept specialization_of = meta::specialization_of<meta::to_plain_type<S>, T>;
 
         template<typename S, template<class, auto...> typename T>
@@ -230,9 +236,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     namespace plain {
         template<typename First, template<typename...> concept C, typename... Ts>
-        concept apply_to = apply<meta::to_plain_type, C, Ts..., First>;
+        concept apply_to = apply<meta::to_plain_type, C, First, Ts...>;
 
-        template<typename S, template<typename...> class T>
+        template<typename S, template<typename...> typename T>
         concept specialization_of = meta::specialization_of<meta::to_plain_type<S>, T>;
 
         template<typename S, template<class, auto...> typename T>

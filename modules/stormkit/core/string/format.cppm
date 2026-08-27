@@ -15,9 +15,11 @@ import stormkit.core.types;
 import stormkit.core.meta.tag_invoke;
 import stormkit.core.meta.concepts;
 import stormkit.core.meta.algorithms;
+import stormkit.core.meta.type_manipulation;
 import stormkit.core.meta.type_query;
 import stormkit.core.typesafe.safecasts;
 import stormkit.core.typesafe.ref_ptr;
+import stormkit.core.errors;
 
 template<typename T, typename CharT = char>
 concept has_as_string = requires(const T& value) {
@@ -29,6 +31,9 @@ export {
         namespace meta {
             template<meta::enumeration T>
             inline constexpr auto DISABLE_DEFAULT_FORMATTER_FOR_ENUM = false;
+
+            template<typename T>
+            inline constexpr auto ENABLE_AS_STRING_AS_FORMATTER = false;
         } // namespace meta
 
         template<typename CharT>
@@ -44,7 +49,9 @@ export {
             template<typename T, typename FormatContext>
             [[nodiscard]]
             static constexpr auto operator()(const T& value, FormatContext& ctx) noexcept -> invoke_result<T, FormatContext>
-                requires(not IS_TAG_INVOKABLE<T, FormatContext> and has_as_string<T, CharT>);
+                requires(not IS_TAG_INVOKABLE<T, FormatContext>
+                         and meta::ENABLE_AS_STRING_AS_FORMATTER<T>
+                         and has_as_string<T, CharT>);
 
             template<typename T, typename FormatContext>
             [[nodiscard]]
@@ -59,6 +66,11 @@ export {
                     format_as_fn<CharT> {}(value, std::declval<std::format_context&>())
                 } -> meta::is<decltype(std::declval<std::format_context&>().out())>;
             };
+
+            namespace plain {
+                template<typename T, typename CharT>
+                concept has_format_as = apply_to<T, meta::has_format_as, CharT>;
+            }
         } // namespace meta
 
         template<typename CharT, typename FormatContext>
@@ -66,10 +78,13 @@ export {
 
         template<typename CharT, typename FormatContext, meta::negate<meta::raw_indirection> T>
         constexpr auto tag_invoke(format_as_fn<CharT>, ref_ptr<T> value, FormatContext& ctx) -> decltype(ctx.out());
+
+        template<typename CharT, typename FormatContext>
+        constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<system_code> value, FormatContext& ctx) -> decltype(ctx.out());
     }} // namespace stormkit::core
 
     template<typename T, typename CharT>
-        requires(stormkit::core::meta::has_format_as<T, CharT>)
+        requires(stormkit::core::meta::plain::has_format_as<T, CharT>)
     struct std::formatter<T, CharT> {
         [[nodiscard]]
         constexpr auto parse(auto& ctx) noexcept -> decltype(ctx.begin());
@@ -88,7 +103,7 @@ namespace stormkit { inline namespace core {
     template<typename T, typename FormatContext>
     STORMKIT_FORCE_INLINE
     constexpr auto format_as_fn<CharT>::operator()(const T& value, FormatContext& ctx) noexcept -> invoke_result<T, FormatContext>
-        requires(not IS_TAG_INVOKABLE<T, FormatContext> and has_as_string<T, CharT>)
+        requires(not IS_TAG_INVOKABLE<T, FormatContext> and meta::ENABLE_AS_STRING_AS_FORMATTER<T> and has_as_string<T, CharT>)
     {
         return std::format_to(ctx.out(), "{}", as<basic_string<CharT>>(value));
     }
@@ -117,12 +132,23 @@ namespace stormkit { inline namespace core {
     constexpr auto tag_invoke(format_as_fn<CharT>, ref_ptr<T> value, FormatContext& ctx) -> decltype(ctx.out()) {
         return std::format_to(ctx.out(), "{:0x}", value.get());
     }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename CharT, typename FormatContext>
+    STORMKIT_FORCE_INLINE
+    constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<system_code> error, FormatContext& ctx) -> decltype(ctx.out()) {
+        return std::format_to(ctx.out(),
+                              "{:#x} ({})",
+                              static_cast<unsigned long long>(error.value()),
+                              std::string_view { error.message() });
+    }
 }} // namespace stormkit::core
 
 /////////////////////////////////////
 /////////////////////////////////////
 template<typename T, typename CharT>
-    requires(stormkit::core::meta::has_format_as<T, CharT>)
+    requires(stormkit::core::meta::plain::has_format_as<T, CharT>)
 constexpr auto std::formatter<T, CharT>::parse(auto& ctx) noexcept -> decltype(ctx.begin()) {
     return ctx.begin();
 }
@@ -130,7 +156,7 @@ constexpr auto std::formatter<T, CharT>::parse(auto& ctx) noexcept -> decltype(c
 /////////////////////////////////////
 /////////////////////////////////////
 template<typename T, typename CharT>
-    requires(stormkit::core::meta::has_format_as<T, CharT>)
+    requires(stormkit::core::meta::plain::has_format_as<T, CharT>)
 constexpr auto std::formatter<T, CharT>::format(const T& value, auto& ctx) const noexcept -> decltype(ctx.out()) {
     return stormkit::core::format_as_fn<CharT> {}(value, ctx);
 }

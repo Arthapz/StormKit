@@ -14,5 +14,5 @@ using namespace stormkit;
 auto main(array_view<const string_view> args) noexcept -> i32 {
     test::parse_args(args);
 
-    return test::runTests();
+    return test::run_tests();
 }

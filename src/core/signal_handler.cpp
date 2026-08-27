@@ -18,7 +18,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    extern "C" auto signal_handler(int signum) noexcept -> void {
+    extern "C" auto signal_handler(i32 signum) noexcept -> void {
         std::signal(signum, SIG_DFL);
         print_stacktrace(3);
         std::raise(SIGABRT);

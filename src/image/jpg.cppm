@@ -253,7 +253,7 @@ namespace stormkit::image::details {
         auto output = byte_dynarray {};
         output.reserve((out_size));
 
-        std::ranges::copy(as<bytes_view>(output_ptr, out_size), std::back_inserter(output));
+        std::ranges::copy(as<array_view>(as_bytes, output_ptr, out_size), std::back_inserter(output));
         if (output_ptr != nullptr) std::free(output_ptr);
 
         return output;

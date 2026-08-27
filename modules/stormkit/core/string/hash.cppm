@@ -13,6 +13,7 @@ import std;
 import stormkit.core.types;
 import stormkit.core.hash;
 import stormkit.core.meta.concepts;
+import stormkit.core.meta.type_query;
 import stormkit.core.containers.hash_map;
 import stormkit.core.typesafe.safecasts;
 
@@ -41,7 +42,7 @@ export namespace stormkit { inline namespace core {
     using string_hash_set = hash_set<Value, string_hash_fn, std::equal_to<>>;
 
     template<meta::hash_type Ret>
-    constexpr auto tag_invoke(hash_fn<Ret, string_view>, string_view value) noexcept -> Ret;
+    constexpr auto tag_invoke(hash_fn<Ret>, string_view value) noexcept -> Ret;
 
     namespace literals {
         constexpr auto operator""_hash32(czstring str, usize size) -> hash32;
@@ -190,8 +191,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(hash_fn<Ret, string_view>, string_view value) noexcept -> Ret {
-        return string_hash_fn::operator()(value);
+    constexpr auto tag_invoke(hash_fn<Ret>, string_view value) noexcept -> Ret {
+        return as<Ret>(string_hash_fn::operator()<meta::underlying_type<Ret>>(value));
     }
 
     namespace literals {

@@ -16,7 +16,7 @@ using namespace std::literals;
 
 namespace stdr = std::ranges;
 
-auto update_pixels(stormkit::ThreadPool& pool, dynarray<ucolor_rgb>& pixels, const auto& extent) noexcept {
+auto update_pixels(stormkit::thread_pool& pool, dynarray<ucolor_rgb>& pixels, const auto& extent) noexcept {
     const auto rect_width  = extent.width / 5;
     const auto rect_height = extent.height / 5;
 
@@ -63,7 +63,7 @@ auto main(array_view<const string_view> args) -> int {
     auto window = wsi::Window::open("Hello world", { .width = 800_u32, .height = 600_u32 }, wsi::WindowFlag::RESIZEABLE);
     ilog("wm: {}", window.wm());
 
-    auto pool   = core::ThreadPool {};
+    auto pool   = core::thread_pool {};
     auto pixels = dynarray<ucolor_rgb> {};
     update_pixels(pool, pixels, window.extent());
     auto active = true;

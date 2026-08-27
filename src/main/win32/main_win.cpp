@@ -81,7 +81,7 @@ auto __stdcall main(int argc, char** argv) -> int {
     auto args = dynarray<string_view> {};
     args.reserve(as<usize>(argc));
 
-    for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
+    for (const auto& i : stormkit::range(argc)) args.emplace_back(argv[i]);
 
     redirect_io_to_console(false);
 
@@ -98,7 +98,7 @@ auto __stdcall WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int {
     auto args = dynarray<string_view> {};
     args.reserve(as<usize>(argc));
 
-    for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
+    for (auto i : stormkit::range(argc)) args.emplace_back(argv[i]);
 
     const auto has_allocated = redirect_io_to_console(false);
 

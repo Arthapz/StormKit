@@ -598,7 +598,7 @@ namespace stormkit::wsi::linux::wayland {
         const auto  stride = as<usize>(extent.width * sizeof(u32));
         const auto  size   = as<usize>(stride * extent.height);
 
-        auto old_shm_buffer   = defer_init<SHMBuffer> {};
+        auto old_shm_buffer   = defer_init<shm_buffer> {};
         auto old_shm_pool     = defer_init<wl::ShmPool> {};
         auto old_pixel_buffer = defer_init<wl::Buffer> {};
 
@@ -608,8 +608,8 @@ namespace stormkit::wsi::linux::wayland {
             old_shm_pool     = std::move(m_shm_pool);
             old_pixel_buffer = std::move(m_pixel_buffer);
 
-            auto _ = SHMBuffer::create(size, std::format("StormKit::{}::PixelBuffer", m_title))
-                       .transform(bind_front(&defer_init<SHMBuffer>::construct<SHMBuffer&&>, &m_shm_buffer))
+            auto _ = shm_buffer::create(size, std::format("StormKit::{}::PixelBuffer", m_title))
+                       .transform(bind_front(&defer_init<shm_buffer>::construct<shm_buffer&&>, &m_shm_buffer))
                        .transform_error(monadic::assert());
 
             m_shm_pool = wl::ShmPool::create(globals.shm,

@@ -91,7 +91,7 @@ namespace stormkit::lua {
             if (not v.valid()) return string {};
             if (v.is<sol::lua_table>()) {
                 auto out = string { "[lua_table " };
-                for (auto&& [key, value] : v.as<sol::table>()) {
+                for (const auto& [key, value] : v.as<sol::table>()) {
                     auto key_as_string   = sol::object { luacall(format, key) }.as<string>();
                     auto value_as_string = sol::object { luacall(format, value) }.as<string>();
                     out += key_as_string;

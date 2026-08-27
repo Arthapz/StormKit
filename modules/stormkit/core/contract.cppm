@@ -18,6 +18,8 @@ import std;
 import stormkit.core.stacktrace;
 import stormkit.core.types;
 
+namespace stdr = std::ranges;
+
 export namespace stormkit { inline namespace core {
     enum class assert_type {
         ASSERTION,
@@ -59,14 +61,14 @@ export namespace stormkit { inline namespace core {
 using namespace std::literals;
 
 namespace stormkit { inline namespace core {
-    struct StringLiteral {
+    struct static_string {
         array<char, 512> buff;
-        std::size_t      size;
+        usize            size;
 
         consteval auto view() noexcept -> string_view { return { std::data(buff), size }; }
     };
 
-    auto constevalFailure(StringLiteral) -> void;
+    auto consteval_failure(static_string) -> void;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -85,11 +87,11 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    consteval auto generateConstevalMessage(assert_type type, string_view message) noexcept -> StringLiteral {
-        auto       result = StringLiteral {};
+    consteval auto generate_consteval_message(assert_type type, string_view message) noexcept -> static_string {
+        auto       result = static_string {};
         const auto str    = "[ASSERTION]"s + as_string(type) + ": " + message;
-        std::ranges::copy(str, std::begin(result.buff));
-        result.size = std::size(str);
+        stdr::copy(str, stdr::begin(result.buff));
+        result.size = stdr::size(str);
         return result;
     }
 
@@ -97,7 +99,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     consteval auto consteval_assert_base(bool cond, assert_type type, string_view message) noexcept -> void {
-        if (not cond) [[unlikely]] { constevalFailure(generateConstevalMessage(type, message)); }
+        if (not cond) [[unlikely]] { consteval_failure(generate_consteval_message(type, message)); }
     }
 
     /////////////////////////////////////

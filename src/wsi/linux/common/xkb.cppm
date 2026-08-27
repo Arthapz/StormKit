@@ -12,7 +12,6 @@ module;
 export module stormkit.wsi:linux.common.xkb;
 
 import std;
-import frozen;
 
 import stormkit.core;
 import stormkit.log;
@@ -49,7 +48,7 @@ namespace stdv = std::views;
 
 namespace stormkit::wsi::linux::common {
     namespace {
-        constexpr auto SCANCODE_AS_KEY = frozen::make_map<xkb_keysym_t, Key>({
+        constexpr auto SCANCODE_AS_KEY = make_static_hash_map<xkb_keysym_t, Key>({
           { XKB_KEY_a,            Key::A               },
           { XKB_KEY_b,            Key::B               },
           { XKB_KEY_c,            Key::C               },
@@ -180,7 +179,7 @@ namespace stormkit::wsi::linux::common {
             auto i   = 0_usize;
             for (const auto& [key, value] : SCANCODE_AS_KEY) out[i++] = std::make_pair(value, key);
 
-            return frozen::make_map(out);
+            return make_static_hash_map(out);
         }();
     } // namespace
 

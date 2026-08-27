@@ -44,15 +44,15 @@ export namespace stormkit { inline namespace core {
 
     template<meta::arithmetic T>
     [[nodiscard]]
-    constexpr auto range(meta::in<numeric_range<T>> nrange) noexcept -> decltype(auto);
+    constexpr auto range(const numeric_range<T>& nrange) noexcept -> decltype(auto);
 
     template<meta::arithmetic... Ts>
     [[nodiscard]]
-    constexpr auto multi_range(const Ts&... args) noexcept -> decltype(auto);
+    constexpr auto multi_range(Ts... args) noexcept -> decltype(auto);
 
     template<meta::arithmetic... Ts>
     [[nodiscard]]
-    constexpr auto multi_range(meta::in<numeric_range<Ts>>... args) noexcept -> decltype(auto);
+    constexpr auto multi_range(const numeric_range<Ts>&... args) noexcept -> decltype(auto);
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ namespace stdv = std::views;
 namespace stormkit { inline namespace core {
     template<meta::arithmetic T>
     STORMKIT_FORCE_INLINE
-    constexpr auto range(meta::in<numeric_range<T>> nrange) noexcept -> decltype(auto) {
+    constexpr auto range(const numeric_range<T>& nrange) noexcept -> decltype(auto) {
         return stdv::iota(nrange.begin, nrange.end) | stdv::stride(nrange.step);
     }
 
@@ -74,7 +74,7 @@ namespace stormkit { inline namespace core {
     template<meta::arithmetic T>
     STORMKIT_FORCE_INLINE
     constexpr auto range(T begin, T end, T step) noexcept -> decltype(auto) {
-        range(numeric_range<T> { .begin = begin, .end = end, .step = step });
+        return range(numeric_range<T> { .begin = begin, .end = end, .step = step });
     }
 
     /////////////////////////////////////
@@ -99,9 +99,9 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr auto multi_range(Ts... ends) noexcept -> decltype(auto) {
 #ifdef STD_CARTESIAN_PRODUCT_SUPPORTED
-        return stdv::cartesian_product((range(ends), ...));
+        return stdv::cartesian_product(range(ends)...);
 #else
-        return cartesian_product((range(ends), ...));
+        return cartesian_product(range(ends)...);
 #endif
     }
 
@@ -109,11 +109,11 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::arithmetic... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr auto multi_range(meta::in<numeric_range<Ts>>... nranges) noexcept -> decltype(auto) {
+    constexpr auto multi_range(const numeric_range<Ts>&... nranges) noexcept -> decltype(auto) {
 #ifdef STD_CARTESIAN_PRODUCT_SUPPORTED
-        return stdv::cartesian_product((range(nranges), ...));
+        return stdv::cartesian_product(range(nranges)...);
 #else
-        return cartesian_product((range(nranges), ...));
+        return cartesian_product(range(nranges)...);
 #endif
     }
 }} // namespace stormkit::core

@@ -126,6 +126,12 @@
     #define STORMKIT_VIEW [[gsl::Pointer]]
 #endif
 
+#if __has_cpp_attribute(trivially_relocatable)
+    #define STORMKIT_TRIVIALLY_RELOCATABLE [[trivially_relocatable]]
+#else
+    #define STORMKIT_TRIVIALLY_RELOCATABLE [[clang::trivial_abi]]
+#endif
+
 #if not defined(STORMKIT_COMPILER_MSVC)
     #if __has_cpp_attribute(gnu::const)
         #define STORMKIT_CONST [[gnu::const]]

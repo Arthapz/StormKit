@@ -110,7 +110,7 @@ namespace stormkit::wsi::linux::wayland::wl {
             };
         }
 
-        const auto INTERFACE_MAP = frozen::make_unordered_map<frozen::string, RegistryBinder>({
+        const auto INTERFACE_MAP = make_static_hash_map<frozen::string, RegistryBinder>({
           { frozen::string { wl_compositor_interface.name },
            { &wl_compositor_interface, make_binder<&Globals::compositor>(), 4 } },
           {

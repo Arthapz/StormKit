@@ -15,31 +15,31 @@ import stormkit.core.types;
 import stormkit.core.typesafe;
 
 namespace stormkit { inline namespace core { namespace details {
-    struct EitherFunc {
+    struct either_fn {
         [[nodiscard]]
         static constexpr auto operator()(bool condition, std::invocable auto&& true_, std::invocable auto&& false_) noexcept
           -> decltype(false_());
 
         template<typename T>
-        using ForwardArg = meta::forward_like<T, meta::ContainedType<meta::to_plain_type<T>>>;
+        using forward_wrapped_type = meta::forward_like<T, meta::value_type<meta::to_plain_type<T>>>;
 
         template<meta::pointer T>
         [[nodiscard]]
-        static constexpr auto operator()(T                                            value,
+        static constexpr auto operator()(T                                             value,
                                          std::invocable<meta::pointed_type<T>&> auto&& true_,
-                                         std::invocable auto&&                        false_) noexcept -> decltype(false_());
+                                         std::invocable auto&&                         false_) noexcept -> decltype(false_());
 
-        template<meta::IsContainer T>
-            requires(meta::convertible_to<bool, T>)
+        template<meta::plain::wrapped_value T>
         [[nodiscard]]
-        static constexpr auto operator()(T&&                                  value,
-                                         std::invocable<ForwardArg<T>> auto&& true_,
-                                         std::invocable auto&&                false_) noexcept -> decltype(false_());
+        static constexpr auto operator()(T&&                                            value,
+                                         std::invocable<forward_wrapped_type<T>> auto&& true_,
+                                         std::invocable auto&&                          false_) noexcept -> decltype(false_())
+            requires(meta::plain::boolean_testable<T>);
     };
 }}} // namespace stormkit::core::details
 
 export namespace stormkit { inline namespace core {
-    inline constexpr auto either = details::EitherFunc {};
+    inline constexpr auto either = details::either_fn {};
 
     using std::bind_back;
     using std::bind_front;
@@ -59,7 +59,7 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        constexpr auto EitherFunc::operator()(bool condition, std::invocable auto&& true_, std::invocable auto&& false_) noexcept
+        constexpr auto either_fn::operator()(bool condition, std::invocable auto&& true_, std::invocable auto&& false_) noexcept
           -> decltype(false_()) {
             if (condition) return true_();
             return false_();
@@ -69,21 +69,22 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         template<meta::pointer T>
         STORMKIT_FORCE_INLINE
-        constexpr auto EitherFunc::operator()(T                                            value,
-                                              std::invocable<meta::pointed_type<T>&> auto&& true_,
-                                              std::invocable auto&& false_) noexcept -> decltype(false_()) {
+        constexpr auto either_fn::operator()(T                                             value,
+                                             std::invocable<meta::pointed_type<T>&> auto&& true_,
+                                             std::invocable auto&& false_) noexcept -> decltype(false_()) {
             if (static_cast<bool>(value)) return true_(unref(value));
             return false_();
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<meta::IsContainer T>
-            requires(meta::convertible_to<bool, T>)
+        template<meta::plain::wrapped_value T>
         STORMKIT_FORCE_INLINE
-        constexpr auto EitherFunc::operator()(T&&                                  value,
-                                              std::invocable<ForwardArg<T>> auto&& true_,
-                                              std::invocable auto&&                false_) noexcept -> decltype(false_()) {
+        constexpr auto either_fn::operator()(T&&                                            value,
+                                             std::invocable<forward_wrapped_type<T>> auto&& true_,
+                                             std::invocable auto&&                          false_) noexcept -> decltype(false_())
+            requires(meta::plain::boolean_testable<T>)
+        {
             if (static_cast<bool>(value)) return true_(std::forward_like<T>(unref(value)));
             return false_();
         }
@@ -92,20 +93,19 @@ namespace stormkit { inline namespace core {
 #if not(defined(__cpp_lib_bind_back) and __cpp_lib_bind_back >= 202306L)
     /////////////////////////////////////
     /////////////////////////////////////
-    template<auto Func, typename... Ts>
+    template<auto FUNC, typename... Ts>
     STORMKIT_FORCE_INLINE
     constexpr auto bind_back(Ts&&... args) noexcept -> decltype(auto) {
-        return std::bind_back<Func>(std::forward<Ts>(args)...);
-        using FuncType = decltype(Func);
-        if constexpr (meta::pointer<FuncType> or std::is_member_pointer_v<FuncType>) static_assert(Func != nullptr);
+        using func_type = decltype(FUNC);
+        if constexpr (meta::pointer<func_type> or std::is_member_pointer_v<func_type>) static_assert(FUNC != nullptr);
         return
           [... bound_args(std::forward<Ts>(args))]<typename Self, typename... CallTs>(
             this Self&&,
-            CallTs&&... call_args) noexcept(std::is_nothrow_invocable_v<FuncType,
-                                                                          CallTs...,
-                                                                          meta::forward_like<Self, meta::to_decayed_type<Ts>>...>)
+            CallTs&&... call_args) noexcept(std::is_nothrow_invocable_v<func_type,
+                                                                        CallTs...,
+                                                                        meta::forward_like<Self, meta::to_decayed_type<Ts>>...>)
             -> decltype(auto) {
-              return std::invoke(Func, std::forward<CallTs>(call_args)..., std::forward_like<Self>(bound_args)...);
+              return std::invoke(FUNC, std::forward<CallTs>(call_args)..., std::forward_like<Self>(bound_args)...);
           };
     }
 #endif

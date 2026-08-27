@@ -65,7 +65,7 @@ namespace stormkit { inline namespace core {
 #ifdef STD_STACKTRACE_SUPPORTED
         const auto st = std::stacktrace::current();
         auto       i  = 0;
-        for (auto&& frame : st) {
+        for (const auto& frame : st) {
             if (i < ignore_count) {
                 i += 1;
                 continue;
@@ -106,7 +106,7 @@ namespace stormkit { inline namespace core {
     #endif
             const auto object_address = (address == 0 ? "inlined" : std::format("{:#010x}", address));
 
-            if (not std::ranges::empty(frame.source_file()) and frame.source_line() != 0) {
+            if (not stdr::empty(frame.source_file()) and frame.source_line() != 0) {
                 std::println(stderr,
                              "{}# {}{}\n    at {}:{}",
                              (i++ - ignore_count),
@@ -114,7 +114,7 @@ namespace stormkit { inline namespace core {
                              formatted_symbol,
                              GREEN_TEXT_STYLE | frame.source_file(),
                              BLUE_TEXT_STYLE | frame.source_line());
-            } else if (not std::ranges::empty(frame.source_file())) {
+            } else if (not stdr::empty(frame.source_file())) {
                 std::println(stderr,
                              "{}# {}{}\n    at {}",
                              (i++ - ignore_count),
