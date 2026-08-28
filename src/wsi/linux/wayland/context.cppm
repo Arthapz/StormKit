@@ -12,8 +12,6 @@ module;
 #include <relative-pointer-unstable-v1.h>
 #include <xdg-decoration-unstable-v1.h>
 
-#include <stormkit/core/flags_macro.hpp>
-
 export module stormkit.wsi:linux.wayland.context;
 
 import std;

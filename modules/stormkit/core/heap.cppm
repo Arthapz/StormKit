@@ -4,8 +4,6 @@
 
 module;
 
-#include <stormkit/core/as_casts_macro.hpp>
-#include <stormkit/core/format_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core.heap;

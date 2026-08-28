@@ -4,8 +4,6 @@
 
 #include <stormkit/main/main_macro.hpp>
 
-#include <stormkit/log/log_macro.hpp>
-
 #include <stormkit/core/try_expected.hpp>
 
 import std;
@@ -30,7 +28,7 @@ auto main(array_view<const string_view> args) -> int {
     wsi::parse_args(args);
     log::parse_args(args);
 
-    auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
+    auto logger = log::logger::create_logger_instance<log::console_logger>();
 
     lua::Engine::run(LUA_FILE, { .wsi = true });
 

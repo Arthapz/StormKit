@@ -53,7 +53,7 @@ option("on_ci", { default = false, category = "root menu/build" })
 option("rad", { default = false, category = "root menu/build" })
 
 ---------------------------- module options ----------------------------
-option("log", { default = false, category = "root menu/modules" })
+option("log", { default = true, category = "root menu/modules" })
 option("math", { default = false, category = "root menu/modules" })
 option("entities", { default = false, category = "root menu/modules" })
 option("image", { default = false, category = "root menu/modules", deps = { "log" } })

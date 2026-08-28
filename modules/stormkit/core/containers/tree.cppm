@@ -6,7 +6,6 @@ module;
 
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/contract_macro.hpp>
-#include <stormkit/core/memory_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core.containers.tree;

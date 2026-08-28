@@ -139,10 +139,14 @@ export namespace stormkit { inline namespace core {
                               array_view<const byte, EXTENT> value,
                               source_location_arg = std::source_location::current()) noexcept -> dynarray<To>;
 
-    // into<array_view>(as_bytes, {0, 1, 2, 3, 4});
+    // into<array>(as_bytes, {0, 1, 2, 3, 4});
     template<meta::explicitly_convertible_to<byte> T, usize EXTENT>
     [[nodiscard]]
-    constexpr auto tag_invoke(into_nttp_v_fn<array_view>, as_bytes_type, array<T, EXTENT> value) noexcept -> array<byte, EXTENT>;
+    constexpr auto tag_invoke(into_nttp_v_fn<array>, as_bytes_type, array<T, EXTENT> value) noexcept -> array<byte, EXTENT>;
+
+    template<meta::explicitly_convertible_to<byte> T, usize EXTENT>
+    [[nodiscard]]
+    constexpr auto tag_invoke(into_nttp_fn<dynarray>, as_bytes_type, array<T, EXTENT> value) noexcept -> dynarray<byte>;
 
     ////////////////////////////////////////////////////////////////////
     ///                           INDIRECTIONS                       ///
@@ -340,14 +344,25 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    // template<meta::explicitly_convertible_to<byte> T, usize EXTENT>
-    // STORMKIT_FORCE_INLINE STORMKIT_PURE
-    // constexpr auto tag_invoke(into_nttp_v_fn<dynarray>, as_bytes_type, array<T, EXTENT> values) noexcept -> array<byte, EXTENT>
-    // {
-    //     auto out = array<byte, EXTENT> {};
-    //     stdr::transform(values, stdr::begin(out), [](auto&& value) static noexcept { return static_cast<byte>(value); });
-    //     return out;
-    // }
+    template<meta::explicitly_convertible_to<byte> T, usize EXTENT>
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    constexpr auto tag_invoke(into_nttp_v_fn<array>, as_bytes_type, array<T, EXTENT> values) noexcept -> array<byte, EXTENT> {
+        auto out = array<byte, EXTENT> {};
+        stdr::transform(values, stdr::begin(out), [](auto&& value) static noexcept { return static_cast<byte>(value); });
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::explicitly_convertible_to<byte> T, usize EXTENT>
+    STORMKIT_FORCE_INLINE
+    constexpr auto tag_invoke(into_nttp_fn<dynarray>, as_bytes_type, array<T, EXTENT> values) noexcept -> dynarray<byte> {
+        auto out = dynarray<byte> {};
+        out.resize(EXTENT);
+        stdr::transform(values, stdr::begin(out), [](auto&& value) static noexcept { return static_cast<byte>(value); });
+        return out;
+    }
+
     ////////////////////////////////////////////////////////////////////
     ///                           INDIRECTIONS                       ///
     ////////////////////////////////////////////////////////////////////

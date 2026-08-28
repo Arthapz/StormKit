@@ -4,7 +4,6 @@
 
 module;
 
-#include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core.console.style;

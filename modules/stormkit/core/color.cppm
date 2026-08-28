@@ -516,16 +516,17 @@ namespace stormkit { inline namespace core {
     constexpr auto tag_invoke(format_as_fn<CharT>, const color<LAYOUT, T>& value, FormatContext& ctx) -> decltype(ctx.out()) {
         static constexpr auto COMPONENT_COUNT = color<LAYOUT, T>::COMPONENT_COUNT;
 
-        auto out = std::format_to(ctx.out(), "[color layout: {}, ", LAYOUT);
+        ctx.advance_to(std::format_to(ctx.out(), "[color layout: {}, ", LAYOUT));
 
-        if constexpr (COMPONENT_COUNT == 1) out = std::format_to(out, "red: {}", value.r);
+        if constexpr (COMPONENT_COUNT == 1) ctx.advance_to(std::format_to(ctx.out(), "red: {}", value.r));
         else if constexpr (COMPONENT_COUNT == 2)
-            out = std::format_to(out, "red: {}, green: {}", value.r, value.g);
+            ctx.advance_to(std::format_to(ctx.out(), "red: {}, green: {}", value.r, value.g));
         else if constexpr (COMPONENT_COUNT == 3)
-            out = std::format_to(out, "red: {}, green: {}, blue: {}", value.r, value.g, value.b);
+            ctx.advance_to(std::format_to(ctx.out(), "red: {}, green: {}, blue: {}", value.r, value.g, value.b));
         else if constexpr (COMPONENT_COUNT == 4)
-            out = std::format_to(out, "red: {}, green: {}, blue: {}, alpha: {}", value.r, value.g, value.b, value.a);
+            ctx.advance_to(std::
+                             format_to(ctx.out(), "red: {}, green: {}, blue: {}, alpha: {}", value.r, value.g, value.b, value.a));
 
-        return std::format_to(out, ", hex: {}]", as<string>(value));
+        return std::format_to(ctx.out(), ", hex: {}]", as<string>(value));
     }
 }} // namespace stormkit::core

@@ -9,7 +9,6 @@ module;
 
 #include <xdg-decoration-unstable-v1.h>
 
-#include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/memory_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
@@ -124,8 +123,8 @@ export {
             wl::Viewport              m_viewport                 = wl::Viewport::empty();
 
             defer_init<shm_buffer> m_shm_buffer;
-            wl::ShmPool          m_shm_pool     = wl::ShmPool::empty();
-            wl::Buffer           m_pixel_buffer = wl::Buffer::empty();
+            wl::ShmPool            m_shm_pool     = wl::ShmPool::empty();
+            wl::Buffer             m_pixel_buffer = wl::Buffer::empty();
 
             struct {
                 bool restored   = false;

@@ -15,29 +15,33 @@ import std;
 
 import stormkit.core;
 
-namespace stdr = std::ranges;
+namespace stdr  = std::ranges;
+namespace stdfs = std::filesystem;
 
 export {
     namespace stormkit::log {
         struct module;
         enum class severity : u8 {
-            INFO    = 1,
-            WARNING = 2,
-            ERROR   = 4,
-            FATAL   = 8,
-            DEBUG   = 16,
+            INFO    = 1 << 0,
+            WARNING = 1 << 1,
+            ERROR   = 1 << 2,
+            FATAL   = 1 << 3,
+            DEBUG   = 1 << 4,
         };
+
+        [[nodiscard]]
+        constexpr auto tag_invoke(as_fn<string_view>,
+                                  severity value,
+                                  source_location_arg = std::source_location::current()) noexcept -> string_view;
     } // namespace stormkit::log
 
     template<>
     inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::log::severity> = true;
 
-    namespace stormkit::log {
-        [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<string_view>,
-                                  severity value,
-                                  source_location_arg = std::source_location::current()) noexcept -> string_view;
+    template<>
+    inline constexpr auto stormkit::core::meta::ENABLE_AS_STRING_AS_FORMATTER<stormkit::log::severity> = true;
 
+    namespace stormkit::log {
         STORMKIT_LOG_API
         auto parse_args(array_view<const string_view> args) noexcept -> void;
 
@@ -176,8 +180,8 @@ export {
 
         class STORMKIT_LOG_API file_logger final: public logger {
           public:
-            file_logger(clock_type::time_point start, std::filesystem::path path) noexcept;
-            file_logger(clock_type::time_point start, std::filesystem::path path, severity mask) noexcept;
+            file_logger(clock_type::time_point start, stdfs::path path) noexcept;
+            file_logger(clock_type::time_point start, stdfs::path path, severity mask) noexcept;
             ~file_logger() noexcept override;
 
             file_logger(const file_logger&) noexcept                    = delete;
@@ -192,7 +196,7 @@ export {
           private:
             string_hash_map<std::ofstream> m_streams;
 
-            std::filesystem::path m_base_path;
+            stdfs::path m_base_path;
         };
 
         class STORMKIT_LOG_API console_logger final: public logger {
@@ -647,6 +651,8 @@ namespace stormkit::log {
     template<static_string str>
     STORMKIT_FORCE_INLINE
     constexpr auto operator""_module() noexcept -> stormkit::log::module {
-        return module { str.view() };
+        return module { str };
     }
+
+    static_assert(meta::has_as_string<stormkit::log::severity> and meta::ENABLE_AS_STRING_AS_FORMATTER<stormkit::log::severity>);
 } // namespace stormkit::log

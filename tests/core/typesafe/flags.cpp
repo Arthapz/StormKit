@@ -7,7 +7,6 @@ import std;
 import stormkit.core;
 import stormkit.test;
 
-#include <stormkit/core/flags_macro.hpp>
 #include <stormkit/test/test_macro.hpp>
 
 using namespace stormkit::core;

@@ -301,7 +301,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T>
     concept trivially_relocatable = (trivially_copyable<T> and trivially_destructible<T>)
 #if defined(__has_builtin)
-    #if __has_builtin(__is_trivially_relocatable)
+    #if __has_builtin(__builtin_is_cpp_trivially_relocatable)
+                                    or __builtin_is_cpp_trivially_relocatable(T)
+    #elif __has_builtin(__is_trivially_relocatable)
                                     or __is_trivially_relocatable(T)
     #endif
 #endif

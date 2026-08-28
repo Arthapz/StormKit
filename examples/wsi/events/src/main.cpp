@@ -6,7 +6,6 @@ import std;
 
 import stormkit;
 
-#include <stormkit/log/log_macro.hpp>
 #include <stormkit/main/main_macro.hpp>
 
 LOGGER("Events");
@@ -22,7 +21,7 @@ auto main(array_view<const string_view> args) -> int {
     wsi::parse_args(args);
     log::parse_args(args);
 
-    auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
+    auto logger = log::logger::create_logger_instance<log::console_logger>();
 
     const auto monitors = wsi::get_monitors();
     ilog("--- Monitors ---");

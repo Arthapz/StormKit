@@ -4,8 +4,6 @@
 
 module;
 
-#include <stormkit/core/memory_macro.hpp>
-
 #include <stormkit/core/contract_macro.hpp>
 
 export module stormkit.core.containers.ringbuffer;
@@ -19,23 +17,20 @@ import stormkit.core.contract;
 
 export namespace stormkit { inline namespace core {
     template<typename T>
-    class RingBuffer {
+    class ring_buffer {
       public:
-        using value_type  = T;
-        using ExtentType = usize;
+        using value_type = T;
+        using size_type  = usize;
 
-        using value_type = value_type;
-        using size_type  = ExtentType;
+        ring_buffer(size_type capacity);
 
-        RingBuffer(ExtentType capacity);
+        ring_buffer(const ring_buffer& copy);
+        auto operator=(const ring_buffer& copy) -> ring_buffer&;
 
-        RingBuffer(const RingBuffer& copy);
-        auto operator=(const RingBuffer& copy) -> RingBuffer&;
+        ring_buffer(ring_buffer&& moved) noexcept;
+        auto operator=(ring_buffer&& moved) noexcept -> ring_buffer&;
 
-        RingBuffer(RingBuffer&& moved) noexcept;
-        auto operator=(RingBuffer&& moved) noexcept -> RingBuffer&;
-
-        ~RingBuffer() noexcept;
+        ~ring_buffer() noexcept;
 
         auto clear() noexcept -> void;
 
@@ -44,16 +39,15 @@ export namespace stormkit { inline namespace core {
         [[nodiscard]]
         auto full() const noexcept -> bool;
         [[nodiscard]]
-        auto size() const noexcept -> ExtentType;
+        auto size() const noexcept -> size_type;
         [[nodiscard]]
-        auto capacity() const noexcept -> ExtentType;
+        auto capacity() const noexcept -> size_type;
 
-        template<typename U>
-            requires meta::is<T, meta::to_plain_type<U>>
-        auto push(U&& value) noexcept(std::is_nothrow_constructible_v<value_type, U>) -> void;
+        template<meta::plain::is<T> U>
+        auto push(U&& value) noexcept(meta::noexcept_constructible_from<value_type, U>) -> void;
 
-        template<class... Ts>
-        auto emplace(Ts&&... values) noexcept(std::is_nothrow_constructible_v<value_type, Ts...>) -> void;
+        template<typename... Ts>
+        auto emplace(Ts&&... values) noexcept(meta::noexcept_constructible_from<value_type, Ts...>) -> void;
 
         auto next() noexcept -> void;
 
@@ -69,15 +63,15 @@ export namespace stormkit { inline namespace core {
       private:
         template<class Self>
         [[nodiscard]]
-        auto get_ptr(this Self& self, ExtentType pos) noexcept -> decltype(auto);
+        auto get_ptr(this Self& self, size_type pos) noexcept -> decltype(auto);
 
-        ExtentType m_capacity = 0;
-        ExtentType m_count    = 0;
+        size_type m_capacity = 0;
+        size_type m_count    = 0;
 
         dynarray<byte> m_buffer;
 
-        ExtentType m_write = 0;
-        ExtentType m_read  = 0;
+        size_type m_write = 0;
+        size_type m_read  = 0;
     };
 }} // namespace stormkit::core
 
@@ -89,14 +83,14 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    RingBuffer<T>::RingBuffer(ExtentType capacity) : m_capacity { capacity } {
+    ring_buffer<T>::ring_buffer(size_type capacity) : m_capacity { capacity } {
         m_buffer.resize(m_capacity * sizeof(value_type));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    RingBuffer<T>::RingBuffer(const RingBuffer& copy) {
+    ring_buffer<T>::ring_buffer(const ring_buffer& copy) {
         m_capacity = copy.m_capacity;
         m_count    = copy.m_count;
         m_write    = copy.m_write;
@@ -116,7 +110,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    auto RingBuffer<T>::operator=(const RingBuffer& copy) -> RingBuffer& {
+    auto ring_buffer<T>::operator=(const ring_buffer& copy) -> ring_buffer& {
         if (&copy == this) return *this;
 
         m_capacity = copy.m_capacity;
@@ -139,7 +133,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    RingBuffer<T>::RingBuffer(RingBuffer&& moved) noexcept {
+    ring_buffer<T>::ring_buffer(ring_buffer&& moved) noexcept {
         m_buffer = std::exchange(moved.m_buffer, dynarray<byte> {});
 
         m_capacity = std::exchange(moved.m_capacity, 0);
@@ -151,7 +145,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    auto RingBuffer<T>::operator=(RingBuffer&& moved) noexcept -> RingBuffer& {
+    auto ring_buffer<T>::operator=(ring_buffer&& moved) noexcept -> ring_buffer& {
         if (&moved == this) return *this;
 
         m_buffer = std::exchange(moved.m_buffer, dynarray<byte> {});
@@ -167,59 +161,58 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    RingBuffer<T>::~RingBuffer() noexcept {
+    ring_buffer<T>::~ring_buffer() noexcept {
         clear();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    auto RingBuffer<T>::clear() noexcept -> void {
+    auto ring_buffer<T>::clear() noexcept -> void {
         while (not empty()) pop();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    auto RingBuffer<T>::empty() const noexcept -> bool {
+    auto ring_buffer<T>::empty() const noexcept -> bool {
         return m_count == 0;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    auto RingBuffer<T>::full() const noexcept -> bool {
+    auto ring_buffer<T>::full() const noexcept -> bool {
         return m_count == m_capacity;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    auto RingBuffer<T>::size() const noexcept -> ExtentType {
+    auto ring_buffer<T>::size() const noexcept -> size_type {
         return m_count;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    auto RingBuffer<T>::capacity() const noexcept -> ExtentType {
+    auto ring_buffer<T>::capacity() const noexcept -> size_type {
         return m_capacity;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    template<typename U>
-        requires meta::is<T, meta::to_plain_type<U>>
-    auto RingBuffer<T>::push(U&& value) noexcept(std::is_nothrow_constructible_v<value_type, U>) -> void {
+    template<meta::plain::is<T> U>
+    auto ring_buffer<T>::push(U&& value) noexcept(meta::noexcept_constructible_from<value_type, U>) -> void {
         emplace(std::forward(value));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    template<class... Ts>
-    auto RingBuffer<T>::emplace(Ts&&... values) noexcept(std::is_nothrow_constructible_v<value_type, Ts...>) -> void {
+    template<typename... Ts>
+    auto ring_buffer<T>::emplace(Ts&&... values) noexcept(meta::noexcept_constructible_from<value_type, Ts...>) -> void {
         if (m_count == m_capacity) pop();
 
         new (&m_buffer[m_write * sizeof(value_type)]) value_type { std::forward<Ts>(values)... };
@@ -233,7 +226,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    auto RingBuffer<T>::next() noexcept -> void {
+    auto ring_buffer<T>::next() noexcept -> void {
         m_read += 1;
         if (m_read >= m_capacity) m_read -= m_capacity;
     }
@@ -241,7 +234,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    auto RingBuffer<T>::pop() noexcept -> void {
+    auto ring_buffer<T>::pop() noexcept -> void {
         EXPECTS(not empty());
 
         get_ptr(m_write)->~value_type();
@@ -253,7 +246,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename T>
     template<class Self>
-    auto RingBuffer<T>::get(this Self& self) noexcept -> decltype(auto) {
+    auto ring_buffer<T>::get(this Self& self) noexcept -> decltype(auto) {
         EXPECTS(not self.empty());
 
         return std::forward_like<Self>(self.get_ptr(self.m_read));
@@ -262,7 +255,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    auto RingBuffer<T>::data() const noexcept -> array_view<const value_type> {
+    auto ring_buffer<T>::data() const noexcept -> array_view<const value_type> {
         return array_view<const value_type> { get_ptr(0), m_capacity };
     }
 
@@ -270,8 +263,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename T>
     template<class Self>
-    auto RingBuffer<T>::get_ptr(this Self& self, ExtentType pos) noexcept -> decltype(auto) {
-        using OutPtr = meta::forward_const_to<Self, T*>;
+    auto ring_buffer<T>::get_ptr(this Self& self, size_type pos) noexcept -> decltype(auto) {
+        using OutPtr = meta::forward_const_to<Self, value_type*>;
         auto addr    = std::forward_like<Self>(&(self.m_buffer[pos * sizeof(value_type)]));
 
         return std::launder(std::bit_cast<OutPtr>(addr));

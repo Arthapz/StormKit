@@ -10,6 +10,8 @@ import stormkit.core;
 
 using namespace std::literals;
 
+namespace stdfs = std::filesystem;
+
 namespace {
     constexpr auto LOG_FILE_NAME = "log.txt";
 }
@@ -17,11 +19,11 @@ namespace {
 namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    file_logger::file_logger(clock_type::time_point start, std::filesystem::path path) noexcept
+    file_logger::file_logger(clock_type::time_point start, stdfs::path path) noexcept
         : logger { std::move(start) }, m_base_path { std::move(path) } {
-        if (not std::filesystem::exists(m_base_path)) std::filesystem::create_directory(m_base_path);
+        if (not stdfs::exists(m_base_path)) stdfs::create_directory(m_base_path);
 
-        expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
+        expects(stdfs::is_directory(m_base_path), "path need to be a directory");
 
         auto filepath                = m_base_path / to_native_encoding(LOG_FILE_NAME);
         m_streams[filepath.string()] = std::ofstream { filepath.string() };
@@ -29,11 +31,11 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    file_logger::file_logger(clock_type::time_point start, std::filesystem::path path, severity log_level) noexcept
+    file_logger::file_logger(clock_type::time_point start, stdfs::path path, severity log_level) noexcept
         : logger { std::move(start), log_level }, m_base_path { std::move(path) } {
-        if (not std::filesystem::exists(m_base_path)) std::filesystem::create_directory(m_base_path);
+        if (not stdfs::exists(m_base_path)) stdfs::create_directory(m_base_path);
 
-        expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
+        expects(stdfs::is_directory(m_base_path), "path need to be a directory");
 
         auto filepath                = m_base_path / to_native_encoding(LOG_FILE_NAME);
         m_streams[filepath.string()] = std::ofstream { filepath.string() };
@@ -51,7 +53,7 @@ namespace stormkit::log {
         const auto now  = clock_type::now();
         const auto time = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
 
-        auto filepath = m_base_path / std::filesystem::path { to_native_encoding(LOG_FILE_NAME) };
+        auto filepath = m_base_path / stdfs::path { to_native_encoding(LOG_FILE_NAME) };
         if (not std::empty(m.name)) {
             filepath = m_base_path / to_native_encoding(m.name);
             filepath += to_native_encoding("-") + to_native_encoding(LOG_FILE_NAME);

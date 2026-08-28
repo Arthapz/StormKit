@@ -16,7 +16,6 @@ import stormkit.core.typesafe.safecasts;
 import stormkit.core.contract;
 import stormkit.core.meta.concepts;
 import stormkit.core.meta.type_manipulation;
-import stormkit.core.string.format;
 import stormkit.core.meta.tag_invoke;
 
 namespace stdr = std::ranges;

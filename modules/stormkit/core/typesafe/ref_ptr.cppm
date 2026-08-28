@@ -39,7 +39,7 @@ export {
 
             template<meta::plain::pointer_to<T> U>
             constexpr ref_ptr(const U& pointed STORMKIT_LIFETIMEBOUND) noexcept;
-            constexpr ~ref_ptr() noexcept;
+            // constexpr ~ref_ptr() noexcept;
 
             template<meta::is<element_type> U>
             constexpr ref_ptr(const ref_ptr<U>&) noexcept;
@@ -142,9 +142,9 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::negate<meta::raw_indirection> T>
-    STORMKIT_FORCE_INLINE
-    constexpr ref_ptr<T>::~ref_ptr() noexcept = default;
+    // template<meta::negate<meta::raw_indirection> T>
+    // STORMKIT_FORCE_INLINE
+    // constexpr ref_ptr<T>::~ref_ptr() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////

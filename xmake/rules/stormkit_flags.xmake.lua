@@ -35,7 +35,11 @@ namespace("stormkit", function()
                 rad_enabled = true
                 target:add("ldflags", "-fuse-ld=radlink", { force = true })
                 target:add("shflags", "-fuse-ld=radlink", { force = true })
+            else
+                target:add("ldflags", "-fuse-ld=lld-link", { force = true })
+                target:add("shflags", "-fuse-ld=lld-link", { force = true })
             end
+
             target:add("cxflags", "clang::-fms-compatibility")
             target:add("defines", "_CRT_STDIO_ISO_WIDE_SPECIFIERS=1")
 

@@ -18,7 +18,7 @@ namespace stormkit::log {
     namespace {
         constexpr auto DEFAULT_LOG_MASK = severity::INFO | severity::ERROR | severity::FATAL | severity::WARNING;
 
-        constinit logger* logger = nullptr;
+        constinit logger* logger_instance = nullptr;
 
         constinit auto debug_enabled = false;
     } // namespace
@@ -32,11 +32,11 @@ namespace stormkit::log {
     /////////////////////////////////////
     /////////////////////////////////////
     logger::logger(clock_type::time_point start_time) noexcept : logger { std::move(start_time), DEFAULT_LOG_MASK } {
-        EXPECTS(not logger);
+        EXPECTS(not logger_instance);
 
         if (debug_enabled) m_severity_mask |= severity::DEBUG;
 
-        logger = this;
+        logger_instance = this;
     }
 
     /////////////////////////////////////
@@ -48,13 +48,13 @@ namespace stormkit::log {
     /////////////////////////////////////
     /////////////////////////////////////
     logger::~logger() noexcept {
-        logger = nullptr;
+        logger_instance = nullptr;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto logger::has_logger() noexcept -> bool {
-        if (logger) [[likely]]
+        if (logger_instance) [[likely]]
             return true;
         return false;
     }
@@ -62,8 +62,8 @@ namespace stormkit::log {
     /////////////////////////////////////
     /////////////////////////////////////
     auto logger::instance() noexcept -> logger& {
-        EXPECTS(logger);
+        EXPECTS(logger_instance != nullptr);
 
-        return *logger;
+        return *logger_instance;
     }
 } // namespace stormkit::log

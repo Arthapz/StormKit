@@ -4,8 +4,6 @@
 
 module;
 
-#include <stormkit/core/as_casts_macro.hpp>
-#include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #include <stormkit/wsi/api.hpp>

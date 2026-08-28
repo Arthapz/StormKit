@@ -6,8 +6,6 @@ module;
 
 #include <stormkit/lua/lua.hpp>
 
-#include <stormkit/log/log_macro.hpp>
-
 module stormkit.lua;
 
 import std;

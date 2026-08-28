@@ -16,23 +16,20 @@ struct Bar {
     string d = "FooBar";
 };
 
-template<class CharT>
-struct std::formatter<Bar, CharT>: std::formatter<std::basic_string<CharT>, CharT> {
-    template<class FormatContext>
-    auto format(const Bar& data, FormatContext& ctx) const -> decltype(ctx.out()) {
-        return format_to(ctx.out(), "[Bar d: {}]", data.d);
-    }
-};
+template<typename CharT, typename FormatContext>
+constexpr auto tag_invoke(format_as_fn<CharT>, const Bar& value, FormatContext& ctx) -> decltype(ctx.out()) {
+    return std::format_to(ctx.out(), "[Bar d: {}]", value.d);
+}
 
 struct Foo {
-    stormkit::u32 a = 0u;
-    f32           b = 2.3f;
-    Bar           c = Bar {};
+    u32 a = 0u;
+    f32 b = 2.3f;
+    Bar c = Bar {};
 };
 
-template<typename FormatContext>
-auto format_as(const Foo& data, FormatContext& ctx) -> decltype(ctx.out()) {
-    return std::format_to(ctx.out(), "[Foo a: {}, b: {}, c: {}]", data.a, data.b, data.c);
+template<typename CharT, typename FormatContext>
+constexpr auto tag_invoke(format_as_fn<CharT>, const Foo& value, FormatContext& ctx) -> decltype(ctx.out()) {
+    return std::format_to(ctx.out(), "[Foo a: {}, b: {}, c: {}]", value.a, value.b, value.c);
 }
 
 #ifdef STORMKIT_COMPILER_MSVC
@@ -52,22 +49,22 @@ auto main(array_view<const string_view> args) -> int {
 
     log::parse_args(args2);
 
-    auto logger = log::Logger::create_logger_instance<log::FileLogger>(LOG_DIR);
+    auto logger = log::logger::create_logger_instance<log::file_logger>(LOG_DIR);
 
-    log::Logger::ilog("This is an information");
-    log::Logger::dlog("This is a debug information");
-    log::Logger::wlog("This is a warning");
-    log::Logger::elog("This is an error");
-    log::Logger::flog("This is a fatal error");
+    log::logger::ilog("This is an information");
+    log::logger::dlog("This is a debug information");
+    log::logger::wlog("This is a warning");
+    log::logger::elog("This is an error");
+    log::logger::flog("This is a fatal error");
 
     const auto integer = 5u;
     const auto real    = 8.5f;
-    log::Logger::ilog("you can format your string like this {}, {}", integer, real);
+    log::logger::ilog("use std::format internally {}, {}", integer, real);
 
-    log::Logger::ilog("Foo"_module, "you can specify a module");
+    log::logger::ilog("Foo"_module, "you can specify a module");
 
     const auto foo = Foo {};
-    log::Logger::ilog("you can format complexes structures\n{}", foo);
+    log::logger::ilog("compatible with cpo format_as\n    {}", foo);
 
     return 0;
 }

@@ -6,7 +6,6 @@ module;
 
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/contract_macro.hpp>
-#include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core.containers.shmbuffer;

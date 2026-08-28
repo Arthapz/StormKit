@@ -14,17 +14,18 @@ import stormkit.core.contract;
 import stormkit.core.meta;
 import stormkit.core.types;
 import stormkit.core.typesafe;
+import stormkit.core.string.safecasts;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 export namespace stormkit { inline namespace core {
-    namespace meta {
-        template<typename T>
-        concept has_as_string = requires(const T& value) {
-            { as_string(value) } -> is<string_view>;
-        };
-    } // namespace meta
+    // namespace meta {
+    //     template<typename T>
+    //     concept has_as_string = requires(const T& value) {
+    //         { as_string(value) } -> is<string_view>;
+    //     };
+    // } // namespace meta
 
     [[nodiscard]]
     constexpr auto split(string_view str, string_view delim) noexcept -> dynarray<string_view>;
@@ -39,14 +40,6 @@ export namespace stormkit { inline namespace core {
 
     [[nodiscard]]
     constexpr auto replace(string_view in, string_view pattern, string_view replacement) noexcept -> string;
-
-    [[nodiscard]]
-    constexpr auto as_czstring(string_view value) noexcept -> czstring;
-
-    template<typename T>
-    [[nodiscard]]
-    constexpr auto as_czstring(T&& value) noexcept -> czstring
-        requires(as_string(std::declval<T>()));
 
     template<meta::char_type T>
     constexpr auto is_text(T c) noexcept -> bool;
@@ -135,92 +128,6 @@ namespace stormkit { inline namespace core {
                | stdv::join
                | stdv::drop(stdr::size(replacement))
                | stdr::to<string>();
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<meta::has_as_string T>
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto to_string(const T& value) noexcept -> string {
-        return string { as_string(std::forward<T>(value)) };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<meta::integral T>
-    constexpr auto to_string(T value, int base) noexcept -> std::expected<string, std::errc> {
-        auto out = std::expected<string, std::errc> { std::in_place };
-        out->resize(16);
-        auto&& [ptr, errc] = std::to_chars(stdr::data(*out), stdr::data(*out) + stdr::size(*out), value, base);
-        if (errc != std::errc {}) [[unlikely]]
-            out = std::unexpected<std::errc> { std::in_place, std::move(errc) };
-        else {
-            const auto size = std::distance(stdr::data(*out), ptr);
-            out->resize(as<usize>(size));
-        }
-
-        return out;
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    // TODO add an argument to customize string buffer size
-    template<meta::floating_point T>
-    [[nodiscard]]
-    auto to_string(T value, std::chars_format fmt) noexcept -> std::expected<string, std::errc> {
-        auto out = std::expected<string, std::errc> { std::in_place };
-        out->resize(16, '\0');
-
-        auto&& [ptr, errc] = std::to_chars(stdr::data(*out), stdr::data(*out) + stdr::size(*out), value, fmt);
-        if (errc != std::errc {}) [[unlikely]]
-            out = std::unexpected<std::errc> { std::in_place, std::move(errc) };
-        else {
-            const auto size = std::distance(stdr::data(*out), ptr);
-            out->resize(size);
-        }
-
-        return out;
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<meta::integral T>
-    inline constexpr auto from_string(string_view data, i32 base) noexcept -> std::expected<T, std::errc> {
-        auto value       = T {};
-        auto&& [_, errc] = std::from_chars(stdr::data(data), stdr::data(data) + stdr::size(data), value, base);
-        if (errc != std::errc {}) [[unlikely]]
-            return std::unexpected<std::errc> { std::in_place, std::move(errc) };
-
-        return std::expected<T, std::errc> { std::in_place, value };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<meta::floating_point T>
-    inline auto from_string(string_view data, std::chars_format fmt) noexcept -> std::expected<T, std::errc> {
-        auto value       = T {};
-        auto&& [_, errc] = std::from_chars(stdr::data(data), stdr::data(data) + stdr::size(data), value, fmt);
-        if (errc != std::errc {}) [[unlikely]]
-            return std::unexpected<std::errc> { std::in_place, std::move(errc) };
-
-        return std::expected<T, std::errc> { std::in_place, value };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto as_czstring(string_view value) noexcept -> czstring {
-        return stdr::data(value);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_czstring(T value) noexcept -> czstring
-        requires(as_string(std::declval<T>()))
-    {
-        return stdr::data(as_string(std::forward<T>(value)));
     }
 
     ////////////////////////////////////////
