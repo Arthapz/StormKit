@@ -10,13 +10,6 @@ inputs:
     required: true
   llvm_version:
     required: false
-outputs:
-  dep_hash:
-    description: Full version string of the compiler
-    value: ${{ steps.dep_hash.outputs.hash }}
-  cache_key:
-    description: Full version string of the compiler
-    value: ${{ steps.cache_key.outputs.key }}
 
 runs:
   using: composite
@@ -61,3 +54,10 @@ runs:
       run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
       shell: bash
 
+outputs:
+  dep_hash:
+    description: Full version string of the compiler
+    value: ${{ steps.dep_hash.outputs.hash }}
+  cache_key:
+    description: Full version string of the compiler
+    value: ${{ steps.cache_key.outputs.key }}
