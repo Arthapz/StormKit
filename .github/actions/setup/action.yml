@@ -11,16 +11,15 @@ inputs:
   llvm_version:
     required: false
 
-outputs:
-  dep_hash:
-    description: Full version string of the compiler
-    value: ${{ steps.dep_hash.outputs.hash }}
-  cache_key:
-    description: Full version string of the compiler
-    value: ${{ steps.cache_key.outputs.key }}
-
 runs:
   using: composite
+  outputs:
+    dep_hash:
+      description: Full version string of the compiler
+      value: ${{ steps.dep_hash.outputs.hash }}
+    cache_key:
+      description: Full version string of the compiler
+      value: ${{ steps.cache_key.outputs.key }}
   steps:
     - name: Use current date as xmake package cache key
       id: cache_key
@@ -44,8 +43,7 @@ runs:
         llvm_version: ${{ inputs.llvm_version }}
     
     - name: Set XMake env
-      run: |
-        echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
+      run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
       shell: bash
 
     - name: Setup XMake
