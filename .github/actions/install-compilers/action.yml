@@ -81,13 +81,13 @@ runs:
     - name: Download LLVM
       if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' && !steps.restore-llvmcache.outputs.cache-hit }}
       run: |
-        curl.exe -o "$GITHUB_WORKSPACE/llvm.7z" -L https://github.com/Arthapz/llvm-prebuilt/releases/download/llvm-24/llvm.7z
+        curl.exe -o '${{ runner.workspace }}/llvm.7z' -L 'https://github.com/Arthapz/llvm-prebuilt/releases/download/llvm-24/llvm.7z'
       shell: bash
 
     - name: Extract LLVM
       if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' }}
       run: |
-        7z x "$GITHUB_WORKSPACE/llvm.7z" -o"$GITHUB_WORKSPACE/llvm"
+        7z x '${{ runner.workspace }}/llvm.7z' -o'${{ runner.workspace }}/llvm'
       shell: bash
 
     - name: Cache LLVM
