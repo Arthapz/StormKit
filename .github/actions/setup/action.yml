@@ -56,8 +56,6 @@ runs:
 
 outputs:
   dep_hash:
-    description: Full version string of the compiler
     value: ${{ steps.dep_hash.outputs.hash }}
   cache_key:
-    description: Full version string of the compiler
     value: ${{ steps.cache_key.outputs.key }}
