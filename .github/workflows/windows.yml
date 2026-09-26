@@ -111,7 +111,7 @@ jobs:
           arch: ${{ matrix.arch }}
           compiler: ${{ matrix.compiler }}
 
-      - run: ls ${{ runner.workspace }}/llvm
+      - run: ls "$GITHUB_WORKSPACE/llvm"
         shell: bash
 
       - name: Build & Tests

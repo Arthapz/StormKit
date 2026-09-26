@@ -75,7 +75,7 @@ runs:
       if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' }}
       uses: actions/cache/restore@v6
       with:
-        path: '$GITHUB_WORKSPACE/llvm.7z'
+        path: '${{ runner.workspace }}/llvm.7z'
         key: ${{ matrix.os }}-LLVM-24-${{ matrix.arch }}
 
     - name: Download LLVM
@@ -94,7 +94,7 @@ runs:
       if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' && !steps.restore-llvmcache.outputs.cache-hit }}
       uses: actions/cache/save@v6
       with:
-        path: '$GITHUB_WORKSPACE/llvm.7z'
+        path: '${{ runner.workspace }}/llvm.7z'
         key: ${{ steps.restore-llvmcache.outputs.cache-primary-key }}
 
     - name: Install build tools
