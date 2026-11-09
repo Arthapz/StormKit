@@ -11,7 +11,7 @@ module;
 
 module stormkit.wsi;
 
-import stormkit.core.win32;
+import stormkit.platform.win32;
 
 import :win32.window;
 import :win32.keyboard;

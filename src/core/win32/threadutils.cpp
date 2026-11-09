@@ -2,7 +2,7 @@ module stormkit.core.parallelism.threadutils;
 
 import std;
 
-import stormkit.core.win32;
+import stormkit.platform.win32;
 import stormkit.core.string.encodings;
 
 #pragma clang diagnostic ignored "-Wlanguage-extension-token"

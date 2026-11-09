@@ -13,7 +13,7 @@ export module stormkit.wsi:win32.window;
 import std;
 
 import stormkit.core;
-import stormkit.core.win32;
+import stormkit.platform.win32;
 import stormkit.wsi;
 
 import :common.window_base;

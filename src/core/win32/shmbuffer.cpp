@@ -4,7 +4,7 @@
 
 module stormkit.core.containers.shmbuffer;
 
-import stormkit.core.win32;
+import stormkit.platform.win32;
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////

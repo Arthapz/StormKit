@@ -13,12 +13,16 @@ using namespace stormkit::core;
 using namespace std::literals;
 
 namespace {
-    auto _ = test::test_suite { "core.Containers", { { "tree.node.name", [] {
-                                                          static constexpr auto name = "test_node_name"sv;
+    auto _ = test::test_suite {
+        "core.containers",
+        { { "tree.node.name",
+            [] {
+                static constexpr auto name = "test_node_name"sv;
 
-                                                          auto node = tree_node {};
-                                                          EXPECTS(node.name() == ""s);
-                                                          node.set_name(string { name });
-                                                          EXPECTS(node.name() == name);
-                                                      } } } };
+                auto node = tree_node {};
+                EXPECTS(node.name() == ""s);
+                node.set_name(string { name });
+                EXPECTS(node.name() == name);
+            } } },
+    };
 } // namespace

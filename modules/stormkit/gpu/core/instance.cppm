@@ -25,161 +25,125 @@ import :structs;
 namespace cmonadic = stormkit::core::monadic;
 
 namespace stormkit::gpu {
+    class physical_device;
+
+    class instance_interface {
+      public:
+        [[nodiscard]]
+        auto supported_extensions(this const auto& self) noexcept -> dynarray<string>;
+
+        [[nodiscard]]
+        auto supported_layers(this const auto& self) noexcept -> dynarray<string>;
+
+        [[nodiscard]]
+        auto loaded_extensions(this const auto& self) noexcept -> dynarray<string>;
+
+        [[nodiscard]]
+        auto loaded_layers(this const auto& self) noexcept -> dynarray<string>;
+
+        [[nodiscard]]
+        auto physical_devices(this const auto& self) noexcept -> dynarray<physical_device>;
+    };
+
+    struct physical_device_interface {
+        [[nodiscard]]
+        auto check_extension_support(string_view extension) const noexcept -> bool;
+
+        [[nodiscard]]
+        auto check_extension_support(array_view<const string_view> extensions) const noexcept
+          -> std::optional<hash_set<string_view>>;
+
+        [[nodiscard]]
+        auto check_extension_support(array_view<const czstring> extensions) const noexcept
+          -> std::optional<hash_set<string_view>>;
+
+        [[nodiscard]]
+        auto info(this const auto& self) noexcept -> physical_device_info;
+
+        [[nodiscard]]
+        auto capabilities(this const auto& self) noexcept -> capabilities;
+
+        [[nodiscard]]
+        auto memory_properties(this const auto& self) noexcept -> dynarray<memory_property_flag>;
+
+        [[nodiscard]]
+        auto queue_families(this const auto& self) noexcept -> dynarray<queue_family>;
+
+        [[nodiscard]]
+        auto extensions(this const auto& self) noexcept -> dynarray<string>;
+
+        [[nodiscard]]
+        auto format_properties(this const auto& self) noexcept -> dynarray<std::pair<pixel_format, format_properties>>;
+    };
+
+    using physical_device_trait = gpu_object_trait<VkPhysicalDevice, physical_device_interface>;
+    using instance_trait        = gpu_object_trait<VkInstance, instance_interface>;
+
     export {
-        template<typename Base>
-        class STORMKIT_GPU_API PhysicalDeviceInterface final: public InstanceObject<Base> {
-          public:
-            using InstanceObject<Base>::InstanceObject;
-            using InstanceObject<Base>::operator=;
-            using TagType = PhysicalDeviceTag;
+        class STORMKIT_GPU_API physical_device: public owned<physical_device_trait> {
+          private:
+            [[nodiscard]]
+            static auto create(VkPhysicalDevice&&) noexcept -> expected<physical_device>;
 
-            [[nodiscard]]
-            auto check_extension_support(string_view extension) const noexcept -> bool;
-            [[nodiscard]]
-            auto check_extension_support(array_view<const string_view> extensions) const noexcept
-              -> std::optional<hash_set<string_view>>;
-            [[nodiscard]]
-            auto check_extension_support(array_view<const czstring> extensions) const noexcept
-              -> std::optional<hash_set<string_view>>;
-
-            [[nodiscard]]
-            auto info() const noexcept -> const physical_device_info&;
-            [[nodiscard]]
-            auto capabilities() const noexcept -> const render_capabilities&;
-            [[nodiscard]]
-            auto memory_types() const noexcept -> array_view<const MemoryPropertyFlag>;
-            [[nodiscard]]
-            auto queue_families() const noexcept -> array_view<const queue_family>;
-            [[nodiscard]]
-            auto extensions() const noexcept -> array_view<const string>;
-            [[nodiscard]]
-            auto formats_properties() const noexcept -> array_view<const std::pair<pixel_format, format_properties>>;
+            auto do_init(VkPhysicalDevice&&) noexcept -> expected<void>;
         };
 
-        template<typename Base>
-        class instance_interface: public Base {
+        class STORMKIT_GPU_API instance: public owned<instance_trait> {
           public:
             struct create_info {
-                string_view application_name;
+                string_view application_name         = "";
                 u32         application_version      = vk::make_version(0, 0, 0);
                 bool        enable_validation_layers = (config::build_type == "DEBUG");
             };
 
-            using Base::Base;
-            using Base::operator=;
-
-            [[nodiscard]]
-            auto extensions() const noexcept -> array_view<const string>;
-
-            [[nodiscard]]
-            auto physical_devices() const noexcept -> array_view<const PhysicalDevice>;
-        };
-    }
-
-    class STORMKIT_GPU_API instance: public instance_interface<instance> {
-      public:
-        using create_info = instance_interface<instance>::create_info;
-
-        explicit instance() noexcept;
-        ~instance() noexcept;
-
-        instance(const instance&) noexcept                    = delete;
-        auto operator=(const instance&) noexcept -> instance& = delete;
-
-        instance(instance&&) noexcept;
-        auto operator=(instance&&) noexcept -> instance&;
-
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
-
-      protected:
-        dynarray<string>         m_extensions;
-        dynarray<PhysicalDevice> m_physical_devices;
-
-        friend class view::instance;
-
-      private:
-        auto do_load_instance() noexcept -> expected<void>;
-        auto do_retrieve_physical_devices() noexcept -> expected<void>;
-    };
-
-    namespace view {
-        class instance: public instance_interface<instance> {
-          public:
-            instance(const gpu::instance&) noexcept;
-            template<cmeta::IsContainerOrPointerOf<gpu::Instance> TContainerOrPointer>
-            instance(const TContainerOrPointer&) noexcept;
             ~instance() noexcept;
 
-            instance(const instance&) noexcept;
-            auto operator=(const instance&) noexcept -> instance&;
+            [[nodiscard]]
+            static auto create(const create_info& info = {}) noexcept -> expected<instance>;
+            [[nodiscard]]
+            static auto allocate(const create_info& info = {}) noexcept -> expected<heap_ptr<instance>>;
 
-            instance(instance&&) noexcept;
-            auto operator=(instance&&) noexcept -> instance&;
+          private:
+            auto do_init(const create_info&) noexcept -> expected<void>;
 
-          protected:
-            array_view<const string>              m_extensions;
-            array_view<const gpu::PhysicalDevice> m_physical_devices;
-        };
-    } // namespace view
-
-    class STORMKIT_GPU_API PhysicalDeviceImplementation: public GpuObjectImplementation<PhysicalDeviceTag, VkPhysicalDevice&&> {
-      public:
-        struct Data {
-            physical_device_info device_info;
-            render_capabilities capabilities;
+            auto do_load_instance() noexcept -> expected<void>;
+            auto do_retrieve_physical_devices() noexcept -> expected<void>;
         };
 
-        PhysicalDeviceImplementation(PrivateTag, view::Instance&&) noexcept;
-        ~PhysicalDeviceImplementation() noexcept;
+        namespace view {
+            class physical_device: public core::view<physical_device_trait> {
+              public:
+                physical_device(gpu::physical_device&&) = delete;
+                physical_device(const gpu::physical_device& device STORMKIT_LIFETIMEBOUND) noexcept;
 
-        PhysicalDeviceImplementation(const PhysicalDeviceImplementation&) noexcept                    = delete;
-        auto operator=(const PhysicalDeviceImplementation&) noexcept -> PhysicalDeviceImplementation& = delete;
+              private:
+                ref_ptr<const physical_device_info>                          device_info_;
+                ref_ptr<const render_capabilities>                           capabilities_;
+                array_view<const MemoryPropertyFlag>                         memory_types_;
+                array_view<const queue_family>                               queue_families_;
+                array_view<const string>                                     extensions_;
+                array_view<const std::pair<pixel_format, format_properties>> format_properties_;
+            };
 
-        PhysicalDeviceImplementation(PhysicalDeviceImplementation&&) noexcept;
-        auto operator=(PhysicalDeviceImplementation&&) noexcept -> PhysicalDeviceImplementation&;
+            class instance: public core::view<instance_trait> {
+              public:
+                instance(gpu::instance&&) = delete;
+                instance(const gpu::instance& instance STORMKIT_LIFETIMEBOUND) noexcept;
 
-        auto do_init(PrivateTag, VkPhysicalDevice&&) noexcept -> void;
+              private:
+                array_view<const string> supported_extensions_;
+                array_view<const string> loaded_extensions_;
+                array_view<const string> loaded_extensions_;
 
-      protected:
-        heap_ptr<Data>                                     m_data;
-        dynarray<MemoryPropertyFlag>                       m_memory_types;
-        dynarray<queue_family>                              m_queue_families;
-        dynarray<string>                                   m_extensions;
-        dynarray<std::pair<pixel_format, format_properties>> m_format_properties;
+                array_view<const gpu::physical_device> physical_devices_;
+            };
+        } // namespace view
 
-        friend class InstanceInterface<InstanceImplementation>;
-        friend class view::PhysicalDeviceImplementation;
-    };
-
-    namespace view {
-        class PhysicalDeviceImplementation: public GpuObjectViewImplementation<PhysicalDeviceTag> {
-          public:
-            PhysicalDeviceImplementation(const gpu::PhysicalDevice&) noexcept;
-            template<cmeta::IsContainerOrPointerOf<gpu::PhysicalDevice> TContainerOrPointer>
-            PhysicalDeviceImplementation(const TContainerOrPointer&) noexcept;
-            ~PhysicalDeviceImplementation() noexcept;
-
-            PhysicalDeviceImplementation(const PhysicalDeviceImplementation&) noexcept;
-            auto operator=(const PhysicalDeviceImplementation&) noexcept -> PhysicalDeviceImplementation&;
-
-            PhysicalDeviceImplementation(PhysicalDeviceImplementation&&) noexcept;
-            auto operator=(PhysicalDeviceImplementation&&) noexcept -> PhysicalDeviceImplementation&;
-
-          protected:
-            ref<const gpu::PhysicalDeviceImplementation::Data>         m_data;
-            array_view<const MemoryPropertyFlag>                       m_memory_types;
-            array_view<const queue_family>                              m_queue_families;
-            array_view<const string>                                   m_extensions;
-            array_view<const std::pair<pixel_format, format_properties>> m_format_properties;
-        };
-    } // namespace view
-
-    export {
         [[nodiscard]]
-        STORMKIT_GPU_API auto score_physical_device(view::PhysicalDevice physical_device) noexcept -> u64;
+        STORMKIT_GPU_API auto score_physical_device(view::physical_device physical_device) noexcept -> u64;
 
         template<typename FormatContext>
-        auto format_as(view::PhysicalDevice physical_device, FormatContext& ctx) noexcept -> decltype(ctx.out());
+        auto format_as(view::physical_device physical_device, FormatContext& ctx) noexcept -> decltype(ctx.out());
     }
 } // namespace stormkit::gpu
 

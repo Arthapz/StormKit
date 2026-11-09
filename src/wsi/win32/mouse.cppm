@@ -11,7 +11,7 @@ export module stormkit.wsi:win32.mouse;
 import std;
 
 import stormkit.core;
-import stormkit.core.win32;
+import stormkit.platform.win32;
 import stormkit.math.linear;
 import stormkit.wsi;
 

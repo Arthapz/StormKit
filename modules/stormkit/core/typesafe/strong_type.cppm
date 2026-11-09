@@ -42,7 +42,7 @@ export namespace stormkit { inline namespace core {
             constexpr auto operator+(this Self self, param_type other) noexcept -> Self
                 requires(meta::prefer_pass_by_value<Self>);
             template<typename Self>
-            constexpr auto operator+(this const Self& self, param_type other) noexcept -> const Self&
+            constexpr auto operator+(this const Self& self, param_type other) noexcept -> Self
                 requires(meta::prefer_pass_by_ref<Self>);
             template<typename Self>
             constexpr auto operator+(this Self self, Self other) noexcept -> Self
@@ -67,7 +67,7 @@ export namespace stormkit { inline namespace core {
             constexpr auto operator-(this Self self, param_type other) noexcept -> Self
                 requires(meta::prefer_pass_by_value<Self>);
             template<typename Self>
-            constexpr auto operator-(this const Self& self, param_type other) noexcept -> const Self&
+            constexpr auto operator-(this const Self& self, param_type other) noexcept -> Self
                 requires(meta::prefer_pass_by_ref<Self>);
             template<typename Self>
             constexpr auto operator-(this Self self, Self other) noexcept -> Self
@@ -92,7 +92,7 @@ export namespace stormkit { inline namespace core {
             constexpr auto operator*(this Self self, param_type other) noexcept -> Self
                 requires(meta::prefer_pass_by_value<Self>);
             template<typename Self>
-            constexpr auto operator*(this const Self& self, param_type other) noexcept -> const Self&
+            constexpr auto operator*(this const Self& self, param_type other) noexcept -> Self
                 requires(meta::prefer_pass_by_ref<Self>);
             template<typename Self>
             constexpr auto operator*(this Self self, Self other) noexcept -> Self
@@ -117,7 +117,7 @@ export namespace stormkit { inline namespace core {
             constexpr auto operator/(this Self self, param_type other) noexcept -> Self
                 requires(meta::prefer_pass_by_value<Self>);
             template<typename Self>
-            constexpr auto operator/(this const Self& self, param_type other) noexcept -> const Self&
+            constexpr auto operator/(this const Self& self, param_type other) noexcept -> Self
                 requires(meta::prefer_pass_by_ref<Self>);
             template<typename Self>
             constexpr auto operator/(this Self self, Self other) noexcept -> Self
@@ -340,7 +340,7 @@ namespace stormkit { inline namespace core {
         template<typename T>
         template<typename Self>
             STORMKIT_FORCE_INLINE
-        constexpr auto arithmetic<T>::operator+(this const Self& self, param_type other) noexcept -> const Self&
+        constexpr auto arithmetic<T>::operator+(this const Self& self, param_type other) noexcept -> Self
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             return Self { self.value_ + other };
@@ -377,6 +377,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_value<Self>)
         {
             self.value_ += other;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -388,6 +389,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             self.value_ += other;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -399,6 +401,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_value<Self>)
         {
             self.value_ += other.value_;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -410,6 +413,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             self.value_ += other.value_;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -428,7 +432,7 @@ namespace stormkit { inline namespace core {
         template<typename T>
         template<typename Self>
             STORMKIT_FORCE_INLINE
-        constexpr auto arithmetic<T>::operator-(this const Self& self, param_type other) noexcept -> const Self&
+        constexpr auto arithmetic<T>::operator-(this const Self& self, param_type other) noexcept -> Self
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             return Self { self.value_ - other };
@@ -465,6 +469,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_value<Self>)
         {
             self.value_ -= other;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -476,6 +481,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             self.value_ -= other;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -487,6 +493,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_value<Self>)
         {
             self.value_ -= other.value_;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -498,6 +505,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             self.value_ -= other.value_;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -516,7 +524,7 @@ namespace stormkit { inline namespace core {
         template<typename T>
         template<typename Self>
             STORMKIT_FORCE_INLINE
-        constexpr auto arithmetic<T>::operator*(this const Self& self, param_type other) noexcept -> const Self&
+        constexpr auto arithmetic<T>::operator*(this const Self& self, param_type other) noexcept -> Self
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             return Self { self.value_ * other };
@@ -553,6 +561,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_value<Self>)
         {
             self.value_ *= other;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -564,6 +573,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             self.value_ *= other;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -575,6 +585,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_value<Self>)
         {
             self.value_ *= other.value_;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -586,6 +597,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             self.value_ *= other.value_;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -604,7 +616,7 @@ namespace stormkit { inline namespace core {
         template<typename T>
         template<typename Self>
             STORMKIT_FORCE_INLINE
-        constexpr auto arithmetic<T>::operator/(this const Self& self, param_type other) noexcept -> const Self&
+        constexpr auto arithmetic<T>::operator/(this const Self& self, param_type other) noexcept -> Self
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             return Self { self.value_ / other };
@@ -641,6 +653,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_value<Self>)
         {
             self.value_ /= other;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -652,6 +665,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             self.value_ /= other;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -663,6 +677,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_value<Self>)
         {
             self.value_ /= other.value_;
+            return self;
         }
 
         ////////////////////////////////////////
@@ -674,6 +689,7 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             self.value_ /= other.value_;
+            return self;
         }
 
         ////////////////////////////////////////

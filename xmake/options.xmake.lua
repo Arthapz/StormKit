@@ -50,7 +50,7 @@ option("math", { default = true, category = "root menu/modules" })
 option("entities", { default = false, category = "root menu/modules" })
 option("image", { default = true, category = "root menu/modules", deps = { "math", "log" } })
 option("wsi", { default = true, category = "root menu/modules", deps = { "log" } })
-option("gpu", { default = true, category = "root menu/modules", deps = { "log", "image", "wsi" } })
+option("gpu", { default = false, category = "root menu/modules", deps = { "log", "image", "wsi" } })
 
 option("compile_commands", { default = false, category = "root menu/support" })
 option("vsxmake", { default = false, category = "root menu/support" })

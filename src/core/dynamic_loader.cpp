@@ -18,7 +18,7 @@ module stormkit.core.dynamic_loader;
 import std;
 
 #ifdef STORMKIT_OS_WINDOWS
-import stormkit.core.win32;
+import stormkit.platform.win32;
 #endif
 import stormkit.core.typesafe.safecasts;
 import stormkit.core.errors;

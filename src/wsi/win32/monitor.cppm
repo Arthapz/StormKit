@@ -6,7 +6,7 @@ export module stormkit.wsi:win32.monitor;
 
 import std;
 
-import stormkit.core.win32;
+import stormkit.platform.win32;
 
 import :core;
 import :monitor;

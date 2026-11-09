@@ -32,17 +32,17 @@ namespace stormkit::log {
     /////////////////////////////////////
     /////////////////////////////////////
     logger::logger(clock_type::time_point start_time) noexcept : logger { std::move(start_time), default_log_mask } {
-        EXPECTS(not logger_instance);
-
-        if (debug_enabled) severity_mask_ |= severity::debug;
-
-        logger_instance = this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     logger::logger(clock_type::time_point start_time, severity log_level) noexcept
         : start_time_ { std::move(start_time) }, severity_mask_ { log_level } {
+        EXPECTS(not logger_instance);
+
+        if (debug_enabled) severity_mask_ |= severity::debug;
+
+        logger_instance = this;
     }
 
     /////////////////////////////////////

@@ -2,31 +2,40 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
+#define SYSTEM_ERROR2_NAMESPACE       system_error2
+#define SYSTEM_ERROR2_NAMESPACE_BEGIN namespace system_error2 {
+#define SYSTEM_ERROR2_NAMESPACE_END   }
+
 #include <status-code/error.hpp>
+
 #include <status-code/status_code.hpp>
+
+#include <status-code/std_error_code.hpp>
 
 export module stormkit.core.status_code;
 
-// clang-format off
-export SYSTEM_ERROR2_NAMESPACE_BEGIN
-  // clang-format on
+import std;
 
-  using SYSTEM_ERROR2_NAMESPACE::quick_status_code_from_enum_code;
-using SYSTEM_ERROR2_NAMESPACE::errc;
-using SYSTEM_ERROR2_NAMESPACE::quick_status_code_from_enum;
-using SYSTEM_ERROR2_NAMESPACE::quick_status_code_from_enum_defaults;
+export namespace system_error2 {
+    namespace detail {
+        using ::system_error2::detail::std_error_code_domain_from_category;
+    }
 
-using SYSTEM_ERROR2_NAMESPACE::posix_code;
-using SYSTEM_ERROR2_NAMESPACE::status_code;
-using SYSTEM_ERROR2_NAMESPACE::system_code;
+    using ::system_error2::errc;
+    using ::system_error2::quick_status_code_from_enum;
+    using ::system_error2::quick_status_code_from_enum_code;
+    using ::system_error2::quick_status_code_from_enum_defaults;
+
+    using ::system_error2::posix_code;
+    using ::system_error2::status_code;
+    using ::system_error2::std_error_code;
+    using ::system_error2::system_code;
 
 #ifdef STORMKIT_OS_WINDOWS
-using SYSTEM_ERROR2_NAMESPACE::nt_code;
-using SYSTEM_ERROR2_NAMESPACE::win32_code;
+    using ::system_error2::nt_code;
+    using ::system_error2::win32_code;
 
-// using nt_code = SYSTEM_ERROR2_NAMESPACE::status_code<SYSTEM_ERROR2_NAMESPACE::nt_code_domain>;
+// using nt_code = ::system_error2::status_code<::system_error2::nt_code_domain>;
 #endif
 
-// clang-format off
-SYSTEM_ERROR2_NAMESPACE_END
-// clang-format on
+} // namespace system_error2

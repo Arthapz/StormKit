@@ -24,6 +24,7 @@ export import stormkit.core.hash;
 export import stormkit.core.heap;
 export import stormkit.core.ranges;
 export import stormkit.core.meta;
+export import stormkit.core.private_tag;
 export import stormkit.core.overload_set;
 export import stormkit.core.parallelism;
 export import stormkit.core.pimpl;

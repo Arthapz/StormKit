@@ -6,14 +6,14 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-
 #include <SDKDDKVer.h>
+#include <winapifamily.h>
+
+#define WIN32_LEAN_AND_MEAN
 
 #include <Windows.h>
 
-#include <Comdef.h>
+// #include <Comdef.h>
 #include <Jobapi2.h>
 #include <Msi.h>
 #include <MsiQuery.h>
@@ -60,7 +60,7 @@ module;
 #include <wincred.h>
 #include <winsafer.h>
 
-export module stormkit.core.win32;
+export module stormkit.platform.win32;
 
 import std;
 
@@ -136,6 +136,7 @@ export namespace win32 {
     using ::CertVerifyCertificateChainPolicy;
     using ::CertVerifyTimeValidity;
     using ::ChangeTimerQueueTimer;
+    using ::CHAR;
     using ::CheckTokenMembership;
     using ::ClientToScreen;
     using ::ClipCursor;
@@ -241,6 +242,7 @@ export namespace win32 {
     using ::DestroyThreadpoolEnvironment;
     using ::DestroyWindow;
     using ::DEVMODE;
+    using ::DisableThreadLibraryCalls;
     using ::DisconnectNamedPipe;
     using ::DispatchMessageA;
     using ::DispatchMessageW;
@@ -409,6 +411,7 @@ export namespace win32 {
     using ::LookupPrivilegeValueW;
     using ::LPARAM;
     using ::LPBYTE;
+    using ::LPCH;
     using ::LPCSTR;
     using ::LPCWSTR;
     using ::LPDWORD;
@@ -458,7 +461,6 @@ export namespace win32 {
     using ::MsiViewFetch;
     using ::MultiByteToWideChar;
     using ::NLM_CONNECTIVITY;
-    using ::NTSTATUS;
     using ::OpenClipboard;
     using ::OpenEventA;
     using ::OpenEventW;
@@ -480,6 +482,8 @@ export namespace win32 {
     using ::OpenServiceW;
     using ::OpenWaitableTimerA;
     using ::OpenWaitableTimerW;
+    using ::OutputDebugStringA;
+    using ::OutputDebugStringW;
     using ::OVERLAPPED;
     using ::PAINTSTRUCT;
     using ::PAPCFUNC;
@@ -487,6 +491,8 @@ export namespace win32 {
     using ::PBYTE;
     using ::PCCERT_CHAIN_CONTEXT;
     using ::PCCERT_CONTEXT;
+    using ::PCH;
+    using ::PCHAR;
     using ::PCSTR;
     using ::PCWSTR;
     using ::PDWORD;
@@ -663,6 +669,9 @@ export namespace win32 {
     using ::WORD;
     using ::WPARAM;
     using ::WriteFile;
+
+#undef VOID
+    using VOID = void;
 
     auto MakeHRESULT(LONG severity, LONG facility, LONG code) noexcept -> HRESULT;
     auto Code(HRESULT) noexcept -> bool;

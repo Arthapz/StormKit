@@ -13,6 +13,8 @@ import std;
 import stormkit.core.contract;
 import stormkit.core.meta;
 import stormkit.core.functional;
+import stormkit.core.private_tag;
+import stormkit.core.heap;
 
 namespace stormkit { inline namespace core {
     namespace details {
@@ -36,9 +38,13 @@ namespace stormkit { inline namespace core {
         template<typename Trait>
         concept is_owned_trait = requires(const Trait& trait) {
             typename Trait::element_type;
-            trait.constructor;
             trait.deleter;
-        } and details::valid_constructor<decltype(Trait::constructor), typename Trait::element_type> and details::valid_deleter<decltype(Trait::deleter), typename Trait::element_type>;
+        } and details::valid_deleter<decltype(Trait::deleter), typename Trait::element_type>;
+
+        template<typename Trait>
+        concept trait_has_constructor = is_owned_trait<Trait> and requires(const Trait& trait) {
+            trait.constructor;
+        } and details::valid_constructor<decltype(Trait::constructor), typename Trait::element_type>;
 
         template<typename Trait>
         concept trait_has_null_handle = is_owned_trait<Trait> and requires(const Trait& trait) {
@@ -70,6 +76,17 @@ namespace stormkit { inline namespace core {
             requires(trait_has_interface<Trait>)
         struct interface_selector<Trait> {
             using type = typename Trait::interface_type;
+        };
+
+        template<is_owned_trait Trait>
+        struct constructor_selector {
+            using type = void;
+        };
+
+        template<is_owned_trait Trait>
+            requires(trait_has_constructor<Trait>)
+        struct constructor_selector<Trait> {
+            using type = decltype(Trait::constructor);
         };
 
         template<is_owned_trait Trait>
@@ -107,16 +124,19 @@ export namespace stormkit { inline namespace core {
     template<typename Trait>
     class STORMKIT_OWNER STORMKIT_TRIVIALLY_RELOCATABLE owned: public meta::details::interface_selector<Trait>::type {
         static_assert(meta::is_owned_trait<Trait>, "Trait should follow is_owned_trait concept for its interface!");
-        using owned_type = owned<Trait>;
+        using owned_type  = owned<Trait>;
+        using private_tag = private_tag<owned_type>;
 
       public:
         using trait_type       = Trait;
         using element_type     = trait_type::element_type;
-        using constructor_type = decltype(trait_type::constructor);
+        using constructor_type = meta::details::constructor_selector<trait_type>::type;
         using deleter_type     = decltype(trait_type::deleter);
 
         static constexpr auto null_handle = meta::details::null_handle_selector<trait_type>::value;
 
+        constexpr explicit owned(private_tag) noexcept;
+        constexpr owned(private_tag, element_type handle) noexcept;
         constexpr ~owned() noexcept;
 
         constexpr owned(owned&)                    = delete;
@@ -127,12 +147,26 @@ export namespace stormkit { inline namespace core {
 
         template<typename... Ts>
         static constexpr auto create(Ts&&... args) noexcept -> owned_type
-            requires(meta::details::plain_constructor<constructor_type, element_type> and std::invocable<constructor_type, Ts...>)
-        ;
+            requires(meta::details::trait_has_constructor<trait_type>
+                     and meta::details::plain_constructor<constructor_type, element_type>
+                     and std::invocable<constructor_type, Ts...>);
 
         template<typename... Ts>
         static constexpr auto create(Ts&&... args) noexcept -> decltype(auto)
-            requires(meta::details::expected_constructor<constructor_type, element_type>
+            requires(meta::details::trait_has_constructor<trait_type>
+                     and meta::details::expected_constructor<constructor_type, element_type>
+                     and std::invocable<constructor_type, Ts...>);
+
+        template<typename... Ts>
+        static constexpr auto allocate(Ts&&... args) noexcept -> heap_ptr<owned_type>
+            requires(meta::details::trait_has_constructor<trait_type>
+                     and meta::details::plain_constructor<constructor_type, element_type>
+                     and std::invocable<constructor_type, Ts...>);
+
+        template<typename... Ts>
+        static constexpr auto allocate(Ts&&... args) noexcept -> decltype(auto)
+            requires(meta::details::trait_has_constructor<trait_type>
+                     and meta::details::expected_constructor<constructor_type, element_type>
                      and std::invocable<constructor_type, Ts...>);
 
         static constexpr auto take(element_type&& value) noexcept -> owned_type;
@@ -178,9 +212,6 @@ export namespace stormkit { inline namespace core {
         element_type handle_ = null_handle;
 
       private:
-        constexpr owned() noexcept;
-        constexpr owned(element_type handle) noexcept;
-
         constexpr auto destroy() noexcept -> void;
     };
 
@@ -266,13 +297,14 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename Trait>
     STORMKIT_FORCE_INLINE
-    constexpr owned<Trait>::owned() noexcept = default;
+    constexpr owned<Trait>::owned(private_tag) noexcept {
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
     STORMKIT_FORCE_INLINE
-    constexpr owned<Trait>::owned(element_type handle) noexcept
+    constexpr owned<Trait>::owned(private_tag, element_type handle) noexcept
         : handle_ { handle } {
     }
 
@@ -319,9 +351,11 @@ namespace stormkit { inline namespace core {
     template<typename... Ts>
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::create(Ts&&... args) noexcept -> owned_type
-        requires(meta::details::plain_constructor<constructor_type, element_type> and std::invocable<constructor_type, Ts...>)
+        requires(meta::details::trait_has_constructor<trait_type>
+                 and meta::details::plain_constructor<constructor_type, element_type>
+                 and std::invocable<constructor_type, Ts...>)
     {
-        return owned { trait_type::constructor(std::forward<Ts>(args)...) };
+        return owned { private_token<owned_type>, trait_type::constructor(std::forward<Ts>(args)...) };
     }
 
     /////////////////////////////////////
@@ -330,8 +364,9 @@ namespace stormkit { inline namespace core {
     template<typename... Ts>
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::create(Ts&&... args) noexcept -> decltype(auto)
-      // -> meta::replace_first<owned_type, meta::return_type<constructor_type>>
-        requires(meta::details::expected_constructor<constructor_type, element_type> and std::invocable<constructor_type, Ts...>)
+        requires(meta::details::trait_has_constructor<trait_type>
+                 and meta::details::expected_constructor<constructor_type, element_type>
+                 and std::invocable<constructor_type, Ts...>)
     {
         using out_type = meta::replace_first<owned_type, meta::return_type<constructor_type>>;
         auto out       = out_type { std::in_place };
@@ -339,7 +374,41 @@ namespace stormkit { inline namespace core {
         auto result = trait_type::constructor(std::forward<Ts>(args)...);
         if (not result) out = std::unexpected { constructor_type::move(result.error()) };
         else
-            out->reset(std::move(result.value()));
+            out->reset({ private_token<owned_type>, std::move(result.value()) });
+
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+    template<typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::allocate(Ts&&... args) noexcept -> heap_ptr<owned_type>
+        requires(meta::details::trait_has_constructor<trait_type>
+                 and meta::details::plain_constructor<constructor_type, element_type>
+                 and std::invocable<constructor_type, Ts...>)
+    {
+        return core::allocate_unsafe<owned>(private_token<owned_type>, trait_type::constructor(std::forward<Ts>(args)...));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+    template<typename... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::allocate(Ts&&... args) noexcept -> decltype(auto)
+        requires(meta::details::trait_has_constructor<trait_type>
+                 and meta::details::expected_constructor<constructor_type, element_type>
+                 and std::invocable<constructor_type, Ts...>)
+    {
+        using out_type = meta::replace_first<heap_ptr<owned_type>, meta::return_type<constructor_type>>;
+        auto out       = out_type { std::in_place };
+
+        auto result = trait_type::constructor(std::forward<Ts>(args)...);
+        if (not result) out = std::unexpected { constructor_type::move(result.error()) };
+        else
+            out->reset(core::allocate_unsafe<owned_type>(private_token<owned_type>, std::move(result.value())));
 
         return out;
     }
@@ -349,7 +418,7 @@ namespace stormkit { inline namespace core {
     template<typename Trait>
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::take(element_type&& value) noexcept -> owned_type {
-        return owned_type { value };
+        return owned_type { private_token<owned_type>, value };
     }
 
     /////////////////////////////////////
@@ -357,7 +426,7 @@ namespace stormkit { inline namespace core {
     template<typename Trait>
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::empty() noexcept -> owned_type {
-        return owned_type {};
+        return owned_type { private_token<owned_type> };
     }
 
     /////////////////////////////////////

@@ -14,7 +14,7 @@ export module stormkit.core.errors;
 import std;
 
 #ifdef STORMKIT_OS_WINDOWS
-import stormkit.core.win32;
+import stormkit.platform.win32;
 #endif
 
 import stormkit.core.types;
@@ -79,10 +79,12 @@ export {
         namespace error_code {
 #ifdef STORMKIT_OS_WINDOWS
             auto from_win32() noexcept -> system_code;
+            auto from_win32(win32::DWORD code) noexcept -> system_code;
             auto from_ntstatus(long code) noexcept -> system_code;
 #endif
             auto from_errno() noexcept -> system_code;
             auto from_stderrc(std::errc code) noexcept -> system_code;
+            auto from_stderror_code(std::error_code code) noexcept -> system_code;
         } // namespace error_code
 
         template<typename T>
@@ -109,6 +111,13 @@ namespace stormkit { inline namespace core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
+        inline auto from_win32(win32::DWORD code) noexcept -> system_code {
+            return system_error2::win32_code { code };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        STORMKIT_FORCE_INLINE
         inline auto from_ntstatus(::win32::LONG status) noexcept -> system_code {
             return system_error2::nt_code { status };
         }
@@ -126,6 +135,13 @@ namespace stormkit { inline namespace core {
         STORMKIT_FORCE_INLINE
         inline auto from_stderrc(std::errc code) noexcept -> system_code {
             return system_error2::posix_code { static_cast<i32>(code) };
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        STORMKIT_FORCE_INLINE
+        inline auto from_stderror_code(std::error_code code) noexcept -> system_code {
+            return system_error2::std_error_code { code };
         }
     } // namespace error_code
 

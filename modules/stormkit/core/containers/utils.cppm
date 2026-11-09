@@ -24,6 +24,21 @@ export namespace stormkit { inline namespace core {
         using common_range_value_type = range_value_type<first_type<Inputs...>>;
     } // namespace meta
 
+    template<typename Container, typename T, meta::convertible_to<meta::to_plain_type<T>>... Ts>
+    constexpr auto make_container(T&& first, Ts&&... args) noexcept -> Container;
+
+    template<template<class> typename Container, typename T, meta::convertible_to<meta::to_plain_type<T>>... Ts>
+    constexpr auto make_container(Ts&&... args) noexcept -> Container<meta::to_plain_type<T>>;
+
+    template<template<class, usize> typename Container, typename T, meta::convertible_to<meta::to_plain_type<T>>... Ts>
+    constexpr auto make_container(T&& first, Ts&&... args) noexcept -> Container<meta::to_plain_type<T>, 1 + sizeof...(Ts)>;
+
+    template<typename T, meta::convertible_to<meta::to_plain_type<T>>... Ts>
+    constexpr auto make_dynarray(T&& first, Ts&&... args) noexcept -> dynarray<meta::to_plain_type<T>>;
+
+    template<typename T, meta::convertible_to<meta::to_plain_type<T>>... Ts>
+    constexpr auto make_array(T&& first, Ts&&... args) noexcept -> array<meta::to_plain_type<T>, 1 + sizeof...(Ts)>;
+
     template<template<class> typename Container = dynarray, typename T>
     constexpr auto filled_with(usize size, T value) noexcept -> Container<T>;
 
@@ -57,6 +72,50 @@ export namespace stormkit { inline namespace core {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename Container, typename T, meta::convertible_to<meta::to_plain_type<T>>... Ts>
+    constexpr auto make_container(T&& first, Ts&&... args) noexcept -> Container {
+        auto out = Container {};
+        out.reserve(1 + sizeof...(Ts));
+        out.emplace_back(std::forward<T>(first));
+        (out.emplace_back(std::forward<Ts>(args)), ...);
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<template<class> typename Container, typename T, meta::convertible_to<meta::to_plain_type<T>>... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto make_container(T&& first, Ts&&... args) noexcept -> Container<meta::to_plain_type<T>> {
+        return make_container<Container<meta::to_plain_type<T>>>(std::forward<T>(first), std::forward<Ts>(args)...);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<template<class, usize> typename Container, typename T, meta::convertible_to<meta::to_plain_type<T>>... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto make_container(T&& first, Ts&&... args) noexcept -> Container<meta::to_plain_type<T>, 1 + sizeof...(Ts)> {
+        return make_container<Container<meta::to_plain_type<T>, 1 + sizeof...(Ts)>>(std::forward<T>(first),
+                                                                                    std::forward<Ts>(args)...);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, meta::convertible_to<meta::to_plain_type<T>>... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto make_dynarray(T&& first, Ts&&... args) noexcept -> dynarray<meta::to_plain_type<T>> {
+        return make_container<dynarray>(std::forward<T>(first), std::forward<Ts>(args)...);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, meta::convertible_to<meta::to_plain_type<T>>... Ts>
+    STORMKIT_FORCE_INLINE
+    constexpr auto make_array(T&& first, Ts... args) noexcept -> array<meta::to_plain_type<T>, 1 + sizeof...(Ts)> {
+        return array<meta::to_plain_type<T>, 1 + sizeof...(Ts)> { std::forward<T>(first), std::forward<Ts>(args)... };
+    }
+
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<template<class> typename Container, typename T>

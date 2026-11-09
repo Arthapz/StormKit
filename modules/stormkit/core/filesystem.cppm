@@ -27,7 +27,7 @@ export module stormkit.core.filesystem;
 import std;
 
 #ifdef STORMKIT_OS_WINDOWS
-import stormkit.core.win32;
+import stormkit.platform.win32;
 #endif
 
 import stormkit.core.errors;
@@ -63,8 +63,15 @@ export {
 
         namespace io {
             enum class access {
-                read,
-                write,
+                read      = 0b1,
+                write     = 0b10,
+                unchecked = 0b100,
+            };
+
+            enum class share_mode {
+                none  = 0,
+                read  = 0b1,
+                write = 0b10,
             };
 
             template<open_mode Mode>
@@ -89,10 +96,14 @@ export {
                 file_descriptor(file_descriptor&&) noexcept;
                 auto operator=(file_descriptor&&) noexcept -> file_descriptor&;
 
-                static auto open(const stdfs::path& path, access access) noexcept -> system_result<file_descriptor>;
-                static auto allocate_and_open(const stdfs::path& path, access access) noexcept
+                static auto open(const stdfs::path& path, access access, share_mode share_mode = io::share_mode::read) noexcept
+                  -> system_result<file_descriptor>;
+                static auto allocate_and_open(const stdfs::path& path,
+                                              access             access,
+                                              share_mode         share_mode = io::share_mode::read) noexcept
                   -> system_result<heap_ptr<file_descriptor>>;
 
+                auto is_open() const noexcept -> bool;
                 auto close() noexcept;
 
                 auto read_to(array_view<byte> out) noexcept -> system_result<usize>;
@@ -115,7 +126,7 @@ export {
                 auto native_descriptor() const noexcept -> native_handle_type;
 
               private:
-                auto do_init(const stdfs::path&, access) noexcept -> system_result<void>;
+                auto do_init(const stdfs::path&, access, share_mode) noexcept -> system_result<void>;
 
                 native_handle_type         m_descriptor = invalid_handle;
                 mutable std::atomic<usize> m_size       = 0;
@@ -144,6 +155,9 @@ export {
 
     template<>
     inline constexpr auto stormkit::meta::flag_trait<stormkit::io::access> = true;
+
+    template<>
+    inline constexpr auto stormkit::meta::flag_trait<stormkit::io::share_mode> = true;
 } // namespace stormkit::core::io
 
 ////////////////////////////////////////////////////////////////////
@@ -197,10 +211,10 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<open_mode Mode>
     STORMKIT_FORCE_INLINE
-    inline auto file_descriptor<Mode>::open(const stdfs::path& path, access access) noexcept
+    inline auto file_descriptor<Mode>::open(const stdfs::path& path, access access, share_mode share_mode) noexcept
       -> system_result<file_descriptor<Mode>> {
         auto out = file_descriptor<Mode> { private_token<file_descriptor<Mode>> };
-        Try(out.do_init(path, access));
+        Try(out.do_init(path, access, share_mode));
         return { std::move(out) };
     }
 
@@ -208,11 +222,17 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     template<open_mode Mode>
     STORMKIT_FORCE_INLINE
-    inline auto file_descriptor<Mode>::allocate_and_open(const stdfs::path& path, access access) noexcept
+    inline auto file_descriptor<Mode>::allocate_and_open(const stdfs::path& path, access access, share_mode share_mode) noexcept
       -> system_result<heap_ptr<file_descriptor<Mode>>> {
         auto out = allocate_unsafe<file_descriptor<Mode>>(private_token<file_descriptor<Mode>>);
-        Try(out->do_init(path, access));
+        Try(out->do_init(path, access, share_mode));
         return { std::move(out) };
+    }
+
+    template<open_mode Mode>
+    STORMKIT_FORCE_INLINE
+    inline auto file_descriptor<Mode>::is_open() const noexcept -> bool {
+        return m_descriptor != invalid_handle;
     }
 
     ////////////////////////////////////////
@@ -220,7 +240,7 @@ namespace stormkit { inline namespace core { namespace io {
     template<open_mode Mode>
     STORMKIT_FORCE_INLINE
     inline auto file_descriptor<Mode>::close() noexcept {
-        if (m_descriptor != invalid_handle) {
+        if (is_open()) {
             flush();
 #ifdef STORMKIT_OS_WINDOWS
             win32::CloseHandle
@@ -384,27 +404,47 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<open_mode Mode>
-    inline auto file_descriptor<Mode>::do_init(const stdfs::path& path, access access) noexcept -> system_result<void> {
-        if (access == access::read and not stdfs::exists(path))
-            return std::unexpected { error_code::from_stderrc(std::errc::no_such_file_or_directory) };
+    inline auto file_descriptor<Mode>::do_init(const stdfs::path& path, access access, share_mode share_mode) noexcept
+      -> system_result<void> {
+        if (not has_flag_bit(access, access::unchecked)) {
+            auto error_code_ = std::error_code {};
+            if (has_flag_bit(access, access::read) and not stdfs::exists(path, error_code_))
+                return std::unexpected { error_code::from_stderrc(std::errc::no_such_file_or_directory) };
+            if (error_code_) return std::unexpected { error_code::from_stderror_code(std::move(error_code_)) };
 
-        if (stdfs::is_directory(path)) return std::unexpected { error_code::from_stderrc(std::errc::is_a_directory) };
+            if (stdfs::is_directory(path, error_code_))
+                return std::unexpected { error_code::from_stderrc(std::errc::is_a_directory) };
+            if (error_code_) return std::unexpected { error_code::from_stderror_code(std::move(error_code_)) };
+        }
 
 #ifdef STORMKIT_OS_WINDOWS
-        const auto path_ = "\\\\?\\" / path;
+        const auto path_ = [&] noexcept {
+            if (not path.string().starts_with("\\\\?\\")) return "\\\\?\\" / path;
+            return path;
+        }();
 
         const auto win32_access = [&access]() noexcept -> win32::DWORD {
-            if (access == access::read) return win32::GENERIC_READ;
-            else if (access == access::write)
+            if (has_flag_bit(access, io::access::read)) return win32::GENERIC_READ;
+            else if (has_flag_bit(access, io::access::write))
                 return win32::GENERIC_WRITE;
             else
                 return win32::GENERIC_WRITE | win32::GENERIC_READ;
             std::unreachable();
         }();
+
+        const auto win32_share_mode = [&share_mode] noexcept -> win32::DWORD {
+            auto out = win32::DWORD { 0 };
+
+            if (has_flag_bit(share_mode, io::share_mode::read)) out |= win32::FILE_SHARE_READ;
+            if (has_flag_bit(share_mode, io::share_mode::write)) out |= win32::FILE_SHARE_WRITE;
+
+            return out;
+        }();
+
         const auto path_as_string = path_.string();
         const auto ret            = win32::CreateFileA(stdr::data(path_as_string),
                                                        win32_access,
-                                                       win32::FILE_SHARE_READ,
+                                                       win32_share_mode,
                                                        nullptr,
                                                        win32::OPEN_ALWAYS,
                                                        win32::FILE_ATTRIBUTE_NORMAL,
