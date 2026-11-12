@@ -169,8 +169,8 @@ namespace stormkit::math {
             return false;
     }
 
-    // #ifndef STORMKIT_COMPILER_MSVC
-    //     #ifndef STORMKIT_OS_WINDOWS
+    // #ifndef STORMKIT_COMPILER_IS_CL
+    //     #ifndef STORMKIT_OS_IS_WINDOWS
     //         #undef STORMKIT_CORE_API
     //         #define STORMKIT_CORE_API
     //     #endif

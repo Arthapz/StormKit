@@ -27,7 +27,7 @@ namespace cmonadic = stormkit::core::monadic;
 namespace stormkit::gpu {
     class physical_device;
 
-    class instance_interface {
+    class instance_interface: gpu_object_interface {
       public:
         [[nodiscard]]
         auto supported_extensions(this const auto& self) noexcept -> dynarray<string>;
@@ -45,7 +45,7 @@ namespace stormkit::gpu {
         auto physical_devices(this const auto& self) noexcept -> dynarray<physical_device>;
     };
 
-    struct physical_device_interface {
+    struct physical_device_interface: gpu_object_interface {
         [[nodiscard]]
         auto check_extension_support(string_view extension) const noexcept -> bool;
 
@@ -58,22 +58,25 @@ namespace stormkit::gpu {
           -> std::optional<hash_set<string_view>>;
 
         [[nodiscard]]
-        auto info(this const auto& self) noexcept -> physical_device_info;
+        auto score() const noexcept -> u64;
 
         [[nodiscard]]
-        auto capabilities(this const auto& self) noexcept -> capabilities;
+        auto info() noexcept -> physical_device_info;
 
         [[nodiscard]]
-        auto memory_properties(this const auto& self) noexcept -> dynarray<memory_property_flag>;
+        auto capabilities() noexcept -> capabilities;
 
         [[nodiscard]]
-        auto queue_families(this const auto& self) noexcept -> dynarray<queue_family>;
+        auto memory_properties() noexcept -> dynarray<memory_property_flag>;
 
         [[nodiscard]]
-        auto extensions(this const auto& self) noexcept -> dynarray<string>;
+        auto queue_families() noexcept -> dynarray<queue_family>;
 
         [[nodiscard]]
-        auto format_properties(this const auto& self) noexcept -> dynarray<std::pair<pixel_format, format_properties>>;
+        auto extensions() noexcept -> dynarray<string>;
+
+        [[nodiscard]]
+        auto format_properties() noexcept -> dynarray<std::pair<pixel_format, format_properties>>;
     };
 
     using physical_device_trait = gpu_object_trait<VkPhysicalDevice, physical_device_interface>;
@@ -111,36 +114,19 @@ namespace stormkit::gpu {
         };
 
         namespace view {
-            class physical_device: public core::view<physical_device_trait> {
-              public:
-                physical_device(gpu::physical_device&&) = delete;
-                physical_device(const gpu::physical_device& device STORMKIT_LIFETIMEBOUND) noexcept;
-
-              private:
-                ref_ptr<const physical_device_info>                          device_info_;
-                ref_ptr<const render_capabilities>                           capabilities_;
-                array_view<const MemoryPropertyFlag>                         memory_types_;
-                array_view<const queue_family>                               queue_families_;
-                array_view<const string>                                     extensions_;
-                array_view<const std::pair<pixel_format, format_properties>> format_properties_;
-            };
-
-            class instance: public core::view<instance_trait> {
-              public:
-                instance(gpu::instance&&) = delete;
-                instance(const gpu::instance& instance STORMKIT_LIFETIMEBOUND) noexcept;
-
-              private:
-                array_view<const string> supported_extensions_;
-                array_view<const string> loaded_extensions_;
-                array_view<const string> loaded_extensions_;
-
-                array_view<const gpu::physical_device> physical_devices_;
-            };
+            using physical_device = core::view<physical_device_trait>;
+            using instance        = core::view<instance_trait>;
         } // namespace view
 
         [[nodiscard]]
-        STORMKIT_GPU_API auto score_physical_device(view::physical_device physical_device) noexcept -> u64;
+        STORMKIT_GPU_API auto score_physical_device(view::physical_device physical_device,
+                                                    const capabilities&   capabilities,
+                                                    const device_info&    info) noexcept -> u64;
+
+        [[nodiscard]]
+        STORMKIT_GPU_API auto is_extension_supported(array_view<const string_view> supported_extensions, string_view extension);
+        STORMKIT_GPU_API auto are_extensions_supported(array_view<const string_view> supported_extensions,
+                                                       array_view<const string_view> extensions);
 
         template<typename FormatContext>
         auto format_as(view::physical_device physical_device, FormatContext& ctx) noexcept -> decltype(ctx.out());
@@ -154,18 +140,10 @@ namespace stormkit::gpu {
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Interface>
     STORMKIT_FORCE_INLINE
-    inline auto InstanceObject<Interface>::instance() const noexcept -> view::Instance {
-        return Interface::owner();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename Base>
-    STORMKIT_FORCE_INLINE
-    inline auto PhysicalDeviceInterface<Base>::check_extension_support(string_view extension) const noexcept -> bool {
-        return stdr::any_of(extensions(), [extension](const auto& e) { return e == extension; });
+    inline auto is_extension_supported(array_view<const string_view> supported_extensions, string_view extension) const noexcept
+      -> bool {
+        return stdr::any_of(supported_extensions, [extension](const auto& e) { return e == extension; });
     }
 
     /////////////////////////////////////
@@ -180,15 +158,6 @@ namespace stormkit::gpu {
         if (not required_extensions.empty()) return required_extensions;
 
         return std::nullopt;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename Base>
-    inline auto PhysicalDeviceInterface<Base>::check_extension_support(array_view<const czstring> extensions) const noexcept
-      -> std::optional<hash_set<string_view>> {
-        const auto ext = transform(extensions, cmonadic::init<string_view>());
-        return check_extension_support(ext);
     }
 
     /////////////////////////////////////

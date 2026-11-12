@@ -59,19 +59,26 @@ export namespace stormkit { inline namespace core { namespace meta {
         []<typename T, auto... VALS>(const Template<T, VALS...>&) { return true; }(s);
     };
 
+    template<typename S, template<class, auto, class...> typename Template>
+    concept specialization_of_nttp_tvt = requires(const S& s) {
+        []<typename T, auto VAL, typename... Ts>(const Template<T, VAL, Ts...>&) { return true; }(s);
+    };
+
     template<typename S, template<class, class, auto...> typename Template>
     concept specialization_of_nttp_ttv = requires(const S& s) {
         []<typename T, typename U, auto... VALS>(const Template<T, U, VALS...>&) { return true; }(s);
     };
 
-    template<typename S, template<class, auto, template<class> class...> typename Template>
+    template<typename S, template<class, auto, template<class...> class...> typename Template>
     concept specialization_of_nttp_tvc = requires(const S& s) {
-        []<typename T, auto VAL, template<class> class... Ts>(const Template<T, VAL, Ts...>&) { return true; }(s);
+        []<typename T, auto VAL, template<class...> class... Ts>(const Template<T, VAL, Ts...>&) { return true; }(s);
     };
 
-    template<typename S, template<class, class, auto, template<class> class...> typename Template>
+    template<typename S, template<class, class, auto, template<class...> class...> typename Template>
     concept specialization_of_nttp_ttvc = requires(const S& s) {
-        []<typename T, typename U, auto VAL, template<class> class... Ts>(const Template<T, U, VAL, Ts...>&) { return true; }(s);
+        []<typename T, typename U, auto VAL, template<class...> class... Ts>(const Template<T, U, VAL, Ts...>&) {
+            return true;
+        }(s);
     };
 
     template<typename T>
@@ -282,6 +289,97 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept has_equality_operator = requires(const T1& first, const T2& second) {
         { first == second } -> boolean_testable;
     };
+
+    template<typename T1, typename T2>
+    concept has_three_way_comparaison_operator = std::three_way_comparable_with<T1, T2>;
+
+    template<typename T, typename U>
+    concept has_add_operator = requires(T value, U&& other) { value + std::forward<U>(other); };
+
+    template<typename T, typename U>
+    concept has_add_assign_operator = requires(T value, U&& other) {
+        { value += std::forward<U>(other) } -> same_as<T&>;
+    };
+
+    template<typename T, typename U>
+    concept has_sub_operator = requires(T value, U&& other) { value - std::forward<U>(other); };
+
+    template<typename T, typename U>
+    concept has_sub_assign_operator = requires(T value, U&& other) {
+        { value -= std::forward<U>(other) } -> same_as<T&>;
+    };
+
+    template<typename T, typename U>
+    concept has_mul_operator = requires(T value, U&& other) { value * std::forward<U>(other); };
+
+    template<typename T, typename U>
+    concept has_mul_assign_operator = requires(T value, U&& other) {
+        { value *= std::forward<U>(other) } -> same_as<T&>;
+    };
+
+    template<typename T, typename U>
+    concept has_div_operator = requires(T value, U&& other) { value / std::forward<U>(other); };
+
+    template<typename T, typename U>
+    concept has_div_assign_operator = requires(T value, U&& other) {
+        { value /= std::forward<U>(other) } -> same_as<T&>;
+    };
+
+    template<typename T, typename U>
+    concept has_l_bitshift_operator = requires(T value, U&& other) { value << std::forward<U>(other); };
+
+    template<typename T, typename U>
+    concept has_l_bitshift_assign_operator = requires(T value, U&& other) {
+        { value <<= std::forward<U>(other) } -> same_as<T&>;
+    };
+
+    template<typename T, typename U>
+    concept has_r_bitshift_operator = requires(T value, U&& other) { value >> std::forward<U>(other); };
+
+    template<typename T, typename U>
+    concept has_r_bitshift_assign_operator = requires(T value, U&& other) {
+        { value >>= std::forward<U>(other) } -> same_as<T&>;
+    };
+
+    template<typename T, typename U>
+    concept has_bitwise_and_operator = requires(T value, U&& other) { value & std::forward<U>(other); };
+
+    template<typename T, typename U>
+    concept has_bitwise_and_assign_operator = requires(T value, U&& other) {
+        { value &= std::forward<U>(other) } -> same_as<T&>;
+    };
+
+    template<typename T, typename U>
+    concept has_bitwise_or_operator = requires(T value, U&& other) { value | std::forward<U>(other); };
+
+    template<typename T, typename U>
+    concept has_bitwise_or_assign_operator = requires(T value, U&& other) {
+        { value |= std::forward<U>(other) } -> same_as<T&>;
+    };
+
+    template<typename T, typename U>
+    concept has_bitwise_xor_operator = requires(T value, U&& other) { value ^ std::forward<U>(other); };
+
+    template<typename T, typename U>
+    concept has_bitwise_xor_assign_operator = requires(T value, U&& other) {
+        { value ^= std::forward<U>(other) } -> same_as<T&>;
+    };
+
+    template<typename T, typename U>
+    concept has_and_operator = requires(T first, U&& second) {
+        { first and std::forward<U>(second) } -> boolean_testable;
+    };
+
+    template<typename T, typename U>
+    concept has_or_operator = requires(T first, U&& second) {
+        { first or std::forward<U>(second) } -> boolean_testable;
+    };
+
+    template<typename T>
+    concept has_deref_operator = requires(T value) { value.operator*(); };
+
+    template<typename T>
+    concept has_deref_call_operator = requires(T value) { value.operator->(); };
 
     template<typename T>
     concept default_constructible = std::default_initializable<T>;

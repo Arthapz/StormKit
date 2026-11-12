@@ -48,6 +48,19 @@
     TryAssert_impl(expected_var_name, try_expression, msg);            \
     auto name = *std::move(expected_var_name)
 
+#define TryIn_impl(name, expected_var_name, try_expression) \
+    Try_impl(expected_var_name, try_expression);            \
+    name = *std::move(expected_var_name)
+#define TryInOr_impl(name, expected_var_name, try_expression, or_closure) \
+    TryOr_impl(expected_var_name, try_expression, or_closure);            \
+    name = *std::move(expected_var_name)
+#define TryInTransform_impl(name, expected_var_name, try_expression, transform_closure) \
+    TryTransform_impl(expected_var_name, try_expression, transform_closure);            \
+    name = *std::move(expected_var_name)
+#define TryInAssert_impl(name, expected_var_name, try_expression, msg) \
+    TryAssert_impl(expected_var_name, try_expression, msg);            \
+    name = *std::move(expected_var_name)
+
 #define Try(try_expression)               Try_impl(STORMKIT_UNIQUE_NAME(temp), try_expression)
 #define TryOr(try_expression, or_closure) TryOr_impl(STORMKIT_UNIQUE_NAME(temp), try_expression, or_closure)
 #define TryTransform(try_expression, transform_closure) \
@@ -73,6 +86,26 @@
 
 #define LoggedTryTo(name, try_expression, msg)               CustomLoggedTryTo(name, try_expression, elog, msg)
 #define LoggedTryToOr(name, try_expression, or_closure, msg) CustomLoggedTryToOr(name, try_expression, or_closure, elog, msg)
+
+#define TryIn(name, try_expression)               TryIn_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression)
+#define TryInOr(name, try_expression, or_closure) TryInOr_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression, or_closure)
+#define TryInTransform(name, try_expression, transform_closure) \
+    TryInTransform_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression, transform_closure)
+#define TryInAssert(name, try_expression, msg) TryInAssert_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression, msg)
+
+#define CustomLoggedTryIn(name, try_expression, logger, msg)                                                                  \
+    TryInOr_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression, ([&]<typename T_>(T_&& error) noexcept -> decltype(auto) { \
+                     logger("{}\n    > reason: {}", msg, error);                                                              \
+                     return std::unexpected { std::forward<T_>(error) };                                                      \
+                 }))
+#define CustomLoggedTryInOr(name, try_expression, or_closure, logger, msg)                                                  \
+    TryOr_impl(name, STORMKIT_UNIQUE_NAME(name), try_expression, ([&]<typename T_>(T_&& error) noexcept -> decltype(auto) { \
+                   logger("{}\n    > reason: {}", msg, error);                                                              \
+                   return std::invoke(or_closure, std::forward<T_>(error));                                                 \
+               }))
+
+#define LoggedTryIn(name, try_expression, msg)               CustomLoggedTryIn(name, try_expression, elog, msg)
+#define LoggedTryInOr(name, try_expression, or_closure, msg) CustomLoggedTryInOr(name, try_expression, or_closure, elog, msg)
 
 #define CustomLoggedTry(try_expression, logger, msg)                                                                  \
     TryOr_impl(STORMKIT_UNIQUE_NAME(temp), try_expression, ([&]<typename T_>(T_&& error) noexcept -> decltype(auto) { \

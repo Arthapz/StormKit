@@ -76,12 +76,12 @@ namespace stormkit { inline namespace core {
         requires(meta::same_as<T, equal>)
     STORMKIT_FORCE_INLINE
     constexpr auto is_fn<T>::operator()(const First& first, const Second& second) noexcept -> bool {
-        static_assert(tag_invokable<const First&, const Second&> or meta::has_equality_operator<First, Second>,
-                      "Is queryier not defined for these types!");
-
         if constexpr (tag_invokable<const First&, const Second&>) return meta::tag_invoke(is_fn<T> {}, first, second);
-        else
+        else if constexpr (meta::has_equality_operator<First, Second>)
             return first == second;
+        else
+            static_assert(tag_invokable<const First&, const Second&> or meta::has_equality_operator<First, Second>,
+                          "Is queryier not defined for these types!");
     }
 
     /////////////////////////////////////

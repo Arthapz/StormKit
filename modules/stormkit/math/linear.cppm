@@ -5,7 +5,6 @@
 export module stormkit.math.linear;
 
 export import stormkit.math.linear.angle;
-export import stormkit.math.linear.tensor;
 export import stormkit.math.linear.matrix;
 export import stormkit.math.linear.vector;
 export import stormkit.math.linear.quaternion;

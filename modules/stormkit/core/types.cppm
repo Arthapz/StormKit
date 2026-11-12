@@ -12,7 +12,7 @@ module;
     #endif
 #endif
 
-#ifdef STORMKIT_COMPILER_MSVC
+#if STORMKIT_COMPILER_IS_CL
     #include <__msvc_int128.hpp>
 #endif
 
@@ -47,7 +47,7 @@ export {
         using u64 = std::uint64_t;
 #ifdef __SIZEOF_INT128__
         __extension__ using u128 = unsigned __int128;
-#elif defined(STORMKIT_COMPILER_MSVC)
+#elif STORMKIT_COMPILER_IS_CL
         using u128 = std::_Unsigned128;
 #endif
 
@@ -57,7 +57,7 @@ export {
         using i64 = std::int64_t;
 #ifdef __SIZEOF_INT128__
         __extension__ using i128 = __int128;
-#elif defined(STORMKIT_COMPILER_MSVC)
+#elif STORMKIT_COMPILER_IS_CL
         using i128 = std::_Signed128;
 #else
 #endif
@@ -82,7 +82,7 @@ export {
 
 #ifdef __STDCPP_FLOAT16_T__
         using f16 = std::float16_t;
-#elif not defined(STORMKIT_OS_WINDOWS)
+#elif not defined(STORMKIT_OS_IS_WINDOWS)
         using f16 = _Float16;
 #endif
 

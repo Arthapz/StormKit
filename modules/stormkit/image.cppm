@@ -326,7 +326,7 @@ namespace stormkit::image {
     inline auto image::pixel(this Self& self, meta::in<math::uvec3> position, u32 layer, u32 face, u32 level) noexcept
       -> array_view<meta::forward_const_to<Self, byte>> {
         const auto mip_extent = self.extent(level);
-        const auto id = position.x() + (position.y() * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z());
+        const auto id = position->x + (position->y * mip_extent.width) + (mip_extent.width * mip_extent.height * position->z);
 
         return self.pixel(id, layer, face, level);
     }

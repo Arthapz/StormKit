@@ -12,10 +12,10 @@ module;
     #define STD_STACKTRACE_SUPPORTED
 #endif
 
-#if not defined(STD_STACKTRACE_SUPPORTED) and defined(STORMKIT_OS_LINUX)
+#if not defined(STD_STACKTRACE_SUPPORTED) and defined(STORMKIT_OS_IS_LINUX)
     #include <execinfo.h>
 
-    #if defined(STORMKIT_COMPILER_CLANG)
+    #if STORMKIT_COMPILER_IS_CLANG
         #include <cxxabi.h>
         #include <dlfcn.h>
     #endif
@@ -81,7 +81,7 @@ namespace stormkit { inline namespace core {
                 count += 1;
                 continue;
             }
-    #ifdef STORMKIT_COMPILER_MSSTL
+    #if STORMKIT_CPPLIB_IS_MSSTL
             const auto frame_str        = std::to_string(frame);
             auto       splitted         = split(frame_str, "+");
             const auto address          = to<u64>(splitted[1].substr(2), 16)
@@ -138,7 +138,7 @@ namespace stormkit { inline namespace core {
         }
 
         if ((count - ignore_count) == 0) std::println("No stacktrace available!");
-#elifdef STORMKIT_OS_LINUX
+#elifdef STORMKIT_OS_IS_LINUX
         auto frames = array<void*, 100> {};
         // const auto count  = backtrace(stdr::data(frames), stdr::size(frames));
         // void*      frames[100];

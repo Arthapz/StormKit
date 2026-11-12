@@ -33,7 +33,7 @@ export namespace stormkit { inline namespace core { namespace monadic {
     constexpr auto throw_as_exception() noexcept -> decltype(auto);
 }}} // namespace stormkit::core::monadic
 
-#ifdef STORMKIT_COMPILER_CLANG
+#if STORMKIT_COMPILER_IS_CLANG
     #define NORETURN_LAMBDA [[noreturn]]
 #else
     #define NORETURN_LAMBDA

@@ -8,7 +8,7 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-#ifndef STORMKIT_OS_WINDOWS
+#ifndef STORMKIT_OS_IS_WINDOWS
     #include <unistd.h>
 #endif
 
@@ -62,7 +62,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto get_stderr_fd() noexcept -> int {
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
         return ::_fileno(get_stderr());
 #else
         return STDERR_FILENO;
@@ -73,7 +73,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto get_stdout_fd() noexcept -> int {
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
         return ::_fileno(get_stdout());
 #else
         return STDOUT_FILENO;
@@ -84,7 +84,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto get_stdin_fd() noexcept -> int {
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
         return ::_fileno(get_stdin());
 #else
         return STDIN_FILENO;

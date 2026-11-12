@@ -52,14 +52,14 @@ namespace stormkit::gpu {
         );
 
         constexpr auto WSI_SURFACE_EXTENSIONS = into_array_of<czstring>(
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
           VK_KHR_WIN32_SURFACE_EXTENSION_NAME
-#elif defined(STORMKIT_OS_LINUX)
+#elif defined(STORMKIT_OS_IS_LINUX)
           VK_KHR_XCB_SURFACE_EXTENSION_NAME,
           VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
-#elif defined(STORMKIT_OS_MACOS)
+#elif defined(STORMKIT_OS_IS_MACOS)
           VK_MVK_MACOS_SURFACE_EXTENSION_NAME
-#elif defined(STORMKIT_OS_IOS)
+#elif defined(STORMKIT_OS_IS_IOS)
           VK_MVK_IOS_SURFACE_EXTENSION_NAME
 #endif
         );

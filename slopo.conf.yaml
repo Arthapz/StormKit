@@ -1,0 +1,28 @@
+# Source directory with code to index.
+# Absolute path, or relative to the current directory.
+source_dir: "./"
+
+# Paths to exclude from indexing, as a list of .gitignore-style patterns.
+source_dir_exclude:
+  - "build*/"
+  - "proposal/"
+  - ".*/"
+  - "src/gpu_backup/"
+  - "examples/"
+
+# When set, only listed extensions are included. Otherwise, all supported files.
+#include_file_extensions:
+#  - .ts
+#  - .py
+
+# Embedding model in LiteLLM format, e.g. "jina_ai/jina-code-embeddings-0.5b"
+# For all supported providers see https://docs.litellm.ai/docs/providers
+embedding_model: ollama/unclemusclez/jina-embeddings-v2-base-code
+
+# Output dimensions of the embedding model.
+embedding_dimensions: 768
+
+# Provider API key. Optional, no need to set for local models.
+# Alternatively, set the SLOPO_EMBEDDING_API_KEY environment variable
+# (also picked up from a .env file in the current directory)
+# embedding_api_key:

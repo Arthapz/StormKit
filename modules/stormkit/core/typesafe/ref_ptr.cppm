@@ -281,8 +281,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::negate<meta::reference> T>
-    STORMKIT_FORCE_INLINE
     template<typename Self>
+    STORMKIT_FORCE_INLINE
     constexpr auto ref_ptr<T>::operator*(this Self& self) noexcept -> meta::forward_const_to<Self, element_type>& {
         return *self.pointed_;
     }
@@ -290,8 +290,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::negate<meta::reference> T>
-    STORMKIT_FORCE_INLINE
     template<typename Self>
+    STORMKIT_FORCE_INLINE
     constexpr auto ref_ptr<T>::get(this Self& self) noexcept -> meta::forward_const_to<Self, element_type>* {
         return static_cast<meta::forward_const_to<Self, element_type>*>(self.pointed_);
     }

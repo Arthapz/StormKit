@@ -63,7 +63,7 @@ module;
     template<typename First, typename... Ts>                                                               \
     concept wrapped_value_of = apply_to<First, meta::wrapped_value_of, Ts...>;                             \
     template<typename First, typename... Ts>                                                               \
-    concept polymorphic = apply_to<First, meta::polymorphic, Ts...>;                             \
+    concept polymorphic = apply_to<First, meta::polymorphic, Ts...>;                                       \
     template<typename First, typename... Ts>                                                               \
     concept polymorphic_pointer = apply_to<First, meta::polymorphic_pointer, Ts...>;                       \
     template<typename First, typename... Ts>                                                               \
@@ -93,17 +93,17 @@ module;
     template<typename First, typename... Ts>                                                               \
     concept character = apply_to<First, meta::character, Ts...>;                                           \
     template<typename First, typename... Ts>                                                               \
-    concept const_qualified = apply_to<First, meta::const_qualified, Ts...>;                                         \
+    concept const_qualified = apply_to<First, meta::const_qualified, Ts...>;                               \
     template<typename First, typename... Ts>                                                               \
-    concept volatile_qualified = apply_to<First, meta::volatile_qualified, Ts...>;                                   \
+    concept volatile_qualified = apply_to<First, meta::volatile_qualified, Ts...>;                         \
     template<typename First, typename... Ts>                                                               \
     concept brace_initializable_to = apply_to<First, meta::brace_initializable_to, Ts...>;                 \
     template<typename First, typename... Ts>                                                               \
-    concept unsigned_integer = apply_to<First, meta::unsigned_integer, Ts...>;                                   \
+    concept unsigned_integer = apply_to<First, meta::unsigned_integer, Ts...>;                             \
     template<typename First, typename... Ts>                                                               \
-    concept signed_integer = apply_to<First, meta::signed_integer, Ts...>;                                       \
+    concept signed_integer = apply_to<First, meta::signed_integer, Ts...>;                                 \
     template<typename First, typename... Ts>                                                               \
-    concept same_signeness_as = apply_to<First, meta::same_signeness_as, Ts...>;                         \
+    concept same_signeness_as = apply_to<First, meta::same_signeness_as, Ts...>;                           \
     template<typename First, typename... Ts>                                                               \
     concept is_sign_narrowing = apply_to<First, meta::is_sign_narrowing, Ts...>;                           \
     template<typename First, typename... Ts>                                                               \
@@ -212,6 +212,12 @@ export namespace stormkit { inline namespace core { namespace meta {
     using remove_const_of = std::remove_const_t<T>;
 
     template<typename T>
+    using remove_volatile_of = std::remove_volatile_t<T>;
+
+    template<typename T>
+    using remove_cv_of = std::remove_cv_t<T>;
+
+    template<typename T>
     using remove_refs_of = std::remove_reference_t<T>;
 
     template<typename T>
@@ -248,6 +254,9 @@ export namespace stormkit { inline namespace core { namespace meta {
         template<typename S, template<class, auto...> typename T>
         concept specialization_of_nttp_tv = meta::specialization_of_nttp_tv<meta::to_decayed_type<S>, T>;
 
+        template<typename S, template<class, auto, class...> typename T>
+        concept specialization_of_nttp_tvt = meta::specialization_of_nttp_tvt<meta::to_decayed_type<S>, T>;
+
         template<typename S, template<class, class, auto...> typename T>
         concept specialization_of_nttp_ttv = meta::specialization_of_nttp_ttv<meta::to_decayed_type<S>, T>;
 
@@ -272,6 +281,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
         template<typename S, template<class, auto...> typename T>
         concept specialization_of_nttp_tv = meta::specialization_of_nttp_tv<meta::to_plain_type<S>, T>;
+
+        template<typename S, template<class, auto, class...> typename T>
+        concept specialization_of_nttp_tvt = meta::specialization_of_nttp_tvt<meta::to_plain_type<S>, T>;
 
         template<typename S, template<class, class, auto...> typename T>
         concept specialization_of_nttp_ttv = meta::specialization_of_nttp_ttv<meta::to_plain_type<S>, T>;

@@ -65,6 +65,24 @@ export namespace stormkit { inline namespace core {
 
     template<template<class...> typename Out = dynarray, stdr::input_range... Inputs>
     constexpr auto move_and_concat(Inputs&&... inputs) noexcept -> Out<meta::common_range_value_type<Inputs...>>;
+
+    inline constexpr auto synth_three_way = []<class T, class U>(const T& t, const U& __u)
+        requires requires {
+            { t < __u } -> meta::boolean_testable;
+            { __u < t } -> meta::boolean_testable;
+        }
+    {
+        if constexpr (meta::has_three_way_comparaison_operator<T, U>) {
+            return t <=> __u;
+        } else {
+            if (t < __u) return std::weak_ordering::less;
+            if (__u < t) return std::weak_ordering::greater;
+            return std::weak_ordering::equivalent;
+        }
+    };
+
+    template<class T, class U = T>
+    using synth_three_way_result = decltype(synth_three_way(std::declval<T&>(), std::declval<U&>()));
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////

@@ -17,19 +17,6 @@ namespace {
     auto _ = test::test_suite {
         "core.math.linear.vector",
         {
-          { "linear.vector.view_of.linear",
-            [] static {
-                auto       a     = math::ivec2 { 2, 3 };
-                const auto span  = view_of(math::as_linear, a);
-                auto       span2 = mutable_view_of(math::as_linear, a);
-
-                EXPECTS(span[0] == 2);
-                EXPECTS(span[1] == 3);
-
-                span2[0] = 1;
-
-                EXPECTS(span[0] == 1);
-            } },
           { "linear.vector.operator[]",
             [] static {
                 auto a = math::ivec2 { 2, 3 };
@@ -41,6 +28,15 @@ namespace {
 
                 a[0] = 5;
             } },
+          { "linear.vector.swizzle",
+            [] static {
+                const auto a = math::ivec3 { 1, 3, 3 };
+                const auto b = a.xyx();
+
+                EXPECTS(b->x == a->x);
+                EXPECTS(b->y == a->y);
+                EXPECTS(b->z == a->x);
+            } },
           {
             "linear.vector.add",
             [] static {
@@ -48,8 +44,8 @@ namespace {
                 const auto b = math::ivec2 { 3, 2 };
 
                 const auto result = add(a, b);
-                EXPECTS(result.x() == 5);
-                EXPECTS(result.y() == 5);
+                EXPECTS(result->x == 5);
+                EXPECTS(result->y == 5);
             },
           }, {
             "linear.vector.sub",
@@ -58,8 +54,8 @@ namespace {
                 const auto b = math::ivec2 { 3, 2 };
 
                 const auto result = sub(a, b);
-                EXPECTS(result.x() == -1);
-                EXPECTS(result.y() == 1);
+                EXPECTS(result->x == -1);
+                EXPECTS(result->y == 1);
             },
           }, {
             "linear.vector.mul",
@@ -67,8 +63,8 @@ namespace {
                 const auto a = math::ivec2 { 10, 6 };
 
                 const auto result = mul(a, 2);
-                EXPECTS(result.x() == 20);
-                EXPECTS(result.y() == 12);
+                EXPECTS(result->x == 20);
+                EXPECTS(result->y == 12);
             },
           }, {
             "linear.vector.div",
@@ -76,8 +72,8 @@ namespace {
                 const auto a = math::ivec2 { 10, 6 };
 
                 const auto result = div(a, 2);
-                EXPECTS(result.x() == 5);
-                EXPECTS(result.y() == 3);
+                EXPECTS(result->x == 5);
+                EXPECTS(result->y == 3);
             },
           }, {
             "linear.vector.dot",
@@ -94,7 +90,7 @@ namespace {
                 const auto b = math::ivec3 { 3, 2, 3 };
 
                 const auto result = math::cross(a, b);
-                EXPECTS(result.x() == 5 and result.y() == 0 and result.z() == -5);
+                EXPECTS(result->x == 5 and result->y == 0 and result->z == -5);
             },
           }, {
             "linear.vector.normalize",
@@ -105,8 +101,8 @@ namespace {
                 };
 
                 const auto result = math::normalize(a);
-                EXPECTS(is(result.x(), 1.f / std::sqrt(1.f + 4.f)));
-                EXPECTS(result.y() == 2.f / std::sqrt(1.f + 4.f));
+                EXPECTS(is(result->x, 1.f / std::sqrt(1.f + 4.f)));
+                EXPECTS(result->y == 2.f / std::sqrt(1.f + 4.f));
             },
           }, },
     };

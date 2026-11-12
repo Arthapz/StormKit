@@ -14,7 +14,7 @@ export module stormkit.core.string.encodings;
 
 import std;
 
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
 import stormkit.platform.win32;
 #endif
 
@@ -31,7 +31,7 @@ export namespace stormkit { inline namespace core {
     auto ascii_to_utf8(string_view) -> u8string;
     auto utf8_to_ascii(u8string_view) -> string;
 
-#ifdef STORMKIT_COMPILER_MSVC
+#if STORMKIT_COMPILER_IS_CL
     auto to_native_encoding(string_view) -> u16string;
 #else
     auto to_native_encoding(string_view) -> u8string;
@@ -50,7 +50,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     inline auto ascii_to_utf16(string_view input) -> u16string {
         auto output = u16string {};
-#if not defined(STORMKIT_COMPILER_CLANG)
+#if not defined(STORMKIT_COMPILER_IS_CLANG)
         auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
 
@@ -71,7 +71,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     inline auto utf16_to_ascii(u16string_view input) -> string {
         auto output = string {};
-#if not defined(STORMKIT_COMPILER_CLANG)
+#if not defined(STORMKIT_COMPILER_IS_CLANG)
         auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
 
@@ -90,7 +90,7 @@ namespace stormkit { inline namespace core {
     inline auto ascii_to_wide(string_view input) -> wstring {
         [[maybe_unused]]
         auto output = wstring {};
-#if defined(STORMKIT_OS_WINDOWS)
+#if defined(STORMKIT_OS_IS_WINDOWS)
         auto count = ::win32::MultiByteToWideChar(::win32::CP_ACP, 0, stdr::data(input), stdr::size(input), nullptr, 0);
         output.resize(count);
 
@@ -100,7 +100,7 @@ namespace stormkit { inline namespace core {
                                      stdr::size(input),
                                      stdr::data(output),
                                      stdr::size(output));
-#elif defined(STORMKIT_OS_MACOS)
+#elif defined(STORMKIT_OS_IS_MACOS)
         output.resize(stdr::size(input));
         auto i = 0;
         for (const auto& c : input) output[i] = unchecked_narrow<wchar_t>(c);
@@ -123,7 +123,7 @@ namespace stormkit { inline namespace core {
     inline auto wide_to_ascii(wstring_view input) -> string {
         [[maybe_unused]]
         auto output = string {};
-#if defined(STORMKIT_OS_WINDOWS)
+#if defined(STORMKIT_OS_IS_WINDOWS)
         auto count = ::win32::
           WideCharToMultiByte(::win32::CP_ACP, 0, stdr::data(input), stdr::size(input), nullptr, 0, nullptr, nullptr);
         output.resize(count);
@@ -136,7 +136,7 @@ namespace stormkit { inline namespace core {
                                      stdr::size(output),
                                      nullptr,
                                      nullptr);
-#elif defined(STORMKIT_OS_MACOS)
+#elif defined(STORMKIT_OS_IS_MACOS)
         output.resize(stdr::size(input));
         auto i = 0;
         for (const auto& c : input) output[i] = unchecked_narrow<char>(c);
@@ -157,10 +157,10 @@ namespace stormkit { inline namespace core {
         auto output = u8string {};
         output.resize(stdr::size(input) * unchecked_narrow<usize>(MB_LEN_MAX));
 
-#if defined(STORMKIT_COMPILER_MSVC)
+#if STORMKIT_COMPILER_IS_CL
         auto bytes = bytes_of(output);
         stdr::copy(bytes_of(input), stdr::begin(bytes));
-#elif defined(STORMKIT_COMPILER_CLANG)
+#elif STORMKIT_COMPILER_IS_CLANG
         output = reinterpret_cast<const char8_t*>(stdr::data(input));
 #else
         auto state    = std::mbstate_t {};
@@ -183,10 +183,10 @@ namespace stormkit { inline namespace core {
         auto output = string {};
         output.resize(stdr::size(input));
 
-#if defined(STORMKIT_COMPILER_MSVC)
+#if STORMKIT_COMPILER_IS_CL
         auto bytes = bytes_of(output);
         stdr::copy(bytes_of(input), stdr::begin(bytes));
-#elif defined(STORMKIT_COMPILER_CLANG)
+#elif STORMKIT_COMPILER_IS_CLANG
         output = reinterpret_cast<const char*>(stdr::data(input));
 #else
         auto state = std::mbstate_t {};
@@ -198,7 +198,7 @@ namespace stormkit { inline namespace core {
         return output;
     }
 
-#ifdef STORMKIT_COMPILER_MSVC
+#if STORMKIT_COMPILER_IS_CL
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE

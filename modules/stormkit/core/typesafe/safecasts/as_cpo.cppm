@@ -52,6 +52,11 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<To>, From&& value, source_location_arg = std::source_location::current()) noexcept
       -> meta::forward_like<From, To>;
+
+    namespace meta {
+        template<typename T, typename U>
+        concept is_as_castable_to = requires(T&& value) { as<U>(value); };
+    } // namespace meta
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////

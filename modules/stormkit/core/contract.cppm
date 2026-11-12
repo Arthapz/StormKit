@@ -32,7 +32,7 @@ export namespace stormkit { inline namespace core {
                      string_view                 message,
                      const std::source_location& location = std::source_location::current()) noexcept -> void;
 
-    consteval auto consteval_assert_base(bool cond, assert_type type, string_view message) noexcept -> void;
+    consteval auto consteval_assert_base(bool cond, assert_type type, string_view message) -> void;
 
     constexpr auto assert(bool                        cond,
                           string_view                 message,
@@ -67,8 +67,6 @@ namespace stormkit { inline namespace core {
         consteval auto view() noexcept -> string_view { return { std::data(buff), size }; }
     };
 
-    auto consteval_failure(static_string) -> void;
-
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
@@ -88,7 +86,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     consteval auto generate_consteval_message(assert_type type, string_view message) noexcept -> static_string {
         auto result = static_string {};
-#ifdef STORMKIT_COMPILER_MSSTL
+#if STORMKIT_CPPLIB_IS_MSSTL
         const auto str = "[ASSERTION]"s + stdr::data(as_string(type)) + ": "s + stdr::data(message);
 #else
         const auto str = "[ASSERTION]"s + as_string(type) + ": " + message;
@@ -101,8 +99,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    consteval auto consteval_assert_base(bool cond, assert_type type, string_view message) noexcept -> void {
-        if (not cond) [[unlikely]] { consteval_failure(generate_consteval_message(type, message)); }
+    consteval auto consteval_assert_base(bool cond, assert_type type, string_view message) -> void {
+        if (not cond) [[unlikely]] { std::unreachable(); }
     }
 
     /////////////////////////////////////

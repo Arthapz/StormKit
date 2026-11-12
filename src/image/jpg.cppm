@@ -152,7 +152,7 @@ namespace stormkit::image::details {
             const auto& extent = image_rgb.extent(0);
 
             auto out =
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
               _fdopen(reinterpret_cast<iptr>(file->native_descriptor()), "w");
 #else
               fdopen(file->native_descriptor(), "w");

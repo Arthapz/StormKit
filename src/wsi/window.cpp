@@ -16,19 +16,19 @@ import stormkit.core;
 
 import :window;
 
-#if defined(STORMKIT_OS_WINDOWS)
+#if defined(STORMKIT_OS_IS_WINDOWS)
 import :win32.window;
 
 namespace impl = stormkit::wsi::win32;
-#elif defined(STORMKIT_OS_LINUX)
+#elif defined(STORMKIT_OS_IS_LINUX)
 import :linux.window;
 
 namespace impl = stormkit::wsi::linux;
-#elif defined(STORMKIT_OS_MACOS)
+#elif defined(STORMKIT_OS_IS_MACOS)
 import :macos.window;
 
 namespace impl = stormkit::wsi::macos;
-#elif defined(STORMKIT_OS_IOS)
+#elif defined(STORMKIT_OS_IS_IOS)
 import :ios.window;
 
 namespace impl = stormkit::wsi::ios;

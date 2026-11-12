@@ -17,16 +17,16 @@ import stormkit.core;
 import :monitor;
 import :core;
 
-#if defined(STORMKIT_OS_WINDOWS)
+#if defined(STORMKIT_OS_IS_WINDOWS)
 import :win32.monitor;
 namespace impl = stormkit::wsi::win32;
-#elif defined(STORMKIT_OS_LINUX)
+#elif defined(STORMKIT_OS_IS_LINUX)
 import :linux.monitor;
 namespace impl = stormkit::wsi::linux;
-#elif defined(STORMKIT_OS_MACOS)
+#elif defined(STORMKIT_OS_IS_MACOS)
 import :macos.monitor;
 namespace impl = stormkit::wsi::macos;
-#elif defined(STORMKIT_OS_IOS)
+#elif defined(STORMKIT_OS_IS_IOS)
 import :ios.monitor;
 namespace impl = stormkit::wsi::ios;
 #else

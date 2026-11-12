@@ -32,7 +32,7 @@ constexpr auto tag_invoke(format_as_fn<CharT>, const Foo& value, FormatContext& 
     return std::format_to(ctx.out(), "[Foo a: {}, b: {}, c: {}]", value.a, value.b, value.c);
 }
 
-#ifdef STORMKIT_COMPILER_MSVC
+#if STORMKIT_COMPILER_IS_CL
 static const auto LOG_DIR = std::filesystem::path { L"log/" };
 #else
 static const auto LOG_DIR = std::filesystem::path { "log/" };

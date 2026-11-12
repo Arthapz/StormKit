@@ -69,7 +69,7 @@ namespace stormkit::wsi {
     constexpr auto monitor::operator<=>(const monitor& other) const noexcept -> std::strong_ordering {
         if (auto ret = flags <=> other.flags; ret != 0) return ret;
 
-#ifdef STORMKIT_COMPILER_CLANG
+#if STORMKIT_COMPILER_IS_CLANG
         if (auto ret = name.compare(other.name); ret != 0) {
             if (ret < 0) return std::strong_ordering::less;
             else if (ret > 0)

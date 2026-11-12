@@ -7,7 +7,7 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#if defined(STORMKIT_OS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
+#if defined(STORMKIT_OS_IS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
     #include <beman/optional/optional.hpp>
 #endif
 
@@ -107,7 +107,7 @@ export namespace stormkit::wsi::common {
             bool           fullscreen = false;
             bool           visible    = false;
             math::uextent2 extent;
-#if defined(STORMKIT_OS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
+#if defined(STORMKIT_OS_IS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
             beman::optional::optional<const monitor&> current_monitor;
 #else
             std::optional<const monitor&> current_monitor;
@@ -154,7 +154,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto window_base::current_monitor() const noexcept -> const monitor& {
-#if defined(STORMKIT_OS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
+#if defined(STORMKIT_OS_IS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
         EXPECTS(state_.current_monitor != beman::optional::nullopt);
 #else
         EXPECTS(state_.current_monitor != std::nullopt);

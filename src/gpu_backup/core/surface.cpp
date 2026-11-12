@@ -8,10 +8,10 @@ module;
 #include <stormkit/core/platform_macro.hpp>
 #include <stormkit/core/try_expected.hpp>
 
-#if defined(STORMKIT_OS_LINUX)
+#if defined(STORMKIT_OS_IS_LINUX)
     #include <wayland-client.h>
     #include <xcb/xcb.h>
-#elif defined(STORMKIT_OS_WINDOWS)
+#elif defined(STORMKIT_OS_IS_WINDOWS)
     #include <stormkit/core/platform/windows.hpp>
 #endif
 
@@ -45,7 +45,7 @@ namespace stormkit::gpu {
         EXPECTS(window.is_open());
         const auto instance = owner();
 
-#if defined(STORMKIT_OS_WINDOWS)
+#if defined(STORMKIT_OS_IS_WINDOWS)
         const auto create_surface = [&window, &instance] {
             const auto create_info = VkWin32SurfaceCreateInfoKHR {
                 .sType       = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
@@ -56,7 +56,7 @@ namespace stormkit::gpu {
             };
             return vk::call_checked<VkSurfaceKHR>(vkCreateWin32SurfaceKHR, instance, &create_info, nullptr);
         };
-#elif defined(STORMKIT_OS_MACOS)
+#elif defined(STORMKIT_OS_IS_MACOS)
         const auto create_surface = [&window, &instance] {
             const auto create_info = VkMacOSSurfaceCreateInfoMVK {
                 .sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK,
@@ -66,7 +66,7 @@ namespace stormkit::gpu {
             };
             return vk::call_checked<VkSurfaceKHR>(vkCreateMacOSSurfaceMVK, instance, &create_info, nullptr);
         };
-#elif defined(STORMKIT_OS_LINUX)
+#elif defined(STORMKIT_OS_IS_LINUX)
         const auto make_wayland_surface = [&window, &instance] {
             struct handles {
                 wl_display* display;
@@ -109,7 +109,7 @@ namespace stormkit::gpu {
             return make_xcb_surface;
         }();
 
-#elif defined(STORMKIT_OS_IOS)
+#elif defined(STORMKIT_OS_IS_IOS)
         const auto create_surface = [this, &window, &m_instance] noexcept {
             const auto create_info = VkIOSSurfaceCreateInfoMVK {
                 .sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK,

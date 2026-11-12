@@ -13,7 +13,7 @@ export module stormkit.core.errors;
 
 import std;
 
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
 import stormkit.platform.win32;
 #endif
 
@@ -77,7 +77,7 @@ export {
         using system_code = system_error2::system_code;
 
         namespace error_code {
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
             auto from_win32() noexcept -> system_code;
             auto from_win32(win32::DWORD code) noexcept -> system_code;
             auto from_ntstatus(long code) noexcept -> system_code;
@@ -100,7 +100,7 @@ namespace stdr = std::ranges;
 
 namespace stormkit { inline namespace core {
     namespace error_code {
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE

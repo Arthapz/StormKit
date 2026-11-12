@@ -16,9 +16,9 @@ module;
 export module stormkit.gpu.core:vulkan.vma;
 
 STORMKIT_PUSH_WARNINGS
-#ifdef STORMKIT_COMPILER_CLANG
+#if STORMKIT_COMPILER_IS_CLANG
     #pragma clang diagnostic ignored "-Winclude-angled-in-module-purview"
-#elifdef STORMKIT_COMPILER_MSVC
+#elif STORMKIT_COMPILER_IS_CL
     #pragma warning(disable: 5244)
 #endif
 export extern "C" {

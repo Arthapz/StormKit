@@ -20,12 +20,12 @@ namespace {
           { "linear.matrix.view_of.linear",
             [] static {
                 auto a = math::imat4 { 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 4, 0, 0, 0 };
-                EXPECTS(a[0] == 0);
-                EXPECTS(a[1] == 1);
+                EXPECTS((a[0, 0] == 0));
+                EXPECTS((a[1, 1] == 1));
                 EXPECTS((a[1, 2] == 2));
 
-                const auto span  = view_of(math::as_linear, a);
-                auto       span2 = mutable_view_of(math::as_linear, a);
+                const auto span  = view_of(a);
+                auto       span2 = mutable_view_of(a);
 
                 EXPECTS(span[0] == 0);
                 EXPECTS(span[1] == 1);
@@ -37,13 +37,18 @@ namespace {
           { "linear.matrix.operator[]",
             [] static {
                 auto a = math::imat4 { 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 4, 0, 0, 0 };
-                EXPECTS(a[0] == 0);
-                EXPECTS(a[1] == 1);
-                EXPECTS(a[0] == 0);
+                EXPECTS(a[0]->x == 0);
+                EXPECTS(a[0]->y == 1);
+                EXPECTS(a[0][0] == 0);
+                EXPECTS(a[0][1] == 1);
+                EXPECTS((a[0, 0] == 0));
+                EXPECTS((a[0, 1] == 1));
 
-                EXPECTS((a[1, 2] == 2));
+                a[0]->y = 5;
 
-                a[0] = 5;
+                EXPECTS(a[0]->y == 5);
+                EXPECTS(a[0][1] == 5);
+                EXPECTS((a[0, 1] == 5));
             } },
           {
             "linear.matrix.determinant",
@@ -61,14 +66,12 @@ namespace {
             "linear.matrix.transpose",
             [] static {
                 const auto a = math::mat3x4<i32> {
-                    0, 1, 0, 0, //
-                    0, 0, 2, 0, //
-                    0, 0, 0, 3
-                }; //
+                    { math::ivec4 { 0, 1, 0, 0 }, math::ivec4 { 0, 0, 2, 0 }, math::ivec4 { 0, 0, 0, 3 } }
+                };
 
                 const auto result = math::transpose(a);
-                EXPECTS(result.EXTENTS[0] == 4);
-                EXPECTS(result.EXTENTS[1] == 3);
+                EXPECTS(result.row_extent() == 4);
+                EXPECTS(result.col_extent() == 3);
                 // std::println("\n{}\n{}", a, result);
                 // for (auto [i, j] : multi_range(4, 3)) std::println("[{} {}] = {}", i, j, result[i, j]);
 
@@ -83,6 +86,7 @@ namespace {
                 const auto b = math::mat3x4<i32> {
                     0, 1, 0, //
                     0, 0, 2, //
+                    0, 0, 0, //
                     0, 0, 0,
                 }; //
 
@@ -192,10 +196,10 @@ namespace {
                 const auto b = math::fmat2 { 1, 2, 3, 4 };
 
                 const auto result = math::div(a, b);
-                EXPECTS(is(result[0], 3.f / 2.f));
-                EXPECTS(is(result[1], -1.f / 2.f));
-                EXPECTS(is(result[2], 1.f / 2.f));
-                EXPECTS(is(result[3], 1.f / 2.f));
+                EXPECTS(is(result[0, 0], 3.f / 2.f));
+                EXPECTS(is(result[0, 1], -1.f / 2.f));
+                EXPECTS(is(result[1, 0], 1.f / 2.f));
+                EXPECTS(is(result[1, 1], 1.f / 2.f));
             },
           }, {
             "linear.matrix.translate",

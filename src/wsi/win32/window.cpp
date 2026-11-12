@@ -133,21 +133,20 @@ namespace stormkit::wsi::win32 {
 
         ::win32::SetThreadDpiAwarenessContext(::win32::DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
 
-        const auto adjusted = adjust_extent(extent, style, style_ex);
-        window_handle_     = ::win32::
-          CreateWindowExA(style_ex,
-                          class_name,
-                          std::data(title),
-                          style,
-                          ::win32::CW_USEDEFAULT,
-                          ::win32::CW_USEDEFAULT,
-                          adjusted.width,
-                          adjusted.height,
-                          nullptr,
-                          nullptr,
-                          h_instance,
-                          this);
-        state_.open              = true;
+        const auto adjusted       = adjust_extent(extent, style, style_ex);
+        window_handle_            = ::win32::CreateWindowExA(style_ex,
+                                                             class_name,
+                                                             std::data(title),
+                                                             style,
+                                                             ::win32::CW_USEDEFAULT,
+                                                             ::win32::CW_USEDEFAULT,
+                                                             adjusted.width,
+                                                             adjusted.height,
+                                                             nullptr,
+                                                             nullptr,
+                                                             h_instance,
+                                                             this);
+        state_.open               = true;
         auto        win32_monitor = ::win32::MonitorFromWindow(window_handle_, ::win32::MONITOR_DEFAULTTOPRIMARY);
         const auto  monitors      = get_monitors();
         const auto& monitor       = *stdr::find_if(monitors, [&win32_monitor](const auto& monitor) noexcept {
@@ -186,9 +185,8 @@ namespace stormkit::wsi::win32 {
     auto window::clear(const ucolor_rgb& color) noexcept -> void {
         if (win32_state_.external_context) return;
 
-        auto hbrush = hbrush::create(::win32::Rgb(color.r, color.g, color.b));
-        const auto
-          rect = ::win32::RECT { 0, 0, as<::win32::LONG>(state_.extent.width), as<::win32::LONG>(state_.extent.height) };
+        auto       hbrush = hbrush::create(::win32::Rgb(color.r, color.g, color.b));
+        const auto rect = ::win32::RECT { 0, 0, as<::win32::LONG>(state_.extent.width), as<::win32::LONG>(state_.extent.height) };
 
         ::win32::FillRect(gdi_frame_data_.context, &rect, hbrush);
         ::win32::InvalidateRect(window_handle_, nullptr, ::win32::FALSE);
@@ -247,7 +245,7 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
     auto window::set_fullscreen(bool fullscreen) noexcept -> void {
-        auto [x, y] = state_.position.storage;
+        auto [x, y] = state_.position;
 
         auto style    = win32_state_.style;
         auto style_ex = win32_state_.style_ex;
@@ -327,8 +325,8 @@ namespace stormkit::wsi::win32 {
 
             ::win32::ScreenToClient(window_handle_, &mouse_position);
 
-            state.locked_at.x() = as<u32>(mouse_position.x);
-            state.locked_at.y() = as<u32>(mouse_position.y);
+            state.locked_at->x = as<u32>(mouse_position.x);
+            state.locked_at->y = as<u32>(mouse_position.y);
         } else
             ::win32::ClipCursor(nullptr);
 
@@ -372,7 +370,7 @@ namespace stormkit::wsi::win32 {
         auto& state = mouse_states_[global_mouse_id];
 
         if (state.locked) {
-            auto locked_at = ::win32::POINT { as<i32>(state.locked_at.x()), as<i32>(state.locked_at.y()) };
+            auto locked_at = ::win32::POINT { as<i32>(state.locked_at->x), as<i32>(state.locked_at->y) };
 
             ::win32::ClientToScreen(window_handle_, &locked_at);
 
@@ -436,7 +434,7 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     auto window::set_mouse_position(const math::ivec2& position, u8 id) noexcept -> void {
         expects(id == global_mouse_id, "stormkit::wsi win32 backend only support one mouse");
-        auto mouse_position = ::win32::POINT { as<long>(position.x()), as<long>(position.y()) };
+        auto mouse_position = ::win32::POINT { as<long>(position->x), as<long>(position->y) };
         ::win32::ClientToScreen(window_handle_, &mouse_position);
         ::win32::SetCursorPos(mouse_position.x, mouse_position.y);
     }
@@ -469,14 +467,14 @@ namespace stormkit::wsi::win32 {
             .biClrImportant  = 0,
         };
 
-        auto ptr                    = raw_ptr<void> { nullptr };
+        auto ptr                   = raw_ptr<void> { nullptr };
         gdi_frame_data_.context    = hdc::create(hdesktop);
         gdi_frame_data_.bitmap     = hbitmap::create(gdi_frame_data_.context,
-                                                      reinterpret_cast<const ::win32::BITMAPINFO*>(&frame_bitmap_info),
-                                                      as<::win32::UINT>(::win32::DIB_RGB_COLORS),
-                                                      &ptr,
-                                                      nullptr,
-                                                      as<::win32::DWORD>(0));
+                                                     reinterpret_cast<const ::win32::BITMAPINFO*>(&frame_bitmap_info),
+                                                     as<::win32::UINT>(::win32::DIB_RGB_COLORS),
+                                                     &ptr,
+                                                     nullptr,
+                                                     as<::win32::DWORD>(0));
         gdi_frame_data_.pixels_ptr = ptr;
         gdi_frame_data_.extent     = { width, height };
         ::win32::SelectObject(gdi_frame_data_.context, gdi_frame_data_.bitmap);
@@ -645,7 +643,7 @@ namespace stormkit::wsi::win32 {
                 case ::win32::WM_RBUTTONDOWN: [[fallthrough]];
                 case ::win32::WM_MBUTTONDOWN: [[fallthrough]];
                 case ::win32::WM_XBUTTONDOWN: {
-                    const auto [x, y] = extract_mouse_position(window_handle, w_param, l_param, false).storage;
+                    const auto [x, y] = extract_mouse_position(window_handle, w_param, l_param, false);
                     const auto button = extract_mouse_button(message, w_param, l_param);
                     window.mouse_button_down_event(global_mouse_id, button, math::ivec2 { x, y });
                 } break;
@@ -653,7 +651,7 @@ namespace stormkit::wsi::win32 {
                 case ::win32::WM_RBUTTONUP: [[fallthrough]];
                 case ::win32::WM_MBUTTONUP: [[fallthrough]];
                 case ::win32::WM_XBUTTONUP: {
-                    const auto [x, y] = extract_mouse_position(window_handle, w_param, l_param, false).storage;
+                    const auto [x, y] = extract_mouse_position(window_handle, w_param, l_param, false);
                     const auto button = extract_mouse_button(message, w_param, l_param);
                     window.mouse_button_up_event(global_mouse_id, button, math::ivec2 { x, y });
                 } break;
@@ -696,15 +694,15 @@ namespace stormkit::wsi::win32 {
                             window.win32_state().mouse_tracked = true;
                     }
 
-                    const auto [x, y] = extract_mouse_position(window_handle, w_param, l_param, false).storage;
+                    const auto [x, y] = extract_mouse_position(window_handle, w_param, l_param, false);
 
                     if (state.locked and state.relative) {
-                        const auto relative_x = x - as<i32>(state.locked_at.x());
-                        const auto relative_y = y - as<i32>(state.locked_at.y());
+                        const auto relative_x = x - as<i32>(state.locked_at->x);
+                        const auto relative_y = y - as<i32>(state.locked_at->y);
                         window.mouse_moved_event(global_mouse_id, math::ivec2 { relative_x, relative_y });
                     } else if (state.relative) {
-                        const auto relative_x = x - as<i32>(state.last_position.x());
-                        const auto relative_y = y - as<i32>(state.last_position.y());
+                        const auto relative_x = x - as<i32>(state.last_position->x);
+                        const auto relative_y = y - as<i32>(state.last_position->y);
                         window.mouse_moved_event(global_mouse_id, math::ivec2 { relative_x, relative_y });
                     } else
                         window.mouse_moved_event(global_mouse_id, math::ivec2 { x, y });

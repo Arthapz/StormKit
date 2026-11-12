@@ -269,20 +269,20 @@ namespace stormkit { inline namespace core { namespace meta {
     ////////////////////////////////////////
     template<typename T>
     consteval auto name_of() noexcept -> std::string_view {
-#if defined(STORMKIT_COMPILER_GCC)
+#if defined(STORMKIT_COMPILER_IS_GCC)
         constexpr auto prefix   = std::string_view { " [with T = " };
         constexpr auto suffix   = std::string_view { "]" };
         constexpr auto function = std::string_view { __PRETTY_FUNCTION__ };
-#elif defined(STORMKIT_COMPILER_CLANG)
+#elif STORMKIT_COMPILER_IS_CLANG
         constexpr auto prefix   = std::string_view { " [T = " };
         constexpr auto suffix   = std::string_view { "]" };
         constexpr auto function = std::string_view { __PRETTY_FUNCTION__ };
-#elif defined(STORMKIT_COMPILER_MSVC)
+#elif STORMKIT_COMPILER_IS_CL
         constexpr auto prefix   = std::string_view { "<" };
         constexpr auto suffix   = std::string_view { ">(void)" };
         constexpr auto function = std::string_view { __FUNCSIG__ };
 #else
-    #error Unsupported compiler
+    #error unsupported compiler STORMKIT_COMPILER
 #endif
         static_assert(not function.empty());
 

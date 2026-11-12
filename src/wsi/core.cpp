@@ -34,17 +34,17 @@ namespace stormkit::wsi {
     /////////////////////////////////////
     /////////////////////////////////////
     window_manager wm() noexcept {
-#if defined(STORMKIT_OS_WINDOWS)
+#if defined(STORMKIT_OS_IS_WINDOWS)
         return window_manager::win32;
-#elif defined(STORMKIT_OS_MACOS)
+#elif defined(STORMKIT_OS_IS_MACOS)
         return window_manager::macos;
-#elif defined(STORMKIT_OS_IOS)
+#elif defined(STORMKIT_OS_IS_IOS)
         return window_manager::IOS;
-#elif defined(STORMKIT_OS_ANDROID)
+#elif defined(STORMKIT_OS_IS_ANDROID)
         return window_manager::android;
 #elif defined(STORMKIT_OS_SWITCH)
         return window_manager::SWITCH;
-#elif defined(STORMKIT_OS_LINUX)
+#elif defined(STORMKIT_OS_IS_LINUX)
         auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
 
         if (wm_hint) return wm_hint.value();

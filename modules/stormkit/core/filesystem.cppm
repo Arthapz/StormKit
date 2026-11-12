@@ -9,7 +9,7 @@ module;
 
 #include <stormkit/core/try_expected.hpp>
 
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
     #include <fcntl.h>
     #include <io.h>
     #include <sys/stat.h>
@@ -26,7 +26,7 @@ export module stormkit.core.filesystem;
 
 import std;
 
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
 import stormkit.platform.win32;
 #endif
 
@@ -79,7 +79,7 @@ export {
                 using private_tag = private_tag<file_descriptor<Mode>>;
 
               public:
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
                 using native_handle_type                = win32::HANDLE;
                 static inline const auto invalid_handle = native_handle_type { win32::INVALID_HANDLE_VALUE };
 #else
@@ -242,7 +242,7 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto file_descriptor<Mode>::close() noexcept {
         if (is_open()) {
             flush();
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
             win32::CloseHandle
 #else
             ::close
@@ -259,7 +259,7 @@ namespace stormkit { inline namespace core { namespace io {
     STORMKIT_FORCE_INLINE
     inline auto file_descriptor<Mode>::read_to(array_view<byte> out) noexcept -> system_result<usize> {
         EXPECTS(m_descriptor != invalid_handle);
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
         // TODO support async WriteFileEx
         auto       ret     = win32::DWORD { 0 };
         const auto succeed = win32::ReadFile(m_descriptor,
@@ -302,7 +302,7 @@ namespace stormkit { inline namespace core { namespace io {
     STORMKIT_FORCE_INLINE
     inline auto file_descriptor<Mode>::write(array_view<byte> data) noexcept -> system_result<usize> {
         EXPECTS(m_descriptor != invalid_handle);
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
         // TODO support async WriteFileEx
         auto       ret     = win32::DWORD { 0 };
         const auto succeed = win32::WriteFile(m_descriptor,
@@ -345,10 +345,10 @@ namespace stormkit { inline namespace core { namespace io {
     STORMKIT_FORCE_INLINE
     inline auto file_descriptor<Mode>::flush() noexcept -> void {
         EXPECTS(m_descriptor != invalid_handle);
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
         win32::FlushFileBuffers(reinterpret_cast<win32::HANDLE>(m_descriptor));
 #else
-    #ifdef STORMKIT_OS_LINUX
+    #ifdef STORMKIT_OS_IS_LINUX
         fdatasync
     #else
         fsync
@@ -363,7 +363,7 @@ namespace stormkit { inline namespace core { namespace io {
     STORMKIT_FORCE_INLINE
     inline auto file_descriptor<Mode>::position() const noexcept -> usize {
         EXPECTS(m_descriptor != invalid_handle);
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
         auto current_position = win32::LARGE_INTEGER { .QuadPart = 0 };
         SetFilePointerEx(m_descriptor, win32::LARGE_INTEGER { .QuadPart = 0 }, &current_position, win32::FILE_CURRENT);
         return as<usize>(current_position.QuadPart);
@@ -378,7 +378,7 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto file_descriptor<Mode>::size() const noexcept -> usize {
         EXPECTS(m_descriptor != invalid_handle);
         if (m_size == 0) {
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
             auto       size    = win32::LARGE_INTEGER { .QuadPart = 0 };
             const auto succeed = win32::GetFileSizeEx(m_descriptor, &size);
             if (succeed) m_size = as<usize>(size.QuadPart);
@@ -417,7 +417,7 @@ namespace stormkit { inline namespace core { namespace io {
             if (error_code_) return std::unexpected { error_code::from_stderror_code(std::move(error_code_)) };
         }
 
-#ifdef STORMKIT_OS_WINDOWS
+#ifdef STORMKIT_OS_IS_WINDOWS
         const auto path_ = [&] noexcept {
             if (not path.string().starts_with("\\\\?\\")) return "\\\\?\\" / path;
             return path;
